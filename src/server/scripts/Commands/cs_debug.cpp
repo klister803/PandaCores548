@@ -54,63 +54,63 @@ public:
             { "buyerror",       SEC_ADMINISTRATOR,  false, &HandleDebugSendBuyErrorCommand,       "", NULL },
             { "channelnotify",  SEC_ADMINISTRATOR,  false, &HandleDebugSendChannelNotifyCommand,  "", NULL },
             { "chatmmessage",   SEC_ADMINISTRATOR,  false, &HandleDebugSendChatMsgCommand,        "", NULL },
+            { "compress",       SEC_ADMINISTRATOR,  false, &HandleDebugSendCompressCommand,       "", NULL },
             { "equiperror",     SEC_ADMINISTRATOR,  false, &HandleDebugSendEquipErrorCommand,     "", NULL },
             { "largepacket",    SEC_ADMINISTRATOR,  false, &HandleDebugSendLargePacketCommand,    "", NULL },
+            { "multi",          SEC_ADMINISTRATOR,  false, &HandleDebugSendMultCommand,           "", NULL },
             { "opcode",         SEC_ADMINISTRATOR,  false, &HandleDebugSendOpcodeCommand,         "", NULL },
-            { "qpartymsg",      SEC_ADMINISTRATOR,  false, &HandleDebugSendQuestPartyMsgCommand,  "", NULL },
             { "qinvalidmsg",    SEC_ADMINISTRATOR,  false, &HandleDebugSendQuestInvalidMsgCommand, "", NULL },
+            { "qpartymsg",      SEC_ADMINISTRATOR,  false, &HandleDebugSendQuestPartyMsgCommand,  "", NULL },
             { "sellerror",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSellErrorCommand,      "", NULL },
             { "setphaseshift",  SEC_ADMINISTRATOR,  false, &HandleDebugSendSetPhaseShiftCommand,  "", NULL },
             { "spellfail",      SEC_ADMINISTRATOR,  false, &HandleDebugSendSpellFailCommand,      "", NULL },
-            { "compress",       SEC_ADMINISTRATOR,  false, &HandleDebugSendCompressCommand,       "", NULL },
-            { "multi",          SEC_ADMINISTRATOR,  false, &HandleDebugSendMultCommand,           "", NULL },
             
             { NULL,             SEC_PLAYER,         false, NULL,                                  "", NULL }
         };
         static ChatCommand debugCommandTable[] =
         {
-            { "setbit",         SEC_ADMINISTRATOR,  false, &HandleDebugSet32BitCommand,        "", NULL },
-            { "threat",         SEC_ADMINISTRATOR,  false, &HandleDebugThreatListCommand,      "", NULL },
-            { "hostil",         SEC_ADMINISTRATOR,  false, &HandleDebugHostileRefListCommand,  "", NULL },
             { "anim",           SEC_GAMEMASTER,     false, &HandleDebugAnimCommand,            "", NULL },
+            { "areatriggers",   SEC_ADMINISTRATOR,  false, &HandleDebugAreaTriggersCommand,    "", NULL },
             { "arena",          SEC_ADMINISTRATOR,  false, &HandleDebugArenaCommand,           "", NULL },
+            { "attackpower",    SEC_ADMINISTRATOR,  false, &HandleDebugModifyAttackpowerCommand,    "", NULL },
+            { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
             { "bg",             SEC_ADMINISTRATOR,  false, &HandleDebugBattlegroundCommand,    "", NULL },
-            { "getitemstate",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemStateCommand,    "", NULL },
-            { "lootrecipient",  SEC_GAMEMASTER,     false, &HandleDebugGetLootRecipientCommand, "", NULL },
-            { "getvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugGetValueCommand,        "", NULL },
+            { "crit",           SEC_ADMINISTRATOR,  false, &HandleDebugModifyCritChanceCommand,     "", NULL },
+            { "entervehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugEnterVehicleCommand,    "", NULL },
             { "getdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugGetDynamicValueCommand, "", NULL },
+            { "getitemstate",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemStateCommand,    "", NULL },
             { "getitemvalue",   SEC_ADMINISTRATOR,  false, &HandleDebugGetItemValueCommand,    "", NULL },
+            { "getvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugGetValueCommand,        "", NULL },
+            { "haste",          SEC_ADMINISTRATOR,  false, &HandleDebugModifyHasteCommand,          "", NULL },
+            { "haste",          SEC_ADMINISTRATOR,  false, &HandleDebugModifyHasteCommand,          "", NULL },
+            { "hit",            SEC_ADMINISTRATOR,  false, &HandleDebugModifyHitCommand,            "", NULL },
+            { "hostile",        SEC_ADMINISTRATOR,  false, &HandleDebugHostileRefListCommand,  "", NULL },
+            { "itemexpire",     SEC_ADMINISTRATOR,  false, &HandleDebugItemExpireCommand,      "", NULL },
+            { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
+            { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  "", NULL },
+            { "lootrecipient",  SEC_GAMEMASTER,     false, &HandleDebugGetLootRecipientCommand, "", NULL },
+            { "los",            SEC_MODERATOR,      false, &HandleDebugLoSCommand,             "", NULL },
+            { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
             { "mapinfo",        SEC_ADMINISTRATOR,  false, &HandleDebugGetMapInfoCommand,      "", NULL },
-            { "Mod32Value",     SEC_ADMINISTRATOR,  false, &HandleDebugMod32ValueCommand,      "", NULL },
+            { "mastery",        SEC_ADMINISTRATOR,  false, &HandleDebugModifyMasteryCommand,        "", NULL },
+            { "mod32value",     SEC_ADMINISTRATOR,  false, &HandleDebugMod32ValueCommand,      "", NULL },
+            { "moveflags",      SEC_ADMINISTRATOR,  false, &HandleDebugMoveflagsCommand,       "", NULL },
+            { "phase",          SEC_MODERATOR,      false, &HandleDebugPhaseCommand,           "", NULL },
             { "play",           SEC_MODERATOR,      false, NULL,              "", debugPlayCommandTable },
             { "send",           SEC_ADMINISTRATOR,  false, NULL,              "", debugSendCommandTable },
             { "setaurastate",   SEC_ADMINISTRATOR,  false, &HandleDebugSetAuraStateCommand,    "", NULL },
+            { "setbit",         SEC_ADMINISTRATOR,  false, &HandleDebugSet32BitCommand,        "", NULL },
+            { "setdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugSetDynamicValueCommand, "", NULL },
             { "setitemvalue",   SEC_ADMINISTRATOR,  false, &HandleDebugSetItemValueCommand,    "", NULL },
             { "setvalue",       SEC_ADMINISTRATOR,  false, &HandleDebugSetValueCommand,        "", NULL },
-            { "setdynamicvalue",SEC_ADMINISTRATOR,  false, &HandleDebugSetDynamicValueCommand, "", NULL },
-            { "spawnvehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugSpawnVehicleCommand,    "", NULL },
             { "setvid",         SEC_ADMINISTRATOR,  false, &HandleDebugSetVehicleIdCommand,    "", NULL },
-            { "entervehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugEnterVehicleCommand,    "", NULL },
-            { "uws",            SEC_ADMINISTRATOR,  false, &HandleDebugUpdateWorldStateCommand, "", NULL },
-            { "update",         SEC_ADMINISTRATOR,  false, &HandleDebugUpdateCommand,          "", NULL },
-            { "itemexpire",     SEC_ADMINISTRATOR,  false, &HandleDebugItemExpireCommand,      "", NULL },
-            { "areatriggers",   SEC_ADMINISTRATOR,  false, &HandleDebugAreaTriggersCommand,    "", NULL },
-            { "los",            SEC_MODERATOR,      false, &HandleDebugLoSCommand,             "", NULL },
-            { "moveflags",      SEC_ADMINISTRATOR,  false, &HandleDebugMoveflagsCommand,       "", NULL },
-            { "phase",          SEC_MODERATOR,      false, &HandleDebugPhaseCommand,           "", NULL },
-            { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
-            { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
-            { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
-            { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
-            { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  "", NULL },
-
-            // stats debug
+            { "spawnvehicle",   SEC_ADMINISTRATOR,  false, &HandleDebugSpawnVehicleCommand,    "", NULL },
             { "spellpower",     SEC_ADMINISTRATOR,  false, &HandleDebugModifySpellpowerCommand,     "", NULL },
-            { "attackpower",    SEC_ADMINISTRATOR,  false, &HandleDebugModifyAttackpowerCommand,    "", NULL },
-            { "crit",           SEC_ADMINISTRATOR,  false, &HandleDebugModifyCritChanceCommand,     "", NULL },
-            { "haste",          SEC_ADMINISTRATOR,  false, &HandleDebugModifyHasteCommand,          "", NULL },
-            { "hit",            SEC_ADMINISTRATOR,  false, &HandleDebugModifyHitCommand,            "", NULL },
-            { "mastery",        SEC_ADMINISTRATOR,  false, &HandleDebugModifyMasteryCommand,        "", NULL },
+            { "threat",         SEC_ADMINISTRATOR,  false, &HandleDebugThreatListCommand,      "", NULL },
+            { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
+            { "update",         SEC_ADMINISTRATOR,  false, &HandleDebugUpdateCommand,          "", NULL },
+            { "updatecriteria", SEC_ADMINISTRATOR,  false, &HandleDebugUpdateCriteriaCommand,  "", NULL },
+            { "uws",            SEC_ADMINISTRATOR,  false, &HandleDebugUpdateWorldStateCommand, "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1067,25 +1067,25 @@ public:
     {
         if (!*args)
             return false;
-	
-        char* t = strtok((char*)args, " ");	
-        char* p = strtok(NULL, " ");	
-        char* w = strtok(NULL, " ");
-        if (!t)	
-            return false;	
-	
-        std::set<uint32> terrainswap;	
-        std::set<uint32> phaseId;	
-        std::set<uint32> worldAreaIds;	
-	
-        terrainswap.insert((uint32)atoi(t));	
-	
-        if (p)	
-            phaseId.insert((uint32)atoi(p));	
 
-        if (w)	
+        char* t = strtok((char*)args, " ");
+        char* p = strtok(NULL, " ");
+        char* w = strtok(NULL, " ");
+        if (!t)
+            return false;
+
+        std::set<uint32> terrainswap;
+        std::set<uint32> phaseId;
+        std::set<uint32> worldAreaIds;
+
+        terrainswap.insert((uint32)atoi(t));
+
+        if (p)
+            phaseId.insert((uint32)atoi(p));
+
+        if (w)
             worldAreaIds.insert((uint32)atoi(w));
-	
+
         handler->GetSession()->SendSetPhaseShift(phaseId, terrainswap, worldAreaIds);
         return true;
     }
@@ -1569,15 +1569,14 @@ public:
         return true;
     }
 
-    static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* args)	
-    {	
-        Unit* unit = handler->getSelectedUnit();	
-        Player* player = handler->GetSession()->GetPlayer();	
-        if(unit && unit->GetTypeId() == TYPEID_PLAYER)	
-            player = unit->ToPlayer();	
-	
-        player->GetPhaseMgr().SendDebugReportToPlayer(handler->GetSession()->GetPlayer());	
-        return true;	
+    static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* args)
+    {
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
+
+        player->GetPhaseMgr().SendDebugReportToPlayer(handler->GetSession()->GetPlayer());
+        return true;
     }
 
     static bool HandleDebugMoveJump(ChatHandler* handler, char const* args)
@@ -1671,13 +1670,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1694,13 +1689,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1718,13 +1709,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1744,13 +1731,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1768,13 +1751,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1792,13 +1771,9 @@ public:
         if (!*args)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
-        Player* player = NULL;
-        if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
-            player = handler->GetSession()->GetPlayer();
-        else
-            player = (Player*)unit;
-        if (!unit) unit = player;
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
 
         char* cval = strtok((char*)args, " ");
 
@@ -1807,6 +1782,46 @@ public:
 
         int32 Value = (int32)atoi(cval);
         player->ApplyRatingMod(CR_MASTERY, Value, true);
+        return true;
+    }
+
+    static bool HandleDebugUpdateCriteriaCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
+
+        Tokenizer tokens(args, ' ');
+        if (tokens.empty())
+            return false;
+
+        uint32 criteriaType = 0;
+        uint32 miscValue1 = 0;
+        uint32 miscValue2 = 0;
+        Unit* unit = NULL;
+        for (uint32 i = 0; i < tokens.size(); ++i)
+        {
+            switch (i)
+            {
+                case 0:
+                    criteriaType = std::atoi(tokens[i]);
+                    break;
+                case 1:
+                    miscValue1 = std::atoi(tokens[i]);
+                    break;
+                case 2:
+                    miscValue2 = std::atoi(tokens[i]);
+                    break;
+                case 3:
+                    unit = player;
+                    break;
+            }
+        }
+
+        player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, unit);
         return true;
     }
 };

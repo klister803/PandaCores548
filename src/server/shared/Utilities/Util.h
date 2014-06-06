@@ -55,6 +55,7 @@ public:
     const_iterator end() const { return m_storage.end(); }
 
     size_type size() const { return m_storage.size(); }
+    bool empty() const { return m_storage.empty(); }
 
     reference operator [] (size_type i) { return m_storage[i]; }
     const_reference operator [] (size_type i) const { return m_storage[i]; }
