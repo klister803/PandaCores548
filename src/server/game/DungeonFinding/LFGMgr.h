@@ -41,13 +41,16 @@ enum LfgOptions
 enum LFGMgrEnum
 {
     LFG_TIME_ROLECHECK                           = 45 * IN_MILLISECONDS,
-    LFG_TIME_BOOT                                = 120,
+    LFG_TIME_BOOT                                = 30,
     LFG_TIME_PROPOSAL                            = 45,
     LFG_QUEUEUPDATE_INTERVAL                     = 15 * IN_MILLISECONDS,
     LFG_SPELL_DUNGEON_COOLDOWN                   = 71328,
     LFG_SPELL_DUNGEON_DESERTER                   = 71041,
     LFG_SPELL_LUCK_OF_THE_DRAW                   = 72221,
-    LFG_GROUP_KICK_VOTES_NEEDED                  = 3
+
+    LFG_DUNGEON_KICK_VOTES_NEEDED                = 3,
+    LFG_RAID_KICK_VOTES_NEEDED                   = 15,
+    LFG_SCENARIO_KICK_VOTES_NEEDED               = 2,
 };
 
 /// Proposal states
@@ -243,6 +246,7 @@ struct LfgPlayerBoot
     time_t cancelTime;                                     ///< Time left to vote
     bool inProgress;                                       ///< Vote in progress
     LfgAnswerContainer votes;                              ///< Player votes (-1 not answer | 0 Not agree | 1 agree)
+    uint8 votesNeeded;
     uint64 victim;                                         ///< Player guid to be kicked (can't vote)
     std::string reason;                                    ///< kick reason
 };
@@ -421,6 +425,8 @@ class LFGMgr
         /// Sends queue status to player
         static void SendLfgQueueStatus(uint64 guid, LfgQueueStatusData const& data);
         void SendUpdateStatus(Player* player, LfgUpdateData const& updateData, bool party);
+
+        uint8 GetVotesNeededForKick(uint64 gguid);
 
     private:
         uint8 GetTeam(uint64 guid);
