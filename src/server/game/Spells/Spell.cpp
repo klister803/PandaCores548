@@ -4494,7 +4494,7 @@ void Spell::SendSpellStart()
     uint32 extraTargetsCount = 0;
     std::vector<ObjectGuid> extraTargetGuids(extraTargetsCount);
 
-    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
+    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON && m_spellInfo->EquippedItemSubClassMask & 0x0004000C/*BOW, GUN, CROSSBOW*/)
     {
         castFlags |= CAST_FLAG_PROJECTILE;
         WriteProjectile(AmmoInventoryType, AmmoDisplayId);
@@ -4980,7 +4980,7 @@ void Spell::SendSpellGo()
     uint32 AmmoDisplayId = 0;
     uint8 AmmoInventoryType = 0;
 
-    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
+    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON && m_spellInfo->EquippedItemSubClassMask & 0x0004000C/*BOW, GUN, CROSSBOW*/)
     {
         castFlags |= CAST_FLAG_PROJECTILE;
         WriteProjectile(AmmoInventoryType, AmmoDisplayId);
