@@ -4484,15 +4484,21 @@ void Spell::SendSpellStart()
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedType = false;
     bool hasAdjustMissile = false;
-    bool hasAmmoInventoryType = false;
     bool hasPredictedHeal = false;
     bool hasVisualChain = false;
-    bool hasAmmoDisplayId = false;
+    uint8 AmmoInventoryType = 0;
+    uint32 AmmoDisplayId = 0;
 
     uint32 powerCount = 0;
     uint32 missCount2 = 0;
     uint32 extraTargetsCount = 0;
     std::vector<ObjectGuid> extraTargetGuids(extraTargetsCount);
+
+    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
+    {
+        castFlags |= CAST_FLAG_PROJECTILE;
+        WriteProjectile(AmmoInventoryType, AmmoDisplayId);
+    }
 
     uint32 targetMask = m_targets.GetTargetMask();
     if (targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_MINIPET))
@@ -4534,7 +4540,7 @@ void Spell::SendSpellStart()
     for (uint32 i = 0; i < extraTargetsCount; ++i)
         data.WriteGuidMask<3, 1, 7, 6, 2, 4, 5, 0>(extraTargetGuids[i]);
 
-    data.WriteBit(!hasAmmoInventoryType);                       // !byte170
+    data.WriteBit(!AmmoInventoryType);                          // !AmmoInventoryType
     data.WriteGuidMask<2>(itemCasterGuid);
     data.WriteBits(0, 24);                                      // hit count
 
@@ -4574,7 +4580,7 @@ void Spell::SendSpellStart()
         data.WriteGuidMask<4, 5, 6, 0, 7, 1, 2, 3>(srcTransportGuid);
     }
     data.WriteGuidMask<1>(casterGuid);
-    data.WriteBit(!hasAmmoDisplayId);                            // !dword16C
+    data.WriteBit(!AmmoDisplayId);                            // !dword16C
     data.WriteGuidMask<4>(casterGuid);
     data.WriteBit((targetMask & TARGET_FLAG_STRING) == 0);
     if (targetMask & TARGET_FLAG_STRING)
@@ -4621,8 +4627,8 @@ void Spell::SendSpellStart()
         data.WriteGuidBytes<3, 1, 6, 4, 0>(extraTargetGuids[i]);
     }
 
-    if (hasAmmoInventoryType)
-        data << uint8(0);
+    if (AmmoInventoryType)
+        data << uint8(AmmoInventoryType);
 
     data.WriteGuidBytes<4, 2, 5, 6, 3, 1, 7, 0>(targetGuid);
 
@@ -4697,8 +4703,8 @@ void Spell::SendSpellStart()
     }
 
     data.WriteGuidBytes<6>(itemCasterGuid);
-    if (hasAmmoDisplayId)
-        data << uint32(0);
+    if (AmmoDisplayId)
+        data << uint32(AmmoDisplayId);
     data.WriteGuidBytes<0>(itemCasterGuid);
     data.WriteGuidBytes<4>(casterGuid);
 
@@ -4964,15 +4970,21 @@ void Spell::SendSpellGo()
 
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedHeal = castFlags & CAST_FLAG_HEAL_PREDICTION;
-    bool hasAmmoDisplayId = false;
     uint8 byte180 = 0;
     bool hasCastSchoolImmunities = false;
     bool hasPredictedType = false;
     bool hasRuneState = castFlags & CAST_FLAG_RUNE_LIST;
     bool hasAdjustMissile = castFlags & CAST_FLAG_ADJUST_MISSILE;
-    bool hasAmmoInventoryType = false;
     bool hasVisualChain = false;
     bool hasCastImmunities = false;
+    uint32 AmmoDisplayId = 0;
+    uint8 AmmoInventoryType = 0;
+
+    if(m_caster->GetTypeId() == TYPEID_UNIT && m_spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO)
+    {
+        castFlags |= CAST_FLAG_PROJECTILE;
+        WriteProjectile(AmmoInventoryType, AmmoDisplayId);
+    }
 
     uint32 targetMask = m_targets.GetTargetMask();
     if (targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_MINIPET))
@@ -5020,7 +5032,7 @@ void Spell::SendSpellGo()
     for (uint32 i = 0; i < extraTargetsCount; ++i)
         data.WriteGuidMask<4, 1, 5, 2, 0, 3, 6, 7>(extraTargetGuids[i]);
 
-    data.WriteBit(!hasAmmoDisplayId);                            // !dword16C
+    data.WriteBit(!AmmoDisplayId);                              // !AmmoDisplayId
     data.WriteGuidMask<0, 1, 4, 6, 5, 3, 2, 7>(guid1A0);
     data.WriteBit(!byte180);                                     // !byte180
     data.WriteGuidMask<3>(casterGuid);
@@ -5083,7 +5095,7 @@ void Spell::SendSpellGo()
     data.WriteBits(0, 13);                                      // dword2C
     data.WriteGuidMask<5>(itemCasterGuid);
     data.WriteBits(hasRuneState ? 1 : powerCount, 21);          // powerCount
-    data.WriteBit(!hasAmmoInventoryType);                       // !byte170
+    data.WriteBit(!AmmoInventoryType);                          // !AmmoInventoryType
     data.WriteGuidMask<7>(casterGuid);
     data.WriteBit(m_targets.HasDst());
     data.WriteBit(hasVisualChain);                              // byte17C
@@ -5263,8 +5275,8 @@ void Spell::SendSpellGo()
     if (hasPredictedType)
         data << uint8(0);
 
-    if (hasAmmoInventoryType)
-        data << uint8(0);
+    if (AmmoInventoryType)
+        data << uint8(AmmoInventoryType);
 
     data.WriteGuidBytes<3>(itemCasterGuid);
     data.WriteGuidBytes<3, 2>(casterGuid);
@@ -5289,8 +5301,8 @@ void Spell::SendSpellGo()
     if (hasCastSchoolImmunities)
         data << uint32(0);
 
-    if (hasAmmoDisplayId)
-        data << uint32(0);
+    if (AmmoDisplayId)
+        data << uint32(AmmoDisplayId);
 
     data.WriteGuidBytes<7>(itemCasterGuid);
 
@@ -8972,6 +8984,45 @@ bool Spell::IsCritForTarget(Unit* target) const
             return true;
 
     return false;
+}
+
+// was WriteAmmoToPacket. Not used only for creature range casts.
+// ToDo: create new field on creature_equip_template and get data from it, as arrows are different.
+void Spell::WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID)
+{
+    ASSERT(m_caster->GetTypeId() != TYPEID_PLAYER);
+
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        if (uint32 item_id = m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + i))
+       {
+            if (ItemEntry const* itemEntry = sItemStore.LookupEntry(item_id))
+            {
+                if (itemEntry->Class == ITEM_CLASS_WEAPON)
+                {
+                    switch (itemEntry->SubClass)
+                    {
+                        case ITEM_SUBCLASS_WEAPON_THROWN:
+                            ammoDisplayID = itemEntry->DisplayId;
+                            ammoInventoryType = itemEntry->InventoryType;
+                            break;
+                        case ITEM_SUBCLASS_WEAPON_BOW:
+                        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                            ammoDisplayID = 5996;       // is this need fixing?
+                            ammoInventoryType = INVTYPE_AMMO;
+                            break;
+                        case ITEM_SUBCLASS_WEAPON_GUN:
+                            ammoDisplayID = 5998;       // is this need fixing?
+                            ammoInventoryType = INVTYPE_AMMO;
+                            break;
+                    }
+
+                    if (ammoDisplayID)
+                        break;
+                }
+            }
+        }
+    }
 }
 
 namespace Trinity

@@ -542,6 +542,7 @@ class Spell
 
         void SetSpellValue(SpellValueMod mod, int32 value);
         uint32 GetCountDispel() const { return m_count_dispeling; }
+        void WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID);
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
