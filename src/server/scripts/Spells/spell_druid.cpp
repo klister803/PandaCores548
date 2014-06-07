@@ -1484,43 +1484,6 @@ class spell_dru_lifebloom : public SpellScriptLoader
         }
 };
 
-// Called by Regrowth - 8936, Nourish - 50464 and Healing Touch - 5185
-// Lifebloom - 33763 : Refresh duration
-class spell_dru_lifebloom_refresh : public SpellScriptLoader
-{
-    public:
-        spell_dru_lifebloom_refresh() : SpellScriptLoader("spell_dru_lifebloom_refresh") { }
-
-        class spell_dru_lifebloom_refresh_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_lifebloom_refresh_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    // Glyph of Blooming
-                    if (_player->HasAura(121840))
-                        return;
-
-                    if (Unit* target = GetHitUnit())
-                        if (Aura* lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
-                            lifebloom->RefreshDuration();
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_lifebloom_refresh_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_lifebloom_refresh_SpellScript();
-        }
-};
-
 // Called by Lifebloom - 33763
 // Omen of Clarity - 113043
 class spell_dru_omen_of_clarity : public SpellScriptLoader
@@ -3145,7 +3108,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_rip();
     new spell_dru_bear_hug();
     new spell_dru_lifebloom();
-    new spell_dru_lifebloom_refresh();
     new spell_dru_omen_of_clarity();
     new spell_dru_mark_of_the_wild();
     new spell_dru_glyph_of_regrowth();

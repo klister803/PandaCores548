@@ -5833,6 +5833,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     Unit* target = victim;
     int32 basepoints0 = 0;
     uint64 originalCaster = 0;
+    Unit* procSpellCaster = dmgInfoProc->GetAttacker();
+    uint64 procSpellCasterGUID = procSpellCaster ? procSpellCaster->GetGUID(): 0;
 
     if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
     {
@@ -6049,11 +6051,41 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR: //5
                 {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
-                        aura->RefreshDuration();
+                    if (itr->aura)
+                    {
+                        if (itr->aura > 0)
+                        {
+                            if (!HasAura(itr->aura))
+                            {
+                                check = true;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (HasAura(-(itr->aura)))
+                            {
+                                check = true;
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (itr->spell_trigger > 0)
+                    {
+                        if (Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                            aura->RefreshTimers();
+                    }
+                    else
+                    {
+                        if (procSpell->Id == -(itr->spell_trigger))
+                            if (procSpellCasterGUID == triggeredByAura->GetCasterGUID())
+                                triggeredByAura->GetBase()->RefreshTimers();
+                    }
+
                     check = true;
+                    break;
                 }
-                break;
                 case SPELL_TRIGGER_GET_DUR_AURA: //6
                 {
                     if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
