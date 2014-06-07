@@ -5735,11 +5735,8 @@ void Spell::TakePower()
     int32  ifMissedPowerCost = m_powerCost;
     bool hit = true;
 
-    if (Player* player = m_caster->ToPlayer())
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (powerType == POWER_HOLY_POWER)
-            m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->ManaCost);
-
         if (uint64 targetGUID = m_targets.GetUnitTargetGUID())
             for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                 if (ihit->targetGUID == targetGUID)
@@ -7505,6 +7502,10 @@ SpellCastResult Spell::CheckPower()
         Powers powerType = Powers(power.powerType);
         if (int32(m_caster->GetPower(powerType)) < m_powerCost)
             return SPELL_FAILED_NO_POWER;
+
+        if (powerType == POWER_HOLY_POWER)
+            if (Player* player = m_caster->ToPlayer())
+                m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->ManaCost);
     }
     else if (!GetSpellInfo()->NoPower())
     {
