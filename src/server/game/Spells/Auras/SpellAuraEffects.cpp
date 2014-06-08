@@ -1936,72 +1936,72 @@ void AuraEffect::CleanupTriggeredSpells(Unit* target)
 
 void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 {
-    uint32 spellId      = 0;
-    uint32 spellId2     = 0;
-    uint32 spellId3     = 0;
-    uint32 spellId4     = 0;
+    uint8 const maxSpell = 5;
+    uint32 spellId[maxSpell] = {0};
 
     std::list<uint32> actionBarReplaceAuras;
 
     switch (GetMiscValue())
     {
         case FORM_CAT:
-            spellId = 3025;     // Wild Charge
-            spellId2 = 48629;   // Swipe, Mangle, Thrash
-            spellId3 = 106840;  // Skull Bash, Stampeding Roar, Berserk
+            spellId[0] = 3025;   // Wild Charge
+            spellId[1] = 48629;  // Swipe, Mangle, Thrash
+            spellId[2] = 106840; // Skull Bash, Stampeding Roar, Berserk
+            spellId[3] = 108300; // Killer Instinct
             break;
         case FORM_TREE:
             break;
         case FORM_TRAVEL:
-            spellId = 5419;
+            spellId[0] = 5419;
             break;
         case FORM_AQUA:
-            spellId = 5421;
+            spellId[0] = 5421;
             break;
         case FORM_BEAR:
-            spellId = 1178;
-            spellId2 = 21178;   // Swipe, Wild Charge
-            spellId3 = 106829;  // Mangle, Thrash, Skull Bash
-            spellId4 = 106899;  // Stampeding Roar, Berserk
+            spellId[0] = 1178;
+            spellId[1] = 21178;  // Swipe, Wild Charge
+            spellId[2] = 106829; // Mangle, Thrash, Skull Bash
+            spellId[3] = 106899; // Stampeding Roar, Berserk
+            spellId[4] = 108300; // Killer Instinct
             break;
         case FORM_BATTLESTANCE:
-            spellId = 21156;
+            spellId[0] = 21156;
             break;
         case FORM_DEFENSIVESTANCE:
-            spellId = 7376;
+            spellId[0] = 7376;
             break;
         case FORM_BERSERKERSTANCE:
-            spellId = 7381;
+            spellId[0] = 7381;
             break;
         case FORM_MOONKIN:
-            spellId = 24905;
-            spellId2 = 24907;
+            spellId[0] = 24905;
+            spellId[1] = 24907;
             // Glyph of the Start
             if (!apply || target->HasAura(114301))
-                spellId3 = 114302;  // Astral Form
+                spellId[2] = 114302;  // Astral Form
             break;
         case FORM_FLIGHT:
-            spellId = 33948;
-            spellId2 = 34764;
+            spellId[0] = 33948;
+            spellId[1] = 34764;
             break;
         case FORM_FLIGHT_EPIC:
-            spellId  = 40122;
-            spellId2 = 40121;
+            spellId[0] = 40122;
+            spellId[1] = 40121;
             break;
         case FORM_METAMORPHOSIS:
-            spellId  = 103965;
-            spellId2 = 54817;
+            spellId[0] = 103965;
+            spellId[1] = 54817;
             break;
         case FORM_SPIRITOFREDEMPTION:
-            spellId  = 27792;
-            spellId2 = 27795;                               // must be second, this important at aura remove to prevent to early iterator invalidation.
+            spellId[0] = 27792;
+            spellId[1] = 27795;                               // must be second, this important at aura remove to prevent to early iterator invalidation.
             break;
         case FORM_SHADOW:
-            spellId = 49868;
-            spellId2 = 71167;
+            spellId[0] = 49868;
+            spellId[1] = 71167;
             break;
         case FORM_GHOSTWOLF:
-            spellId = 67116;
+            spellId[0] = 67116;
             break;
         case FORM_GHOUL:
         case FORM_AMBIENT:
@@ -2015,38 +2015,17 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
 
     if (apply)
     {
-        // Remove cooldown of spells triggered on stance change - they may share cooldown with stance spell
-        if (spellId)
+        if (Player* plrTarget = target->ToPlayer())
         {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->RemoveSpellCooldown(spellId);
-            target->CastSpell(target, spellId, true, NULL, this);
-        }
-
-        if (spellId2)
-        {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->RemoveSpellCooldown(spellId2);
-            target->CastSpell(target, spellId2, true, NULL, this);
-        }
-
-        if (spellId3)
-        {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->RemoveSpellCooldown(spellId3);
-            target->CastSpell(target, spellId3, true, NULL, this);
-        }
-
-        if (spellId4)
-        {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->RemoveSpellCooldown(spellId4);
-            target->CastSpell(target, spellId4, true, NULL, this);
-        }
-
-        if (target->GetTypeId() == TYPEID_PLAYER)
-        {
-            Player* plrTarget = target->ToPlayer();
+            // Remove cooldown of spells triggered on stance change - they may share cooldown with stance spell
+            for (uint8 i = NULL; i < maxSpell; i++)
+            {
+                if (spellId[i])
+                {
+                    plrTarget->RemoveSpellCooldown(spellId[i]);
+                    plrTarget->CastSpell(target, spellId[i], true, NULL, this);
+                }
+            }
 
             PlayerSpellMap const& sp_list = plrTarget->GetSpellMap();
             for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
@@ -2054,8 +2033,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
-                if (itr->first == spellId || itr->first == spellId2|| itr->first == spellId3 || itr->first == spellId4)
-                    continue;
+                for (uint8 i = NULL; i < maxSpell; i++)
+                    if (itr->first == spellId[i])
+                        continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_HIDDEN_CLIENTSIDE)))
@@ -2141,14 +2121,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
     }
     else
     {
-        if (spellId)
-            target->RemoveAurasDueToSpell(spellId);
-        if (spellId2)
-            target->RemoveAurasDueToSpell(spellId2);
-        if (spellId3)
-            target->RemoveAurasDueToSpell(spellId3);
-        if (spellId4)
-            target->RemoveAurasDueToSpell(spellId4);
+        for (uint8 i = NULL; i < maxSpell; i++)
+            if (spellId[i])
+                target->RemoveAurasDueToSpell(spellId[i]);
 
         // Improved Barkskin - apply/remove armor bonus due to shapeshift
         if (Player* player=target->ToPlayer())
