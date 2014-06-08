@@ -24609,6 +24609,7 @@ void Player::UpdateTriggerVisibility()
 void Player::SendInitialVisiblePackets(Unit* target)
 {
     SendAurasForTarget(target);
+    SendVegnette(target->ToCreature());
     if (target->isAlive())
     {
         if (target->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && target->getVictim())
@@ -24880,10 +24881,11 @@ void Player::SendInitialPacketsBeforeAddToMap()
     //SMSG_WEATHER done on UpdateZone
     SendCurrencies();
 
+    // Reset Vignitte data
     data.Initialize(SMSG_CLIENT_VIGNETTE_DATA, 15);
     data.WriteBits(0, 24);
     data.WriteBits(0, 24);
-    data.WriteBit(0);
+    data.WriteBit(1);
     data.WriteBits(0, 20);
     data.WriteBits(0, 20);
     data.WriteBits(0, 24);
@@ -29671,4 +29673,38 @@ uint8 Player::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
         m_modForHolyPowerSpell = m_baseHolypower / baseCost;
         return m_baseHolypower;
     }
+}
+
+// Just for test. 
+// ToDo: add field with corect vignitte id for bosses.
+// ToDo2: system should work not at creature udapte, but at zone entering.
+void Player::SendVegnette(Creature *target)
+{
+    if (!target || !target->isWorldBoss())
+        return;
+
+    ObjectGuid targetGUID = target->GetGUID();
+    ObjectGuid unk = targetGUID/*0x81101000F*/;
+
+    WorldPacket data(SMSG_CLIENT_VIGNETTE_DATA, 20);
+    data.WriteBits(0, 24);
+    data.WriteBits(0, 24);
+    data.WriteBit(9);
+    data.WriteBits(1, 20);
+    data.WriteBits(0, 20);
+    data.WriteGuidMask<0, 5, 6, 7, 3, 1, 4, 2>(targetGUID);
+    data.WriteBits(1, 24);
+    data.WriteGuidMask<0, 5, 6, 7, 3, 1, 4, 2>(unk);
+    data.WriteGuidBytes<0, 2, 3, 4, 5, 1, 7, 6>(unk);
+
+    {
+        data << float(target->GetPositionX());
+        data.WriteGuidBytes<2, 4>(targetGUID);
+        data << float(target->GetPositionY());
+        data.WriteGuidBytes<6, 7, 0, 3>(targetGUID);
+        data << uint32(4);      //Vegnette.dbc2 ID
+        data << float(target->GetPositionZ());
+        data.WriteGuidBytes<5, 1>(targetGUID);
+    }
+    GetSession()->SendPacket(&data);
 }
