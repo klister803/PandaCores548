@@ -520,6 +520,17 @@ public:
             z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
         }
 
+        // scenario special handling
+        // TODO: remove this
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (mapEntry->IsScenario())
+        {
+            if (GetMapDifficultyData(mapId, NORMAL_SCENARIO_DIFFICULTY))
+                player->SetDungeonDifficulty(NORMAL_SCENARIO_DIFFICULTY);
+            else if (GetMapDifficultyData(mapId, HEROIC_SCENARIO_DIFFICULTY))
+                player->SetDungeonDifficulty(HEROIC_SCENARIO_DIFFICULTY);
+        }
+
         // stop flight if need
         if (player->isInFlight())
         {

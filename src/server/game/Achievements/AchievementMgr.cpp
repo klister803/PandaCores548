@@ -1594,6 +1594,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
             case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
             case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
+            case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
+            case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -2063,6 +2065,9 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
             return progress->counter >= criteriaTree->requirement_count; // currencyGain.count;
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
             return progress->counter >= criteriaTree->requirement_count;
+        case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
+        case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+            return progress->counter >= criteriaTree->requirement_count; // script_event.count;
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
         case ACHIEVEMENT_CRITERIA_TYPE_DEATH_AT_MAP:
@@ -3091,7 +3096,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL:
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA:
     case ACHIEVEMENT_CRITERIA_TYPE_WON_AUCTIONS:
-        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
+    case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
         if (!miscValue1)
             return false;
         break;
@@ -3419,10 +3424,16 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
         if (miscValue1 != achievementCriteria->win_arena.mapID)
             return false;
+    case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
+    case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+        if (!miscValue1 || miscValue1 != achievementCriteria->script_event.unkValue)
+            return false;
+        break;
     default:
         break;
-        }
-        return true;
+    }
+
+    return true;
  }
 
  template<class T>
@@ -3786,6 +3797,9 @@ CriteriaSort AchievementMgr<ScenarioProgress>::GetCriteriaSort() const
          return "LOOT_EPIC_ITEM";
      case ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM:
          return "RECEIVE_EPIC_ITEM";
+     case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
+     case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+         return "SCRIPT_EVENT";
      case ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED:
          return "ROLL_NEED";
      case ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED:
