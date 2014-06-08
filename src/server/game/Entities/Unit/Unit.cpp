@@ -7782,6 +7782,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 102351: // Cenarion Ward
+                {
+                    if (procEx & PROC_EX_INTERNAL_HOT) // temporarily
+                        return false;
+                    break;
+                }
                 // Sudden Eclipse
                 case 46832:
                 {
