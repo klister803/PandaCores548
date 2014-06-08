@@ -2033,9 +2033,12 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                 if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
-                for (uint8 i = NULL; i < maxSpell; i++)
-                    if (itr->first == spellId[i])
-                        continue;
+                if (itr->first == spellId[0] ||
+                    itr->first == spellId[1] ||
+                    itr->first == spellId[2] ||
+                    itr->first == spellId[3] ||
+                    itr->first == spellId[4])
+                    continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & (SPELL_ATTR0_PASSIVE | SPELL_ATTR0_HIDDEN_CLIENTSIDE)))
