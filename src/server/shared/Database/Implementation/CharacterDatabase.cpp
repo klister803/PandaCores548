@@ -644,7 +644,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_LOAD_BATTLE_PET_SLOTS, "SELECT slot_0, slot_1, slot_2 FROM character_battle_pet WHERE ownerAccID = ?", CONNECTION_ASYNC);
 
     // Scenario Criterias
-    PREPARE_STATEMENT(CHAR_SEL_SCENARIO_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_SCENARIO_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SAVE_SCENARIO_CRITERIAPROGRESS, "REPLACE INTO scenario_criteria_progress (instanceId, criteria, counter, date) VALUE (?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_INVALID_SCENARIO_PROGRESS_CRITERIA, "DELETE FROM scenario_criteria_progress WHERE criteria = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_SCENARIO_CRITERIAPROGRESS, "DELETE FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_ASYNC);
