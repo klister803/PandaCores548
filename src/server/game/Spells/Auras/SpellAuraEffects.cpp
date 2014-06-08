@@ -1947,7 +1947,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             spellId[0] = 3025;   // Wild Charge
             spellId[1] = 48629;  // Swipe, Mangle, Thrash
             spellId[2] = 106840; // Skull Bash, Stampeding Roar, Berserk
-            spellId[3] = 108300; // Killer Instinct
+
+            if (target->HasAura(108299)) // Killer Instinct
+                spellId[3] = 108300;
             break;
         case FORM_TREE:
             break;
@@ -1962,7 +1964,9 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             spellId[1] = 21178;  // Swipe, Wild Charge
             spellId[2] = 106829; // Mangle, Thrash, Skull Bash
             spellId[3] = 106899; // Stampeding Roar, Berserk
-            spellId[4] = 108300; // Killer Instinct
+
+            if (target->HasAura(108299)) // Killer Instinct
+                spellId[4] = 108300;
             break;
         case FORM_BATTLESTANCE:
             spellId[0] = 21156;
