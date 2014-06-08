@@ -451,6 +451,14 @@ struct CriteriaEntry
             // uint32  lootCount;                           // treeCount in CriteriaTree
         } fish_in_gameobject;
 
+        // ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT           = 73
+        // ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2         = 92
+        struct
+        {
+            uint32 unkValue;
+            //uint32 count;
+        } script_event;
+
         // ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS = 75
         struct
         {

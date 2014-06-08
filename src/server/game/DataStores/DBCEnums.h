@@ -272,6 +272,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL              = 70,
     ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID               = 71,
     ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT            = 72,
+    ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT                  = 73,  // should be thrown by scripts
     ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE              = 74, // TODO: title id is not mentioned in dbc
     ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS        = 75,
     ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL                      = 76,
@@ -288,6 +289,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_KNOWN_FACTIONS                = 89,
     ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM                = 90,
     ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM             = 91,
+    ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2                = 92,  // should be thrown by scripts
     ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED                     = 93,
     ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED                    = 94,
     ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HIT_DEALT             = 101,
