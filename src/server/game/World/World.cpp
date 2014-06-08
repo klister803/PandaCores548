@@ -2120,7 +2120,7 @@ void World::LoadAutobroadcasts()
 
     m_Autobroadcasts.clear();
 
-    QueryResult result = CharacterDatabase.Query("SELECT text FROM autobroadcast");
+    QueryResult result = WorldDatabase.Query("SELECT text FROM autobroadcast");
 
     if (!result)
     {
