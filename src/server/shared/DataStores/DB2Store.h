@@ -210,7 +210,12 @@ public:
                             }
                             else if ((*sql->formatString)[columnNumber] == FT_SQL_PRESENT)
                             {
-                                bool validSqlColumn = true;
+                                if (sqlColumnNumber > result->GetFieldCount() - 1)
+                                {
+                                    sLog->outError(LOG_FILTER_GENERAL, "SQL and DB2 format strings are not matching for table: '%s'", sql->sqlTableName.c_str());
+                                    return false;
+                                }
+
                                 switch (fmt[columnNumber])
                                 {
                                     case FT_FLOAT:
@@ -232,21 +237,17 @@ public:
                                     case FT_SORT:
                                         break;
                                     default:
-                                        validSqlColumn = false;
+                                        sLog->outError(LOG_FILTER_GENERAL, "Unsupported data type in table '%s' at char %d", sql->sqlTableName.c_str(), columnNumber);
+                                        return false;
                                 }
-                                if (validSqlColumn && (columnNumber != (sql->formatString->size()-1)))
-                                    sqlColumnNumber++;
+
+                                ++sqlColumnNumber;
                             }
                             else
                             {
                                 sLog->outError(LOG_FILTER_GENERAL, "Incorrect sql format string '%s' at char %d", sql->sqlTableName.c_str(), columnNumber);
                                 return false;
                             }
-                        }
-                        if (sqlColumnNumber != (result->GetFieldCount()-1))
-                        {
-                            sLog->outError(LOG_FILTER_GENERAL, "SQL and db2 format strings are not matching for table: '%s'", sql->sqlTableName.c_str());
-                            return false;
                         }
 
                         fields = NULL;
