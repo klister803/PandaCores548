@@ -3477,6 +3477,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 5487:  // Bear Form
+                    spellInfo->Effects[2].BasePoints = 120;
+                    break;
                 case 96172: // Hand of Light
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
