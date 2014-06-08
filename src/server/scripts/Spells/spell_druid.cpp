@@ -2175,14 +2175,12 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
                         {
                             int32 rageused = _player->GetPower(POWER_RAGE);
                             int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
-                            int32 agility = _player->GetStat(STAT_AGILITY) * 4;
-                            int32 stamina = int32(_player->GetStat(STAT_STAMINA) * 2.5f);
-                            int32 healAmount;
+                            int32 agility = _player->GetStat(STAT_AGILITY) * 2;
+                            int32 stamina = int32(_player->GetStat(STAT_STAMINA));
+                            int32 a = (AP - agility) * GetSpellInfo()->Effects[1].BasePoints / 100;
+                            int32 b = stamina * GetSpellInfo()->Effects[2].BasePoints / 100;
 
-                            healAmount = int32(2 * (AP - agility));
-
-                            if (healAmount < 0)
-                                healAmount = stamina;
+                            int32 healAmount = int32(std::max(a, b));
 
                             if (rageused >= 600)
                                 rageused = 600;
