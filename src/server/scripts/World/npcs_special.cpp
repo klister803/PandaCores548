@@ -2353,7 +2353,6 @@ class npc_training_dummy : public CreatureScript
             {
                 me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
-                me->SetReactState(REACT_PASSIVE);
 
                 resetTimer = 5000;
                 despawnTimer = 15000;
