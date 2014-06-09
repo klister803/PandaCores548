@@ -407,6 +407,7 @@ public:
                     case 589: 
                     case 172: 
                     case 100:
+                    case 8921:
                     {
                         player->KilledMonsterCredit(44175, 0);
                         break;
