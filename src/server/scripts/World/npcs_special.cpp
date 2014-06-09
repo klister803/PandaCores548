@@ -2369,9 +2369,11 @@ class npc_training_dummy : public CreatureScript
                     switch (spell->Id)
                     {
                         case 100:
+                        case 172:
                         case 589:
                         case 20271:
                         case 73899:
+                        case 100787:
                         {
                             player->KilledMonsterCredit(44175, 0);
                             break;
