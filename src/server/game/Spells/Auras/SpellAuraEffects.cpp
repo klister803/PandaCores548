@@ -1095,6 +1095,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             break;
         case SPELL_AURA_MOD_STAT:
         {
+            // aura stat do not scaling
+            m_send_baseAmount = m_baseAmount;
+            amount = m_send_baseAmount;
+
             switch (m_spellInfo->Id)
             {
                 case 104993: // Jade Spirit

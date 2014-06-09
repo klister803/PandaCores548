@@ -2473,6 +2473,7 @@ class Unit : public WorldObject
 
         void DisableSpline();
     private:
+        bool SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect);
         bool IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect);
         bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);

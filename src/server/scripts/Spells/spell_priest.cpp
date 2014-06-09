@@ -1059,37 +1059,6 @@ class spell_pri_mind_spike : public SpellScriptLoader
         }
 };
 
-// Called by Holy Fire - 14914, Smite - 585 and Penance - 47666
-// Evangelism - 81662
-class spell_pri_evangelism : public SpellScriptLoader
-{
-    public:
-        spell_pri_evangelism() : SpellScriptLoader("spell_pri_evangelism") { }
-
-        class spell_pri_evangelism_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_evangelism_SpellScript);
-
-			void HandleOnHit()
-			{
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(PRIEST_EVANGELISM_AURA))
-                        if (GetHitDamage())
-                            _player->CastSpell(_player, PRIEST_EVANGELISM_STACK, true);
-			}
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_evangelism_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_evangelism_SpellScript;
-        }
-};
-
 // Archangel - 81700
 class spell_pri_archangel : public SpellScriptLoader
 {
@@ -2372,7 +2341,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_vampiric_touch();
     new spell_priest_renew();
     new spell_pri_shadowform();
-    new spell_pri_evangelism();
     new spell_pri_archangel();
     new spell_pri_void_tendrils();
     new spell_pri_psychic_terror();

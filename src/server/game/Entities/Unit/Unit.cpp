@@ -7655,6 +7655,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                 basepoints0 = CalculatePct(int32(damage), triggerAmount);
 
+                if(roll_chance_f(triggeredByAura->GetCritChance()))
+                    basepoints0 *= 2;
+
                 triggered_spell_id = 47753;
                 break;
             }
@@ -12552,7 +12555,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 {
     //! Mobs can't crit with spells. Player Totems can
     //! Fire Elemental (from totem) can too - but this part is a hack and needs more research
-    if (((ToCreature() && ToCreature()->GetMap()->IsDungeon()) || IS_CREATURE_GUID(GetGUID())) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
+    if (IS_CREATURE_GUID(GetGUID()) && !(isTotem() && IS_PLAYER_GUID(GetOwnerGUID())) && GetEntry() != 15438)
         return false;
 
     // not critting spell
@@ -16988,6 +16991,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 // If not trigger by default and spellProcEvent == NULL - skip
                 if (!isTriggerAura[aurEff->GetAuraType()] && (triggerData.spellProcEvent == NULL || !(triggerData.spellProcEvent->effectMask & (1<<i))))
                     continue;
+                if (!SpellProcCheck(target, spellProto, procSpell, i))
+                    continue;
                 // Some spells must always trigger
                 if (!triggered || isAlwaysTriggeredAura[aurEff->GetAuraType()])
                     triggerData.effMask |= 1<<i;
@@ -17049,117 +17054,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         // Note: must SetCantProc(false) before return
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
             SetCantProc(true);
-
-        if(procSpell)
-        {
-            bool procCheck = false;
-            Unit* _checkTarget = this;
-            if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellInfo->Id))
-            {
-                for (std::vector<SpellPrcoCheck>::const_iterator itr = spellCheck->begin(); itr != spellCheck->end(); ++itr)
-                {
-                    if (!(itr->effectmask & i->effMask))
-                        continue;
-                    if(itr->target == 1 && target)
-                        _checkTarget = target;
-                    //if this spell exist not proc
-                    if (itr->checkspell < 0)
-                    {
-                        if (-(itr->checkspell) == procSpell->Id)
-                        {
-                            if(itr->hastalent != 0)
-                            {
-                                if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
-                                    procCheck = true;
-                                else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
-                                    procCheck = true;
-                                if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
-                                    procCheck = false;
-                                if(!procCheck)
-                                    continue;
-                            }
-                            else if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                                procCheck = true;
-                            else
-                                procCheck = true;
-                            break;
-                        }
-                    }
-                    //if this spell not exist not proc
-                    else if (itr->checkspell == procSpell->Id)
-                    {
-                        if(itr->hastalent != 0)
-                        {
-                            if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
-                            {
-                                procCheck = false;
-                                break;
-                            }
-                            else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
-                            {
-                                procCheck = false;
-                                break;
-                            }
-                            procCheck = true;
-                            continue;
-                        }
-                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                        {
-                            procCheck = true;
-                            break;
-                        }
-                        procCheck = false;
-                        break;
-                    }
-                    //other check
-                    else if (itr->checkspell == 0)
-                    {
-                        procCheck = true;
-                        if(itr->hastalent != 0)
-                        {
-                            if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
-                            {
-                                procCheck = false;
-                                break;
-                            }
-                            else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
-                            {
-                                procCheck = false;
-                                break;
-                            }
-                        }
-                        if(itr->chance != 0 && roll_chance_i(itr->chance))
-                        {
-                            procCheck = false;
-                            break;
-                        }
-                        if(itr->powertype != 0 && itr->dmgclass != 0)
-                        {
-                            if(itr->powertype == procSpell->PowerType && itr->dmgclass == procSpell->DmgClass)
-                            {
-                                procCheck = false;
-                                break;
-                            }
-                        }
-                        else if(itr->dmgclass != 0 && itr->dmgclass == procSpell->DmgClass)
-                        {
-                            procCheck = false;
-                            break;
-                        }
-                        else if(itr->powertype != 0 && itr->powertype == procSpell->PowerType)
-                        {
-                            procCheck = false;
-                            break;
-                        }
-                    }
-                    else
-                        procCheck = true;
-                }
-            }
-            //if check true false proc
-            if(procCheck)
-                continue;
-        }
 
         i->aura->CallScriptProcHandlers(aurApp, eventInfo);
 
@@ -18218,6 +18112,125 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
     pet->InitPetCreateSpells();
     //pet->InitLevelupSpellsForLevel();
     pet->SetFullHealth();
+    return true;
+}
+
+bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)
+{
+    if(!procSpell)
+        return true;
+
+    bool procCheck = false;
+    Unit* _checkTarget = this;
+    if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
+    {
+        for (std::vector<SpellPrcoCheck>::const_iterator itr = spellCheck->begin(); itr != spellCheck->end(); ++itr)
+        {
+            if (!(itr->effectmask & (1<<effect)))
+                continue;
+            if(itr->target == 1 && victim)
+                _checkTarget = victim;
+            //if this spell exist not proc
+            if (itr->checkspell < 0)
+            {
+                if (-(itr->checkspell) == procSpell->Id)
+                {
+                    if(itr->hastalent != 0)
+                    {
+                        if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                            procCheck = true;
+                        else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                            procCheck = true;
+                        if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
+                            procCheck = false;
+                        if(!procCheck)
+                            continue;
+                    }
+                            else if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                        procCheck = true;
+                    else
+                        procCheck = true;
+                            break;
+                }
+            }
+            //if this spell not exist not proc
+            else if (itr->checkspell == procSpell->Id)
+            {
+                if(itr->hastalent != 0)
+                {
+                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                    {
+                        procCheck = false;
+                        break;
+                    }
+                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                    {
+                        procCheck = false;
+                        break;
+                    }
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                {
+                    procCheck = true;
+                    break;
+                }
+                procCheck = false;
+                break;
+            }
+            //other check
+            else if (itr->checkspell == 0)
+            {
+                procCheck = true;
+                if(itr->hastalent != 0)
+                {
+                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                    {
+                        procCheck = false;
+                        break;
+                    }
+                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                    {
+                        procCheck = false;
+                        break;
+                    }
+                }
+                if(itr->chance != 0 && roll_chance_i(itr->chance))
+                {
+                    procCheck = false;
+                    break;
+                }
+                if(itr->powertype != 0 && itr->dmgclass != 0)
+                {
+                    if(itr->powertype == procSpell->PowerType && itr->dmgclass == procSpell->DmgClass)
+                    {
+                        procCheck = false;
+                        break;
+                    }
+                }
+                else if(itr->dmgclass != 0 && itr->dmgclass == procSpell->DmgClass)
+                {
+                    procCheck = false;
+                    break;
+                }
+                else if(itr->powertype != 0 && itr->powertype == procSpell->PowerType)
+                {
+                    procCheck = false;
+                    break;
+                }
+            }
+            else
+                procCheck = true;
+        }
+    }
+    //if check true false proc
+    if(procCheck)
+    {
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, procSpell->Id %i", spellProto->Id, effect, procSpell->Id);
+        return false;
+    }
+
     return true;
 }
 
