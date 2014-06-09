@@ -10213,7 +10213,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                 loot->objEntry = go->GetGOInfo()->entry;
                 loot->objGuid = go->GetGUID();
                 loot->objType = 3;
-                loot->countItem = 1;
                 loot->spawnMode = go->GetMap()->GetSpawnMode();
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false);
 
@@ -10311,7 +10310,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                     loot->objEntry = item->GetEntry();
                     loot->objGuid = item->GetGUID();
                     loot->objType = 2;
-                    loot->countItem = item->GetCount();
                     loot->FillLoot(item->GetEntry(), LootTemplates_Item, this, true, loot->gold != 0);
                     break;
             }
