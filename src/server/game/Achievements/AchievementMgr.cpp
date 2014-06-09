@@ -2297,7 +2297,7 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
             m_timedAchievements.erase(timedIter);
     }
 
-    if (criteriaComplete && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
+    if (criteriaComplete && achievement && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
     if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
@@ -3961,7 +3961,7 @@ void AchievementGlobalMgr::LoadAchievementCriteriaList()
                     if (!crite)
                         continue;
 
-                    ++scenarioCriterias, m_CriteriaTreesByType[crite->type].push_back(cTree);
+                    ++scenarioCriterias, m_ScenarioCriteriaTreesByType[crite->type].push_back(cTree);
 
                     if (crite->timeLimit)
                         m_CriteriaTreesByTimedType[crite->timedCriteriaStartType].push_back(cTree);

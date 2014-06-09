@@ -42,7 +42,6 @@ enum ScenarioType
 class ScenarioProgress
 {
 public:
-    ScenarioProgress() : instanceId(0), dungeonData(NULL), type(SCENARIO_TYPE_NORMAL), m_achievementMgr(this), currentStep(0), rewarded(false), bonusRewarded(false) { }
     ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData);
 
     void SaveToDB(SQLTransaction& trans);
@@ -85,7 +84,7 @@ protected:
     bool bonusRewarded;
 };
 
-typedef UNORDERED_MAP<uint32 /*instance_id*/, ScenarioProgress> ScenarioProgressMap;
+typedef UNORDERED_MAP<uint32 /*instance_id*/, ScenarioProgress*> ScenarioProgressMap;
 typedef UNORDERED_MAP<uint32, ScenarioSteps> ScenarioStepsByScenarioMap;
 
 class ScenarioMgr

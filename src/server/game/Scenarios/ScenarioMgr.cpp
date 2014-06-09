@@ -117,12 +117,23 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     uint8 oldStep = currentStep;
     for (ScenarioSteps::const_iterator itr = steps.begin(); itr != steps.end(); ++itr)
     {
-        CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(itr->second->m_criteriaTreeId);
-        if (!criteriaTree)
+        // TODO: fix achievement mgr to consider parent criterias?
+        std::list<uint32> const* treeList = GetCriteriaTreeList(itr->second->m_criteriaTreeId);
+        if (!treeList)
             continue;
 
-        if (GetAchievementMgr().IsCompletedCriteria(criteriaTree, NULL))
-            currentStep = itr->second->m_orderIndex + 1;
+        for (std::list<uint32>::const_iterator itr2 = treeList->begin(); itr2 != treeList->end(); ++itr2)
+        {
+            CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr2);
+            if (!criteriaTree)
+                continue;
+
+            if (GetAchievementMgr().IsCompletedCriteria(criteriaTree, NULL))
+            {
+                currentStep = itr->second->m_orderIndex + 1;
+                break;
+            }
+        }
     }
 
     if (currentStep != oldStep && !loading)
@@ -228,44 +239,46 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
     {
         ByteBuffer buff;
         uint32 count = 0;
-        CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap();
-        for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+        if (CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap())
         {
-            CriteriaProgress const& progress = itr->second;
-            CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
-            if (!criteriaTreeEntry)
-                continue;
+            for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+            {
+                CriteriaProgress const& progress = itr->second;
+                CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
+                if (!criteriaTreeEntry)
+                    continue;
 
-            ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
-            uint64 counter = progress.counter;
+                ObjectGuid criteriaGuid = MAKE_NEW_GUID(1, GetScenarioId(), HIGHGUID_SCENARIO_CRITERIA);
+                uint64 counter = progress.counter;
 
-            data.WriteGuidMask<7, 6, 0, 4>(criteriaGuid);
-            data.WriteGuidMask<7>(counter);
-            data.WriteGuidMask<5, 1>(criteriaGuid);
-            data.WriteGuidMask<1, 3, 0, 2>(counter);
-            data.WriteGuidMask<3>(criteriaGuid);
-            data.WriteGuidMask<5>(counter);
-            data.WriteBits(0, 4);           // criteria flags
-            data.WriteGuidMask<4>(counter);
-            data.WriteGuidMask<2>(criteriaGuid);
-            data.WriteGuidMask<6>(counter);
+                data.WriteGuidMask<7, 6, 0, 4>(criteriaGuid);
+                data.WriteGuidMask<7>(counter);
+                data.WriteGuidMask<5, 1>(criteriaGuid);
+                data.WriteGuidMask<1, 3, 0, 2>(counter);
+                data.WriteGuidMask<3>(criteriaGuid);
+                data.WriteGuidMask<5>(counter);
+                data.WriteBits(0, 4);           // criteria flags
+                data.WriteGuidMask<4>(counter);
+                data.WriteGuidMask<2>(criteriaGuid);
+                data.WriteGuidMask<6>(counter);
 
-            buff.WriteGuidBytes<1>(counter);
-            buff << uint32(time(NULL) - progress.date);
-            buff.WriteGuidBytes<3>(counter);
-            buff.WriteGuidBytes<3, 4, 0, 1>(criteriaGuid);
-            buff << secsToTimeBitFields(progress.date);
-            buff.WriteGuidBytes<6, 7>(criteriaGuid);
-            buff.WriteGuidBytes<0>(counter);
-            buff.WriteGuidBytes<5>(criteriaGuid);
-            buff.WriteGuidBytes<4, 5>(counter);
-            buff << uint32(criteriaTreeEntry->criteria);
-            buff.WriteGuidBytes<2>(counter);
-            buff << uint32(time(NULL) - progress.date);
-            buff.WriteGuidBytes<6, 7>(counter);
-            buff.WriteGuidBytes<2>(criteriaGuid);
+                buff.WriteGuidBytes<1>(counter);
+                buff << uint32(time(NULL) - progress.date);
+                buff.WriteGuidBytes<3>(counter);
+                buff.WriteGuidBytes<3, 4, 0, 1>(criteriaGuid);
+                buff << secsToTimeBitFields(progress.date);
+                buff.WriteGuidBytes<6, 7>(criteriaGuid);
+                buff.WriteGuidBytes<0>(counter);
+                buff.WriteGuidBytes<5>(criteriaGuid);
+                buff.WriteGuidBytes<4, 5>(counter);
+                buff << uint32(criteriaTreeEntry->criteria);
+                buff.WriteGuidBytes<2>(counter);
+                buff << uint32(time(NULL) - progress.date);
+                buff.WriteGuidBytes<6, 7>(counter);
+                buff.WriteGuidBytes<2>(criteriaGuid);
 
-            ++count;
+                ++count;
+            }
         }
 
         data.FlushBits();
@@ -347,12 +360,14 @@ ScenarioMgr::ScenarioMgr() : updateDiff(0)
 
 ScenarioMgr::~ScenarioMgr()
 {
+    for (ScenarioProgressMap::iterator itr = m_scenarioProgressMap.begin(); itr != m_scenarioProgressMap.end(); ++itr)
+        delete itr->second;
 }
 
 ScenarioProgress* ScenarioMgr::GetScenarioProgress(uint32 instanceId)
 {
     ScenarioProgressMap::iterator itr = m_scenarioProgressMap.find(instanceId);
-    return itr != m_scenarioProgressMap.end() ? &itr->second : NULL;
+    return itr != m_scenarioProgressMap.end() ? itr->second : NULL;
 }
 
 void ScenarioMgr::AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData const* dungeonData, bool loading)
@@ -360,9 +375,10 @@ void ScenarioMgr::AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData con
     if (m_scenarioProgressMap.find(instanceId) != m_scenarioProgressMap.end())
         return;
 
-    m_scenarioProgressMap[instanceId] = ScenarioProgress(instanceId, dungeonData);
+    ScenarioProgress* progress = new ScenarioProgress(instanceId, dungeonData);
+    m_scenarioProgressMap[instanceId] = progress;
     if (loading)
-        m_scenarioProgressMap[instanceId].LoadFromDB();
+        progress->LoadFromDB();
 }
 
 void ScenarioMgr::RemoveScenarioProgress(uint32 instanceId)
@@ -371,7 +387,8 @@ void ScenarioMgr::RemoveScenarioProgress(uint32 instanceId)
     if (itr == m_scenarioProgressMap.end())
         return;
 
-    itr->second.DeleteFromDB();
+    itr->second->DeleteFromDB();
+    delete itr->second;
     m_scenarioProgressMap.erase(itr);
 }
 
@@ -385,7 +402,7 @@ void ScenarioMgr::SaveToDB(SQLTransaction& trans)
     }
 
     for (ScenarioProgressMap::iterator itr = m_scenarioProgressMap.begin(); itr != m_scenarioProgressMap.end(); ++itr)
-        itr->second.SaveToDB(trans);
+        itr->second->SaveToDB(trans);
 
     if (commit)
         CharacterDatabase.CommitTransaction(trans);

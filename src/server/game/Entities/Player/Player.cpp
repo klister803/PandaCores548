@@ -27974,13 +27974,13 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     RemoveAllAurasByType(SPELL_AURA_GLIDE);
 }
 
-void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/)
+void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit* unit /*= NULL*/, bool ignoreGroup /*=false*/)
 {
     GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 
     // Update only individual achievement criteria here, otherwise we may get multiple updates
     // from a single boss kill
-    if (sAchievementMgr->IsGroupCriteriaType(type))
+    if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
         return;
 
     // Quest "A Test of Valor"
