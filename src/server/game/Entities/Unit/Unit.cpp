@@ -18598,7 +18598,6 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
                 loot->objEntry = creature->GetCreatureTemplate()->Entry;
                 loot->objGuid = creature->GetGUID();
                 loot->objType = 1;
-                loot->countItem = 1;
                 loot->spawnMode = creature->GetMap()->GetSpawnMode();
                 loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false);
             }

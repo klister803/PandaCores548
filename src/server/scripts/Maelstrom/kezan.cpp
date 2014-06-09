@@ -134,6 +134,7 @@ class npc_defiant_troll : public CreatureScript
 enum Rod_Enum
 {
     RADIO_MUSIC                     = 23406,
+    GOBLIN_ZONE_MUSIC               = 15962,
 
     QUEST_ROLLING_WITH_MY_HOMIES    = 14071,  //Rolling with my Homies
 
@@ -195,9 +196,7 @@ class npc_hot_rod : public CreatureScript
                 if (apply)
                 {
                     // enable radio
-                    WorldPacket data(SMSG_PLAY_MUSIC, 4);
-                    data << uint32(RADIO_MUSIC);
-                    player->GetSession()->SendPacket(&data);
+                    player->PlayDistanceSound(RADIO_MUSIC, player);
 
                     // update visibility for QUEST_ROLLING_WITH_MY_HOMIES
                     QuestStatusMap::const_iterator itr = player->getQuestStatusMap().find(QUEST_ROLLING_WITH_MY_HOMIES);
@@ -610,7 +609,7 @@ class npc_bilgewater_buccaneer : public CreatureScript
                     case EVENT_PLAY_SOUND:
                         if (Player* plr = GetPassenger())
                         {
-                            plr->PlayDistanceSound(SOUND_START, plr);
+                            plr->PlayDirectSound(SOUND_START, plr);
                             events.ScheduleEvent(EVENT_PLAY_SOUND, 1000);
                         }
                         break;
@@ -735,7 +734,7 @@ class npc_bilgewater_buccaneer_2 : public CreatureScript
                     case EVENT_PLAY_SOUND:
                         if (Player* plr = GetPassenger())
                         {
-                            plr->PlayDistanceSound(SOUND_START_2, plr);
+                            plr->PlayDirectSound(SOUND_START_2, plr);
                             events.ScheduleEvent(EVENT_PLAY_SOUND, 1000);
                         }
                         break;
@@ -921,6 +920,67 @@ public:
         return new npc_fourth_and_goal_targetAI(creature);
     }
 };
+
+class spell_gen_stop_playing_current_music : public SpellScriptLoader
+{
+public:
+    spell_gen_stop_playing_current_music() : SpellScriptLoader("spell_gen_stop_playing_current_music") { }
+
+    class spell_gen_stop_playing_current_music_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_stop_playing_current_music_SpellScript);
+              
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* owner =  GetCaster()->GetOwner())
+            {
+                if (Player* player = owner->ToPlayer())
+                    player->PlayDistanceSound(GOBLIN_ZONE_MUSIC, player);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_gen_stop_playing_current_music_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_stop_playing_current_music_SpellScript();
+    }
+};
+
+class spell_gen_radio : public SpellScriptLoader
+{
+public:
+    spell_gen_radio() : SpellScriptLoader("spell_gen_radio") { }
+
+    class spell_gen_radio_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_radio_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* owner =  GetCaster()->GetOwner())
+            {
+                if (Player* player = owner->ToPlayer())
+                    player->PlayDistanceSound(RADIO_MUSIC, player);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_gen_radio_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_radio_SpellScript();
+    }
+};
+
 void AddSC_kezan()
 {
     new npc_fourth_and_goal_target;
@@ -931,4 +991,6 @@ void AddSC_kezan()
     new npc_bilgewater_buccaneer();
     new npc_bilgewater_buccaneer_2();
     new npc_steamwheedle_shark();
+    new spell_gen_stop_playing_current_music();
+    new spell_gen_radio();
 }
