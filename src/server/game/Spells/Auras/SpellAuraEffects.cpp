@@ -2098,8 +2098,6 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
                         target->CastCustomSpell(target, 48420, &bp, NULL, NULL, true);
                     }
 
-                    // remove Vengeance Buff on entering cat form
-                    target->RemoveAurasDueToSpell(132365);
                 break;
                 case FORM_BEAR:
                     // Master Shapeshifter - Bear

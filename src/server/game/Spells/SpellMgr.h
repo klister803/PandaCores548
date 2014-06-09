@@ -126,6 +126,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX      = 21,           // Update duration for select spell to ignore max duration
     SPELL_TRIGGER_ADD_DURATION                  = 22,           // Add duration for select spell
     SPELL_TRIGGER_MODIFY_COOLDOWN               = 23,           // Modify cooldown for trigger spell
+    SPELL_TRIGGER_VENGEANCE                     = 24,
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

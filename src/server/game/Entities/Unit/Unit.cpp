@@ -5831,7 +5831,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     uint32 cooldown_spell_id = 0; // for random trigger, will be one of the triggered spell to avoid repeatable triggers
                                   // otherwise, it's the triggered_spell_id by default
     Unit* target = victim;
-    int32 basepoints0 = 0;
+    int32 basepoints0 = NULL;
+    int32 basepoints1 = NULL;
+    int32 basepoints2 = NULL;
     uint64 originalCaster = 0;
     Unit* procSpellCaster = dmgInfoProc->GetAttacker();
     uint64 procSpellCasterGUID = procSpellCaster ? procSpellCaster->GetGUID(): 0;
@@ -6309,8 +6311,37 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         player->ModifySpellCooldown(triggered_spell_id, -ChangeCooldown);
                     }
                     check = true;
+                    break;
                 }
-                break;
+                case SPELL_TRIGGER_VENGEANCE: // 24
+                {
+                    if (!victim || victim->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        return false;
+
+                    if (itr->aura)
+                        if (!HasAura(itr->aura))
+                            return false;
+
+                    triggered_spell_id = itr->spell_trigger;
+
+                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb())
+                    {
+                        int32 bp = CalculatePct(alldamage, triggerAmount / 100);
+
+                        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
+                            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                                bp += oldEff->GetAmount();
+
+                        int32 maxVal = GetMaxHealth();
+
+                        if (bp > maxVal)
+                            bp = maxVal;
+
+                        basepoints0 = bp;
+                        basepoints1 = bp;
+                    }
+                    break;
+                }
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -7402,9 +7433,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     RemoveAura(dummySpell->Id);
                     return false;
                 }
-                // Vengeance (Protection)
-                case 93098:
-                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
 
             // Retaliation
@@ -7786,6 +7814,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 {
                     if (procEx & PROC_EX_INTERNAL_HOT) // temporarily
                         return false;
+
+                    target = this;
                     break;
                 }
                 // Sudden Eclipse
@@ -7965,9 +7995,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     CastCustomSpell(70691, SPELLVALUE_BASE_POINT0, damage, victim, true);
                     return true;
                 }
-                // Vengeance (Guardian)
-                case 84840:
-                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             // Living Seed
             if (dummySpell->SpellIconID == 2860)
@@ -8260,9 +8287,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         basepoints0 = maxAmt;
                     break;
                 }
-                // Vengeance (Protection)
-                case 84839:
-                    return HandleVengeanceProc(victim, damage, triggerAmount);
                 // Ancient Crusader (player)
                 case 86701:
                 {
@@ -9022,9 +9046,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 target = this;
                 break;
             }
-            // Vengeance (Blood)
-            if (dummySpell->Id == 93099)
-                return HandleVengeanceProc(victim, damage, triggerAmount);
             break;
         }
         case SPELLFAMILY_POTION:
@@ -9156,9 +9177,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     break;
                 }
-                // Vengeance (Brewmaster)
-                case 120267:
-                    return HandleVengeanceProc(victim, damage, triggerAmount);
             }
             break;
         }
@@ -9192,8 +9210,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
         return false;
 
-    if (basepoints0)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura, originalCaster);
+    if (basepoints0 || basepoints1 || basepoints2)
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
@@ -21839,39 +21857,6 @@ uint32 Unit::GetDamageCounterInPastSecs(uint32 secs, int type)
         damage += m_damage_counters[type][i];
 
     return damage;
-}
-
-bool Unit::HandleVengeanceProc(Unit* pVictim, int32 damage, int32 triggerAmount)
-{
-    // do not proc from player damage
-    if (!pVictim || pVictim->GetCharmerOrOwnerPlayerOrPlayerItself())
-        return false;
-
-    if (int32 basebp = damage)
-    {
-        int32 bp = 0;
-        uint32 triggered_spell_id = 132365;
-        // stack with old buff
-        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
-        {
-            basebp = int32(basebp * triggerAmount / 100);
-            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
-                bp += oldEff->GetAmount() * oldAura->GetDuration() / oldAura->GetMaxDuration();
-        }
-        else
-            basebp = int32(basebp * 33 / 100);
-
-        bp += basebp;
-
-        // capped at max health
-        int32 maxVal = int32(GetMaxHealth());
-        if (bp > maxVal)
-            bp = maxVal;
-
-        CastCustomSpell(this, triggered_spell_id, &bp, &bp, NULL, true);
-    }
-
-    return true;
 }
 
 bool Unit::CheckAndIncreaseCastCounter()
