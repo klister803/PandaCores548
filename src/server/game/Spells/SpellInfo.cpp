@@ -466,7 +466,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 Reqlvl = m_castItem->GetTemplate()->RequiredLevel;
 
                 if (Reqlvl != 1)
-                    level = Reqlvl;
+                    level = Reqlvl ? Reqlvl: 1;
             }
 
             if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_spellInfo->ScalingClass != -1 ? (_spellInfo->ScalingClass - 1) * 100 + level - 1 : (MAX_CLASSES - 1) * 100 + level - 1))
@@ -526,6 +526,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                         case 504: cof =  46.545f; break;
                         case 502: cof =  43.858f; break;
                         case 500: cof =  41.170f; break;
+                        case 498: cof =  38.600f; break;
                         case 497: cof =  37.338f; break;
                         case 496: cof =  36.023f; break;
                         case 493: cof =  32.296f; break;
