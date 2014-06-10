@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -73,7 +73,7 @@ public:
         {
             if (instance)
             {
-            if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_LAVANTHOR_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_LAVANTHOR_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -100,7 +100,8 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) { }
+
 
         void UpdateAI(const uint32 diff)
         {
@@ -110,19 +111,19 @@ public:
 
             if (uiFireboltTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_FIREBOLT);
+                DoCastVictim(SPELL_FIREBOLT);
                 uiFireboltTimer = urand(5000, 13000);
             } else uiFireboltTimer -= diff;
 
             if (uiFlameBreathTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_FLAME_BREATH);
+                DoCastVictim(SPELL_FLAME_BREATH);
                 uiFlameBreathTimer = urand(10000, 15000);
             } else uiFlameBreathTimer -= diff;
 
             if (uiLavaBurnTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_LAVA_BURN);
+                DoCastVictim(SPELL_LAVA_BURN);
                 uiLavaBurnTimer = urand(15000, 23000);
             }
 
@@ -130,7 +131,7 @@ public:
             {
                 if (uiCauterizingFlamesTimer <= diff)
                 {
-                    DoCast(me->getVictim(), SPELL_CAUTERIZING_FLAMES);
+                    DoCastVictim(SPELL_CAUTERIZING_FLAMES);
                     uiCauterizingFlamesTimer = urand(10000, 16000);
                 } else uiCauterizingFlamesTimer -= diff;
             }

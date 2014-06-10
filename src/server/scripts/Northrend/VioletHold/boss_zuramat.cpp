@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,24 +31,25 @@ enum Spells
     H_SPELL_ZURAMAT_ADD_2                       = 59747
 };
 
-enum ZuramatCreatures
+enum Creatures
 {
-    CREATURE_VOID_SENTRY                        = 29364
+    NPC_VOID_SENTRY                        = 29364
 };
 
 enum Yells
 {
-    SAY_AGGRO                                   = -1608037,
-    SAY_SLAY_1                                  = -1608038,
-    SAY_SLAY_2                                  = -1608039,
-    SAY_SLAY_3                                  = -1608040,
-    SAY_DEATH                                   = -1608041,
-    SAY_SPAWN                                   = -1608042,
-    SAY_SHIELD                                  = -1608043,
-    SAY_WHISPER                                 = -1608044
+    SAY_AGGRO                                   = 0,
+    SAY_SLAY                                    = 1,
+    SAY_DEATH                                   = 2,
+    SAY_SPAWN                                   = 3,
+    SAY_SHIELD                                  = 4,
+    SAY_WHISPER                                 = 5
 };
 
-#define DATA_VOID_DANCE                         2153
+enum Misc
+{
+    DATA_VOID_DANCE                             = 2153
+};
 
 class boss_zuramat : public CreatureScript
 {
@@ -106,10 +107,10 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-            DoScriptText(SAY_AGGRO, me);
+            Talk(SAY_AGGRO);
             if (instance)
             {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ZURAMAT_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_XEVOZZ_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -122,7 +123,8 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) { }
+
 
         void UpdateAI(const uint32 diff)
         {
@@ -132,7 +134,7 @@ public:
 
             if (SpellSummonVoidTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_SUMMON_VOID_SENTRY, false);
+                DoCastVictim(SPELL_SUMMON_VOID_SENTRY, false);
                 SpellSummonVoidTimer = 20000;
             } else SpellSummonVoidTimer -=diff;
 
@@ -145,7 +147,7 @@ public:
 
             if (SpellShroudOfDarknessTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_SHROUD_OF_DARKNESS);
+                DoCastVictim(SPELL_SHROUD_OF_DARKNESS);
                 SpellShroudOfDarknessTimer = 20000;
             } else SpellShroudOfDarknessTimer -=diff;
 
@@ -154,11 +156,11 @@ public:
 
         void SummonedCreatureDies(Creature* summoned, Unit* /*who*/)
         {
-            if (summoned->GetEntry() == CREATURE_VOID_SENTRY)
+            if (summoned->GetEntry() == NPC_VOID_SENTRY)
                 voidDance = false;
         }
 
-        uint32 GetData(uint32 type)
+        uint32 GetData(uint32 type) const
         {
             if (type == DATA_VOID_DANCE)
                 return voidDance ? 1 : 0;
@@ -168,7 +170,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            DoScriptText(SAY_DEATH, me);
+            Talk(SAY_DEATH);
 
             if (instance)
             {
@@ -179,7 +181,7 @@ public:
                 }
                 else if (instance->GetData(DATA_WAVE_COUNT) == 12)
                 {
-                    instance->SetData(DATA_2ND_BOSS_EVENT, DONE);
+                    instance->SetData(DATA_2ND_BOSS_EVENT, NOT_STARTED);
                     instance->SetData(DATA_WAVE_COUNT, 13);
                 }
             }
@@ -187,16 +189,16 @@ public:
 
         void KilledUnit(Unit* victim)
         {
-            if (victim == me)
+            if (victim->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
+            Talk(SAY_SLAY);
         }
 
         void JustSummoned(Creature* summon)
         {
             summon->AI()->AttackStart(me->getVictim());
-            summon->AI()->DoCastAOE(SPELL_ZURAMAT_ADD_2);
+            summon->CastSpell((Unit*)NULL, SPELL_ZURAMAT_ADD_2);
             summon->SetPhaseMask(17, true);
         }
     };

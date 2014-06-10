@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,16 +34,13 @@ enum Spells
 
 enum Yells
 {
-    SAY_AGGRO                                   = -1608000,
-    SAY_SLAY_1                                  = -1608001,
-    SAY_SLAY_2                                  = -1608002,
-    SAY_SLAY_3                                  = -1608003,
-    SAY_DEATH                                   = -1608004,
-    SAY_SPAWN                                   = -1608005,
-    SAY_DISRUPTION                              = -1608006,
-    SAY_BREATH_ATTACK                           = -1608007,
-    SAY_SPECIAL_ATTACK_1                        = -1608008,
-    SAY_SPECIAL_ATTACK_2                        = -1608009
+    SAY_AGGRO                                   = 0,
+    SAY_SLAY                                    = 1,
+    SAY_DEATH                                   = 2,
+    SAY_SPAWN                                   = 3,
+    SAY_DISRUPTION                              = 4,
+    SAY_BREATH_ATTACK                           = 5,
+    SAY_SPECIAL_ATTACK                          = 6
 };
 
 class boss_cyanigosa : public CreatureScript
@@ -84,13 +81,14 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-            DoScriptText(SAY_AGGRO, me);
+            Talk(SAY_AGGRO);
 
             if (instance)
                 instance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) { }
+
 
         void UpdateAI(const uint32 diff)
         {
@@ -144,17 +142,18 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            DoScriptText(SAY_DEATH, me);
-
+            Talk(SAY_DEATH);
+            
             if (instance)
                 instance->SetData(DATA_CYANIGOSA_EVENT, DONE);
         }
 
         void KilledUnit(Unit* victim)
         {
-            if (victim == me)
+            if (victim->GetTypeId() != TYPEID_PLAYER)
                 return;
-            DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
+
+            Talk(SAY_SLAY);
         }
     };
 
