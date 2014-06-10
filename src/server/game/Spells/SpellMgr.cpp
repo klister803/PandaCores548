@@ -137,7 +137,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             if (spellproto->SpellFamilyFlags[0] & 0x00000200)
                 return DIMINISHING_CONTROLLED_ROOT;
             // Faerie Fire and Infected Wounds
-            else if (spellproto->SpellFamilyFlags[0] & 0x400 || spellproto->Id == 58180)
+            else if (spellproto->SpellFamilyFlags[0] & 0x400 || spellproto->Id == 58180 || spellproto->Id == 102355)
                 return DIMINISHING_LIMITONLY;
             break;
         }
@@ -279,9 +279,9 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
     {
         case SPELLFAMILY_DRUID:
         {
-            // Faerie Fire - limit to 40 seconds in PvP (3.1)
-            if (spellproto->SpellFamilyFlags[0] & 0x400)
-                return 40 * IN_MILLISECONDS;
+            // Faerie Fire and Faerie Swarm - limit to 20 seconds in PvP (5.4)
+            if (spellproto->SpellFamilyFlags[0] & 0x400 || spellproto->Id == 102355)
+                return 20 * IN_MILLISECONDS;
             break;
         }
         case SPELLFAMILY_HUNTER:
