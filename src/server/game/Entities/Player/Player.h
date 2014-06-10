@@ -3110,6 +3110,12 @@ class Player : public Unit, public GridObject<Player>
 
         void CheckItemCapLevel(bool hasCap);
 
+        void ScheduleDelayedOperation(uint32 operation)
+        {
+            if (operation < DELAYED_END)
+                m_DelayedOperations |= operation;
+        }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3448,12 +3454,6 @@ class Player : public Unit, public GridObject<Player>
         bool IsHasDelayedTeleport() const { return m_bHasDelayedTeleport; }
         void SetDelayedTeleportFlag(bool setting) { m_bHasDelayedTeleport = setting; }
 
-        void ScheduleDelayedOperation(uint32 operation)
-        {
-            if (operation < DELAYED_END)
-                m_DelayedOperations |= operation;
-        }
-
         MapReference m_mapRef;
 
         void UpdateCharmedAI();
@@ -3596,4 +3596,26 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     basevalue = T((float)basevalue + diff);
     return T(diff);
 }
+
+class TeleportEvent : public BasicEvent
+{
+    uint32 mapId, params, m_delay;
+    float x, y, z, o;
+    bool lfg;
+    bool scheduleDelayed;
+    Player* m_owner;
+
+public:
+    explicit TeleportEvent(Player* owner, uint32 _mapId, float _x, float _y, float _z, float _o, uint32 _params, bool _lfg, bool _scheduleDelayed, uint32 delay) :
+        m_owner(owner), mapId(_mapId), x(_x), y(_y), z(_z), o(_o), params(_params), lfg(_lfg), scheduleDelayed(_scheduleDelayed), m_delay(delay) { }
+
+    explicit TeleportEvent(Player* owner, WorldLocation const& loc, uint32 _params, bool _lfg, bool _scheduleDelayed, uint32 delay) :
+        m_owner(owner), mapId(loc.GetMapId()), x(loc.GetPositionX()), y(loc.GetPositionY()), z(loc.GetPositionZ()), o(loc.GetOrientation()), params(_params), lfg(_lfg), scheduleDelayed(_scheduleDelayed), m_delay(delay) { }
+
+    ~TeleportEvent() { }
+
+    virtual bool Execute(uint64, uint32);
+    bool Schedule();
+};
+
 #endif

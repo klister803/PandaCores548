@@ -29706,3 +29706,31 @@ void Player::SendVegnette(Creature *target)
     }
     GetSession()->SendPacket(&data);
 }
+
+bool TeleportEvent::Execute(uint64, uint32)
+{
+    if (!m_owner->IsInWorld() || m_owner->IsBeingTeleported())
+        return false;
+
+    if (scheduleDelayed)
+    {
+        m_owner->ScheduleDelayedOperation(DELAYED_BG_MOUNT_RESTORE);
+        m_owner->ScheduleDelayedOperation(DELAYED_BG_TAXI_RESTORE);
+        m_owner->ScheduleDelayedOperation(DELAYED_BG_GROUP_RESTORE);
+    }
+
+    bool ok = m_owner->TeleportTo(mapId, x, y, z, o, params);
+    if (lfg)
+        m_owner->GetSession()->SendLfgTeleportError(ok ? lfg::LFG_TELEPORTERROR_OK : lfg::LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION);
+
+    return true;
+}
+
+bool TeleportEvent::Schedule()
+{
+    if (mapId == MAPID_INVALID)
+        return false;
+
+    m_owner->m_Events.AddEvent(this, m_owner->m_Events.CalculateTime(m_delay));
+    return true;
+}

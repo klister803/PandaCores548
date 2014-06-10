@@ -1505,21 +1505,32 @@ struct LFGDungeonEntry
     bool IsScenario() const { return subType == LFG_SUBTYPE_SCENARIO; }
     bool IsChallenge() const { return difficulty == CHALLENGE_MODE_DIFFICULTY; }
     bool IsRaidFinder() const { return difficulty == RAID_TOOL_DIFFICULTY; }
+    bool IsFlex() const { return difficulty == FLEXIBLE_DIFFICULTY; }
     uint32 GetMinGroupSize() const { return minTankNeeded + minHealerNeeded + minDpsNeeded; }
     uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
-    bool IsValidType() const
+    bool IsValid() const
     {
         switch (type)
         {
             case LFG_TYPE_DUNGEON:
             case LFG_TYPE_RAID:
             case LFG_TYPE_RANDOM:
-                return true;
+                break;
+            default:
+                return false;
+        }
+
+        switch (ID)
+        {
+            case 540:           // Temple of Kotmogu
+            case 541:           // Test Scenario PS
+            case 645:           // Greenstone Village
+                return false;
             default:
                 break;
         }
 
-        return false;
+        return true;
     }
     LfgType GetInternalType() const
     {

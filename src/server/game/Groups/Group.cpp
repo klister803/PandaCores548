@@ -774,7 +774,8 @@ void Group::Disband(bool hideDestroy /* = false */)
             SendEmptyParty(player);
         }
 
-        _homebindIfInstance(player);
+        if (!isLFGGroup())
+            _homebindIfInstance(player);
     }
     RollId.clear();
     m_memberSlots.clear();
@@ -1956,7 +1957,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 //! 5.4.1
 void Group::SendEmptyParty(Player *player)
 {
-    ObjectGuid leaderGuid = player->GetGUID();
+    ObjectGuid leaderGuid = 0;
     ObjectGuid guid = 0;
 
     WorldPacket data(SMSG_PARTY_UPDATE, 60);

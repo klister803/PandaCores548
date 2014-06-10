@@ -56,6 +56,7 @@
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "Bracket.h"
+#include "LFGMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
 {
@@ -1109,27 +1110,36 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
             return;
         }
 
-        if (OutdoorPvP* pvp = player->GetOutdoorPvP())
-            if (pvp->HandleAreaTrigger(_player, triggerId))
-                return;
-
-        AreaTrigger const* at = sObjectMgr->GetAreaTrigger(triggerId);
-        if (!at)
+    if (OutdoorPvP* pvp = player->GetOutdoorPvP())
+        if (pvp->HandleAreaTrigger(_player, triggerId))
             return;
 
-        bool teleported = false;
-        if (player->GetMapId() != at->target_mapId)
+    AreaTrigger const* at = sObjectMgr->GetAreaTrigger(triggerId);
+    if (!at)
+        return;
+
+    bool teleported = false;
+    if (player->GetMapId() != at->target_mapId)
+    {
+        if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
+            return;
+
+        if (Group* group = player->GetGroup())
+            if (group->isLFGGroup() && player->GetMap()->IsDungeon())
+                teleported = player->TeleportToBGEntryPoint();
+
+        MapEntry const* targetMap = sMapStore.LookupEntry(at->target_mapId);
+        if (targetMap->IsDungeon() && player->GetGroup())
         {
-            if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
-                return;
-
-            if (Group* group = player->GetGroup())
-                if (group->isLFGGroup() && player->GetMap()->IsDungeon())
-                    teleported = player->TeleportToBGEntryPoint();
+            if (uint32 dungeonId = sLFGMgr->GetDungeon(player->GetGroup()->GetGUID(), true))
+                if (lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(dungeonId))
+                    if (dungeon->map == targetMap->MapID)
+                        teleported = player->TeleportTo(dungeon->map, dungeon->x, dungeon->y, dungeon->z, dungeon->o, TELE_TO_NOT_LEAVE_TRANSPORT);
         }
+    }
 
-        if (!teleported)
-            player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
+    if (!teleported)
+        player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
 }
 
 //! 5.4.1

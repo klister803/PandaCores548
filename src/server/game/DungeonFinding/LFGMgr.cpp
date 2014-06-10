@@ -186,7 +186,7 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
     for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
-        if (!dungeon || !dungeon->IsValidType())
+        if (!dungeon || !dungeon->IsValid())
             continue;
 
         LfgDungeonStore[dungeon->ID] = LFGDungeonData(dungeon);
@@ -468,7 +468,10 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         {
             LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*it & 0xFFFFF);
             if(!entry)
-                return;
+            {
+                joinData.result = LFG_JOIN_DUNGEON_INVALID;
+                break;
+            }
 
             switch (entry->dbc->subType)
             {
@@ -1342,7 +1345,11 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         sLog->outDebug(LOG_FILTER_LFG, "TeleportPlayer: Player %s is being teleported out. Current Map %u - Expected Map %u",
             player->GetName(), player->GetMapId(), uint32(dungeon->map));
         if (player->GetMapId() == uint32(dungeon->map))
-            player->TeleportToBGEntryPoint();
+        {
+            TeleportEvent* e = new TeleportEvent(player, player->GetBattlegroundEntryPoint(), 0, false, true, 1000);
+            if (!e->Schedule())
+                delete e;
+        }
 
         return;
     }
@@ -1394,8 +1401,11 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
             player->CleanupAfterTaxiFlight();
         }
 
-        if (!player->TeleportTo(mapid, x, y, z, orientation))
-            error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
+        // hack....
+        TeleportEvent* e = new TeleportEvent(player, mapid, x, y, z, orientation, 0, true, false, 1000);
+        if (!e->Schedule())
+            delete e;
+        return;
     }
     else
         error = LFG_TELEPORTERROR_INVALID_TELEPORT_LOCATION;
@@ -1737,7 +1747,8 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             lockData.status = LFG_LOCKSTATUS_INSUFFICIENT_EXPANSION;
         else if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, dungeon->map, player))
             lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
-        else if (dungeon->difficulty > REGULAR_DIFFICULTY && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)))
+        else if (dungeon->difficulty > REGULAR_DIFFICULTY && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)) && 
+            !dungeon->dbc->IsScenario() && !dungeon->dbc->IsRaidFinder() && !dungeon->dbc->IsFlex())
             lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (dungeon->minlevel > level)
             lockData.status = LFG_LOCKSTATUS_TOO_LOW_LEVEL;
