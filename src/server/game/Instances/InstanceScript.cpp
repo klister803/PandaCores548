@@ -563,7 +563,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
         fullEncounterIndex |= 1 << encounter->dbcEntry->encounterIndex;
     }
 
-    if (dungeonId && fullEncounterIndex == completedEncounters)
+    if (dungeonId && (fullEncounterIndex == completedEncounters || instance->GetDifficulty() != CHALLENGE_MODE_DIFFICULTY))
     {
         Map::PlayerList const& players = instance->GetPlayers();
         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
