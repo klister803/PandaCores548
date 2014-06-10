@@ -314,6 +314,8 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
             break;
         }
         case DISABLE_TYPE_MAP:
+            if (!unit)
+                return false;
             if (Player const* player = unit->ToPlayer())
             {
                 MapEntry const* mapEntry = sMapStore.LookupEntry(entry);
