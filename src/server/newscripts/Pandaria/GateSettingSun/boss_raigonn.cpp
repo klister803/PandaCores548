@@ -95,6 +95,7 @@ class boss_raigonn : public CreatureScript
             boss_raigonnAI(Creature* creature) : BossAI(creature, DATA_RAIGONN)
             {
                 pInstance = creature->GetInstanceScript();
+                me->SetVisible(false);
             }
 
             InstanceScript* pInstance;
@@ -108,7 +109,7 @@ class boss_raigonn : public CreatureScript
             {
                 _Reset();
                 me->SetReactState(REACT_AGGRESSIVE);
-                me->AddAura(SPELL_IMPERVIOUS_CARAPACE, me);
+                //me->AddAura(SPELL_IMPERVIOUS_CARAPACE, me);
                 me->CombatStop();
                 SetCanSeeEvenInPassiveMode(true);
                 Phase = PHASE_WEAK_SPOT;

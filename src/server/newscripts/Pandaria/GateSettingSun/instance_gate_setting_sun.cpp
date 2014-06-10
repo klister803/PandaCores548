@@ -234,6 +234,27 @@ public:
                     break;
             }
 
+            if (state == DONE && id != DATA_RAIGONN)
+            {
+                if (InstanceMap* im = instance->ToInstanceMap())
+                {
+                    InstanceScript* pInstance = im->GetInstanceScript();
+                    int8 bossval = 0;
+                    for (uint8 n = DATA_KIPTILAK; n <= DATA_RIMOK; n++)
+                    {
+                        if (pInstance->GetBossState(n) == DONE)
+                            bossval++;
+                        else
+                            break;
+                    }
+
+                    if (bossval == 3)
+                    {
+                        if (Creature* raigonn = instance->GetCreature(raigonnGuid))
+                            raigonn->SetVisible(true);
+                    }
+                }
+            }
             return true;
         }
 
