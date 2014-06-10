@@ -560,10 +560,10 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                 //break;
             }
         }
-        FullEncounterIndex |= 1 << encounter->dbcEntry->encounterIndex;
+        fullEncounterIndex |= 1 << encounter->dbcEntry->encounterIndex;
     }
 
-    if (dungeonId && FullEncounterIndex == completedEncounters)
+    if (dungeonId && fullEncounterIndex == completedEncounters)
     {
         Map::PlayerList const& players = instance->GetPlayers();
         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
