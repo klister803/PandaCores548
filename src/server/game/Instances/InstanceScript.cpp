@@ -544,6 +544,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
         return;
 
     uint32 dungeonId = 0;
+    uint32 fullEncounterIndex = 0;
 
     for (DungeonEncounterList::const_iterator itr = encounters->begin(); itr != encounters->end(); ++itr)
     {
@@ -555,12 +556,14 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
             {
                 dungeonId = encounter->lastEncounterDungeon;
                 sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName[0], dungeonId);
-                break;
+                // no break need check all encounters.
+                //break;
             }
         }
+        FullEncounterIndex |= 1 << encounter->dbcEntry->encounterIndex;
     }
 
-    if (dungeonId)
+    if (dungeonId && FullEncounterIndex == completedEncounters)
     {
         Map::PlayerList const& players = instance->GetPlayers();
         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
