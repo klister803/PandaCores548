@@ -173,19 +173,19 @@ public:
                 {
                     if(!bonus1 && totaltime >= (1 * HOUR))
                     {
-                        player->ModifyMoney(5000000);
+                        player->ModifyMoney(1000000);
                         update = true;
                         bonus1 = true;
                     }
-                    if(!bonus2 && totaltime >= (5 * HOUR))
+                    if(!bonus2 && totaltime >= (10 * HOUR))
                     {
-                        player->ModifyMoney(15000000);
+                        player->ModifyMoney(5000000);
                         update = true;
                         bonus2 = true;
                     }
-                    if(!bonus3 && totaltime >= (10 * HOUR))
+                    if(!bonus3 && totaltime >= (20 * HOUR))
                     {
-                        player->ModifyMoney(30000000);
+                        player->ModifyMoney(10000000);
                         CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 46109);
                         update = true;
                         bonus3 = true;
