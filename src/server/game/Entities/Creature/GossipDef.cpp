@@ -591,7 +591,7 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
 
     data.WriteBits(questEndText.size(), 9);
 
-    data << uint32(0);
+    data << uint32(quest->GetBonusTalents());
     data << uint32(quest->GetQuestGiverPortrait());
     data << uint32(hideRewards ? 0 : quest->RewardChoiceItemId[3]);
     data.WriteString(questEndText);
@@ -704,9 +704,6 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
     data << uint32(quest->GetSuggestedPlayers());               // suggested players count
     data << uint32(quest->GetRewSpell());                       // reward spell, this spell will display (icon) (casted if RewSpellCast == 0)
     data << uint32(quest->GetMinLevel());                       // min level
-
-    // FINDME
-    //data << uint32(quest->GetBonusTalents());               // bonus talents
 
     _session->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());
