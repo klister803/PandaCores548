@@ -2333,7 +2333,7 @@ enum eTrainingDummy
     NPC_TARGET_DUMMY                           = 2673
 };
 
-class npc_training_dummy : public CreatureScript
+/*class npc_training_dummy : public CreatureScript
 {
     public:
         npc_training_dummy() : CreatureScript("npc_training_dummy") { }
@@ -2393,13 +2393,13 @@ class npc_training_dummy : public CreatureScript
                 Reset();
             }
 
-            void DamageTaken(Unit* /*doneBy*/, uint32& damage)
+            void DamageTaken(Unit* doneBy, uint32& damage)
             {
                 resetTimer = 5000;
                 damage = 0;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* who)
             {
                 if (entry != NPC_ADVANCED_TARGET_DUMMY && entry != NPC_TARGET_DUMMY)
                     return;
@@ -2432,7 +2432,126 @@ class npc_training_dummy : public CreatureScript
                         despawnTimer -= diff;
                 }
             }
-            void MoveInLineOfSight(Unit* /*who*/){return;}
+            void MoveInLineOfSight(Unit* who){return;}
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_training_dummyAI(creature);
+        }
+};*/
+
+enum sEvents
+{
+    EVENT_CHECK_ATTACKERS = 1,
+    EVENT_CLEAR_LIST      = 2,
+};
+
+class npc_training_dummy : public CreatureScript
+{
+    public:
+        npc_training_dummy() : CreatureScript("npc_training_dummy") { }
+
+        struct npc_training_dummyAI : Scripted_NoMovementAI
+        {
+            npc_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature){}
+
+            EventMap events;
+            std::vector <uint64> attackersList;
+
+            void Reset()
+            {
+                attackersList.clear();
+                me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
+            }
+            
+            void SpellHit(Unit* source, SpellInfo const* spell)
+            {
+                if (source)
+                {
+                    Player* player = source->ToPlayer();
+                    if(!player)
+                        return;
+                    if (spell->Id == 589 || spell->Id == 20271 || spell->Id == 73899)  
+                    {
+                        player->KilledMonsterCredit(44175, 0);
+                    }
+                }
+            }
+            
+            void DamageTaken(Unit* attacker, uint32 &damage)
+            {
+                damage = 0;
+                for (std::vector <uint64>::const_iterator guid = attackersList.begin(); guid != attackersList.end(); guid++)
+                    if (attacker->GetGUID() == (*guid))
+                        return;
+                
+                attackersList.push_back(attacker->GetGUID());
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_CLEAR_LIST, 4000); 
+            }
+
+            void UpdateAI(uint32 const diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (!me->HasUnitState(UNIT_STATE_STUNNED))
+                    me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_CHECK_ATTACKERS:
+                        {
+                            if (attackersList.empty())
+                            {
+                                EnterEvadeMode();
+                                return;
+                            }
+
+                            std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+                            if (!threatlist.empty())
+                            {
+                                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
+                                {
+                                    bool forced = false;
+                                    for (std::vector<uint64>::const_iterator guid = attackersList.begin(); guid != attackersList.end(); guid++)
+                                    {
+                                        if (*guid == (*itr)->getUnitGuid())
+                                        {
+                                            forced = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!forced)
+                                    {
+                                        if (Unit* target = me->GetUnit(*me, (*itr)->getUnitGuid()))
+                                        {
+                                            me->DeleteFromThreatList(target);
+                                            target->ClearInCombat();
+                                        }
+                                    }
+                                }
+                            }
+                            events.ScheduleEvent(EVENT_CLEAR_LIST, 4000);
+                        }
+                        break;
+                    case EVENT_CLEAR_LIST:
+                        attackersList.clear();
+                        events.ScheduleEvent(EVENT_CHECK_ATTACKERS, 4000);
+                        break;
+                    }
+                }
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -2440,6 +2559,7 @@ class npc_training_dummy : public CreatureScript
             return new npc_training_dummyAI(creature);
         }
 };
+
 
 /*######
 # npc_fire_elemental
