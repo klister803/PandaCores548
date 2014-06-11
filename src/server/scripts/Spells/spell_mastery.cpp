@@ -56,6 +56,12 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 if (!caster)
                     return;
 
+                if (AuraEffect const* aurEff = caster->GetAuraEffect(47753, EFFECT_0)) //Divine Aegis
+                {
+                    if(roll_chance_f(aurEff->GetCritChance()))
+                        amount *= 2;
+                }
+
                 AuraEffect const* aurEff = caster->GetAuraEffect(MASTERY_SPELL_DISCIPLINE_SHIELD, EFFECT_0);
                 if (!aurEff)
                     return;
@@ -63,9 +69,24 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 amount += int32(amount * aurEff->GetAmount() / 100.0f);
             }
 
+            // Glyph of Reflective Shield
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                Unit* caster = dmgInfo.GetVictim();
+                Unit* target = dmgInfo.GetAttacker();
+
+                if (!target || !caster || !caster->HasAura(33202))
+                    return;
+
+                int32 reflectiveDamage = int32((dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f);
+                if(reflectiveDamage)
+                    caster->CastCustomSpell(target, 33619, &reflectiveDamage, NULL, NULL, true);
+            }
+
             void Register()
             {
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mastery_shield_discipline_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_mastery_shield_discipline_AuraScript::Absorb, EFFECT_0);
             }
         };
 

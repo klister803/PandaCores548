@@ -4000,9 +4000,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
-                case 47515: // Divine Aegis
-                    spellInfo->Effects[EFFECT_0].BasePoints = 50;
-                    break;
                 case 108201:// Desecrated Ground
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
@@ -4912,6 +4909,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 23035: // Battle Standard (Horde)
                 case 23034: // Battle Standard (Alliance)
                     spellInfo->Effects[EFFECT_0].MiscValueB = 3291;  //SUMMON_TYPE_BANNER
+                    break;
+                case 33619: // Reflective Shield
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 default:
                     break;

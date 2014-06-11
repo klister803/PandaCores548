@@ -33,7 +33,6 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_DAMAGE                 = 47758,
     PRIEST_SPELL_PENANCE_HEAL                   = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
-    PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
     PRIEST_SHADOW_WORD_DEATH                    = 32409,
     PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
@@ -1763,8 +1762,8 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
 
             void Register()
             {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_guardian_spirit_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_pri_guardian_spirit_AuraScript::Absorb, EFFECT_1);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_guardian_spirit_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_pri_guardian_spirit_AuraScript::Absorb, EFFECT_2);
             }
         };
 
@@ -1850,49 +1849,6 @@ class spell_pri_penance : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_penance_SpellScript;
-        }
-};
-
-// Reflective Shield
-class spell_pri_reflective_shield_trigger : public SpellScriptLoader
-{
-    public:
-        spell_pri_reflective_shield_trigger() : SpellScriptLoader("spell_pri_reflective_shield_trigger") { }
-
-        class spell_pri_reflective_shield_trigger_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pri_reflective_shield_trigger_AuraScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED) || !sSpellMgr->GetSpellInfo(PRIEST_SPELL_REFLECTIVE_SHIELD_R1))
-                    return false;
-                return true;
-            }
-
-            void Trigger(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                Unit* target = GetTarget();
-                if (dmgInfo.GetAttacker() == target)
-                    return;
-
-                if (GetCaster())
-                    if (AuraEffect* talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
-                    {
-                        int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
-                        target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
-                    }
-            }
-
-            void Register()
-            {
-                 AfterEffectAbsorb += AuraEffectAbsorbFn(spell_pri_reflective_shield_trigger_AuraScript::Trigger, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pri_reflective_shield_trigger_AuraScript();
         }
 };
 
@@ -2298,6 +2254,177 @@ class spell_pri_power_word_solace_heal : public SpellScriptLoader
         }
 };
 
+// Mind Flay - 15407 for Glyph of Mind Flay 120585
+class spell_pri_mind_flay : public SpellScriptLoader
+{
+    public:
+        spell_pri_mind_flay() : SpellScriptLoader("spell_pri_mind_flay") { }
+
+        class spell_pri_mind_flay_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_mind_flay_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(120585))
+                        amount = 0;
+            }
+
+            void OnTick(AuraEffect const* /*aurEff*/)
+            {
+                if (Unit* m_caster = GetCaster())
+                    if (m_caster->HasAura(120585))
+                        m_caster->CastSpell(m_caster, 120587, true);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_mind_flay_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_DECREASE_SPEED);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_mind_flay_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_mind_flay_AuraScript();
+        }
+};
+
+class spell_pri_holy_nova_damage : public SpellScriptLoader
+{
+    public:
+        spell_pri_holy_nova_damage() : SpellScriptLoader("spell_pri_holy_nova_damage") { }
+
+        class spell_pri_holy_nova_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_holy_nova_damage_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                Trinity::Containers::RandomResizeList(targets, 5);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_holy_nova_damage_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_holy_nova_damage_SpellScript();
+        }
+};
+
+class spell_pri_holy_nova_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_holy_nova_heal() : SpellScriptLoader("spell_pri_holy_nova_heal") { }
+
+        class spell_pri_holy_nova_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_holy_nova_heal_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                Trinity::Containers::RandomResizeList(targets, 5);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_holy_nova_heal_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_holy_nova_heal_SpellScript();
+        }
+};
+
+class spell_pri_binding_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_binding_heal() : SpellScriptLoader("spell_pri_binding_heal") { }
+
+        class spell_pri_binding_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_binding_heal_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<WorldObject*> unitList;
+                if(Unit* caster = GetCaster())
+                {
+                    for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                    {
+                        if(Unit* targer = (*itr)->ToUnit())
+                        if (targer != caster)
+                            unitList.push_back((*itr));
+                    }
+
+                    Trinity::Containers::RandomResizeList(unitList, caster->HasAura(63248) ? 2 : 1);
+                    unitList.push_back(caster);
+                }
+                targets.clear();
+                targets = unitList;
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_binding_heal_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_binding_heal_SpellScript();
+        }
+};
+
+// Dispel Magic - 528 for Glyph of Dispel Magic
+class spell_pri_dispel_magic : public SpellScriptLoader
+{
+    public:
+        spell_pri_dispel_magic() : SpellScriptLoader("spell_pri_dispel_magic") { }
+
+        class spell_pri_dispel_magic_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_dispel_magic_SpellScript);
+
+            void HandleDispel()
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if(!caster || !target)
+                    return;
+
+                if (caster->HasAura(119864) && GetSpell()->GetCountDispel())
+                    caster->CastSpell(target, 119856, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pri_dispel_magic_SpellScript::HandleDispel);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_dispel_magic_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_item_s12_4p_heal();
@@ -2336,7 +2463,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_psychic_horror();
     new spell_pri_guardian_spirit();
     new spell_pri_penance();
-    new spell_pri_reflective_shield_trigger();
     new spell_pri_prayer_of_mending_heal();
     new spell_pri_vampiric_touch();
     new spell_priest_renew();
@@ -2346,4 +2472,9 @@ void AddSC_priest_spell_scripts()
     new spell_pri_psychic_terror();
     new spell_pri_divine_star();
     new spell_pri_power_word_solace_heal();
+    new spell_pri_mind_flay();
+    new spell_pri_holy_nova_damage();
+    new spell_pri_holy_nova_heal();
+    new spell_pri_binding_heal();
+    new spell_pri_dispel_magic();
 }

@@ -1406,12 +1406,6 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Immolate by 6s
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
                         {
-                            if (Aura* corruption = target->GetAura(WARLOCK_IMMOLATE, _player->GetGUID()))
-                            {
-                                corruption->SetDuration(corruption->GetDuration() + 6000);
-                                corruption->SetNeedClientUpdateForTargets();
-                            }
-
                             if (GetSpell()->IsCritForTarget(target))
                                 _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
                             else
@@ -2086,6 +2080,37 @@ class spell_warl_havoc : public SpellScriptLoader
         }
 };
 
+// 42223 - Rain of Fire spell for Immolate
+class spell_warl_rain_of_fire_damage : public SpellScriptLoader
+{
+    public:
+        spell_warl_rain_of_fire_damage() : SpellScriptLoader("spell_warl_rain_of_fire_damage") { }
+
+        class spell_warl_rain_of_fire_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_rain_of_fire_damage_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                {
+                    if(unitTarget->HasAura(348))
+                        SetHitDamage(int32(GetHitDamage() * 1.5f));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_rain_of_fire_damage_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_rain_of_fire_damage_SpellScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2134,4 +2159,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_unbound_will();
     new spell_warl_seed_of_corruption_dota();
     new spell_warl_havoc();
+    new spell_warl_rain_of_fire_damage();
 }

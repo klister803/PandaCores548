@@ -7658,6 +7658,13 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 if(roll_chance_f(triggeredByAura->GetCritChance()))
                     basepoints0 *= 2;
 
+                if(AuraEffect const* aurEff = GetAuraEffect(47753, EFFECT_0))
+                {
+                    basepoints0 += aurEff->GetAmount();
+                    if(basepoints0 > CountPctFromMaxHealth(40))
+                        basepoints0 = CountPctFromMaxHealth(40);
+                }
+
                 triggered_spell_id = 47753;
                 break;
             }
