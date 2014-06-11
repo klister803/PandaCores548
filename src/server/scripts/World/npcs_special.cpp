@@ -2468,15 +2468,28 @@ class npc_training_dummy : public CreatureScript
             
             void SpellHit(Unit* source, SpellInfo const* spell)
             {
-                if (source)
+                if(source)
                 {
                     Player* player = source->ToPlayer();
                     if(!player)
                         return;
-                    if (spell->Id == 589 || spell->Id == 20271 || spell->Id == 73899)  
+                    
+                    switch (spell->Id)
                     {
-                        player->KilledMonsterCredit(44175, 0);
-                    }
+                        case 100:
+                        case 172:
+                        case 589:
+                        case 20271:
+                        case 73899:
+                        case 100787:
+                        case 118215:
+                        {
+                            player->KilledMonsterCredit(44175, 0);
+                            break;
+                        }
+                        default:
+                            break;
+                    }          
                 }
             }
             
