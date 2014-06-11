@@ -4914,6 +4914,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
+                case 69971: //q.24502
+                case 69976:
+                case 69977:
+                case 69978:
+                case 69979:
+                case 69980:
+                case 69981:
+                case 69982:
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_DB;
+                    break;
                 default:
                     break;
             }
