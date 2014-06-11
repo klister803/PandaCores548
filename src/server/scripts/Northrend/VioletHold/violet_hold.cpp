@@ -688,7 +688,10 @@ struct violet_hold_trashAI : public npc_escortAI
         instance = creature->GetInstanceScript();
         bHasGotMovingPoints = false;
         if (instance)
+        {
+            attack_door = 0;
             portalLocationID = instance->GetData(DATA_PORTAL_LOCATION);
+        }
         Reset();
     }
 
@@ -697,6 +700,7 @@ struct violet_hold_trashAI : public npc_escortAI
         bool bHasGotMovingPoints;
         uint32 portalLocationID;
         uint32 secondPortalRouteID;
+        uint32 attack_door;
 
     void WaypointReached(uint32 waypointId)
     {
@@ -729,7 +733,7 @@ struct violet_hold_trashAI : public npc_escortAI
         }
     }
 
-    void UpdateAI(const uint32)
+    void UpdateAI(const uint32 diff)
     {
         if (instance && instance->GetData(DATA_MAIN_EVENT_PHASE) != IN_PROGRESS)
             me->CastStop();
@@ -784,6 +788,19 @@ struct violet_hold_trashAI : public npc_escortAI
             SetDespawnAtEnd(false);
             Start(true, true);
         }
+
+        if (attack_door)
+        {
+            if (attack_door <= diff)
+            {
+                if (instance)
+                    if (instance->GetData(DATA_DOOR_INTEGRITY) >= 1)
+                        instance->SetData(DATA_DOOR_INTEGRITY, instance->GetData(DATA_DOOR_INTEGRITY)-1);
+                attack_door = 2000;
+            }
+            else
+                attack_door -= diff;
+        }
     }
 
     void JustDied(Unit* /*killer*/)
@@ -792,8 +809,6 @@ struct violet_hold_trashAI : public npc_escortAI
         {
             if (Creature* portal = Unit::GetCreature((*me), instance->GetData64(DATA_TELEPORTATION_PORTAL)))
                 CAST_AI(npc_teleportation_portal_vh::npc_teleportation_portalAI, portal->AI())->SummonedCreatureDies(me);
-            if (instance)
-                instance->SetData(DATA_NPC_PRESENCE_AT_DOOR_REMOVE, 1);
         }
     }
 
@@ -801,10 +816,8 @@ struct violet_hold_trashAI : public npc_escortAI
     {
         me->SetReactState(REACT_PASSIVE);
         DoCast(SPELL_DESTROY_DOOR_SEAL);
-        if (instance)
-            instance->SetData(DATA_NPC_PRESENCE_AT_DOOR_ADD, 1);
+        attack_door = 2000;
     }
-
 };
 
 class npc_azure_invader : public CreatureScript

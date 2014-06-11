@@ -680,6 +680,51 @@ public:
             return true;
         }
 
+        void Reset_Event()
+        {
+            uiMainEventPhase = NOT_STARTED;
+            uiDoorIntegrity = 100;
+            SetData(DATA_REMOVE_NPC, 1);
+            StartBossEncounter(uiFirstBoss, false);
+            StartBossEncounter(uiSecondBoss, false);
+            SetData(DATA_MAIN_DOOR, GO_STATE_ACTIVE);
+            SetData(DATA_WAVE_COUNT, 0);
+            DoUpdateWorldState(WORLD_STATE_VH, 0);
+
+            for (int i = 0; i < 4; ++i)
+                if (GameObject* crystal = instance->GetGameObject(uiActivationCrystal[i]))
+                    crystal->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+
+            for (std::set<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
+            {
+                if (Creature* creature = instance->GetCreature(*itr))
+                    if (creature && creature->isAlive())
+                        creature->DespawnOrUnsummon();
+            }
+            trashMobs.clear();
+            
+            if (Creature* pSinclari = instance->GetCreature(uiSinclari))
+            {
+                pSinclari->SetVisible(true);
+                std::list<Creature*> GuardList;
+                pSinclari->GetCreatureListWithEntryInGrid(GuardList, NPC_VIOLET_HOLD_GUARD, 40.0f);
+                if (!GuardList.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = GuardList.begin(); itr != GuardList.end(); ++itr)
+                    {
+                        if (Creature* pGuard = *itr)
+                        {
+                            pGuard->SetVisible(true);
+                            pGuard->SetReactState(REACT_AGGRESSIVE);
+                            pGuard->GetMotionMaster()->MovePoint(1, pGuard->GetHomePosition());
+                        }
+                    }
+                }
+                pSinclari->GetMotionMaster()->MovePoint(1, pSinclari->GetHomePosition());
+                pSinclari->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+        }
+
         void Update(uint32 diff)
         {
             if (!instance->HavePlayers())
@@ -699,41 +744,7 @@ public:
 
             // if main event is in progress and players have wiped then reset instance
             if (uiMainEventPhase == IN_PROGRESS && CheckWipe())
-            {
-                SetData(DATA_REMOVE_NPC, 1);
-                StartBossEncounter(uiFirstBoss, false);
-                StartBossEncounter(uiSecondBoss, false);
-
-                SetData(DATA_MAIN_DOOR, GO_STATE_ACTIVE);
-                SetData(DATA_WAVE_COUNT, 0);
-                uiMainEventPhase = NOT_STARTED;
-
-                for (int i = 0; i < 4; ++i)
-                    if (GameObject* crystal = instance->GetGameObject(uiActivationCrystal[i]))
-                        crystal->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
-
-                if (Creature* pSinclari = instance->GetCreature(uiSinclari))
-                {
-                    pSinclari->SetVisible(true);
-
-                    std::list<Creature*> GuardList;
-                    pSinclari->GetCreatureListWithEntryInGrid(GuardList, NPC_VIOLET_HOLD_GUARD, 40.0f);
-                    if (!GuardList.empty())
-                    {
-                        for (std::list<Creature*>::const_iterator itr = GuardList.begin(); itr != GuardList.end(); ++itr)
-                        {
-                            if (Creature* pGuard = *itr)
-                            {
-                                pGuard->SetVisible(true);
-                                pGuard->SetReactState(REACT_AGGRESSIVE);
-                                pGuard->GetMotionMaster()->MovePoint(1, pGuard->GetHomePosition());
-                            }
-                        }
-                    }
-                    pSinclari->GetMotionMaster()->MovePoint(1, pSinclari->GetHomePosition());
-                    pSinclari->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                }
-            }
+                Reset_Event();
 
             // Cyanigosa is spawned but not tranformed, prefight event
             Creature* pCyanigosa = instance->GetCreature(uiCyanigosa);
@@ -767,27 +778,14 @@ public:
                             uiCyanigosaEventPhase = 0;
                             break;
                     }
-                } else uiCyanigosaEventTimer -= diff;
+                }
+                else uiCyanigosaEventTimer -= diff;
             }
-
-            // if there are NPCs in front of the prison door, which are casting the door seal spell and doors are active
-            if (GetData(DATA_NPC_PRESENCE_AT_DOOR) && uiMainEventPhase == IN_PROGRESS)
+            
+            if (!GetData(DATA_DOOR_INTEGRITY) && uiMainEventPhase == IN_PROGRESS)
             {
-                // if door integrity is > 0 then decrase it's integrity state
-                if (GetData(DATA_DOOR_INTEGRITY))
-                {
-                    if (uiDoorSpellTimer < diff)
-                    {
-                        SetData(DATA_DOOR_INTEGRITY, GetData(DATA_DOOR_INTEGRITY)-1);
-                        uiDoorSpellTimer =2000;
-                    } else uiDoorSpellTimer -= diff;
-                }
-                // else set door state to active (means door will open and group have failed to sustain mob invasion on the door)
-                else
-                {
-                    SetData(DATA_MAIN_DOOR, GO_STATE_ACTIVE);
-                    uiMainEventPhase = FAIL;
-                }
+                uiMainEventPhase = NOT_STARTED;
+                Reset_Event();
             }
         }
 
