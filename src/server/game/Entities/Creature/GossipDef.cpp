@@ -482,7 +482,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
             continue;
 
         data << uint32(quest->RequiredIdBack[i]);
-        data << uint32(0);
+        data << uint32(quest->RequiredPOI[i]);
         data << uint32(quest->RequiredIdCount[i]);
         data << uint8(quest->RequirementType[i]);
     }
@@ -706,7 +706,6 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
     data << uint32(quest->GetMinLevel());                       // min level
 
     // FINDME
-    //data << uint32(quest->GetMinimapTargetMark());          // minimap target mark (skull, etc. missing enum)
     //data << uint32(quest->GetBonusTalents());               // bonus talents
 
     _session->SendPacket(&data);

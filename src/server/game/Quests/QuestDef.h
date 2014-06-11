@@ -287,7 +287,6 @@ class Quest
         bool   IsAutoComplete() const;
         uint32 GetFlags() const { return Flags; }
         uint32 GetSpecialFlags() const { return SpecialFlags; }
-        uint32 GetMinimapTargetMark() const { return MinimapTargetMark; }
         uint32 GetRewardSkillId() const { return RewardSkillId; }
         uint32 GetRewardSkillPoints() const { return RewardSkillPoints; }
         uint32 GetRewardReputationMask() const { return RewardReputationMask; }
@@ -424,7 +423,6 @@ class Quest
         uint32 StartScript;
         uint32 CompleteScript;
         // new in 4.x
-        uint32 MinimapTargetMark;
         uint32 RewardSkillId;
         uint32 RewardSkillPoints;
         uint32 RewardReputationMask;
