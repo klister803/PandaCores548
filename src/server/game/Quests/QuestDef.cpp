@@ -125,6 +125,12 @@ Quest::Quest(Field* questRecord)
         RequiredIdCount[i] = questRecord[index++].GetUInt32();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        RequiredPOI[i] = questRecord[index++].GetUInt32();
+
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        RequiredUnkFlag[i] = questRecord[index++].GetUInt32();
+
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         RequirementType[i] = questRecord[index++].GetUInt8();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)

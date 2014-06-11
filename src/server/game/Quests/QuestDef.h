@@ -336,6 +336,8 @@ class Quest
         uint32 RequiredIdBack[QUEST_OBJECTIVES_COUNT];
         uint32 RequiredIdCount[QUEST_OBJECTIVES_COUNT];
         uint32 RequirementType[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredPOI[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredUnkFlag[QUEST_OBJECTIVES_COUNT];
 
         uint32 GetReqItemsCount() const { return m_reqItemsCount; }
         uint32 GetReqCreatureOrGOcount() const { return m_reqNpcOrGoCount; }

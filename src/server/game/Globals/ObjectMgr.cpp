@@ -3492,21 +3492,23 @@ void ObjectMgr::LoadQuests()
         "RequiredId1, RequiredId2, RequiredId3, RequiredId4, RequiredId5, RequiredId6, RequiredId7, RequiredId8, RequiredId9, RequiredId10, "
         //       106             107                108              109                110               111              112               113               114               115
         "RequiredIdCount1, RequiredIdCount2, RequiredIdCount3, RequiredIdCount4, RequiredIdCount5, RequiredIdCount6, RequiredIdCount7, RequiredIdCount8, RequiredIdCount9, RequiredIdCount10, "
-        //       116              117              118               119               120               121               122                123               124               125
+        //      116          117           118           119          120          121            122           123          124             125            126             127                 128                 129             130                 131                 132             133
+        "RequiredPOI1, RequiredPOI2, RequiredPOI3, RequiredPOI4, RequiredPOI5, RequiredPOI6, RequiredPOI7, RequiredPOI8, RequiredPOI9, RequiredPOI10, RequiredUnkFlag1, RequiredUnkFlag2, RequiredUnkFlag1, 3, RequiredUnkFlag4, RequiredUnkFlag5, RequiredUnkFlag6, RequiredUnkFlag7, RequiredUnkFlag8, RequiredUnkFlag9, RequiredUnkFlag10, "
+        //       134              135              136               137               137               138               139                140               141               142
         "RequirementType1, RequirementType2, RequirementType3, RequirementType4, RequirementType5, RequirementType6, RequirementType7, RequirementType8, RequirementType9, RequirementType10, "
-        //      126             127                 128                129                  130              131              132             133           134
+        //      143             144                 145                146                  147              148              149             150           151
         "ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4, ObjectiveText5, ObjectiveText6, ObjectiveText7, ObjectiveText8, ObjectiveText9, ObjectiveText10, "
-        //      135             136                 137                138                  139
+        //      152             153                 154                155                  156
         "RequiredSpell, RequiredSpellCast1, RequiredSpellCast2, RequiredSpellCast3, RequiredSpellCast4, "
-        //     140                  141               142               143                  144                  145                     146                   147
+        //     157                  158               159               160                  161                  162                     163                   164
         "RewardCurrencyId1, RewardCurrencyId2, RewardCurrencyId3, RewardCurrencyId4, RewardCurrencyCount1, RewardCurrencyCount2, RewardCurrencyCount3, RewardCurrencyCount4, "
-        //      164                  165                 166                   167               168          169
+        //      165                  166                 167                   168               169          170
         "QuestGiverTextWindow, QuestGiverTargetName, QuestTurnTextWindow, QuestTurnTargetName, SoundAccept, SoundTurnIn, "
-        //      170          171           172            173               174                175                  176                  177                178             179
+        //      171          172           173            174               175                176                  177                  178                179             180
         "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4, DetailsEmoteDelay1, DetailsEmoteDelay2, DetailsEmoteDelay3, DetailsEmoteDelay4, EmoteOnIncomplete, EmoteOnComplete, "
-        //      180                 181               182                183                   184                      185                     186                  187
+        //      181                 182               183                184                   185                      186                     187                  188
         "OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4, OfferRewardEmoteDelay1, OfferRewardEmoteDelay2, OfferRewardEmoteDelay3, OfferRewardEmoteDelay4, "
-        //    188           189           190          191
+        //    189           190           191          192
         "StartScript, CompleteScript, PackageItem, WDBVerified"
         " FROM quest_template");
     if (!result)

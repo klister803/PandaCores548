@@ -610,10 +610,10 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
 
     for (uint32 i = 0; i < realCount; ++i)
     {
-        data << uint32(0);                                      // unk
+        data << uint32(quest->RequiredUnkFlag[i]);              // unk
         data << uint8(quest->RequirementType[i]);               // RequirementType
         data << uint32(quest->RequiredIdBack[i]);
-        data << uint32(0);
+        data << uint32(quest->RequiredPOI[i]);
         data.WriteString(questObjectiveText[i]);
         data << uint8(i);                                       // objective index
         data << uint32(quest->RequiredIdCount[i]);
