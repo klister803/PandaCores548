@@ -6,6 +6,9 @@
 -- Misc Data
 -- =================
 
+-- Fix PhaseShift poi
+UPDATE `quest_poi` SET WorldMapAreaId = 605 WHERE `mapid` = 648; 
+
 -- Mage Trainer
 SELECT `guid` FROM creature where id = 34696 LIMIT 1 INTO @warlock;
 UPDATE  `creature_template` SET  `AIName` =  'SmartAI' WHERE  `entry` =34689;
@@ -198,8 +201,8 @@ INSERT INTO `quest_poi` (`questId`, `id`, `objIndex`, `mapid`, `WorldMapAreaId`,
 (14070, 2, 0, 648, 605, 0, 1, 265429),
 (14070, 3, 0, 648, 605, 0, 1, 265430),
 (14070, 4, -1, 648, 605, 0, 7, 0);
-UPDATE `quest_template` SET RequiredPOI1 = 265427, RequiredPOI1 = 265428, RequiredPOI3 = 265429, RequiredPOI4 = 265430, RequiredUnkFlag1 = 1, RequiredUnkFlag2 = 1, RequiredUnkFlag3 = 1, RequiredUnkFlag4 = 1 WHERE id = 14070;
-UPDATE `creature_template` SET  type_flags=4, dynamicflags=33554432, unit_flags=32768, `faction_A` = '7', `faction_H` = '7', `IconName` = 'Attack', `rangeattacktime` =  '2000', `unit_flags2` = '33556480', `dynamicflags` =  '0', `type_flags` =  '0' WHERE  `entry` =34835;
+UPDATE `quest_template` SET RequiredPOI1 = 265427, RequiredPOI2 = 265428, RequiredPOI3 = 265429, RequiredPOI4 = 265430, RequiredUnkFlag1 = 1, RequiredUnkFlag2 = 1, RequiredUnkFlag3 = 1, RequiredUnkFlag4 = 1 WHERE id = 14070;
+UPDATE `creature_template` SET  type_flags=4, dynamicflags=33554432, unit_flags=32768, `faction_A` = '7', `faction_H` = '7', `IconName` = 'Attack', `rangeattacktime` =  '2000', `unit_flags2` = '33556480', `type_flags` =  '0' WHERE  `entry` =34835;
 UPDATE `creature_template` SET  type_flags=4, dynamicflags=33554432, unit_flags=32768, `faction_A` = '7', `faction_H` = '7', `IconName` = 'Attack', `rangeattacktime` =  '2000',`unit_flags2` =  '33556480', `type_flags` =  '0' WHERE `entry` =34876;
 UPDATE `creature_template` SET  type_flags=4, dynamicflags=33554432, unit_flags=32768, `faction_A` = '7', `faction_H` = '7', `IconName` = 'Attack', `rangeattacktime` =  '2000',`unit_flags2` =  '33556480', `type_flags` =  '0' WHERE `entry` =34877;
 UPDATE `creature_template` SET  type_flags=4, dynamicflags=33554432, unit_flags=32768, `faction_A` = '7', `faction_H` = '7', `IconName` = 'Attack', `rangeattacktime` =  '2000',`unit_flags2` =  '33556480', `type_flags` =  '0' WHERE `entry` =34878;
@@ -366,3 +369,24 @@ UPDATE  `creature_template` SET  `ScriptName` =  'npc_bilgewater_buccaneer_2' WH
 DELETE FROM `conditions` WHERE `SourceEntry` = 70065;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 ('13', '1', '70065', '0', '0', '31', '0', '3', '37213', '0', '0', '0', '', NULL);
+
+-- q26712. Сначала – в банк
+UPDATE  `quest_template` SET  `StartScript` =  '26712' WHERE  `Id` =26712;
+DELETE FROM `db_script_string` WHERE `entry` in(2000267110, 2000267111);
+INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALUES 
+('2000267110', 'Вытяни из банка как можно больше бабок! Не хочу снова увидеть тебя в том отрепье, что ты обычно носишь. Это крайне важная вечеринка!', 'Вытяни из банка как можно больше бабок! Не хочу снова увидеть тебя в том отрепье, что ты обычно носишь. Это крайне важная вечеринка!'),
+('2000267111', 'Эй, тихо! Не видите, здесь $gсам:сама; $N! $gОн:Она; станет $gследующим торговым принцем:следующей торговой принцессой;!', 'Эй, тихо! Не видите, здесь $gсам:сама; $N! $gОн:Она; станет $gследующим торговым принцем:следующей торговой принцессой;!');
+DELETE FROM `quest_start_scripts` WHERE `id` = 26712;
+INSERT INTO `quest_start_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES
+('26712', '0', '0', '0', '0', '2000267110', '0', '0', '0', '0');
+UPDATE `quest_template` SET  `Method` =  '2', `CompleteScript` =  '26712' WHERE  `Id` =26712;
+DELETE FROM `quest_end_scripts` WHERE `id` = 26712;
+INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
+('26712', '0', '0', '0', '0', '2000267111', '0', '0', '0', '0');
+
+-- Q14110
+UPDATE `quest_template` SET `PrevQuestId` = '26712' WHERE `Id` = 14110;
+UPDATE `quest_template` SET RequiredPOI1 = 264967, RequiredPOI2 = 264968, RequiredPOI3 = 264969, RequiredPOI3 = 0, RequiredUnkFlag1 = 0, RequiredUnkFlag2 = 0, RequiredUnkFlag3 = 0, RequiredUnkFlag4 = 0 WHERE id = 14070;
+UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35128;
+UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35130;
+UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35126;
