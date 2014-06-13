@@ -3679,15 +3679,6 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     if (apply && target->HasAura(116946))
         return;
 
-    // Psychic Scream
-    if (GetId() == 8122)
-    {
-        // Not handle if no - Glyph of Psychic Scream
-        if (Unit* caster = GetCaster())
-            if (!caster->HasAura(55676))
-                return;
-    }
-
     target->SetControlled(apply, UNIT_STATE_ROOT);
 }
 
