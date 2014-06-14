@@ -3565,6 +3565,10 @@ void Spell::cast(bool skipCheck)
 
     HandleLaunchPhase();
 
+    // Powers have to be taken before SendSpellGo
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
+        TakePower();
+
     SendSpellCreateVisual();
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
@@ -3598,11 +3602,7 @@ void Spell::cast(bool skipCheck)
     CallScriptAfterCastHandlers();
 
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
-    {
-        // Powers have to be taken before SendSpellGo
-        TakePower();
-        TakeReagents();                                         // we must remove reagents before HandleEffects to allow place crafted item in same slot
-    }
+        TakeReagents();
     else if (Item* targetItem = m_targets.GetItemTarget())
     {
         /// Not own traded item (in trader trade slot) req. reagents including triggered spell case
@@ -5851,14 +5851,12 @@ SpellCastResult Spell::CheckRuneCost(uint32 runeCostID)
 
     int32 runeCost[NUM_RUNE_TYPES];                         // blood, frost, unholy, death
 
-    for (uint32 i = 0; i < RUNE_DEATH; ++i)
+    for (uint32 i = 0; i < NUM_RUNE_TYPES; ++i)
     {
         runeCost[i] = src->RuneCost[i];
         if (Player* modOwner = m_caster->GetSpellModOwner())
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, runeCost[i], this);
     }
-
-    runeCost[RUNE_DEATH] = MAX_RUNES;                       // calculated later
 
     for (uint32 i = 0; i < MAX_RUNES; ++i)
     {
@@ -5868,11 +5866,13 @@ SpellCastResult Spell::CheckRuneCost(uint32 runeCostID)
     }
 
     for (uint32 i = 0; i < RUNE_DEATH; ++i)
+    {
         if (runeCost[i] > 0)
             runeCost[RUNE_DEATH] += runeCost[i];
+    }
 
     if (runeCost[RUNE_DEATH] > MAX_RUNES)
-        return SPELL_FAILED_NO_POWER;                       // not sure if result code is correct
+        return SPELL_FAILED_NO_POWER;
 
     return SPELL_CAST_OK;
 }
@@ -5891,7 +5891,7 @@ void Spell::TakeRunePower(bool didHit)
 
     int32 runeCost[NUM_RUNE_TYPES];                         // blood, frost, unholy, death
 
-    for (uint32 i = 0; i < RUNE_DEATH; ++i)
+    for (uint32 i = 0; i < NUM_RUNE_TYPES; ++i)
     {
         runeCost[i] = runeCostData->RuneCost[i];
         if (Player* modOwner = m_caster->GetSpellModOwner())
@@ -5902,8 +5902,6 @@ void Spell::TakeRunePower(bool didHit)
                 runeCost[i] = 0;
         }
     }
-
-    runeCost[RUNE_DEATH] = 0;                               // calculated later
 
     for (uint32 i = 0; i < MAX_RUNES; ++i)
     {
@@ -5917,7 +5915,7 @@ void Spell::TakeRunePower(bool didHit)
         runeCost[rune]--;
     }
 
-    runeCost[RUNE_DEATH] = runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
+    runeCost[RUNE_DEATH] += runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
 
     if (runeCost[RUNE_DEATH] > 0)
     {

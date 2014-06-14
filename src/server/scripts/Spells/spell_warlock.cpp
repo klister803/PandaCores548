@@ -678,7 +678,7 @@ class spell_warl_immolation_aura : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_immolation_aura_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_immolation_aura_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 
@@ -1157,35 +1157,6 @@ class spell_warl_demonic_gateway_charges : public SpellScriptLoader
         }
 };
 
-// Rain of Fire - 104232
-class spell_warl_rain_of_fire : public SpellScriptLoader
-{
-    public:
-        spell_warl_rain_of_fire() : SpellScriptLoader("spell_warl_rain_of_fire") { }
-
-        class spell_warl_rain_of_fire_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_rain_of_fire_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (Unit* caster = GetCaster())
-                    if (DynamicObject* dynObj = caster->GetDynObject(WARLOCK_RAIN_OF_FIRE))
-                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), WARLOCK_RAIN_OF_FIRE_TRIGGERED, true);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_rain_of_fire_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_rain_of_fire_AuraScript();
-        }
-};
-
 // Chaos Bolt - 116858
 class spell_warl_chaos_bolt : public SpellScriptLoader
 {
@@ -1213,39 +1184,6 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warl_chaos_bolt_SpellScript();
-        }
-};
-
-// Called By : Incinerate (Fire and Brimstone) - 114654, Conflagrate (Fire and Brimstone) - 108685
-// Curse of the Elements (Fire and Brimstone) - 104225, Curse of Enfeeblement (Fire and Brimstone) - 109468
-// Immolate (Fire and Brimstone) - 108686
-// Fire and Brimstone - 108683
-class spell_warl_fire_and_brimstone : public SpellScriptLoader
-{
-    public:
-        spell_warl_fire_and_brimstone() : SpellScriptLoader("spell_warl_fire_and_brimstone") { }
-
-        class spell_warl_fire_and_brimstone_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_fire_and_brimstone_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(WARLOCK_FIRE_AND_BRIMSTONE))
-                            _player->RemoveAura(WARLOCK_FIRE_AND_BRIMSTONE);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_fire_and_brimstone_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_fire_and_brimstone_SpellScript();
         }
 };
 
@@ -2080,7 +2018,7 @@ class spell_warl_havoc : public SpellScriptLoader
         }
 };
 
-// 42223 - Rain of Fire spell for Immolate
+// 42223, 104233 - Rain of Fire spell for Immolate
 class spell_warl_rain_of_fire_damage : public SpellScriptLoader
 {
     public:
@@ -2094,7 +2032,7 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
             {
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    if(unitTarget->HasAura(348))
+                    if(unitTarget->HasAura(348) || unitTarget->HasAura(108686))
                         SetHitDamage(int32(GetHitDamage() * 1.5f));
                 }
             }
@@ -2137,9 +2075,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_swap();
     new spell_warl_drain_soul();
     new spell_warl_demonic_gateway_charges();
-    new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
-    new spell_warl_fire_and_brimstone();
     new spell_warl_conflagrate_aura();
     new spell_warl_shadowburn();
     new spell_warl_burning_embers();

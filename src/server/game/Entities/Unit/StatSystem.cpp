@@ -944,7 +944,7 @@ void Player::UpdateRangeHastMod()
     else
         ApplyPercentModFloatVar(value, -amount, true);
     SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, value);
-    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, value);
 
     if (getClass() == CLASS_DEATH_KNIGHT)
         UpdateAllRunesRegen();
@@ -1303,6 +1303,7 @@ void Guardian::UpdateArmor()
 
     value *= GetModifierValue(unitMod, BASE_PCT);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
+    value *= m_owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_ARMOR), GetEntry());
 
     SetArmor(int32(value));
 }
@@ -1355,6 +1356,9 @@ void Guardian::UpdateMaxHealth()
 
     if(Unit* owner = GetOwner())
     {
+        multiplicator *= owner->GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT);
+        multiplicator *= owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_MAX_HP), GetEntry());
+
         if (isHunterPet())
             value = owner->GetMaxHealth() * 0.70f;
         else

@@ -327,53 +327,6 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         {
             return new spell_dk_necrotic_strike_AuraScript();
         }
-
-        class spell_dk_necrotic_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_necrotic_strike_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        for (uint32 i = 0; i < MAX_RUNES; ++i)
-                        {
-                            RuneType rune = _player->GetCurrentRune(i);
-
-                            if (!_player->GetRuneCooldown(i) && rune == RUNE_DEATH)
-                            {
-                                uint32 cooldown = _player->GetRuneBaseCooldown(i);
-                                _player->SetRuneCooldown(i, cooldown);
-
-                                bool takePower = true;
-                                if (uint32 spell = _player->GetRuneConvertSpell(i))
-                                    takePower = spell != 54637;
-
-                                // keep Death Rune type if player has Blood of the North
-                                if (takePower)
-                                {
-                                    _player->RestoreBaseRune(i);
-                                    _player->SetDeathRuneUsed(i, true);
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_dk_necrotic_strike_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_necrotic_strike_SpellScript();
-        }
 };
 
 // Pestilence - 50842
@@ -924,25 +877,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         int32 bp = GetHitDamage();
-                        bool runeDeath = false;
-
                         _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
-
-                        for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        {
-                            if (_player->GetCurrentRune(i) != RUNE_DEATH)
-                                continue;
-
-                            if (runeDeath)
-                                continue;
-
-                            if (!_player->GetRuneCooldown(i))
-                            {
-                                _player->RestoreBaseRune(i);
-                                _player->SetRuneCooldown(i, _player->GetRuneBaseCooldown(i));
-                                runeDeath = true;
-                            }
-                        }
                     }
                 }
             }

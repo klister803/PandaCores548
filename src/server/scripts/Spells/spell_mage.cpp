@@ -305,34 +305,6 @@ class spell_mage_cauterize : public SpellScriptLoader
         }
 };
 
-// Mirror Images - 55342
-class spell_mage_mirror_images : public SpellScriptLoader
-{
-    public:
-        spell_mage_mirror_images() : SpellScriptLoader("spell_mage_mirror_images") { }
-
-        class spell_mage_mirror_images_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_mirror_images_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, SPELL_MAGE_MIRROR_IMAGE_SUMMON, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_mirror_images_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_mirror_images_SpellScript();
-        }
-};
-
 // Called by Nether Tempest - 114923, Frost Bomb - 112948 and Living Bomb - 44457
 // Pyromaniac - 132209
 class spell_mage_pyromaniac : public SpellScriptLoader
@@ -2130,7 +2102,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_incanters_ward();
     new spell_mage_arcane_missile();
     new spell_mage_cauterize();
-    new spell_mage_mirror_images();
     new spell_mage_pyromaniac();
     new spell_mage_arcane_barrage();
     new spell_mage_arcane_explosion();

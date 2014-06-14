@@ -437,8 +437,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
     &AuraEffect::HandleModManaRegen,                              //379 SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
-    &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT
-    &AuraEffect::HandleAuraModPetHealthPercent,                   //382 SPELL_AURA_MODE_PET_HEALTH_PCT
+    &AuraEffect::HandleNoImmediateEffect,                         //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT implemented in Guardian::UpdateMaxHealth
+    &AuraEffect::HandleAuraModPetStatsModifier,                   //382 SPELL_AURA_MOD_PET_STATS_MODIFIER
     &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
@@ -4959,7 +4959,7 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
         target->SetHealth(target->CountPctFromMaxHealth(int32(percent)));
 }
 
-void AuraEffect::HandleAuraModPetHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
+void AuraEffect::HandleAuraModPetStatsModifier(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
@@ -4970,18 +4970,19 @@ void AuraEffect::HandleAuraModPetHealthPercent(AuraApplication const* aurApp, ui
         if (Player* _player = target->ToPlayer())
             pet = _player->GetGuardianPet();
 
-        pet = target->ToPet();
+        if(!pet)
+            pet = target->ToPet();
+
         if (pet)
         {
-            float percent = GetAmount() / 100.0f;
-            if(apply)
+            if(GetMiscValue() == PETSPELLMOD_ARMOR)
+                pet->UpdateArmor();
+            if(GetMiscValue() == PETSPELLMOD_MAX_HP)
             {
-                int32 health = int32(pet->GetMaxHealth() + int32(pet->GetMaxHealth() * percent));
-                pet->SetMaxHealth(health);
-                pet->SetHealth(health);
-            }
-            else
+                if(apply)
+                    pet->ModifyHealth(GetAmount());
                 pet->UpdateMaxHealth();
+            }
         }
     }
 }
@@ -6593,7 +6594,9 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         if(GetBase()->GetDuration() < 1000)
             caster->CastSpell(caster, 109107);
     }
-    
+
+    uint32 trigger_spell_id = m_spellInfo->GetEffect(m_effIndex, m_diffMode).TriggerSpell;
+
     switch (GetSpellInfo()->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -6639,7 +6642,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     target->CastSpell(caster, 113950, true);
                     break;
                 case 66149: // Bullet Controller Periodic - 10 Man
-                case 68396: // Bullet Controller Periodic - 25 Man
                 {
                     if (!caster)
                         break;
@@ -6648,10 +6650,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     caster->CastCustomSpell(66153, SPELLVALUE_MAX_TARGETS, urand(1, 6), target, true);
                     break;
                 }
-                case 62292: // Blaze (Pool of Tar)
-                    // should we use custom damage?
-                    target->CastSpell((Unit*)NULL, m_spellInfo->GetEffect(m_effIndex, m_diffMode).TriggerSpell, true);
-                    break;
                 case 62399: // Overload Circuit
                     if (target->GetMap()->IsDungeon() && int(target->GetAppliedAuras().count(62399)) >= (target->GetMap()->IsHeroic() ? 4 : 2))
                     {
@@ -6669,14 +6667,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     break;
             }
             break;
-        case SPELLFAMILY_MAGE:
-        {
-            // Mirror Image
-            if (GetId() == 55342)
-                // Set name of summons to name of caster
-                target->CastSpell((Unit*)NULL, m_spellInfo->GetEffect(m_effIndex, m_diffMode).TriggerSpell, true);
-            break;
-        }
         case SPELLFAMILY_DRUID:
         {
             switch (GetSpellInfo()->Id)
@@ -6837,6 +6827,14 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
             break;
         default:
             break;
+    }
+
+    if(caster && trigger_spell_id)
+    {
+        if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
+            caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this);
+        else if(target)
+            caster->CastSpell(target, trigger_spell_id, true, NULL, this);
     }
 }
 
@@ -7127,7 +7125,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
+            if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
+                caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this);
+            else
+                triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
     }

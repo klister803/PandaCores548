@@ -2536,14 +2536,16 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
         // Flat mod from caster auras by spell school
         powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
         // Apply cost mod by spell
-        if (Player* modOwner = caster->GetSpellModOwner())
-            modOwner->ApplySpellMod(Id, SPELLMOD_COST, powerCost);
+        if(power.powerType != POWER_BURNING_EMBERS)
+            if (Player* modOwner = caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(Id, SPELLMOD_COST, powerCost);
 
         if (Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION)
             powerCost = int32(powerCost / (1.117f * SpellLevel / caster->getLevel() -0.1327f));
 
         // PCT mod from user auras by school
         powerCost = int32(powerCost * (1.0f + caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + school)));
+
         if (powerCost < 0)
             powerCost = 0;
         return powerCost;

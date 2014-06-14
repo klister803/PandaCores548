@@ -139,6 +139,15 @@ enum SpellModOp
     SPELLMOD_JUMP_DISTANCE          = 36,
 };
 
+enum PetSpellModOp // aura SPELL_AURA_MOD_PET_STATS_MODIFIER
+{
+    PETSPELLMOD_MAX_HP                 = 1,
+    PETSPELLMOD_DAMAGE                 = 2,
+    PETSPELLMOD_DAMAGE_UNK             = 3,
+    PETSPELLMOD_ARMOR                  = 13,
+    PETSPELLMOD_DOT                    = 24, //may be DOT?
+};
+
 #define MAX_SPELLMOD 37
 
 enum SpellValueMod
@@ -1945,6 +1954,7 @@ class Unit : public WorldObject
 
         int32 GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
         float GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_value) const;
+        float GetTotalAuraMultiplierByMiscValueB(AuraType auratype, int32 misc_value, int32 misc_valueB) const;
         int32 GetMaxPositiveAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
         int32 GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
 

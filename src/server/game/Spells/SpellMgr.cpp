@@ -4924,6 +4924,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 69982:
                     spellInfo->Effects[0].TargetA = TARGET_DEST_DB;
                     break;
+                 // Drain Soul hack
+                case 1120:
+                    spellInfo->Effects[EFFECT_3].TriggerSpell = 0;
+                    break;
                 default:
                     break;
             }

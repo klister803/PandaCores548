@@ -2731,8 +2731,6 @@ void Player::RegenerateAll()
 
     if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
         m_demonicFuryPowerRegenTimerCount += m_regenTimer;
-    else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
-        m_burningEmbersRegenTimerCount += m_regenTimer;
     else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
         m_soulShardsRegenTimerCount += m_regenTimer;
 
@@ -2765,6 +2763,21 @@ void Player::RegenerateAll()
         m_focusRegenTimerCount -= 1000;
     }
 
+    if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        if (!isInCombat())
+        {
+            Regenerate(POWER_BURNING_EMBERS);
+
+            if(m_burningEmbersRegenTimerCount <= m_regenTimer)
+                m_burningEmbersRegenTimerCount = 2500;
+            else
+                m_burningEmbersRegenTimerCount -= m_regenTimer;
+        }
+        else
+            m_burningEmbersRegenTimerCount = 25000;
+    }
+
     if (m_regenTimerCount >= 2000)
     {
         // Not in combat or they have regeneration
@@ -2780,12 +2793,6 @@ void Player::RegenerateAll()
             Regenerate(POWER_RUNIC_POWER);
 
         m_regenTimerCount -= 2000;
-    }
-
-    if (m_burningEmbersRegenTimerCount >= 2000 && getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
-    {
-        Regenerate(POWER_BURNING_EMBERS);
-        m_burningEmbersRegenTimerCount -= 2000;
     }
 
     if (m_holyPowerRegenTimerCount >= 10000 && getClass() == CLASS_PALADIN)
@@ -2835,6 +2842,17 @@ void Player::Regenerate(Powers power)
 
     uint32 curValue = GetPower(power);
 
+    switch (power)
+    {
+        case POWER_MANA:
+        case POWER_FOCUS:
+        case POWER_ENERGY:
+        if (curValue == maxValue) // stop spamm!
+            return;
+        default:
+            break;
+    }
+
     // TODO: possible use of miscvalueb instead of amount
     if (HasAuraTypeWithValue(SPELL_AURA_PREVENT_REGENERATE_POWER, power))
         return;
@@ -2851,7 +2869,7 @@ void Player::Regenerate(Powers power)
     float rangedHaste = GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
-    float regenmod = 1.0f / GetFloatValue(UNIT_MOD_CAST_HASTE);
+    float regenmod = 1.0f / GetFloatValue(UNIT_MOD_HASTE_REGEN);
     bool  needUpdate = false;
 
     switch (power)
@@ -2881,7 +2899,7 @@ void Player::Regenerate(Powers power)
         }
         // Regenerate Focus
         case POWER_FOCUS:
-            addvalue += (6.0f + CalculatePct(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
+            addvalue += (5.0f * regenmod) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         // Regenerate Energy
         case POWER_ENERGY:
@@ -2942,16 +2960,13 @@ void Player::Regenerate(Powers power)
         {
             // After 15s return to one embers if no one
             // or return to one if more than one
-            if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) < 10)
-                SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
-            else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
-                SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) - 1);
-
-            if (GetPower(POWER_BURNING_EMBERS) >= 20)
-                CastSpell(this, 116855, true);
-            else
-                RemoveAura(116855);
-
+            if(m_burningEmbersRegenTimerCount <= m_regenTimer)
+            {
+                if (GetPower(POWER_BURNING_EMBERS) < 10)
+                    addvalue += 1.0f;
+                else if (GetPower(POWER_BURNING_EMBERS) > 10)
+                    addvalue -= 1.0f;
+            }
             break;
         }
         // Regenerate Soul Shards

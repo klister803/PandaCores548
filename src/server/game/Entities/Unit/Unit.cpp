@@ -5004,6 +5004,26 @@ float Unit::GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_valu
     return multiplier;
 }
 
+float Unit::GetTotalAuraMultiplierByMiscValueB(AuraType auratype, int32 misc_value, int32 misc_valueB) const
+{
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
+    float multiplier = 1.0f;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
+        if ((*i)->GetMiscValue() == misc_value)
+            if ((*i)->GetMiscValueB() == 0 || (*i)->GetMiscValueB() == misc_valueB)
+                if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                    AddPct(multiplier, (*i)->GetAmount());
+    }
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        AddPct(multiplier, itr->second);
+
+    return multiplier;
+}
+
 int32 Unit::GetMaxPositiveAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const
 {
     int32 modifier = 0;
@@ -14546,6 +14566,13 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
     int32 curPower = GetPower(power);
 
     int32 val = dVal + curPower;
+
+    if(power == POWER_BURNING_EMBERS)
+    {
+        if(val < 10 && HasAura(108683))
+            RemoveAura(108683);
+    }
+
     if (val <= GetMinPower(power))
     {
         SetPower(power, GetMinPower(power));
@@ -16158,6 +16185,14 @@ void Unit::SetPower(Powers power, int32 val)
         }
     }
 
+    if(power == POWER_BURNING_EMBERS)
+    {
+        if (val >= 20 && !HasAura(116920))
+            CastSpell(this, 116920, true);
+        else if (val < 20 && HasAura(116920))
+            RemoveAura(116920);
+    }
+
     SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
 
     if (IsInWorld())
@@ -16900,9 +16935,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->DropCharge();
 
     // Hack Fix Immolate - Critical strikes generate burning embers
-    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
-        if (roll_chance_i(50))
-            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && (procSpell->Id == 348 || procSpell->Id == 108686) && procExtra & PROC_EX_CRITICAL_HIT)
+        SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
 
     // Hack Rain of Fire - Has a chance to generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
