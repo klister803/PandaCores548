@@ -21,6 +21,22 @@
 
 enum eSpells
 {
+    SPELL_PRIMORDIAL_STRIKE   = 136037,
+    SPELL_MALFORMED_BLOOD     = 136050,
+
+    //Special spells
+    SPELL_ACIDIC_EXPLOSION    = 136219,
+    SPELL_VOLATILE_POTHOGEN   = 136228,
+    SPELL_VOLATILE_POTHOGEN_D = 136225,
+    SPELL_CAUSTIC_GAS         = 136216,
+    SPELL_CAUSTIC_GAS_D       = 136215,
+};
+
+enum eEvents
+{
+    EVENT_PRIMORDIAL_STRIKE   = 1,
+    EVENT_MALFORMED_BLOOD     = 2,
+    EVENT_SPECIAL_STRIKE      = 3,
 };
 
 class boss_primordius : public CreatureScript
@@ -28,9 +44,9 @@ class boss_primordius : public CreatureScript
     public:
         boss_primordius() : CreatureScript("boss_primordius") {}
 
-        struct boss_primordiusAI : public ScriptedAI
+        struct boss_primordiusAI : public BossAI
         {
-            boss_primordiusAI(Creature* creature) : ScriptedAI(creature)
+            boss_primordiusAI(Creature* creature) : BossAI(creature, DATA_PRIMORDIUS)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -39,29 +55,70 @@ class boss_primordius : public CreatureScript
 
             void Reset()
             {
+                _Reset();
             }
 
             void EnterCombat(Unit* who)
             {
+                _EnterCombat();
+                me->AddAura(SPELL_VOLATILE_POTHOGEN_D, me);
+                me->AddAura(SPELL_CAUSTIC_GAS_D, me);
+                events.ScheduleEvent(EVENT_PRIMORDIAL_STRIKE, 22000);
+                events.ScheduleEvent(EVENT_MALFORMED_BLOOD,   50000);
+                events.ScheduleEvent(EVENT_SPECIAL_STRIKE,    60000);
             }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-            }
-
-            void DoAction(int32 const action)
-            {
-            }
-
+            
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_PRIMORDIAL_STRIKE:
+                        if (me->getVictim())
+                        {
+                            me->SetFacingToObject(me->getVictim());
+                            DoCast(me->getVictim(), SPELL_PRIMORDIAL_STRIKE);
+                        }
+                        events.ScheduleEvent(EVENT_PRIMORDIAL_STRIKE, 22000);
+                        break;
+                    case EVENT_MALFORMED_BLOOD:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_MALFORMED_BLOOD);
+                        events.ScheduleEvent(EVENT_MALFORMED_BLOOD, 50000);
+                        break;
+                    case EVENT_SPECIAL_STRIKE:
+                        {
+                            uint8 pos = urand(0, 2);
+                            switch (pos)
+                            {
+                            case 0:
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                                    DoCast(target, SPELL_ACIDIC_EXPLOSION);
+                                break;
+                            case 1:
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                                    DoCast(target, SPELL_VOLATILE_POTHOGEN);
+                                break;
+                            case 2:
+                                DoCastAOE(SPELL_CAUSTIC_GAS);
+                                break;
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_SPECIAL_STRIKE, 60000);
+                        break;
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };

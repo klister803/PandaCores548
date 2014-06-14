@@ -4613,6 +4613,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 139836: //Cinders void zone dmg
                     spellInfo->Effects[1].TargetB = 15;
                     break;
+                //Primordius
+                case 136220: //Acidic explosion tr ef dmg
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(8);
+                    break;
 
 
                 //World Bosses

@@ -17,7 +17,7 @@ const DoorData doorData[] =
     {GO_TORTOS_EX2_DOOR,   DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
     {GO_MEGAERA_EX_DOOR,   DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
     {GO_JI_KUN_EX_DOOR,    DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
-    //{GO_DURUMU_EX_DOOR,    DATA_DURUMU             DOOR_TYPE_PASSAGE, 0},
+    {GO_DURUMU_EX_DOOR,    DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
     {0,                    0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
@@ -48,6 +48,8 @@ public:
         uint64 megaeraexdoorGuid;
         uint64 jikunexdoorGuid;
         uint64 durumuexdoorGuid;
+        uint64 primordiusentdoorGuid;
+        uint64 primordiusexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -84,46 +86,48 @@ public:
             LoadDoorData(doorData);
 
             //GameObject
-            jinrokhentdoorGuid  = 0;
-            mogufont_sr_Guid    = 0;
-            mogufont_nr_Guid    = 0;
-            mogufont_nl_Guid    = 0;
-            mogufont_sl_Guid    = 0;
-            jinrokhexdoorGuid   = 0;
-            horridonpredoorGuid = 0;
-            horridonentdoorGuid = 0;
-            horridonexdoorGuid  = 0;
-            councilexdoorGuid   = 0;
-            councilex2doorGuid  = 0;
-            tortosexdoorGuid    = 0;
-            tortosex2doorGuid   = 0;
-            megaeraexdoorGuid   = 0;
-            jikunexdoorGuid     = 0;
-            durumuexdoorGuid    = 0;
+            jinrokhentdoorGuid    = 0;
+            mogufont_sr_Guid      = 0;
+            mogufont_nr_Guid      = 0;
+            mogufont_nl_Guid      = 0;
+            mogufont_sl_Guid      = 0;
+            jinrokhexdoorGuid     = 0;
+            horridonpredoorGuid   = 0;
+            horridonentdoorGuid   = 0;
+            horridonexdoorGuid    = 0;
+            councilexdoorGuid     = 0;
+            councilex2doorGuid    = 0;
+            tortosexdoorGuid      = 0;
+            tortosex2doorGuid     = 0;
+            megaeraexdoorGuid     = 0;
+            jikunexdoorGuid       = 0;
+            durumuexdoorGuid      = 0;
+            primordiusentdoorGuid = 0;
+            primordiusexdoorGuid  = 0;
            
             //Creature
-            stormcallerGuid     = 0;
-            jinrokhGuid         = 0;
-            stormbringerGuid    = 0;
-            horridonGuid        = 0;
-            jalakGuid           = 0;
-            mallakGuid          = 0;
-            marliGuid           = 0;
-            kazrajinGuid        = 0;
-            sulGuid             = 0;
-            tortosGuid          = 0;
-            flameheadGuid       = 0;
-            frozenheadGuid      = 0;
-            venousheadGuid      = 0;
-            jikunGuid           = 0;
-            durumuGuid          = 0;
-            primordiusGuid      = 0;
-            darkanimusGuid      = 0;
-            ironqonGuid         = 0;
-            sulinGuid           = 0;
-            lulinGuid           = 0;
-            leishenGuid         = 0;
-            radenGuid           = 0;
+            stormcallerGuid       = 0;
+            jinrokhGuid           = 0;
+            stormbringerGuid      = 0;
+            horridonGuid          = 0;
+            jalakGuid             = 0;
+            mallakGuid            = 0;
+            marliGuid             = 0;
+            kazrajinGuid          = 0;
+            sulGuid               = 0;
+            tortosGuid            = 0;
+            flameheadGuid         = 0;
+            frozenheadGuid        = 0;
+            venousheadGuid        = 0;
+            jikunGuid             = 0;
+            durumuGuid            = 0;
+            primordiusGuid        = 0;
+            darkanimusGuid        = 0;
+            ironqonGuid           = 0;
+            sulinGuid             = 0;
+            lulinGuid             = 0;
+            leishenGuid           = 0;
+            radenGuid             = 0;
 
             councilGuids.clear();
             mogufontsGuids.clear();
@@ -292,8 +296,14 @@ public:
                 jikunexdoorGuid = go->GetGUID();
                 break;
             case GO_DURUMU_EX_DOOR:
-                //AddDoor(go, true);
+                AddDoor(go, true);
                 durumuexdoorGuid = go->GetGUID();
+                break;
+            case GO_PRIMORDIUS_ENT_DOOR:
+                primordiusentdoorGuid = go->GetGUID();
+                break;
+            case GO_PRIMORDIUS_EX_DOOR:
+                primordiusexdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -431,10 +441,27 @@ public:
                     }
                 }
                 break;
-           /* case DATA_DURUMU: //Next boss not ready
+            case DATA_DURUMU: 
                 if (state == DONE)
                     HandleGameObject(durumuexdoorGuid, true);
-                break;*/
+                break;
+            case DATA_PRIMORDIUS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(primordiusentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(primordiusentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(primordiusentdoorGuid, true);
+                        //HandleGameObject(primordiusexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
             }
