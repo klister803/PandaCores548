@@ -463,6 +463,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
     if (joinData.result == LFG_JOIN_OK)
     {
         bool isDungeon = false;
+        bool isScenario = false;
         bool isRaid = false;
         for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end() && joinData.result == LFG_JOIN_OK; ++it)
         {
@@ -476,8 +477,10 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
             switch (entry->dbc->subType)
             {
                 case LFG_SUBTYPE_DUNGEON:
-                case LFG_SUBTYPE_SCENARIO:
                     isDungeon = true;
+                    break;
+                case LFG_SUBTYPE_SCENARIO:
+                    isScenario = true;
                     break;
                 case LFG_SUBTYPE_RAID:
                 case LFG_SUBTYPE_FLEX:
@@ -485,7 +488,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                     break;
             }
 
-            if (isDungeon && isRaid)
+            if (isDungeon && isRaid || isDungeon && isScenario || isRaid && isScenario)
             {
                 //joinData.result = LFG_JOIN_MIXED_RAID_DUNGEON;
                 joinData.result = LFG_JOIN_INTERNAL_ERROR;
@@ -559,6 +562,10 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
             if (dungeons.empty())
                 joinData.result = /*group ? LFG_JOIN_PARTY_NOT_MEET_REQS : */LFG_JOIN_NOT_MEET_REQS;
         }
+
+        // only damagers allowed for scenarios
+        if (isScenario)
+            roles = roles & PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE;
     }
 
     // Can't join. Send result
@@ -758,6 +765,14 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
         dungeons.insert(roleCheck.rDungeonId);
     else
         dungeons = roleCheck.dungeons;
+
+    // only damagers in scenarios
+    if (roles)
+    {
+        if (LFGDungeonData const* dungeonData = GetLFGDungeon(*dungeons.begin()))
+            if (dungeonData->dbc->IsScenario() && !dungeonData->dbc->IsChallenge())
+                roles = roles & PLAYER_ROLE_LEADER | PLAYER_ROLE_DAMAGE;
+    }
 
     if (!guid)
         roleCheck.state = LFG_ROLECHECK_ABORTED;
