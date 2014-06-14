@@ -94,6 +94,9 @@ void Pet::RemoveFromWorld()
 
 bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current, PetSlot slotID, bool stampeded)
 {
+    if(owner->HasSpell(108503))
+        return false;
+
     m_loading = true;
 
     //ASSERT(slotID != PET_SLOT_UNK_SLOT);

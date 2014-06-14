@@ -747,6 +747,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
+    m_RunesRegenTimerCount = 0;
     m_baseMHastRatingPct = 0;
     m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
@@ -2755,6 +2756,30 @@ void Player::RegenerateAll()
             if (cd)
                 SetRuneCooldown(runeToRegen, (cd > m_regenTimer) ? cd - m_regenTimer : 0);
         }
+
+        if (!isInCombat())
+        {
+            if(m_RunesRegenTimerCount <= m_regenTimer && m_RunesRegenTimerCount != 0)
+            {
+                m_RunesRegenTimerCount = 0;
+                for (uint32 i = 0; i < MAX_RUNES; ++i)
+                {
+                    bool convertRune = true;
+                    RuneType rune = GetCurrentRune(i);
+                    if (rune == RUNE_DEATH)
+                    {
+                        if (uint32 _spell = GetRuneConvertSpell(i))
+                            convertRune = _spell != 54637;
+                        if(convertRune)
+                            RestoreBaseRune(i);
+                    }
+                }
+            }
+            else if(m_RunesRegenTimerCount != 0)
+                m_RunesRegenTimerCount -= m_regenTimer;
+        }
+        else
+            m_RunesRegenTimerCount = 30000;
     }
 
     if (m_focusRegenTimerCount >= 1000 && getClass() == CLASS_HUNTER)

@@ -407,6 +407,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
     m_skipCheck = skipCheck;
     m_spellMissMask = 0;
     m_selfContainer = NULL;
+    m_spellDynObj = NULL;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
     m_needComboPoints = m_spellInfo->NeedsComboPoints();
@@ -2935,6 +2936,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         }
                     }
                     m_spellAura->_RegisterForTargets();
+                    if(DynamicObject* dynObj = GetSpellDynamicObject())
+                        m_spellAura->SetSpellDynamicObject(dynObj);
                 }
             }
         }

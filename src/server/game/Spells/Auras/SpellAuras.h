@@ -109,6 +109,8 @@ class Aura
         WorldObject* GetOwner() const { return m_owner; }
         Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
+        void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
+        DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
 
         AuraObjectType GetType() const;
 
@@ -245,6 +247,7 @@ class Aura
         uint64 const m_castItemGuid;                        // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t const m_applyTime;
         WorldObject* const m_owner;                        //
+        DynamicObject* m_spellDynObj;
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time

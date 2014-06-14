@@ -6831,7 +6831,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
 
     if(caster && trigger_spell_id)
     {
-        if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
+        if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
             caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this);
         else if(target)
             caster->CastSpell(target, trigger_spell_id, true, NULL, this);
@@ -7125,7 +7125,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
+            if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
                 caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this);
             else
                 triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);

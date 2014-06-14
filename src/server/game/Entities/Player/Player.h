@@ -3125,6 +3125,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_burningEmbersRegenTimerCount;
         uint32 m_soulShardsRegenTimerCount;
         uint32 m_focusRegenTimerCount;
+        uint32 m_RunesRegenTimerCount;
         float  m_baseMHastRatingPct;
         bool   m_doLastUpdate;
         uint32 m_demonicFuryPowerRegenTimerCount;

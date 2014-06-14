@@ -820,6 +820,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         int32 basepoints0 = damage;
         int32 triggered_spell_id = damage;
         std::list<int32> groupList;
+        uint32 cooldown_spell_id = 0;
 
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
@@ -859,6 +860,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             if(itr->target == 5) //get target owner
                 if (Unit* owner = triggerCaster->GetOwner())
                     triggerTarget = owner;
+
+            cooldown_spell_id = abs(itr->spell_trigger);
+            if(triggerCaster->ToPlayer())
+                if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+                    return;
+            if(triggerCaster->ToCreature())
+                if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id))
+                    return;
 
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
@@ -2798,6 +2807,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
+        SetSpellDynamicObject(dynObj);
         Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
@@ -3803,6 +3813,7 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
         return;
     }
 
+    SetSpellDynamicObject(dynObj);
     dynObj->SetDuration(duration);
     dynObj->SetCasterViewpoint();
 }
@@ -7781,6 +7792,7 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
             return;
         }
 
+        SetSpellDynamicObject(dynObj);
         Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
@@ -8070,6 +8082,7 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
         return;
     }
 
+    SetSpellDynamicObject(dynObj);
     dynObj->SetDuration(duration);
     group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }
