@@ -613,6 +613,24 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 }
             }
             break;
+        case SPELL_AURA_MOD_BASE_RESISTANCE_PCT:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 5487: // Bear Form
+                {
+                    if (Aura* aur = caster->GetAura(16931)) // Thick Hide
+                        amount = aur->GetEffect(EFFECT_1)->GetAmount();
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_SCHOOL_ABSORB:
         {
             m_canBeRecalculated = false;
@@ -4481,9 +4499,7 @@ void AuraEffect::HandleAuraModBaseResistancePCT(AuraApplication const* aurApp, u
     {
         for (int8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL; x++)
         {
-            if (GetMiscValue() & int32(1<<x) && target->HasAura(16931) && aurApp->GetBase()->GetId() == 5487)
-                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(330), apply);
-            else if (GetMiscValue() & int32(1<<x))
+            if (GetMiscValue() & int32(1<<x))
                 target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(GetAmount()), apply);
         }
     }
