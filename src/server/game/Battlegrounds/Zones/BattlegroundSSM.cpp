@@ -79,11 +79,20 @@ bool BattlegroundSSM::SetupBattleground()
     m_cart[1] = AddCart(BG_SSM_CART_2, Way2[0]);
     m_cart[2] = AddCart(BG_SSM_CART_3, Way3[0]);
 
-    AddObject(BG_DOOR_1, BG_SSM_DOOR, 640.48f, 209.58f, 328.84f, 0.116671f, 0, 0, 0.058f, 0.99f);
-    AddObject(BG_DOOR_2, BG_SSM_DOOR, 657.515f, 230.798f, 328.932f, 0.116671f, 0, 0, 0.058f, 0.99f);
-
-    AddObject(BG_DOOR_3, BG_SSM_DOOR, 825.491f, 144.609f, 328.926f, 2.91383f, 0, 0, 0.993f, 0.113f);
-    AddObject(BG_DOOR_4, BG_SSM_DOOR, 847.954f, 156.54f, 328.801f, 3.09369f, 0, 0, 0.99f, 0.023f);
+    // gates
+    if (!AddObject(BG_DOOR_1, BG_SSM_DOOR, 640.48f, 209.58f, 328.84f, 0.116671f, 0, 0, 0.058f, 0.99f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DOOR_2, BG_SSM_DOOR, 657.515f, 230.798f, 328.932f, 0.116671f, 0, 0, 0.058f, 0.99f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DOOR_3, BG_SSM_DOOR, 825.491f, 144.609f, 328.926f, 2.91383f, 0, 0, 0.993f, 0.113f, RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_DOOR_4, BG_SSM_DOOR, 847.954f, 156.54f, 328.801f, 3.09369f, 0, 0, 0.99f, 0.023f, RESPAWN_IMMEDIATELY)   
+        // buffs
+        || !AddObject(BG_SSM_OBJECT_SPEEDBUFF, BG_OBJECTID_SPEEDBUFF_ENTRY, 865.844f, 10.441f, 362.424f, 1.719f, 0, 0, 0.7313537f, -0.6819983f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_SSM_OBJECT_REGENBUFF, BG_OBJECTID_REGENBUFF_ENTRY, 787.352f, 271.7178f, 358.240f, 5.729f, 0, 0, 0.1305263f, -0.9914448f, BUFF_RESPAWN_TIME)
+        || !AddObject(BG_SSM_OBJECT_BERSERKBUFF, BG_OBJECTID_BERSERKERBUFF_ENTRY, 756.198f, 75.984f, 371.229f, 1.354f, 0, 0, 0.5591929f, 0.8290376f, BUFF_RESPAWN_TIME)
+        )
+    {
+        sLog->outError(LOG_FILTER_SQL, "BatteGroundSSM: Failed to spawn some object Battleground not created!");
+        return false;
+    }
 
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD);
     if (!sg || !AddSpiritGuide(BG_SSM_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
@@ -178,7 +187,7 @@ Creature* BattlegroundSSM::UpdateCart(uint32 type)
         if (!cart->isMoving())
         {
             uint16 id = m_waysStep[type];
-            cart->MonsterMoveWithSpeed((m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z, 0.4f);
+            cart->MonsterMoveWithSpeed((m_waysMap[type])[id].x, (m_waysMap[type])[id].y, (m_waysMap[type])[id].z, 1.0f);
             m_waysStep[type]++;
         }
     }
@@ -278,9 +287,9 @@ void BattlegroundSSM::UpdateScore()
     for (uint8 i = 0; i < SSM_POINTS_MAX; ++i)
     {
         if (m_cartsState[i] == SSM_CONTROL_ALLIANCE)
-            allianceChange += 10;
+            allianceChange += 1;
         else if (m_cartsState[i] == SSM_CONTROL_HORDE)
-            hordeChange += 10;
+            hordeChange += 1;
     }
 
     if (allianceChange)

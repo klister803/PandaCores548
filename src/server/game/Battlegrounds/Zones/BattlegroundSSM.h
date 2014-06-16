@@ -121,7 +121,7 @@ enum BG_SSM_ProgressBarConsts
     BG_SSM_POINT_RADIUS                  = 22,
     BG_SSM_PROGRESS_BAR_DONT_SHOW        = 0,
     BG_SSM_PROGRESS_BAR_SHOW             = 1,
-    BG_SSM_PROGRESS_BAR_PERCENT_GREY     = 40,
+    BG_SSM_PROGRESS_BAR_PERCENT_GREY     = 0,
     BG_SSM_PROGRESS_BAR_STATE_MIDDLE     = 50,
     BG_SSM_PROGRESS_BAR_HORDE_CONTROLLED = 0,
     BG_SSM_PROGRESS_BAR_NEUTRAL_LOW      = 30,
@@ -147,7 +147,7 @@ static Location Way2[]=
 {
     {743.69f, 203.00f, 319.460f, 2.241f},
     {736.25f, 207.34f, 319.618f,  0.0f},
-    {723.46f, 218.65f, 320.11f, 0.0f},
+    {730.46f, 218.65f, 320.11f, 0.0f},
     {730.10f, 220.65f, 320.272f, 0.0f},
     {728.06f, 230.64f, 320.834f, 0.0f},
     {725.10f, 237.83f, 320.991f, 0.0f},
