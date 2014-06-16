@@ -537,7 +537,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
                     // flex can be queued only in group
                     if (!group)
                         joinData.result = LFG_JOIN_PARTY_INFO_FAILED;
-                    else if (group->GetMembersCount() < entry->dbc->GetMinGroupSize())
+                    else if (group->GetMembersCount() < entry->dbc->GetMinGroupSize() && !isContinueDungeonRequest)
                         joinData.result = LFG_JOIN_TOO_FEW_MEMBERS;
                     break;
                 }
