@@ -937,6 +937,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         petType = MAX_PET_TYPE;
 
     SetBonusDamage(0);
+    UpdateAllStats();
 
     switch (GetEntry())
     {
@@ -1191,6 +1192,16 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
             break;
         }
+        case 54984:
+        {
+            float mindmg = 2189 + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
+            float maxdmg = 2189 + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+            SetAttackTime(BASE_ATTACK, BASE_ATTACK_TIME);
+            SetMaxPower(POWER_RAGE, 0);
+            SetMaxHealth(CalculatePct(m_owner->GetMaxHealth(), 30));
+        }
         default:
         {
             switch (petType)
@@ -1225,7 +1236,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         }
     }
 
-    UpdateAllStats();
+    
 
     SetFullHealth();
 
