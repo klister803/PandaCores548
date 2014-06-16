@@ -981,6 +981,262 @@ public:
     }
 };
 
+enum event_hacking
+{
+    EVENT_BANK_INTRO    = 1,
+    EVENT_BANK_INTRO_2  = 2,
+    EVENT_BANK_INTRO_3  = 3,
+    EVENT_BANK_GENERATE = 4,
+    EVENT_TIMEOUT       = 5,
+
+};
+
+enum bank_text
+{
+    TEXT_INTRO_1        = 0,
+    TEXT_INTRO_2        = 1,
+    TEXT_INTRO_3        = 2,
+
+    TEXT_TIMEOUT        = 4,
+    TEXT_RIGHT          = 7,
+    TEXT_WRONG          = 10,
+    TEXT_WIN            = 11,
+
+    TEXT_REQ_SPELL_1    = 3,
+    TEXT_REQ_SPELL_2    = 5,
+    TEXT_REQ_SPELL_3    = 6,
+    TEXT_REQ_SPELL_4    = 9,
+    TEXT_REQ_SPELL_5    = 8,
+
+    TEXT_EMPTY_STRING   = 12,   //Yes it's off-like, for cleaning string.
+};
+
+enum bank_data
+{
+    SPELL_TIMER             = 67502,
+    QUEST_GREAT_BANK_HEIST  = 14122,
+};
+
+// The Great Bank Heist: Vault Interact
+class spell_great_bank_heist : public SpellScriptLoader
+{
+public:
+    spell_great_bank_heist() : SpellScriptLoader("spell_great_bank_heist") { }
+
+    class spell_great_bank_heist_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_great_bank_heist_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* caster =  GetCaster())
+            {
+                if (caster->GetTypeId() == TYPEID_PLAYER &&
+                    caster->ToPlayer()->GetQuestStatus(QUEST_GREAT_BANK_HEIST) != QUEST_STATUS_INCOMPLETE)
+                    return;
+
+                Position pos;
+                caster->GetPosition(&pos);
+                TempSummon* summon = caster->GetMap()->SummonCreature(35486, pos, NULL, 0, caster);
+
+                //
+                caster->CastSpell(summon, 67476, true);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_great_bank_heist_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_great_bank_heist_SpellScript();
+    }
+};
+
+//hacking bank spells
+class spell_gen_bank_hacking_spell : public SpellScriptLoader
+{
+public:
+    spell_gen_bank_hacking_spell() : SpellScriptLoader("spell_bank_hacking_spells") { }
+
+    class spell_gen_bank_hacking_spell_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_gen_bank_hacking_spell_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            Creature *vehicle = caster->GetVehicleCreatureBase();
+            if (!vehicle)
+                return;
+
+            if (!vehicle->IsAIEnabled || vehicle->GetTypeId() != TYPEID_UNIT)
+                return;
+
+            vehicle->AI()->SetData(m_scriptSpellId, 0);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_gen_bank_hacking_spell_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_gen_bank_hacking_spell_SpellScript();
+    }
+};
+
+uint32 const hacking_spell[5] = { 67526, 67508, 67524, 67525, 67522 };
+uint32 const hacking_text[5] =  {TEXT_REQ_SPELL_1, TEXT_REQ_SPELL_2, TEXT_REQ_SPELL_3, TEXT_REQ_SPELL_4, TEXT_REQ_SPELL_5};
+
+class npc_hack_bank_controller : public CreatureScript
+{
+    public:
+        npc_hack_bank_controller() : CreatureScript("npc_hack_bank_controller") { }
+
+    struct npc_hack_bank_controllerAI : public ScriptedAI
+    {
+        npc_hack_bank_controllerAI(Creature* creature) : ScriptedAI(creature) {}
+
+        EventMap events;
+        uint32 _select;
+        uint64 _playerGUID;
+
+        void Reset()
+        { 
+            events.Reset();
+            _select = 0;
+            _playerGUID = 0;
+        }
+
+        void generate()
+        {
+            if (Player *pPlayer = Unit::GetPlayer(*me, _playerGUID))
+            {
+                _select = urand(0, 4);
+                sCreatureTextMgr->SendChat(me, hacking_text[_select], _playerGUID); //
+                sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                events.ScheduleEvent(EVENT_TIMEOUT, 5000);
+                pPlayer->CastSpell(pPlayer, SPELL_TIMER, true);
+            }else
+                me->DespawnOrUnsummon();            
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (Player *pPlayer = Unit::GetPlayer(*me, _playerGUID))
+                pPlayer->RemoveAura(SPELL_TIMER);
+
+            events.CancelEvent(EVENT_TIMEOUT);
+            
+            if (hacking_spell[_select] == type)
+            {
+                // Right
+                me->EnergizeBySpell(me, type, 10, POWER_TYPE_VAULT_CRACKING_PROGRESS);
+                if (me->GetPower(POWER_TYPE_VAULT_CRACKING_PROGRESS) < 100)
+                {
+                    events.ScheduleEvent(EVENT_BANK_GENERATE, urand(1000, 5000));
+                    sCreatureTextMgr->SendChat(me, TEXT_RIGHT, _playerGUID);
+                    sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                }
+                else
+                {
+                    //Win
+                    me->DespawnOrUnsummon();
+                    sCreatureTextMgr->SendChat(me, TEXT_WIN, _playerGUID);
+                    sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                    if (Player *pPlayer = Unit::GetPlayer(*me, _playerGUID))
+                        pPlayer->AddItem(46858, 1);
+                }
+            }else
+            {
+                // Wrong
+                events.ScheduleEvent(EVENT_BANK_GENERATE, 5000);
+                sCreatureTextMgr->SendChat(me, TEXT_WRONG, _playerGUID);
+                sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                if (me->GetPower(POWER_TYPE_VAULT_CRACKING_PROGRESS) > 5)
+                    me->EnergizeBySpell(me, type, -5, POWER_TYPE_VAULT_CRACKING_PROGRESS);
+            }
+
+            // privent lagging casts.
+            _select = 100;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_BANK_INTRO:
+                        sCreatureTextMgr->SendChat(me, TEXT_INTRO_1, _playerGUID);
+                        sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                        events.ScheduleEvent(EVENT_BANK_INTRO_2, 10000);
+                        break;
+                    case EVENT_BANK_INTRO_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_INTRO_2, _playerGUID);
+                        sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                        events.ScheduleEvent(EVENT_BANK_INTRO_3, 10000);
+                        break;
+                    case EVENT_BANK_INTRO_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_INTRO_3, _playerGUID);
+                        sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                        events.ScheduleEvent(EVENT_BANK_GENERATE, 10000);
+                        break;
+                    case EVENT_BANK_GENERATE:
+                        generate();
+                        break;
+                    case EVENT_TIMEOUT:
+                        sCreatureTextMgr->SendChat(me, TEXT_TIMEOUT, _playerGUID);
+                        sCreatureTextMgr->SendChat(me, TEXT_EMPTY_STRING, _playerGUID);
+                        me->DespawnOrUnsummon();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        void OnCharmed(bool apply)
+        {
+            //AI should work all time. in original mode id't disabled
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!who->ToPlayer() || !apply)
+            {
+                me->DespawnOrUnsummon(1000);
+                return;
+            }
+
+            _playerGUID = who->GetGUID();
+            events.ScheduleEvent(EVENT_BANK_INTRO, 1000);
+            who->ToPlayer()->KilledMonsterCredit(35486);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_hack_bank_controllerAI(creature);
+    }
+};
+
+//67502 - Используйте |cFFFF2222невероятное гамма-излучение!|r$B|TInterface\Icons\INV_Misc_EngGizmos_20.blp:64|t
+//67020 - sound - 847 - 16381 - spell 67494
+//67502 -67496 Используйте |cFFFF2222взрывхлопушки!|r$B|TInterface\Icons\INV_Misc_Bomb_07.blp:64|t
+
 void AddSC_kezan()
 {
     new npc_fourth_and_goal_target;
@@ -993,4 +1249,7 @@ void AddSC_kezan()
     new npc_steamwheedle_shark();
     new spell_gen_stop_playing_current_music();
     new spell_gen_radio();
+    new spell_great_bank_heist();
+    new spell_gen_bank_hacking_spell();
+    new npc_hack_bank_controller();
 }

@@ -16065,29 +16065,8 @@ void Unit::SetMaxHealth(uint32 val)
 
 uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
-    if (powerId == POWER_ENERGY)
-    {
-        if (ToPet() && ToPet()->IsWarlockPet())
-            return 0;
-
-        switch (this->GetEntry())
-        {
-            case 26125:
-            case 59915:
-            case 60043:
-            case 60047:
-            case 60051:
-            case 60491: //Sha of Anger
-            case 60399: //Will of                QIN_XI
-            case 60400: //        the Imperator  JAN_XI
-            case 62837: //Empress Shekzeer
-            case 62442: //Tsulong
-            case 60999: //Sha of Fear
-                return 0;
-            default:
-                break;
-        }
-    }
+    if (GetTypeId() != TYPEID_PLAYER)
+        return 0;
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
 
