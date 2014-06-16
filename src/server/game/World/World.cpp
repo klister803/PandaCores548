@@ -1322,6 +1322,7 @@ void World::LoadConfigSettings(bool reload)
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK] = ConfigMgr::GetIntDefault("DungeonFinder.OptionsMask", 1);
     m_bool_configs[CONFIG_LFG_DEBUG_JOIN] = ConfigMgr::GetBoolDefault("DungeonFinder.DebugJoin", false);
+    m_bool_configs[CONFIG_LFG_FORCE_MINPLAYERS] = ConfigMgr::GetBoolDefault("DungeonFinder.ForceMinplayers", false);
 
     m_bool_configs[CONFIG_GROUP_BONUS_XP] = ConfigMgr::GetBoolDefault("Group.BonusXp", false);
 

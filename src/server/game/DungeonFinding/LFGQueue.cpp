@@ -333,6 +333,8 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
     if (sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN))
         minGroupSize = 1;
 
+    bool forceMinPlayers = sWorld->getBoolConfig(CONFIG_LFG_FORCE_MINPLAYERS) || sWorld->getBoolConfig(CONFIG_LFG_DEBUG_JOIN);
+
     // Check for correct size
     if (check.size() > maxGroupSize || check.empty())
     {
@@ -385,8 +387,11 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         }
     }
 
+    uint64 gguid = *check.begin();
+    proposal.isNew = numLfgGroups != 1 || sLFGMgr->GetOldState(gguid) != LFG_STATE_DUNGEON;
+
     // Group with less that MAXGROUPSIZE members always compatible
-    if (check.size() == 1 && numPlayers < minGroupSize)
+    if (check.size() == 1 && numPlayers < (proposal.isNew && !forceMinPlayers ? maxGroupSize : minGroupSize))
     {
         sLog->outDebug(LOG_FILTER_LFG, "LFGQueue::CheckCompatibility: (%s) sigle group. Compatibles", strGuids.c_str());
         LfgQueueDataContainer::iterator itQueue = QueueDataStore.find(check.front());
@@ -490,7 +495,7 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
     }
 
     // Enough players?
-    if (numPlayers < minGroupSize)
+    if (numPlayers < (proposal.isNew && !forceMinPlayers ? maxGroupSize : minGroupSize))
     {
         sLog->outDebug(LOG_FILTER_LFG, "LFGQueue::CheckCompatibility: (%s) Compatibles but not enough players(%u)", strGuids.c_str(), numPlayers);
 
@@ -504,9 +509,7 @@ LfgCompatibility LFGQueue::CheckCompatibility(LfgGuidList check)
         return LFG_COMPATIBLES_WITH_LESS_PLAYERS;
     }
 
-    uint64 gguid = *check.begin();
     proposal.queues = check;
-    proposal.isNew = numLfgGroups != 1 || sLFGMgr->GetOldState(gguid) != LFG_STATE_DUNGEON;
 
     if (!sLFGMgr->AllQueued(check))
     {
