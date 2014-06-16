@@ -1106,6 +1106,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount += int32(multiplier * level_diff);
             break;
         }
+        case SPELL_AURA_HASTE_SPELLS:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 90315: // 
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        amount = -25;
+                }
+                default:
+                    break;
+            }
+        }
         case SPELL_AURA_MOD_INCREASE_HEALTH:
             // Vampiric Blood
             if (GetId() == 55233)
