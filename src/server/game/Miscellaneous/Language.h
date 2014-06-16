@@ -660,6 +660,11 @@ enum TrinityStrings
     LANG_BG_EY_CAPTURED_FLAG_H          = 685,
     LANG_BG_EY_DROPPED_FLAG             = 686,
     LANG_BG_EY_RESETED_FLAG             = 687,
+    
+    LANG_BG_SSM_START_TWO_MINUTES       = 756,
+    LANG_BG_SSM_START_ONE_MINUTE        = 773,
+    LANG_BG_SSM_START_HALF_MINUTE       = 774,
+    LANG_BG_SSM_HAS_BEGUN               = 775,
 
     LANG_ARENA_ONE_TOOLOW               = 700,
     LANG_ARENA_ONE_MINUTE               = 701,

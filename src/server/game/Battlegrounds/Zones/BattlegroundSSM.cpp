@@ -31,6 +31,12 @@ BattlegroundSSM::BattlegroundSSM()
 {
     BgCreatures.resize(BG_SSM_OBJECT_MAX);
     BgObjects.resize(BG_SSM_OBJECT_MAX);
+    
+    /// Start Messages Initialization
+    StartMessageIds[BG_STARTING_EVENT_FIRST]  = LANG_BG_SSM_START_TWO_MINUTES;
+    StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_SSM_START_ONE_MINUTE;
+    StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_SSM_START_HALF_MINUTE;
+    StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_SSM_HAS_BEGUN;
 
     m_waysStep[0] = 1;
     m_waysStep[1] = 1;
