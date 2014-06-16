@@ -846,7 +846,7 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
 }
 
 // TODO: Move stat mods code to pet passive auras
-bool Guardian::InitStatsForLevel(uint8 petlevel)
+bool Guardian::InitStatsForLevel(uint8 petlevel, SpellInfo const* spellInfo)
 {
     CreatureTemplate const* cinfo = GetCreatureTemplate();
     ASSERT(cinfo);
@@ -1192,12 +1192,20 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
             break;
         }
-        case 54984:
+        case 54984: // Force of Nature
         {
-            float mindmg = 2189 + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
-            float maxdmg = 2189 + m_owner->GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+            SetUInt32Value(UNIT_FIELD_ATTACK_POWER, m_owner->GetTotalAttackPowerValue(BASE_ATTACK));
+
+            if (spellInfo)
+            {
+                uint32 baseBP = spellInfo->Effects[0].CalcValue(m_owner);
+            
+                float mindmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
+                float maxdmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
+
+                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+            }
             SetAttackTime(BASE_ATTACK, BASE_ATTACK_TIME);
             SetMaxPower(POWER_RAGE, 0);
             SetMaxHealth(CalculatePct(m_owner->GetMaxHealth(), 30));

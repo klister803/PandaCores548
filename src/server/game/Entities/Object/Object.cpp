@@ -2537,6 +2537,8 @@ void WorldObject::AddObjectToRemoveList()
 
 TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint64 targetGuid /*= 0*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
 {
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
     if(summoner)
     {
         std::list<Creature*> creatures;
@@ -2642,7 +2644,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
     summon->SetHomePosition(pos);
 
-    summon->InitStats(duration);
+    summon->InitStats(duration, spellInfo ? spellInfo: 0);
 
     if (viewerGuid)
         summon->AddPlayerInPersonnalVisibilityList(viewerGuid);

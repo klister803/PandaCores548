@@ -164,7 +164,7 @@ void TempSummon::Update(uint32 diff)
     }
 }
 
-void TempSummon::InitStats(uint32 duration)
+void TempSummon::InitStats(uint32 duration, SpellInfo const* spellInfo)
 {
     ASSERT(!isPet());
 
@@ -369,11 +369,11 @@ Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool is
     }
 }
 
-void Guardian::InitStats(uint32 duration)
+void Guardian::InitStats(uint32 duration, SpellInfo const* spellInfo)
 {
     Minion::InitStats(duration);
 
-    InitStatsForLevel(m_owner->getLevel());
+    InitStatsForLevel(m_owner->getLevel(), spellInfo ? spellInfo: 0);
 
     if (m_owner->GetTypeId() == TYPEID_PLAYER && HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
         m_charmInfo->InitCharmCreateSpells();
