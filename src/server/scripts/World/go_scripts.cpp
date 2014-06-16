@@ -306,7 +306,13 @@ public:
     go_ethereum_prison() : GameObjectScript("go_ethereum_prison") { }
 
     bool OnGossipHello(Player* player, GameObject* go)
-    {
+    {    
+        for (uint8 n = 0; n <= 12; n++)
+        {
+            if (Creature* cre = player->FindNearestCreature(NpcPrisonEntry[n], 20.0f, true))
+                return false;
+        }
+        
         int Random = rand() % (sizeof(NpcPrisonEntry) / sizeof(uint32));
 
         if (Creature* creature = player->SummonCreature(NpcPrisonEntry[Random], go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetAngle(player),
