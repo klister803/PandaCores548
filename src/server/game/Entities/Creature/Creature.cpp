@@ -626,7 +626,7 @@ void Creature::Update(uint32 diff)
                 if (!IsVehicle() || GetVehicleKit()->GetVehicleInfo()->m_powerType != POWER_PYRITE)
                     Regenerate(POWER_ENERGY);
             }
-            else
+            else if (!IsVehicle() || GetVehicleKit()->GetVehicleInfo()->m_powerType != POWER_TYPE_VAULT_CRACKING_PROGRESS)
                 RegenerateMana();
 
             /*if (!bIsPolymorphed) // only increase the timer if not polymorphed

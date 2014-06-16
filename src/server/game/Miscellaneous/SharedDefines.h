@@ -279,6 +279,7 @@ enum Powers
     POWER_DEMONIC_FURY                  = 15,
     POWER_UNKNOWN                       = 16,
     MAX_POWERS                          = 17,
+    POWER_TYPE_VAULT_CRACKING_PROGRESS  = 82,
     POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };

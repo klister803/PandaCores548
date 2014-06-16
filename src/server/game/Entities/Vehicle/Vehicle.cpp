@@ -67,6 +67,10 @@ void Vehicle::Install()
                 _me->setPowerType(POWER_ENERGY);
                 _me->SetMaxPower(POWER_ENERGY, 100);
                 break;
+            case POWER_TYPE_VAULT_CRACKING_PROGRESS:
+                _me->setPowerType(POWER_UNKNOWN);
+                _me->SetMaxPower(POWER_UNKNOWN, 100);
+                break;
             case POWER_PYRITE:
                 _me->setPowerType(POWER_ENERGY);
                 _me->SetMaxPower(POWER_ENERGY, 50);
