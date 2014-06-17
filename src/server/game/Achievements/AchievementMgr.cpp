@@ -567,6 +567,23 @@ void AchievementMgr<T>::SaveToDB(SQLTransaction& /*trans*/)
 template<>
 void AchievementMgr<ScenarioProgress>::SaveToDB(SQLTransaction& trans)
 {
+    CriteriaProgressMap* progressMap = GetCriteriaProgressMap();
+    if (!progressMap)
+        return;
+
+    for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+    {
+        if (!itr->second.changed || !itr->second.counter)
+            continue;
+
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_SCENARIO_CRITERIAPROGRESS);
+        stmt->setUInt32(0, GetOwner()->GetInstanceId());
+        stmt->setUInt32(1, itr->first);
+        stmt->setUInt32(2, itr->second.counter);
+        stmt->setUInt32(3, itr->second.date);
+
+        trans->Append(stmt);
+    }
 }
 
 template<>
