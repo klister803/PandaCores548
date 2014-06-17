@@ -168,7 +168,7 @@ bool Player::UpdateAllStats()
     UpdateAttackPowerAndDamage(true);
     UpdateMaxHealth();
 
-    for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
+    for (uint8 i = POWER_MANA; i < MAX_POWERS_PER_CLASS; ++i)
         UpdateMaxPower(Powers(i));
 
     // Custom MoP script
