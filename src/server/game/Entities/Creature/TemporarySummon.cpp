@@ -164,7 +164,7 @@ void TempSummon::Update(uint32 diff)
     }
 }
 
-void TempSummon::InitStats(uint32 duration, SpellInfo const* spellInfo)
+void TempSummon::InitStats(uint32 duration)
 {
     ASSERT(!isPet());
 
@@ -193,6 +193,13 @@ void TempSummon::InitStats(uint32 duration, SpellInfo const* spellInfo)
 
         switch(GetEntry())
         {
+//             case ENTRY_TREANT:
+//             {
+//                 owner->SetUInt32Value(PLAYER_PET_SPELL_POWER, owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE));
+//                 SetMaxPower(POWER_RAGE, 0);
+//                 SetMaxHealth(CalculatePct(owner->GetMaxHealth(), 30));        
+//                 break;
+//             }
             case 59271:     //Warlock purge gateway
                 slot = MAX_SUMMON_SLOT - 1;
                 break;
@@ -369,11 +376,11 @@ Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool is
     }
 }
 
-void Guardian::InitStats(uint32 duration, SpellInfo const* spellInfo)
+void Guardian::InitStats(uint32 duration)
 {
     Minion::InitStats(duration);
 
-    InitStatsForLevel(m_owner->getLevel(), spellInfo ? spellInfo: 0);
+    InitStatsForLevel(m_owner->getLevel());
 
     if (m_owner->GetTypeId() == TYPEID_PLAYER && HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
         m_charmInfo->InitCharmCreateSpells();

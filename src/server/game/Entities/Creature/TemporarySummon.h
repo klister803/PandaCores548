@@ -27,7 +27,7 @@ class TempSummon : public Creature
         explicit TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         virtual ~TempSummon() {}
         void Update(uint32 time);
-        virtual void InitStats(uint32 lifetime, SpellInfo const* spellInfo = NULL);
+        virtual void InitStats(uint32 lifetime);
         virtual void InitSummon();
         virtual void UnSummon(uint32 msTime = 0);
         void RemoveFromWorld();
@@ -68,8 +68,8 @@ class Guardian : public Minion
 {
     public:
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
-        void InitStats(uint32 duration, SpellInfo const* spellInfo = NULL);
-        bool InitStatsForLevel(uint8 level, SpellInfo const* spellInfo = NULL);
+        void InitStats(uint32 duration);
+        bool InitStatsForLevel(uint8 level);
         void InitSummon();
 
         bool UpdateStats(Stats stat);
