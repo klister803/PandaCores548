@@ -172,7 +172,7 @@ const uint32 BG_KT_ORBS_AURA[MAX_ORBS] =
 };
 
 //tick point according to which zone
-const uint32 BG_KT_TickPoints[3] = {5, 10, 20};
+const uint32 BG_KT_TickPoints[3] = {3, 4, 5};
 
 class BattlegroundKT : public Battleground
 {
