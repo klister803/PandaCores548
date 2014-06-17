@@ -16066,7 +16066,11 @@ void Unit::SetMaxHealth(uint32 val)
 uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
     if (GetTypeId() != TYPEID_PLAYER)
+    {
+        if (powerId == POWER_ALTERNATE_POWER)
+            return 1;
         return 0;
+    }
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
 
@@ -16233,6 +16237,7 @@ void Unit::SetPower(Powers power, int32 val)
 void Unit::SetMaxPower(Powers power, int32 val)
 {
     uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+   
     if (powerIndex == MAX_POWERS)
         return;
 

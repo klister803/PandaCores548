@@ -990,8 +990,11 @@ bool Creature::UpdateAllStats()
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);
 
-    for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
-        UpdateMaxPower(Powers(i));
+    // not do iteration powers for creatures. Now it has 2 indexes 0 - main, 1 - alt
+    //for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
+    //    UpdateMaxPower(Powers(i));
+    UpdateMaxPower(getPowerType());
+    UpdateMaxPower(POWER_ALTERNATE_POWER);
 
     for (int8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
@@ -1226,8 +1229,11 @@ bool Guardian::UpdateAllStats()
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         UpdateStats(Stats(i));
 
-    for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
-        UpdateMaxPower(Powers(i));
+    // not do iteration powers for creatures. Now it has 2 indexes 0 - main, 1 - alt
+    //for (uint8 i = POWER_MANA; i < MAX_POWERS; ++i)
+    //    UpdateMaxPower(Powers(i));
+    UpdateMaxPower(getPowerType());
+    UpdateMaxPower(POWER_ALTERNATE_POWER);
 
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
