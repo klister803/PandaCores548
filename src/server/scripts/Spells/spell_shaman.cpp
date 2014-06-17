@@ -631,6 +631,9 @@ class spell_sha_mana_tide : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                if(!GetCaster() || !GetCaster()->GetOwner())
+                    return;
+
                 if (Unit* target = GetHitUnit())
                 {
                     if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
