@@ -81,8 +81,6 @@ uint32 GetLiquidFlags(uint32 liquidType);
 PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level);
 PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundBracketId id);
 
-bool IsScenarioCriteriaTree(uint32 criteriaTreeId);
-
 extern DBCStorage <AchievementEntry>             sAchievementStore;
 extern DBCStorage <CriteriaEntry>                sCriteriaStore;
 extern DBCStorage <CriteriaTreeEntry>            sCriteriaTreeStore;
