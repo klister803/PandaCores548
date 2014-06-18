@@ -975,7 +975,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST)));
             break;
         }
-        case ENTRY_TREANT:
+        case 54983: // ENTRY_TREANT (Restoration)
+        case ENTRY_TREANT: // (Balance)
         {
             SetBonusDamage(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE));
             SetMaxPower(POWER_RAGE, 0);
