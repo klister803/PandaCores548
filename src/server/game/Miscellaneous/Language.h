@@ -970,11 +970,15 @@ enum TrinityStrings
     LANG_BG_KT_START_ONE_MINUTE         = 1346,
     LANG_BG_KT_START_HALF_MINUTE        = 1347,
     LANG_BG_KT_HAS_BEGUN                = 1348,
-    LANG_BG_KT_DROPPED                  = 1349,
-    LANG_BG_KT_PICKEDUP                 = 1350,
-    LANG_BG_KT_O_PLACED                 = 1351,
-    // FREE IDS                           1352-1999
-
+    LANG_BG_KT_PICKEDUP_1               = 1349,
+    LANG_BG_KT_PICKEDUP_2               = 1350,
+    LANG_BG_KT_PICKEDUP_3               = 1351,
+    LANG_BG_KT_PICKEDUP_4               = 1352,
+    LANG_BG_KT_DROPPED_1                = 1353,
+    LANG_BG_KT_DROPPED_2                = 1354,
+    LANG_BG_KT_DROPPED_3                = 1355,
+    LANG_BG_KT_DROPPED_4                = 1356,
+    // FREE IDS                           1357-1999
 
 
 

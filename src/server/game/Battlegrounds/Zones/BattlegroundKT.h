@@ -39,7 +39,10 @@ enum BG_KT_Objects
     BG_KT_OBJECT_ORB_2          = 3,
     BG_KT_OBJECT_ORB_3          = 4,
     BG_KT_OBJECT_ORB_4          = 5,
-    BG_KT_OBJECT_MAX            = 6
+    BG_KT_OBJECT_BERSERKBUFF_1  = 6,
+    BG_KT_OBJECT_BERSERKBUFF_2  = 7,
+    
+    BG_KT_OBJECT_MAX            = 8
 };
 
 enum BG_KT_Creatures
@@ -75,15 +78,15 @@ enum BG_KT_Sound
 
 enum BG_KT_SpellId
 {
-    BG_KT_SPELL_ORB_PICKED_UP_1 = 121164,   // PURPLE
-    BG_KT_SPELL_ORB_PICKED_UP_2 = 121175,   // ORANGE
-    BG_KT_SPELL_ORB_PICKED_UP_3 = 121176,   // GREEN
-    BG_KT_SPELL_ORB_PICKED_UP_4 = 121177,   // YELLOW
+    BG_KT_SPELL_ORB_PICKED_UP_1 = 121176,   // GREEN
+    BG_KT_SPELL_ORB_PICKED_UP_2 = 121175,   // PURPLE
+    BG_KT_SPELL_ORB_PICKED_UP_3 = 121177,   // ORANGE
+    BG_KT_SPELL_ORB_PICKED_UP_4 = 121164,   // BLUE
 
-    BG_KT_SPELL_ORB_AURA_1      = 121219,   // PURPLE
-    BG_KT_SPELL_ORB_AURA_2      = 121221,   // ORANGE
-    BG_KT_SPELL_ORB_AURA_3      = 121220,   // GREEN
-    BG_KT_SPELL_ORB_AURA_4      = 121217,   // YELLOW
+    BG_KT_SPELL_ORB_AURA_1      = 121220,   // GREEN
+    BG_KT_SPELL_ORB_AURA_2      = 121219,   // PURPLE
+    BG_KT_SPELL_ORB_AURA_3      = 121221,   // ORANGE
+    BG_KT_SPELL_ORB_AURA_4      = 121217,   // BLUE
 
     BG_KT_ALLIANCE_INSIGNIA     = 131527,
     BG_KT_HORDE_INSIGNIA        = 131528
@@ -171,6 +174,22 @@ const uint32 BG_KT_ORBS_AURA[MAX_ORBS] =
     BG_KT_SPELL_ORB_AURA_4
 };
 
+const uint16 LANG_BG_KT_PICKEDUP[MAX_ORBS] =
+{
+    LANG_BG_KT_PICKEDUP_1,
+    LANG_BG_KT_PICKEDUP_2,
+    LANG_BG_KT_PICKEDUP_3,
+    LANG_BG_KT_PICKEDUP_4
+};
+
+const uint16 LANG_BG_KT_DROPPED[MAX_ORBS] =
+{
+    LANG_BG_KT_DROPPED_1,
+    LANG_BG_KT_DROPPED_2,
+    LANG_BG_KT_DROPPED_3,
+    LANG_BG_KT_DROPPED_4
+};
+
 //tick point according to which zone
 const uint32 BG_KT_TickPoints[3] = {3, 4, 5};
 
@@ -191,11 +210,11 @@ class BattlegroundKT : public Battleground
 
         /* Battleground Events */
         void EventPlayerDroppedFlag(Player* source);
-
+        
         virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj) { EventPlayerClickedOnOrb(source, target_obj); }
         void EventPlayerClickedOnOrb(Player* source, GameObject* target_obj);
 
-        void RemovePlayer(Player* plr, ObjectGuid guid);
+        void RemovePlayer(Player* player, uint64 guid, uint32);
         void HandleAreaTrigger(Player* source, uint32 trigger);
         void HandleKillPlayer(Player* player, Player* killer);
         bool SetupBattleground();

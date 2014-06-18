@@ -3749,6 +3749,39 @@ class spell_gen_dampening : public SpellScriptLoader
         }
 };
 
+// spell  121176 - Orb of Power
+class spell_gen_orb_of_power : public SpellScriptLoader
+{
+    public:
+        spell_gen_orb_of_power() : SpellScriptLoader("spell_gen_orb_of_power") { }
+
+        class spell_gen_orb_of_powerAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_orb_of_powerAuraScript);
+
+            void HandleEffectPeriodicUpdate(AuraEffect* aurEff)
+            {
+                if (AuraEffect* aurEff0 = aurEff->GetBase()->GetEffect(EFFECT_0))
+                    aurEff0->SetAmount(aurEff0->GetAmount() + aurEff0->GetBaseAmount());
+                if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
+                    aurEff1->SetAmount(aurEff1->GetAmount() + aurEff1->GetBaseAmount());
+                if (AuraEffect* aurEff2 = aurEff->GetBase()->GetEffect(EFFECT_2))
+                    aurEff2->SetAmount(aurEff2->GetAmount() + aurEff2->GetBaseAmount());
+            }
+
+            void Register()
+            {
+                OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_gen_orb_of_powerAuraScript::HandleEffectPeriodicUpdate, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_orb_of_powerAuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3832,4 +3865,5 @@ void AddSC_generic_spell_scripts()
     new spell_time_lost_wisdom();
     new spell_gen_brutal_assault();
     new spell_gen_dampening();
+    new spell_gen_orb_of_power();
 }
