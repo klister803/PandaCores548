@@ -392,6 +392,7 @@ class Spell
         int32 CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultiplier, int32 base);
         void EffectResurrectWithAura(SpellEffIndex effIndex);
         void EffectSummonRaidMarker(SpellEffIndex effIndex);
+        void EffectRandomizeDigsites(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 

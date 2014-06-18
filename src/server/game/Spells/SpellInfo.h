@@ -456,6 +456,7 @@ public:
 
     bool IsExplicitDiscovery() const;
     bool IsLootCrafting() const;
+    bool IsArchaeologyCraftingSpell() const;
     bool IsQuestTame() const;
     bool IsProfessionOrRiding() const;
     bool IsProfession() const;

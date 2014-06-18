@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "Containers.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "Spell.h"
@@ -63,11 +64,9 @@ bool Player::GenerateDigSiteLoot(uint16 siteId, DigSite &site)
         default:                            site.find_id = 0; break;
     }
 
-    DigSitePositionVector::const_iterator entry = loot.begin();
-    std::advance(entry, urand(0, loot.size() - 1));
-
-    site.loot_x = entry->x;
-    site.loot_y = entry->y;
+    DigSitePosition const& lootSite = Trinity::Containers::SelectRandomContainerElement(loot);
+    site.loot_x = lootSite.x;
+    site.loot_y = lootSite.y;
 
     return true;
 }
@@ -152,7 +151,8 @@ bool Player::OnSurvey(uint32& entry, float& x, float& y, float& z, float &orient
     else
     {
         site.clear();
-        UseResearchSite(site_id);
+        _researchSites.erase(site_id);
+        GenerateResearchSiteInMap(GetMapId());
     }
 
     _archaeologyChanged = true;
@@ -228,10 +228,33 @@ bool Player::IsPointInZone(ResearchPOIPoint &test, ResearchPOIPointVector &polyg
     return w != 0;
 }
 
-void Player::UseResearchSite(uint32 id)
+void Player::RandomizeSitesInMap(uint32 mapId, uint8 count)
 {
-    _researchSites.erase(id);
-    GenerateResearchSiteInMap(GetMapId());
+    std::set<uint32> sites;
+    for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
+    {
+        uint32 site_id = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
+        ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.find(site_id);
+        if (itr == sResearchSiteDataMap.end())
+            continue;
+
+        if (itr->second.entry->MapID != mapId)
+            continue;
+
+        sites.insert(site_id);
+    }
+
+    uint8 cnt = 0;
+    while (cnt < count && !sites.empty())
+    {
+        uint32 site_id = Trinity::Containers::SelectRandomContainerElement(sites);
+        sites.erase(site_id);
+        _researchSites.erase(site_id);
+        ++cnt;
+    }
+
+    for (uint8 i = 0; i < cnt; ++i)
+        GenerateResearchSiteInMap(mapId);
 }
 
 void Player::ShowResearchSites()
@@ -240,17 +263,15 @@ void Player::ShowResearchSites()
         return;
 
     uint8 count = 0;
-
     for (ResearchSiteSet::const_iterator itr = _researchSites.begin(); itr != _researchSites.end(); ++itr)
     {
-        uint32 id = (*itr);
+        uint32 id = *itr;
         ResearchSiteEntry const* rs = GetResearchSiteEntryById(id);
 
         if (!rs || CanResearchWithSkillLevel(rs->ID) == 2)
             id = 0;
 
-        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, count, id);
-        ++count;
+        SetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, count++, id);
     }
 }
 
@@ -318,20 +339,22 @@ void Player::GenerateResearchSiteInMap(uint32 mapId)
     for (ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
     {
         ResearchSiteEntry const* entry = itr->second.entry;
-        if (!HasResearchSite(entry->ID) &&
-            entry->MapID == mapId &&
-            CanResearchWithLevel(entry->ID) &&
-            CanResearchWithSkillLevel(entry->ID))
-            tempSites.insert(entry->ID);
+
+        if (HasResearchSite(entry->ID) || entry->MapID != mapId || !CanResearchWithLevel(entry->ID) || !CanResearchWithSkillLevel(entry->ID))
+            continue;
+
+        // add only mantid sites when player has Mantid Artifact Sonic Locator
+        if (entry->MapID == 870 && itr->second.branch_id != ARCHAEOLOGY_BRANCH_MANTID && HasItemCount(95509))
+            continue;
+
+        tempSites.insert(entry->ID);
     }
 
     if (tempSites.empty())
         return;
 
-    SiteSet::const_iterator entry = tempSites.begin();
-    std::advance(entry, urand(0, tempSites.size() - 1));
-
-    _researchSites.insert(*entry);
+    uint32 site_id = Trinity::Containers::SelectRandomContainerElement(tempSites);
+    _researchSites.insert(site_id);
     _archaeologyChanged = true;
 
     ShowResearchSites();
@@ -346,8 +369,14 @@ void Player::GenerateResearchSites()
     for (ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.begin(); itr != sResearchSiteDataMap.end(); ++itr)
     {
         ResearchSiteEntry const* entry = itr->second.entry;
-        if (CanResearchWithLevel(entry->ID) && CanResearchWithSkillLevel(entry->ID))
-            tempSites[entry->MapID].insert(entry->ID);
+        if (!CanResearchWithLevel(entry->ID) || !CanResearchWithSkillLevel(entry->ID))
+            continue;
+
+        // add only mantid sites when player has Mantid Artifact Sonic Locator
+        if (entry->MapID == 870 && itr->second.branch_id != ARCHAEOLOGY_BRANCH_MANTID && HasItemCount(95509))
+            continue;
+
+        tempSites[entry->MapID].insert(entry->ID);
     }
 
     for (Sites::const_iterator itr = tempSites.begin(); itr != tempSites.end(); ++itr)
@@ -356,11 +385,10 @@ void Player::GenerateResearchSites()
 
         for (uint8 i = 0; i < mapMax;)
         {
-            SiteSet::const_iterator itr2 = itr->second.begin();
-            std::advance(itr2, urand(0, itr->second.size() - 1));
-            if (!HasResearchSite(*itr2))
+            uint32 site_id = Trinity::Containers::SelectRandomContainerElement(itr->second);
+            if (!HasResearchSite(site_id))
             {
-                _researchSites.insert(*itr2);
+                _researchSites.insert(site_id);
                 ++i;
             }
         }
@@ -412,20 +440,14 @@ void Player::GenerateResearchProjects()
 
     for (ProjectsByBranch::const_iterator itr = tempProjects.begin(); itr != tempProjects.end(); ++itr)
     {
-        ResearchProjectSet::const_iterator itr2;
+        uint32 project_id = 0;
 
         if (tempRareProjects[itr->first].size() > 0 && roll_chance_f(rare_chance))
-        {
-            itr2 = tempRareProjects[itr->first].begin();
-            std::advance(itr2, urand(0, tempRareProjects[itr->first].size() - 1));
-        }
+            project_id = Trinity::Containers::SelectRandomContainerElement(tempRareProjects[itr->first]);
         else
-        {
-            itr2 = itr->second.begin();
-            std::advance(itr2, urand(0, itr->second.size() - 1));
-        }
+            project_id = Trinity::Containers::SelectRandomContainerElement(itr->second);
 
-        ReplaceResearchProject(0, *itr2);
+        ReplaceResearchProject(0, project_id);
     }
 
     _archaeologyChanged = true;
@@ -565,19 +587,13 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
             tempProjects.insert(project->ID);
     }
 
-    ResearchProjectSet::const_iterator itr;
+    uint32 project_id = 0;
     if (tempRareProjects.size() > 0 && roll_chance_f(rare_chance))
-    {
-        itr = tempRareProjects.begin();
-        std::advance(itr, urand(0, tempRareProjects.size() - 1));
-    }
+        project_id = Trinity::Containers::SelectRandomContainerElement(tempRareProjects);
     else
-    {
-        itr = tempProjects.begin();
-        std::advance(itr, urand(0, tempProjects.size() - 1));
-    }
+        project_id = Trinity::Containers::SelectRandomContainerElement(tempProjects);
 
-    ReplaceResearchProject(entry->ID, *itr);
+    ReplaceResearchProject(entry->ID, project_id);
 
     _archaeologyChanged = true;
 

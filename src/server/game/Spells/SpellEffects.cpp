@@ -257,7 +257,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //184 SPELL_EFFECT_REPUTATION_REWARD
     &Spell::EffectNULL,                                     //185 SPELL_EFFECT_185
     &Spell::EffectNULL,                                     //186 SPELL_EFFECT_186
-    &Spell::EffectNULL,                                     //187 SPELL_EFFECT_RANDOMIZE_DIGSITES
+    &Spell::EffectRandomizeDigsites,                        //187 SPELL_EFFECT_RANDOMIZE_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_STAMPEDE
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
@@ -2690,7 +2690,7 @@ void Spell::EffectCreateItem(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsArchaeologyCraftingSpell())
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -2719,7 +2719,7 @@ void Spell::EffectCreateItem2(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && IsPartOfSkillLine(SKILL_ARCHAEOLOGY, m_spellInfo->Id))
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsArchaeologyCraftingSpell())
         if (!m_caster->ToPlayer()->SolveResearchProject(m_spellInfo->Id, m_targets))
             return;
 
@@ -8086,3 +8086,19 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
     dynObj->SetDuration(duration);
     group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }
+
+void Spell::EffectRandomizeDigsites(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
+        return;
+
+    player->RandomizeSitesInMap(m_spellInfo->GetEffect(effIndex).MiscValue, damage);
+}
+

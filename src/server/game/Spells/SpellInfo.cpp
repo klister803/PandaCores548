@@ -1224,6 +1224,32 @@ bool SpellInfo::IsLootCrafting() const
         (TotemCategory[0] != 0 || Effects[0].ItemType == 0);
 }
 
+bool SpellInfo::IsArchaeologyCraftingSpell() const
+{
+    if (IsPartOfSkillLine(SKILL_ARCHAEOLOGY, Id))
+        return true;
+
+    switch (Id)
+    {
+        // Mantid projects do not have entry in SkillLineAbility
+        case 139776:    // Banner of the Mantid Empire
+        case 139779:    // Ancient Sap Feeder
+        case 139780:    // The Praying Mantid
+        case 139781:    // Inert Sound Beacon
+        case 139782:    // Remains of a Paragon
+        case 139783:    // Mantid Lamp
+        case 139784:    // Pollen Collector
+        case 139785:    // Kypari Sap Container
+        case 139786:    // Mantid Sky Reaver
+        case 139787:    // Sonic Pulse Generator
+            return true;
+        default:
+            break;
+    }
+
+    return false;
+}
+
 bool SpellInfo::IsQuestTame() const
 {
     return Effects[0].Effect == SPELL_EFFECT_THREAT && Effects[1].Effect == SPELL_EFFECT_APPLY_AURA && Effects[1].ApplyAuraName == SPELL_AURA_DUMMY;
