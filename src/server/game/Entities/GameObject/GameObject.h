@@ -112,6 +112,21 @@ struct GameObjectTemplate
             uint32 openTextID;                              //14 can be used to replace castBarCaption?
             uint32 groupLootRules;                          //15
             uint32 floatingTooltip;                         //16
+            uint32 data17;                                  //17
+            uint32 data18;                                  //18
+            uint32 data19;                                  //19
+            uint32 data20;                                  //20
+            uint32 data21;                                  //21
+            uint32 data22;                                  //22
+            uint32 data23;                                  //23
+            uint32 data24;                                  //24
+            uint32 data25;                                  //25
+            uint32 data26;                                  //26
+            uint32 data27;                                  //27
+            uint32 data28;                                  //28
+            uint32 data29;                                  //29
+            uint32 data30;                                  //30
+            uint32 data31;                                  //31
         } chest;
         //4 GAMEOBJECT_TYPE_BINDER - empty
         //5 GAMEOBJECT_TYPE_GENERIC

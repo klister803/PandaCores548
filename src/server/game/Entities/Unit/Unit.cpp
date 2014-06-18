@@ -4887,7 +4887,7 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
     {
         if ((*i)->GetAmount() < modifier)
         {
-            if ((*i)->GetBase()->GetId() == 116 && auratype == SPELL_AURA_MOD_DECREASE_SPEED) // Frostbolt speed reduction is always at 50%
+            if (auratype == SPELL_AURA_MOD_DECREASE_SPEED) // Frostbolt speed reduction is always at 50%
                 modifier = (*i)->GetBaseAmount();
             else
                 modifier = (*i)->GetAmount();

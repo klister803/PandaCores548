@@ -808,35 +808,6 @@ class spell_warl_sacrificial_pact : public SpellScriptLoader
         }
 };
 
-// Hand of Gul'Dan - 86040
-class spell_warl_hand_of_guldan : public SpellScriptLoader
-{
-    public:
-        spell_warl_hand_of_guldan() : SpellScriptLoader("spell_warl_hand_of_guldan") { }
-
-        class spell_warl_hand_of_guldan_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_hand_of_guldan_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, WARLOCK_SHADOWFLAME, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_hand_of_guldan_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_hand_of_guldan_SpellScript();
-        }
-};
-
 // Twilight Ward - 6229 and Twilight Ward (Metamorphosis) - 104048
 class spell_warl_twilight_ward_s12 : public SpellScriptLoader
 {
@@ -2066,7 +2037,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
     new spell_warl_sacrificial_pact();
-    new spell_warl_hand_of_guldan();
     new spell_warl_twilight_ward_s12();
     new spell_warl_hellfire();
     new spell_warl_demonic_leap();

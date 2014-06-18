@@ -10208,21 +10208,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             return;
         }
 
-        /*if (go->GetGoType() == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.lockId)
-        {
-            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
-            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
-            uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
-            uint32 consumable = go->GetGOInfo()->chest.consumable;
-            uint32 lootid =  go->GetGOInfo()->GetLootId();
-
-            if (go_min == 1 && go_max == 1 && consumable == 1 && chestRestockTime == 0 && lootid)
-            {
-                AutoStoreLoot(lootid, LootTemplates_Gameobject);
-                return;
-            }
-        }*/
-
         loot = &go->loot;
 
         if (go->getLootState() == GO_READY)
@@ -10523,6 +10508,27 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
+
+    if (IS_GAMEOBJECT_GUID(guid))
+    {
+        GameObject *go = GetMap()->GetGameObject(guid);
+        if (go && go->GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        {
+            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
+            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
+            uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
+            uint32 consumable = go->GetGOInfo()->chest.consumable;
+            uint32 data26 = go->GetGOInfo()->chest.data26;
+            uint32 questItems = go->GetGOInfo()->questItems[0];
+            uint32 lootid =  go->GetGOInfo()->GetLootId();
+
+            if(go_min == 1 && go_max ==1 && consumable == 1 && chestRestockTime == 0 && data26 == 0 && questItems == 0 && lootid)
+            {
+                AutoStoreLoot(lootid, LootTemplates_Gameobject);
+                loot->clear();
+            }
+        }
+    }
 
     //! 5.4.1
     WorldPacket data(SMSG_LOOT_RESPONSE);
