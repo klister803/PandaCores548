@@ -193,13 +193,6 @@ void TempSummon::InitStats(uint32 duration)
 
         switch(GetEntry())
         {
-//             case ENTRY_TREANT:
-//             {
-//                 owner->SetUInt32Value(PLAYER_PET_SPELL_POWER, owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_NATURE));
-//                 SetMaxPower(POWER_RAGE, 0);
-//                 SetMaxHealth(CalculatePct(owner->GetMaxHealth(), 30));        
-//                 break;
-//             }
             case 59271:     //Warlock purge gateway
                 slot = MAX_SUMMON_SLOT - 1;
                 break;
@@ -367,12 +360,25 @@ bool Minion::IsWarlockPet() const
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject)
 , m_bonusSpellDamage(0)
 {
+    bool controlable = true;
     memset(m_statFromOwner, 0, sizeof(float)*MAX_STATS);
     m_unitTypeMask |= UNIT_MASK_GUARDIAN;
-    if (properties && properties->Type == SUMMON_TYPE_PET && properties->Id != 3459)
+
+    if (properties)
     {
-        m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
-        InitCharmInfo();
+        switch (properties->Id)
+        {
+            case 3459:
+            case 3097:
+                controlable = false;
+                break;
+        }
+
+        if (properties->Type == SUMMON_TYPE_PET && controlable)
+        {
+            m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
+            InitCharmInfo();
+        }
     }
 }
 

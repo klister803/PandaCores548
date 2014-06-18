@@ -117,6 +117,48 @@ SpawnAssociation spawnAssociations[] =
     {22126, 22122, SPAWNTYPE_ALARMBOT}                      //Air Force Trip Wire - Rooftop (Cenarion Expedition)
 };
 
+class npc_force_of_nature_treant_for_boomkin : public CreatureScript
+{
+public:
+    npc_force_of_nature_treant_for_boomkin() : CreatureScript("npc_force_of_nature_treant_for_boomkin") { }
+
+    struct npc_force_of_nature_treant_for_boomkinAI : ScriptedAI
+    {
+        npc_force_of_nature_treant_for_boomkinAI(Creature* creature) : ScriptedAI(creature) { }
+
+        bool firsttarget;
+
+        void InitializeAI()
+        {
+            me->CastSpell(me->GetTargetUnit(), 113770, true);
+            firsttarget = true;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+            
+            if (Unit* victim = me->SelectVictim())
+                me->CastSpell(victim, 113769, false);
+
+            if (firsttarget)
+            {
+                me->CastSpell(me->GetTargetUnit(), 113769, false);
+                AttackStart(me->GetTargetUnit());
+                firsttarget = false;
+            }
+
+            
+        }
+    };
+
+    ScriptedAI* GetAI(Creature* creature) const
+    {
+        return new npc_force_of_nature_treant_for_boomkinAI(creature);
+    }
+};
+
 class npc_force_of_nature_treant : public CreatureScript
 {
 public:
@@ -4995,6 +5037,7 @@ class npc_transcendence_spirit : public CreatureScript
 
 void AddSC_npcs_special()
 {
+    new npc_force_of_nature_treant_for_boomkin();
     new npc_force_of_nature_treant();
     new npc_air_force_bots();
     new npc_lunaclaw_spirit();
