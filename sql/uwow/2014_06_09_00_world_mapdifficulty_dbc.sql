@@ -1,1 +1,1 @@
-ALTER TABLE `mapdifficulty_dbc` DROP `m_difficulty`;
+ALTER TABLE `mapdifficulty_dbc` DROP `m_requirement`;
