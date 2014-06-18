@@ -162,7 +162,7 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
-void BattlegroundKT::EventPlayerDroppedOrb(Player* source)
+void BattlegroundKT::EventPlayerDroppedFlag(Player* source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -196,7 +196,7 @@ void BattlegroundKT::EventPlayerDroppedOrb(Player* source)
 
 void BattlegroundKT::RemovePlayer(Player* plr, ObjectGuid guid)
 {
-    EventPlayerDroppedOrb(plr);
+    EventPlayerDroppedFlag(plr);
     m_playersZone.erase(plr->GetGUID());
 }
 
@@ -316,7 +316,7 @@ void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    EventPlayerDroppedOrb(player);
+    EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
 }

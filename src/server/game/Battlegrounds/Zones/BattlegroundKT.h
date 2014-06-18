@@ -190,7 +190,7 @@ class BattlegroundKT : public Battleground
         virtual void StartingEventOpenDoors();
 
         /* Battleground Events */
-        virtual void EventPlayerDroppedOrb(Player* source);
+        void EventPlayerDroppedFlag(Player* source);
 
         virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj) { EventPlayerClickedOnOrb(source, target_obj); }
         void EventPlayerClickedOnOrb(Player* source, GameObject* target_obj);
