@@ -7681,7 +7681,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 if(AuraEffect const* aurEff = GetAuraEffect(47753, EFFECT_0))
                 {
                     basepoints0 += aurEff->GetAmount();
-                    if(basepoints0 > CountPctFromMaxHealth(40))
+                    if(basepoints0 > int32(CountPctFromMaxHealth(40)))
                         basepoints0 = CountPctFromMaxHealth(40);
                 }
 
@@ -12987,6 +12987,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
+
+    if (HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
+
     int32 bonusDone = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
     if (!DoneAdvertisedBenefit || DoneAdvertisedBenefit < bonusDone)
         DoneAdvertisedBenefit = bonusDone;

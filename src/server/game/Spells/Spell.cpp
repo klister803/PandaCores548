@@ -1191,6 +1191,13 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             case SPELLFAMILY_GENERIC:
                 switch (m_spellInfo->Id)
                 {
+                    case 113828: // Healing Touch
+                    {
+                        unitTargets.push_back(m_caster);
+                        maxSize = 1;
+                        power = POWER_HEALTH;
+                        break;
+                    }
                     case 52759: // Ancestral Awakening
                     case 71610: // Echoes of Light (Althor's Abacus normal version)
                     case 71641: // Echoes of Light (Althor's Abacus heroic version)
