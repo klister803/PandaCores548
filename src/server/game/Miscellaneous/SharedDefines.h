@@ -1081,7 +1081,7 @@ enum SpellEffects
     SPELL_EFFECT_160                                = 160, // forcecast trigger spell ?
     SPELL_EFFECT_TALENT_SPEC_COUNT                  = 161,
     SPELL_EFFECT_TALENT_SPEC_SELECT                 = 162,
-    SPELL_EFFECT_163                                = 163, // Unused (5.0.5)
+    SPELL_EFFECT_163                                = 163, // Unused (5.4.1)
     SPELL_EFFECT_REMOVE_AURA                        = 164,
     SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT         = 165,
     SPELL_EFFECT_GIVE_CURRENCY                      = 166,
@@ -1096,12 +1096,12 @@ enum SpellEffects
     SPELL_EFFECT_175                                = 175, // random target ? only 125570
     SPELL_EFFECT_SANCTUARY_2                        = 176,
     SPELL_EFFECT_177                                = 177, // despawn areatrigger
-    SPELL_EFFECT_178                                = 178, // Unused (5.0.5)
+    SPELL_EFFECT_178                                = 178, // Unused (5.4.1)
     SPELL_EFFECT_CREATE_AREATRIGGER                 = 179,
-    SPELL_EFFECT_180                                = 180, // Only one spell : "Update Area Triggers" 106584
+    SPELL_EFFECT_180                                = 180, // "Update Area Triggers" 106584 133355
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
     SPELL_EFFECT_182                                = 182, // despawwn areatrigger
-    SPELL_EFFECT_183                                = 183, // Unused (5.0.5)
+    SPELL_EFFECT_183                                = 183, // Unused (5.4.1)
     SPELL_EFFECT_REPUTATION_REWARD                  = 184, // add 400 (normal) 800 (10/25 player mode) Avengers of Hyjal (TDF ?) see 73843
     SPELL_EFFECT_185                                = 185, // Scene related
     SPELL_EFFECT_186                                = 186, // Scene related
@@ -1120,8 +1120,8 @@ enum SpellEffects
     SPELL_EFFECT_199                                = 199, // 0 spells
     SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
     SPELL_EFFECT_BATTLE_PET                         = 201, // Battle pet first slot
-    SPELL_EFFECT_202                                = 202,
-    SPELL_EFFECT_203                                = 203,
+    SPELL_EFFECT_APPLY_AURA_WITH_VALUE              = 202,
+    SPELL_EFFECT_TRIGGER_SPELL_3                    = 203,
     SPELL_EFFECT_UPGRADE_BATTLE_PET                 = 204,
     SPELL_EFFECT_205                                = 205, // Launch PvE/PvP Choice
     SPELL_EFFECT_CREATE_ITEM_3                      = 206, // Create item from Timeless Isle
