@@ -2675,8 +2675,8 @@ void ObjectMgr::LoadVehicleTemplateAccessories()
 
     uint32 count = 0;
 
-    //                                                  0             1              2          3           4             5
-    QueryResult result = WorldDatabase.Query("SELECT `entry`, `accessory_entry`, `seat_id`, `minion`, `summontype`, `summontimer` FROM `vehicle_template_accessory`");
+    //                                                     0              1              2          3           4             5
+    QueryResult result = WorldDatabase.Query("SELECT `EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `summontype`, `summontimer` FROM `vehicle_template_accessory`");
 
     if (!result)
     {
@@ -2689,16 +2689,22 @@ void ObjectMgr::LoadVehicleTemplateAccessories()
     {
         Field* fields = result->Fetch();
 
-        uint32 uiEntry      = fields[0].GetUInt32();
+        int32  uiEntryOrAura= fields[0].GetInt32();
         uint32 uiAccessory  = fields[1].GetUInt32();
         int8   uiSeat       = int8(fields[2].GetInt8());
         bool   bMinion      = fields[3].GetBool();
         uint8  uiSummonType = fields[4].GetUInt8();
         uint32 uiSummonTimer= fields[5].GetUInt32();
 
-        if (!sObjectMgr->GetCreatureTemplate(uiEntry))
+        if (uiEntryOrAura > 0 && !sObjectMgr->GetCreatureTemplate(uiEntryOrAura))
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `vehicle_template_accessory`: creature template entry %u does not exist.", uiEntry);
+            sLog->outError(LOG_FILTER_SQL, "Table `vehicle_template_accessory`: creature template entry %u does not exist.", uiEntryOrAura);
+            continue;
+        }
+
+        if (uiEntryOrAura < 0 && !sSpellMgr->GetSpellInfo(uiEntryOrAura * -1))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `vehicle_template_accessory`: aura %u does not exist.", uiEntryOrAura);
             continue;
         }
 
@@ -2708,13 +2714,13 @@ void ObjectMgr::LoadVehicleTemplateAccessories()
             continue;
         }
 
-        if (_spellClickInfoStore.find(uiEntry) == _spellClickInfoStore.end())
+        if (uiEntryOrAura > 0 && _spellClickInfoStore.find(uiEntryOrAura) == _spellClickInfoStore.end())
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `vehicle_template_accessory`: creature template entry %u has no data in npc_spellclick_spells", uiEntry);
+            sLog->outError(LOG_FILTER_SQL, "Table `vehicle_template_accessory`: creature template entry %u has no data in npc_spellclick_spells", uiEntryOrAura);
             continue;
         }
 
-        _vehicleTemplateAccessoryStore[uiEntry].push_back(VehicleAccessory(uiAccessory, uiSeat, bMinion, uiSummonType, uiSummonTimer));
+        _vehicleTemplateAccessoryStore[uiEntryOrAura].push_back(VehicleAccessory(uiAccessory, uiSeat, bMinion, uiSummonType, uiSummonTimer));
 
         ++count;
     }
@@ -9035,6 +9041,15 @@ VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) con
     VehicleAccessoryContainer::const_iterator itr = _vehicleTemplateAccessoryStore.find(veh->GetCreatureEntry());
     if (itr != _vehicleTemplateAccessoryStore.end())
         return &itr->second;
+
+    // For Player witch come vehicle by 296 aura
+    if (veh->GetRecAura())
+    {
+        VehicleAccessoryContainer::const_iterator itr = _vehicleTemplateAccessoryStore.find(veh->GetRecAura() * -1);
+        if (itr != _vehicleTemplateAccessoryStore.end())
+            return &itr->second;
+    }
+    
     return NULL;
 }
 

@@ -30,8 +30,9 @@
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
 
-Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry),
-                                                                                  _isBeingDismissed(false), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false)
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura) :
+    _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry), _recAura(recAura),
+    _isBeingDismissed(false), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
     {
@@ -136,6 +137,7 @@ void Vehicle::Reset(bool evading /*= false*/)
     {
         if (_usableSeatNum)
             _me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PLAYER_VEHICLE);
+        InstallAllAccessories(evading);
     }
     else
     {
@@ -291,11 +293,15 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
         if (minion)
             accessory->AddUnitTypeMask(UNIT_MASK_ACCESSORY);
 
-        if (!_me->HandleSpellClick(accessory, seatId))
+        if (!GetRecAura() && !_me->HandleSpellClick(accessory, seatId))
         {
             accessory->UnSummon();
             return;
         }
+
+        // Force enter for force vehicle aura - 296
+        if (GetRecAura())
+            accessory->_EnterVehicle(this, -1);
 
         // this cannot be checked instantly like this
         // spellsystem is delaying everything to next update tick

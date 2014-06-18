@@ -919,7 +919,7 @@ enum Opcodes
     SMSG_FORCED_DEATH_UPDATE                          = 0xC13,  // 5.0.5 16048
     SMSG_FORCE_DISPLAY_UPDATE                         = 0,      // Not found in 4.3.4
     SMSG_FORCE_SEND_QUEUED_PACKETS                    = 0x626,  // 5.0.5 16048
-    SMSG_FORCE_SET_VEHICLE_REC_ID                     = 0xAA7,  // 5.0.5 16048
+    SMSG_FORCE_SET_VEHICLE_REC_ID                     = 0x07BE, // 5.4.1 17538
     SMSG_FORGE_MASTER_SET                             = 0xF8F,  // 5.0.5 16048
     SMSG_FRIEND_STATUS                                = 0x180B, // 5.4.1 17538
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0x09A7, // 5.4.1 17538

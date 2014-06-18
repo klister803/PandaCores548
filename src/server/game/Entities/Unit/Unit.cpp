@@ -19363,13 +19363,13 @@ void Unit::RestoreFaction()
     }
 }
 
-bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry)
+bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura)
 {
     VehicleEntry const* vehInfo = sVehicleStore.LookupEntry(id);
     if (!vehInfo)
         return false;
 
-    m_vehicleKit = new Vehicle(this, vehInfo, creatureEntry);
+    m_vehicleKit = new Vehicle(this, vehInfo, creatureEntry, RecAura);
     m_updateFlag |= UPDATEFLAG_VEHICLE;
     m_unitTypeMask |= UNIT_MASK_VEHICLE;
     return true;

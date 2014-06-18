@@ -30,7 +30,7 @@ typedef std::set<uint64> GuidSet;
 class Vehicle : public TransportBase
 {
     public:
-        explicit Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry);
+        explicit Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
         virtual ~Vehicle();
 
         void Install();
@@ -48,7 +48,7 @@ class Vehicle : public TransportBase
         Unit* GetPassenger(int8 seatId) const;
         int8 GetNextEmptySeat(int8 seatId, bool next) const;
         uint8 GetAvailableSeatCount() const;
-
+        uint32 GetRecAura() const { return _recAura; }
         bool CheckCustomCanEnter();
         bool AddPassenger(Unit* passenger, int8 seatId = -1);
         void EjectPassenger(Unit* passenger, Unit* controller);
@@ -84,6 +84,7 @@ class Vehicle : public TransportBase
         GuidSet vehiclePlayers;
         uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
         uint32 _creatureEntry;         // Can be different than me->GetBase()->GetEntry() in case of players
+        uint32 _recAura;               // aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
 
         bool _isBeingDismissed;
         bool _passengersSpawnedByAI;

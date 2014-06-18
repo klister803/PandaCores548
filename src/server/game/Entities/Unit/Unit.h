@@ -2293,7 +2293,7 @@ class Unit : public WorldObject
 
         bool IsAIEnabled, NeedChangeAI;
         uint64 LastCharmerGUID;
-        bool CreateVehicleKit(uint32 id, uint32 creatureEntry);
+        bool CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura = 0);
         void RemoveVehicleKit();
         Vehicle* GetVehicleKit()const { return m_vehicleKit; }
         Vehicle* GetVehicle()   const { return m_vehicle; }
