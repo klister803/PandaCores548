@@ -1,4 +1,6 @@
 /*
+Phases:
+finish q14109 spell phase(59073) phase 7.
  */
 
 #include "ScriptPCH.h"

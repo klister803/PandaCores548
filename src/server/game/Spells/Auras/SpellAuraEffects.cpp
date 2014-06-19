@@ -6575,7 +6575,7 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
         data.WriteGuidBytes<7, 2, 5, 6, 4>(target->GetObjectGuid());
         data << uint32(vehicleId);
         data.WriteGuidBytes<3, 1, 0>(target->GetObjectGuid());
-        data << uint32(0);          //unk
+        data << uint32(781);          //unk
         target->SendMessageToSet(&data, true);
     }
 
@@ -6583,7 +6583,6 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
     data << uint32(apply ? vehicleId : 0);
     data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(target->GetObjectGuid());
     data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(target->GetObjectGuid());
-    target->ToPlayer()->GetSession()->SendPacket(&data);
     target->SendMessageToSet(&data, true);
 
     if (apply)
