@@ -164,7 +164,7 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_
 
 void BattlegroundKT::EventPlayerDroppedFlag(Player* source)
 {
-    if (GetStatus() != STATUS_IN_PROGRESS)
+    if (!source || GetStatus() != STATUS_IN_PROGRESS)
         return;
 
     uint8 index = 0;
