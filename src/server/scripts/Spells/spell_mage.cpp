@@ -88,6 +88,7 @@ enum MageSpells
     SPELL_MAGE_INCANTERS_WARD_ENERGIZE           = 113842,
     SPELL_MAGE_INCANTERS_ABSORBTION              = 116267,
     SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE      = 118858,
+    SPELL_DRUMS_OF_RAGE                          = 146555,
 };
 
 // Incanter's Ward (Cooldown marker) - 118859
@@ -1194,6 +1195,7 @@ class spell_mage_time_warp : public SpellScriptLoader
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_DRUMS_OF_RAGE));
             }
 
             void ApplyDebuff()

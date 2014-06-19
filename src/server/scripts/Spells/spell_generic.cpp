@@ -3782,6 +3782,52 @@ class spell_gen_orb_of_power : public SpellScriptLoader
         }
 };
 
+enum
+{
+    SPELL_MAGE_TEMPORAL_DISPLACEMENT             = 80354,
+    HUNTER_SPELL_INSANITY                        = 95809,
+    SPELL_SHAMAN_SATED                           = 57724,
+    SPELL_SHAMAN_EXHAUSTED                       = 57723,
+};
+// Drums of Rage - 146555
+class spell_gen_drums_of_rage : public SpellScriptLoader
+{
+    public:
+        spell_gen_drums_of_rage() : SpellScriptLoader("spell_gen_drums_of_rage") { }
+
+        class spell_gen_drums_of_rage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_drums_of_rage_SpellScript);
+
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+            }
+
+            void ApplyDebuff()
+            {
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(target, SPELL_SHAMAN_EXHAUSTED, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_drums_of_rage_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_drums_of_rage_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_drums_of_rage_SpellScript::RemoveInvalidTargets, EFFECT_2, TARGET_UNIT_CASTER_AREA_RAID);
+                AfterHit += SpellHitFn(spell_gen_drums_of_rage_SpellScript::ApplyDebuff);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_drums_of_rage_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3866,4 +3912,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_brutal_assault();
     new spell_gen_dampening();
     new spell_gen_orb_of_power();
+    new spell_gen_drums_of_rage();
 }

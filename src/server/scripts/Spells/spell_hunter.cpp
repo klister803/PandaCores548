@@ -106,7 +106,7 @@ enum HunterSpells
     HUNTER_SPELL_GLYPH_OF_DIRECTION              = 126179,
     HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
     HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
-    
+    SPELL_DRUMS_OF_RAGE                          = 146555,
 };
 
 // Dash - 113073
@@ -1098,6 +1098,7 @@ class spell_hun_ancient_hysteria : public SpellScriptLoader
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_DRUMS_OF_RAGE));
             }
 
             void ApplyDebuff()

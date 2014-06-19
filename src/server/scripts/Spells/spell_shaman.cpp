@@ -86,6 +86,7 @@ enum ShamanSpells
     SPELL_SHA_SOLAR_BEAM_SILENCE            = 113288,
     SPELL_SHA_GHOST_WOLF                    = 2645,
     SPELL_SHA_ITEM_T14_4P                   = 123124,
+    SPELL_DRUMS_OF_RAGE                     = 146555,
 };
 
 // Prowl - 113289
@@ -1309,6 +1310,7 @@ class spell_sha_bloodlust : public SpellScriptLoader
                 targets.remove_if(Trinity::UnitAuraCheck(true, SHAMAN_SPELL_SATED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
                 targets.remove_if(Trinity::UnitAuraCheck(true, MAGE_SPELL_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_DRUMS_OF_RAGE));
             }
 
             void ApplyDebuff()
@@ -1353,6 +1355,7 @@ class spell_sha_heroism : public SpellScriptLoader
                 targets.remove_if(Trinity::UnitAuraCheck(true, SHAMAN_SPELL_EXHAUSTION));
                 targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
                 targets.remove_if(Trinity::UnitAuraCheck(true, MAGE_SPELL_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_DRUMS_OF_RAGE));
             }
 
             void ApplyDebuff()
