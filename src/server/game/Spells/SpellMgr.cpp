@@ -4619,6 +4619,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(8);
                     break;
+                //Dark Animus
+                case 138569: //Explosive slam
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
 
 
                 //World Bosses

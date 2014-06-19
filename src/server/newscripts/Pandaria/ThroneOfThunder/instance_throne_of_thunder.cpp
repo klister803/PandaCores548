@@ -7,18 +7,19 @@
 
 const DoorData doorData[] =
 {
-    {GO_JINROKH_PRE_DOOR,  DATA_STORM_CALLER,      DOOR_TYPE_PASSAGE, 0},
-    {GO_JINROKH_EX_DOOR,   DATA_JINROKH,           DOOR_TYPE_PASSAGE, 0},
-    {GO_HORRIDON_PRE_DOOR, DATA_STORMBRINGER,      DOOR_TYPE_PASSAGE, 0},
-    {GO_HORRIDON_EX_DOOR,  DATA_HORRIDON,          DOOR_TYPE_PASSAGE, 0},
-    {GO_COUNCIL_EX_DOOR,   DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
-    {GO_COUNCIL_EX2_DOOR,  DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
-    {GO_TORTOS_EX_DOOR,    DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
-    {GO_TORTOS_EX2_DOOR,   DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
-    {GO_MEGAERA_EX_DOOR,   DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
-    {GO_JI_KUN_EX_DOOR,    DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
-    {GO_DURUMU_EX_DOOR,    DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
-    {0,                    0,                      DOOR_TYPE_PASSAGE, 0},
+    {GO_JINROKH_PRE_DOOR,   DATA_STORM_CALLER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_JINROKH_EX_DOOR,    DATA_JINROKH,           DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_PRE_DOOR,  DATA_STORMBRINGER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_EX_DOOR,   DATA_HORRIDON,          DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX_DOOR,    DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX2_DOOR,   DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX_DOOR,     DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX2_DOOR,    DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_MEGAERA_EX_DOOR,    DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
+    {GO_JI_KUN_EX_DOOR,     DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
+    {GO_DURUMU_EX_DOOR,     DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
+    {GO_PRIMORDIUS_EX_DOOR, DATA_PRIMORDIUS,        DOOR_TYPE_PASSAGE, 0},
+    {0,                     0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
 class instance_throne_of_thunder : public InstanceMapScript
@@ -50,6 +51,8 @@ public:
         uint64 durumuexdoorGuid;
         uint64 primordiusentdoorGuid;
         uint64 primordiusexdoorGuid;
+        uint64 danimusentdoorGuid;
+        uint64 danimusexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -79,6 +82,7 @@ public:
         std::vector <uint64> mogufontsGuids;
         std::vector <uint64> councilentdoorGuids;
         std::vector <uint64> jikunfeatherGuids;
+        std::vector <uint64> massiveanimagolemGuids;
         
         void Initialize()
         {
@@ -104,6 +108,8 @@ public:
             durumuexdoorGuid      = 0;
             primordiusentdoorGuid = 0;
             primordiusexdoorGuid  = 0;
+            danimusentdoorGuid    = 0;
+            danimusexdoorGuid     = 0;
            
             //Creature
             stormcallerGuid       = 0;
@@ -133,6 +139,7 @@ public:
             mogufontsGuids.clear();
             councilentdoorGuids.clear();
             jikunfeatherGuids.clear();
+            massiveanimagolemGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -194,6 +201,9 @@ public:
                 break;
             case NPC_PRIMORDIUS: 
                 primordiusGuid = creature->GetGUID();
+                break;
+            case NPC_MASSIVE_ANIMA_GOLEM:
+                massiveanimagolemGuids.push_back(creature->GetGUID());
                 break;
             case NPC_DARK_ANIMUS:  
                 darkanimusGuid = creature->GetGUID();
@@ -303,7 +313,14 @@ public:
                 primordiusentdoorGuid = go->GetGUID();
                 break;
             case GO_PRIMORDIUS_EX_DOOR:
+                AddDoor(go, true);
                 primordiusexdoorGuid = go->GetGUID();
+                break;
+            case GO_DARK_ANIMUS_ENT_DOOR:
+                danimusentdoorGuid = go->GetGUID();
+                break;
+            case GO_DARK_ANIMUS_EX_DOOR:
+                danimusexdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -457,7 +474,51 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(primordiusentdoorGuid, true);
-                        //HandleGameObject(primordiusexdoorGuid, true);
+                        HandleGameObject(primordiusexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_DARK_ANIMUS:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = massiveanimagolemGuids.begin(); guid != massiveanimagolemGuids.end(); guid++)
+                        {
+                            if (Creature* mag = instance->GetCreature(*guid))
+                            {
+                                if (mag->isAlive() && mag->isInCombat())
+                                    mag->AI()->EnterEvadeMode();
+                                else if (!mag->isAlive())
+                                {
+                                    mag->Respawn();
+                                    mag->GetMotionMaster()->MoveTargetedHome();
+                                }
+                            }
+                        }
+                        HandleGameObject(danimusentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        if (Creature* animus = instance->GetCreature(darkanimusGuid))
+                        {
+                            if (animus->isAlive() && !animus->isInCombat())
+                                animus->AI()->DoZoneInCombat(animus, 150.0f);
+                        }
+
+                        for (std::vector<uint64>::const_iterator guid = massiveanimagolemGuids.begin(); guid != massiveanimagolemGuids.end(); guid++)
+                        {
+                            if (Creature* mag = instance->GetCreature(*guid))
+                            {
+                                if (mag->isAlive() && !mag->isInCombat())
+                                    mag->AI()->DoZoneInCombat(mag, 150.0f);
+                            }
+                        }
+                        HandleGameObject(danimusentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(danimusentdoorGuid, true);
+                        //HandleGameObject(danimusexdoorGuid, true);
                         break;
                     }
                 }
@@ -504,8 +565,6 @@ public:
                 return frozenheadGuid;
             case NPC_VENOMOUS_HEAD:
                 return venousheadGuid;
-            case GO_MEGAERA_EX_DOOR:
-                return megaeraexdoorGuid;
             //
             case NPC_JI_KUN:  
                 return jikunGuid;

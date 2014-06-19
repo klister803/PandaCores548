@@ -21,42 +21,259 @@
 
 enum eSpells
 {
+    //Dark Animus
+    SPELL_TOUCH_OF_THE_ANIMUS  = 138659, 
+    SPELL_ANIMA_FONT           = 138697, 
+    SPELL_INTERRUPTING_JOLT    = 138763, 
+    SPELL_FULL_POWER           = 138749,
+    //Massive anima golem
+    SPELL_EXPLOSIVE_SLAM       = 138569,
 };
+
+enum sEvents
+{
+    //Dark Animus
+    EVENT_TOUCH_OF_THE_ANIMUS  = 1,
+    EVENT_ANIMA_FONT           = 2,
+    EVENT_INTERRUPTING_JOLT    = 3,
+    EVENT_FULL_POWER           = 4,
+    //Massive anima golem
+    EVENT_EXPLOSIVE_SLAM       = 5,
+};
+
+enum Actions
+{
+    ACTION_FULL_POWER          = 1,
+};
+
+void SetGolemState(Creature* golem, bool state)
+{
+    if (golem)
+    {
+        if (state)
+        {
+            //online
+            golem->SetReactState(REACT_AGGRESSIVE);
+            golem->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+        else
+        {
+            //offline
+            golem->SetReactState(REACT_PASSIVE);
+            golem->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        }
+    }
+}
 
 class boss_dark_animus : public CreatureScript
 {
     public:
         boss_dark_animus() : CreatureScript("boss_dark_animus") {}
 
-        struct boss_dark_animusAI : public ScriptedAI
+        struct boss_dark_animusAI : public BossAI
         {
-            boss_dark_animusAI(Creature* creature) : ScriptedAI(creature)
+            boss_dark_animusAI(Creature* creature) : BossAI(creature, DATA_DARK_ANIMUS)
             {
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
+            bool fullpower;
 
             void Reset()
             {
+                _Reset();
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_THE_ANIMUS);
+                fullpower = false;
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void EnterCombat(Unit* who)
             {
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
+                _EnterCombat();
+                events.ScheduleEvent(EVENT_TOUCH_OF_THE_ANIMUS, 20000);
+                events.ScheduleEvent(EVENT_ANIMA_FONT, 26000);
+                events.ScheduleEvent(EVENT_INTERRUPTING_JOLT, 30000);
             }
 
             void DoAction(int32 const action)
             {
+                if (action == ACTION_FULL_POWER && !fullpower)
+                {
+                    fullpower = true;
+                    me->MonsterTextEmote("FULL POWER ACTIVE", 0, true);
+                    events.ScheduleEvent(EVENT_FULL_POWER, 4000);
+                }
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_THE_ANIMUS);
             }
 
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_TOUCH_OF_THE_ANIMUS:
+                        {
+                            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+                            if (!ThreatList.empty())
+                            {
+                                for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); itr++)
+                                {
+                                    if (itr == ThreatList.begin())
+                                        continue;
+                                    
+                                    if (Unit* target = me->GetUnit(*me, (*itr)->getUnitGuid()))
+                                    {
+                                        if (!target->HasAura(SPELL_TOUCH_OF_THE_ANIMUS))
+                                        {
+                                            DoCast(target, SPELL_TOUCH_OF_THE_ANIMUS);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_TOUCH_OF_THE_ANIMUS, 20000);
+                        break;
+                    case EVENT_ANIMA_FONT:
+                        {
+                            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+                            if (!ThreatList.empty())
+                            {
+                                for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); itr++)
+                                {
+                                    if (itr == ThreatList.begin())
+                                        continue;
+                                    
+                                    if (Unit* target = me->GetUnit(*me, (*itr)->getUnitGuid()))
+                                    {
+                                        if (target->HasAura(SPELL_TOUCH_OF_THE_ANIMUS))
+                                            DoCast(target, SPELL_ANIMA_FONT);
+                                    }
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_ANIMA_FONT, 26000);
+                        break;
+                    case EVENT_INTERRUPTING_JOLT:
+                        DoCastAOE(SPELL_INTERRUPTING_JOLT);
+                        events.ScheduleEvent(SPELL_INTERRUPTING_JOLT, 30000);
+                        break;
+                    case EVENT_FULL_POWER:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                            DoCast(target, SPELL_FULL_POWER);
+                        events.ScheduleEvent(EVENT_FULL_POWER, 4000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new boss_dark_animusAI(creature);
+        }
+};
+
+class npc_massive_anima_golem : public CreatureScript
+{
+    public:
+        npc_massive_anima_golem() : CreatureScript("npc_massive_anima_golem") {}
+
+        struct npc_massive_anima_golemAI : public ScriptedAI
+        {
+            npc_massive_anima_golemAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+            EventMap events;
+
+            void Reset()
+            {
+                events.Reset();
+                me->SetReactState(REACT_DEFENSIVE);
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                if (instance)
+                    instance->SetBossState(DATA_DARK_ANIMUS, IN_PROGRESS);
+                DoZoneInCombat(me, 150.0f);
+                events.ScheduleEvent(EVENT_EXPLOSIVE_SLAM, 10000);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                if (instance)
+                {
+                    if (Creature* animus = me->GetCreature(*me, instance->GetData64(NPC_DARK_ANIMUS)))
+                        animus->AI()->DoAction(ACTION_FULL_POWER);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_EXPLOSIVE_SLAM)
+                    {
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_EXPLOSIVE_SLAM);
+                        events.ScheduleEvent(EVENT_EXPLOSIVE_SLAM, 25000);
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_massive_anima_golemAI(creature);
+        }
+};
+
+class npc_large_anima_golem : public CreatureScript
+{
+    public:
+        npc_large_anima_golem() : CreatureScript("npc_large_anima_golem") {}
+
+        struct npc_large_anima_golemAI : public ScriptedAI
+        {
+            npc_large_anima_golemAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                SetGolemState(me, false);
+            }
+
+            InstanceScript* instance;
+
+            void Reset(){}
+            
+            void EnterCombat(Unit* who){}
+            
+            void JustDied(Unit* /*killer*/){}
+            
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
@@ -68,11 +285,51 @@ class boss_dark_animus : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_dark_animusAI(creature);
+            return new npc_large_anima_golemAI(creature);
         }
 };
+
+class npc_anima_golem : public CreatureScript
+{
+    public:
+        npc_anima_golem() : CreatureScript("npc_anima_golem") {}
+
+        struct npc_anima_golemAI : public ScriptedAI
+        {
+            npc_anima_golemAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                SetGolemState(me, false);
+            }
+
+            InstanceScript* instance;
+
+            void Reset(){}
+            
+            void EnterCombat(Unit* who){}
+            
+            void JustDied(Unit* /*killer*/){}
+            
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_anima_golemAI(creature);
+        }
+};
+
 
 void AddSC_boss_dark_animus()
 {
     new boss_dark_animus();
+    new npc_massive_anima_golem();
+    new npc_large_anima_golem();
+    new npc_anima_golem();
 }
