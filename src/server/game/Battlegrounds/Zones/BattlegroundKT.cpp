@@ -196,6 +196,9 @@ void BattlegroundKT::EventPlayerDroppedFlag(Player* source)
 
 void BattlegroundKT::RemovePlayer(Player* player, uint64 guid, uint32)
 {
+    if(!player)
+        return;
+
     EventPlayerDroppedFlag(player);
     m_playersZone.erase(player->GetGUID());
 }
