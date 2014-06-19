@@ -1151,8 +1151,13 @@ SpellInfo::~SpellInfo()
 SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) const
 {
     // custom spell effects (needed for rewrite targets, etc..)
-    if (Id == 122855) //Sun Breath (Tsulong)
+    switch (Id)
+    {
+    case 122855: //Sun Breath (Tsulong)
+    case 133946: //Furios stone (Tortos)
+    case 136220: //Acidic explosion (Primordius)
         return Effects[effect];
+    }
 
     if(difficulty)
     {
