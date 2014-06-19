@@ -512,7 +512,7 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
         power = GetSpellInfo()->GetPowerInfo(0);
 
-    if (power.powerPerSecond)
+    if (power.powerPerSecond || power.powerPerSecondPercentage)
         m_timeCla = 1 * IN_MILLISECONDS;
 
     m_maxDuration = CalcMaxDuration(caster);
@@ -853,27 +853,30 @@ void Aura::Update(uint32 diff, Unit* caster)
         if (m_duration < 0)
             m_duration = 0;
 
-        // handle powerPerSecond/manaPerSecondPerLevel
+        // handle powerPerSecond/PowerPerSecondPercentage
         if (m_timeCla)
         {
             if (m_timeCla > int32(diff))
                 m_timeCla -= diff;
             else if (caster)
             {                
+                m_timeCla += 1000 - diff;
+
                 SpellPowerEntry power;
                 if (!GetSpellInfo()->GetSpellPowerByCasterPower(caster, power))
                     power = GetSpellInfo()->GetPowerInfo(0);
 
-                if (int32 powerPerSecond = power.powerPerSecond)
+                if (power.powerPerSecond || power.powerPerSecondPercentage)
                 {
-                    m_timeCla += 1000 - diff;
-
-
                     Powers powertype = Powers(power.powerType);
                     if (powertype == POWER_HEALTH)
                     {
-                        if (int32(caster->CountPctFromMaxHealth(powerPerSecond)) < caster->GetHealth())
-                            caster->ModifyHealth(-1 * caster->CountPctFromMaxHealth(powerPerSecond));
+                        uint32 reqHealth = power.powerPerSecond;
+                        if (power.powerPerSecondPercentage)
+                            reqHealth += caster->CountPctFromMaxHealth(power.powerPerSecondPercentage);
+                        
+                        if (reqHealth < caster->GetHealth())
+                            caster->ModifyHealth(-1 * reqHealth);
                         else
                         {
                             Remove();
@@ -882,8 +885,12 @@ void Aura::Update(uint32 diff, Unit* caster)
                     }
                     else
                     {
-                        if (int32(caster->CountPctFromMaxPower(powerPerSecond, powertype)) <= caster->GetPower(powertype))
-                            caster->ModifyPower(powertype, -1 * int32(caster->CountPctFromMaxPower(powerPerSecond, powertype)));
+                        int32 reqPower = power.powerPerSecond;
+                        if (power.powerPerSecondPercentage)
+                            reqPower += caster->CountPctFromMaxPower(power.powerPerSecondPercentage, powertype);
+
+                        if (reqPower < caster->GetPower(powertype))
+                            caster->ModifyPower(powertype, -1 * reqPower);
                         else
                         {
                             Remove();
@@ -944,7 +951,7 @@ void Aura::RefreshDuration(bool /*recalculate*/)
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
         power = GetSpellInfo()->GetPowerInfo(0);
 
-    if (power.powerPerSecond)
+    if (power.powerPerSecond || power.powerPerSecondPercentage)
         m_timeCla = 1 * IN_MILLISECONDS;
 }
 

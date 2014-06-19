@@ -3318,6 +3318,7 @@ void SpellMgr::LoadSpellInfoStore()
         spell->PowerCost = spellPower->powerCost;
         spell->PowerCostPercentage = spellPower->powerCostPercentage;
         spell->PowerPerSecond = spellPower->powerPerSecond;
+        spell->PowerPerSecondPercentage = spellPower->powerPerSecondPercentage;
         spell->PowerType = spellPower->powerType;
 
         if (!spell->AddPowerData(spellPower))
