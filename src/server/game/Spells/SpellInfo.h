@@ -355,9 +355,9 @@ public:
     uint32 SpellLevel;
     SpellDurationEntry const* DurationEntry;
     uint32 PowerType;
-    uint32 ManaCost;
-    uint32 ManaPerSecond;
-    float ManaCostPercentage;
+    uint32 PowerCost;
+    uint32 PowerPerSecond;
+    float PowerCostPercentage;
     uint32 RuneCostID;
     SpellRangeEntry const* RangeEntry;
     float  Speed;

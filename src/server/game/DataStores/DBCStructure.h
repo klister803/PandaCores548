@@ -2244,15 +2244,15 @@ struct SpellPowerEntry
     uint32    SpellId;                                      // 1
     //uint32    unk505                                      // 2 use in mob spell
     uint32    powerType;                                    // 3
-    uint32    manaCost;                                     // 4
-    //uint32 unk                                            // 5 use in mob spell
-    uint32 PlusPerSecond;                                   // 6 plus per second
-    //uint32 unk                                            // 7 use in mob spell
-    //uint32 unk                                            // 8 use in mob spell
-    float ManaCostPercentage;                               // 9
-    float manaPerSecond;                                    // 10
-    uint32 SpellRequestId;                                   // 11 spell request for use energy
-    float getpercentHp;                                     // 12 take percent hp
+    uint32    powerCost;                                    // 4
+    //uint32    unk;                                        // 5 m_manaCostPerLevel
+    uint32    PlusPerSecond;                                // 6 plus per second
+    uint32    PowerDisplayId;                               // 7 m_powerDisplayID - id from PowerDisplay.dbc, new in 3.1
+    //uint32    unk;                                        // 8 m_manaPerSecondPerLevel
+    float     powerCostPercentage;                          // 9
+    float     powerPerSecond;                               // 10
+    uint32    SpellRequestId;                               // 11 spell request for use energy
+    float     getpercentHp;                                 // 12 take percent hp
 };
 
 struct SpellRuneCostEntry

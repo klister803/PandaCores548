@@ -908,7 +908,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 break;
                 case SPELL_TRIGGER_MANA_COST: //2
                 {
-                    int32 cost = int32(m_spellInfo->ManaCost + CalculatePct(triggerCaster->GetCreateMana(), m_spellInfo->ManaCostPercentage));
+                    int32 cost = int32(m_spellInfo->PowerCost + CalculatePct(triggerCaster->GetCreateMana(), m_spellInfo->PowerCostPercentage));
                     basepoints0 = CalculatePct(cost, bp0);
 
                     triggered_spell_id = abs(spell_trigger);
@@ -6736,7 +6736,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if (spellInfo)
             {
-                manaCostPercentage = spellInfo->ManaCostPercentage;
+                manaCostPercentage = spellInfo->PowerCostPercentage;
                 mana += m_caster->CountPctFromMaxMana(int32(manaCostPercentage));
             }
             totem->ToTotem()->UnSummon();

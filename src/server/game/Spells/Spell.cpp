@@ -7518,7 +7518,7 @@ SpellCastResult Spell::CheckPower()
 
         if (powerType == POWER_HOLY_POWER)
             if (Player* player = m_caster->ToPlayer())
-                m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->ManaCost);
+                m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
     }
     else if (!GetSpellInfo()->NoPower())
     {

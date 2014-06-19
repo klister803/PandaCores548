@@ -3315,9 +3315,9 @@ void SpellMgr::LoadSpellInfoStore()
         if (!spell)
             continue;
 
-        spell->ManaCost = spellPower->manaCost;
-        spell->ManaCostPercentage = spellPower->ManaCostPercentage;
-        spell->ManaPerSecond = spellPower->manaPerSecond;
+        spell->PowerCost = spellPower->powerCost;
+        spell->PowerCostPercentage = spellPower->powerCostPercentage;
+        spell->PowerPerSecond = spellPower->powerPerSecond;
         spell->PowerType = spellPower->powerType;
 
         if (!spell->AddPowerData(spellPower))

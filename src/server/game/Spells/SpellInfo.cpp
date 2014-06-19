@@ -1047,16 +1047,16 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellLevel = _levels ? _levels->spellLevel : 0;
 
     // SpellPowerEntry
-    ManaCost =  0;
-    ManaCostPercentage = 0;
-    ManaPerSecond = 0;
+    PowerCost =  0;
+    PowerCostPercentage = 0;
+    PowerPerSecond = 0;
     PowerType = POWER_MANA;
 
     for (uint8 i = 0; i < MAX_POWERS_FOR_SPELL; ++i)
     {
-        spellPower[i].manaCost = 0;
-        spellPower[i].ManaCostPercentage = 0;
-        spellPower[i].manaPerSecond = 0;
+        spellPower[i].powerCost = 0;
+        spellPower[i].powerCostPercentage = 0;
+        spellPower[i].powerPerSecond = 0;
         spellPower[i].SpellId = Id;
         spellPower[i].powerType = POWER_MANA;
         spellPower[i].Id = 0;
@@ -2538,23 +2538,23 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
     if (GetSpellPowerByCasterPower(caster, power))
     {
         // Base powerCost
-        int32 powerCost = power.manaCost;
+        int32 powerCost = power.powerCost;
         // PCT cost from total amount
-        if (power.ManaCostPercentage)
+        if (power.powerCostPercentage)
         {
             switch (power.powerType)
             {
                 // health as power used
                 case POWER_HEALTH:
-                    powerCost += int32(CalculatePct(caster->GetCreateHealth(), power.ManaCostPercentage));
+                    powerCost += int32(CalculatePct(caster->GetCreateHealth(), power.powerCostPercentage));
                     break;
                 case POWER_MANA:
-                    powerCost += int32(CalculatePct(caster->GetCreateMana(), power.ManaCostPercentage));
+                    powerCost += int32(CalculatePct(caster->GetCreateMana(), power.powerCostPercentage));
                     break;
                 case POWER_RAGE:
                 case POWER_FOCUS:
                 case POWER_ENERGY:
-                    powerCost += int32(CalculatePct(caster->GetMaxPower(Powers(power.powerType)), power.ManaCostPercentage));
+                    powerCost += int32(CalculatePct(caster->GetMaxPower(Powers(power.powerType)), power.powerCostPercentage));
                     break;
                 case POWER_RUNES:
                 case POWER_RUNIC_POWER:
@@ -3349,9 +3349,9 @@ bool SpellInfo::AddPowerData(SpellPowerEntry const *power)
             continue;
 
         spellPower[i].Id = power->Id;
-        spellPower[i].manaCost = power->manaCost;
-        spellPower[i].ManaCostPercentage = power->ManaCostPercentage;
-        spellPower[i].manaPerSecond = power->manaPerSecond;
+        spellPower[i].powerCost = power->powerCost;
+        spellPower[i].powerCostPercentage = power->powerCostPercentage;
+        spellPower[i].powerPerSecond = power->powerPerSecond;
         spellPower[i].powerType = power->powerType;
 
         return true;
@@ -3385,9 +3385,9 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
         if (spellPower[i].powerType == caster->getPowerType() && spellPower[i].Id)
         {
             power.Id = spellPower[i].Id;
-            power.manaCost = spellPower[i].manaCost;
-            power.ManaCostPercentage = spellPower[i].ManaCostPercentage;
-            power.manaPerSecond = spellPower[i].manaPerSecond;
+            power.powerCost = spellPower[i].powerCost;
+            power.powerCostPercentage = spellPower[i].powerCostPercentage;
+            power.powerPerSecond = spellPower[i].powerPerSecond;
             power.powerType = spellPower[i].powerType;
 
             return true;
@@ -3396,9 +3396,9 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
     if (spellPower[0].Id && spellPower[0].powerType >= POWER_RUNES)
     {
         power.Id = spellPower[0].Id;
-        power.manaCost = spellPower[0].manaCost;
-        power.ManaCostPercentage = spellPower[0].ManaCostPercentage;
-        power.manaPerSecond = spellPower[0].manaPerSecond;
+        power.powerCost = spellPower[0].powerCost;
+        power.powerCostPercentage = spellPower[0].powerCostPercentage;
+        power.powerPerSecond = spellPower[0].powerPerSecond;
         power.powerType = spellPower[0].powerType;
 
         return true;
