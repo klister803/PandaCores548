@@ -449,28 +449,28 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //390 SPELL_AURA_390
     &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391
     &AuraEffect::HandleNULL,                                      //392 SPELL_AURA_392
-    &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_MOD_PARRY_PERCENT_2
+    &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_MOD_DEFLECT_SPELLS_FROM_FRONT
     &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_LOOT_BONUS
     &AuraEffect::HandleNULL,                                      //395 SPELL_AURA_395
-    &AuraEffect::HandleNULL,                                      //396 SPELL_AURA_396
-    &AuraEffect::HandleNULL,                                      //397 SPELL_AURA_397
-    &AuraEffect::HandleNULL,                                      //398 SPELL_AURA_398
+    &AuraEffect::HandleNULL,                                      //396 SPELL_AURA_PROC_ON_POWER_AMOUNT_2
+    &AuraEffect::HandleBattlegroundFlag,                          //397 SPELL_AURA_BATTLEGROUND_FLAG
+    &AuraEffect::HandleBattlegroundFlag,                          //398 SPELL_AURA_BATTLEGROUND_FLAG_2
     &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_399
-    &AuraEffect::HandleNULL,                                      //400 SPELL_AURA_SKILL_2
-    &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_401
-    &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_402
-    &AuraEffect::HandleNULL,                                      //403 SPELL_AURA_MOD_SPELL_VISUAL
+    &AuraEffect::HandleAuraModSkill,                              //400 SPELL_AURA_MOD_SKILL_2
+    &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_CART_AURA
+    &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_ENABLE_POWER_TYPE
+    &AuraEffect::HandleNoImmediateEffect,                         //403 SPELL_AURA_MOD_SPELL_VISUAL
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
-    &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
+    &AuraEffect::HandleNoImmediateEffect,                         //406 SPELL_AURA_OVERRIDE_CLIENT_CONTROLS
     &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_MOD_FEAR_2
-    &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE
+    &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_PROC_SPELL_CHARGE removed by spell defined in EffectTriggerSpell
     &AuraEffect::HandleAuraGlide,                                 //409 SPELL_AURA_GLIDE
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
     &AuraEffect::HandleAuraModCharges,                            //411 SPELL_AURA_MOD_CHARGES
     &AuraEffect::HandleModPowerRegen,                             //412 SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN
     &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
-    &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
+    &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_MOD_DEFLECT_RANGED_ATTACKS
     &AuraEffect::HandleNULL,                                      //415 SPELL_AURA_415
     &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416
     &AuraEffect::HandleNULL,                                      //417 SPELL_AURA_417
@@ -484,8 +484,8 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //425 SPELL_AURA_425
     &AuraEffect::HandleNULL,                                      //426 SPELL_AURA_426
     &AuraEffect::HandleNULL,                                      //427 SPELL_AURA_427
-    &AuraEffect::HandleNULL,                                      //428 SPELL_AURA_428
-    &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_PET_DAMAGE_DONE
+    &AuraEffect::HandleNULL,                                      //428 SPELL_AURA_SUMMON_CONTROLLER
+    &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_PET_DAMAGE_DONE_PCT
     &AuraEffect::HandleNULL,                                      //430 SPELL_AURA_430
     &AuraEffect::HandleNULL,                                      //431 SPELL_AURA_CONTESTED_PVP
     &AuraEffect::HandleNULL,                                      //432 SPELL_AURA_432
@@ -4330,22 +4330,6 @@ void AuraEffect::HandleAuraModEffectImmunity(AuraApplication const* aurApp, uint
     Unit* target = aurApp->GetTarget();
 
    target->ApplySpellImmune(GetId(), IMMUNITY_EFFECT, GetMiscValue(), apply);
-
-    // when removing flag aura, handle flag drop
-    if (!apply && target->GetTypeId() == TYPEID_PLAYER
-        && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION))
-    {
-        if (target->GetTypeId() == TYPEID_PLAYER)
-        {
-            if (target->ToPlayer()->InBattleground())
-            {
-                if (Battleground* bg = target->ToPlayer()->GetBattleground())
-                        bg->EventPlayerDroppedFlag(target->ToPlayer());
-            }
-            else
-                sOutdoorPvPMgr->HandleDropFlag((Player*)target, GetSpellInfo()->Id);
-        }
-    }
 }
 
 void AuraEffect::HandleAuraModStateImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5552,14 +5536,6 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const* aurApp, uint8
         for (int i = 0; i < MAX_ATTACK; ++i)
             if (Item* item = target->ToPlayer()->GetWeaponForAttack(WeaponAttackType(i), false))
                 target->ToPlayer()->_ApplyWeaponDependentAuraDamageMod(item, WeaponAttackType(i), this, apply);
-
-        // when removing flag aura, handle flag drop P.S. Orb of Power
-        if (!apply && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION) &&
-            target->ToPlayer()->InBattleground())
-        {
-            if (Battleground* bg = target->ToPlayer()->GetBattleground())
-                    bg->EventPlayerDroppedFlag(target->ToPlayer());
-        }
     }
 
     if ((GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) && (GetSpellInfo()->EquippedItemClass == -1 || target->GetTypeId() != TYPEID_PLAYER))
@@ -8337,5 +8313,25 @@ void AuraEffect::HandleAuraModCharges(AuraApplication const* aurApp, uint8 mode,
 
     target->RecalculateSpellCategoryCharges(GetMiscValue());
     target->SendSpellChargeData();
+}
+
+void AuraEffect::HandleBattlegroundFlag(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+
+    // when removing flag aura, handle flag drop
+    if (!apply && target)
+    {
+        if (target->InBattleground())
+        {
+            if (Battleground* bg = target->GetBattleground())
+                bg->EventPlayerDroppedFlag(target);
+        }
+        else
+            sOutdoorPvPMgr->HandleDropFlag(target, GetSpellInfo()->Id);
+    }
 }
 
