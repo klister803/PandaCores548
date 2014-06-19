@@ -357,6 +357,7 @@ public:
     uint32 PowerType;
     uint32 PowerCost;
     uint32 PowerPerSecond;
+    float PowerPerSecondPercentage;
     float PowerCostPercentage;
     uint32 RuneCostID;
     SpellRangeEntry const* RangeEntry;

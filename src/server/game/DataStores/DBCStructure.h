@@ -2246,12 +2246,12 @@ struct SpellPowerEntry
     uint32    powerType;                                    // 3
     uint32    powerCost;                                    // 4
     //uint32    unk;                                        // 5 m_manaCostPerLevel
-    uint32    PlusPerSecond;                                // 6 plus per second
+    uint32    powerPerSecond;                               // 6 powerPerSecond
     uint32    PowerDisplayId;                               // 7 m_powerDisplayID - id from PowerDisplay.dbc, new in 3.1
     //uint32    unk;                                        // 8 m_manaPerSecondPerLevel
     float     powerCostPercentage;                          // 9
-    float     powerPerSecond;                               // 10
-    uint32    SpellRequestId;                               // 11 spell request for use energy
+    float     powerPerSecondPercentage;                     // 10
+    uint32    spellRequestId;                               // 11 spell request for use energy
     float     getpercentHp;                                 // 12 take percent hp
 };
 

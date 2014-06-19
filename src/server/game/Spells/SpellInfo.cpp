@@ -1048,14 +1048,16 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     // SpellPowerEntry
     PowerCost =  0;
-    PowerCostPercentage = 0;
     PowerPerSecond = 0;
+    PowerCostPercentage = 0.0f;
+    PowerPerSecondPercentage = 0.0f;
     PowerType = POWER_MANA;
 
     for (uint8 i = 0; i < MAX_POWERS_FOR_SPELL; ++i)
     {
         spellPower[i].powerCost = 0;
-        spellPower[i].powerCostPercentage = 0;
+        spellPower[i].powerCostPercentage = 0.0f;
+        spellPower[i].powerPerSecondPercentage = 0.0f;
         spellPower[i].powerPerSecond = 0;
         spellPower[i].SpellId = Id;
         spellPower[i].powerType = POWER_MANA;
