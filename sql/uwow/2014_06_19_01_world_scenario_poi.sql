@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: 505_world_542
 Target Host: localhost
 Target Database: 505_world_542
-Date: 19.06.2014 19:53:22
+Date: 20.06.2014 21:31:22
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -116,3 +116,16 @@ INSERT INTO `scenario_poi` VALUES ('30573', '0', '1095', '914', '1', '0', '0', '
 INSERT INTO `scenario_poi` VALUES ('21994', '0', '1005', '878', '0', '0', '0', '1229', '0');
 INSERT INTO `scenario_poi` VALUES ('21996', '0', '1005', '878', '0', '0', '0', '0', '0');
 INSERT INTO `scenario_poi` VALUES ('22000', '0', '1005', '878', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('32775', '0', '1099', '940', '0', '0', '0', '1161', '0');
+INSERT INTO `scenario_poi` VALUES ('32777', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('32779', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('32782', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27198', '0', '1030', '900', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('22066', '0', '1030', '900', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('21051', '0', '1030', '900', '2', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('30998', '0', '1104', '912', '0', '0', '0', '0', '19596');
+INSERT INTO `scenario_poi` VALUES ('30999', '0', '1104', '912', '0', '0', '0', '0', '19682');
+INSERT INTO `scenario_poi` VALUES ('31000', '0', '1104', '912', '0', '0', '0', '0', '19855');
+INSERT INTO `scenario_poi` VALUES ('31001', '0', '1104', '912', '0', '0', '0', '0', '20050');
+INSERT INTO `scenario_poi` VALUES ('31002', '0', '1104', '912', '0', '0', '0', '0', '19990');
+INSERT INTO `scenario_poi` VALUES ('31193', '0', '1104', '912', '0', '0', '0', '0', '0');
