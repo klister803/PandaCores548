@@ -54,6 +54,9 @@ void BattlegroundTTP::StartingEventOpenDoors()
 {
     for (uint32 i = BG_TTP_OBJECT_DOOR_1; i <= BG_TTP_OBJECT_DOOR_2; ++i)
         DoorOpen(i);
+        
+    for (uint32 i = BG_TTP_OBJECT_BUFF_1; i <= BG_TTP_OBJECT_BUFF_2; ++i)
+        SpawnBGObject(i, 60);
 }
 
 void BattlegroundTTP::AddPlayer(Player* player)
@@ -139,7 +142,7 @@ bool BattlegroundTTP::SetupBattleground()
         || !AddObject(BG_TTP_OBJECT_BUFF_1, BG_TTP_OBJECT_TYPE_BUFF_1, 566.6805f, 602.2274f, 383.6813f, 3.316144f, 0, 0, -1.f, 0, 120)
         || !AddObject(BG_TTP_OBJECT_BUFF_2, BG_TTP_OBJECT_TYPE_BUFF_2, 566.6563f, 664.566f, 383.6809f, 2.460913f, 0, 0, 0, 1.f, 120))
     {
-        sLog->outError(LOG_FILTER_SQL, "BattlegroundTV: Failed to spawn some object!");
+        sLog->outError(LOG_FILTER_SQL, "BattlegroundTTP: Failed to spawn some object!");
         return false;
     }
 
