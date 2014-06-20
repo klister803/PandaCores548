@@ -1,6 +1,8 @@
 /*
 Phases:
-finish q14109 spell phase(59073) phase 7.
+start q14113/14153 spell phase(59073) phase 2.
+start q14115 spell phase(59074) phase 4.
+start q14116 spell - 59087 phase 8
  */
 
 #include "ScriptPCH.h"
@@ -11,12 +13,22 @@ finish q14109 spell phase(59073) phase 7.
 #include "CreatureTextMgr.h"
 #include "Vehicle.h"
 
+enum Kezan_quests
+{
+    QUEST_ROLLING_WITH_MY_HOMIES       = 14071,  //Rolling with my Homies
+    QUEST_GOOD_HELP_IS_HARD_TO_FIND    = 14069,
+    QUEST_NECESSARY_ROUGHNESS          = 24502,
+    QUEST_GOAL                         = 24503,
+    QUEST_LIBERATE_KAJAMITE            = 14124,
+    QUEST_GREAT_BANK_HEIST             = 14122,
+    QUEST_ROBBING_HOODS                = 14121,
+};
+
 // npc_deffiant_troll
 enum NPC_DeffiantTroll
 {
     DEFFIANT_KILL_CREDIT               = 34830,
     SPELL_LIGHTNING_VISUAL             = 66306,
-    QUEST_GOOD_HELP_IS_HARD_TO_FIND    = 14069,
     GO_DEPOSIT                         = 195489,
 };
 
@@ -138,7 +150,9 @@ enum Rod_Enum
     RADIO_MUSIC                     = 23406,
     GOBLIN_ZONE_MUSIC               = 15962,
 
-    QUEST_ROLLING_WITH_MY_HOMIES    = 14071,  //Rolling with my Homies
+    NPC_HIRED_LOOTER                = 35234,
+    ITEM_STOLEN_LOOT                = 47530,
+    SPELL_ADD_STOLEN_ITEM           = 67041,
 
     SPELL_RADIO                     = 66299,
     SPELL_STOP_RADIO                = 90247,
@@ -150,6 +164,8 @@ enum Rod_Enum
     SPELL_RESUMMON_IZZY             = 66646,
     SPELL_RESUMMON_ACE              = 66644,
     SPELL_RESUMMON_GOBER            = 66645,
+
+    EVENT_KNOCK_BACK                = 1,
 };
 
 int QuestTemplateData [4][4] = {
@@ -170,11 +186,54 @@ class npc_hot_rod : public CreatureScript
     {
         npc_hot_rodAI(Creature* creature) : ScriptedAI(creature) {}
 
-        void Reset() {}
+        void Reset()
+        { 
+            events.Reset();
+            events.ScheduleEvent(EVENT_KNOCK_BACK, 500);
+        }
+
+        EventMap events;
+
+        void SpellHitTarget(Unit* target, SpellInfo const* spell)
+        {
+            if (spell->Id != SPELL_KNOCKBACK)
+                return;
+
+            if(target->GetEntry() == NPC_HIRED_LOOTER)
+            {
+                Unit* passanger = me->GetVehicleKit()->GetPassenger(0);
+                if (!passanger)
+                    return;
+
+                Player* player = passanger->ToPlayer();
+                if (!player)
+                    return;
+
+                if (player->GetQuestStatus(QUEST_ROBBING_HOODS) != QUEST_STATUS_INCOMPLETE)
+                    return;
+
+                player->AddItem(ITEM_STOLEN_LOOT, 1);
+                //target->CastSpell(player, SPELL_ADD_STOLEN_ITEM, true);
+                target->CastSpell(target, 3240, false);     //kill. Blizz use spell 3617, but it not fined on dbc.
+                
+            }
+        }
 
         void UpdateAI(const uint32 diff)
         {
-            //DoCast(me, SPELL_KNOCKBACK);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_KNOCK_BACK:
+                        DoCast(me, SPELL_KNOCKBACK);
+                        events.ScheduleEvent(EVENT_KNOCK_BACK, 500);
+                        break;
+                }
+            }
         }
         void OnCharmed(bool apply)
         {
@@ -475,9 +534,6 @@ class npc_roling_friends_guard : public CreatureScript
 
 enum NecessaryRoughness
 {
-    QUEST_NECESSARY_ROUGHNESS       = 24502,
-    QUEST_GOAL                      = 24503,
-
     NPC_VEH_PHASE_1                 = 37179,    //q24502
     NPC_VEH_PHASE_2                 = 37213,    //q37203
     NPC_PHASE_2_TARGET              = 37203,    //q37203
@@ -1016,7 +1072,6 @@ enum bank_text
 enum bank_data
 {
     SPELL_TIMER             = 67502,
-    QUEST_GREAT_BANK_HEIST  = 14122,
 };
 
 // The Great Bank Heist: Vault Interact
@@ -1239,6 +1294,37 @@ class npc_hack_bank_controller : public CreatureScript
 //67020 - sound - 847 - 16381 - spell 67494
 //67502 -67496 Используйте |cFFFF2222взрывхлопушки!|r$B|TInterface\Icons\INV_Misc_Bomb_07.blp:64|t
 
+//Kaja'mite Deposit
+enum misc_data
+{
+    GO_KAJAMITE_CHUNK       = 195492, //Kaja'mite Chunk
+};
+
+class go_kajamite_deposit : public GameObjectScript
+{
+public:
+    go_kajamite_deposit() : GameObjectScript("go_kajamite_deposit") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        if (player->GetQuestStatus(QUEST_LIBERATE_KAJAMITE) == QUEST_STATUS_INCOMPLETE)
+        {
+            go->SendCustomAnim(0);
+            go->SetLootState(GO_JUST_DEACTIVATED);
+
+            uint8 count = urand(1, 4);
+            Position pos;
+            while(count > 0)
+            {
+                go->GetRandomPoint(*go, 5.0f, pos);
+                go->SummonGameObject(GO_KAJAMITE_CHUNK, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0, 0, 0, 0, 0, 30000);
+                --count;
+            }
+        }
+        return true;
+    }
+};
+
 void AddSC_kezan()
 {
     new npc_fourth_and_goal_target;
@@ -1254,4 +1340,5 @@ void AddSC_kezan()
     new spell_great_bank_heist();
     new spell_gen_bank_hacking_spell();
     new npc_hack_bank_controller();
+    new go_kajamite_deposit();
 }
