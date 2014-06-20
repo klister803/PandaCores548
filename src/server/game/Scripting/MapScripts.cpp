@@ -913,8 +913,8 @@ void Map::ScriptsProcess()
                 break;
 
             case SCRIPT_COMMAND_PLAYMOVIE:
-                // Source must be Player.
-                if (Player* player = _GetScriptPlayer(source, true, step.script))
+                // For quest end or start event target is player. Somewhere else it's used?
+                if (Player* player = _GetScriptPlayer(target, true, step.script))
                     player->SendMovieStart(step.script->PlayMovie.MovieID);
                 break;
 
