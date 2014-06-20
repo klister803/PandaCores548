@@ -1192,16 +1192,26 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             break;
         }
         case 54984: // Force of Nature
+        case 54985: // Force of Nature (Guardian)
         {
             SetUInt32Value(UNIT_FIELD_ATTACK_POWER, m_owner->GetTotalAttackPowerValue(BASE_ATTACK));
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(102703);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(GetEntry() == 54984 ? 102703: 102706);
 
             if (spellInfo)
             {
                 uint32 baseBP = spellInfo->Effects[0].CalcValue(m_owner);
             
-                float mindmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
-                float maxdmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2 + 1;
+                float mindmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2f;
+                float maxdmg = baseBP + GetTotalAttackPowerValue(BASE_ATTACK) / 14 * 2 * 1.2f;
+
+                if (GetEntry() == 54985)
+                {
+                    mindmg *= 0.2f;
+                    maxdmg *= 0.2f;
+                }
+
+                mindmg += 1;
+                maxdmg += 1;
 
                 SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
                 SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
