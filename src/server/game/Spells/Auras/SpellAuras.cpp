@@ -1152,14 +1152,36 @@ bool Aura::CanBeSaved() const
     if (HasEffectType(SPELL_AURA_OPEN_STABLE))
         return false;
 
-    // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking
-    // we skip saving this aura
-    if (GetId() == 44413)
-        return false;
+    switch (GetId())
+    {
+        // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking
+        // we skip saving this aura
+        case 44413:
+        // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
+        case 67483:
+        case 67484:
+        case 48517:
+        case 48518:
+        case 107095:
+        case 118694:
+        case 119048:
+        case 108446:
+            return false;
+        default:
+            break;
+    }
 
-    // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
-    if (GetId() == 67483 || GetId() == 67484 || GetId() == 48517 || GetId() == 48518 || GetId() == 107095 || GetId() == 118694 || GetId() == 119048 || GetId() == 108446)
-        return false;
+    // for correct work it should send cast packets. Never save it. 
+    // If need save it -> perfome manual cast for example spell_area table or by script.
+    for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if(GetSpellInfo()->Effects[i].IsEffect())
+        {
+            if (AuraEffect const* eff = GetEffect(i))
+                if(eff->GetAuraType() == SPELL_AURA_OVERRIDE_SPELLS)
+                    return false;
+        }
+    }
 
     // don't save auras removed by proc system
     if (IsUsingCharges() && !GetCharges())
