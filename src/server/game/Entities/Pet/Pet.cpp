@@ -636,30 +636,21 @@ void Pet::Update(uint32 diff)
             }
 
             //regenerate focus for hunter pets or energy for deathknight's ghoul
-            if (m_regenTimer)
+            switch (getPowerType())
             {
-                if (m_regenTimer > diff)
-                    m_regenTimer -= diff;
-                else
+                case POWER_FOCUS:
                 {
-                    switch (getPowerType())
+                    m_regenTimer += diff;
+                    if (m_regenTimer >= 2000)
                     {
-                        case POWER_FOCUS:
-                            Regenerate(POWER_FOCUS);
-                            m_regenTimer += PET_FOCUS_REGEN_INTERVAL - diff;
-                            if (!m_regenTimer)
-                                ++m_regenTimer;
-
-                            // Reset if large diff (lag) causes focus to get 'stuck'
-                            if (m_regenTimer > PET_FOCUS_REGEN_INTERVAL)
-                                m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
-
-                            break;
-                        default:
-                            m_regenTimer = 0;
-                            break;
+                        Regenerate(POWER_FOCUS);
+                        m_regenTimer -= 2000;
                     }
+                    break;
                 }
+                default:
+                    m_regenTimer = 0;
+                    break;
             }
             break;
         }
@@ -679,14 +670,17 @@ void Creature::Regenerate(Powers power)
 
     float addvalue = 0.0f;
     float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE) : 0.0f;
+    Unit* owner = GetOwner();
 
     switch (power)
     {
         case POWER_FOCUS:
         {
+            float hastbonus = 1.0f;
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                hastbonus = owner->ToPlayer()->GetBaseRHastRatingPct();
             // For hunter pets - Pets regen focus 125% more faster than owners
-            addvalue += (24.0f + CalculatePct(24.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
-            addvalue *= 1.25f;
+            addvalue += 10.0f * hastbonus * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         }
         case POWER_ENERGY:

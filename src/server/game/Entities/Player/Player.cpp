@@ -746,9 +746,10 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
-    m_focusRegenTimerCount = 0;
     m_RunesRegenTimerCount = 0;
+    m_focusRegenTimerCount = 0;
     m_baseMHastRatingPct = 0;
+    m_baseRHastRatingPct = 0;
     m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
     m_modForHolyPowerSpell = 0;
@@ -2782,10 +2783,10 @@ void Player::RegenerateAll()
             m_RunesRegenTimerCount = 30000;
     }
 
-    if (m_focusRegenTimerCount >= 1000 && getClass() == CLASS_HUNTER)
+    if (m_focusRegenTimerCount >= 200 && getClass() == CLASS_HUNTER)
     {
         Regenerate(POWER_FOCUS);
-        m_focusRegenTimerCount -= 1000;
+        m_focusRegenTimerCount -= 200;
     }
 
     if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
@@ -2869,10 +2870,9 @@ void Player::Regenerate(Powers power)
 
     switch (power)
     {
-        case POWER_MANA:
         case POWER_FOCUS:
         case POWER_ENERGY:
-        if (curValue == maxValue) // stop spamm!
+        if (curValue == maxValue && !m_doLastUpdate) // stop spamm!
             return;
         default:
             break;
@@ -2922,12 +2922,13 @@ void Player::Regenerate(Powers power)
 
             break;
         }
-        // Regenerate Focus
-        case POWER_FOCUS:
-            addvalue += (5.0f * regenmod) * sWorld->getRate(RATE_POWER_FOCUS);
+        case POWER_FOCUS: // Regenerate Focus
+        {
+            addvalue += 1.0f * m_baseRHastRatingPct * sWorld->getRate(RATE_POWER_FOCUS);
+            needUpdate = true;
             break;
-        // Regenerate Energy
-        case POWER_ENERGY:
+        }
+        case POWER_ENERGY: // Regenerate Energy
         {
             float defaultreg = 0.01f * m_regenTimer;
             addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
@@ -3061,9 +3062,10 @@ void Player::Regenerate(Powers power)
 
     switch (power)
     {
+        case POWER_FOCUS:
         case POWER_ENERGY:
         {
-            if (GetPower(POWER_ENERGY) != maxValue || m_doLastUpdate)
+            if (GetPower(power) != maxValue || m_doLastUpdate)
             {
                 if (m_regenTimerCount >= 2000)
                 {

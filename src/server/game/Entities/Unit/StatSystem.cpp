@@ -804,6 +804,14 @@ void Player::UpdateEnergyRegen()
     SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
 }
 
+void Player::UpdateFocusRegen()
+{
+    float auramod = GetTotalAuraMultiplier(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+    float val = 1.0f / m_baseRHastRatingPct / auramod;
+
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
+}
+
 void Player::UpdateManaRegen()
 {
     // Mana regen from spirit
@@ -927,6 +935,8 @@ void Player::UpdateRangeHastMod()
 {
     float amount = GetRatingBonusValue(CR_HASTE_RANGED);
 
+    m_baseRHastRatingPct = amount / 100.0f + 1.0f;
+
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
     auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE_3);
@@ -944,7 +954,9 @@ void Player::UpdateRangeHastMod()
     else
         ApplyPercentModFloatVar(value, -amount, true);
     SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, value);
-    SetFloatValue(UNIT_MOD_HASTE_REGEN, value);
+
+    if (GetPower(POWER_FOCUS))
+        UpdateFocusRegen();
 
     if (getClass() == CLASS_DEATH_KNIGHT)
         UpdateAllRunesRegen();

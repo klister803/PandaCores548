@@ -2352,6 +2352,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateMasteryAuras();
         void UpdateManaRegen();
         void UpdateEnergyRegen();
+        void UpdateFocusRegen();
         void UpdateRuneRegen(RuneType rune);
         void UpdateAllRunesRegen();
         void UpdateMeleeHastMod();
@@ -3087,6 +3088,8 @@ class Player : public Unit, public GridObject<Player>
         void SetIgnoreMovementCount(uint8 count) { m_ignoreMovementCount = count; }
         uint8 GetIgnoreMovementCount() const { return m_ignoreMovementCount; }
 
+        float GetBaseRHastRatingPct() const { return m_baseRHastRatingPct; }
+
         void _LoadStore();
 
         void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
@@ -3124,9 +3127,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_chiPowerRegenTimerCount;
         uint32 m_burningEmbersRegenTimerCount;
         uint32 m_soulShardsRegenTimerCount;
-        uint32 m_focusRegenTimerCount;
         uint32 m_RunesRegenTimerCount;
+        uint32 m_focusRegenTimerCount;
         float  m_baseMHastRatingPct;
+        float  m_baseRHastRatingPct;
         bool   m_doLastUpdate;
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
