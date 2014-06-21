@@ -3394,6 +3394,7 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
             power.Id = spellPower[i].Id;
             power.powerCost = spellPower[i].powerCost;
             power.powerCostPercentage = spellPower[i].powerCostPercentage;
+            power.powerPerSecondPercentage = spellPower[i].powerPerSecondPercentage;
             power.powerPerSecond = spellPower[i].powerPerSecond;
             power.powerType = spellPower[i].powerType;
 
@@ -3405,6 +3406,7 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
         power.Id = spellPower[0].Id;
         power.powerCost = spellPower[0].powerCost;
         power.powerCostPercentage = spellPower[0].powerCostPercentage;
+        power.powerPerSecondPercentage = spellPower[0].powerPerSecondPercentage;
         power.powerPerSecond = spellPower[0].powerPerSecond;
         power.powerType = spellPower[0].powerType;
 
