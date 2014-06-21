@@ -2935,8 +2935,7 @@ void Player::Regenerate(Powers power)
             needUpdate = true;
             break;
         }
-        // Regenerate Runic Power
-        case POWER_RUNIC_POWER:
+        case POWER_RUNIC_POWER: // Regenerate Runic Power
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
