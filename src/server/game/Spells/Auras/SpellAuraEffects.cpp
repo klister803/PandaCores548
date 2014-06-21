@@ -1014,6 +1014,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                    amount = manaPerc;
                 break;
             case 29166: // Innervate
+                if (!caster)
+                    break;
                 manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1].BasePoints) / 10;
                 amount = CalculatePct(caster->GetStat(STAT_SPIRIT), m_spellInfo->Effects[0].BasePoints);
                 if(amount < manaPerc)
