@@ -2899,8 +2899,7 @@ void Player::Regenerate(Powers power)
 
     switch (power)
     {
-        // Regenerate Mana
-        case POWER_MANA:
+        case POWER_MANA: // Regenerate Mana
         {
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
 
