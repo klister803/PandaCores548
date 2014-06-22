@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: 505_world_542
 Target Host: localhost
 Target Database: 505_world_542
-Date: 20.06.2014 21:31:22
+Date: 22.06.2014 20:57:11
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -129,3 +129,55 @@ INSERT INTO `scenario_poi` VALUES ('31000', '0', '1104', '912', '0', '0', '0', '
 INSERT INTO `scenario_poi` VALUES ('31001', '0', '1104', '912', '0', '0', '0', '0', '20050');
 INSERT INTO `scenario_poi` VALUES ('31002', '0', '1104', '912', '0', '0', '0', '0', '19990');
 INSERT INTO `scenario_poi` VALUES ('31193', '0', '1104', '912', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31863', '0', '1126', '933', '0', '0', '0', '658', '0');
+INSERT INTO `scenario_poi` VALUES ('32143', '0', '1126', '933', '0', '0', '0', '1559', '0');
+INSERT INTO `scenario_poi` VALUES ('31929', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31931', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31933', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('32032', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31935', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31834', '0', '1126', '933', '0', '0', '0', '1497', '0');
+INSERT INTO `scenario_poi` VALUES ('31836', '0', '1126', '933', '0', '0', '0', '1559', '0');
+INSERT INTO `scenario_poi` VALUES ('31840', '0', '1126', '933', '0', '0', '0', '1537', '0');
+INSERT INTO `scenario_poi` VALUES ('31838', '0', '1126', '933', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('24762', '0', '1031', '899', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('24763', '0', '1031', '899', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('24764', '0', '1031', '899', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('24765', '0', '1031', '899', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('24766', '0', '1031', '899', '1', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31228', '0', '1050', '883', '0', '0', '0', '538', '0');
+INSERT INTO `scenario_poi` VALUES ('31230', '0', '1050', '883', '0', '0', '0', '1285', '0');
+INSERT INTO `scenario_poi` VALUES ('31230', '1', '1050', '883', '0', '0', '0', '1285', '0');
+INSERT INTO `scenario_poi` VALUES ('31230', '2', '1050', '883', '0', '0', '0', '1285', '0');
+INSERT INTO `scenario_poi` VALUES ('31231', '0', '1050', '883', '0', '0', '0', '1286', '0');
+INSERT INTO `scenario_poi` VALUES ('31231', '1', '1050', '883', '0', '0', '0', '1286', '0');
+INSERT INTO `scenario_poi` VALUES ('31231', '2', '1050', '883', '0', '0', '0', '1286', '0');
+INSERT INTO `scenario_poi` VALUES ('31232', '0', '1050', '883', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31234', '0', '1050', '883', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31235', '0', '1050', '883', '0', '0', '0', '1359', '0');
+INSERT INTO `scenario_poi` VALUES ('31237', '0', '1050', '883', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('32658', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('30732', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('30734', '0', '1099', '940', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31285', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31284', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31286', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31289', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31290', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31297', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31298', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31299', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('31302', '0', '1103', '911', '0', '0', '0', '1409', '0');
+INSERT INTO `scenario_poi` VALUES ('31303', '0', '1103', '911', '0', '0', '0', '1410', '0');
+INSERT INTO `scenario_poi` VALUES ('31301', '0', '1103', '911', '0', '0', '0', '1411', '0');
+INSERT INTO `scenario_poi` VALUES ('31295', '0', '1103', '911', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27243', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27258', '0', '1000', '906', '0', '0', '0', '1161', '0');
+INSERT INTO `scenario_poi` VALUES ('27258', '1', '1000', '906', '0', '0', '0', '1161', '0');
+INSERT INTO `scenario_poi` VALUES ('27258', '2', '1000', '906', '0', '0', '0', '1161', '0');
+INSERT INTO `scenario_poi` VALUES ('27261', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27453', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27458', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27461', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('27576', '0', '1000', '906', '0', '0', '0', '0', '0');
+INSERT INTO `scenario_poi` VALUES ('21049', '0', '1030', '900', '1', '0', '0', '1161', '0');
