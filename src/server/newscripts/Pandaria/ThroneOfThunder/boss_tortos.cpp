@@ -50,6 +50,8 @@ enum eEvents
     EVENT_SPINNING_SHELL       = 5,
 };
 
+const float maxpullpos = 4988.0f;
+
 class boss_tortos : public CreatureScript
 {
     public:
@@ -63,17 +65,26 @@ class boss_tortos : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkvictim;
 
             void Reset()
             {
                 _Reset();
+                checkvictim = 0;
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 100);
+            }
+
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_DEFENSIVE);
             }
 
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                checkvictim = 1500;
                 events.ScheduleEvent(EVENT_SUMMON_BATS, 45000);
                 events.ScheduleEvent(EVENT_CALL_OF_TORTOS, 60000);
                 events.ScheduleEvent(EVENT_STONE_BREATH, urand(60000, 70000));
@@ -86,11 +97,44 @@ class boss_tortos : public CreatureScript
                 _JustDied();
             }
 
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (!who->ToPlayer() || who->GetPositionY() > maxpullpos)
+                    return false;
+
+                return true;
+            }
+
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim() && me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+                
                 events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
