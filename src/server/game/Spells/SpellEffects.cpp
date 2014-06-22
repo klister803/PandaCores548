@@ -863,10 +863,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
             cooldown_spell_id = abs(itr->spell_trigger);
             if(triggerCaster->ToPlayer())
-                if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+                if (triggerCaster->ToPlayer()->HasSpellCooldown(cooldown_spell_id) && itr->option != SPELL_TRIGGER_COOLDOWN)
                     return;
             if(triggerCaster->ToCreature())
-                if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id))
+                if (triggerCaster->ToCreature()->HasSpellCooldown(cooldown_spell_id) && itr->option != SPELL_TRIGGER_COOLDOWN)
                     return;
 
             int32 bp0 = int32(itr->bp0);
