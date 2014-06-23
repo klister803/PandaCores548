@@ -46,8 +46,8 @@ enum GILNEAS_BG_WorldStates
     GILNEAS_BG_OP_RESOURCES_WARNING          = 1955
 };
 
-const uint32 GILNEAS_BG_OP_NODESTATES[3] =    {1767, 1772, 1782};
-const uint32 GILNEAS_BG_OP_NODEICONS[3]  =    {1842, 1845, 1846};
+const uint32 GILNEAS_BG_OP_NODESTATES[3] =    {1767, 1782, 1772};
+const uint32 GILNEAS_BG_OP_NODEICONS[3]  =    {1842, 1846, 1845};
 
 enum GILNEAS_BG_NodeObjectId
 {
@@ -181,13 +181,13 @@ const uint32 GILNEAS_BG_TickIntervals[4] = { 0, 12000, 6000, 1000 };
 const uint32 GILNEAS_BG_TickPoints[4]    = { 0, 10, 10, 30 };
 
 //Light, Water, Mine, Ally, Horde
-const uint32 GILNEAS_BG_GraveyardIds[GILNEAS_BG_ALL_NODES_COUNT] = { 1738, 1735, 1736, 1798, 1799 };
+const uint32 GILNEAS_BG_GraveyardIds[GILNEAS_BG_ALL_NODES_COUNT] = { 1736, 1738, 1735, 1740, 1739 };
 
 const float GILNEAS_BG_SpiritGuidePos[GILNEAS_BG_ALL_NODES_COUNT][4] =
 {
-    { 887.578f, 937.337f, 23.7737f, 4.88f },     // Waterworks
-    { 1252.23f, 836.547f, 27.7895f, 5.51f },     // Mine
     { 1034.82f, 1335.58f, 13.0095f, 5.27f },     // Lighthouse
+    { 887.578f, 937.337f, 23.7737f, 4.88f },     // Waterworks
+    { 1252.23f, 836.547f, 27.7895f, 5.51f },     // Mine    
     { 909.46f,  1337.36f, 27.6449f, 6.04f },     // Alliance
     { 1430.44f, 983.861f, 0.225735f, 4.77f},     // Horde
 };
