@@ -1631,6 +1631,7 @@ class Player : public Unit, public GridObject<Player>
         void GenerateResearchProjects();
         bool SolveResearchProject(uint32 spellId, SpellCastTargets& targets);
         void RandomizeSitesInMap(uint32 mapId, uint8 count);
+        bool TeleportToDigsiteInMap(uint32 mapId);
         static bool IsPointInZone(ResearchPOIPoint &test, ResearchPOIPointVector &polygon);
         uint16 GetResearchSiteID();
         bool OnSurvey(uint32& entry, float& x, float& y, float& z, float &orientation);

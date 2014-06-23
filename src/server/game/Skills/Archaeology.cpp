@@ -231,14 +231,14 @@ bool Player::IsPointInZone(ResearchPOIPoint &test, ResearchPOIPointVector &polyg
 void Player::RandomizeSitesInMap(uint32 mapId, uint8 count)
 {
     std::set<uint32> sites;
-    for (uint32 i = 0; i < MAX_RESEARCH_SITES; ++i)
+    for (ResearchSiteSet::const_iterator itr = _researchSites.begin(); itr != _researchSites.end(); ++itr)
     {
-        uint32 site_id = GetDynamicUInt32Value(PLAYER_DYNAMIC_RESEARCH_SITES, i);
-        ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.find(site_id);
-        if (itr == sResearchSiteDataMap.end())
+        uint32 site_id = *itr;
+        ResearchSiteDataMap::const_iterator itr2 = sResearchSiteDataMap.find(site_id);
+        if (itr2 == sResearchSiteDataMap.end())
             continue;
 
-        if (itr->second.entry->MapID != mapId)
+        if (itr2->second.entry->MapID != mapId)
             continue;
 
         sites.insert(site_id);
@@ -255,6 +255,43 @@ void Player::RandomizeSitesInMap(uint32 mapId, uint8 count)
 
     for (uint8 i = 0; i < cnt; ++i)
         GenerateResearchSiteInMap(mapId);
+}
+
+bool Player::TeleportToDigsiteInMap(uint32 mapId)
+{
+    std::set<uint32> sites;
+    for (ResearchSiteSet::const_iterator itr = _researchSites.begin(); itr != _researchSites.end(); ++itr)
+    {
+        uint32 site_id = *itr;
+        ResearchSiteDataMap::const_iterator itr2 = sResearchSiteDataMap.find(site_id);
+        if (itr2 == sResearchSiteDataMap.end())
+            continue;
+
+        if (itr2->second.entry->MapID != mapId)
+            continue;
+
+        sites.insert(site_id);
+    }
+
+    if (sites.empty())
+        return false;
+
+    uint32 site_id = Trinity::Containers::SelectRandomContainerElement(sites);
+    ResearchSiteDataMap::const_iterator itr = sResearchSiteDataMap.find(site_id);
+    ResearchSiteData const& data = itr->second;
+    if (data.points.empty())
+        return false;
+
+    Map const* map = sMapMgr->CreateBaseMap(mapId);
+    if (!map)
+        return false;
+
+    ResearchPOIPoint const& point = Trinity::Containers::SelectRandomContainerElement(data.points);
+    float x = point.x;
+    float y = point.y;
+    float z = map->GetHeight(GetPhaseMask(), x, y, MAX_HEIGHT) + 0.1;
+
+    TeleportTo(mapId, x, y, z, GetOrientation());
 }
 
 void Player::ShowResearchSites()

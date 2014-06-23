@@ -261,7 +261,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_STAMPEDE
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
-    &Spell::EffectNULL,                                     //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
+    &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
     &Spell::EffectNULL,                                     //192 SPELL_EFFECT_UNCAGE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
@@ -8102,3 +8102,17 @@ void Spell::EffectRandomizeDigsites(SpellEffIndex effIndex)
     player->RandomizeSitesInMap(m_spellInfo->GetEffect(effIndex).MiscValue, damage);
 }
 
+void Spell::EffectTeleportToDigsite(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
+        return;
+
+    Player* player = m_caster->ToPlayer();
+    if (!player || !player->GetSkillValue(SKILL_ARCHAEOLOGY))
+        return;
+
+    player->TeleportToDigsiteInMap(player->GetMapId());
+}

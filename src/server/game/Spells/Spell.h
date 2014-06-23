@@ -393,6 +393,7 @@ class Spell
         void EffectResurrectWithAura(SpellEffIndex effIndex);
         void EffectSummonRaidMarker(SpellEffIndex effIndex);
         void EffectRandomizeDigsites(SpellEffIndex effIndex);
+        void EffectTeleportToDigsite(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 
