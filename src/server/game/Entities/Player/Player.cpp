@@ -23334,7 +23334,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(unSpellId);
         if (!spellInfo)
         {
-            ASSERT(spellInfo);
+            //ASSERT(spellInfo);
             continue;
         }
 

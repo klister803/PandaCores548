@@ -416,7 +416,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         if (!dungeons.empty())
         {
             LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*dungeons.begin() & 0xFFFFF);
-            if (queue.GetQueueType(groupGuid) != entry->internalType)
+            if (entry && queue.GetQueueType(groupGuid) != entry->internalType)
             {
                 ChatHandler(player).PSendSysMessage("You cannot queue in different type queues at the same time.");
                 joinData.result = LFG_JOIN_INTERNAL_ERROR;
