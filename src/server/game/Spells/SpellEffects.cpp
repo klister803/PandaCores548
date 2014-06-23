@@ -1311,6 +1311,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
                     break;
                 }
+                case 148565:    // Spectral Grog
+                {
+                    if (!unitTarget)
+                        return;
+
+                    Player* player = unitTarget->ToPlayer();
+                    if (!player)
+                        return;
+
+                    player->CastSpell(player, player->getGender() == GENDER_MALE ? 148564 : 148563, true);
+                    return;
+                }
                 default:
                     break;
             }
