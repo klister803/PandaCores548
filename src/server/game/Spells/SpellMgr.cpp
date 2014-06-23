@@ -3556,7 +3556,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 83968:  // Mass Resurrection
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_PARTY;
                     break;
                 case 125883: // Zen Flight
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;

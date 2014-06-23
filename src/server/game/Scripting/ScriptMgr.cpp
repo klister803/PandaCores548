@@ -366,7 +366,8 @@ void ScriptMgr::FillSpellSummary()
             // Spell targets AoE friends.
             if (pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
                 pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
-                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER)
+                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER ||
+                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_MASS_RESSURECTION)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_FRIEND-1);
 
             // Spell targets any friend (or self).
@@ -375,7 +376,8 @@ void ScriptMgr::FillSpellSummary()
                 pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_PARTY ||
                 pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
                 pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
-                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER)
+                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER ||
+                pTempSpell->Effects[j].TargetA.GetTarget() == TARGET_MASS_RESSURECTION)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_FRIEND-1);
 
             // Make sure that this spell includes a damage effect.

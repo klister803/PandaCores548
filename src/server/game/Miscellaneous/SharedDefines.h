@@ -1818,7 +1818,7 @@ enum Targets
     TARGET_UNK_116                     = 116,
     TARGET_UNK_117                     = 117,
     TARGET_UNK_118                     = 118,
-    TARGET_UNK_119                     = 119,
+    TARGET_MASS_RESSURECTION           = 119,
     TARGET_UNK_120                     = 120,
     TARGET_UNK_121                     = 121,
     TARGET_UNK_122                     = 122,
