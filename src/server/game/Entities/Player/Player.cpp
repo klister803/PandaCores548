@@ -16770,7 +16770,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
     {
-        if (quest->RequiredSourceItemId[i])
+        if (quest->RequiredSourceItemId[i] && !quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_NOT_REMOVE_SOURCE))
         {
             uint32 count = quest->RequiredSourceItemCount[i];
             DestroyItemCount(quest->RequiredSourceItemId[i], count ? count : 9999, true);

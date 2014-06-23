@@ -169,6 +169,7 @@ enum __QuestSpecialFlags
     QUEST_SPECIAL_FLAGS_EXPLORATION_OR_EVENT = 0x002, // if required area explore, spell SPELL_EFFECT_QUEST_COMPLETE casting, table `*_script` command SCRIPT_COMMAND_QUEST_EXPLORED use, set from script)
     QUEST_SPECIAL_FLAGS_AUTO_ACCEPT          = 0x004, // quest is to be auto-accepted.
     QUEST_SPECIAL_FLAGS_DF_QUEST             = 0x008, // quest is used by Dungeon Finder.
+    QUEST_SPECIAL_FLAGS_NOT_REMOVE_SOURCE    = 0x010, // then we shoul leave at player requared items (exp. q30027)
 
     // room for more custom flags
 
