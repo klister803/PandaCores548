@@ -6563,7 +6563,11 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
         m_caster->GetPosition(x, y);
     }
 
-    unitTarget->KnockbackFrom(x, y, speedxy, speedz);
+    // Forward Thrust
+    if (m_spellInfo->Id == 126408)
+        unitTarget->JumpTo(-speedxy, speedz);
+    else
+        unitTarget->KnockbackFrom(x, y, speedxy, speedz);
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
         unitTarget->ToPlayer()->SetKnockBackTime(getMSTime());
