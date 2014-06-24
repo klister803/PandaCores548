@@ -628,10 +628,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 121414:
                         damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f;
                         break;
-                        // A Murder of Crows
-                    case 131900:
-                        damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.288f;
-                        break;
                     default:
                         break;
                 }
