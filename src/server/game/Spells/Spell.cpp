@@ -6474,6 +6474,22 @@ SpellCastResult Spell::CheckCast(bool strict)
         // for effects of spells that have only one target
         switch (m_spellInfo->GetEffect(i, m_diffMode).Effect)
         {
+            case SPELL_EFFECT_TRIGGER_SPELL:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 36554: // Shadowstep
+                    {
+                        if (Unit * target = m_targets.GetUnitTarget())
+                            if (target == m_caster)
+                                return SPELL_FAILED_BAD_TARGETS;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELL_EFFECT_SCHOOL_DAMAGE:
             {
                 switch (m_spellInfo->Id)
