@@ -386,7 +386,7 @@ INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong
 
 -- Q14110
 UPDATE `quest_template` SET `PrevQuestId` = '26712' WHERE `Id` = 14110;
-UPDATE `quest_template` SET RequiredPOI1 = 264967, RequiredPOI2 = 264968, RequiredPOI3 = 264969, RequiredPOI3 = 0, RequiredUnkFlag1 = 0, RequiredUnkFlag2 = 0, RequiredUnkFlag3 = 0, RequiredUnkFlag4 = 0 WHERE id = 14070;
+UPDATE `quest_template` SET RequiredPOI1 = 264967, RequiredPOI2 = 264968, RequiredPOI3 = 264969, RequiredUnkFlag1 = 0, RequiredUnkFlag2 = 0, RequiredUnkFlag3 = 0, RequiredUnkFlag4 = 0 WHERE id = 14110;
 UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35128;
 UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35130;
 UPDATE `creature_template` SET unit_flags=32768, `faction_A` = '2159', `faction_H` = '2159' WHERE  `entry` =35126;
