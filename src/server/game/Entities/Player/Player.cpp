@@ -971,6 +971,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_PetSlots.resize(PET_SLOT_LAST, 0);
     m_Store = false;
     realmTransferid = 0;
+
+    m_watching_movie = false;
 }
 
 Player::~Player()
@@ -7778,6 +7780,9 @@ void Player::SendMovieStart(uint32 MovieId)
     WorldPacket data(SMSG_TRIGGER_MOVIE, 4);
     data << uint32(MovieId);
     SendDirectMessage(&data);
+
+    // used for chacking plr state.
+    setWatchinMovie(true);
 }
 
 void Player::CheckAreaExploreAndOutdoor()

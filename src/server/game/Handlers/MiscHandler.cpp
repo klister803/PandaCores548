@@ -1312,6 +1312,17 @@ void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
 }
 
+void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_COMPLETE_MOVIE");
+
+    if (!_player)
+        return;
+
+    _player->setWatchinMovie(false);
+}
+
+
 void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_MOVE_TIME_SKIPPED");

@@ -3120,6 +3120,12 @@ class Player : public Unit, public GridObject<Player>
                 m_DelayedOperations |= operation;
         }
 
+        /*********************************************************/
+        /***              E.T.C.                               ***/
+        /*********************************************************/
+        bool isWatchingMovie() const { return m_watching_movie; }
+        void setWatchinMovie(bool s) { m_watching_movie = s; }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3521,6 +3527,8 @@ class Player : public Unit, public GridObject<Player>
         bool m_Store;
 
         BracketList m_BracketsList;
+
+        bool m_watching_movie;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
