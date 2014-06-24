@@ -391,7 +391,8 @@ public:
                 me->AddThreat(pWho, 100000.0f);
                 me->AI()->AttackStart(pWho);
                 dmgCount = 0;
-            }
+            }else
+                uiDamage = 0;
         }
 
         void SpellHit(Unit* source, SpellInfo const* spell)
@@ -2773,6 +2774,12 @@ public:
             CrowleyOn = false;
             CrowleySpawn = false;
             Run = false;
+        }
+
+        void DamageTaken(Unit * pWho, uint32 &uiDamage)
+        {
+            if (me->GetHealthPct() <= 30)
+                uiDamage = 0;
         }
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
