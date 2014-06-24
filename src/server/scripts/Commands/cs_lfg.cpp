@@ -43,11 +43,12 @@ public:
     {
         static ChatCommand lfgCommandTable[] =
         {
-            {  "player",     SEC_GAMEMASTER, false, &HandleLfgPlayerInfoCommand, "", NULL },
-            {   "group",     SEC_GAMEMASTER, false,  &HandleLfgGroupInfoCommand, "", NULL },
-            {   "queue",     SEC_GAMEMASTER, false,  &HandleLfgQueueInfoCommand, "", NULL },
             {   "clean",  SEC_ADMINISTRATOR, false,      &HandleLfgCleanCommand, "", NULL },
+            {   "group",     SEC_GAMEMASTER, false,  &HandleLfgGroupInfoCommand, "", NULL },
+            {    "join",  SEC_ADMINISTRATOR, false,       &HandleLfgJoinCommand, "", NULL },
             { "options",  SEC_ADMINISTRATOR, false,    &HandleLfgOptionsCommand, "", NULL },
+            {  "player",     SEC_GAMEMASTER, false, &HandleLfgPlayerInfoCommand, "", NULL },
+            {   "queue",     SEC_GAMEMASTER, false,  &HandleLfgQueueInfoCommand, "", NULL },
             {      NULL,         SEC_PLAYER, false,                        NULL, "", NULL }
         };
 
@@ -57,6 +58,32 @@ public:
             {  NULL,             SEC_PLAYER, false,                        NULL, "", NULL }
         };
         return commandTable;
+    }
+
+    static bool HandleLfgJoinCommand(ChatHandler* handler, char const* args)
+    {
+        if (!sLFGMgr->isOptionEnabled(lfg::LFG_OPTION_ENABLE_DUNGEON_FINDER | lfg::LFG_OPTION_ENABLE_RAID_BROWSER))
+            return false;
+
+        Player* player = handler->getSelectedPlayer();
+        if (!player)
+            return false;
+
+        Tokenizer tokens(args, ' ');
+        if (tokens.size() < 2)
+            return false;
+
+        uint32 roles;
+        lfg::LfgDungeonSet dungeons;
+        for (uint32 i = 0; i < tokens.size(); ++i)
+        {
+            if (i == 0)
+                roles = std::atoi(tokens[i]);
+            else
+                dungeons.insert(std::atoi(tokens[i]));
+        }
+
+        sLFGMgr->JoinLfg(player, uint8(roles), dungeons, "");
     }
 
     static bool HandleLfgPlayerInfoCommand(ChatHandler* handler, char const* args)
