@@ -624,10 +624,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
-                    // Glaive Toss
-                    case 121414:
-                        damage += m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f;
-                        break;
                     default:
                         break;
                 }
