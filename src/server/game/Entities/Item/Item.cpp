@@ -1632,26 +1632,6 @@ void Item::AppendDynamicInfo(ByteBuffer& buff) const
     buff.put<uint32>(countPos, count * 4);
 }
 
-uint32 ItemTemplate::GetCurrencySubstitutionId() const
-{
-    switch (CurrencySubstitutionId)
-    {
-        case 4: return CURRENCY_TYPE_ARCHAEOLOGY_TROLL;
-        case 5: return CURRENCY_TYPE_ARCHAEOLOGY_DWARF;
-        case 9: return CURRENCY_TYPE_ARCHAEOLOGY_NIGHT_ELF;
-        case 10: return CURRENCY_TYPE_ARCHAEOLOGY_ORC;
-        case 11: return CURRENCY_TYPE_ARCHAEOLOGY_DRAENEI;
-        case 12: return CURRENCY_TYPE_ARCHAEOLOGY_VRYKUL;
-        case 13: return CURRENCY_TYPE_ARCHAEOLOGY_NERUBIAN;
-        case 14: return CURRENCY_TYPE_ARCHAEOLOGY_TOLVIR;
-        case 39: return CURRENCY_TYPE_ARCHAEOLOGY_PANDAREN;
-        case 40: return CURRENCY_TYPE_ARCHAEOLOGY_MOGU;
-        case 44: return CURRENCY_TYPE_ARCHAEOLOGY_MANTID;
-    }
-
-    return 0;
-}
-
 uint32 Item::GetLeveledStatValue(uint8 statIndex) const
 {
     ItemTemplate const* proto = GetTemplate();

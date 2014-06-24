@@ -541,7 +541,9 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
         break;
     }
 
-    if (!entry || !HasResearchProject(entry->ID))
+    bool gmCast = isGameMaster();
+
+    if (!entry || !HasResearchProject(entry->ID) && !gmCast)
         return false;
 
     ResearchBranchEntry const* branch = NULL;
@@ -561,47 +563,62 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
     if (!branch)
         return false;
 
-    uint32 currencyId = branch->CurrencyID;
-    int32 currencyAmt = int32(entry->RequiredCurrencyAmount);
-
-    ArchaeologyWeights weights = targets.GetWeights();
-    for (ArchaeologyWeights::iterator itr = weights.begin(); itr != weights.end(); ++itr)
+    if (!gmCast)
     {
-        ArchaeologyWeight& w = *itr;
-        if (w.type == WEIGHT_KEYSTONE)
+        uint32 currencyId = branch->CurrencyID;
+        int32 currencyAmt = int32(entry->RequiredCurrencyAmount);
+        CurrencyTypesEntry const* currencyEntry = sCurrencyTypesStore.LookupEntry(currencyId);
+        if (!currencyEntry)
+            return false;
+
+        ArchaeologyWeights weights = targets.GetWeights();
+        for (ArchaeologyWeights::iterator itr = weights.begin(); itr != weights.end(); ++itr)
         {
-            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(w.keystone.itemId);
-            if (!proto)
-                return false;
+            ArchaeologyWeight& w = *itr;
+            if (w.type == WEIGHT_KEYSTONE)
+            {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(w.keystone.itemId);
+                if (!proto)
+                    return false;
 
-            if (proto->GetCurrencySubstitutionId() != currencyId)
-                return false;
+                if (proto->CurrencySubstitutionId != currencyEntry->SubstitutionId)
+                    return false;
 
-            if (w.keystone.itemCount > entry->Complexity)
-                return false;
+                if (w.keystone.itemCount > entry->Complexity)
+                    return false;
 
-            if (!HasItemCount(w.keystone.itemId, w.keystone.itemCount))
-                return false;
+                if (!HasItemCount(w.keystone.itemId, w.keystone.itemCount))
+                    return false;
 
-            currencyAmt -= int32(proto->CurrencySubstitutionCount * w.keystone.itemCount);
+                currencyAmt -= int32(proto->CurrencySubstitutionCount * w.keystone.itemCount);
+            }
+        }
+
+        if (currencyAmt > 0 && !HasCurrency(currencyId, currencyAmt))
+            return false;
+
+        ModifyCurrency(currencyId, -currencyAmt);
+
+        for (ArchaeologyWeights::iterator itr = weights.begin(); itr != weights.end(); ++itr)
+        {
+            ArchaeologyWeight& w = *itr;
+            if (w.type == WEIGHT_KEYSTONE)
+                DestroyItemCount(w.keystone.itemId, w.keystone.itemCount, true);
         }
     }
 
-    if (currencyAmt > 0 && !HasCurrency(currencyId, currencyAmt))
-        return false;
+    uint32 newCount = AddCompletedProject(entry);
 
-    ModifyCurrency(currencyId, -currencyAmt);
+    WorldPacket data (SMSG_RESEARCH_COMPLETE, 4 * 3);
+    data << uint32(time(NULL));
+    data << uint32(newCount);
+    data << uint32(entry->ID);
+    SendDirectMessage(&data);
 
-    for (ArchaeologyWeights::iterator itr = weights.begin(); itr != weights.end(); ++itr)
-    {
-        ArchaeologyWeight& w = *itr;
-        if (w.type == WEIGHT_KEYSTONE)
-            DestroyItemCount(w.keystone.itemId, w.keystone.itemCount, true);
-    }
+    if (gmCast)
+        return true;
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, entry->ID, 1);
-
-    uint32 newCount = AddCompletedProject(entry);
 
     ResearchProjectSet tempProjects;
     ResearchProjectSet tempRareProjects;
@@ -633,12 +650,6 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
     ReplaceResearchProject(entry->ID, project_id);
 
     _archaeologyChanged = true;
-
-    WorldPacket data (SMSG_RESEARCH_COMPLETE, 4 * 3);
-    data << uint32(time(NULL));
-    data << uint32(newCount);
-    data << uint32(entry->ID);
-    SendDirectMessage(&data);
 
     return true;
 }
