@@ -949,6 +949,36 @@ class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
         }
 };
 
+// Safeguard - 114029
+class spell_war_safeguard : public SpellScriptLoader
+{
+    public:
+        spell_war_safeguard() : SpellScriptLoader("spell_war_safeguard") { }
+
+        class spell_war_safeguard_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_war_safeguard_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Unit* player = GetCaster())
+                {
+                    player->RemoveMovementImpairingAuras();
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_war_safeguard_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_war_safeguard_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -976,4 +1006,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
     new spell_warr_curse_of_enfeeblement();
+    new spell_war_safeguard();
 }
