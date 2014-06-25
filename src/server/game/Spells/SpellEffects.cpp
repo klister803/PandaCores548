@@ -499,15 +499,25 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_DRUID:
             {
-                // Faerie Fire - 770
-                if (m_spellInfo->Id == 770)
+                switch (m_spellInfo->Id)
                 {
-                    // Deals damage only if casted from bear form
-                    if (m_caster->GetShapeshiftForm() != FORM_BEAR)
-                        return;
+                    case 770: // Faerie Fire
+                    {
+                        // Deals damage only if casted from bear form
+                        if (m_caster->GetShapeshiftForm() != FORM_BEAR)
+                            return;
+                        break;
+                    }
+                    case 77758: // Thrash
+                    {
+                        damage += m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_2].BasePoints / 1000;
+                        break;
+                    }
+                    default:
+                        break;
                 }
                 // Ferocious Bite
-                else if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
+                if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
                 {
                     // converts each extra point of energy ( up to 25 energy ) into additional damage
                     int32 energy = -(m_caster->ModifyPower(POWER_ENERGY, -25));

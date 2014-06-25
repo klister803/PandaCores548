@@ -879,6 +879,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
+                case 77758: // Thrash
+                {
+                    amount += caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_3].BasePoints / 1000;
+                    break;
+                }
                 case 109076: // Incendiary Fireworks Launcher
                 {
                     amount = irand(6000, 9000);
