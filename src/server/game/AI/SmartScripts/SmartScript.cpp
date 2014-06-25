@@ -2698,6 +2698,14 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             RecalcTimer(e, e.event.aura.repeatMin, e.event.aura.repeatMax);
             break;
         }
+        case SMART_EVENT_QUEST_ACCEPTED:
+        case SMART_EVENT_QUEST_REWARDED:
+        {
+            if (!me || var0 != e.event.raw.param1)
+                return;
+            ProcessAction(e, unit, var0, var1, bvar, spell, gob);
+            break;
+        }
         //no params
         case SMART_EVENT_AGGRO:
         case SMART_EVENT_DEATH:
@@ -2709,10 +2717,8 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         case SMART_EVENT_AI_INIT:
         case SMART_EVENT_TRANSPORT_ADDPLAYER:
         case SMART_EVENT_TRANSPORT_REMOVE_PLAYER:
-        case SMART_EVENT_QUEST_ACCEPTED:
         case SMART_EVENT_QUEST_OBJ_COPLETETION:
         case SMART_EVENT_QUEST_COMPLETION:
-        case SMART_EVENT_QUEST_REWARDED:
         case SMART_EVENT_QUEST_FAIL:
         case SMART_EVENT_JUST_SUMMONED:
         case SMART_EVENT_RESET:

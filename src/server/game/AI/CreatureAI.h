@@ -180,6 +180,9 @@ class CreatureAI : public UnitAI
         virtual void OnSpellClick(Unit* /*clicker*/) { }
 
         virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
+
+        virtual void OnQuestReward(Player* /*player*/, Quest const* /*quest*/) {}
+        virtual void OnStartQuest(Player* /*player*/, Quest const* /*quest*/) {}
     protected:
         virtual void MoveInLineOfSight(Unit* /*who*/);
 

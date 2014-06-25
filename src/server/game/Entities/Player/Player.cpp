@@ -16718,6 +16718,9 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     if (questGiver && quest->GetQuestStartScript() != 0)
         GetMap()->ScriptsStart(sQuestStartScripts, quest->GetQuestStartScript(), questGiver, this);
 
+    if (questGiver && questGiver->GetTypeId() == TYPEID_UNIT)
+        questGiver->ToCreature()->AI()->OnStartQuest(this, quest);
+
     CheckSpellAreaOnQuestStatusChange(quest_id);
 
     PhaseUpdateData phaseUdateData;
@@ -18196,6 +18199,9 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
 
     if (quest->GetQuestCompleteScript() != 0)
         GetMap()->ScriptsStart(sQuestEndScripts, quest->GetQuestCompleteScript(), questGiver, this);
+
+    if (questGiver && questGiver->GetTypeId() == TYPEID_UNIT)
+        questGiver->ToCreature()->AI()->OnQuestReward(this, quest);
 }
 
 void Player::SendQuestFailed(uint32 questId, InventoryResult reason)

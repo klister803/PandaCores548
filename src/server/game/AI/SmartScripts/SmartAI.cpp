@@ -597,6 +597,16 @@ void SmartAI::JustReachedHome()
     GetScript()->ProcessEventsFor(SMART_EVENT_REACHED_HOME);
 }
 
+void SmartAI::OnQuestReward(Player* player, Quest const* quest)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_QUEST_REWARDED, player, quest->GetQuestId());
+}
+
+void SmartAI::OnStartQuest(Player* player, Quest const* quest)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_QUEST_ACCEPTED, player, quest->GetQuestId());
+}
+
 void SmartAI::EnterCombat(Unit* enemy)
 {
     me->InterruptNonMeleeSpells(false); // must be before ProcessEvents
