@@ -950,6 +950,7 @@ class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
 };
 
 // Safeguard - 114029
+// Avatar - 107574
 class spell_war_safeguard : public SpellScriptLoader
 {
     public:
