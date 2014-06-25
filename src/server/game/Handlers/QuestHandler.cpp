@@ -422,6 +422,8 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         default:
             break;
         }
+        // As quest complete send available quests. Need when questgiver from next quest chain staying near questtaker
+        HandleQuestgiverStatusMultipleQuery(recvData);
     }
     else 
         _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, guid, true);
