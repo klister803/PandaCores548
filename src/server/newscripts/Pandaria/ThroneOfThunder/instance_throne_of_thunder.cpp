@@ -7,19 +7,20 @@
 
 const DoorData doorData[] =
 {
-    {GO_JINROKH_PRE_DOOR,   DATA_STORM_CALLER,      DOOR_TYPE_PASSAGE, 0},
-    {GO_JINROKH_EX_DOOR,    DATA_JINROKH,           DOOR_TYPE_PASSAGE, 0},
-    {GO_HORRIDON_PRE_DOOR,  DATA_STORMBRINGER,      DOOR_TYPE_PASSAGE, 0},
-    {GO_HORRIDON_EX_DOOR,   DATA_HORRIDON,          DOOR_TYPE_PASSAGE, 0},
-    {GO_COUNCIL_EX_DOOR,    DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
-    {GO_COUNCIL_EX2_DOOR,   DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
-    {GO_TORTOS_EX_DOOR,     DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
-    {GO_TORTOS_EX2_DOOR,    DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
-    {GO_MEGAERA_EX_DOOR,    DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
-    {GO_JI_KUN_EX_DOOR,     DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
-    {GO_DURUMU_EX_DOOR,     DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
-    {GO_PRIMORDIUS_EX_DOOR, DATA_PRIMORDIUS,        DOOR_TYPE_PASSAGE, 0},
-    {0,                     0,                      DOOR_TYPE_PASSAGE, 0},
+    {GO_JINROKH_PRE_DOOR,    DATA_STORM_CALLER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_JINROKH_EX_DOOR,     DATA_JINROKH,           DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_PRE_DOOR,   DATA_STORMBRINGER,      DOOR_TYPE_PASSAGE, 0},
+    {GO_HORRIDON_EX_DOOR,    DATA_HORRIDON,          DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX_DOOR,     DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_COUNCIL_EX2_DOOR,    DATA_COUNCIL_OF_ELDERS, DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX_DOOR,      DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_TORTOS_EX2_DOOR,     DATA_TORTOS,            DOOR_TYPE_PASSAGE, 0},
+    {GO_MEGAERA_EX_DOOR,     DATA_MEGAERA,           DOOR_TYPE_PASSAGE, 0},
+    {GO_JI_KUN_EX_DOOR,      DATA_JI_KUN,            DOOR_TYPE_PASSAGE, 0},
+    {GO_DURUMU_EX_DOOR,      DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
+    {GO_PRIMORDIUS_EX_DOOR,  DATA_PRIMORDIUS,        DOOR_TYPE_PASSAGE, 0},
+    {GO_DARK_ANIMUS_EX_DOOR, DATA_DARK_ANIMUS,       DOOR_TYPE_PASSAGE, 0},
+    {0,                      0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
 class instance_throne_of_thunder : public InstanceMapScript
@@ -53,6 +54,8 @@ public:
         uint64 primordiusexdoorGuid;
         uint64 danimusentdoorGuid;
         uint64 danimusexdoorGuid;
+        uint64 ironqonentdoorGuid;
+        uint64 ironqonexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -73,6 +76,9 @@ public:
         uint64 primordiusGuid;
         uint64 darkanimusGuid;
         uint64 ironqonGuid;
+        uint64 roshakGuid;
+        uint64 quetzalGuid;
+        uint64 damrenGuid;
         uint64 sulinGuid;
         uint64 lulinGuid;
         uint64 leishenGuid;
@@ -110,6 +116,8 @@ public:
             primordiusexdoorGuid  = 0;
             danimusentdoorGuid    = 0;
             danimusexdoorGuid     = 0;
+            ironqonentdoorGuid    = 0;
+            ironqonexdoorGuid     = 0;
            
             //Creature
             stormcallerGuid       = 0;
@@ -130,6 +138,9 @@ public:
             primordiusGuid        = 0;
             darkanimusGuid        = 0;
             ironqonGuid           = 0;
+            roshakGuid            = 0;
+            quetzalGuid           = 0;
+            damrenGuid            = 0;
             sulinGuid             = 0;
             lulinGuid             = 0;
             leishenGuid           = 0;
@@ -210,6 +221,15 @@ public:
                 break;
             case NPC_IRON_QON:
                 ironqonGuid = creature->GetGUID();
+                break;
+            case NPC_ROSHAK:
+                roshakGuid = creature->GetGUID();
+                break;
+            case NPC_QUETZAL:
+                quetzalGuid = creature->GetGUID();
+                break;
+            case NPC_DAMREN:
+                damrenGuid = creature->GetGUID();
                 break;
             //Twin consorts
             case NPC_SULIN:   
@@ -320,7 +340,14 @@ public:
                 danimusentdoorGuid = go->GetGUID();
                 break;
             case GO_DARK_ANIMUS_EX_DOOR:
+                AddDoor(go, true);
                 danimusexdoorGuid = go->GetGUID();
+                break;
+            case GO_IRON_QON_ENT_DOOR:
+                ironqonentdoorGuid = go->GetGUID();
+                break;
+            case GO_IRON_QON_EX_DOOR:
+                ironqonexdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -518,7 +545,24 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(danimusentdoorGuid, true);
-                        //HandleGameObject(danimusexdoorGuid, true);
+                        HandleGameObject(danimusexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
+            case DATA_IRON_QON:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        HandleGameObject(ironqonentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(ironqonentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(ironqonentdoorGuid, true);
+                        //HandleGameObject(ironqonexdoorGuid, true);
                         break;
                     }
                 }
@@ -576,6 +620,14 @@ public:
                 return darkanimusGuid;
             case NPC_IRON_QON:
                 return ironqonGuid;
+            //Iron Qon Maunts
+            case NPC_ROSHAK:
+                return roshakGuid;
+            case NPC_QUETZAL:
+                return quetzalGuid;
+            case NPC_DAMREN:
+                return damrenGuid;
+            //
             //Twin consorts
             case NPC_SULIN:   
                 return sulinGuid;

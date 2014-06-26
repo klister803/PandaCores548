@@ -4624,6 +4624,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetB = 15;
                     break;
+                //Iron Qon
+                case 134926: //Throw spear tr ef
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].MiscValue = 0;
+                    spellInfo->Effects[1].MiscValueB = 0; 
+                    break;
+                case 136324: //Rising Anger
+                    spellInfo->CasterAuraSpell = 0;
+                    break;
 
 
                 //World Bosses

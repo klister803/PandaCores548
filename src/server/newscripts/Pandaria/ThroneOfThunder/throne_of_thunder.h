@@ -65,6 +65,12 @@ enum eCreatures
     NPC_PRIMORDIUS          = 69017,
     NPC_DARK_ANIMUS         = 69427,
     NPC_IRON_QON            = 68078,
+    //Iron Qon Maunts
+    NPC_ROSHAK              = 68079, //Fire
+    NPC_QUETZAL             = 68080, //Storm
+    NPC_DAMREN              = 68081, //Froxen
+    //
+
     //Twin consorts
     NPC_SULIN               = 68904,
     NPC_LULIN               = 68905,
@@ -123,6 +129,10 @@ enum eGameObjects
     //Dark Animus
     GO_DARK_ANIMUS_ENT_DOOR = 218392,
     GO_DARK_ANIMUS_EX_DOOR  = 218393,
+    //
+    //Iron Qon
+    GO_IRON_QON_ENT_DOOR    = 218388,
+    GO_IRON_QON_EX_DOOR     = 218588,
 };
 
 #endif THRONEOFTHUNDER

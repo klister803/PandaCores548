@@ -1156,6 +1156,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 122855: //Sun Breath (Tsulong)
     case 133946: //Furios stone (Tortos)
     case 136220: //Acidic explosion (Primordius)
+    case 134926: //Throw spear (Iron Qon)
+    case 136324: //Rising Anger (Iron Qon)
         return Effects[effect];
     }
 
