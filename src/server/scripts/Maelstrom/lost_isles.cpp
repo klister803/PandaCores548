@@ -1,13 +1,16 @@
 /*
+phase 67851 ind 2 - for quest 14474 
 */
 
 #include "ScriptPCH.h"
 #include "CreatureTextMgr.h"
+#include "ScriptedEscortAI.h"
 
 enum isle_quests
 {
     QUEST_DONT_GO_INTO_LIGHT                     = 14239,
-    QUEST_GOBLIN_ESCAPE_PODS                     = 14474,  //Goblin Escape Pods or 14001
+    QUEST_GOBLIN_ESCAPE_PODS                     = 14474,  // Goblin Escape Pods or 14001
+    QUEST_MINER_TROUBLES                         = 14021,  // Miner Troubles
 };
 
 enum isle_spells
@@ -24,7 +27,13 @@ enum isle_spells
 enum isle_npc
 {
     NPC_DOC_ZAPNNOZZLE                           = 36608,
-    NPC_GIZMO                                    = 36600, //Geargrinder Gizmo
+    NPC_GIZMO                                    = 36600, // Geargrinder Gizmo
+    NPC_FRIGHTENED_MINER                         = 35813, // Frightened Miner
+};
+
+enum gizmo_text
+{
+    TEXT_GIZMO_QUEST                             = 1,
 };
 
 class npc_gizmo : public CreatureScript
@@ -44,6 +53,14 @@ class npc_gizmo : public CreatureScript
         void Reset()
         {
             m_player_for_event.clear();
+        }
+
+        void OnStartQuest(Player* player, Quest const* quest)
+        {
+            if (!quest || quest->GetQuestId() != QUEST_GOBLIN_ESCAPE_PODS)
+                return;
+
+            sCreatureTextMgr->SendChat(me, TEXT_GIZMO_QUEST, player ? player->GetGUID(): 0);
         }
 
         // Remove from conteiner for posibility repeat it.
@@ -220,8 +237,62 @@ class npc_doc_zapnnozzle : public CreatureScript
     }
 };
 
+enum miner_text
+{
+    TEXT_MINER_0      = 0,
+    TEXT_MINER_1      = 1,
+    TEXT_MINER_2      = 2,
+    TEXT_MINER_3      = 3,
+    TEXT_MINER_4      = 4,
+    TEXT_MINER_5      = 5,
+};
+
+class npc_frightened_miner : public CreatureScript
+{
+public:
+    npc_frightened_miner() : CreatureScript("npc_frightened_miner") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_frightened_minerAI (creature);
+    }
+
+    struct npc_frightened_minerAI : public npc_escortAI
+    {
+        npc_frightened_minerAI(Creature* creature) : npc_escortAI(creature) {}
+
+        void Reset()
+        {
+            Start(false, true/*, who->GetGUID()*/);
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            Player* player = GetPlayerForEscort();
+            switch(i)
+            {
+                case 36:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
     new npc_doc_zapnnozzle();
+    new npc_frightened_miner();
 }
