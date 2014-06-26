@@ -55,7 +55,7 @@ DELETE FROM creature WHERE guid in(SELECT creature.guid FROM `creature_copy` WHE
 -- Очистка аддонов и линков на гуид
 ALTER TABLE `creature_addon` ADD INDEX(`path_id`);
 DELETE FROM `creature_addon` WHERE guid not in (select guid from creature);
-DELETE FROM waypoint_data WHERE id not in (SELECT path_id FROM creature_addon);
+-- DELETE FROM waypoint_data WHERE id not in (SELECT path_id FROM creature_addon);
 ALTER TABLE creature_addon DROP INDEX path_id;
 
 -- Удаление временной таблицы
