@@ -51,7 +51,7 @@ INSERT INTO  `spell_script_names` (`spell_id` ,`ScriptName`)VALUES
 -- =================
 
 DELETE FROM `creature_questrelation` WHERE `quest` IN (14071,14093,14098,14115,14122,14125,14153,14204,14218,14222,24930);
-INSERT INTO `creature_questrelation`(`id`,`quest`) VALUES (34874, 14071),(34850,14093),(34850,14098),(34668,14115),(34668,14122),(34668,14125),(35054,14153),(35378,14204),(35618,14218),(35378,14222),(35115,24930);
+INSERT INTO `creature_questrelation`(`id`,`quest`) VALUES (34874, 14071),(34850,14093),(34850,14098),(34668,14115),(34668,14122),(34668,14125),(35054,14153),(35378,14204),(35618,14218),(35566,14222),(35115,24930);
 DELETE FROM `creature_involvedrelation` WHERE `quest` in (14075,14078,14091,14138);
 INSERT INTO `creature_involvedrelation`(`id`,`quest`) VALUES (34850,14091),(34863,14078),(34872,14075),(34872,14138);
 DELETE FROM  `creature_involvedrelation` WHERE `quest` =28414;
