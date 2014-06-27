@@ -2144,7 +2144,7 @@ bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
     uint32 mask = obj->m_invisibility.GetFlags() & m_invisibilityDetect.GetFlags();
 
     // Check for not detected types
-    if (mask != obj->m_invisibility.GetFlags())
+    if (!mask)
         return false;
 
     if (obj->ToUnit())
