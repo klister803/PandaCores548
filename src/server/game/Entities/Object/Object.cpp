@@ -2027,7 +2027,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
-    if (obj->MustBeVisibleOnlyForSomePlayers())
+    if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
     {
         Player const* thisPlayer = ToPlayer();
 
