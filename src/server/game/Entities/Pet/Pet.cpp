@@ -1116,12 +1116,14 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         }
         case 19833: // Snake Trap - Venomous Snake
         {
+            SetUInt32Value(UNIT_FIELD_ATTACK_POWER, m_owner->GetTotalAttackPowerValue(RANGED_ATTACK));
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel / 2) - 25));
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel / 2) - 18));
             break;
         }
         case 19921: // Snake Trap - Viper
         {
+            SetUInt32Value(UNIT_FIELD_ATTACK_POWER, m_owner->GetTotalAttackPowerValue(RANGED_ATTACK));
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel / 2 - 10));
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel / 2));
             break;
