@@ -2399,6 +2399,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.MinMoneyLoot = 0;
         itemTemplate.MaxMoneyLoot = 0;
         itemTemplate.ItemSpecExist = GetItemSpecsList(itemId).empty() ? 0 : 1;
+        itemTemplate.FlagsCu = 0;
         ++sparseCount;
     }
 
@@ -2567,6 +2568,7 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.MinMoneyLoot              = 0;
             itemTemplate.MaxMoneyLoot              = 0;
             itemTemplate.ItemSpecExist             = GetItemSpecsList(itemId).empty() ? 0 : 1;
+            itemTemplate.FlagsCu                   = 0;
             ++dbCount;
         } while (result->NextRow());
     }
