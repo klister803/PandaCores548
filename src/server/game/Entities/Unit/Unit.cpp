@@ -560,7 +560,7 @@ bool Unit::HasCrowdControlAuraType(AuraType type, uint32 excludeAura) const
     AuraEffectList const& auras = GetAuraEffectsByType(type);
     for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         if ((!excludeAura || excludeAura != (*itr)->GetSpellInfo()->Id) && //Avoid self interrupt of channeled Crowd Control spells like Seduction
-            ((*itr)->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE || (*itr)->GetSpellInfo()->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2)))
+            ((*itr)->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE || (*itr)->GetSpellInfo()->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE)))
             return true;
     return false;
 }
@@ -778,11 +778,11 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         {
             if (!(spellProto->AttributesEx4 & SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS))
                 if (damagetype == DOT && damage != 0 || damagetype != DOT)
-                    victim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2, spellProto->Id);
+                    victim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, spellProto->Id);
         }
         else if (damagetype != SELF_DAMAGE)
         {
-            victim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2, 0);
+            victim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, 0);
         }
 
         // We're going to call functions which can modify content of the list during iteration over it's elements
@@ -4197,7 +4197,7 @@ uint32 Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     if (!(m_interruptMask & flag))
         return 0;
 
-    if (_haveCCDEffect && flag & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2))
+    if (_haveCCDEffect && flag & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
     {
         _delayInterruptFlag = flag;
         return 0;
@@ -16963,7 +16963,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (procSpell && procSpell->Id == 123725 && itr->first == 123393)
             continue;
 
-        if (procSpell && !(procSpell->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE|AURA_INTERRUPT_FLAG_TAKE_DAMAGE2)))
+        if (procSpell && !(procSpell->AuraInterruptFlags & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE)))
             // time for hardcode! Some spells can proc on absorb
             if (triggerData.aura && triggerData.aura->GetSpellInfo() && (triggerData.aura->GetSpellInfo()->Id == 33757 ||
                 triggerData.aura->GetSpellInfo()->Id == 2823 ||

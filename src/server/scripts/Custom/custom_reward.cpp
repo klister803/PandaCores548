@@ -173,20 +173,19 @@ public:
                 {
                     if(!bonus1 && totaltime >= (1 * HOUR))
                     {
-                        player->ModifyMoney(1000000);
+                        player->ModifyMoney(500000);
                         update = true;
                         bonus1 = true;
                     }
                     if(!bonus2 && totaltime >= (10 * HOUR))
                     {
-                        player->ModifyMoney(5000000);
+                        player->ModifyMoney(2500000);
                         update = true;
                         bonus2 = true;
                     }
                     if(!bonus3 && totaltime >= (20 * HOUR))
                     {
-                        player->ModifyMoney(10000000);
-                        CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 46109);
+                        player->ModifyMoney(5000000);
                         update = true;
                         bonus3 = true;
                     }
@@ -212,7 +211,7 @@ public:
                 }
                 if(!bonus7 && totaltime >= (1000 * HOUR))
                 {
-                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 68385);
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 106246);
                     update = true;
                     bonus7 = true;
                 }
@@ -239,7 +238,7 @@ public:
                 }
                 if(!bonus11 && totaltime >= (250 * HOUR))
                 {
-                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 72068);
+                    CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", owner_guid, 68385);
                     update = true;
                     bonus11 = true;
                 }

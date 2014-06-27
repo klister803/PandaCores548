@@ -3808,12 +3808,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 130616:// Glyph of Fear
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_STUN;
-                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 118699:// Fear Effect
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
-                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 124991:// Nature's Vigil (Damage)
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
@@ -4728,7 +4726,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 11327: //Vanish
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;
-                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 8177: //totem
                     spellInfo->RecoveryTime = 25000;
@@ -4764,15 +4761,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 114714:// Grilled Plainshawk Leg
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
-                    break;
-                // Hack these until proc flags of CC auras are implemented
-                case 339:       // Entangling Roots
-                case 19975:     // Entangling Roots
-                case 51514:     // Hex
-                case 102359:    // Mass Entanglement
-                case 104239:    // Horror (Soulburn)
-                case 105421:    // Blinding Light
-                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 112965:    // Fingers of Frost
                     for (int i = 0; i < 3; ++i)
@@ -4889,7 +4877,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 20066: // Repentance
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
-                    spellInfo->AuraInterruptFlags &= ~AURA_INTERRUPT_FLAG_TAKE_DAMAGE2;
                     break;
                 case 53651: // Beacon of Light Trigger
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;                    

@@ -623,8 +623,9 @@ class npc_bilgewater_buccaneer : public CreatureScript
 
         Player * GetPassenger()
         {
-            if(Unit* passanger = me->GetVehicleKit()->GetPassenger(0))
-                return passanger->ToPlayer();
+            if(me->GetVehicleKit())
+                if(Unit* passanger = me->GetVehicleKit()->GetPassenger(0))
+                    return passanger->ToPlayer();
             return NULL;
         }
 

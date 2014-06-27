@@ -2424,6 +2424,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         ObjectGuid counter = uint64(itr->second.counter);
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
         
         data.WriteByteSeq(counter[5]);
         data.WriteByteSeq(counter[7]);
@@ -2435,7 +2436,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data.WriteByteSeq(counter[2]);
         data.WriteByteSeq(guid[6]);
         data.WriteByteSeq(counter[6]);
-        data << uint32(itr->first);                     // Criteria id
+        data << uint32(criteriaTree->criteria);                     // Criteria id
         data.WriteByteSeq(counter[4]);
         data.WriteByteSeq(guid[2]);
         data.WriteByteSeq(counter[3]);
@@ -2541,13 +2542,14 @@ void AchievementMgr<Player>::SendAchievementInfo(Player* receiver, uint32 /*achi
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         counter = itr->second.counter;
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
 
         data.WriteByteSeq(guid[1]);
         data.WriteByteSeq(guid[3]);
         data.WriteByteSeq(guid[0]);
         data.WriteByteSeq(counter[5]);
         data.WriteByteSeq(counter[7]);
-        data << uint32(itr->first);     // criteria id
+        data << uint32(criteriaTree->criteria);     // criteria id
         data.WriteByteSeq(counter[2]);
         data << uint32(227545947);
         data.WriteByteSeq(guid[4]);

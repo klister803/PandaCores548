@@ -980,6 +980,36 @@ class spell_war_safeguard : public SpellScriptLoader
         }
 };
 
+class spell_war_intimidating_shout : public SpellScriptLoader
+{
+    public:
+        spell_war_intimidating_shout() : SpellScriptLoader("spell_war_intimidating_shout") { }
+
+        class spell_war_intimidating_shout_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_war_intimidating_shout_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                if(!GetCaster() || !GetCaster()->HasAura(63327))
+                    targets.clear();
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_intimidating_shout_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_war_intimidating_shout_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1008,4 +1038,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_deep_wounds();
     new spell_warr_curse_of_enfeeblement();
     new spell_war_safeguard();
+    new spell_war_intimidating_shout();
 }
