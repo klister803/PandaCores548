@@ -22,6 +22,10 @@ enum isle_spells
     SPELL_INTRO_VISUAL                           = 69085,
     SPELL_INTRO_RES                              = 69022,
     SPELL_INVISIBLE_INRO_DUMMY                   = 76354,
+    SPELL_SUMMON_FRIGTNED_MINER                  = 68059,
+    SPELL_SUMMON_ORE_CART                        = 68064,
+    SPELL_VISUAL_ORE_CART_CHAIN                  = 68122,
+    SPELL_VISUAL_CART_TRANSFORM                  = 68065,
 };
 
 enum isle_npc
@@ -29,12 +33,49 @@ enum isle_npc
     NPC_DOC_ZAPNNOZZLE                           = 36608,
     NPC_GIZMO                                    = 36600, // Geargrinder Gizmo
     NPC_FRIGHTENED_MINER                         = 35813, // Frightened Miner
+    NPC_FOREMAN_DAMPWICK                         = 35769, // Foreman Dampwick
+    NPC_ORE_CART                                 = 35814, // Miner Troubles Ore Cart 35814
+    NPC_QUEST_MINE_TROUBLES_CREDIT               = 35816,
+};
+
+enum isle_go
+{
+    GO_KAJAMITE_ORE                             = 195622, //Kaja'mite Ore
+};
+
+enum isle_events
+{
+    EVENT_THE_VERY_BEGINING_1                      = 1,
+    EVENT_THE_VERY_BEGINING_2                      = 2,
+    EVENT_THE_VERY_BEGINING_3                      = 3,
+    EVENT_THE_VERY_BEGINING_4                      = 4,
+    EVENT_THE_VERY_BEGINING_5                      = 5,
+    EVENT_THE_VERY_BEGINING_6                      = 6,
+    EVENT_THE_VERY_BEGINING_7                      = 7,
+    EVENT_THE_VERY_BEGINING_8                      = 8,
+    EVENT_THE_VERY_BEGINING_9                      = 9,
+    EVENT_THE_VERY_BEGINING_10                     = 10,
+    EVENT_THE_VERY_BEGINING_11                     = 11,
+    EVENT_THE_VERY_BEGINING_12                     = 12,
+    EVENT_THE_VERY_BEGINING_13                     = 13,
+
+    EVENT_GENERIC_1                                = 1,
+    EVENT_GENERIC_2                                = 2,
+
+    EVENT_POINT_MINE                               = 1000,
+};
+
+enum isle_emote
+{
+    EMOTE_FIND_MINE                                = 396,
+    EMOTE_FIND_MINING                              = 233,
 };
 
 enum gizmo_text
 {
     TEXT_GIZMO_QUEST                             = 1,
 };
+
 
 class npc_gizmo : public CreatureScript
 {
@@ -108,22 +149,7 @@ class npc_gizmo : public CreatureScript
     }
 };
 
-enum isle_event
-{
-    EVENT_THE_VERY_BEGINING_1                      = 1,
-    EVENT_THE_VERY_BEGINING_2                      = 2,
-    EVENT_THE_VERY_BEGINING_3                      = 3,
-    EVENT_THE_VERY_BEGINING_4                      = 4,
-    EVENT_THE_VERY_BEGINING_5                      = 5,
-    EVENT_THE_VERY_BEGINING_6                      = 6,
-    EVENT_THE_VERY_BEGINING_7                      = 7,
-    EVENT_THE_VERY_BEGINING_8                      = 8,
-    EVENT_THE_VERY_BEGINING_9                      = 9,
-    EVENT_THE_VERY_BEGINING_10                     = 10,
-    EVENT_THE_VERY_BEGINING_11                     = 11,
-    EVENT_THE_VERY_BEGINING_12                     = 12,
-    EVENT_THE_VERY_BEGINING_13                     = 13
-};
+
 
 enum intro_text
 {
@@ -237,6 +263,45 @@ class npc_doc_zapnnozzle : public CreatureScript
     }
 };
 
+// NPC_FOREMAN_DAMPWICK                         = 35769, //Foreman Dampwick
+
+class npc_foreman_dampwick : public CreatureScript
+{
+    public:
+        npc_foreman_dampwick() : CreatureScript("npc_foreman_dampwick") { }
+
+    struct npc_foreman_dampwickAI : public ScriptedAI
+    {
+        npc_foreman_dampwickAI(Creature* creature) : ScriptedAI(creature)
+        {
+
+        }
+
+        void Reset()
+        {
+        }
+
+        void OnStartQuest(Player* player, Quest const* quest)   
+        {
+            if (!quest || quest->GetQuestId() != QUEST_MINER_TROUBLES)
+                return;
+
+            Position pos;
+            pos.Relocate(492.4184f, 2976.321f, 8.040207f);
+            if (TempSummon* summon = player->GetMap()->SummonCreature(NPC_FRIGHTENED_MINER, pos, NULL, 0, player))
+            {
+                summon->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+                summon->AI()->SetGUID(player->GetGUID(), 0);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_foreman_dampwickAI(creature);
+    }
+};
+
 enum miner_text
 {
     TEXT_MINER_0      = 0,
@@ -261,31 +326,146 @@ public:
     {
         npc_frightened_minerAI(Creature* creature) : npc_escortAI(creature) {}
 
+        uint64 plrGUID;
+        uint64 cartGUID;
+        uint64 mineGUID;
+        EventMap events;
+        uint32 wpMine;
+
         void Reset()
         {
-            Start(false, true/*, who->GetGUID()*/);
+            plrGUID = 0;
+            cartGUID = 0;
+            mineGUID = 0;
+            wpMine = 0;
+            events.Reset();
+            
         }
 
-        void WaypointReached(uint32 i)
+        void SetGUID(uint64 guid, int32 id)
         {
-            Player* player = GetPlayerForEscort();
-            switch(i)
+            plrGUID = guid;
+            Start(true, false, guid);
+            DoCast(me, SPELL_SUMMON_ORE_CART);
+        }
+
+        void EnterEvadeMode()
+        {
+            npc_escortAI::EnterEvadeMode();
+            if (Creature* cart = Unit::GetCreature(*me, cartGUID))
+                me->CastSpell(cart, SPELL_VISUAL_ORE_CART_CHAIN, true);
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            summon->AddPlayerInPersonnalVisibilityList(plrGUID);
+            summon->SetWalk(false);
+            summon->SetSpeed(MOVE_RUN, 1.25f);
+            summon->GetMotionMaster()->MoveFollow(me, 1.0f, 0);
+            cartGUID = summon->GetGUID();
+        }
+
+        void JustDied(Unit* /*killer*/) 
+        {
+            if (Player* player = GetPlayerForEscort())
+                player->FailQuest(QUEST_MINER_TROUBLES);
+        }
+
+        void seachMine()
+        {
+            if (GameObject* mine = me->FindNearestGameObject(GO_KAJAMITE_ORE, 20.0f))
             {
-                case 36:
+                mineGUID = mine->GetGUID();
+                SetEscortPaused(true);
+
+                events.Reset();
+
+                //Position pos;
+                //mine->GetNearPosition(pos, 1.0f, 0.0f);
+                me->GetMotionMaster()->MovePoint(EVENT_POINT_MINE, mine->m_positionX, mine->m_positionY, mine->m_positionZ);
+                me->HandleEmoteCommand(EMOTE_FIND_MINE);
+            }else if (HasEscortState(STATE_ESCORT_PAUSED))
+                SetEscortPaused(false);
+        }
+        
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            if (pointId == EVENT_POINT_MINE)
+            {
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_FIND_MINING);
+                events.ScheduleEvent(EVENT_GENERIC_1, 10000);
+                return;
+            }
+            if (HasEscortState(STATE_ESCORT_PAUSED))
+                seachMine();
+
+            npc_escortAI::MovementInform(moveType, pointId);
+        }
+
+        void WaypointReached(uint32 pointId)
+        {            
+            switch(pointId)
+            {
+                case 1:
+                    sCreatureTextMgr->SendChat(me, TEXT_MINER_0, plrGUID);
+                    if (Creature* cart = Unit::GetCreature(*me, cartGUID))
+                        me->CastSpell(cart, SPELL_VISUAL_ORE_CART_CHAIN, true);
+                    break;
+                case 7:
+                    sCreatureTextMgr->SendChat(me, TEXT_MINER_1, plrGUID);
+                    break;
+                case 10:
+                case 14:
+                case 17:
+                case 22:
+                    wpMine = pointId;
+                    seachMine();
+                    break;
+                case 23:
+                    sCreatureTextMgr->SendChat(me, TEXT_MINER_5, plrGUID);
+                    if (Player* player = GetPlayerForEscort())
+                        player->KilledMonsterCredit(NPC_QUEST_MINE_TROUBLES_CREDIT);
+                    break;
+                case 24:
+                    me->SetWalk(false);
                     break;
                 default:
                     break;
             }
         }
 
-        void JustDied(Unit* /*killer*/)
-        {
-
-        }
-
         void UpdateAI(uint32 const diff)
         {
             npc_escortAI::UpdateAI(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_GENERIC_1:
+                    {
+                        uint32 text = 0;
+                        switch(wpMine)
+                        {
+                            case 10: text = TEXT_MINER_2; break;
+                            case 14: text = TEXT_MINER_3; break;
+                            case 17: text = TEXT_MINER_4; break;
+                        }
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+                        SetEscortPaused(false);
+                        if (text)
+                            sCreatureTextMgr->SendChat(me, text, plrGUID);
+                        if (GameObject* go = ObjectAccessor::GetGameObject(*me, mineGUID))
+                        {
+                            go->SendCustomAnim(0);
+                            go->SetLootState(GO_JUST_DEACTIVATED);
+                        }
+                        break;
+                    }
+                }
+            }
         }
     };
 };
@@ -294,5 +474,6 @@ void AddSC_lost_isle()
 {
     new npc_gizmo();
     new npc_doc_zapnnozzle();
+    new npc_foreman_dampwick();
     new npc_frightened_miner();
 }
