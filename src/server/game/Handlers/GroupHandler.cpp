@@ -617,9 +617,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     }
 
     recvData.ReadGuidBytes<5, 3, 6, 7, 1, 2, 0, 4>(target_playerguid);
-    //recvData >> lootguid >> slotid >> target_playerguid;
 
-    if (!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
+    Group* group = _player->GetGroup();
+    if (!group || group->isLFGGroup() || group->GetLooterGuid() != _player->GetGUID())
     {
         _player->SendLootRelease(GetPlayer()->GetLootGUID());
         return;
@@ -685,7 +685,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         }
 
         // delete roll's in progress for this aoeSlot
-        _player->GetGroup()->ErraseRollbyRealSlot(slotid, loot);
+        group->ErraseRollbyRealSlot(slotid, loot);
 
         // ToDo: check for already rolled items. This could posible on packet spaming (special tools should be writen, no so important now)
 
@@ -730,7 +730,7 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
         return;
 
     /** error handling **/
-    if (!group->IsLeader(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()) || group->isLFGGroup())
         return;
     /********************/
 
