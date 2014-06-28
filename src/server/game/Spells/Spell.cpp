@@ -6945,6 +6945,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 break;
             }
             case SPELL_EFFECT_TALENT_SPEC_SELECT:
+            case SPELL_EFFECT_UNLEARN_TALENT:
                 // can't change during already started arena/battleground
                 if (Player* player = m_caster->ToPlayer())
                     if (Battleground* bg = player->GetBattleground())

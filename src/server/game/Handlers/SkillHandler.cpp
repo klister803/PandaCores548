@@ -71,6 +71,13 @@ void WorldSession::HandleLearnTalents(WorldPacket& recvData)
     if (count > _player->GetFreeTalentPoints())
         return;
 
+    Battleground* bg = _player->GetBattleground();
+    if (bg && bg->GetStatus() != STATUS_WAIT_JOIN)
+    {
+        recvData.rfinish();
+        return;
+    }
+
     for (uint32 i = 0; i < count; ++i)
     {
         uint16 talentId = recvData.read<uint16>();
