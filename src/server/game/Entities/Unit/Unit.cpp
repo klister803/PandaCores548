@@ -13520,11 +13520,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         DoneTotalMod = CalcPvPPower(victim, DoneTotalMod);
     }
 
-    // Sudden Death - 29725
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS && HasAura(29725) && (attType == BASE_ATTACK || attType == OFF_ATTACK || spellProto))
-        if (roll_chance_i(20))
-            CastSpell(this, 52437, true); // Reset Cooldown of Colossus Smash
-
     // Some spells don't benefit from pct done mods
     if (spellProto)
         if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && !spellProto->IsRankOf(sSpellMgr->GetSpellInfo(12162)))
