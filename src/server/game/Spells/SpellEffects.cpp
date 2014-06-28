@@ -4469,7 +4469,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     fixed_bonus += (aur->GetStackAmount() - 1) * CalculateDamage(2, unitTarget);
                 }
             }
-            // Heroic Strike - 154% more damage with one-hard weapon
+            // Heroic Strike - 154% more damage with one-hand weapon
             if (m_spellInfo->Id == 78)
             {
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -4479,7 +4479,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                             item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_AXE || 
                             item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_MACE || 
                             item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_FIST_WEAPON)
-                totalDamagePercentMod *= 1.54f;
+                totalDamagePercentMod *= 1.4f;
             }
             break;
         }
