@@ -766,48 +766,6 @@ class spell_warl_dark_regeneration : public SpellScriptLoader
         }
 };
 
-// Sacrificial Pact - 108416
-class spell_warl_sacrificial_pact : public SpellScriptLoader
-{
-    public:
-        spell_warl_sacrificial_pact() : SpellScriptLoader("spell_warl_sacrificial_pact") { }
-
-        class spell_warl_sacrificial_pact_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_sacrificial_pact_AuraScript);
-
-            void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if(!GetCaster()->GetGuardianPet())
-                    {
-                        int32 percent = GetSpellInfo()->Effects[EFFECT_1].BasePoints;
-                        int32 sacrifiedHealth = GetCaster()->CountPctFromCurHealth(percent);
-                        GetCaster()->ModifyHealth(-sacrifiedHealth);
-                        amount = CalculatePct(sacrifiedHealth, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
-                    }
-                    else if(GetCaster()->GetGuardianPet())
-                    {
-                        int32 percent = GetSpellInfo()->Effects[EFFECT_1].BasePoints;
-                        int32 sacrifiedHealth = GetCaster()->GetGuardianPet()->CountPctFromCurHealth(percent);
-                        GetCaster()->GetGuardianPet()->ModifyHealth(-sacrifiedHealth);
-                        amount = CalculatePct(sacrifiedHealth, GetSpellInfo()->Effects[EFFECT_0].BasePoints);
-                    }
-                }
-            }
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_sacrificial_pact_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_sacrificial_pact_AuraScript();
-        }
-};
-
 // Twilight Ward - 6229 and Twilight Ward (Metamorphosis) - 104048
 class spell_warl_twilight_ward_s12 : public SpellScriptLoader
 {
@@ -2036,7 +1994,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
-    new spell_warl_sacrificial_pact();
     new spell_warl_twilight_ward_s12();
     new spell_warl_hellfire();
     new spell_warl_demonic_leap();

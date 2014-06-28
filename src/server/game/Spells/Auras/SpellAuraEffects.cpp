@@ -638,6 +638,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             if (!caster)
                 break;
 
+            switch (m_spellInfo->Id)
+            {
+                case 108416: // Sacrificial Pact
+                {
+                    Unit* spelltarget = caster->GetGuardianPet() ? caster->GetGuardianPet(): caster;
+                    int32 sacrifiedHealth = spelltarget->CountPctFromCurHealth(m_spellInfo->Effects[EFFECT_1].BasePoints);
+                    spelltarget->ModifyHealth(-sacrifiedHealth);
+                    amount = CalculatePct(sacrifiedHealth, m_spellInfo->Effects[EFFECT_0].BasePoints);
+                    break;
+                }
+                default:
+                    break;
+            }
+
             amount = caster->CalcAbsorb(target, m_spellInfo, amount);
 
             break;
