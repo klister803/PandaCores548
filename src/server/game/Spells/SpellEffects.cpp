@@ -508,7 +508,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             return;
                         break;
                     }
-                    case 77758: // Thrash
+                    case 106830: // Thrash (Cat)
+                    case 77758:  // Thrash
                     {
                         damage += m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_spellInfo->Effects[EFFECT_2].BasePoints / 1000;
                         break;
