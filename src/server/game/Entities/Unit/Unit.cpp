@@ -6346,7 +6346,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb())
                     {
-                        int32 bp = CalculatePct(alldamage, triggerAmount / 100);
+                        int32 bp = CalculatePct(alldamage, triggerAmount / 100.0f);
 
                         if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
                             if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
