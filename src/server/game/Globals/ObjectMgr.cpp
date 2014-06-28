@@ -2401,6 +2401,11 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.ItemSpecExist = GetItemSpecsList(itemId).empty() ? 0 : 1;
         itemTemplate.FlagsCu = 0;
         ++sparseCount;
+
+        // Mantid Amber Sliver
+        if (itemTemplate.ItemId == 95373)
+            if (CurrencyTypesEntry const* curr = sCurrencyTypesStore.LookupEntry(CURRENCY_TYPE_ARCHAEOLOGY_MANTID))
+                itemTemplate.CurrencySubstitutionId = curr->SubstitutionId;
     }
 
     // Load missing items from item_template AND overwrite data from Item-sparse.db2 (item_template is supposed to contain Item-sparse.adb data)
