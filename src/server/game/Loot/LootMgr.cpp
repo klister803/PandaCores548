@@ -433,7 +433,7 @@ bool LootItem::AllowedForPlayer(Player const* player) const
     else if (type == LOOT_ITEM_TYPE_CURRENCY)
     {
         CurrencyTypesEntry const * currency = sCurrencyTypesStore.LookupEntry(itemid);
-        if (!itemid)
+        if (!currency)
             return false;
 
         if (!player->isGameMaster())

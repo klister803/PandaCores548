@@ -27092,6 +27092,8 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
     for (uint32 i = 0; i < max_slot; ++i)
     {
         LootItem* lootItem = loot.LootItemInSlot(i, this);
+        if (!lootItem->AllowedForPlayer(this))
+            continue;
 
         if (lootItem->currency)
         {
