@@ -4252,85 +4252,52 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
     if (result == SPELL_CAST_OK)
         return;
 
-    bool hasBit1 = false;
-    bool hasBit2 = false;
-    uint32 result1 = 0;
-    uint32 result2 = 0;
+    uint32 param1 = 0;
+    uint32 param2 = 0;
 
     switch (result)
     {
         case SPELL_FAILED_NOT_READY:
         {
-            hasBit1 = true;
-            result1 = 0;                                    // unknown (value 1 update cooldowns on client flag)                       
+            param1 = 0;                                    // unknown (value 1 update cooldowns on client flag)                       
             break;
         }
         case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
         {
-            hasBit1 = true;
-            result1 = spellInfo->RequiresSpellFocus;        // SpellFocusObject.dbc id
+            param1 = spellInfo->RequiresSpellFocus;        // SpellFocusObject.dbc id
             break;
         }
         case SPELL_FAILED_REQUIRES_AREA:                    // AreaTable.dbc id
         {
-            hasBit1 = true;
             // hardcode areas limitation case
             switch (spellInfo->Id)
             {
                 case 41617:                                 // Cenarion Mana Salve
                 case 41619:                                 // Cenarion Healing Salve
-                    result1 = 3905;
+                    param1 = 3905;
                     break;
                 case 41618:                                 // Bottled Nethergon Energy
                 case 41620:                                 // Bottled Nethergon Vapor
-                    result1 = 3842;
+                    param1 = 3842;
                     break;
                 case 45373:                                 // Bloodberry Elixir
-                    result1 = 4075;
+                    param1 = 4075;
                     break;
                 default:                                    // default case (don't must be)
-                    result1 = 0;
                     break;
             }
-
             break;
         }
         case SPELL_FAILED_TOTEMS:
         {
-            if (spellInfo->Totem[0] && spellInfo->Totem[1])
-            {
-                hasBit1 = true;
-                hasBit2 = true;
-            }
-            else
-            {
-                hasBit1 = true;
-            }
-
-            if (spellInfo->Totem[0])
-                result1 = spellInfo->Totem[0];
-
-            if (spellInfo->Totem[1])
-                result2 = spellInfo->Totem[1];
+            param1 = spellInfo->Totem[0];
+            param2 = spellInfo->Totem[1];
             break;
         }
         case SPELL_FAILED_TOTEM_CATEGORY:
         {
-            if (spellInfo->TotemCategory[0] && spellInfo->TotemCategory[1])
-            {
-                hasBit1 = true;
-                hasBit2 = true;
-            }
-            else
-            {
-                hasBit1 = true;
-            }
-
-            if (spellInfo->TotemCategory[0])
-                result1 = spellInfo->TotemCategory[0];
-
-            if (spellInfo->TotemCategory[1])
-                result2 = uint32(spellInfo->TotemCategory[1]);
+            param1 = spellInfo->TotemCategory[0];
+            param2 = spellInfo->TotemCategory[1];
 
             //if (hasBit1 && hasBit2 && (!spellInfo->TotemCategory[0] || !spellInfo->TotemCategory[1]))
             //    sLog->OutCS(">>> SPELL_FAILED_TOTEM_CATEGORY ");
@@ -4341,76 +4308,60 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_MAINHAND:
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS_OFFHAND:
         {
-            hasBit1 = true;
-            hasBit2 = true;
-            result1 = spellInfo->EquippedItemClass;
-            result2 = spellInfo->EquippedItemSubClassMask;
+            param1 = spellInfo->EquippedItemClass;
+            param2 = spellInfo->EquippedItemSubClassMask;
             break;
         }
         case SPELL_FAILED_TOO_MANY_OF_ITEM:
         {
-            uint32 item = 0;
-            for (int8 eff = 0; eff < MAX_SPELL_EFFECTS; eff++)
-                if (spellInfo->Effects[eff].ItemType)
-                    item = spellInfo->Effects[eff].ItemType;
-            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
-            if (proto && proto->ItemLimitCategory)
-            {
-                hasBit1 = true;
-                result1 = proto->ItemLimitCategory;
-            }
+            for (uint32 eff = 0; eff < MAX_SPELL_EFFECTS; ++eff)
+                if (uint32 item = spellInfo->Effects[eff].ItemType)
+                    if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item))
+                    {
+                        param1 = proto->ItemLimitCategory;
+                        break;
+                    }
             break;
         }
         case SPELL_FAILED_PREVENTED_BY_MECHANIC:
         {
-            hasBit1 = true;
-            result1 = spellInfo->GetAllEffectsMechanicMask();   // SpellMechanic.dbc id
+            param1 = spellInfo->GetAllEffectsMechanicMask();   // SpellMechanic.dbc id
             break;
         }
         case SPELL_FAILED_NEED_EXOTIC_AMMO:
         {
-            hasBit1 = true;
-            result1 = spellInfo->EquippedItemSubClassMask;          // seems correct...
+            param1 = spellInfo->EquippedItemSubClassMask;          // seems correct...
             break;
         }
         case SPELL_FAILED_NEED_MORE_ITEMS:
         {
-            hasBit1 = true;
-            hasBit2 = true;
-            result2 = 0;                              // Item id
-            result1 = 0;                              // Item count?
+            //param1 = 0;                              // Item count?
+            //param2 = 0;                              // Item id
             break;
         }
         case SPELL_FAILED_MIN_SKILL:
         {
-            hasBit1 = true;
-            hasBit2 = true;
-            result1 = 0;                              // SkillLine.dbc id
-            result2 = 0;                              // required skill value
+            //param1 = 0;                              // SkillLine.dbc id
+            //param2 = 0;                              // required skill value
             break;
         }
         case SPELL_FAILED_FISHING_TOO_LOW:
         {
-            hasBit1 = true;
-            result1 = 0;                              // required fishing skill
+            //param1 = 0;                              // required fishing skill
             break;
         }
         case SPELL_FAILED_CUSTOM_ERROR:
         {
-            hasBit1 = true;
-            result1 = customError;
+            param1 = customError;
             break;
         }
         case SPELL_FAILED_SILENCED:
         {
-            hasBit1 = true;
-            result1 = 0;                              // Unknown
+            //param1 = 0;                              // Unknown
             break;
         }
         case SPELL_FAILED_REAGENTS:
         {
-            uint32 missingItem = 0;
-            uint32 missingCount = 0;
             for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
             {
                 if (spellInfo->Reagent[i] <= 0)
@@ -4421,28 +4372,23 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
 
                 if (!caster->HasItemCount(itemid, itemcount))
                 {
-                    missingItem = itemid;
-                    missingCount = itemcount;
+                    param1 = itemid;
+                    param2 = itemcount;
                     break;
                 }
             }
 
-            if(spellInfo->ReagentCurrency != 0)
+            if(!param1 && spellInfo->ReagentCurrency != 0)
             {
                 uint32 currencyId    = spellInfo->ReagentCurrency;
                 uint32 currencyCount = spellInfo->ReagentCurrencyCount;
 
                 if (!caster->HasCurrency(currencyId, currencyCount))
                 {
-                    missingItem = currencyId;
-                    missingCount = currencyCount;
+                    param1 = currencyId;
+                    param2 = currencyCount;
                 }
             }
-
-            hasBit1 = true; //may be count?
-            hasBit2 = true;
-            result1 = missingItem;
-            result2 = missingCount;
             break;
         }
         // TODO: SPELL_FAILED_NOT_STANDING
@@ -4451,16 +4397,16 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
     }
 
     //! 5.4.1
-    WorldPacket data(SMSG_CAST_FAILED, 1+4+4);
-    data.WriteBit(!hasBit1);
-    data.WriteBit(!hasBit2);
-    data << uint32(result);                                 // problem
+    WorldPacket data(SMSG_CAST_FAILED, 4 * 4 + 1 + 1);
+    data.WriteBit(!param1);
+    data.WriteBit(!param2);
+    data << uint32(result);                                 // cast result
     data << uint32(spellInfo->Id);                          // spellId
-    if (hasBit1)
-        data << uint32(result1);
+    if (param1)
+        data << uint32(param1);
     data << uint8(cast_count);                              // single cast or multi 2.3 (0/1)
-    if (hasBit2)
-        data << uint32(result2);
+    if (param2)
+        data << uint32(param2);
     caster->GetSession()->SendPacket(&data);
 }
 
