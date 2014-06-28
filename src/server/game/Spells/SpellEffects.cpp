@@ -4469,6 +4469,18 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     fixed_bonus += (aur->GetStackAmount() - 1) * CalculateDamage(2, unitTarget);
                 }
             }
+            // Heroic Strike - 154% more damage with one-hard weapon
+            if (m_spellInfo->Id == 78)
+            {
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
+                        if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || 
+                            item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER || 
+                            item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_AXE || 
+                            item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_MACE || 
+                            item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_FIST_WEAPON)
+                totalDamagePercentMod *= 1.54f;
+            }
             break;
         }
         case SPELLFAMILY_ROGUE:
