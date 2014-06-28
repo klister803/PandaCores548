@@ -10344,21 +10344,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                     return false;
             break;
         }
-        // Enrage
-        case 13046:
-        {
-            if (!procSpell)
-                return false;
-
-            if (!(procEx & PROC_EX_CRITICAL_HIT))
-                return false;
-
-            // Mortal Strike, Bloodthirst and Colossus Smash critical strikes and critical blocks Enrage you
-            if (procSpell->Id != 12294 && procSpell->Id != 23881 && procSpell->Id != 86346)
-                return false;
-
-            break;
-        }
         // Backdraft
         case 117896:
         {
