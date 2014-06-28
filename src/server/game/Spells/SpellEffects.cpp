@@ -4469,8 +4469,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     fixed_bonus += (aur->GetStackAmount() - 1) * CalculateDamage(2, unitTarget);
                 }
             }
-            // Heroic Strike - 154% more damage with one-hand weapon
-            if (m_spellInfo->Id == 78)
+            // Heroic Strike - 154%, Cleave - 114.8% more damage with one-hand weapon
+            if (m_spellInfo->Id == 78 || m_spellInfo->Id == 845)
             {
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
