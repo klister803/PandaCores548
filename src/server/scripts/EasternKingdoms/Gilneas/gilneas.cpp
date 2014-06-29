@@ -2473,7 +2473,6 @@ public:
                         SetEscortPaused(true);
                         break;
                     }
-                    else
                     break;
                 case 12:
                     player->ExitVehicle();
