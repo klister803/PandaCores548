@@ -292,6 +292,7 @@ bool Player::TeleportToDigsiteInMap(uint32 mapId)
     float z = map->GetHeight(GetPhaseMask(), x, y, MAX_HEIGHT) + 0.1;
 
     TeleportTo(mapId, x, y, z, GetOrientation());
+    return true;
 }
 
 void Player::ShowResearchSites()

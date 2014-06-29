@@ -378,6 +378,7 @@ enum WorldIntConfigs
     CONFIG_GUILD_WEEKLY_REP_CAP,
     CONFIG_AUTO_SERVER_RESTART_HOUR,
     CONFIG_WORD_FILTER_MUTE_DURATION,
+    CONFIG_MAX_SKILL_VALUE,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -702,8 +703,7 @@ class World
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
         {
-            uint8 lvl = uint8(getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
-            return lvl > 60 ? 300 + ((lvl - 60) * 75) / 10 : lvl*5;
+            return getIntConfig(CONFIG_MAX_SKILL_VALUE);
         }
 
         void SetInitialWorldSettings();
