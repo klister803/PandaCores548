@@ -6912,10 +6912,33 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 if (guild->GetPurchasedTabsSize() >= GetSpellInfo()->Effects[0].BasePoints)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-                
+
                 if (guild->GetPurchasedTabsSize() < GetSpellInfo()->Effects[0].BasePoints - 1)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
+                break;
+            }
+            case SPELL_EFFECT_SCRIPT_EFFECT:
+            {
+                Player* player = m_caster->ToPlayer();
+                if (!player)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 143626:                                // Celestial Cloth and Its Uses
+                        if (player->HasSpell(143011))
+                            return SPELL_FAILED_SPELL_LEARNED;
+                        break;
+                    case 143644:                                // Hardened Magnificent Hide and Its Uses
+                        if (player->HasSpell(142976))
+                            return SPELL_FAILED_SPELL_LEARNED;
+                        break;
+                    case 143646:                                // Balanced Trillium Ingot and Its Uses
+                        if (player->HasSpell(143255))
+                            return SPELL_FAILED_SPELL_LEARNED;
+                        break;
+                }
                 break;
             }
             default:

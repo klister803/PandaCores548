@@ -5386,8 +5386,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 142976:                                // Hardened Magnificent Hide
                 case 143011:                                // Celestial Cloth
                 case 143255:                                // Balanced Trillium Ingot
-                case 143626:                                // Celestial Cloth and Its Uses
-                case 143646:                                // Balanced Trillium Ingot and Its Uses
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -5397,20 +5395,40 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
                     return;
                 }
-
+                case 143626:                                // Celestial Cloth and Its Uses
                 case 143644:                                // Hardened Magnificent Hide and Its Uses
+                case 143646:                                // Balanced Trillium Ingot and Its Uses
                 {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                    Player* player = m_caster->ToPlayer();
+                    if (!player)
                         return;
 
-                    // We need alow no learn new discover spell, but we need get cd. Are we have cd??
-                    if (m_caster->ToPlayer()->HasSpellCooldown(142976))
+                    uint32 spellToRecipe[][3] = {
+                        { 143626, 143011, 146925 },
+                        { 143644, 142976, 146923 },
+                        { 143646, 143255, 146921 },
+                        { 0, 0 }
+                    };
+
+                    uint32 learnSpell = 0;
+                    uint32 acceleratedSpell = 0;
+                    for (uint32 i = 0; spellToRecipe[i][0] != 0; ++i)
+                        if (spellToRecipe[i][0] == m_spellInfo->Id)
+                        {
+                            learnSpell = spellToRecipe[i][1];
+                            acceleratedSpell = spellToRecipe[i][2];
+                            break;
+                        }
+
+                    if (!learnSpell || player->HasSpell(learnSpell))
                         return;
 
-                    m_caster->ToPlayer()->learnSpell(142976, false);
+                    player->learnSpell(learnSpell, false);
+                    player->learnSpell(acceleratedSpell, false);
+
                     // learn random explicit discovery recipe (if any)
-                    if (uint32 discoveredSpell = GetExplicitDiscoverySpell(142976, m_caster->ToPlayer()))
-                        m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
+                    if (uint32 discoveredSpell = GetExplicitDiscoverySpell(learnSpell, player))
+                        player->learnSpell(discoveredSpell, false);
                     return;
                 }
                 case 62482: // Grab Crate
