@@ -5407,7 +5407,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         { 143626, 143011, 146925 },
                         { 143644, 142976, 146923 },
                         { 143646, 143255, 146921 },
-                        { 0, 0 }
+                        { 0, 0, 0 }
                     };
 
                     uint32 learnSpell = 0;
