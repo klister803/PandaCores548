@@ -1010,6 +1010,55 @@ class spell_war_intimidating_shout : public SpellScriptLoader
         }
 };
 
+// Glyph of Die by the Sword - 58386
+class spell_war_glyph_of_die_by_the_sword : public SpellScriptLoader
+{
+public:
+    spell_war_glyph_of_die_by_the_sword() : SpellScriptLoader("spell_war_glyph_of_die_by_the_sword") {}
+
+    class spell_war_glyph_of_die_by_the_sword_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_war_glyph_of_die_by_the_sword_SpellScript);
+
+        void HandleOnHit()
+        {            
+            Unit* pCaster = GetCaster();
+            if (!pCaster)
+                return;
+                        
+            if (pCaster->HasAura(58386))
+            {
+                if (GetSpellInfo()->Id == 7384)
+                {
+                    if (Aura* aura = pCaster->GetAura(118038))
+                    {
+                        int32 duration = aura->GetDuration();
+                        aura->SetDuration(duration+1000);
+                    }
+                }
+                if (GetSpellInfo()->Id == 100130)
+                {
+                    if (Aura* aura = pCaster->GetAura(118038))
+                    {
+                        int32 duration = aura->GetDuration();
+                        aura->SetDuration(duration+500);
+                    }
+                }
+            }
+        }
+
+    void Register()
+        {
+            OnHit += SpellHitFn(spell_war_glyph_of_die_by_the_sword_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_war_glyph_of_die_by_the_sword_SpellScript();
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1039,4 +1088,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_curse_of_enfeeblement();
     new spell_war_safeguard();
     new spell_war_intimidating_shout();
+    new spell_war_glyph_of_die_by_the_sword();
 }
