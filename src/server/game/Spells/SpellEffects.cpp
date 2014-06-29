@@ -2873,6 +2873,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             {
                 damage = 0;
             }
+            m_caster->RemoveAura(50227);
             break;
         }
         case 1454: // Life Tap

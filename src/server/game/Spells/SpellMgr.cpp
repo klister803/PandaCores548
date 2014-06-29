@@ -4060,6 +4060,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
                 case 113901: // Demonic Gateway
+                case 50227: // Sword and Board
                     spellInfo->ProcCharges = 0;
                     break;
                 case 109259: // Powershot
