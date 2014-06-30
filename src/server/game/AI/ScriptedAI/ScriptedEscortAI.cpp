@@ -166,7 +166,7 @@ void npc_escortAI::ReturnToLastPoint()
 
 void npc_escortAI::EnterEvadeMode()
 {
-    me->RemoveAllAuras();
+    me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
     me->DeleteThreatList();
     me->CombatStop(true);
     me->SetLootRecipient(NULL);
