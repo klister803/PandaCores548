@@ -36,6 +36,11 @@ enum isle_spells
     SPELL_SUMMON_WW_CHANNEL_BUNNY                = 68216, // Weed Whacker: Summon Weed Whacker Channel Bunny
     SPELL_WEED_WHACKER                           = 68212, // Weed Whacker DMG aura
     SPELL_WEED_WHACKER_BUF                       = 68824, //Weed Whacker
+    SPELL_PHASE_4                                = 67852,
+    SPELL_PHASE_8                                = 67853,
+    SPELL_TRALL_CHAIN_LIGHTING_RIGHT             = 68441,
+    SPELL_TRALL_CHAIN_LIGHTING_LEFT              = 68440,
+    SPELL_VISUAL_FLAME_AFTER_LIGHTING            = 42345,
 };
 
 enum isle_npc
@@ -873,7 +878,6 @@ public:
                     {
                         SetEscortPaused(true);
                         player->ExitVehicle();
-                        player->SetClientControl(me, 1);
                     }
                     break;
             }
@@ -893,6 +897,177 @@ public:
     };
 };
 
+class npc_gyrochoppa : public CreatureScript
+{
+public:
+    npc_gyrochoppa() : CreatureScript("npc_gyrochoppa") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_gyrochoppaAI (creature);
+    }
+
+    struct npc_gyrochoppaAI : public npc_escortAI
+    {
+        npc_gyrochoppaAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+        void Reset()
+        {
+             PlayerOn       = false;
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+             PlayerOn = true;
+             Start(false, true, who->GetGUID());
+             who->ToPlayer()->PlayDistanceSound(16422, who->ToPlayer());
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            switch(i)
+            {
+                case 6:
+                    if (Player* player = GetPlayerForEscort())
+                    {
+                        SetEscortPaused(true);
+                        player->ExitVehicle();
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, player->GetGUID());
+                    }
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            
+            if (PlayerOn)
+            {
+                if (Player* player = GetPlayerForEscort())
+                    player->SetClientControl(me, 0);
+                PlayerOn = false;
+            }
+        }
+    };
+};
+
+// Meet Me Up Top: Quest Phase Controller Aura
+// castom phaser. Blizz use it for remove phase 8 | 4 by i did it by removing them at spell_area... so just set phase logic
+class spell_mmut_phase_controller : public SpellScriptLoader
+{
+    public:
+        spell_mmut_phase_controller() : SpellScriptLoader("spell_mmut_phase_controller") { }
+
+        class spell_mmut_phase_controller_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mmut_phase_controller_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* owner = GetUnitOwner();
+                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                owner->ToPlayer()->GetPhaseMgr().RegisterPhasingAuraEffect(aurEff);	
+                owner->UpdateObjectVisibility();
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* owner = GetUnitOwner();
+                if (!owner  || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                owner->ToPlayer()->GetPhaseMgr().UnRegisterPhasingAuraEffect(aurEff);
+                owner->UpdateObjectVisibility();
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectRemoveFn(spell_mmut_phase_controller_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mmut_phase_controller_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mmut_phase_controller_AuraScript();
+        }
+};
+
+
+//Chain Lightning trall
+class spell_trall_chain_lightning : public SpellScriptLoader
+{
+public:
+    spell_trall_chain_lightning() : SpellScriptLoader("spell_trall_chain_lightning") { }
+
+    class spell_trall_chain_lightning_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_trall_chain_lightning_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            PreventHitDefaultEffect(effIndex);
+
+            Unit* caster =  GetCaster();
+            if (!caster)
+                return;
+
+            Unit* target = GetHitUnit();
+            if (!target || target->GetTypeId() == TYPEID_PLAYER)
+                return;
+
+            target->CastSpell(target, SPELL_VISUAL_FLAME_AFTER_LIGHTING, true);
+        }
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            Unit* caster =  GetCaster();
+            if (!caster)
+                return;
+
+            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+            {
+                if (983.0f < (*itr)->GetPositionX())    //left
+                {
+                    if (m_scriptSpellId == SPELL_TRALL_CHAIN_LIGHTING_LEFT)
+                        ++itr;
+                    else
+                        targets.erase(itr++);
+                }else
+                {
+                    if (m_scriptSpellId == SPELL_TRALL_CHAIN_LIGHTING_RIGHT)
+                        ++itr;
+                    else
+                        targets.erase(itr++);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_trall_chain_lightning_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_NEARBY_ENTRY);
+            OnEffectHitTarget += SpellEffectFn(spell_trall_chain_lightning_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_trall_chain_lightning_SpellScript();
+    }
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -905,4 +1080,7 @@ void AddSC_lost_isle()
     new npc_strangle_vine();
     new spell_weed_whacker();
     new npc_bastia();
+    new npc_gyrochoppa();
+    new spell_mmut_phase_controller();
+    new spell_trall_chain_lightning();
 }
