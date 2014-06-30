@@ -136,9 +136,17 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Nature's Grasp
             if (spellproto->SpellFamilyFlags[0] & 0x00000200)
                 return DIMINISHING_CONTROLLED_ROOT;
-            // Faerie Fire and Infected Wounds
-            else if (spellproto->SpellFamilyFlags[0] & 0x400 || spellproto->Id == 58180 || spellproto->Id == 102355)
-                return DIMINISHING_LIMITONLY;
+
+            switch (spellproto->Id)
+            {
+                case 770:    // Faerie Fire
+                case 58180:  // Infected Wounds
+                case 102355: // Faerie Swarm
+                case 102354: // Faerie Swarm (Slow)
+                    return DIMINISHING_LIMITONLY;
+                default:
+                    break;
+            }
             break;
         }
         case SPELLFAMILY_ROGUE:
