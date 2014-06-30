@@ -55,6 +55,8 @@ enum WarriorSpells
     WARRIOR_SPELL_PHYSICAL_VULNERABILITY        = 81326,
     WARRIOR_SPELL_STORM_BOLT_STUN               = 132169,
     WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED       = 132404,
+    WARRIOR_SPELL_GLYPH_OF_GAG_ORDER            = 58357,
+    WARRIOR_SPELL_SILENCED_GAG_ORDER            = 18498,
 };
 
 // Stampeding Shout - 122294
@@ -1059,6 +1061,41 @@ public:
     }
 };
 
+// Glyph of Gag Order - 58357
+class spell_glyph_of_gag_order : public SpellScriptLoader
+{
+public:
+    spell_glyph_of_gag_order() : SpellScriptLoader("spell_glyph_of_gag_order") {}
+
+    class spell_glyph_of_gag_order_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_glyph_of_gag_order_SpellScript);
+
+        void HandleOnHit()
+        {            
+            Unit* player = GetCaster();
+            Unit* target = GetHitUnit();
+            if (!player || target->GetTypeId() == TYPEID_PLAYER)
+                return;
+
+            if (player->HasAura(WARRIOR_SPELL_GLYPH_OF_GAG_ORDER))
+            {
+                player->CastSpell(target, WARRIOR_SPELL_SILENCED_GAG_ORDER, true);
+            }
+        }
+
+    void Register()
+        {
+            OnHit += SpellHitFn(spell_glyph_of_gag_order_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_glyph_of_gag_order_SpellScript();
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1089,4 +1126,5 @@ void AddSC_warrior_spell_scripts()
     new spell_war_safeguard();
     new spell_war_intimidating_shout();
     new spell_war_glyph_of_die_by_the_sword();
+    new spell_glyph_of_gag_order();
 }
