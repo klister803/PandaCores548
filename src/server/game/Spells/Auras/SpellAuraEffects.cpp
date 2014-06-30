@@ -684,6 +684,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 1178:   // Bear Form Passive
+                {
+                    if (caster->HasAura(114237))
+                        amount = 15000;
+                    break;
+                }
                 case 114232: // Sanctified Wrath
                 {
                     if (Player* paladin = caster->ToPlayer())
