@@ -643,6 +643,17 @@ namespace Trinity
             GameObjectFocusCheck(Unit const* unit, uint32 focusId) : i_unit(unit), i_focusId(focusId) {}
             bool operator()(GameObject* go) const
             {
+                // Time to hack: Anvil of the Thunder Forges
+                if (i_focusId == 1813)
+                {
+                    if (go->GetGOInfo()->type != GAMEOBJECT_TYPE_GOOBER || go->GetGOInfo()->displayId != 10982)
+                        return false;
+
+                    float dist = go->GetGOInfo()->size * 2;
+
+                    return go->IsWithinDistInMap(i_unit, dist);
+                }
+
                 if (go->GetGOInfo()->type != GAMEOBJECT_TYPE_SPELL_FOCUS)
                     return false;
 

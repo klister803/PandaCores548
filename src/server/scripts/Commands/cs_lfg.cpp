@@ -84,6 +84,7 @@ public:
         }
 
         sLFGMgr->JoinLfg(player, uint8(roles), dungeons, "");
+        return true;
     }
 
     static bool HandleLfgPlayerInfoCommand(ChatHandler* handler, char const* args)
