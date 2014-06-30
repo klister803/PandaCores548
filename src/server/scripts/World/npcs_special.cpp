@@ -2513,6 +2513,7 @@ class npc_training_dummy : public CreatureScript
                         case 100:
                         case 172:
                         case 589:
+                        case 8921:
                         case 20271:
                         case 73899:
                         case 100787:
