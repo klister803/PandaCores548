@@ -3542,9 +3542,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
                     break;
-                case 126462: // Thermal Anvil
-                    spellInfo->Effects[1].MiscValue = 0;
-                    break;
                 case 1943:  // Rupture
                 case 2818:  // Deadly Poison
                 case 703:   // Garrote
