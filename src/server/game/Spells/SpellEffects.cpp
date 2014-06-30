@@ -4916,6 +4916,20 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
     {
         case SPELLFAMILY_GENERIC:
         {
+            // process discovery spells
+            if (m_spellInfo->Mechanic == MECHANIC_DISCOVERY || m_spellInfo->IsExplicitDiscovery())
+            {
+                if (Player* player = m_caster->ToPlayer())
+                {
+                    // learn random explicit discovery recipe (if any)
+                    if (uint32 discoveredSpell = GetExplicitDiscoverySpell(m_spellInfo->Id, player))
+                    {
+                        player->learnSpell(discoveredSpell, false);
+                        return;
+                    }
+                }
+            }
+
             switch (m_spellInfo->Id)
             {
                 // Glyph of Backstab
@@ -5379,27 +5393,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         unitTarget->CastSpell(unitTarget, 59314, true);
 
                     return;
-                // random spell learn instead placeholder
-                case 60893:                                 // Northrend Alchemy Research
-                case 61177:                                 // Northrend Inscription Research
-                case 61288:                                 // Minor Inscription Research
-                case 64323:                                 // Book of Glyph Mastery
-                case 112996:                                // Scroll of Wisdom
-                case 125557:                                // Imperial Silk
-                case 140040:                                // Magnificence of Leather
-                case 140041:                                // Magnificence of Scales
-                case 142976:                                // Hardened Magnificent Hide
-                case 143011:                                // Celestial Cloth
-                case 143255:                                // Balanced Trillium Ingot
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    // learn random explicit discovery recipe (if any)
-                    if (uint32 discoveredSpell = GetExplicitDiscoverySpell(m_spellInfo->Id, m_caster->ToPlayer()))
-                        m_caster->ToPlayer()->learnSpell(discoveredSpell, false);
-                    return;
-                }
                 case 143626:                                // Celestial Cloth and Its Uses
                 case 143644:                                // Hardened Magnificent Hide and Its Uses
                 case 143646:                                // Balanced Trillium Ingot and Its Uses
