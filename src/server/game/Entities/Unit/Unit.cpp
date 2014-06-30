@@ -10201,17 +10201,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
 
             break;
         }
-        // Ultimatum
-        case 122509:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 23922)
-                return false;
-
-            break;
-        }
         // Revenge (aura proc)
         case 5301:
         {
