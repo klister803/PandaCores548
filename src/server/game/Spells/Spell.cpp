@@ -2076,7 +2076,8 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             {
                 if (foundItr == tempTargets.end())
                 {
-                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr))
+                    // isBouncingFar allow hit not in los target & IsWithinDist already checked at SearchAreaTargets
+                    if (isBouncingFar || target->IsWithinLOSInMap(*itr))
                         foundItr = itr;
                 }
                 else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr))
