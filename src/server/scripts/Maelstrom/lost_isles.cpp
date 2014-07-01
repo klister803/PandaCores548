@@ -13,6 +13,7 @@ enum isle_quests
     QUEST_MINER_TROUBLES                         = 14021,  // Miner Troubles
     QUEST_CAPTURE_UNKNOWN                        = 14031,  // Capturing the Unknown
     QUEST_WEED_WHACKER                           = 14236,  // Weed Whacker
+    QUEST_WARCHIEF_REVENGE                       = 14243,  //Warchief's Revenge
 };
 
 enum isle_spells
@@ -41,6 +42,9 @@ enum isle_spells
     SPELL_TRALL_CHAIN_LIGHTING_RIGHT             = 68441,
     SPELL_TRALL_CHAIN_LIGHTING_LEFT              = 68440,
     SPELL_VISUAL_FLAME_AFTER_LIGHTING            = 42345,
+    SPELL_VISUAL_UP_UP_ROCKET                    = 68813, // Up, Up & Away!: Force Cast from Sling Rocket
+    SPELL_UP_UP_AWAY_KILL_CREDIT                 = 66127, // Up, Up & Away!: Kill Credit + Explosion
+    SPELL_VISUAL_ROCKET_BLAST                    = 66110, // Rocket Scouting: Rocket Blast
 };
 
 enum isle_npc
@@ -1028,7 +1032,8 @@ public:
             if (!target || target->GetTypeId() == TYPEID_PLAYER)
                 return;
 
-            target->CastSpell(target, SPELL_VISUAL_FLAME_AFTER_LIGHTING, true);
+            if (944.0f > target->GetPositionX() || 1030.0f < target->GetPositionX())
+                target->CastSpell(target, SPELL_VISUAL_FLAME_AFTER_LIGHTING, true);
         }
 
         void FilterTargets(std::list<WorldObject*>& targets)
@@ -1068,6 +1073,157 @@ public:
     }
 };
 
+class npc_cyclone_of_the_elements : public CreatureScript
+{
+public:
+    npc_cyclone_of_the_elements() : CreatureScript("npc_cyclone_of_the_elements") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_cyclone_of_the_elementsAI (creature);
+    }
+
+    struct npc_cyclone_of_the_elementsAI : public npc_escortAI
+    {
+        npc_cyclone_of_the_elementsAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+        bool onFinish;
+        void Reset()
+        {
+             PlayerOn       = false;
+             onFinish       = false;
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+             PlayerOn = true;
+             Start(false, true, who->GetGUID());
+             who->ToPlayer()->PlayDistanceSound(16424, who->ToPlayer());
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            switch(i)
+            {
+                // last point of cycle. set 4 point, skipp start.
+                case 25:
+                    SetNextWaypoint(4, false, false);
+                    break;
+                case 34:
+                    if (Player* player = GetPlayerForEscort())
+                        player->ExitVehicle();
+                    break;
+                default:
+                {
+                    if (onFinish)
+                        break;
+                    if (Player* player = GetPlayerForEscort())
+                    {
+                        if (player->GetQuestStatus(QUEST_WARCHIEF_REVENGE) == QUEST_STATUS_COMPLETE)
+                        {
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, player->GetGUID());
+                            SetNextWaypoint(26, false, false);
+                            onFinish = true;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            
+            if (PlayerOn)
+            {
+                if (Player* player = GetPlayerForEscort())
+                    player->SetClientControl(me, 0);
+                PlayerOn = false;
+            }
+        }
+    };
+};
+
+class npc_sling_rocket : public CreatureScript
+{
+public:
+    npc_sling_rocket() : CreatureScript("npc_sling_rocket") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_sling_rocketAI (creature);
+    }
+
+    struct npc_sling_rocketAI : public npc_escortAI
+    {
+        npc_sling_rocketAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+        void Reset()
+        {
+             PlayerOn       = false;
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+             PlayerOn = true;
+             Start(false, true, who->GetGUID());
+             who->ToPlayer()->PlayDistanceSound(2304, who->ToPlayer());
+             me->CastSpell(me, SPELL_VISUAL_ROCKET_BLAST, true);
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            switch(i)
+            {
+                case 6:
+                case 7:
+                    me->CastSpell(me, SPELL_VISUAL_UP_UP_ROCKET, true);
+                    break;
+                case 8:
+                    if (Player* player = GetPlayerForEscort())
+                    {
+                        player->ExitVehicle();
+                        player->CastSpell(player, SPELL_UP_UP_AWAY_KILL_CREDIT, true);                        
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            
+            if (PlayerOn)
+            {
+                if (Player* player = GetPlayerForEscort())
+                    player->SetClientControl(me, 0);
+                PlayerOn = false;
+            }
+        }
+    };
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -1083,4 +1239,6 @@ void AddSC_lost_isle()
     new npc_gyrochoppa();
     new spell_mmut_phase_controller();
     new spell_trall_chain_lightning();
+    new npc_cyclone_of_the_elements();
+    new npc_sling_rocket();
 }

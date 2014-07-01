@@ -4950,7 +4950,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Thrall Lighting in goblin
                 case 68441:
                 case 68440:
-                    spellInfo->Effects[EFFECT_0].ChainTarget = 50;
+                    spellInfo->Effects[EFFECT_0].ChainTarget = 60;
                     break;
                 default:
                     break;
