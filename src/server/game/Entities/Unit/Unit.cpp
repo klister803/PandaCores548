@@ -7440,11 +7440,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 // Sweeping Strikes
                 case 12328:
                 {
-                    target = SelectNearbyTarget(victim);
+                    if (!victim || !damage)
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!procSpell || procSpell->Id == 76858)
+                        return false;
+
+                    triggered_spell_id = 12723;
+
+                    target = SelectNearbyTarget(victim, 5);
+
                     if (!target)
                         return false;
 
-                    triggered_spell_id = 26654;
+                    basepoints0 = damage;
                     break;
                 }
                 // Victorious
