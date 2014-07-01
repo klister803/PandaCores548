@@ -1314,7 +1314,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
                     break;
                 }
-                case 127132:    // Wormhole: Pandaria
+                case 126755:    // Wormhole: Pandaria
                 {
                     if (!unitTarget)
                         return;
