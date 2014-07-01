@@ -1587,12 +1587,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             target->ToPlayer()->RemoveSpellCooldown(20252, true);
                         break;
                 }
-
-                // Recently Bandaged
-                if (m_spellInfo->Mechanic == MECHANIC_PROVOKE || (m_spellInfo->SpellIconID == 104 && m_spellInfo->Effects[EFFECT_0].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
-                    if (target && target->IsInWorld())
-                        target->CastSpell(target, 11196, true);
-
                 break;
             case SPELLFAMILY_DRUID:
                 if (!caster)
