@@ -501,7 +501,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
-                    case 770: // Faerie Fire
+                    case 102355: // Faerie Swarm
+                    case 770:    // Faerie Fire
                     {
                         // Deals damage only if casted from bear form
                         if (m_caster->GetShapeshiftForm() != FORM_BEAR)
