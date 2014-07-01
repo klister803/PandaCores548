@@ -459,6 +459,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         damage += int32(CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), pct));
                     break;
                 }
+                // Impending Victory
+                if (m_spellInfo->Id == 103840)
+                {
+                    int32 pct = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, 0);
+                    if (pct > 0)
+                        damage += int32(CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), pct));
+                    break;
+                }
                 break;
             }
             case SPELLFAMILY_WARLOCK:
