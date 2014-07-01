@@ -1681,6 +1681,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (m_spellInfo->Id)
                 {
+                    case 115078: // Cap
+                    {
+                        if (target->isInBack(caster))
+                        {
+                            int32 duration = GetMaxDuration();
+                            AddPct(duration, m_spellInfo->Effects[EFFECT_1].BasePoints);
+                            SetMaxDuration(duration);
+                            SetDuration(duration);
+                        }
+                        break;
+                    }
                     case 132467: // Chi Wave Neg
                     {
                         int32 bp = aurApp->GetBase()->GetEffect(1)->GetAmount();

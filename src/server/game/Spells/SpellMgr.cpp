@@ -325,6 +325,12 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
                 return 120 * IN_MILLISECONDS;
             break;
         }
+        case SPELLFAMILY_MONK:
+        {
+            if (spellproto->Id == 115078)
+                return 4 * IN_MILLISECONDS;
+            break;
+        }
         default:
             break;
     }

@@ -2150,63 +2150,6 @@ class spell_monk_provoke : public SpellScriptLoader
         }
 };
 
-// Paralysis - 115078
-class spell_monk_paralysis : public SpellScriptLoader
-{
-    public:
-        spell_monk_paralysis() : SpellScriptLoader("spell_monk_paralysis") { }
-
-        class spell_monk_paralysis_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_paralysis_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (target->isInBack(caster))
-                        {
-                            if (AuraApplication* aura = target->GetAuraApplication(115078))
-                            {
-                                Aura* Paralysis = aura->GetBase();
-                                int32 maxDuration = Paralysis->GetMaxDuration();
-                                int32 newDuration = maxDuration * 2;
-                                Paralysis->SetDuration(newDuration);
-
-                                if (newDuration > maxDuration)
-                                    Paralysis->SetMaxDuration(newDuration);
-                            }
-                        }
-                        
-                        if (target->ToPlayer())
-                        {
-                            if (AuraApplication* aura = target->GetAuraApplication(115078))
-                            {
-                                Aura* Paralysis = aura->GetBase();
-                                int32 maxDuration = Paralysis->GetMaxDuration();
-                                int32 newDuration = maxDuration / 2;
-                                Paralysis->SetDuration(newDuration);
-                                Paralysis->SetMaxDuration(newDuration);
-                            }                            
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_monk_paralysis_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_paralysis_SpellScript();
-        }
-};
-
 // Fortifying brew - 115203
 class spell_monk_fortifying_brew : public SpellScriptLoader
 {
@@ -2445,7 +2388,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_blackout_kick();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
-    new spell_monk_paralysis();
     new spell_monk_provoke();
     new spell_monk_roll();
     new spell_monk_tigereye_brew_stacks();
