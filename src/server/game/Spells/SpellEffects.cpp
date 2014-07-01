@@ -1314,6 +1314,49 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
                     break;
                 }
+                case 127132:    // Wormhole: Pandaria
+                {
+                    if (!unitTarget)
+                        return;
+
+                    Player* player = unitTarget->ToPlayer();
+                    if (!player)
+                        return;
+
+                    switch (urand(0, 8))
+                    {
+                        case 0:     // Dread Wastes, Zan'vess
+                            player->TeleportTo(870, -1513.342896f, 4575.043945f, 367.025208f, 1.921501f);
+                            break;
+                        case 1:     // Dread Wastes, Rikkitun Village
+                            player->TeleportTo(870, 635.419983f, 4150.577637f, 210.107971f, 3.444401f);
+                            break;
+                        case 2:     // The Jade Forest, Emperor's Omen
+                            player->TeleportTo(870, 2387.586914f, -2107.073486f, 230.486252f, 5.69462f);
+                            break;
+                        case 3:     // Krasarang Wilds, Narsong Spires
+                            player->TeleportTo(870, -1493.026123f, -380.700806f, 119.941902f, 1.411952f);
+                            break;
+                        case 4:     // Kun-Lai Summit, Firebough Nook
+                            player->TeleportTo(870, 2087.523682f, 2113.091309f, 443.190643f, 5.433147f);
+                            break;
+                        case 5:     // Kun-Lai Summit, Isle of Reckoning
+                            player->TeleportTo(870, 5052.794434f, 193.100662f, 2.693901f, 4.899077f);
+                            break;
+                        case 6:     // Townlong Steppes, Sra'vess
+                            player->TeleportTo(870, 3074.227539f, 6119.812500f, 54.291294f, 0.226609f);
+                            break;
+                        case 7:     // Vale of Eternal Blossoms, Whitepetal Lake
+                            player->TeleportTo(870, 1208.797974f, 1376.896851f, 363.663788f, 5.034821f);
+                            break;
+                        case 8:     // Valley of the Four Winds, The Heartland
+                            player->TeleportTo(870, 125.107628f, 1024.812378f, 194.217041f, 3.868679f);
+                            break;
+                        default:
+                            break;
+                    }
+                    return;
+                }
                 case 148565:    // Spectral Grog
                 {
                     if (!unitTarget)
