@@ -865,18 +865,18 @@ void Battleground::EndBattleground(uint32 winner)
         // Reward winner team
         if (team == winner)
         {
-            if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID()))
+            if (isBattleground() && !IsRBG() && (IsRandom() || BattlegroundMgr::IsBGWeekend(GetTypeID())))
             {
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, winner_bonus);
                 if (!player->GetRandomWinner())
                 {
-                    // 100cp awarded for the first rated battleground won each day 
+                    // 150cp awarded for the first rated battleground won each day 
                     player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_FIRST);
                     player->SetRandomWinner(true);
                 }
+                else
+                    player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_LAST);
             }
-            //else // 50cp awarded for each non-rated battleground won 
-             //   player->ModifyCurrency(CURRENCY_TYPE_CONQUEST_META_ARENA/*CURRENCY_TYPE_CONQUEST_META_RANDOM_BG*/, BG_REWARD_WINNER_CONQUEST_LAST );
 
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1);
             if (!guildAwarded)
@@ -1001,7 +1001,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (isArena() || IsRBG())
             {
                 // set the bg type to all arenas & rbg (it will be used for queue refreshing)
-                bgTypeId = isArena() ? BATTLEGROUND_AA : BATTLEGROUND_RATED_10_VS_10;                   
+                bgTypeId = isArena() ? BATTLEGROUND_AA : BATTLEGROUND_RATED_10_VS_10;
 
                 // unsummon current and summon old pet if there was one and there isn't a current pet
                 player->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT);
