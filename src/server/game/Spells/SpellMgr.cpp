@@ -4953,6 +4953,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 68440:
                     spellInfo->Effects[EFFECT_0].ChainTarget = 60;
                     break;
+                case 71091: // Goblin. Lost Isles. It's a Town-In-A-Box
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(63);
+                    break;
                 default:
                     break;
             }
