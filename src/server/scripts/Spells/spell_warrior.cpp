@@ -325,35 +325,6 @@ class spell_warr_staggering_shout : public SpellScriptLoader
         }
 };
 
-// Frenzied Regeneration - 55694
-class spell_warr_frenzied_regeneration : public SpellScriptLoader
-{
-    public:
-        spell_warr_frenzied_regeneration() : SpellScriptLoader("spell_warr_frenzied_regeneration") { }
-
-        class spell_warr_frenzied_regeneration_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_frenzied_regeneration_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAuraState(AURA_STATE_ENRAGE))
-                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 600, POWER_RAGE);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_frenzied_regeneration_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_frenzied_regeneration_SpellScript();
-        }
-};
-
 // Second Wind - 29838
 class spell_warr_second_wind : public SpellScriptLoader
 {
@@ -1106,7 +1077,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_meat_cleaver();
     new spell_warr_dragon_roar();
     new spell_warr_staggering_shout();
-    new spell_warr_frenzied_regeneration();
     new spell_warr_second_wind();
     new spell_warr_sudden_death();
     new spell_warr_mocking_banner();
