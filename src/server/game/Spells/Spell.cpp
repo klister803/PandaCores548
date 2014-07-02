@@ -6425,7 +6425,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 switch (m_spellInfo->Id)
                 {
-                    case 36554: // Shadowstep
+                    case 36554:     // Shadowstep
                     {
                         if (Unit * target = m_targets.GetUnitTarget())
                             if (target == m_caster)
@@ -6523,6 +6523,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                             }
                         }
                         break;
+                    }
+                    case 143333:    // Water Strider Water Walking
+                    {
+                        if (Map* map = m_caster->GetMap())
+                            if (map->IsBattlegroundOrArena())
+                                return (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_INCORRECT_AREA;
                     }
                     default:
                         break;

@@ -4134,6 +4134,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 81292:  // Glyph of Mind Spike
                 case 131567: // Holy Spark
                 case 125831: // Taste for Blood
+                case 143333: // Water Strider Water Walking
                     spellInfo->ProcCharges = 1;
                     break;
                 case 89485:  // Inner Focus

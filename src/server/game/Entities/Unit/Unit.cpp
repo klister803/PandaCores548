@@ -16766,6 +16766,7 @@ bool InitTriggerAuraData()
     isAlwaysTriggeredAura[SPELL_AURA_MOD_STEALTH] = true;
     isAlwaysTriggeredAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING] = true;
+    isAlwaysTriggeredAura[SPELL_AURA_WATER_WALK] = true;
 
     return true;
 }
