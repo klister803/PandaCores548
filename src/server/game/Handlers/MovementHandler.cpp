@@ -708,6 +708,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             {
                 if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
                 {
+                    // by CyberBrest: Nice! Best regards. Just kill man,  maybe return them to the grave??? 
+                    // move to grave, and then kill.
+                    plrMover->RepopAtGraveyard();
+
                     // NOTE: this is actually called many times while falling
                     // even after the player has been teleported away
                     // TODO: discard movement packets after the player is rooted
