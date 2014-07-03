@@ -987,6 +987,12 @@ bool GameObject::ActivateToQuest(Player* target) const
                 return true;
             break;
         }
+        case GAMEOBJECT_TYPE_SPELL_FOCUS:
+        {
+            if (GetGOInfo()->spellFocus.questID == -1 || target->GetQuestStatus(GetGOInfo()->spellFocus.questID) == QUEST_STATUS_INCOMPLETE)
+                return true;
+            break;
+        }
         default:
             break;
     }

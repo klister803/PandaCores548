@@ -7612,6 +7612,16 @@ void ObjectMgr::LoadGameObjectForQuests()
                 }
                 break;
             }
+            case GAMEOBJECT_TYPE_SPELL_FOCUS:
+            {
+                //
+                if (itr->second.spellFocus.questID > 0)              //quests objects
+                {
+                    _gameObjectForQuestStore.insert(itr->second.entry);
+                    count++;
+                }
+                break;
+            }
             default:
                 break;
         }
