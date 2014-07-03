@@ -552,7 +552,8 @@ void GameObject::Update(uint32 diff)
 
             //! If this is summoned by a spell with ie. SPELL_EFFECT_SUMMON_OBJECT_WILD, with or without owner, we check respawn criteria based on spell
             //! The GetOwnerGUID() check is mostly for compatibility with hacky scripts - 99% of the time summoning should be done trough spells.
-            if (GetSpellId() || GetOwnerGUID())
+            //! If object is tmp spawn no need collect him all time in depawn mode.
+            if (GetSpellId() || GetOwnerGUID() || !m_spawnedByDefault)
             {
                 SetRespawnTime(0);
                 Delete();
@@ -569,9 +570,7 @@ void GameObject::Update(uint32 diff)
                 SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
             }
 
-            if (!m_respawnDelayTime)
-                return;
-
+            //! depr. see above
             if (!m_spawnedByDefault)
             {
                 m_respawnTime = 0;
