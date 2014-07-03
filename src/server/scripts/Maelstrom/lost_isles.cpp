@@ -13,7 +13,9 @@ enum isle_quests
     QUEST_MINER_TROUBLES                         = 14021,  // Miner Troubles
     QUEST_CAPTURE_UNKNOWN                        = 14031,  // Capturing the Unknown
     QUEST_WEED_WHACKER                           = 14236,  // Weed Whacker
-    QUEST_WARCHIEF_REVENGE                       = 14243,  //Warchief's Revenge
+    QUEST_WARCHIEF_REVENGE                       = 14243,  // Warchief's Revenge
+    QUEST_CLUSTER_CLUCK                          = 24671,  // Cluster Cluck
+    QUEST_BIGGEST_EGG                            = 24744,  // The Biggest Egg Ever
 };
 
 enum isle_spells
@@ -45,6 +47,15 @@ enum isle_spells
     SPELL_VISUAL_UP_UP_ROCKET                    = 68813, // Up, Up & Away!: Force Cast from Sling Rocket
     SPELL_UP_UP_AWAY_KILL_CREDIT                 = 66127, // Up, Up & Away!: Kill Credit + Explosion
     SPELL_VISUAL_ROCKET_BLAST                    = 66110, // Rocket Scouting: Rocket Blast
+    SPELL_REMOTE_CONTROL_FIREWORKS               = 71170, // Remote Control Fireworks
+    SPELL_CC_FIREWORKS_VISUAL                    = 74177, // Cluster Cluck: Remote Control Fireworks Visual
+    SPELL_PERMAMENT_DEATH                        = 29266,
+    SPELL_BIGGEST_EGG_FOUNTAIN                   = 71608, //The Biggest Egg Ever: Egg Fountain
+};
+
+enum isle_items
+{
+    ITEM_REMOTE_CONTROL_FIREWORKS                = 52712,
 };
 
 enum isle_npc
@@ -55,11 +66,18 @@ enum isle_npc
     NPC_FOREMAN_DAMPWICK                         = 35769, // Foreman Dampwick
     NPC_ORE_CART                                 = 35814, // Miner Troubles Ore Cart 35814
     NPC_QUEST_MINE_TROUBLES_CREDIT               = 35816,
+    NPC_CLUSTER_CLUCK_KILL_CREDIT                = 38117, // Cluster Cluck Kill Credit
+    NPC_RAPTOR                                   = 38187,
+    NPC_BAMM_MEGABOMB                            = 38122, // Bamm Megabomb <Hunter Trainer>
+    NPC_ASSISTANT_GREELY                         = 38124, // Assistant Greely
+    NPC_ELM_PURPOSE_BUNNY                        = 24021, // ELM General Purpose Bunny (scale x0.01)
 };
 
 enum isle_go
 {
-    GO_KAJAMITE_ORE                             = 195622, //Kaja'mite Ore
+    GO_KAJAMITE_ORE                             = 195622, // Kaja'mite Ore
+    GO_RAPTOR_TRAP                              = 201972, // Raptor Trap
+    GO_RAPTOR_EGG                               = 201974,
 };
 
 enum isle_events
@@ -1224,6 +1242,275 @@ public:
     };
 };
 
+class npc_wild_clucker : public CreatureScript
+{
+public:
+    npc_wild_clucker() : CreatureScript("npc_wild_clucker") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wild_cluckerAI (creature);
+    }
+
+    struct npc_wild_cluckerAI : public npc_escortAI
+    {
+        npc_wild_cluckerAI(Creature* creature) : npc_escortAI(creature) {}
+
+        void Reset()
+        {
+
+        }
+
+        void SpellHit(Unit* caster, SpellInfo const* spell)
+        {
+            if (caster->GetTypeId() != TYPEID_PLAYER || spell->Id != SPELL_REMOTE_CONTROL_FIREWORKS || me->HasAura(SPELL_CC_FIREWORKS_VISUAL))
+                return;
+
+            Player *player = caster->ToPlayer();
+
+            if (player->GetQuestStatus(QUEST_CLUSTER_CLUCK) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            Start(false, true);
+            me->SendPlaySound(6820, false);
+            me->CastSpell(me, SPELL_CC_FIREWORKS_VISUAL, true);
+            player->KilledMonsterCredit(NPC_CLUSTER_CLUCK_KILL_CREDIT);
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            switch(i)
+            {
+                case 12:
+                    me->DespawnOrUnsummon(1000);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+};
+
+class npc_wild_clucker_egg : public CreatureScript
+{
+    public:
+        npc_wild_clucker_egg() : CreatureScript("npc_wild_clucker_egg") { }
+
+    struct npc_wild_clucker_eggAI : public Scripted_NoMovementAI
+    {
+        npc_wild_clucker_eggAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        { 
+            me->SetLevel(6);
+        }
+
+        void Reset()
+        {
+            if (GameObject* mine = me->FindNearestGameObject(GO_RAPTOR_TRAP, 20.0f))
+                me->GetMotionMaster()->MovePoint(EVENT_POINT_MINE, mine->m_positionX, mine->m_positionY, mine->m_positionZ);
+
+            
+            if (Unit* target = me->FindNearestCreature(NPC_RAPTOR, 100.0f, true))
+            {
+                if (target->GetTypeId() == TYPEID_UNIT)
+                {
+                    me->CombatStart(target, true);
+                    target->AddThreat(me, 10000);
+                }
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32& damage)
+        {
+            if (attacker->GetTypeId() != TYPEID_UNIT)
+                return;
+
+            if (GameObject* trap = me->FindNearestGameObject(GO_RAPTOR_TRAP, 20.0f))
+            {
+                trap->SendCustomAnim(0);                
+                trap->SetLootState(GO_JUST_DEACTIVATED);
+                trap->SummonGameObject(GO_RAPTOR_EGG, trap->m_positionX, trap->m_positionY, trap->m_positionZ, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 30000);
+                attacker->CastSpell(attacker, SPELL_PERMAMENT_DEATH, true);
+                attacker->ToCreature()->DespawnOrUnsummon(10000);
+                me->DespawnOrUnsummon();
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wild_clucker_eggAI(creature);
+    }
+};
+
+enum eventCooking
+{
+    EVENT_COOOKING_1        = 1,
+    EVENT_COOOKING_2        = 2,
+    EVENT_COOOKING_3        = 3,
+    EVENT_COOOKING_4        = 4,
+    EVENT_COOOKING_5        = 5,
+    EVENT_COOOKING_6        = 6,
+};
+
+class npc_hobart_grapplehammer : public CreatureScript
+{
+    public:
+        npc_hobart_grapplehammer() : CreatureScript("npc_hobart_grapplehammer") { }
+
+    struct npc_hobart_grapplehammerAI : public ScriptedAI
+    {
+        npc_hobart_grapplehammerAI(Creature* creature) : ScriptedAI(creature)
+        {
+
+        }
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void OnStartQuest(Player* player, Quest const* quest)   
+        {
+            if (!quest)
+                return;
+            
+            switch(quest->GetQuestId())
+            {
+                case QUEST_CLUSTER_CLUCK:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, player->GetGUID());
+                    break;
+                case QUEST_BIGGEST_EGG:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, player->GetGUID());
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void OnQuestReward(Player* player, Quest const* quest)
+        {
+            if (!quest)
+                return;
+
+            switch(quest->GetQuestId())
+            {
+                case QUEST_CLUSTER_CLUCK:
+                    if (Creature* target = me->FindNearestCreature(NPC_BAMM_MEGABOMB, 100.0f, true))
+                        sCreatureTextMgr->SendChat(target, TEXT_GENERIC_0, player->GetGUID());
+                    break;
+                case QUEST_BIGGEST_EGG:
+                    events.ScheduleEvent(EVENT_COOOKING_1, 1000);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_COOOKING_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                        events.ScheduleEvent(EVENT_COOOKING_2, 3000);
+                        break;
+                    case EVENT_COOOKING_2:
+                        events.ScheduleEvent(EVENT_COOOKING_3, 7000);
+                        if (Creature* target = me->FindNearestCreature(NPC_ASSISTANT_GREELY, 100.0f, true))
+                            sCreatureTextMgr->SendChat(target, TEXT_GENERIC_0);
+                        break;
+                    case EVENT_COOOKING_3:
+                        events.ScheduleEvent(EVENT_COOOKING_4, 6000);
+                        if (Creature* target = me->FindNearestCreature(NPC_ASSISTANT_GREELY, 100.0f, true))
+                            sCreatureTextMgr->SendChat(target, TEXT_GENERIC_1);
+                        break;
+                    case EVENT_COOOKING_4:
+                    {
+                        // 
+                        events.ScheduleEvent(EVENT_COOOKING_5, 5000);
+                        if (Creature* target = me->FindNearestCreature(NPC_ELM_PURPOSE_BUNNY, 100.0f, true))
+                            target->AI()->SetData(EVENT_COOOKING_1, true);
+                        if (Creature* target = me->FindNearestCreature(NPC_ASSISTANT_GREELY, 100.0f, true))
+                            sCreatureTextMgr->SendChat(target, TEXT_GENERIC_2);
+                        break;
+                    }
+                    case EVENT_COOOKING_5:
+                        events.ScheduleEvent(EVENT_COOOKING_6, 5000);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4);
+                        break;
+                    case EVENT_COOOKING_6:
+                        if (Creature* target = me->FindNearestCreature(NPC_ELM_PURPOSE_BUNNY, 100.0f, true))
+                            target->AI()->SetData(EVENT_COOOKING_1, false);
+                        break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_hobart_grapplehammerAI(creature);
+    }
+};
+
+//ELM General Purpose Bunny
+class npc_elm_bunny : public CreatureScript
+{
+    public:
+        npc_elm_bunny() : CreatureScript("npc_elm_bunny") { }
+
+    struct npc_elm_bunnyAI : public ScriptedAI
+    {
+        npc_elm_bunnyAI(Creature* creature) : ScriptedAI(creature){}
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void SetData(uint32 id, uint32 value)
+        {
+            if (value)
+                events.ScheduleEvent(EVENT_COOOKING_1, 1000);
+            else
+                events.Reset();
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                me->CastSpell(me, SPELL_BIGGEST_EGG_FOUNTAIN, true);
+                events.ScheduleEvent(EVENT_COOOKING_1, 1000);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_elm_bunnyAI(creature);
+    }
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -1241,4 +1528,8 @@ void AddSC_lost_isle()
     new spell_trall_chain_lightning();
     new npc_cyclone_of_the_elements();
     new npc_sling_rocket();
+    new npc_wild_clucker();
+    new npc_wild_clucker_egg();
+    new npc_hobart_grapplehammer();
+    new npc_elm_bunny();
 }

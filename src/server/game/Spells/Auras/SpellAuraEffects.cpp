@@ -6919,6 +6919,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             {
                 switch (auraId)
                 {
+                    // Cluster Cluck: Remote Control Fireworks Visual
+                    case 74177:
+                        target->PlayDistanceSound(6820);
+                        return;
                     // Thaumaturgy Channel
                     case 9712:
                         triggerSpellId = 21029;
@@ -7085,6 +7089,12 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            // The Biggest Egg Ever: Mechachicken's Rocket Barrage Aura Effect
+            case 71416:
+                // prock 71419 with this action.
+                target->PlayDistanceSound(23829);
+                target->HandleEmoteCommand(403);
+                break;
             case 114889: // Stone Bulwark Totem
             {
                 if (Unit * shaman = caster->GetOwner())
