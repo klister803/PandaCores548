@@ -164,8 +164,64 @@ public:
     {
         npc_force_of_nature_treant_for_RestorationAI(Creature* creature) : ScriptedAI(creature) { }
 
+        Unit* target;
+        uint32 _time;
+        bool firstcast;
+
+        void InitializeAI()
+        {
+            if (Unit* owner = me->ToTempSummon()->GetSummoner())
+            {
+                std::list<Unit*> targets;
+                std::list<Unit*> unitTargets;
+                uint64 ownerGUID = owner->GetGUID();
+                target = NULL;
+
+                Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(me, me, 40);
+                Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(me, unitTargets, u_check);
+                me->VisitNearbyObject(40.0f, searcher);
+
+                for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
+                {
+                    if (!(*iter)->HasAura(774, ownerGUID))
+                        continue;
+
+                    targets.push_back(*iter);
+                }
+
+                targets.sort(Trinity::HealthPctOrderPred());
+
+                for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                {
+                    if (!(*iter)->IsWithinLOSInMap(me))
+                        continue;
+
+                    target = (*iter);
+                    break;
+                }
+            }
+            _time = 0;
+            firstcast = true;
+        }
+        
+        
         void UpdateAI(const uint32 diff)
         {
+            if (target && firstcast)
+            {
+                me->CastSpell(target, 142421, true);
+                firstcast = false;
+            }
+
+            _time += diff;
+
+            if (_time >= 2000)
+            {
+                if (DynamicObject* dynObj = me->GetDynObject(142423))
+                    me->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), 81269, true);
+                _time -= 2000;
+            }
+
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
             

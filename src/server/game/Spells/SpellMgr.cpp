@@ -3534,6 +3534,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 81269: // Efflorescence
                     spellInfo->Effects[0].ScalingMultiplier = 1.5309f;
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
                     break;
                 case 132464: // Chi Wave (Pos)
                     spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
@@ -4981,6 +4982,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 142423: // Swiftmend
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_MASK;
+                    break;
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;
