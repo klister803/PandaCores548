@@ -2863,7 +2863,10 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
         return NULL;
     }
     go->SetRespawnTime(respawnTime);
-    if (GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT) //not sure how to handle this
+
+    // If we summon go by creature at despown - we will see deleted go.
+    // If we summon go by creature with ownership in some cases we couldn't use it
+    if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !respawnTime)) //not sure how to handle this
         ToUnit()->AddGameObject(go);
     else
         go->SetSpawnedByDefault(false);
