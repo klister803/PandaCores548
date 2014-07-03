@@ -2266,8 +2266,14 @@ void WorldObject::AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerLi
 
 void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
 {
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
-    data << Sound;
+    ObjectGuid source = GetGUID();
+
+    WorldPacket data(SMSG_PLAY_SOUND, 12);
+    data.WriteGuidMask<0, 2, 4, 7, 6, 5, 1, 3>(source);
+    data.WriteGuidBytes<3, 4, 2, 6, 1, 5, 0>(source);
+    data << uint32(Sound);
+    data.WriteGuidBytes<7>(source);
+
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
         this->ToPlayer()->GetSession()->SendPacket(&data);
     else
