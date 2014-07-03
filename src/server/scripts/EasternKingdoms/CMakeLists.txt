@@ -219,7 +219,6 @@ set(scripts_STAT_SRCS
   EasternKingdoms/BlackwingLair/boss_nefarian.cpp
   EasternKingdoms/BlackwingLair/boss_flamegor.cpp
   EasternKingdoms/BlackwingLair/boss_victor_nefarius.cpp
-  EasternKingdoms/blasted_lands.cpp
   EasternKingdoms/stormwind_city.cpp
   EasternKingdoms/ZulAman/boss_halazzi.cpp
   EasternKingdoms/ZulAman/boss_hexlord.cpp
