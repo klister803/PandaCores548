@@ -2704,9 +2704,6 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
     // Ranged attacks can only miss, resist and deflect
     if (attType == RANGED_ATTACK)
     {
-        canParry = false;
-        canDodge = false;
-
         // only if in front
         if (victim->HasInArc(M_PI, this) || victim->HasAuraType(SPELL_AURA_IGNORE_HIT_DIRECTION))
         {
@@ -2715,7 +2712,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
             if (roll < tmp)
                 return SPELL_MISS_DEFLECT;
         }
-        return SPELL_MISS_NONE;
+
+        if (spell->EquippedItemClass > 0)
+            canDodge = true;
+        else 
+            return SPELL_MISS_NONE;
     }
 
     // Check for attack from behind
@@ -2793,6 +2794,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
 
         if (roll < (tmp += dodgeChance))
             return SPELL_MISS_DODGE;
+        else if (attType == RANGED_ATTACK)
+            return SPELL_MISS_NONE;
     }
 
     if (canParry)
