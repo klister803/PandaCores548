@@ -461,7 +461,7 @@ struct GameObjectTemplate
         switch (type)
         {
             case GAMEOBJECT_TYPE_CHEST:  return chest.consumable;
-            case GAMEOBJECT_TYPE_GOOBER: return goober.consumable;
+            case GAMEOBJECT_TYPE_GOOBER: return goober.consumable || goober.cooldown;
             default: return false;
         }
     }
