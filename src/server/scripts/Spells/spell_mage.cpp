@@ -2074,14 +2074,14 @@ class spell_mage_illusion : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if(Unit* target = _player->GetSelectedUnit())
+                    /*if(Unit* target = _player->GetSelectedUnit())
                     {
                         if (target->GetTypeId() == TYPEID_PLAYER && target != GetCaster())
                         {
                             target->CastSpell(_player, 80396, true);
                             return;
                         }
-                    }
+                    }*/
                     _player->CastSpell(_player, 94632, true);
                 }
             }

@@ -4346,7 +4346,20 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot));
-    if (!pet)
+    if (pet)
+    {
+        if(petentry)
+        {
+            uint32 spellId = pet->GetCreatureTemplate()->spells[0];
+            if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+            {
+                pet->ToggleAutocast(sInfo, true);
+                pet->SetCasterPet(true);
+                pet->SetAttackDist(sInfo->GetMaxRange(false));
+            }
+        }
+    }
+    else
         return;
 
     if (m_caster->GetTypeId() == TYPEID_UNIT)

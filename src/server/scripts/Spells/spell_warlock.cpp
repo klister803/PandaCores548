@@ -556,15 +556,12 @@ class spell_warl_void_ray : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* _caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (Aura* corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
-                        {
-                            corruption->SetDuration(corruption->GetDuration() + 4000);
-                            corruption->SetNeedClientUpdateForTargets();
-                        }
+                        if (Aura* corruption = target->GetAura(146739))
+                            corruption->SetDuration(corruption->GetSpellInfo()->GetMaxDuration(), true);
                     }
                 }
             }
@@ -660,7 +657,7 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
         }
 };
 
-// Immolation Aura - 104025
+// Immolation Aura - 104025 and 140720
 class spell_warl_immolation_aura : public SpellScriptLoader
 {
     public:
@@ -673,7 +670,13 @@ class spell_warl_immolation_aura : public SpellScriptLoader
             void OnTick(AuraEffect const* aurEff)
             {
                 if (GetCaster())
+                {
                     GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, -25, POWER_DEMONIC_FURY);
+                    if(aurEff->GetSpellInfo()->Id == 104025)
+                        GetCaster()->CastSpell(GetCaster(), 129476, true);
+                    else
+                        GetCaster()->CastSpell(GetCaster(), 140721, true);
+                }
             }
 
             void Register()
@@ -1374,10 +1377,10 @@ class spell_warl_soul_harverst : public SpellScriptLoader
                     {
                         if (!_player->isInCombat() && !_player->InArena() && _player->isAlive())
                         {
-                            _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
+                            _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() * 0.02f));
 
                             if (Pet* pet = _player->GetPet())
-                                pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
+                                pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() * 0.02f));
                         }
                     }
 
@@ -1385,8 +1388,14 @@ class spell_warl_soul_harverst : public SpellScriptLoader
                 }
             }
 
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount = 0;
+            }
+
             void Register()
             {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_soul_harverst_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
                 OnEffectUpdate += AuraEffectUpdateFn(spell_warl_soul_harverst_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
             }
         };
@@ -1978,6 +1987,107 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
         }
 };
 
+// Metamorphosis - 103965 for Dark Apotheosis 114168
+class spell_warl_metamorphosis : public SpellScriptLoader
+{
+    public:
+        spell_warl_metamorphosis() : SpellScriptLoader("spell_warl_metamorphosis") { }
+
+        class spell_warl_metamorphosis_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_metamorphosis_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    switch(aurEff->GetEffIndex())
+                    {
+                        case EFFECT_0:
+                            if(caster->HasAura(114168))
+                                amount = 114175;
+                            break;
+                        case EFFECT_1:
+                        case EFFECT_3:
+                        case EFFECT_14:
+                            if(caster->HasAura(114168))
+                                amount = 0;
+                            break;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_metamorphosis_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_metamorphosis_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_metamorphosis_AuraScript::CalculateAmount, EFFECT_3, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_metamorphosis_AuraScript::CalculateAmount, EFFECT_14, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_metamorphosis_AuraScript();
+        }
+};
+
+// Corruption - 146739 for Malefic Grasp 103103
+class spell_warl_corruption : public SpellScriptLoader
+{
+    public:
+        spell_warl_corruption() : SpellScriptLoader("spell_warl_corruption") { }
+
+        class spell_warl_corruption_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_corruption_AuraScript);
+
+            void HandleTick(AuraEffect const* aurEff, int32& /*amount*/, Unit* /*target*/)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), aurEff->GetSpellInfo()->Id, 4, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(spell_warl_corruption_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_corruption_AuraScript();
+        }
+};
+
+// Siphon Life - 63106 - correct percent hael
+class spell_warl_siphon_life : public SpellScriptLoader
+{
+    public:
+        spell_warl_siphon_life() : SpellScriptLoader("spell_warl_siphon_life") { }
+
+        class spell_warl_siphon_life_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_siphon_life_SpellScript);
+
+            void HandleHeal(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                    SetHitHeal(int32(caster->GetMaxHealth() * 0.005f));
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_siphon_life_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_siphon_life_SpellScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2023,4 +2133,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_seed_of_corruption_dota();
     new spell_warl_havoc();
     new spell_warl_rain_of_fire_damage();
+    new spell_warl_metamorphosis();
+    new spell_warl_corruption();
+    new spell_warl_siphon_life();
 }

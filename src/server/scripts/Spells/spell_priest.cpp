@@ -985,7 +985,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                     caster->CastCustomSpell(caster, PRIEST_DEVOURING_PLAGUE_HEAL, &orbCount, 0, 0, true);
             }
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* /*target*/)
             {
                 amount *= orbCount;
             }

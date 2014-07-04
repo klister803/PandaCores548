@@ -459,7 +459,7 @@ class AuraScript : public _SpellScript
         typedef void(CLASSNAME::*AuraEffectUpdateFnType)(uint32, AuraEffect*); \
         typedef void(CLASSNAME::*AuraEffectUpdatePeriodicFnType)(AuraEffect*); \
         typedef void(CLASSNAME::*AuraEffectCalcAmountFnType)(AuraEffect const*, int32 &, bool &); \
-        typedef void(CLASSNAME::*AuraEffectChangeTickDamageFnType)(AuraEffect const*, int32 &); \
+        typedef void(CLASSNAME::*AuraEffectChangeTickDamageFnType)(AuraEffect const*, int32 &, Unit*); \
         typedef void(CLASSNAME::*AuraEffectCalcPeriodicFnType)(AuraEffect const*, bool &, int32 &); \
         typedef void(CLASSNAME::*AuraEffectCalcSpellModFnType)(AuraEffect const*, SpellModifier* &); \
         typedef void(CLASSNAME::*AuraEffectAbsorbFnType)(AuraEffect*, DamageInfo &, uint32 &); \
@@ -537,7 +537,7 @@ class AuraScript : public _SpellScript
         {
             public:
                 EffectChangeTickDamageHandler(AuraEffectChangeTickDamageFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName);
-                void Call(AuraScript* auraScript, AuraEffect const* aurEff, int32 & amount);
+                void Call(AuraScript* auraScript, AuraEffect const* aurEff, int32 & amount, Unit* target);
             private:
                 AuraEffectChangeTickDamageFnType pEffectHandlerScript;
         };

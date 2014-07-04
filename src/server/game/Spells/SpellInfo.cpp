@@ -1451,8 +1451,11 @@ bool SpellInfo::IsPositive() const
     return !(AttributesCu & SPELL_ATTR0_CU_NEGATIVE);
 }
 
-bool SpellInfo::IsPositiveEffect(uint8 effIndex) const
+bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool caster) const
 {
+    if(AttributesCu & SPELL_ATTR0_CU_POSITIVE_FOR_CASTER)
+        return caster;
+
     switch (effIndex)
     {
         default:
@@ -2832,8 +2835,6 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
         case SPELL_EFFECT_HEAL_PCT:
         case SPELL_EFFECT_ENERGIZE_PCT:
             return true;
-        case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
-            return false;
 
             // non-positive aura use
         case SPELL_EFFECT_APPLY_AURA:

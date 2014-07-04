@@ -194,6 +194,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[BASE_ATTACK] = 1.0f;
     m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
+    m_attackDist = MELEE_RANGE;
 
     m_extraAttacks = 0;
     countCrit = 0;
@@ -10009,6 +10010,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 145672: // Riposte
         case 145676: // Riposte
         {
             if(Player* player = ToPlayer())
@@ -16110,6 +16112,12 @@ void Unit::SetPower(Powers power, int32 val)
     if(power == POWER_SOUL_SHARDS)
     {
         uint32 spellid[] = {104756, 104759, 123171};
+        if(HasAura(56241))
+        {
+            spellid[0] = 123728;
+            spellid[1] = 123730;
+            spellid[2] = 123731;
+        }
 
         switch(val)
         {
@@ -16155,6 +16163,48 @@ void Unit::SetPower(Powers power, int32 val)
             CastSpell(this, 116920, true);
         else if (val < 20 && HasAura(116920))
             RemoveAura(116920);
+
+        if(HasAura(56241))
+        {
+            uint32 spellid[] = {123728, 123730, 123731};
+
+            switch(val)
+            {
+                case 10:
+                {
+                    RemoveAura(spellid[1]);
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[0], true);
+                    break;
+                }
+                case 20:
+                {
+                    RemoveAura(spellid[0]);
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[1], true);
+                    break;
+                }
+                case 30:
+                {
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[1], true);
+                    CastSpell(this, spellid[0], true);
+                    break;
+                }
+                case 40:
+                {
+                    RemoveAura(spellid[0]);
+                    CastSpell(this, spellid[2], true);
+                    CastSpell(this, spellid[1], true);
+                    break;
+                }
+                default:
+                {
+                    RemoveAura(spellid[0]);
+                    break;
+                }
+            }
+        }
     }
 
     SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);

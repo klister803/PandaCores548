@@ -1087,7 +1087,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
                 }
             }
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/)
             {
                 if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
                     amount *= 9;
@@ -1157,7 +1157,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
                 }
             }
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount)
+            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* /*target*/)
             {
                 if(aurEff->GetTotalTicks() == aurEff->GetTickNumber())
                     amount *= 9;

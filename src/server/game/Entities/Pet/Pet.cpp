@@ -246,6 +246,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     switch (getPetType())
     {
         case SUMMON_PET:
+        {
             petlevel = owner->getLevel();
 
             SetClass(CLASS_MAGE);
@@ -256,7 +257,15 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
                 SetClass(CLASS_ROGUE);
                 setPowerType(POWER_ENERGY); // Warlock's pets have energy
             }
+            uint32 spellId = GetCreatureTemplate()->spells[0];
+            if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+            {
+                ToggleAutocast(sInfo, true);
+                SetCasterPet(true);
+                SetAttackDist(sInfo->GetMaxRange(false));
+            }
             break;
+        }
         case HUNTER_PET:
             SetSheath(SHEATH_STATE_MELEE);
             SetClass(CLASS_HUNTER);
@@ -877,6 +886,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
+    SetUInt32Value(UNIT_FIELD_FLAGS_2, cinfo->unit_flags2);
 
     //scale
     CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family);
@@ -901,9 +911,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     PetLevelInfo const* pInfo = sObjectMgr->GetPetLevelInfo(creature_ID, petlevel);
     if (pInfo)                                      // exist in DB
     {
-        if (creature_ID != 510)
-            SetCreateHealth(pInfo->health);
-        if (petType != HUNTER_PET && GetOwner() && GetOwner()->getClass() != CLASS_WARLOCK && creature_ID != 510) // hunter's pets use focus and Warlock's pets use energy
+        SetCreateHealth(pInfo->health);
+        if (petType != HUNTER_PET && GetOwner() && GetOwner()->getClass() != CLASS_WARLOCK) // hunter's pets use focus and Warlock's pets use energy
             SetCreateMana(pInfo->mana);
 
         if (pInfo->armor > 0)
@@ -964,8 +973,6 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         }
         case ENTRY_WATER_ELEMENTAL:
         {
-            SetCreateHealth(m_owner->CountPctFromMaxHealth(50));
-            SetCreateMana(m_owner->GetMaxPower(POWER_MANA));
             SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST)));
             break;
         }
@@ -1030,8 +1037,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 SetCreateHealth(28 + 30 * petlevel);
             }
 
+            SetMaxPower(POWER_ENERGY, 10);
             SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE)));
-
             break;
         }
         case 63508: // Xuen, the White Tiger

@@ -125,11 +125,11 @@ void CasterAI::InitializeAI()
 {
     CombatAI::InitializeAI();
 
-    m_attackDist = 30.0f;
+    m_attackDist = MAGIC_RANGE;
     for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr)
         if (AISpellInfo[*itr].condition == AICOND_COMBAT && m_attackDist > GetAISpellInfo(*itr)->maxRange)
             m_attackDist = GetAISpellInfo(*itr)->maxRange;
-    if (m_attackDist == 30.0f)
+    if (m_attackDist == MAGIC_RANGE)
         m_attackDist = MELEE_RANGE;
 }
 

@@ -61,7 +61,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     float x, y, z;
     bool targetIsVictim = owner.getVictim() && owner.getVictim()->GetGUID() == i_target->GetGUID();
 
-    if (!i_offset)
+    if (!i_offset || i_angle == 0.0f)
     {
         // to nearest contact position
         float dist = 0.0f;
@@ -70,11 +70,13 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
         if (dist < 0.5f)
             dist = 0.5f;
+        if(i_offset)
+            dist = i_offset;
 
         if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && !i_target->IsWithinLOSInMap(&owner))
         {
             Position pos;
-            i_target->GetFirstCollisionPosition(pos, MELEE_RANGE - 0.5f, 180.0f);
+            i_target->GetFirstCollisionPosition(pos, ((Creature*)&owner)->GetAttackDist() - 0.5f, 180.0f);
             x = pos.m_positionX;
             y = pos.m_positionY;
             z = pos.m_positionZ;

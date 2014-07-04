@@ -3487,6 +3487,9 @@ void SpellMgr::LoadSpellCustomAttr()
             if (!spellInfo->_IsPositiveEffect(EFFECT_2, false))
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
 
+            if (spellInfo->HasEffect(SPELL_EFFECT_APPLY_AREA_AURA_ENEMY))
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_POSITIVE_FOR_CASTER;
+
             if (spellInfo->SpellVisual[0] == 3879)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
 
@@ -3833,9 +3836,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
-                case 122355:// Molten Core
-                    spellInfo->StackAmount = 255;
-                    break;
                 case 6203:  // Soulstone
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
@@ -3859,26 +3859,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[EFFECT_2].TargetB = 0;
                     spellInfo->Effects[EFFECT_2].BasePoints = 0;
-                    break;
-                case 116198:// Enfeeblement Aura
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_1].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[4].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[4].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    break;
-                case 116202:// Elements Aura
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_DEST_TARGET_ENEMY;
-                    spellInfo->Effects[EFFECT_2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                     break;
                 case 94339: // Fungal Area
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s

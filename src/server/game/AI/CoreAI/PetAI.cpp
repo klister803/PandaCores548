@@ -109,7 +109,8 @@ void PetAI::UpdateAI(const uint32 diff)
         if (owner && !owner->isInCombat())
             owner->SetInCombatWith(me->getVictim());
 
-        DoMeleeAttackIfReady();
+        if(!me->GetCasterPet())
+            DoMeleeAttackIfReady();
     }
     else if (owner && me->GetCharmInfo()) //no victim
     {
@@ -458,7 +459,19 @@ void PetAI::DoAttack(Unit* target, bool chase)
 
     if (chase)
     {
-        if (me->Attack(target, true))
+        if(me->GetCasterPet())
+        {
+            if (me->Attack(target, false))
+            {
+                me->GetCharmInfo()->SetIsAtStay(false);
+                me->GetCharmInfo()->SetIsFollowing(false);
+                me->GetCharmInfo()->SetIsReturning(false);
+                me->GetMotionMaster()->Clear();
+                if(!me->IsWithinMeleeRange(target, me->GetAttackDist()))
+                    me->GetMotionMaster()->MoveChase(target, me->GetAttackDist() - 0.5f);
+            }
+        }
+        else if (me->Attack(target, true))
         {
             me->GetCharmInfo()->SetIsAtStay(false);
             me->GetCharmInfo()->SetIsFollowing(false);
@@ -472,7 +485,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
         me->GetCharmInfo()->SetIsAtStay(true);
         me->GetCharmInfo()->SetIsFollowing(false);
         me->GetCharmInfo()->SetIsReturning(false);
-        me->Attack(target, true);
+        me->Attack(target, !me->GetCasterPet());
     }
 }
 
@@ -539,7 +552,7 @@ bool PetAI::CanAttack(Unit* target)
 
     // Stay - can attack if target is within range or commanded to
     if (me->GetCharmInfo()->HasCommandState(COMMAND_STAY))
-        return (me->IsWithinMeleeRange(target, MELEE_RANGE) || me->GetCharmInfo()->IsCommandAttack());
+        return (me->IsWithinMeleeRange(target, me->GetAttackDist()) || me->GetCharmInfo()->IsCommandAttack());
 
     // Follow
     if (me->GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))

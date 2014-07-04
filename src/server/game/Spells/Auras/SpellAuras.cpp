@@ -124,7 +124,7 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
         bool negativeFound = false;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (((1<<i) & effMask) && !GetBase()->GetSpellInfo()->IsPositiveEffect(i))
+            if (((1<<i) & effMask) && !GetBase()->GetSpellInfo()->IsPositiveEffect(i, IsSelfcasted()))
             {
                 negativeFound = true;
                 break;
@@ -195,7 +195,7 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
         data.WriteGuidMask<2, 3, 4, 0, 1, 6, 7, 5>(aura->GetCasterGUID());
     uint32 count = 0;
     bool sendEffect = false;
-    bool absorbEffect = false;
+    bool nosendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
@@ -203,14 +203,23 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
             ++count;
             if (AuraEffect const* eff = aura->GetEffect(i))
             {
-                if(eff->GetAuraType() == SPELL_AURA_SCHOOL_ABSORB)
-                    absorbEffect = true;
-                if(eff->GetAmount() != eff->GetBaseSendAmount())
-                    sendEffect = true;
+                switch (eff->GetAuraType())
+                {
+                    case SPELL_AURA_SCHOOL_ABSORB:
+                    case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
+                    case SPELL_AURA_ADD_FLAT_MODIFIER:
+                    case SPELL_AURA_ADD_PCT_MODIFIER:
+                        nosendEffect = true;
+                        break;
+                    default:
+                        if(eff->GetAmount() != eff->GetBaseSendAmount())
+                            sendEffect = true;
+                        break;
+                }
             }
         }
     }
-    data.WriteBits((sendEffect && !absorbEffect) ? count : 0, 22);  // effect count 2
+    data.WriteBits((sendEffect && !nosendEffect) ? count : 0, 22);  // effect count 2
     data.WriteBits(count, 22);  // effect count
     data.WriteBit(flags & AFLAG_DURATION);  // has duration
     data.WriteBit(flags & AFLAG_DURATION);  // has max duration
@@ -231,22 +240,31 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         flags |= AFLAG_DURATION;
 
     bool sendEffect = false;
-    bool absorbEffect = false;
+    bool nosendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
         {
             if (AuraEffect const* eff = aura->GetEffect(i))
             {
-                if(eff->GetAuraType() == SPELL_AURA_SCHOOL_ABSORB)
-                    absorbEffect = true;
-                if(eff->GetAmount() != eff->GetBaseSendAmount())
-                    sendEffect = true;
+                switch (eff->GetAuraType())
+                {
+                    case SPELL_AURA_SCHOOL_ABSORB:
+                    case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
+                    case SPELL_AURA_ADD_FLAT_MODIFIER:
+                    case SPELL_AURA_ADD_PCT_MODIFIER:
+                        nosendEffect = true;
+                        break;
+                    default:
+                        if(eff->GetAmount() != eff->GetBaseSendAmount())
+                            sendEffect = true;
+                        break;
+                }
             }
         }
     }
 
-    if(sendEffect && !absorbEffect)
+    if(sendEffect && !nosendEffect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -286,7 +304,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
         data << uint32(aura->GetMaxDuration());
 
     //effect2 send base amount
-    if(sendEffect && !absorbEffect)
+    if(sendEffect && !nosendEffect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
@@ -2617,7 +2635,7 @@ void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & 
     }
 }
 
-void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount)
+void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount, Unit* target)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2626,7 +2644,7 @@ void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, in
         for (; effItr != effEndItr; ++effItr)
         {
             if ((*effItr).IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
-                (*effItr).Call(*scritr, aurEff, amount);
+                (*effItr).Call(*scritr, aurEff, amount, target);
         }
         (*scritr)->_FinishScriptCall();
     }

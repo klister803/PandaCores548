@@ -2390,6 +2390,10 @@ class Unit : public WorldObject
         void SendDispelLog(uint64 targetGuid, uint32 spellId, std::list<uint32>& spellList, bool broke, bool stolen);
 
         void SendMoveflag2_0x1000_Update(bool on);
+        void SetCasterPet(bool isCaster) { isCasterPet = isCaster; }
+        bool GetCasterPet() { return isCasterPet; }
+        void SetAttackDist(float dist) { m_attackDist = dist; }
+        float GetAttackDist() { return m_attackDist; }
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2461,6 +2465,8 @@ class Unit : public WorldObject
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
+        bool isCasterPet;
+        float m_attackDist;
 
         ThreatManager m_ThreatManager;
 
