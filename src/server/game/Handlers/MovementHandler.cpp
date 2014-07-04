@@ -429,6 +429,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         plrMover->SetInWater(!plrMover->IsInWater() || plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()));
     }
 
+    // check for swimming vehicles 
+    if (vehMover && plrMover)
+    {
+        if (Creature * vehCreature = vehMover->GetBase()->ToCreature())
+        {
+            if (!vehCreature->isInAccessiblePlaceFor(vehCreature))
+                plrMover->ExitVehicle();
+        }
+    }
+
     /*----------------------*/
     // begin anti cheat
     bool check_passed = true;
