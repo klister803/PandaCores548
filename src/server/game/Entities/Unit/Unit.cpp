@@ -6292,6 +6292,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_CAST_SPELL: // 20
+                {
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if (_caster->HasAura(itr->aura))
+                        _caster->CastSpell(target, triggered_spell_id, true);
+
+                    check = true;
+                    break;
+                }
                 case SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX: //21
                 {
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))

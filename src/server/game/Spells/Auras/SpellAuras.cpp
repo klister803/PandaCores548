@@ -1922,6 +1922,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         }
                         break;
                     }
+                    case 89775:  // Hemorrhage
                     case 703:    // Garrote
                     case 1943:   // Rupture
                     case 121411: // Crimson Tempest
@@ -1936,6 +1937,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             if      (target->HasAura(703,    m_casterGuid)) hasbleed = true;
                             else if (target->HasAura(1943,   m_casterGuid)) hasbleed = true;
                             else if (target->HasAura(121411, m_casterGuid)) hasbleed = true;
+                            else if (caster->HasAura(146631))
+                                 if (target->HasAura(89775,  m_casterGuid)) hasbleed = true;
 
                             if (!hasbleed) target->RemoveAura(124271, m_casterGuid);
                         }
