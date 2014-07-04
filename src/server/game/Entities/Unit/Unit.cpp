@@ -12338,7 +12338,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         // Default calculation
         if (DoneAdvertisedBenefit)
         {
-            if ((!bonus && !dbccoeff) || coeff < 0)
+            if ((!bonus && !dbccoeff && !spellProto->SpellAPBonusMultiplier) || coeff < 0)
                 coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
             float factorMod = CalculateLevelPenalty(spellProto);
