@@ -20,6 +20,7 @@ const DoorData doorData[] =
     {GO_DURUMU_EX_DOOR,      DATA_DURUMU,            DOOR_TYPE_PASSAGE, 0},
     {GO_PRIMORDIUS_EX_DOOR,  DATA_PRIMORDIUS,        DOOR_TYPE_PASSAGE, 0},
     {GO_DARK_ANIMUS_EX_DOOR, DATA_DARK_ANIMUS,       DOOR_TYPE_PASSAGE, 0},
+    {GO_IRON_QON_EX_DOOR,    DATA_IRON_QON,          DOOR_TYPE_PASSAGE, 0},
     {0,                      0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
@@ -56,6 +57,8 @@ public:
         uint64 danimusexdoorGuid;
         uint64 ironqonentdoorGuid;
         uint64 ironqonexdoorGuid;
+        uint64 twinentdoorGuid;
+        uint64 twinexdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -89,6 +92,7 @@ public:
         std::vector <uint64> councilentdoorGuids;
         std::vector <uint64> jikunfeatherGuids;
         std::vector <uint64> massiveanimagolemGuids;
+        std::vector <uint64> twinfencedoorGuids;
         
         void Initialize()
         {
@@ -118,6 +122,8 @@ public:
             danimusexdoorGuid     = 0;
             ironqonentdoorGuid    = 0;
             ironqonexdoorGuid     = 0;
+            twinentdoorGuid       = 0;
+            twinexdoorGuid        = 0;
            
             //Creature
             stormcallerGuid       = 0;
@@ -151,6 +157,7 @@ public:
             councilentdoorGuids.clear();
             jikunfeatherGuids.clear();
             massiveanimagolemGuids.clear();
+            twinfencedoorGuids.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -347,7 +354,20 @@ public:
                 ironqonentdoorGuid = go->GetGUID();
                 break;
             case GO_IRON_QON_EX_DOOR:
+                AddDoor(go, true);
                 ironqonexdoorGuid = go->GetGUID();
+                break;
+            case GO_TWIN_ENT_DOOR:
+                twinentdoorGuid = go->GetGUID();
+                break;
+            case GO_TWIN_FENCE_DOOR:
+                twinfencedoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_TWIN_FENCE_DOOR_2:
+                twinfencedoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_TWIN_EX_DOOR:
+                twinexdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -562,8 +582,31 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(ironqonentdoorGuid, true);
-                        //HandleGameObject(ironqonexdoorGuid, true);
+                        HandleGameObject(ironqonexdoorGuid, true);
                         break;
+                    }
+                }
+                break;
+            case DATA_TWIN_CONSORTS:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                            for (std::vector<uint64>::const_iterator guid = twinfencedoorGuids.begin(); guid != twinfencedoorGuids.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            HandleGameObject(twinentdoorGuid, true);
+                            break;
+                        case IN_PROGRESS:
+                            for (std::vector<uint64>::const_iterator guid = twinfencedoorGuids.begin(); guid != twinfencedoorGuids.end(); guid++)
+                                HandleGameObject(*guid, false);
+                            HandleGameObject(twinentdoorGuid, false);
+                            break;
+                        case DONE:
+                            for (std::vector<uint64>::const_iterator guid = twinfencedoorGuids.begin(); guid != twinfencedoorGuids.end(); guid++)
+                                HandleGameObject(*guid, true);
+                            HandleGameObject(twinentdoorGuid, true);
+                            //HandleGameObject(twinexdoorGuid, true);
+                            break;                         
                     }
                 }
                 break;

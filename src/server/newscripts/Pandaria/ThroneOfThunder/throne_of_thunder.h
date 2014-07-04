@@ -43,6 +43,7 @@ enum eCreatures
     NPC_ANIMA_GOLEM         = 69701,
     NPC_LARGE_ANIMA_GOLEM   = 69700,
     NPC_MASSIVE_ANIMA_GOLEM = 69699,
+    NPC_BEAST_OF_NIGHTMARES = 69479,
 
     //Bosses
     NPC_JINROKH             = 69465,
@@ -69,8 +70,6 @@ enum eCreatures
     NPC_ROSHAK              = 68079, //Fire
     NPC_QUETZAL             = 68080, //Storm
     NPC_DAMREN              = 68081, //Froxen
-    //
-
     //Twin consorts
     NPC_SULIN               = 68904,
     NPC_LULIN               = 68905,
@@ -89,7 +88,6 @@ enum eGameObjects
     GO_MOGU_NL              = 218677,
     GO_MOGU_SL              = 218678,
     GO_JINROKH_EX_DOOR      = 218663,
-    //
     //Horridon
     GO_HORRIDON_PRE_DOOR    = 218669,
     GO_HORRIDON_ENT_DOOR    = 218667,
@@ -99,40 +97,37 @@ enum eGameObjects
     GO_DRAKKARI_GATE        = 218671,
     GO_AMANI_GATE           = 218673,
     GO_HORRIDON_EX_DOOR     = 218666,
-    //
     //Council of Elders
     GO_COUNCIL_LENT_DOOR    = 218655,
     GO_COUNCIL_RENT_DOOR    = 218656,
     GO_COUNCIL_EX_DOOR      = 218657,
     GO_COUNCIL_EX2_DOOR     = 218469,
-    //
     //Tortos
     GO_TORTOS_EX_DOOR       = 218980,
     GO_TORTOS_EX2_DOOR      = 218987,
-    //
     //Megaera
     GO_MEGAERA_EX_DOOR      = 218746,
-    //
     //Ji Kun
     GO_JI_KUN_FEATHER       = 218543,
     GO_JI_KUN_EX_DOOR       = 218888,
-    //
     //Durumu
     GO_DURUMU_EX_DOOR       = 218390,
-    //
     //Primordius
     GO_PRIMORDIUS_ENT_DOOR  = 218584,
     GO_PRIMORDIUS_EX_DOOR   = 218585,
     //Secret Ra Den door
     GO_S_RA_DEN_ENT_DOOR    = 218553,
-    //
     //Dark Animus
     GO_DARK_ANIMUS_ENT_DOOR = 218392,
     GO_DARK_ANIMUS_EX_DOOR  = 218393,
-    //
     //Iron Qon
     GO_IRON_QON_ENT_DOOR    = 218388,
     GO_IRON_QON_EX_DOOR     = 218588,
+    //Twin consorts
+    GO_TWIN_ENT_DOOR        = 218781,
+    GO_TWIN_FENCE_DOOR      = 218711,
+    GO_TWIN_FENCE_DOOR_2    = 218712,
+    GO_TWIN_EX_DOOR         = 218394,
 };
 
 #endif THRONEOFTHUNDER

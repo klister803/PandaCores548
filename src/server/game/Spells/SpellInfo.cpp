@@ -1158,6 +1158,9 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 136220: //Acidic explosion (Primordius)
     case 134926: //Throw spear (Iron Qon)
     case 136324: //Rising Anger (Iron Qon)
+    case 137341: //Beast of Nightmares (Twin Consorts) target aura
+    case 137405: //Tears of Sun (Twin Consorts)
+    case 137419: //Ice Comet tr ef (Twin Consorts)
         return Effects[effect];
     }
 

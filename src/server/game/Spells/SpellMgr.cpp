@@ -4625,6 +4625,22 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 136324: //Rising Anger
                     spellInfo->CasterAuraSpell = 0;
                     break;
+                //Twin Consorts
+                case 137341: //Beast of nightmares target aura
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[1].TargetA = 1;
+                    spellInfo->Effects[2].TargetA = 1;
+                    spellInfo->Effects[3].TargetA = 1;
+                    spellInfo->Effects[4].TargetA = 1;
+                    break;
+                case 137405: //Tears of Sun
+                    spellInfo->ExcludeTargetAuraSpell = 0;
+                    break;
+                case 137419: //Ice Comet tr ef
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].MiscValue = 0;
+                    spellInfo->Effects[1].MiscValueB = 0; 
+                    break;
 
 
                 //World Bosses
