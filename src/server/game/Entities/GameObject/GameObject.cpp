@@ -1779,6 +1779,8 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
     }
     else
     {
+        if (target)
+            trigger->SetPhaseMask(target->GetPhaseMask(), true);
         trigger->setFaction(14);
         // Set owner guid for target if no owner available - needed by trigger auras
         // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
