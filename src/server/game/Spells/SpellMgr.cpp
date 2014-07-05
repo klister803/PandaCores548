@@ -828,17 +828,29 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
     if (procFlags & PROC_FLAG_DONE_PERIODIC)
     {
         if (procExtra & PROC_EX_INTERNAL_DOT)
-            return (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG);
+        {
+            if (!(EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG))
+                return false;
+        }
         else if (procExtra & PROC_EX_INTERNAL_HOT)
-            return (!(EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG));
+        {
+            if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
+                return false;
+        }
     }
 
     if (procFlags & PROC_FLAG_TAKEN_PERIODIC)
     {
         if (procExtra & PROC_EX_INTERNAL_DOT)
-            return (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG);
+        {
+            if (!(EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG))
+                return false;
+        }
         else if (procExtra & PROC_EX_INTERNAL_HOT)
-            return (!(EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG));
+        {
+            if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG)
+                return false;
+        }
     }
 
 //     if (procFlags & PROC_FLAG_DONE_PERIODIC)
