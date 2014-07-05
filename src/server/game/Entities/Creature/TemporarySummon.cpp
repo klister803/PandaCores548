@@ -300,7 +300,7 @@ Minion::Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorl
 {
     ASSERT(m_owner);
     m_unitTypeMask |= UNIT_MASK_MINION;
-    m_followAngle = PET_FOLLOW_ANGLE;
+    m_followAngle = frand(0, 2*M_PI);
 }
 
 void Minion::InitStats(uint32 duration)
