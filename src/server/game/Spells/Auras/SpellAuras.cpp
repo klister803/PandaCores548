@@ -1913,6 +1913,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 {
                     case 137619: // Marked for Death
                     {
+                        if (removeMode != AURA_REMOVE_BY_DEATH)
+                            break;
+
                         if (!caster)
                             break;
 

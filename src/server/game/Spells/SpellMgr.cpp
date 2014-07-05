@@ -3511,6 +3511,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137619: // Marked for Death
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
+                    break;
                 case 5487:  // Bear Form
                     spellInfo->Effects[2].BasePoints = 120;
                     break;
