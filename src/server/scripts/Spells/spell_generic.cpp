@@ -3766,7 +3766,18 @@ class spell_gen_orb_of_power : public SpellScriptLoader
                 if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
                     aurEff1->SetAmount(aurEff1->GetAmount() + aurEff1->GetBaseAmount());
                 if (AuraEffect* aurEff2 = aurEff->GetBase()->GetEffect(EFFECT_2))
-                    aurEff2->SetAmount(aurEff2->GetAmount() + aurEff2->GetBaseAmount());
+                {
+                    int32 amount = aurEff2->GetAmount() + aurEff2->GetBaseAmount();
+
+                    if (AuraApplication * aurApp = GetAura()->GetApplicationOfTarget(GetCasterGUID()))
+                    {
+                        aurEff2->HandleEffect(aurApp, AURA_EFFECT_HANDLE_REAL, false);
+                        aurEff2->SetAmount(amount);
+                        aurEff2->HandleEffect(aurApp, AURA_EFFECT_HANDLE_REAL, true);
+                    }
+                }
+
+                
             }
 
             void Register()
