@@ -827,29 +827,45 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
 
     if (procFlags & PROC_FLAG_DONE_PERIODIC)
     {
-        if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
-        {
-            if (!(procExtra & PROC_EX_INTERNAL_DOT))
-                return false;
-        }
+        if (procExtra & PROC_EX_INTERNAL_DOT)
+            return (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG);
         else if (procExtra & PROC_EX_INTERNAL_HOT)
-            procExtra |= PROC_EX_INTERNAL_REQ_FAMILY;
-        else if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS)
-            return false;
+            return (!(EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG));
     }
 
     if (procFlags & PROC_FLAG_TAKEN_PERIODIC)
     {
-        if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS)
-        {
-            if (!(procExtra & PROC_EX_INTERNAL_DOT))
-                return false;
-        }
+        if (procExtra & PROC_EX_INTERNAL_DOT)
+            return (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG);
         else if (procExtra & PROC_EX_INTERNAL_HOT)
-            procExtra |= PROC_EX_INTERNAL_REQ_FAMILY;
-        else if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS)
-            return false;
+            return (!(EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG));
     }
+
+//     if (procFlags & PROC_FLAG_DONE_PERIODIC)
+//     {
+//         if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
+//         {
+//             if (!(procExtra & PROC_EX_INTERNAL_DOT))
+//                 return false;
+//         }
+//         else if (procExtra & PROC_EX_INTERNAL_HOT)
+//             procExtra |= PROC_EX_INTERNAL_REQ_FAMILY;
+//         else if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS)
+//             return false;
+//     }
+// 
+//     if (procFlags & PROC_FLAG_TAKEN_PERIODIC)
+//     {
+//         if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS)
+//         {
+//             if (!(procExtra & PROC_EX_INTERNAL_DOT))
+//                 return false;
+//         }
+//         else if (procExtra & PROC_EX_INTERNAL_HOT)
+//             procExtra |= PROC_EX_INTERNAL_REQ_FAMILY;
+//         else if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS)
+//             return false;
+//    }
     // Trap casts are active by default
     if (procFlags & PROC_FLAG_DONE_TRAP_ACTIVATION)
         active = true;
