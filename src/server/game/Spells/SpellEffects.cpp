@@ -2369,6 +2369,19 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 115072: // Expel Harm
+            {
+                SpellInfo const* _triggerInfo = sSpellMgr->GetSpellInfo(115129);
+                addhealth = CalculateMonkSpellDamage(m_caster, 7.0f / 1.1125f, 0.5f, 7);
+                Unit* target = m_caster->SelectNearbyTarget(m_caster, _triggerInfo->Effects[0].CalcRadius());
+
+                if (target && m_caster->IsValidAttackTarget(target))
+                {
+                    int32 bp = CalculatePct(addhealth, _triggerInfo->Effects[1].BasePoints);
+                    m_caster->CastCustomSpell(target, _triggerInfo->Id, &bp, NULL, NULL, true);
+                }
+                break;
+            }
             case 52042: // Glyph of Healing Stream Totem
             {
                 if (m_caster->ToTotem()->GetOwner()->HasAura(55456))
@@ -2481,21 +2494,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
-        // 115072 - Expel Harm
-        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
-        {
-            addhealth = Spell::CalculateMonkMeleeAttacks(m_caster, 7, 14);
-
-            Unit* target;
-
-            target = m_caster->SelectNearbyTarget(m_caster, 10.0f);
-
-            if (target && m_caster->IsValidAttackTarget(target))
-            {
-                int32 bp = addhealth * 0.5;
-                m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
-            }
-        }
         // Chakra : Serenity - 81208
         if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
             if (Aura* renew = unitTarget->GetAura(139, m_caster->GetGUID()))
