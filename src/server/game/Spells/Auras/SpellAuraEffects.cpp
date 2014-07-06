@@ -1237,12 +1237,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
                         residue -= stuck;
 
-                        if (residue != 0)
+                        if (m_effIndex == EFFECT_1)
                         {
-                            if (m_effIndex == EFFECT_1)
+                            if (residue != 0)
                                 aura->SetStackAmount(residue);
+                            else caster->RemoveAura(125195);
                         }
-                        else caster->RemoveAura(125195);
                         
                         amount *= stuck;
                     }
@@ -1251,6 +1251,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 default:
                     break;
             }
+            break;
         }
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         {
