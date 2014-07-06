@@ -4257,12 +4257,10 @@ class npc_wild_imp : public CreatureScript
         struct npc_wild_impAI : public ScriptedAI
         {
             uint32 charges;
-            Unit* m_target;
 
             npc_wild_impAI(Creature *creature) : ScriptedAI(creature)
             {
                 charges = 10;
-                m_target = me->GetTargetUnit();
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
@@ -4273,8 +4271,6 @@ class npc_wild_imp : public CreatureScript
                 if (me->GetOwner())
                     if (me->GetOwner()->getVictim())
                         AttackStart(me->GetOwner()->getVictim());
-                    else if(m_target)
-                        AttackStart(m_target);
             }
 
             void UpdateAI(const uint32 diff)
@@ -4294,12 +4290,9 @@ class npc_wild_imp : public CreatureScript
                 if (!charges)
                     me->DespawnOrUnsummon();
 
-                if (me->getVictim() || m_target || me->GetOwner()->getAttackerForHelper())
+                if ((me->getVictim() || me->GetOwner()->getAttackerForHelper()))
                 {
-                    if (me->getVictim() || me->GetOwner()->getAttackerForHelper())
-                        m_target = me->getVictim() ? me->getVictim() : me->GetOwner()->getAttackerForHelper();
-
-                    me->CastSpell(m_target, FIREBOLT, false);
+                    me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getAttackerForHelper(), FIREBOLT, false);
                     me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
                     charges--;
                     me->SetPower(POWER_ENERGY, charges);
