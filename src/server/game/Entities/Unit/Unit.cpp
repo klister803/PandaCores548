@@ -12991,8 +12991,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-    if(!dbccoeff)
-        dbccoeff = spellProto->SpellAPBonusMultiplier;
+    float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
     float coeff = 0;
     float factorMod = 1.0f;
     if (bonus)
@@ -13011,25 +13010,15 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 DoneTotal += int32(bonus->ap_bonus * stack * GetTotalAttackPowerValue(BASE_ATTACK));
         }
     }
-    else if(dbccoeff)
+    else
     {
-        coeff = dbccoeff;
-    }
-    else if(spellProto->SpellAPBonusMultiplier)
-    {
-        dbccoeff = spellProto->SpellAPBonusMultiplier;
-        coeff = spellProto->SpellAPBonusMultiplier;
-        //code for bonus AP from DBC
-        if (damagetype == DOT)
+        if (dbccoeff && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC)
+            coeff = dbccoeff;
+
+        if (ApCoeffMod)
         {
-            if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
-                DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(
-                    (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK));
-        }
-        else
-        {
-            if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
-                DoneTotal += int32(coeff * stack * GetTotalAttackPowerValue(BASE_ATTACK));
+            DoneTotal += int32(ApCoeffMod * stack * GetTotalAttackPowerValue(
+                (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass !=SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK));
         }
     }
 
