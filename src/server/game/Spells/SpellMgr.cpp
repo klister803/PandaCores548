@@ -4987,6 +4987,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 71091: // Goblin. Lost Isles. It's a Town-In-A-Box
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(63);
                     break;
+                case 71919:
+                case 71918:
+                case 83115:
+                case 83116:
+                    spellInfo->Effects[EFFECT_0].MiscValueB = 3302;  //SUMMON_TYPE_MINIPET
+                    break;
                 default:
                     break;
             }

@@ -16,6 +16,8 @@ enum isle_quests
     QUEST_WARCHIEF_REVENGE                       = 14243,  // Warchief's Revenge
     QUEST_CLUSTER_CLUCK                          = 24671,  // Cluster Cluck
     QUEST_BIGGEST_EGG                            = 24744,  // The Biggest Egg Ever
+    QUEST_INVASION_IMMINENT                      = 24856,  // Invasion Imminent!
+    QUEST_IRRESTIBLE_POOL_PONY                   = 24864,  //Irresistible Pool Pony
 };
 
 enum isle_spells
@@ -51,6 +53,13 @@ enum isle_spells
     SPELL_CC_FIREWORKS_VISUAL                    = 74177, // Cluster Cluck: Remote Control Fireworks Visual
     SPELL_PERMAMENT_DEATH                        = 29266,
     SPELL_BIGGEST_EGG_FOUNTAIN                   = 71608, //The Biggest Egg Ever: Egg Fountain
+    SPELL_FROST_NOWA                             = 11831,
+    SPELL_FROSTBALL                              = 9672,
+    SPELL_SUMMON_HATCHLONG1                      = 71919,
+    SPELL_SUMMON_HATCHLONG2                      = 71918,
+    SPELL_SUMMON_HATCHLONG3                      = 83115,
+    SPELL_SUMMON_HATCHLONG4                      = 83116,
+    SPELL_PONNY_AURA                             = 71914,
 };
 
 enum isle_items
@@ -71,6 +80,17 @@ enum isle_npc
     NPC_BAMM_MEGABOMB                            = 38122, // Bamm Megabomb <Hunter Trainer>
     NPC_ASSISTANT_GREELY                         = 38124, // Assistant Greely
     NPC_ELM_PURPOSE_BUNNY                        = 24021, // ELM General Purpose Bunny (scale x0.01)
+    NPC_NAGA_HATCHLING                           = 38412, // Naga Hatchling
+    NPC_NAGA_HATCHLING2                          = 44578, // Naga Hatchling
+    NPC_NAGA_HATCHLING3                          = 44579, // Naga Hatchling
+    NPC_NAGA_HATCHLING4                          = 44580, // Naga Hatchling
+    NPC_NAGA_KILL_CREDIT                         = 38413, // Naga Hatchling Kill Credit
+    NPC_NAGA_PROTECTOR_HATCHLING                 = 38360,
+};
+
+enum isle_sound
+{
+    SOUND_HATCHLING                             = 3437,
 };
 
 enum isle_go
@@ -109,7 +129,9 @@ enum isle_text
     TEXT_GENERIC_2                                 = 2,
     TEXT_GENERIC_3                                 = 3,
     TEXT_GENERIC_4                                 = 4,
-
+    TEXT_GENERIC_5                                 = 5,
+    TEXT_GENERIC_6                                 = 6,
+    TEXT_GENERIC_7                                 = 7,
 };
 
 enum isle_emote
@@ -117,6 +139,7 @@ enum isle_emote
     EMOTE_FIND_MINE                                = 396,
     EMOTE_FIND_MINING                              = 233,
     EMOTE_SAFE_ORC                                 = 66,
+    EMOTE_HATCHLING                                = 35,
 };
 
 enum gizmo_text
@@ -1394,6 +1417,9 @@ class npc_hobart_grapplehammer : public CreatureScript
                 case QUEST_BIGGEST_EGG:
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, player->GetGUID());
                     break;
+                case QUEST_INVASION_IMMINENT:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, player->GetGUID());
+                    break;
                 default:
                     break;
             }
@@ -1511,6 +1537,186 @@ class npc_elm_bunny : public CreatureScript
     }
 };
 
+class npc_vashjelan_siren : public CreatureScript
+{
+    public:
+        npc_vashjelan_siren() : CreatureScript("npc_vashjelan_siren") { }
+
+    struct npc_vashjelan_sirenAI : public ScriptedAI
+    {
+        npc_vashjelan_sirenAI(Creature* creature) : ScriptedAI(creature){}
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void Hatchiling(std::list<Creature*>& creatureList, Unit* killer)
+        {
+            for (std::list<Creature*>::iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
+            {
+                Creature* c = *itr;
+                c->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                c->GetMotionMaster()->MovePoint(EVENT_GENERIC_1, killer->m_positionX, killer->m_positionY, killer->m_positionZ);
+                c->AI()->SetGUID(killer->GetGUID(), EVENT_GENERIC_1);
+            }
+        }
+
+        void JustDied(Unit* killer) 
+        {
+            if (!killer->HasAura(SPELL_PONNY_AURA))
+                return;
+
+            Player *player = killer->ToPlayer();
+            if (!player)
+                return;
+
+            if (player->GetQuestStatus(QUEST_IRRESTIBLE_POOL_PONY) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            std::list<Creature*> creatureList;
+            me->GetCreatureListWithEntryInGrid(creatureList, NPC_NAGA_HATCHLING, 25.0f);
+            Hatchiling(creatureList, killer);
+            me->GetCreatureListWithEntryInGrid(creatureList, NPC_NAGA_HATCHLING2, 25.0f);
+            Hatchiling(creatureList, killer);
+            me->GetCreatureListWithEntryInGrid(creatureList, NPC_NAGA_HATCHLING3, 25.0f);
+            Hatchiling(creatureList, killer);
+            me->GetCreatureListWithEntryInGrid(creatureList, NPC_NAGA_HATCHLING4, 25.0f);
+            Hatchiling(creatureList, killer);
+        }
+
+        void EnterCombat(Unit* /*victim*/)
+        {
+            events.ScheduleEvent(EVENT_GENERIC_1, 3000);
+            events.ScheduleEvent(EVENT_GENERIC_2, 4000);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_GENERIC_1:
+                        me->CastSpell(me, SPELL_FROST_NOWA, true);
+                        break;
+                    case EVENT_GENERIC_2:
+                        if (Unit *target = me->getVictim())
+                            me->CastSpell(target, SPELL_FROSTBALL, true);
+                        events.ScheduleEvent(EVENT_GENERIC_2, 3000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_vashjelan_sirenAI(creature);
+    }
+};
+
+const uint32 sum_hat[4] = {SPELL_SUMMON_HATCHLONG1, SPELL_SUMMON_HATCHLONG2, SPELL_SUMMON_HATCHLONG3, SPELL_SUMMON_HATCHLONG4};
+
+class npc_naga_hatchling : public CreatureScript
+{
+    public:
+        npc_naga_hatchling() : CreatureScript("npc_naga_hatchling") { }
+
+    struct npc_naga_hatchlingAI : public ScriptedAI
+    {
+        npc_naga_hatchlingAI(Creature* creature) : ScriptedAI(creature){}
+        EventMap events;
+        uint64 plrGUID;
+        void Reset()
+        {
+            events.Reset();
+            plrGUID = 0;
+            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            events.ScheduleEvent(EVENT_GENERIC_1, 20000);
+            plrGUID = guid;
+        }
+
+        void OnSpellClick(Unit* clicker)
+        {
+            if (!clicker || clicker->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            clicker->CastSpell(clicker, sum_hat[urand(0, 3)], true);
+            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            me->PlayDistanceSound(SOUND_HATCHLING);
+            me->HandleEmoteCommand(EMOTE_HATCHLING);
+            clicker->ToPlayer()->KilledMonsterCredit(NPC_NAGA_KILL_CREDIT);
+            me->DespawnOrUnsummon(100);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type != POINT_MOTION_TYPE)
+                return;
+            me->PlayDistanceSound(SOUND_HATCHLING);
+            me->HandleEmoteCommand(EMOTE_HATCHLING);
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (!who->HasAura(SPELL_PONNY_AURA) || me->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
+                return;
+
+            Player *player = who->ToPlayer();
+            if (!player)
+                return;
+
+            if (player->GetQuestStatus(QUEST_IRRESTIBLE_POOL_PONY) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            if (me->FindNearestCreature(NPC_NAGA_PROTECTOR_HATCHLING, 25.0f, true))
+                return;
+
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            me->GetMotionMaster()->MovePoint(EVENT_GENERIC_1, who->m_positionX, who->m_positionY, who->m_positionZ);
+            SetGUID(who->GetGUID(), EVENT_GENERIC_1);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_GENERIC_1:
+                        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_naga_hatchlingAI(creature);
+    }
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -1532,4 +1738,6 @@ void AddSC_lost_isle()
     new npc_wild_clucker_egg();
     new npc_hobart_grapplehammer();
     new npc_elm_bunny();
+    new npc_vashjelan_siren();
+    new npc_naga_hatchling();
 }

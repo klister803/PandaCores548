@@ -6932,6 +6932,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     case 74177:
                         target->PlayDistanceSound(6820);
                         return;
+                    // resistible Pool Pony: Naga Hatchling Proximity Control - Master
+                    case 71917:
+                        target->PlayDistanceSound(3437);
+                        return;
                     // Thaumaturgy Channel
                     case 9712:
                         triggerSpellId = 21029;
