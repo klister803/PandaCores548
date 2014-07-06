@@ -6510,13 +6510,6 @@ void Player::RepopAtGraveyard()
         return;
     }
 
-    // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
-    {
-        ResurrectPlayer(0.5f);
-        SpawnCorpseBones();
-    }
-
     WorldSafeLocsEntry const* ClosestGrave = NULL;
 
     // Special handle for battleground maps
@@ -6536,7 +6529,7 @@ void Player::RepopAtGraveyard()
 
     // if no grave found, stay at the current location
     // and don't show spirit healer location
-    if (ClosestGrave)
+    if (ClosestGrave && !GetTransport())
     {
         TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, GetOrientation());
         UpdateObjectVisibility();
@@ -6550,6 +6543,13 @@ void Player::RepopAtGraveyard()
             data << ClosestGrave->x;
             GetSession()->SendPacket(&data);
         }
+    }
+    // Do it only if where is no grave or transport!
+    // Such zones are considered unreachable as a ghost and the player must be automatically revived
+    else if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
+    {
+        ResurrectPlayer(0.5f);
+        SpawnCorpseBones();
     }
     //else if (GetPositionZ() < zone->MaxDepth)
         //TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
