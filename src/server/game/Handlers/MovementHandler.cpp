@@ -430,7 +430,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // check for swimming vehicles 
-    if (vehMover && plrMover)
+    if (vehMover && plrMover && vehMover->GetBase())
     {
         if (Creature * vehCreature = vehMover->GetBase()->ToCreature())
         {
