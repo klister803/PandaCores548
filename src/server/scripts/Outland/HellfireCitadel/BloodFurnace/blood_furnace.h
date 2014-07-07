@@ -76,11 +76,4 @@ enum ActionIds
     ACTION_RESET_BROGGOK        = 2,
     ACTION_PREPARE_BROGGOK      = 3
 };
-
-template<class AI>
-AI* GetBloodFurnaceAI(Creature* creature)
-{
-    return new GetInstanceAI<AI>(creature, BFScriptName);
-}
-
 #endif // BLOOD_FURNACE_H_
