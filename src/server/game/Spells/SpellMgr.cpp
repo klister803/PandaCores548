@@ -4601,8 +4601,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 //Council of Elders
-                //Mallak
-                case 136991: //bitting cold tr ef 
+                //Mallak 
+                case 136992: //Bitting cold
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
+                case 136991: //Bitting cold tr ef 
                     spellInfo->Effects[0].TargetB = 30;
                     break;
                 //Kazrajin

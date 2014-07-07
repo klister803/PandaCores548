@@ -191,7 +191,7 @@ class boss_council_of_elders : public CreatureScript
                         break;
                     //Kazrajin
                     case EVENT_R_CHARGE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                         {
                             me->SetFacingToObject(target);
                             target->GetPosition(&chargepos);

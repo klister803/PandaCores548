@@ -1154,7 +1154,21 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     switch (Id)
     {
     case 122855: //Sun Breath (Tsulong)
+    case 139900: //Stormcloud (StormBringer - ToT)
+    case 139901: //Stormcloud dmg (StormBringer - ToT)
+    case 137261: //Lightning storm dmg (Jinrokh)
+    case 140819: //Lightning storm dummy (Jinrokh)
+    case 136740: //Double swipe (Horridon)
+    case 136769: //Horridon charge
+    case 136992: //Bitting cold (Mallak)
+    case 136991: //Bitting cold tr ef (Mallak)
+    case 137122: //Reckless charge - point dmg (Kazrajin)
+    case 134920: //Quake stomp (Tortos)
     case 133946: //Furios stone (Tortos)
+    case 134011: //Spinning shell dmg (Tortos)
+    case 135101: //Drain the weak dmg (Tortos)
+    case 139822: //Cinders dot (Megaera)
+    case 139836: //Cinders void zone dmg (Megaera)
     case 136220: //Acidic explosion (Primordius)
     case 134926: //Throw spear (Iron Qon)
     case 136324: //Rising Anger (Iron Qon)
@@ -1164,7 +1178,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
         return Effects[effect];
     }
 
-    if(difficulty)
+    if (difficulty)
     {
         SpellEffectInfoMap::const_iterator itr = EffectsMap.find(MAKE_PAIR16(effect, difficulty));
         if(itr != EffectsMap.end())
