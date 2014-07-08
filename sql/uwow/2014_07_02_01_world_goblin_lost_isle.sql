@@ -1390,6 +1390,7 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 -- --------------------------------
 --          PHASE 8. Continue after 11.
 -- --------------------------------
+UPDATE spell_area SET quest_end = 14245, quest_end_status = 66 WHERE spell = 68421 AND area = 4720; -- END 1024 phase
 
 DELETE FROM spell_area WHERE spell = 68750 AND  area = 4720;
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 

@@ -17,7 +17,8 @@ enum isle_quests
     QUEST_CLUSTER_CLUCK                          = 24671,  // Cluster Cluck
     QUEST_BIGGEST_EGG                            = 24744,  // The Biggest Egg Ever
     QUEST_INVASION_IMMINENT                      = 24856,  // Invasion Imminent!
-    QUEST_IRRESTIBLE_POOL_PONY                   = 24864,  //Irresistible Pool Pony
+    QUEST_IRRESTIBLE_POOL_PONY                   = 24864,  // Irresistible Pool Pony
+    QUEST_SURRENDER_OR_ELSE                      = 24868, // Surrender or Else!
 };
 
 enum isle_spells
@@ -52,14 +53,21 @@ enum isle_spells
     SPELL_REMOTE_CONTROL_FIREWORKS               = 71170, // Remote Control Fireworks
     SPELL_CC_FIREWORKS_VISUAL                    = 74177, // Cluster Cluck: Remote Control Fireworks Visual
     SPELL_PERMAMENT_DEATH                        = 29266,
-    SPELL_BIGGEST_EGG_FOUNTAIN                   = 71608, //The Biggest Egg Ever: Egg Fountain
+    SPELL_BIGGEST_EGG_FOUNTAIN                   = 71608, // The Biggest Egg Ever: Egg Fountain
     SPELL_FROST_NOWA                             = 11831,
     SPELL_FROSTBALL                              = 9672,
     SPELL_SUMMON_HATCHLONG1                      = 71919,
     SPELL_SUMMON_HATCHLONG2                      = 71918,
     SPELL_SUMMON_HATCHLONG3                      = 83115,
     SPELL_SUMMON_HATCHLONG4                      = 83116,
-    SPELL_PONNY_AURA                             = 71914,
+    SPELL_PONNY_AURA                             = 71914, // Surrender Or Else!: Faceless of the Deep - Beam Effect
+    SPELL_SOE_FREEZE_ANIM                        = 72126, // Surrender Or Else!: Faceless of the Deep - Freeze Anim
+    SPELL_SOE_ABSORPTION_SHIELD                  = 72055, // Absorption Shield
+    SPELL_SOE_BEAM_EFFECT                        = 72076, 
+    SPELL_SOE_STRANGE_TENTACLE                   = 71910, // Strange Tentacle: Base Effect
+    SPELL_SHADOW_CRASH                           = 75903, // Shadow Crash
+    SPELL_ENVELOPING_WINDS                       = 72518, //Enveloping Winds
+    SPELL_ENVELOPING_WINDS_CAPTURED              = 72522, 
 };
 
 enum isle_items
@@ -86,6 +94,7 @@ enum isle_npc
     NPC_NAGA_HATCHLING4                          = 44580, // Naga Hatchling
     NPC_NAGA_KILL_CREDIT                         = 38413, // Naga Hatchling Kill Credit
     NPC_NAGA_PROTECTOR_HATCHLING                 = 38360,
+    NPC_OOMLOT_SHAMAN                            = 38644, // Oomlot Shaman
 };
 
 enum isle_sound
@@ -118,6 +127,10 @@ enum isle_events
 
     EVENT_GENERIC_1                                = 1,
     EVENT_GENERIC_2                                = 2,
+    EVENT_GENERIC_3                                = 3,
+    EVENT_GENERIC_4                                = 4,
+    EVENT_GENERIC_5                                = 5,
+    EVENT_GENERIC_6                                = 6,
 
     EVENT_POINT_MINE                               = 1000,
 };
@@ -1717,6 +1730,269 @@ class npc_naga_hatchling : public CreatureScript
     }
 };
 
+enum Phases
+{
+    PHASE_INTRO = 1,
+    PHASE_COMBAT,
+
+    PHASE_MASK_INTRO            = 1 << PHASE_INTRO,
+    PHASE_MASK_COMBAT           = 1 << PHASE_COMBAT,
+};
+
+
+class npc_faceless_of_the_deep : public CreatureScript
+{
+    public:
+        npc_faceless_of_the_deep() : CreatureScript("npc_faceless_of_the_deep") { }
+
+    struct npc_faceless_of_the_deepAI : public ScriptedAI
+    {
+        npc_faceless_of_the_deepAI(Creature* creature) : ScriptedAI(creature){}
+        EventMap events;
+        uint64 playerGUID;
+        void Reset()
+        {
+            events.Reset();
+            playerGUID = 0;
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+        }
+
+
+        void EnterCombat(Unit* /*victim*/)
+        {
+            me->SetCanFly(false);
+            me->SetDisableGravity(false);
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            Player *player = who->ToPlayer();
+            if (!player || events.GetPhaseMask())
+                return;
+
+            me->CastSpell(me, SPELL_SOE_ABSORPTION_SHIELD, true);
+            
+            if (player->GetQuestStatus(QUEST_SURRENDER_OR_ELSE) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            playerGUID = who->GetGUID();
+            events.SetPhase(PHASE_INTRO);
+            events.ScheduleEvent(EVENT_GENERIC_1, 300, 0, PHASE_INTRO);
+            me->SetCanFly(true);
+            me->SetDisableGravity(true);
+            me->GetMotionMaster()->MovePoint(EVENT_GENERIC_1, 132.3455f,  1938.528f,  17.56664f);
+            //events.ScheduleEvent(EVENT_GENERIC_2, 1000, 0, PHASE_INTRO);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            
+            if (type != POINT_MOTION_TYPE || pointId != EVENT_GENERIC_1)
+                return;
+            
+            if (Player* target = sObjectAccessor->FindPlayer(playerGUID))
+                me->SetFacingToObject(target);
+            events.ScheduleEvent(EVENT_GENERIC_2, 1000, 0, PHASE_INTRO);
+            me->CastSpell(me, SPELL_SOE_STRANGE_TENTACLE, true);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (events.GetPhaseMask() & PHASE_MASK_COMBAT && !UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_GENERIC_1:
+                        me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
+                        me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
+                        me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
+                        events.ScheduleEvent(EVENT_GENERIC_1, 300, 0, PHASE_INTRO);
+                        break;
+                    case EVENT_GENERIC_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+                        events.ScheduleEvent(EVENT_GENERIC_3, 3000, 0, PHASE_INTRO);
+                        break;
+                    case EVENT_GENERIC_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_GENERIC_4, 6000, 0, PHASE_INTRO);
+                        break;
+                    case EVENT_GENERIC_4:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                        events.ScheduleEvent(EVENT_GENERIC_5, 6000);
+                        break;
+                    case EVENT_GENERIC_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGUID);
+                        events.SetPhase(PHASE_COMBAT);
+                        if (Player* target = sObjectAccessor->FindPlayer(playerGUID))
+                        {
+                            events.ScheduleEvent(EVENT_GENERIC_6, 6000, 0, PHASE_COMBAT);
+                            me->RemoveAura(SPELL_SOE_ABSORPTION_SHIELD);
+                            me->RemoveAura(SPELL_SOE_STRANGE_TENTACLE);
+                            me->RemoveAura(SPELL_SOE_FREEZE_ANIM);
+                            me->GetMotionMaster()->MoveJump(167.6672f, 1944.108f, 5.213703f, 10, 15);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                        }else
+                            EnterEvadeMode();
+                        break;
+                    case EVENT_GENERIC_6:
+                        events.ScheduleEvent(EVENT_GENERIC_6, 6000, 0, PHASE_COMBAT);
+                        if (Player* target = sObjectAccessor->FindPlayer(playerGUID))
+                            me->CastSpell(target, SPELL_SHADOW_CRASH, false);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_faceless_of_the_deepAI(creature);
+    }
+};
+
+#define MAX_OMLOT_WP_TICK    15
+class npc_omlot_warrior : public CreatureScript
+{
+public:
+    npc_omlot_warrior() : CreatureScript("npc_omlot_warrior") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_omlot_warriorAI (creature);
+    }
+
+    struct npc_omlot_warriorAI : public npc_escortAI
+    {
+        npc_omlot_warriorAI(Creature* creature) : npc_escortAI(creature) {}
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+            me->setActive(true);
+            Start(false, false);
+            if (me->GetPositionY() < 2285.0f)
+            {
+                switch(me->GetGUID()%3)
+                {
+                    case 0:
+                        SetNextWaypoint(urand(0, 15), true, false);
+                        break;
+                    case 1:
+                        SetNextWaypoint(urand(26, 41), true, false);
+                        break;
+                    default:
+                        SetNextWaypoint(urand(51, 66), true, false);
+                        break;
+                }
+                
+            }
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+            events.ScheduleEvent(EVENT_GENERIC_1, urand(20000, 40000));
+        }    
+
+        void WaypointReached(uint32 pointId)
+        {
+            switch(pointId)
+            {
+                case 25:
+                case 50:
+                case 78:
+                    SetEscortPaused(true);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32& damage) 
+        {
+            if (attacker->GetTypeId() != TYPEID_PLAYER)
+                damage *= 100;
+        }
+
+        void DamageDealt(Unit* /*victim*/, uint32& damage, DamageEffectType /*damageType*/)
+        { 
+            damage = 0;
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                events.ScheduleEvent(EVENT_GENERIC_1, 25000);
+                
+                if (Unit* victim = me->getVictim())
+                {
+                    if (me->GetPositionY() < 2340.0f && victim->GetTypeId() != TYPEID_PLAYER)
+                    {
+                        victim->DealDamage(me, me->GetHealth(), NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        return;
+                    }
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+};
+
+
+class npc_goblin_captive : public CreatureScript
+{
+public:
+    npc_goblin_captive() : CreatureScript("npc_goblin_captive") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_goblin_captiveAI (creature);
+    }
+
+    struct npc_goblin_captiveAI : public npc_escortAI
+    {
+        npc_goblin_captiveAI(Creature* creature) : npc_escortAI(creature) {}
+        EventMap events;
+        uint64 sharMan;
+        void Reset()
+        {
+            sharMan = 0;
+
+            events.Reset();
+
+            Position pos;
+            me->GetNearPosition(pos, 4.0f, 0.0f);
+
+            if (TempSummon* summon = me->SummonCreature(NPC_OOMLOT_SHAMAN, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000))
+            {
+                sharMan = summon->GetGUID();
+                summon->CastSpell(me, SPELL_ENVELOPING_WINDS, true);
+            }
+        }    
+
+        void SummonedCreatureDespawn(Creature* /*summon*/)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+            Start(false, true);
+            me->RemoveAura(SPELL_ENVELOPING_WINDS_CAPTURED); 
+        }
+
+        void WaypointReached(uint32 pointId)
+        {
+        }
+    };
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -1740,4 +2016,7 @@ void AddSC_lost_isle()
     new npc_elm_bunny();
     new npc_vashjelan_siren();
     new npc_naga_hatchling();
+    new npc_faceless_of_the_deep();
+    new npc_omlot_warrior();
+    new npc_goblin_captive();
 }
