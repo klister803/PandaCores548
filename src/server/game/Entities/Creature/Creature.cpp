@@ -1663,7 +1663,9 @@ float Creature::GetAttackDistance(Unit const* player) const
         leveldif = -25;
 
     // "The aggro radius of a mob having the same level as the player is roughly 20 yards"
-    float RetDistance = 20;
+    // ToDo: UNIT_FIELD_COMBATREACH (or GetObjectSize) + self halfmodelze + target haldmodelsize
+    // modelsize get from mdx, m2 file in client. See Ascent creature data extractor.
+    float RetDistance = GetObjectSize() + GetCombatReach() + player->GetCombatReach();
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel
