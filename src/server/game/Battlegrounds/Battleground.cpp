@@ -1842,6 +1842,8 @@ const char* Battleground::GetTrinityString(int32 entry)
 // buffs are in their positions when battleground starts
 void Battleground::HandleTriggerBuff(uint64 go_guid)
 {
+    if(!GetBgMap())
+        return;
     GameObject* obj = GetBgMap()->GetGameObject(go_guid);
     if (!obj || obj->GetGoType() != GAMEOBJECT_TYPE_TRAP || !obj->isSpawned())
         return;
