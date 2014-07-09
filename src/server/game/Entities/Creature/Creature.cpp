@@ -836,6 +836,10 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
             break;
     }
 
+    // All rare npc have max visibility distance.
+    if (GetCreatureTemplate()->rank)
+        m_SightDistance = MAX_VISIBILITY_DISTANCE;
+
     //hack on start DK
     if (GetMapId() == 609)
         m_corpseDelay /= 3;
