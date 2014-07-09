@@ -99,7 +99,7 @@ void CombatAI::UpdateAI(const uint32 diff)
 
     events.Update(diff);
 
-    if (me->getVictim()->HasCrowdControlAura(me))
+    if (me->getVictim() && me->getVictim()->HasCrowdControlAura(me))
     {
         me->InterruptNonMeleeSpells(false);
         return;
