@@ -1521,6 +1521,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
                 AP = maximum * 0.75f;
                 break;
             }
+            case ENTRY_INFERNAL:
+            case ENTRY_ABYSSAL:
             case ENTRY_EARTH_ELEMENTAL: //Earth Elemental Totem
             {
                 int32 maximum = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_NATURE)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_NATURE);

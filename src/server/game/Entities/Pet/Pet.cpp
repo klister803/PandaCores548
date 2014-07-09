@@ -971,6 +971,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
             break;
         }
+        case ENTRY_INFERNAL:
+        case ENTRY_ABYSSAL:
+        {
+            SetMaxPower(POWER_ENERGY, 0);
+            SetPower(POWER_ENERGY, 0);
+            break;
+        }
         case ENTRY_WATER_ELEMENTAL:
         {
             SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST)));

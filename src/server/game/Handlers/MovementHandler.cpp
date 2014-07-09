@@ -430,12 +430,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // check for swimming vehicles 
-    if (vehMover && plrMover && vehMover->GetBase())
+    if (plrMover && mover)
     {
-        if (Creature * vehCreature = vehMover->GetBase()->ToCreature())
+        Vehicle *veh = mover->GetVehicleKit();
+        if (veh && veh->GetBase())
         {
-            if (!vehCreature->isInAccessiblePlaceFor(vehCreature))
-                plrMover->ExitVehicle();
+            if (Creature * vehCreature = veh->GetBase()->ToCreature())
+            {
+                if (!vehCreature->isInAccessiblePlaceFor(vehCreature))
+                    plrMover->ExitVehicle();
+            }
         }
     }
 

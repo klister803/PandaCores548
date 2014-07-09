@@ -23488,7 +23488,7 @@ void Player::TakeExtendedCost(uint32 extendedCostId, uint32 count)
     }
 }
 
-inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int32 price, ItemTemplate const *pProto, Creature *pVendor, VendorItem const* crItem, bool bStore)
+inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int64 price, ItemTemplate const *pProto, Creature *pVendor, VendorItem const* crItem, bool bStore)
 {
     ItemPosCountVec vDest;
     uint16 uiDest = 0;
@@ -23556,7 +23556,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         {
             it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
             it->SetRefundRecipient(GetGUIDLow());
-            it->SetPaidMoney(price);
+            it->SetPaidMoney(uint32(price));
             it->SetPaidExtendedCost(crItem->ExtendedCost);
             it->SaveRefundDataToDB();
             AddRefundReference(it->GetGUIDLow());
@@ -23885,7 +23885,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             }
     }
 
-    uint32 price = 0;
+    uint64 price = 0;
     if (crItem->IsGoldRequired(pProto) && pProto->BuyPrice > 0) //Assume price cannot be negative (do not know why it is int32)
     {
         uint32 maxCount = MAX_MONEY_AMOUNT / pProto->BuyPrice;
@@ -23897,17 +23897,18 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         price = pProto->BuyPrice * count; //it should not exceed MAX_MONEY_AMOUNT
 
         // reputation discount
-        price = uint32(floor(price * GetReputationPriceDiscount(creature)));
+        price *= double(GetReputationPriceDiscount(creature));
 
         //if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
             //price -= CalculatePct(price, priceMod);
 
-        if (!HasEnoughMoney(uint64(price)))
+        if (!HasEnoughMoney(price))
         {
             SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, creature, item, 0);
             return false;
         }
     }
+
 
     if ((bag == NULL_BAG && slot == NULL_SLOT) || IsInventoryPos(bag, slot))
     {
