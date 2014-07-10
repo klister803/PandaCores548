@@ -9,24 +9,29 @@ phase 67851 ind 2 - for quest 14474
 enum isle_quests
 {
     QUEST_DONT_GO_INTO_LIGHT                     = 14239,
-    QUEST_GOBLIN_ESCAPE_PODS                     = 14474,  // Goblin Escape Pods or 14001
-    QUEST_MINER_TROUBLES                         = 14021,  // Miner Troubles
-    QUEST_CAPTURE_UNKNOWN                        = 14031,  // Capturing the Unknown
-    QUEST_WEED_WHACKER                           = 14236,  // Weed Whacker
-    QUEST_WARCHIEF_REVENGE                       = 14243,  // Warchief's Revenge
-    QUEST_CLUSTER_CLUCK                          = 24671,  // Cluster Cluck
-    QUEST_BIGGEST_EGG                            = 24744,  // The Biggest Egg Ever
-    QUEST_INVASION_IMMINENT                      = 24856,  // Invasion Imminent!
-    QUEST_IRRESTIBLE_POOL_PONY                   = 24864,  // Irresistible Pool Pony
+    QUEST_GOBLIN_ESCAPE_PODS                     = 14474, // Goblin Escape Pods or 14001
+    QUEST_MINER_TROUBLES                         = 14021, // Miner Troubles
+    QUEST_CAPTURE_UNKNOWN                        = 14031, // Capturing the Unknown
+    QUEST_WEED_WHACKER                           = 14236, // Weed Whacker
+    QUEST_WARCHIEF_REVENGE                       = 14243, // Warchief's Revenge
+    QUEST_CLUSTER_CLUCK                          = 24671, // Cluster Cluck
+    QUEST_BIGGEST_EGG                            = 24744, // The Biggest Egg Ever
+    QUEST_INVASION_IMMINENT                      = 24856, // Invasion Imminent!
+    QUEST_IRRESTIBLE_POOL_PONY                   = 24864, // Irresistible Pool Pony
     QUEST_SURRENDER_OR_ELSE                      = 24868, // Surrender or Else!
+    QUEST_CHILDREN_OF_TURTLE                     = 24954, // Children of a Turtle God
+    QUEST_VOLCANOTH                              = 24958, // Volcanoth!
+    QUEST_OLD_FRIENDS                            = 25023, // Old Friends
+    QUEST_COLA_GIVE_YOU_IDEAS                    = 25110, // Kaja'Cola Gives You IDEAS! (TM)
+    QUEST_MORALE_BOOST                           = 25122, // Morale Boost
 };
 
 enum isle_spells
 {
     //Intro
-    SPELL_SUMMON_DOC_ZAPNOZZLE                   = 69018,  // Don't Go Into The Light!: Summon Doc Zapnozzle
-    SPELL_NEAR_DEATH                             = 69010,  // Near Death!
-    SPELL_DOC_TO_CHAR                            = 69085,  // Don't Go Into The Light!: Force Cast from Doc to Character + proc 69086
+    SPELL_SUMMON_DOC_ZAPNOZZLE                   = 69018, // Don't Go Into The Light!: Summon Doc Zapnozzle
+    SPELL_NEAR_DEATH                             = 69010, // Near Death!
+    SPELL_DOC_TO_CHAR                            = 69085, // Don't Go Into The Light!: Force Cast from Doc to Character + proc 69086
     SPELL_INTRO_VISUAL                           = 69085,
     SPELL_INTRO_RES                              = 69022,
     SPELL_INVISIBLE_INRO_DUMMY                   = 76354,
@@ -34,14 +39,14 @@ enum isle_spells
     SPELL_SUMMON_ORE_CART                        = 68064,
     SPELL_VISUAL_ORE_CART_CHAIN                  = 68122,
     SPELL_VISUAL_CART_TRANSFORM                  = 68065,
-    SPELL_PHOTO_VISUAL_SCREEN_EFFECT             = 70649,  // Capturing The Unknown: Player's Screen Effect
-    SPELL_PHOTO_VISUAL_BIND_SIGHT                = 70641,  // Capturing The Unknown: Player's Bind Sight
-    SPELL_PHOTO_SNAPSHOT                         = 68281,  // KTC Snapflash
+    SPELL_PHOTO_VISUAL_SCREEN_EFFECT             = 70649, // Capturing The Unknown: Player's Screen Effect
+    SPELL_PHOTO_VISUAL_BIND_SIGHT                = 70641, // Capturing The Unknown: Player's Bind Sight
+    SPELL_PHOTO_SNAPSHOT                         = 68281, // KTC Snapflash
     SPELL_SHOOT                                  = 15620,
     SPELL_VISUAL_VILE_CAPTURE                    = 68295,
     SPELL_SUMMON_WW_CHANNEL_BUNNY                = 68216, // Weed Whacker: Summon Weed Whacker Channel Bunny
     SPELL_WEED_WHACKER                           = 68212, // Weed Whacker DMG aura
-    SPELL_WEED_WHACKER_BUF                       = 68824, //Weed Whacker
+    SPELL_WEED_WHACKER_BUF                       = 68824, // Weed Whacker
     SPELL_PHASE_4                                = 67852,
     SPELL_PHASE_8                                = 67853,
     SPELL_TRALL_CHAIN_LIGHTING_RIGHT             = 68441,
@@ -66,8 +71,17 @@ enum isle_spells
     SPELL_SOE_BEAM_EFFECT                        = 72076, 
     SPELL_SOE_STRANGE_TENTACLE                   = 71910, // Strange Tentacle: Base Effect
     SPELL_SHADOW_CRASH                           = 75903, // Shadow Crash
-    SPELL_ENVELOPING_WINDS                       = 72518, //Enveloping Winds
+    SPELL_ENVELOPING_WINDS                       = 72518, // Enveloping Winds
     SPELL_ENVELOPING_WINDS_CAPTURED              = 72522, 
+    SPELL_ZOMBIES_ROCKET_BOOTS_AICAST_ENTER      = 72897, // Zombies vs. Super Booster Rocket Boots: AICast on Enter Seat
+    SPELL_ZVSBRB_NEW_BOOTS                       = 72948, // Zombies vs. Super Booster Rocket Boots: New Boots from Gossip. ToDo: add gossip and item check
+    SPELL_ZVSBRB_DAMAGE_AURA                     = 72885, // Zombies vs. Super Booster Rocket Boots: Damage - Trigger
+    SPELL_OF_BIND                                = 73135, // Old Friends: Quest Accept & Bind
+    SPELL_OF_SUMMON_BOMBER                       = 73105, // Old Friends: Summon Flying Bomber
+    SPELL_KCGYI_SUMMON_GREELY                    = 73603, // Kaja'Cola Gives You IDEAS! (TM): Summon Assistant Greely
+    SPELL_FM_IZZY_FREED                          = 73613, // Free Their Minds: Izzy Freed
+    SPELL_FM_GOOBER_FREED                        = 73614, // Free Their Minds: Gobber Freed
+    SPELL_FM_ACE_FREED                           = 73602, 
 };
 
 enum isle_items
@@ -95,11 +109,20 @@ enum isle_npc
     NPC_NAGA_KILL_CREDIT                         = 38413, // Naga Hatchling Kill Credit
     NPC_NAGA_PROTECTOR_HATCHLING                 = 38360,
     NPC_OOMLOT_SHAMAN                            = 38644, // Oomlot Shaman
+    NPC_GOBLIN_ZOMBIE                            = 38753, // Goblin Zombie
+    NPC_BASTIA_2                                 = 39152,
+    NPC_KCGYI_GREELY                             = 39199,
+    NPC_MB_KEZAN_CITIZEN                         = 38745, //Kezan Citizen
+    NPC_MB_KEZAN_CITIZEN2                        = 38409,
+    NPC_MB_IZI                                   = 38647,
+    NPC_MB_GOOBER                                = 38746,
+    NPC_MB_ACE                                   = 38441,
 };
 
 enum isle_sound
 {
     SOUND_HATCHLING                             = 3437,
+    MUSIC_VOLCANO                               = 23722,
 };
 
 enum isle_go
@@ -753,6 +776,11 @@ class npc_strangle_vine : public CreatureScript
         {
 
         }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
         void PassengerBoarded(Unit* passenger, int8 /*seatId*/, bool apply)
         {
             if (passenger->GetTypeId() != TYPEID_UNIT)
@@ -932,6 +960,10 @@ public:
             switch(i)
             {
                 case 20:
+                    if (me->GetEntry() == NPC_BASTIA_2)
+                        return;
+                    //no break
+                case 48:    // for NPC_BASTIA_2
                     if (Player* player = GetPlayerForEscort())
                     {
                         SetEscortPaused(true);
@@ -1432,6 +1464,12 @@ class npc_hobart_grapplehammer : public CreatureScript
                     break;
                 case QUEST_INVASION_IMMINENT:
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, player->GetGUID());
+                    break;
+                case QUEST_CHILDREN_OF_TURTLE:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, player->GetGUID());
+                    break;
+                case QUEST_VOLCANOTH:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_7, player->GetGUID());
                     break;
                 default:
                     break;
@@ -1993,6 +2031,282 @@ public:
     };
 };
 
+class npc_super_booster_rocket_boots : public CreatureScript
+{
+    public:
+        npc_super_booster_rocket_boots() : CreatureScript("npc_super_booster_rocket_boots") { }
+
+    struct npc_super_booster_rocket_bootsAI : public ScriptedAI
+    {
+        npc_super_booster_rocket_bootsAI(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset()
+        {
+
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void PassengerBoarded(Unit* passenger, int8 /*seatId*/, bool apply)
+        {
+            if (passenger->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (apply)
+                passenger->CastSpell(passenger, SPELL_ZVSBRB_DAMAGE_AURA, true);
+            else
+                passenger->RemoveAura(SPELL_ZVSBRB_DAMAGE_AURA); 
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_super_booster_rocket_bootsAI(creature);
+    }
+};
+
+class npc_sassy_hardwrench : public CreatureScript
+{
+    public:
+        npc_sassy_hardwrench() : CreatureScript("npc_sassy_hardwrench") { }
+
+    struct npc_sassy_hardwrenchAI : public ScriptedAI
+    {
+        npc_sassy_hardwrenchAI(Creature* creature) : ScriptedAI(creature)
+        {
+
+        }
+
+        std::set<uint64> m_player_for_event;
+        void Reset()
+        {
+            m_player_for_event.clear();
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+            m_player_for_event.insert(who->GetGUID());
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
+        }
+
+        void OnStartQuest(Player* player, Quest const* quest)   
+        {
+            if (!quest || quest->GetQuestId() != QUEST_OLD_FRIENDS)
+                return;
+
+            //WorldLocation loc(648, 1580.93f, 2720.48f, 83.2326f);
+            //player->SetHomebind(loc, 4912);
+            me->CastSpell(player, SPELL_OF_BIND, true);
+            player->PlayDistanceSound(MUSIC_VOLCANO, player);
+            player->CastSpell(player, SPELL_OF_SUMMON_BOMBER, true);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_sassy_hardwrenchAI(creature);
+    }
+};
+
+class npc_flying_bomber : public CreatureScript
+{
+public:
+    npc_flying_bomber() : CreatureScript("npc_flying_bomber") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_flying_bomberAI (creature);
+    }
+
+    struct npc_flying_bomberAI : public npc_escortAI
+    {
+        npc_flying_bomberAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+        void Reset()
+        {
+             PlayerOn       = false;
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+             PlayerOn = true;
+             Start(false, true, who->GetGUID());
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            Player* player = GetPlayerForEscort();
+            if (!player)
+                return;
+
+            Vehicle*  v = me->GetVehicleKit();
+            if (!v)
+                return;
+
+            Unit* sassy = v->GetPassenger(0);
+            if (!sassy)
+                return;
+
+            switch(i)
+            {
+                case 1:
+                    sCreatureTextMgr->SendChat(sassy->ToCreature(), TEXT_GENERIC_0, player->GetGUID());
+                    break;
+                case 3:
+                    sCreatureTextMgr->SendChat(sassy->ToCreature(), TEXT_GENERIC_1, player->GetGUID());
+                    break;
+                case 25 :
+                    SetEscortPaused(true);
+                    player->ExitVehicle();
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            
+            if (PlayerOn)
+            {
+                if (Player* player = GetPlayerForEscort())
+                    player->SetClientControl(me, 0);
+                PlayerOn = false;
+            }
+        }
+    };
+};
+// Kaja'Cola Gives You IDEAS! (TM): Dummy To Assistant Greely
+class spell_kcgyi_assistant_greely : public SpellScriptLoader
+{
+public:
+    spell_kcgyi_assistant_greely() : SpellScriptLoader("spell_kcgyi_assistant_greely") { }
+
+    class spell_kcgyi_assistant_greely_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_kcgyi_assistant_greely_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            PreventHitDefaultEffect(effIndex);
+
+            Unit* caster =  GetCaster();
+            if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if (caster->GetTypeId() == TYPEID_PLAYER &&
+                caster->ToPlayer()->GetQuestStatus(QUEST_COLA_GIVE_YOU_IDEAS) != QUEST_STATUS_REWARDED)
+                return;
+
+            Unit* target = GetHitUnit();
+            if (!target)
+                return;
+
+            std::list<Creature*> Minions;
+            caster->GetAllMinionsByEntry(Minions, NPC_KCGYI_GREELY);
+            if (Minions.empty())
+                caster->CastSpell(caster, SPELL_KCGYI_SUMMON_GREELY, true);            
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_kcgyi_assistant_greely_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_kcgyi_assistant_greely_SpellScript();
+    }
+};
+
+//Kaja'Cola Zero-One
+class spell_cola_zero_one : public SpellScriptLoader
+{
+public:
+    spell_cola_zero_one() : SpellScriptLoader("spell_cola_zero_one") { }
+
+    class spell_cola_zero_one_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_cola_zero_one_SpellScript);
+
+        void HandleScript(SpellEffIndex effIndex)
+        {
+            PreventHitDefaultEffect(effIndex);
+
+            Unit* caster =  GetCaster();
+            if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            //if (caster->GetTypeId() == TYPEID_PLAYER &&
+            //    caster->ToPlayer()->GetQuestStatus(QUEST_MORALE_BOOST) != QUEST_STATUS_REWARDED)
+            //    return;
+
+            Unit* target = GetHitUnit();
+            if (!target || !target->ToCreature())
+                return;
+
+            switch(target->GetEntry())
+            {
+                case NPC_MB_KEZAN_CITIZEN:
+                case NPC_MB_KEZAN_CITIZEN2:
+                    sCreatureTextMgr->SendChat(target->ToCreature(), TEXT_GENERIC_0, caster->GetGUID());
+                    caster->ToPlayer()->KilledMonsterCredit(NPC_MB_KEZAN_CITIZEN2);
+                    target->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+                    target->GetMotionMaster()->MoveFollow(caster, 1.0f, 0);
+                    target->ToCreature()->DespawnOrUnsummon(5000);
+                    break;
+                case NPC_MB_IZI:
+                    caster->CastSpell(caster, SPELL_FM_IZZY_FREED, true); 
+                    caster->ToPlayer()->KilledMonsterCredit(NPC_MB_IZI);
+                    target->ToCreature()->DespawnOrUnsummon(0);
+                    break;
+                case NPC_MB_GOOBER:
+                    caster->CastSpell(caster, SPELL_FM_GOOBER_FREED, true); 
+                    caster->ToPlayer()->KilledMonsterCredit(NPC_MB_GOOBER);
+                    target->ToCreature()->DespawnOrUnsummon(0);
+                    break;
+                case NPC_MB_ACE:
+                    caster->CastSpell(caster, SPELL_FM_ACE_FREED, true); 
+                    caster->ToPlayer()->KilledMonsterCredit(NPC_MB_ACE);
+                    target->ToCreature()->DespawnOrUnsummon(0);
+                    break;
+            }         
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_cola_zero_one_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_cola_zero_one_SpellScript();
+    }
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -2019,4 +2333,9 @@ void AddSC_lost_isle()
     new npc_faceless_of_the_deep();
     new npc_omlot_warrior();
     new npc_goblin_captive();
+    new npc_super_booster_rocket_boots();
+    new npc_sassy_hardwrench();
+    new npc_flying_bomber();
+    new spell_kcgyi_assistant_greely();
+    new spell_cola_zero_one();
 }
