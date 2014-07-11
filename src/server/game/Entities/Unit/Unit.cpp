@@ -5852,6 +5852,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
 
     uint32 triggered_spell_id = triggeredByAura->GetTriggerSpell() ? triggeredByAura->GetTriggerSpell(): 0;
+    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
     uint32 cooldown_spell_id = 0; // for random trigger, will be one of the triggered spell to avoid repeatable triggers
                                   // otherwise, it's the triggered_spell_id by default
     Unit* target = victim;
@@ -8642,20 +8643,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (Aura* lightningShield = _plr->GetAura(324))
                     {
-                        // Improved Lightning Shield
-                        if (!_plr->HasAura(100956))
-                        {
-                            if (lightningShield->GetCharges() > 1)
-                                lightningShield->DropCharge();
-                        }
-                        else
-                        {
-                            if (lightningShield->GetCharges() < 7)
-                                lightningShield->SetCharges(lightningShield->GetCharges() + 1);
+                        if (lightningShield->GetCharges() > 1)
+                            lightningShield->DropCharge();
 
-                            if (lightningShield->GetCharges() >= 7)
-                                _plr->CastSpell(_plr, 95774, true); // Fulmination Info
-                        }
+                        cooldown = triggerEntry->GetRecoveryTime() / 1000.0f;
                     }
 
                     break;
@@ -9253,7 +9244,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     if (!triggered_spell_id)
         return true;
 
-    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
     if (!triggerEntry)
     {
         sLog->outError(LOG_FILTER_UNITS, "Unit::HandleDummyAuraProc: Spell %u has non-existing triggered spell %u", dummySpell->Id, triggered_spell_id);
@@ -9272,7 +9262,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+    {
+        ToPlayer()->ApplySpellMod(cooldown_spell_id, SPELLMOD_COOLDOWN, cooldown);
         ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
+    }
 
     return true;
 }

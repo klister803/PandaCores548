@@ -3523,6 +3523,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 26364: // Lightning Shield
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
+                    break;
                 case 119611: // Renewing Mist
                     spellInfo->ProcCharges = 3;
                     break;
