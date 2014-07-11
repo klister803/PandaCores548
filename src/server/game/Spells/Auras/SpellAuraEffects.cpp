@@ -830,7 +830,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 amount = caster->SpellHealingBonusDone(target, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
                 amount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
             }
-            else if(m_aura_amount)
+            else if(m_aura_amount && !m_baseAmount)
             {
                 amount = m_aura_amount;
                 return amount;
@@ -1066,6 +1066,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
+                case 119611: // Renewing Mist
+                {
+                    SpellInfo const* _spellInfo = sSpellMgr->GetSpellInfo(115151);
+                    float mod = _spellInfo->Effects[2].BonusMultiplier * 100.0f;
+                    int32 DoneAdvertisedBenefit = caster->SpellBaseHealingBonusDone(m_spellInfo->GetSchoolMask());
+                    amount += CalculatePct(DoneAdvertisedBenefit, mod);
+                    break;
+                }
                 case 73651: // Recuperate
                 {
                     amount = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56806) ? 3.5f: 3);

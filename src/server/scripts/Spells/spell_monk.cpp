@@ -99,6 +99,78 @@ enum MonkSpells
     SPELL_MONK_GUARD                            = 115295,
 };
 
+// spell 119611 Renewing Mist
+class spell_monk_renewing_mist : public SpellScriptLoader
+{
+public:
+    spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
+
+    class spell_monk_renewing_mistAuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_renewing_mistAuraScript);
+
+        void HandleEffectPeriodicUpdate(AuraEffect* aurEff)
+        {
+            std::list<Unit*> targets;
+            std::list<Unit*> unitTargets;
+            Unit* owner = GetUnitOwner();
+            Unit* caster = GetCaster();
+            Unit* target = NULL;
+            Aura* aura = GetAura();
+
+            if (!owner || !caster)
+                return;
+
+            if (aura && aura->GetCharges() < 2)
+                return;
+
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(owner, owner, 20);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(owner, unitTargets, u_check);
+            owner->VisitNearbyObject(20.0f, searcher);
+
+            for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
+            {
+                if ((*iter)->HasAura(GetId(), caster->GetGUID()) || !(*iter)->IsInPartyWith(caster) || (*iter)->GetTypeId() != TYPEID_PLAYER)
+                    continue;
+
+                targets.push_back(*iter);
+            }
+
+            targets.sort(Trinity::HealthPctOrderPred());
+
+            for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+            {
+                if (!(*iter)->IsWithinLOSInMap(owner))
+                    continue;
+
+                target = (*iter);
+                break;
+            }
+
+            if (!target)
+                return;
+
+            if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
+            {
+                int32 setstack = aurEff1->GetAmount() - 1;
+                int32 amount = aurEff->GetAmount();
+                caster->CastCustomSpell(target, GetId(), &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
+                aura->SetCharges(1);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_monk_renewing_mistAuraScript::HandleEffectPeriodicUpdate, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_monk_renewing_mistAuraScript();
+    }
+};
+
 // Diffuse Magic - 122783
 class spell_monk_diffuse_magic : public SpellScriptLoader
 {
@@ -1102,185 +1174,6 @@ class spell_monk_surging_mist : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_surging_mist_SpellScript();
-        }
-};
-
-// Renewing Mist - 119611
-class spell_monk_renewing_mist : public SpellScriptLoader
-{
-    public:
-        spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
-
-        class spell_monk_renewing_mist_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_renewing_mist_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    std::list<Unit*> playerList;
-                    std::list<Creature*> tempList;
-                    std::list<Creature*> statueList;
-                    Creature* statue;
-
-                    _player->GetPartyMembers(playerList);
-
-                    if (playerList.size() > 1)
-                    {
-                        playerList.sort(Trinity::HealthPctOrderPred());
-                        playerList.resize(1);
-                    }
-
-                    _player->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
-                    _player->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
-
-                    // Remove other players jade statue
-                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                    {
-                        Unit* owner = (*i)->GetOwner();
-                        if (owner && owner == _player && (*i)->isSummon())
-                            continue;
-
-                        statueList.remove((*i));
-                    }
-
-                    for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                    {
-                        if (statueList.size() == 1)
-                        {
-                            for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
-                                statue = *itrBis;
-
-                            if (statue && (statue->isPet() || statue->isGuardian()))
-                            {
-                                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
-                                {
-                                    _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, *itr);
-                                    _player->CastSpell(*itr, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_monk_renewing_mist_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_renewing_mist_SpellScript();
-        }
-
-        class spell_monk_renewing_mist_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_monk_renewing_mist_AuraScript);
-
-            uint32 update;
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                update = 0;
-
-                if (!sSpellMgr->GetSpellInfo(119611))
-                    return false;
-                return true;
-            }
-
-            void OnUpdate(uint32 diff, AuraEffect* aurEff)
-            {
-                update += diff;
-
-                if (update >= 2500)
-                {
-                    if (GetCaster())
-                        if (Player* _player = GetCaster()->ToPlayer())
-                            _player->CastSpell(_player, SPELL_MONK_UPLIFT_ALLOWING_CAST, true);
-
-                    update = 0;
-                }
-            }
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Player* _player = caster->ToPlayer())
-                    {
-                        Player* target = GetTarget()->ToPlayer();
-                        Unit* newTarget;
-
-                        if (!target)
-                            return;
-
-                        if (target->HasAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
-                        {
-                            if (_player->HasAura(SPELL_MONK_GLYPH_OF_RENEWING_MIST))
-                                newTarget = target->GetNextRandomRaidMemberOrPet(40.0f);
-                            else
-                                newTarget = target->GetNextRandomRaidMemberOrPet(20.0f);
-
-                            if (!newTarget)
-                                return;
-
-                            if (Aura* renewingMistJump = target->GetAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
-                            {
-                                if (renewingMistJump->GetCharges() > 1)
-                                {
-                                    renewingMistJump->DropCharge();
-                                    uint8 stacks = renewingMistJump->GetCharges();
-
-                                    target->RemoveAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID());
-                                    _player->CastSpell(newTarget, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
-
-                                    if (Aura* NEWrenewingMistJump = newTarget->GetAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
-                                        NEWrenewingMistJump->SetCharges(stacks);
-                                }
-                                else
-                                    target->RemoveAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID());
-                            }
-
-                            if (Aura* renewingMistHot = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
-                            {
-                                int32 duration = renewingMistHot->GetDuration();
-                                int32 maxDuration = renewingMistHot->GetMaxDuration();
-
-                                target->RemoveAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID());
-                                _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, newTarget);
-
-                                if (Aura* NEWrenewingMistHot = newTarget->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
-                                {
-                                    NEWrenewingMistHot->SetDuration(duration);
-                                    NEWrenewingMistHot->SetMaxDuration(maxDuration);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
-            {
-                if (GetCaster())
-                    if (Aura* uplift = GetCaster()->GetAura(SPELL_MONK_UPLIFT_ALLOWING_CAST, GetCaster()->GetGUID()))
-                        GetCaster()->RemoveAura(SPELL_MONK_UPLIFT_ALLOWING_CAST, GetCaster()->GetGUID());
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mist_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-                OnEffectUpdate += AuraEffectUpdateFn(spell_monk_renewing_mist_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-                OnEffectRemove += AuraEffectApplyFn(spell_monk_renewing_mist_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_monk_renewing_mist_AuraScript();
         }
 };
 
@@ -2348,6 +2241,7 @@ class spell_monk_rushing_jade_windc : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_renewing_mist();
     new spell_monk_diffuse_magic();
     new spell_monk_black_ox_statue();
     new spell_monk_guard();
@@ -2367,7 +2261,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_mana_tea_stacks();
     new spell_monk_enveloping_mist();
     new spell_monk_surging_mist();
-    new spell_monk_renewing_mist();
     new spell_monk_healing_elixirs();
     new spell_monk_zen_sphere();
     new spell_monk_zen_sphere_hot();

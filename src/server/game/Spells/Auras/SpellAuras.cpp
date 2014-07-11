@@ -1701,6 +1701,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (m_spellInfo->Id)
                 {
+                    case 119611: // Renewing Mist
+                    {
+                        if (AuraEffect* eff = GetEffect(EFFECT_1))
+                            SetCharges(eff->GetAmount());
+                        break;
+                    }
                     case 115078: // Cap
                     {
                         if (target->isInBack(caster))
