@@ -685,7 +685,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                     // Check per caster aura states to not enable using a pell in client if specified aura is not by target
                     *data << ((Unit*)this)->BuildAuraStateUpdateForTarget(target);
                 }
-                else if (index == UNIT_FIELD_MAXDAMAGE || index == UNIT_FIELD_MINDAMAGE)
+                else if (index == UNIT_FIELD_MAXDAMAGE || index == UNIT_FIELD_MINDAMAGE || index == UNIT_FIELD_MINOFFHANDDAMAGE || index == UNIT_FIELD_MAXOFFHANDDAMAGE)
                 {
                     *data << (m_floatValues[index] + CalculatePct(m_floatValues[index], ((Unit*)this)->GetTotalAuraModifier(SPELL_AURA_MOD_AUTOATTACK_DAMAGE)));
                 }
