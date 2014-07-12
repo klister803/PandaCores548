@@ -6303,7 +6303,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 {
                     triggered_spell_id = abs(itr->spell_trigger);
 
-                    if (_caster->HasAura(itr->aura))
+                    if (itr->aura)
+                    {
+                        if (_caster->HasAura(itr->aura))
+                            _caster->CastSpell(target, triggered_spell_id, true);
+                    }
+                    else
                         _caster->CastSpell(target, triggered_spell_id, true);
 
                     check = true;
