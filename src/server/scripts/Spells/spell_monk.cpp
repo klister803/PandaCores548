@@ -121,6 +121,10 @@ public:
             if (!owner || !caster)
                 return;
 
+            if (Aura* Uplift = caster->GetAura(123757))
+                Uplift->RefreshTimers();
+                
+
             if (aura && aura->GetCharges() < 2)
                 return;
 

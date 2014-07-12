@@ -1970,6 +1970,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 break;
             }
             case SPELLFAMILY_DEATHKNIGHT:
+            {
                 // Reaping
                 // Blood Rites
                 if (GetSpellInfo()->Id == 56835 || GetSpellInfo()->Id == 54637)
@@ -1985,6 +1986,44 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     target->ToPlayer()->RemoveRunesBySpell(GetId());
                 }
                 break;
+            }
+            case SPELLFAMILY_MONK:
+            {
+                if (!caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    case 119611: // Renewing Mist
+                    {
+                        std::list<Unit*> unitTargets;
+                        bool hastarget = false;
+                        Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, 100);
+                        Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, unitTargets, u_check);
+                        caster->VisitNearbyObject(100.0f, searcher);
+
+                        if (target)
+                            unitTargets.remove(target);
+
+                        for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
+                        {
+                            if ((*iter)->HasAura(119611, caster->GetGUID()))
+                            {
+                                RefreshTimers();
+                                hastarget = true;
+                                break;
+                            }
+                        }
+
+                        if (!hastarget)
+                            caster->RemoveAura(123757);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_HUNTER:
                 // Glyph of Freezing Trap
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x00000008)

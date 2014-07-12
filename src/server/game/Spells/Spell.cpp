@@ -1295,6 +1295,26 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                     }
                 }
                 break;
+            case SPELLFAMILY_MONK:
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 116670: // Uplift
+                    {
+                        for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
+                        {
+                            if (!(*itr)->HasAura(119611, m_caster->GetGUID()))
+                                itr = unitTargets.erase(itr);
+                            else
+                                ++itr;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
             case SPELLFAMILY_DRUID:
             {
                 bool shouldCheck = false;
