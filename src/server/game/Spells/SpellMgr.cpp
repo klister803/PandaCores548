@@ -3523,7 +3523,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 26364: // Lightning Shield
+                case 115175: // Soothing Mist
+                    spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
+                    spellInfo->PowerPerSecondPercentage = 1;
+                    break;
+                case 26364:  // Lightning Shield
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
                 case 119611: // Renewing Mist
@@ -4014,7 +4018,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_DUMMY;
                     spellInfo->Mechanic = 0;
                     break;
-                case 115175:// Soothing Mists
                 case 116694:// Surging Mists
                 case 117952:// Crackling Jade Lightning
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;

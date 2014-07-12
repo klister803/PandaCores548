@@ -3412,11 +3412,11 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
         if (spellPower[i].powerType == caster->getPowerType() && spellPower[i].Id)
         {
             power.Id = spellPower[i].Id;
-            power.powerCost = spellPower[i].powerCost;
-            power.powerCostPercentage = spellPower[i].powerCostPercentage;
-            power.powerPerSecondPercentage = spellPower[i].powerPerSecondPercentage;
-            power.powerPerSecond = spellPower[i].powerPerSecond;
-            power.powerType = spellPower[i].powerType;
+            power.powerCost = PowerCost;
+            power.powerCostPercentage = PowerCostPercentage;
+            power.powerPerSecondPercentage = PowerPerSecondPercentage;
+            power.powerPerSecond = PowerPerSecond;
+            power.powerType = PowerType;
 
             return true;
         }
