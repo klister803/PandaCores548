@@ -57,6 +57,7 @@ enum WarriorSpells
     WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED       = 132404,
     WARRIOR_SPELL_GLYPH_OF_GAG_ORDER            = 58357,
     WARRIOR_SPELL_SILENCED_GAG_ORDER            = 18498,
+    WARRIOR_SPELL_T16_DPS_2P_BONUS              = 144436,
 };
 
 // Stampeding Shout - 122294
@@ -1067,6 +1068,43 @@ public:
     }
 };
 
+// Warrior T16 DPS 2P Bonus - 144436
+class spell_warr_t16_dps_2p : public SpellScriptLoader
+{
+    public:
+        spell_warr_t16_dps_2p() : SpellScriptLoader("spell_warr_t16_dps_2p") { }
+
+        class spell_warr_t16_dps_2p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_t16_dps_2p_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(WARRIOR_SPELL_COLOSSUS_SMASH))
+                        {
+                            if (_player->HasAura(WARRIOR_SPELL_T16_DPS_2P_BONUS))
+                                _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 50, POWER_RAGE);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_t16_dps_2p_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_t16_dps_2p_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1097,4 +1135,5 @@ void AddSC_warrior_spell_scripts()
     new spell_war_intimidating_shout();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
+    new spell_warr_t16_dps_2p();
 }
