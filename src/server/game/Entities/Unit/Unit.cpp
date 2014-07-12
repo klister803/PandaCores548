@@ -2779,8 +2779,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
 
     if (canDodge)
     {
+        int32 lvldiff = victim->getLevel() - getLevel();
+        int32 dodgelvl = lvldiff * 150;
         // Roll dodge
         int32 dodgeChance = int32(victim->GetUnitDodgeChance() * 100.0f);
+        dodgeChance += dodgelvl;
         // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
         dodgeChance += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE) * 100;
         dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
@@ -2991,7 +2994,7 @@ float Unit::GetUnitDodgeChance() const
             return 0.0f;
         else
         {
-            float dodge = 5.0f;
+            float dodge = 3.0f;
             dodge += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
             return dodge > 0.0f ? dodge : 0.0f;
         }
