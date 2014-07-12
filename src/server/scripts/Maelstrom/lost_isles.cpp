@@ -2489,7 +2489,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
                 return;
             }
 
-            if (damage >= me->GetHealth() && )
+            if (damage >= me->GetHealth())
             {
                 damage = 0;
                 events.SetPhase(PHASE_PRINCE_FINAL);

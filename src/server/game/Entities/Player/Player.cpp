@@ -16856,6 +16856,9 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         }
     }
 
+    if ( !quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_NOT_REMOVE_SOURCE))
+        TakeQuestSourceItem(quest_id, true); // remove quest src item from player
+
     for (uint8 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
     {
         if (int32 reqCurrencyId = quest->RequiredCurrencyId[i])
