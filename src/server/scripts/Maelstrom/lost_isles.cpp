@@ -1,5 +1,9 @@
 /*
-phase 67851 ind 2 - for quest 14474 
+Cosmetic toDo:
+-- spell 74076 by 43359
+-- spell 74070 by 43359 
+-- spell 74072 by 43359
+-- spell 74085 by 43359
 */
 
 #include "ScriptPCH.h"
@@ -24,6 +28,8 @@ enum isle_quests
     QUEST_OLD_FRIENDS                            = 25023, // Old Friends
     QUEST_COLA_GIVE_YOU_IDEAS                    = 25110, // Kaja'Cola Gives You IDEAS! (TM)
     QUEST_MORALE_BOOST                           = 25122, // Morale Boost
+    QUEST_ESCAPE_VELOCITY                        = 25214, // Escape Velocity
+    QUEST_FINAL_CONFRONTATION                    = 25251, // Final Confrontation
 };
 
 enum isle_spells
@@ -82,6 +88,8 @@ enum isle_spells
     SPELL_FM_IZZY_FREED                          = 73613, // Free Their Minds: Izzy Freed
     SPELL_FM_GOOBER_FREED                        = 73614, // Free Their Minds: Gobber Freed
     SPELL_FM_ACE_FREED                           = 73602, 
+    SPELL_EC_ON_INTERACT                         = 73947, // Escape Velocity: On Interact
+    SPELL_EC_ROCKETS                             = 73948, // Escape Velocity: Rockets
 };
 
 enum isle_items
@@ -1331,7 +1339,7 @@ public:
 
         void SpellHit(Unit* caster, SpellInfo const* spell)
         {
-            if (caster->GetTypeId() != TYPEID_PLAYER || spell->Id != SPELL_REMOTE_CONTROL_FIREWORKS || me->HasAura(SPELL_CC_FIREWORKS_VISUAL))
+            if (caster->GetTypeId() != TYPEID_PLAYER || spell->Id != SPELL_REMOTE_CONTROL_FIREWORKS)
                 return;
 
             Player *player = caster->ToPlayer();
@@ -1849,7 +1857,7 @@ class npc_faceless_of_the_deep : public CreatureScript
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
-                        events.ScheduleEvent(EVENT_GENERIC_1, 300, 0, PHASE_INTRO);
+                        events.ScheduleEvent(EVENT_GENERIC_2, 300, 0, PHASE_INTRO);
                         break;
                     case EVENT_GENERIC_2:
                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
@@ -2307,6 +2315,246 @@ public:
     }
 };
 
+class npc_footbomb_uniform : public CreatureScript
+{
+public:
+    npc_footbomb_uniform() : CreatureScript("npc_footbomb_uniform") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_footbomb_uniformAI (creature);
+    }
+
+    struct npc_footbomb_uniformAI : public npc_escortAI
+    {
+        npc_footbomb_uniformAI(Creature* creature) : npc_escortAI(creature) {}
+
+        bool PlayerOn;
+        void Reset()
+        {
+             PlayerOn       = false;
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+             PlayerOn = true;
+             Start(false, true, who->GetGUID());
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            if (i == 12)
+            {
+                if (Player* player = GetPlayerForEscort())
+                {
+                    SetEscortPaused(true);
+                    player->ExitVehicle();
+                }
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            
+            if (PlayerOn)
+            {
+                if (Player* player = GetPlayerForEscort())
+                    player->SetClientControl(me, 0);
+                PlayerOn = false;
+            }
+        }
+    };
+};
+
+class npc_captured_goblin : public CreatureScript
+{
+    public:
+        npc_captured_goblin() : CreatureScript("npc_captured_goblin") { }
+
+    struct npc_captured_goblinAI : public Scripted_NoMovementAI
+    {
+        npc_captured_goblinAI(Creature* creature) : Scripted_NoMovementAI(creature) { }
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+        
+        void SpellHit(Unit* caster, SpellInfo const* spell)
+        {
+            if (caster->GetTypeId() != TYPEID_PLAYER || spell->Id != SPELL_EC_ON_INTERACT)
+                return;
+
+            Player *player = caster->ToPlayer();
+
+            if (player->GetQuestStatus(QUEST_ESCAPE_VELOCITY) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, caster->GetGUID());
+            me->CastSpell(me, SPELL_EC_ROCKETS, true);
+            player->KilledMonsterCredit(me->GetEntry());
+            events.ScheduleEvent(EVENT_GENERIC_1, 3000);
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            if (pointId == EVENT_POINT_MINE)
+                me->DespawnOrUnsummon(0);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+                me->GetMotionMaster()->MovePoint(EVENT_POINT_MINE, me->m_positionX, me->m_positionY, me->m_positionZ+200.0f);
+            // SMSG_SET_PLAY_HOVER_ANIM
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_captured_goblinAI(creature);
+    }
+};
+
+enum princePhases
+{
+    PHASE_PRINCE_COMBAT = 1,
+    PHASE_PRINCE_FINAL,
+
+    PHASE_MASK_PRINCE_FINAL            = 1 << PHASE_PRINCE_FINAL,
+    PHASE_MASK_PRINCE_COMBAT           = 1 << PHASE_PRINCE_COMBAT,
+};
+
+const uint32 prince_spells[5] = {81000, 74003, 74005, 74000, 74004};
+class npc_trade_prince_gallywix_final : public CreatureScript
+{
+    public:
+        npc_trade_prince_gallywix_final() : CreatureScript("npc_trade_prince_gallywix_final") { }
+
+    struct npc_trade_prince_gallywix_finalAI : public ScriptedAI
+    {
+        npc_trade_prince_gallywix_finalAI(Creature* creature) : ScriptedAI(creature){}
+        EventMap events;
+        uint64 playerGUID;
+        void Reset()
+        {
+            playerGUID = 0;
+            events.Reset();
+            me->SetCreateHealth(98260);
+            me->SetMaxHealth(98260);
+        }
+
+        void EnterCombat(Unit* victim)
+        {
+            if (events.GetPhaseMask())
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+            else
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+            events.ScheduleEvent(EVENT_GENERIC_5, 3000, 0, PHASE_PRINCE_COMBAT);
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            Player *player = who->ToPlayer();
+            if (!player || events.GetPhaseMask())
+                return;
+            
+            if (player->GetQuestStatus(QUEST_FINAL_CONFRONTATION) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            events.SetPhase(PHASE_PRINCE_COMBAT);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+            playerGUID = who->GetGUID();
+        }
+
+        void DamageTaken(Unit* attacker, uint32& damage)
+        {
+            // God mode.
+            if (!(events.GetPhaseMask() & PHASE_MASK_PRINCE_COMBAT))
+            {
+                damage = 0;
+                return;
+            }
+
+            if (damage >= me->GetHealth() && )
+            {
+                damage = 0;
+                events.SetPhase(PHASE_PRINCE_FINAL);
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4);
+                events.ScheduleEvent(EVENT_GENERIC_1, 3000, 0, PHASE_PRINCE_FINAL);
+                if (Player* target = sObjectAccessor->FindPlayer(playerGUID))
+                    target->KilledMonsterCredit(me->GetEntry());
+                me->setFaction(2239);
+            }                
+        }
+
+        void DamageDealt(Unit* victim, uint32& damage, DamageEffectType /*damageType*/)
+        {
+            damage = 0;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (events.GetPhaseMask() & PHASE_MASK_PRINCE_COMBAT && !UpdateVictim())
+                return;
+
+            events.Update(diff);
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_GENERIC_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5);
+                        events.ScheduleEvent(EVENT_GENERIC_2, 3000, 0, PHASE_PRINCE_FINAL);
+                        break;
+                    case EVENT_GENERIC_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6);
+                        events.ScheduleEvent(EVENT_GENERIC_3, 3000, 0, PHASE_PRINCE_FINAL);
+                        break;
+                    case EVENT_GENERIC_3:
+                        // trall say miss text
+                        //sCreatureTextMgr->SendChat(trall, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_GENERIC_4, 6000, 0, PHASE_PRINCE_FINAL);
+                        me->DespawnOrUnsummon(1000);
+                        break;
+                    case EVENT_GENERIC_4:
+                        // trall say miss text
+                        //sCreatureTextMgr->SendChat(trall, TEXT_GENERIC_2);
+                        break;
+                    case EVENT_GENERIC_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                        if (Unit * target = me->getVictim())
+                            me->CastSpell(target, prince_spells[urand(0, 4)], false);
+                        events.ScheduleEvent(EVENT_GENERIC_5, 4000, 0, PHASE_PRINCE_COMBAT);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_trade_prince_gallywix_finalAI(creature);
+    }
+};
+
 void AddSC_lost_isle()
 {
     new npc_gizmo();
@@ -2338,4 +2586,7 @@ void AddSC_lost_isle()
     new npc_flying_bomber();
     new spell_kcgyi_assistant_greely();
     new spell_cola_zero_one();
+    new npc_footbomb_uniform();
+    new npc_captured_goblin();
+    new npc_trade_prince_gallywix_final();
 }
