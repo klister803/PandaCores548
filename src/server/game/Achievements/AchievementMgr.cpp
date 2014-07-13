@@ -897,7 +897,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
             if (!progressMap)
                 continue;
-            
+
             CriteriaProgress& progress = (*progressMap)[char_criteria_id];
             progress.counter = fields[1].GetUInt32();
             progress.date    = date;
@@ -917,13 +917,6 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
             if (!achievement)
                 continue;
-            
-            // Achievement in character_achievement but not in account_achievement, there is a problem.
-            if (m_completedAchievements.find(achievementid) == m_completedAchievements.end())
-            {
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Achievement '%u' in character_achievement but not in account_achievement, there is a problem.", achievementid);
-                continue;
-            }
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.completedByThisCharacter = true;
