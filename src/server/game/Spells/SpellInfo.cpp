@@ -2236,7 +2236,7 @@ AuraStateType SpellInfo::GetAuraState() const
         return AURA_STATE_FAERIE_FIRE;
 
     // Victorious
-    if (SpellFamilyName == SPELLFAMILY_WARRIOR &&  SpellFamilyFlags[1] & 0x00040000)
+    if ((SpellFamilyName == SPELLFAMILY_WARRIOR && SpellFamilyFlags[1] & 0x00040000) || Id == 138279)
         return AURA_STATE_WARRIOR_VICTORY_RUSH;
 
     // Swiftmend state on Regrowth & Rejuvenation
