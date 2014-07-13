@@ -123,11 +123,15 @@ enum eGameObjects
     //Iron Qon
     GO_IRON_QON_ENT_DOOR    = 218388,
     GO_IRON_QON_EX_DOOR     = 218588,
-    //Twin consorts
+    //Twin Consorts
     GO_TWIN_ENT_DOOR        = 218781,
     GO_TWIN_FENCE_DOOR      = 218711,
     GO_TWIN_FENCE_DOOR_2    = 218712,
     GO_TWIN_EX_DOOR         = 218394,
+    //Lei Shen
+    GO_TP_PLATFORM          = 218417,
+    //Ra Den
+    GO_RA_DEN_ENT_DOOR      = 218555,
 };
 
 #endif THRONEOFTHUNDER

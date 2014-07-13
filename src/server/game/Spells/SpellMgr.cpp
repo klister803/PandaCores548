@@ -4580,6 +4580,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26);//4yards
                     break;
 
+
                 //Throne of Thunder
                 //Jinrokh
                 case 137162: //Static burst
@@ -4686,6 +4687,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].Effect = 0;
                     spellInfo->Effects[1].MiscValue = 0;
                     spellInfo->Effects[1].MiscValueB = 0; 
+                    break;
+                //Lei Shen
+                case 134912: //Decapitate base aura
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(3); //20yards
+                    break;
+                case 134916: //Decapitate tr ef
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
+                case 135703: //Static shock tr ef dmg
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
 
 

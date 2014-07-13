@@ -21,6 +21,7 @@ const DoorData doorData[] =
     {GO_PRIMORDIUS_EX_DOOR,  DATA_PRIMORDIUS,        DOOR_TYPE_PASSAGE, 0},
     {GO_DARK_ANIMUS_EX_DOOR, DATA_DARK_ANIMUS,       DOOR_TYPE_PASSAGE, 0},
     {GO_IRON_QON_EX_DOOR,    DATA_IRON_QON,          DOOR_TYPE_PASSAGE, 0},
+    {GO_TWIN_EX_DOOR,        DATA_TWIN_CONSORTS,     DOOR_TYPE_PASSAGE, 0},
     {0,                      0,                      DOOR_TYPE_PASSAGE, 0},
 };
 
@@ -52,6 +53,7 @@ public:
         uint64 jikunexdoorGuid;
         uint64 durumuexdoorGuid;
         uint64 primordiusentdoorGuid;
+        uint64 secretradendoorGuid;
         uint64 primordiusexdoorGuid;
         uint64 danimusentdoorGuid;
         uint64 danimusexdoorGuid;
@@ -117,6 +119,7 @@ public:
             jikunexdoorGuid       = 0;
             durumuexdoorGuid      = 0;
             primordiusentdoorGuid = 0;
+            secretradendoorGuid   = 0;
             primordiusexdoorGuid  = 0;
             danimusentdoorGuid    = 0;
             danimusexdoorGuid     = 0;
@@ -339,6 +342,9 @@ public:
             case GO_PRIMORDIUS_ENT_DOOR:
                 primordiusentdoorGuid = go->GetGUID();
                 break;
+            case GO_S_RA_DEN_ENT_DOOR:
+                //LoadSecretRaDenDoor(go); Ra Den not ready
+                secretradendoorGuid = go->GetGUID();
             case GO_PRIMORDIUS_EX_DOOR:
                 AddDoor(go, true);
                 primordiusexdoorGuid = go->GetGUID();
@@ -367,6 +373,7 @@ public:
                 twinfencedoorGuids.push_back(go->GetGUID());
                 break;
             case GO_TWIN_EX_DOOR:
+                AddDoor(go, true);
                 twinexdoorGuid = go->GetGUID();
                 break;
             default:
@@ -605,7 +612,7 @@ public:
                             for (std::vector<uint64>::const_iterator guid = twinfencedoorGuids.begin(); guid != twinfencedoorGuids.end(); guid++)
                                 HandleGameObject(*guid, true);
                             HandleGameObject(twinentdoorGuid, true);
-                            //HandleGameObject(twinexdoorGuid, true);
+                            HandleGameObject(twinexdoorGuid, true);
                             break;                         
                     }
                 }
@@ -613,7 +620,30 @@ public:
             default:
                 break;
             }
+           //Ra Den not ready 
+           /* if (state == DONE && id != DATA_RA_DEN)
+            {
+                if (GameObject* go = instance->GetGameObject(secretradendoorGuid))
+                    LoadSecretRaDenDoor(go);
+            }*/
             return true;
+        }
+
+        void LoadSecretRaDenDoor(GameObject* go)
+        {
+            if (!go)
+                return;
+
+            if (InstanceMap* im = instance->ToInstanceMap())
+            {
+                InstanceScript* pinstance = im->GetInstanceScript();
+                for (uint8 n = DATA_STORM_CALLER; n <= DATA_LEI_SHEN; n++)
+                {
+                    if (pinstance->GetBossState(n) != DONE)
+                        return;
+                }
+                go->SetGoState(GO_STATE_ACTIVE);
+            }
         }
 
         void SetData(uint32 type, uint32 data){}
