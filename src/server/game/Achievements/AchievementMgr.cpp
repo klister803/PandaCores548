@@ -922,6 +922,17 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             ca.completedByThisCharacter = true;
             _achievementPoints += achievement->points;
 
+            // title achievement rewards are retroactive
+            if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+            {
+                if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
+                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                        GetOwner()->SetTitle(titleEntry);
+
+                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
+                    GetOwner()->learnSpell(reward->learnSpell, true);
+            }
+
         }
         while (achievementResult->NextRow());
     }
