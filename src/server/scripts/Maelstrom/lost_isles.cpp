@@ -1857,7 +1857,7 @@ class npc_faceless_of_the_deep : public CreatureScript
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
                         me->CastSpell(me, SPELL_SOE_BEAM_EFFECT, true);
-                        events.ScheduleEvent(EVENT_GENERIC_2, 300, 0, PHASE_INTRO);
+                        events.ScheduleEvent(EVENT_GENERIC_1, 300, 0, PHASE_INTRO);
                         break;
                     case EVENT_GENERIC_2:
                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);

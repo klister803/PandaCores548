@@ -212,7 +212,7 @@ void npc_escortAI::UpdateAI(uint32 const diff)
         if (m_uiWPWaitTimer <= diff)
         {
             //End of the line
-            if (CurrentWP == WaypointList.end())
+            if (WaypointList.empty() || CurrentWP == WaypointList.end())
             {
                 LastWaypointReached();
 
