@@ -2573,10 +2573,22 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
                 damage = 20;
                 m_caster->RemoveAurasDueToSpell(32216);
             }
+            if (m_caster->HasAura(138279))
+            {
+                damage *= 2;
+                m_caster->RemoveAurasDueToSpell(138279);
+            }
             break;
         case 118779: // Victory Rush
             if (m_caster->HasAura(58382)) // Glyph of Victory Rush
+            {
                 damage += 10;
+            }
+            if (m_caster->HasAura(138279))
+            {
+                damage *= 2;
+                m_caster->RemoveAurasDueToSpell(138279);
+            }
             break;
         default:
             break;
