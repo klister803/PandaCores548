@@ -6524,8 +6524,8 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 switch (m_spellInfo->Id)
                 {
-                    case 106951: // Berserk
                     case 5217:   // Tiger's Fury
+                    case 106951: // Berserk
                     {
                         if (m_caster->HasAura(5217) || m_caster->HasAura(106951))
                         {
@@ -6687,10 +6687,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 if (m_caster->HasUnitState(UNIT_STATE_ROOT))
                     return SPELL_FAILED_ROOTED;
-				if (m_caster->GetTypeId() == TYPEID_PLAYER)
-					if (Unit* target = m_targets.GetUnitTarget())
-						if (!target->isAlive())
-							return SPELL_FAILED_BAD_TARGETS;
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Unit* target = m_targets.GetUnitTarget())
+                        if (!target->isAlive())
+                            return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
             case SPELL_EFFECT_SKINNING:
@@ -6972,6 +6972,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
+            case SPELL_EFFECT_SUMMON_RAID_MARKER:
+            {
+                Player* player = m_caster->ToPlayer();
+                if (!player)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                Group* group = player->GetGroup();
+                if (!group)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                break;
+            }
             default:
                 break;
         }
@@ -7086,29 +7097,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_targets.GetUnitTarget()->getPowerType() != POWER_MANA)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                break;
-            }
-            case SPELL_EFFECT_SUMMON_RAID_MARKER:
-            {
-                switch (m_spellInfo->Id)
-                {
-                    case 115176: // Zen Meditation
-                    case 1706:   // Levitate
-                    case 111759: // Levitate Effect
-                    case 121186: // Glyph of Mystic Shout
-                        break;
-                    default:
-                    {
-                        Player* player = m_caster->ToPlayer();
-                        if (!player)
-                            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-
-                        Group* group = player->GetGroup();
-                        if (!group)
-                            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-                        break;
-                    }
-                }
                 break;
             }
             default:
