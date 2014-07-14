@@ -205,10 +205,12 @@ class npc_gizmo : public CreatureScript
             me->m_invisibilityDetect.AddValue(INVISIBILITY_UNK7, 100000);
         }
 
+        EventMap events;
         std::set<uint64> m_player_for_event;
         void Reset()
         {
             m_player_for_event.clear();
+            events.ScheduleEvent(EVENT_GENERIC_1, 1000);
         }
 
         void OnStartQuest(Player* player, Quest const* quest)
@@ -254,7 +256,14 @@ class npc_gizmo : public CreatureScript
 
         void UpdateAI(const uint32 diff)
         {
+            events.Update(diff);
 
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                events.ScheduleEvent(EVENT_GENERIC_1, 1000);
+                if (Player* p = me->FindNearestPlayer(50.0f, true))
+                    MoveInLineOfSight(p);
+            }
         }
     };
 
@@ -1808,6 +1817,11 @@ class npc_faceless_of_the_deep : public CreatureScript
         {
             me->SetCanFly(false);
             me->SetDisableGravity(false);
+        }
+
+        void JustDied(Unit* /*killer*/) 
+        {
+
         }
 
         void MoveInLineOfSight(Unit* who)
