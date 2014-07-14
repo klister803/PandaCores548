@@ -840,9 +840,17 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     if (GetCreatureTemplate()->rank)
         m_SightDistance = MAX_VISIBILITY_DISTANCE;
 
-    //hack on start DK
-    if (GetMapId() == 609)
-        m_corpseDelay /= 3;
+    switch(GetMapId())
+    {
+        case 609: // start DK
+        case 648: // start goblin
+        case 654: // start worgen
+        case 860: // start pandaren
+            m_corpseDelay /= 3;
+            break;
+        default:
+            break;
+    }        
 
     LoadCreaturesAddon();
 
