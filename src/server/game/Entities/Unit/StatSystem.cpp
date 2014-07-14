@@ -669,13 +669,13 @@ void Player::UpdateDodgePercentage()
         65.631440f,     // Warrior
         65.631440f,     // Paladin
         145.560408f,    // Hunter
-        145.560408f,    // Rogue
+        98.2f,          // Rogue
         150.375940f,    // Priest
         65.631440f,     // DK
         145.560408f,    // Shaman
         150.375940f,    // Mage
         150.375940f,    // Warlock
-        0.0f,           // Monk  @todo: find me !
+        17.43f,         // Monk  @todo: find me !
         116.890707f     // Druid
     };
 
