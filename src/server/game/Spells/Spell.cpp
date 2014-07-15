@@ -5751,6 +5751,24 @@ void Spell::TakePower()
                 }
     }
 
+    if (powerType == POWER_CHI)
+    {
+        if (!m_UniqueTargetInfo.empty())
+            if (Aura* aur = m_caster->GetAura(123980))
+            {
+                uint8 chipower = m_spellInfo->PowerCost;
+                uint8 maxamount = aur->GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                int8 amount = aur->GetEffect(EFFECT_0)->GetAmount();
+                amount -= chipower;
+
+                if (amount <= 0)
+                {
+                    m_caster->CastSpell(m_caster, 125195, true);
+                    amount += maxamount;
+                }
+                aur->GetEffect(EFFECT_0)->SetAmount(amount);
+            }
+    }
     if (powerType == POWER_RUNES)
     {
         TakeRunePower(hit);
