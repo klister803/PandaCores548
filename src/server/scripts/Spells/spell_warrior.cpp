@@ -1105,6 +1105,51 @@ class spell_warr_t16_dps_2p : public SpellScriptLoader
         }
 };
 
+// Raging Blow! - 131116, use spell - 96103 on remove aura
+class spell_warr_raging_blow_remove : public SpellScriptLoader
+{
+    public:
+        spell_warr_raging_blow_remove() : SpellScriptLoader("spell_warr_raging_blow_remove") { }
+
+        class spell_warr_raging_blow_remove_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_raging_blow_remove_SpellScript);
+
+            uint64 tar;
+            
+            void HandleOnCast()
+            {                
+                Unit* target = GetExplTargetUnit();
+
+                if (!target)
+                    return;
+
+                tar = target->GetGUID();
+                
+                if (GetCaster())
+                {
+                    if (Aura* bloodCharges = GetCaster()->GetAura(WARRIOR_SPELL_ALLOW_RAGING_BLOW))
+                    {
+                        if (bloodCharges->GetStackAmount() > 1)
+                            bloodCharges->SetStackAmount(bloodCharges->GetStackAmount() - 1);
+                        else
+                            GetCaster()->RemoveAura(WARRIOR_SPELL_ALLOW_RAGING_BLOW);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_warr_raging_blow_remove_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_raging_blow_remove_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1136,4 +1181,5 @@ void AddSC_warrior_spell_scripts()
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
     new spell_warr_t16_dps_2p();
+    new spell_warr_raging_blow_remove();
 }

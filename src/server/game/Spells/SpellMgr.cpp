@@ -4093,9 +4093,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
-                    break;
+                    break;                
+                case 324:    // Lightning Shield
+                case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
-                case 50227: // Sword and Board
+                case 131116: // Raging Blow!
                     spellInfo->ProcCharges = 0;
                     break;
                 case 109259: // Powershot
@@ -4189,9 +4191,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148022:// Icicle
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
-                case 131116:// Allow to use Raging Blow
-                    spellInfo->ProcCharges = 2;
-                    break;
                 case 44544: // Fingers of Frost
                     // affect Ice Lance
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
@@ -4205,9 +4204,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
-                    break;
-                case 324:   // Lightning Shield
-                    spellInfo->ProcCharges = 0;
                     break;
                 case 117993:// Chi Torpedo : Heal
                 case 124040:// Chi Torpedo : Damage

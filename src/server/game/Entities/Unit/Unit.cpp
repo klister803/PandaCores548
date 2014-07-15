@@ -17393,7 +17393,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
-            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116 && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
+            && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
             && !(i->aura->GetId() == 79683))
 
         {
@@ -17413,7 +17413,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
 
         if (prepare && useCharges && takeCharges && ((i->aura->GetId() == 119962 && procSpell && procSpell->Id == 7384) // Custom MoP Script - Hack Fix for allow Overpower
-            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                                    // Hack Fix for allow Raging Blow
             i->aura->DropCharge();
 
         i->aura->CallScriptAfterProcHandlers(aurApp, eventInfo);
