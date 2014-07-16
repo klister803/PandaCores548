@@ -2206,6 +2206,42 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
         }
 };
 
+// 115636 - Mastery : Bottled Fury
+class spell_mastery_bottled_fury : public SpellScriptLoader
+{
+public:
+    spell_mastery_bottled_fury() : SpellScriptLoader("spell_mastery_bottled_fury") { }
+
+    class spell_mastery_bottled_fury_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_mastery_bottled_fury_SpellScript);
+
+        void HandleAfterHit()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Aura* WW_mastery = caster->GetAura(115636))
+                {
+                    int32 amount = WW_mastery->GetEffect(EFFECT_0)->GetAmount();
+
+                    if (roll_chance_i(amount))
+                        caster->AddAura(125195, caster);
+                }
+            }
+        }
+
+        void Register()
+        {
+            AfterHit += SpellHitFn(spell_mastery_bottled_fury_SpellScript::HandleAfterHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_mastery_bottled_fury_SpellScript();
+    }
+};
+
 // Rushing Jade Wind - 148187
 class spell_monk_rushing_jade_windc : public SpellScriptLoader
 {
@@ -2289,4 +2325,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_roll();
     new spell_monk_tigereye_brew_stacks();
     new spell_monk_rushing_jade_windc();
+    new spell_mastery_bottled_fury();
 }

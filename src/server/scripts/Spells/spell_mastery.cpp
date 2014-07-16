@@ -96,59 +96,6 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
         }
 };
 
-// Called by 100780 - Jab
-// 115636 - Mastery : Combo Breaker
-class spell_mastery_combo_breaker : public SpellScriptLoader
-{
-    public:
-        spell_mastery_combo_breaker() : SpellScriptLoader("spell_mastery_combo_breaker") { }
-
-        class spell_mastery_combo_breaker_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mastery_combo_breaker_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(100780))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                Unit* target = GetHitUnit();
-                if (!target)
-                    return;
-
-                // Mastery: Combo Breaker
-                if (AuraEffect const* aurEff = caster->GetAuraEffect(115636, EFFECT_0))
-                {
-                    if (roll_chance_i(aurEff->GetAmount()))
-                    {
-                        if (roll_chance_i(50))
-                            caster->CastSpell(caster, MASTERY_SPELL_COMBO_BREAKER_1, true);
-                        else
-                            caster->CastSpell(caster, MASTERY_SPELL_COMBO_BREAKER_2, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mastery_combo_breaker_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mastery_combo_breaker_SpellScript();
-        }
-};
-
 // Called by 403 - Lightning Bolt, 421 - Chain Lightning, 51505 - Lava Burst and 117014 - Elemental Blast
 // 77222 - Mastery : Elemental Overload
 class spell_mastery_elemental_overload : public SpellScriptLoader
@@ -226,6 +173,5 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 void AddSC_mastery_spell_scripts()
 {
     new spell_mastery_shield_discipline();
-    new spell_mastery_combo_breaker();
     new spell_mastery_elemental_overload();
 }

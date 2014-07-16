@@ -1248,7 +1248,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         if (m_effIndex == EFFECT_1)
                         {
                             if (residue != 0)
+                            {
                                 aura->SetStackAmount(residue);
+
+                                if (residue < 10)
+                                    caster->RemoveAura(137591);
+                            }
                             else caster->RemoveAura(125195);
                         }
                         

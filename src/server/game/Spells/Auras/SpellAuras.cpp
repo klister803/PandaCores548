@@ -2150,6 +2150,27 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     break;
             }
             break;
+        case SPELLFAMILY_MONK:
+        {
+            switch (GetId())
+            {
+                case 125195:
+                {
+                    if (apply)
+                    {
+                        if (GetStackAmount() >= 10)
+                            caster->AddAura(137591, caster);
+                    }
+                    else
+                    {
+                        caster->RemoveAura(137591);
+                    }
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELLFAMILY_PALADIN:
             switch (GetId())
             {
