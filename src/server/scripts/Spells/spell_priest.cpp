@@ -2425,6 +2425,46 @@ class spell_pri_dispel_magic : public SpellScriptLoader
         }
 };
 
+class spell_pri_t15_healer_4p : public SpellScriptLoader
+{
+    public:
+        spell_pri_t15_healer_4p() : SpellScriptLoader("spell_pri_t15_healer_4p") { }
+
+        class spell_pri_t15_healer_4p_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_t15_healer_4p_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<WorldObject*> unitList;
+                if(Unit* caster = GetCaster())
+                {
+                    for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                    {
+                        if(Unit* targer = (*itr)->ToUnit())
+                        if (targer != caster)
+                            unitList.push_back((*itr));
+                    }
+                }
+                targets.clear();
+                targets = unitList;
+            }
+            
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_t15_healer_4p_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_t15_healer_4p_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_item_s12_4p_heal();
@@ -2477,4 +2517,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_holy_nova_heal();
     new spell_pri_binding_heal();
     new spell_pri_dispel_magic();
+    new spell_pri_t15_healer_4p();
 }
