@@ -17838,7 +17838,7 @@ Unit* Unit::SelectNearbyAlly(Unit* exclude, float dist) const
     return Trinity::Containers::SelectRandomContainerElement(targets);
 }
 
-Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront) const
+Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront, bool IsNeutral) const
 {
     Unit* Nearby    = NULL;
     float nearbydist = NULL;
@@ -17851,11 +17851,15 @@ Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront) const
     {
         for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
         {
-            if (!(*itr)->IsWithinLOSInMap(this) || IsFriendlyTo(*itr) || (*itr)->IsNeutralToAll())
+            if (!(*itr)->IsWithinLOSInMap(this) || IsFriendlyTo(*itr))
                 continue;
 
             if (IsInFront)
                 if (!isInFront(*itr))
+                    continue;
+
+            if (IsNeutral)
+                if ((*itr)->IsNeutralToAll())
                     continue;
 
             Position pos;

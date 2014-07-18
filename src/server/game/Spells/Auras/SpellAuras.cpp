@@ -1726,6 +1726,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             break;
 
                         std::list<Unit*> targetList;
+                        Unit* Chi_Wave_target = NULL;
                         target->GetAttackableUnitListInRange(targetList, 25.0f);
 
                         targetList.remove(target);
@@ -1739,9 +1740,23 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     continue;
 
                                 bp ++;
-                                target->CastCustomSpell(*itr, 132464, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
+                                Chi_Wave_target = *itr;
                                 break;
                             }
+
+                            if (!Chi_Wave_target)
+                                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                                {
+                                    if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsInPartyWith(*itr))
+                                        continue;
+
+                                    bp ++;
+                                    Chi_Wave_target = *itr;
+                                    break;
+                                }
+
+                            if (Chi_Wave_target)
+                                target->CastCustomSpell(Chi_Wave_target, 132464, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
                         }
                         break;
 
@@ -1757,7 +1772,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (bp == 7)
                             break;
 
-                        Unit* nearby = target->GetNearbyVictim(target, 25.0f);
+                        Unit* nearby = target->GetNearbyVictim(target, 25.0f, false, true);
+
+                        if (!nearby)
+                            nearby = target->GetNearbyVictim(target, 25.0f);
 
                         if (nearby)
                         {
