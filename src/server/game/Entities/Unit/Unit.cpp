@@ -8933,7 +8933,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 break;
             }
             // Flametongue Weapon (Passive)
-            if (dummySpell->SpellFamilyFlags[0] & 0x200000)
+            if (dummySpell->Id == 10400)
             {
                 if (GetTypeId() != TYPEID_PLAYER  || !victim || !victim->isAlive() || !castItem || !castItem->IsEquipped())
                     return false;
@@ -8944,38 +8944,31 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     || (attType == OFF_ATTACK && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK))
                     return false;
 
-                float fire_onhit = float(CalculatePct(dummySpell->GetEffect(EFFECT_0, GetSpawnMode()). CalcValue(), 1.0f));
-
-                float add_spellpower = (float)(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE)
-                                     + victim->SpellBaseDamageBonusTaken(SPELL_SCHOOL_MASK_FIRE));
-
-                // 1.3speed = 5%, 2.6speed = 10%, 4.0 speed = 15%, so, 1.0speed = 3.84%
-                ApplyPct(add_spellpower, 3.84f);
+                SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(8024);
+                int32 dmg = 8625;
+                float add_spellpower = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE) * _spellinfo->Effects[EFFECT_1].BonusMultiplier;
 
                 // Enchant on Off-Hand and ready?
                 if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND && procFlag & PROC_FLAG_DONE_OFFHAND_ATTACK)
                 {
                     float BaseWeaponSpeed = GetAttackTime(OFF_ATTACK) / 1000.0f;
-
-                    // Value1: add the tooltip damage by swingspeed + Value2: add spelldmg by swingspeed
-                    basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
+                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
+                    basepoints0 += add_spellpower;
+                    AddPct(basepoints0, 50);
                     triggered_spell_id = 10444;
                 }
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
                     float BaseWeaponSpeed = GetAttackTime(BASE_ATTACK) / 1000.0f;
-
-                    // Value1: add the tooltip damage by swingspeed +  Value2: add spelldmg by swingspeed
-                    basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
+                    basepoints0 = dmg / (100 / BaseWeaponSpeed);
+                    basepoints0 += add_spellpower;
+                    AddPct(basepoints0, 50);
                     triggered_spell_id = 10444;
                 }
                 // If not ready, we should  return, shouldn't we?!
                 else
                     return false;
-
-                CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
-                return true;
             }
             break;
         }
