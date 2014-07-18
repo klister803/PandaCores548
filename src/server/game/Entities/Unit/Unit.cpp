@@ -17016,6 +17016,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
                 active = true;
             }
+            else if (procSpell && procSpell->Mechanic == MECHANIC_DISARM)
+                active = true;
         }
 
         // do checks using conditions table
