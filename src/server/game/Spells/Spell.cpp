@@ -2283,12 +2283,22 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     // Incoming time is zero for self casts. At least I think so.
     if (m_spellInfo->Speed > 0.0f && m_caster != target)
     {
+        float mindist = 5.0f;
+        switch (m_spellInfo->Id)
+        {
+            case 132467: // Chi Wave Neg
+            case 132464: // Chi Wave Pos
+                mindist = 0.0f;
+                break;
+            default:
+                break;
+        }
         // calculate spell incoming interval
         // TODO: this is a hack
         float dist = m_caster->GetDistance(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
-        if (dist < 5.0f)
-            dist = 5.0f;
+        if (dist < mindist)
+            dist = mindist;
 
         if (!(m_spellInfo->AttributesEx9 & SPELL_ATTR9_SPECIAL_DELAY_CALCULATION))
             targetInfo.timeDelay = uint64(floor(dist / m_spellInfo->Speed * 1000.0f));

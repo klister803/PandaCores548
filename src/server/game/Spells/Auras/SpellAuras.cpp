@@ -1735,7 +1735,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             targetList.sort(Trinity::HealthPctOrderPred());
                             for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             {
-                                if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsFriendlyTo(*itr))
+                                if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsInPartyWith(*itr) || (*itr)->GetTypeId() != TYPEID_PLAYER)
                                     continue;
 
                                 bp ++;

@@ -17851,7 +17851,7 @@ Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront) const
     {
         for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
         {
-            if (!(*itr)->IsWithinLOSInMap(this) || IsFriendlyTo(*itr))
+            if (!(*itr)->IsWithinLOSInMap(this) || IsFriendlyTo(*itr) || (*itr)->IsNeutralToAll())
                 continue;
 
             if (IsInFront)
