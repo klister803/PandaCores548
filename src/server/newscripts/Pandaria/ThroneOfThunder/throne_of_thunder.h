@@ -44,6 +44,8 @@ enum eCreatures
     NPC_LARGE_ANIMA_GOLEM   = 69700,
     NPC_MASSIVE_ANIMA_GOLEM = 69699,
     NPC_BEAST_OF_NIGHTMARES = 69479,
+    NPC_CORRUPTED_ANIMA     = 69957,
+    NPC_CORRUPTED_VITA      = 69958,
 
     //Bosses
     NPC_JINROKH             = 69465,

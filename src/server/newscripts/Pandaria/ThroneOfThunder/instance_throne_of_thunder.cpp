@@ -61,6 +61,7 @@ public:
         uint64 ironqonexdoorGuid;
         uint64 twinentdoorGuid;
         uint64 twinexdoorGuid;
+        uint64 radenentdoorGuid;
         
         //Creature
         uint64 stormcallerGuid;
@@ -88,6 +89,8 @@ public:
         uint64 lulinGuid;
         uint64 leishenGuid;
         uint64 radenGuid;
+        uint64 canimaGuid;
+        uint64 cvitaGuid;
 
         std::vector <uint64> councilGuids;
         std::vector <uint64> mogufontsGuids;
@@ -127,6 +130,7 @@ public:
             ironqonexdoorGuid     = 0;
             twinentdoorGuid       = 0;
             twinexdoorGuid        = 0;
+            radenentdoorGuid      = 0;
            
             //Creature
             stormcallerGuid       = 0;
@@ -154,6 +158,8 @@ public:
             lulinGuid             = 0;
             leishenGuid           = 0;
             radenGuid             = 0;
+            canimaGuid            = 0;
+            cvitaGuid             = 0;
 
             councilGuids.clear();
             mogufontsGuids.clear();
@@ -255,6 +261,12 @@ public:
             case NPC_RA_DEN:
                 radenGuid = creature->GetGUID();
                 break;
+            case NPC_CORRUPTED_ANIMA:
+                canimaGuid = creature->GetGUID();
+                break;
+            case NPC_CORRUPTED_VITA:
+                cvitaGuid = creature->GetGUID();
+                break;
             }
         }
 
@@ -343,7 +355,7 @@ public:
                 primordiusentdoorGuid = go->GetGUID();
                 break;
             case GO_S_RA_DEN_ENT_DOOR:
-                //LoadSecretRaDenDoor(go); Ra Den not ready
+                LoadSecretRaDenDoor(go);
                 secretradendoorGuid = go->GetGUID();
             case GO_PRIMORDIUS_EX_DOOR:
                 AddDoor(go, true);
@@ -375,6 +387,9 @@ public:
             case GO_TWIN_EX_DOOR:
                 AddDoor(go, true);
                 twinexdoorGuid = go->GetGUID();
+                break;
+            case GO_RA_DEN_ENT_DOOR:
+                radenentdoorGuid = go->GetGUID();
                 break;
             default:
                 break;
@@ -617,21 +632,35 @@ public:
                     }
                 }
                 break;
+            case DATA_RA_DEN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(radenentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(radenentdoorGuid, false);
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
             }
-           //Ra Den not ready 
-           /* if (state == DONE && id != DATA_RA_DEN)
+           
+            if (state == DONE && id != DATA_RA_DEN)
             {
                 if (GameObject* go = instance->GetGameObject(secretradendoorGuid))
                     LoadSecretRaDenDoor(go);
-            }*/
+            }
             return true;
         }
 
         void LoadSecretRaDenDoor(GameObject* go)
         {
-            if (!go)
+            if (!go || !instance->IsHeroic())
                 return;
 
             if (InstanceMap* im = instance->ToInstanceMap())
@@ -711,6 +740,10 @@ public:
                 return leishenGuid;
             case NPC_RA_DEN:
                 return radenGuid;
+            case NPC_CORRUPTED_ANIMA:
+                return canimaGuid;
+            case NPC_CORRUPTED_VITA:
+                return cvitaGuid;
             }
             return 0;
         }

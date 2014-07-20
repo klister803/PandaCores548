@@ -4694,7 +4694,20 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 135703: //Static shock tr ef dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
-
+                //Ra Den
+                case 138321: //Material of creation
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+                case 138334: //Fatal strike
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
+                case 138329: //Unleashed anime
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 1;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
 
                 //World Bosses
                 //Sha of Anger

@@ -1178,6 +1178,9 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 134912: //Decapitate base aura (Lei Shen)
     case 134916: //Decapitate tr ef dmg (Lei Shen)
     case 135703: //Static shock tr ef dmg (Lei Shen)
+    case 138321: //Material of creation (Ra Den)
+    case 138334: //Fatal strike (Ra Den)
+    case 138329: //Unleashed anime (Ra Den)
         return Effects[effect];
     }
 
