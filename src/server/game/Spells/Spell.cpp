@@ -1300,18 +1300,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             {
                 switch (m_spellInfo->Id)
                 {
-                    case 116781: // Legacy of the White Tiger
-                    {
-                        if (m_originalTarget)
-                        {
-                            if (!m_caster->IsInPartyWith(m_originalTarget))
-                            {
-                                unitTargets.clear();
-                                unitTargets.push_back(m_originalTarget);
-                            }
-                        }
-                        break;
-                    }
                     case 116670: // Uplift
                     {
                         for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
@@ -1372,6 +1360,18 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             }
             default:
                 break;
+        }
+
+        if (targetType.GetTarget() == TARGET_UNK_118)
+        {
+            if (m_originalTarget)
+            {
+                if (!m_caster->IsInPartyWith(m_originalTarget))
+                {
+                    unitTargets.clear();
+                    unitTargets.push_back(m_originalTarget);
+                }
+            }
         }
 
         if (maxSize && power != -1)

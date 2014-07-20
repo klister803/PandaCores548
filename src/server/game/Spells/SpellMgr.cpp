@@ -3959,15 +3959,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
                     break;
-                case 1126:  // Mark of the Wild
-                case 19740: // Blessing of Might
-                case 20217: // Blessing of Kings
-                case 21562: // Power Word : Fortitude
-                //case 24907: // Moonkin Aura
-                case 127830:// Spirit Beast Blessing
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
-                    spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
                 case 1459:  // Arcane Illumination
                 case 109773:// Dark Intent
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
