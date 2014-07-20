@@ -536,6 +536,7 @@ Spell::~Spell()
 void Spell::InitExplicitTargets(SpellCastTargets const& targets)
 {
     m_targets = targets;
+    m_originalTarget = targets.GetUnitTarget();
     // this function tries to correct spell explicit targets for spell
     // client doesn't send explicit targets correctly sometimes - we need to fix such spells serverside
     // this also makes sure that we correctly send explicit targets to client (removes redundant data)
@@ -1299,6 +1300,18 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 116781: // Legacy of the White Tiger
+                    {
+                        if (m_originalTarget)
+                        {
+                            if (!m_caster->IsInPartyWith(m_originalTarget))
+                            {
+                                unitTargets.clear();
+                                unitTargets.push_back(m_originalTarget);
+                            }
+                        }
+                        break;
+                    }
                     case 116670: // Uplift
                     {
                         for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)

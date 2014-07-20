@@ -3964,7 +3964,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 20217: // Blessing of Kings
                 case 21562: // Power Word : Fortitude
                 //case 24907: // Moonkin Aura
-                case 116781:// Legacy of the White Tiger
+//                case 116781:// Legacy of the White Tiger
                 case 127830:// Spirit Beast Blessing
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_CASTER_AREA_RAID;
