@@ -1498,6 +1498,14 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 115921: // Legacy of the Emperor
+        {
+            spell_id = m_spellInfo->Effects[effIndex].BasePoints;
+
+            if (unitTarget->IsInPartyWith(m_caster))
+                spell_id = 117666;
+            break;
+        }
         case 49998: // Death Strike
         {
             if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
