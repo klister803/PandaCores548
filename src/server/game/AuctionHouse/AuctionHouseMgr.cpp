@@ -205,6 +205,11 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry* auction, SQLTransacti
     // owner exist
     if (owner || owner_accId)
     {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
+        stmt->setUInt32(0, auction->owner);
+        stmt->setUInt32(1, pItem->GetGUIDLow());
+        trans->Append(stmt);
+
         if (owner)
             owner->GetSession()->SendAuctionOwnerNotification(auction);
 

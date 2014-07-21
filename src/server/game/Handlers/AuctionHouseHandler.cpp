@@ -312,6 +312,14 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             _player->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+            // remove owner from item.
+            item->SetOwnerGUID(0);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
+            stmt->setUInt32(0, 0);
+            stmt->setUInt32(1, item->GetGUIDLow());
+            trans->Append(stmt);
+
             item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
             AH->SaveToDB(trans);
@@ -332,6 +340,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
                 return;
             }
+
+            // should not have owner.
+            newItem->SetOwnerGUID(0);
 
             if (GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
             {
@@ -355,6 +366,8 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             sAuctionMgr->AddAItem(newItem);
             auctionHouse->AddAuction(AH);
 
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
             for (uint32 j = 0; j < itemsCount; ++j)
             {
                 Item* item2 = items[j];
@@ -363,11 +376,8 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 if (item2->GetCount() == stackCount[j])
                 {
                     _player->MoveItemFromInventory(item2->GetBagSlot(), item2->GetSlot(), true);
-
-                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
                     item2->DeleteFromInventoryDB(trans);
                     item2->DeleteFromDB(trans);
-                    CharacterDatabase.CommitTransaction(trans);
                 }
                 else // Item stack count is bigger than required count, update item stack count and save to database - cloned item will be used for auction
                 {
@@ -375,14 +385,10 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                     item2->SetState(ITEM_CHANGED, _player);
                     _player->ItemRemovedQuestCheck(item2->GetEntry(), stackCount[j]);
                     item2->SendUpdateToPlayer(_player);
-
-                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
                     item2->SaveToDB(trans);
-                    CharacterDatabase.CommitTransaction(trans);
                 }
             }
 
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
             newItem->SaveToDB(trans);
             AH->SaveToDB(trans);
             _player->SaveInventoryAndGoldToDB(trans);

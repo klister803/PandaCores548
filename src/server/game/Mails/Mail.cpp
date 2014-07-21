@@ -78,6 +78,7 @@ MailReceiver::MailReceiver(Player* receiver, uint32 receiver_lowguid) : m_receiv
 
 MailDraft& MailDraft::AddItem(Item* item)
 {
+    item->SetOwnerGUID(0);
     m_items[item->GetGUIDLow()] = item; return *this;
 }
 

@@ -19534,26 +19534,33 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                     item->SetContainer(NULL);
                     item->SetSlot(slot);
 
-                    if (IsInventoryPos(INVENTORY_SLOT_BAG_0, slot))
+                    // check for already equiped item
+                    if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                        err = EQUIP_ERR_ITEM_MAX_COUNT;
+
+                    if (err == EQUIP_ERR_OK)
                     {
-                        ItemPosCountVec dest;
-                        err = CanStoreItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false);
-                        if (err == EQUIP_ERR_OK)
-                            item = StoreItem(dest, item, true);
-                    }
-                    else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
-                    {
-                        uint16 dest;
-                        err = CanEquipItem(slot, dest, item, false, false);
-                        if (err == EQUIP_ERR_OK)
-                            QuickEquipItem(dest, item);
-                    }
-                    else if (IsBankPos(INVENTORY_SLOT_BAG_0, slot))
-                    {
-                        ItemPosCountVec dest;
-                        err = CanBankItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false, false);
-                        if (err == EQUIP_ERR_OK)
-                            item = BankItem(dest, item, true);
+                        if (IsInventoryPos(INVENTORY_SLOT_BAG_0, slot))
+                        {
+                            ItemPosCountVec dest;
+                            err = CanStoreItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false);
+                            if (err == EQUIP_ERR_OK)
+                                item = StoreItem(dest, item, true);
+                        }
+                        else if (IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
+                        {
+                            uint16 dest;
+                            err = CanEquipItem(slot, dest, item, false, false);
+                            if (err == EQUIP_ERR_OK)
+                                QuickEquipItem(dest, item);
+                        }
+                        else if (IsBankPos(INVENTORY_SLOT_BAG_0, slot))
+                        {
+                            ItemPosCountVec dest;
+                            err = CanBankItem(INVENTORY_SLOT_BAG_0, slot, dest, item, false, false);
+                            if (err == EQUIP_ERR_OK)
+                                item = BankItem(dest, item, true);
+                        }
                     }
 
                     // Remember bags that may contain items in them
