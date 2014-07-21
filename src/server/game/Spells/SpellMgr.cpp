@@ -3523,6 +3523,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137562: // Nimble Brew
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                    break;
                 case 115175: // Soothing Mist
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     spellInfo->PowerPerSecondPercentage = 1;
