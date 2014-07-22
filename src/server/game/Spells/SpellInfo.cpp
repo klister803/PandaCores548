@@ -3386,7 +3386,7 @@ bool SpellInfo::AddPowerData(SpellPowerEntry const *power)
         spellPower[i].powerCostPercentage = power->powerCostPercentage;
         spellPower[i].powerPerSecond = power->powerPerSecond;
         spellPower[i].powerType = power->powerType;
-
+        spellPower[i].spellRequestId = power->spellRequestId;
         return true;
     }
 
@@ -3414,28 +3414,31 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
     if (!caster)
         return false;
 
+    uint8 index = 0;
     for (uint8 i = 0; i < MAX_POWERS_FOR_SPELL; ++i)
-        if (spellPower[i].powerType == caster->getPowerType() && spellPower[i].Id)
-        {
-            power.Id = spellPower[i].Id;
-            power.powerCost = PowerCost;
-            power.powerCostPercentage = PowerCostPercentage;
-            power.powerPerSecondPercentage = PowerPerSecondPercentage;
-            power.powerPerSecond = PowerPerSecond;
-            power.powerType = PowerType;
+    {
+        if (!spellPower[i].Id)
+            continue;
 
-            return true;
+        // skip requarement
+        if (spellPower[i].spellRequestId > 0 && caster->HasAura(spellPower[i].spellRequestId))
+        {
+            index = i;
+            break;
         }
 
-    if (spellPower[0].Id && spellPower[0].powerType >= POWER_RUNES)
-    {
-        power.Id = spellPower[0].Id;
-        power.powerCost = spellPower[0].powerCost;
-        power.powerCostPercentage = spellPower[0].powerCostPercentage;
-        power.powerPerSecondPercentage = spellPower[0].powerPerSecondPercentage;
-        power.powerPerSecond = spellPower[0].powerPerSecond;
-        power.powerType = spellPower[0].powerType;
+        if (spellPower[i].powerType == caster->getPowerType())
+            index = i;
+    }
 
+    if (spellPower[index].Id)
+    {
+        power.Id = spellPower[index].Id;
+        power.powerCost = spellPower[index].powerCost;
+        power.powerCostPercentage = spellPower[index].powerCostPercentage;
+        power.powerPerSecondPercentage = spellPower[index].powerPerSecondPercentage;
+        power.powerPerSecond = spellPower[index].powerPerSecond;
+        power.powerType = spellPower[index].powerType;
         return true;
     }
 
