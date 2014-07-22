@@ -871,6 +871,7 @@ class WorldSession
         void HandleBfQueueInviteResponse(WorldPacket &recv_data);
         void HandleBfEntryInviteResponse(WorldPacket &recv_data);
         void HandleBfExitQueueRequest(WorldPacket &recv_data);
+        void HandleBfSetPreferedCemetry(WorldPacket & recvData);
         void HandleBfExitRequest(WorldPacket &recv_data);
         void HandleBfQueueRequest(WorldPacket &recv_data);
 
