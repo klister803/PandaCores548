@@ -182,7 +182,13 @@ void WorldSession::HandleBfQueueInviteResponse(WorldPacket & recvData)
     if (!bf)
         return;
     
-    bf->PlayerAcceptInviteToQueue(_player);
+    if (accepted)
+        bf->PlayerAcceptInviteToQueue(_player);
+    else if (bf->IsWarTime() || bf->IsOnStartGrouping())
+    {
+        if (_player->GetZoneId() == bf->GetZoneId())
+            bf->KickPlayerFromBattlefield(_player->GetGUID());
+    }
 }
 
 //Send by client on clicking in accept or refuse of invitation windows for join game
@@ -253,8 +259,13 @@ void WorldSession::HandleBfExitRequest(WorldPacket& recv_data)
 {
     sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitRequest");
     Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId());
-    if(bf)
-         bf->KickPlayerFromBattlefield(_player->GetGUID());
+
+    if (!bf)
+        return;
+
+    SendBfLeaveMessage(bf->GetBattleId());
+    bf->AskToLeaveQueue(_player);
+    bf->KickPlayerFromBattlefield(_player->GetGUID());
 }
 
 //! 5.4.1

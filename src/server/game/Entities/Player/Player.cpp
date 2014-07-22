@@ -2694,6 +2694,7 @@ void Player::RemoveFromWorld()
         UnsummonPetTemporaryIfAny();
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
+        m_zoneUpdateId = 0; //fix returning to wg
     }
 
     ///- Do not add/remove the player from the object storage

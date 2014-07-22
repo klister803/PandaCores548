@@ -44,6 +44,14 @@ typedef std::set<WGWorkshop*> Workshop;
 typedef std::set<Group*> GroupSet;
 //typedef std::set<WintergraspCapturePoint *> CapturePointSet; unused ?
 
+enum WintergrastData
+{
+    WG_MARK_OF_HONOR                             = 43589,
+    POS_X_CENTER                                 = 5100,
+    BATTLEFIELD_WG_ZONEID                        = 4197,             // Wintergrasp
+    BATTLEFIELD_WG_MAPID                         = 571               // Northrend
+};
+
 enum WintergraspSpells
 {
     // Wartime auras
@@ -81,11 +89,36 @@ enum WintergraspSpells
     SPELL_WINTERGRASP_RESTRICTED_FLIGHT_AREA    = 91604,
 
     // Phasing spells
+    SPELL_PHASE_NON_BATTLE                      = 64576, // alow see trash out of battle
     SPELL_HORDE_CONTROLS_FACTORY_PHASE_SHIFT    = 56618, // ADDS PHASE 16
     SPELL_ALLIANCE_CONTROLS_FACTORY_PHASE_SHIFT = 56617, // ADDS PHASE 32
 
     SPELL_HORDE_CONTROL_PHASE_SHIFT             = 55773, // ADDS PHASE 64
     SPELL_ALLIANCE_CONTROL_PHASE_SHIFT          = 55774, // ADDS PHASE 128
+};
+
+enum WGQuestCredit
+{
+    CRE_PVP_KILL                                 = 31086, //Quest Objective - Fixme: this should be handled by DB
+    CRE_PVP_KILL_V                               = 31093, //Quest Objective - Fixme: this should be handled by DB
+};
+
+enum Wintergrasp_Sounds
+{
+    OutdoorPvP_WG_SOUND_KEEP_CLAIMED            = 8192,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_ALLIANCE  = 8173,
+    OutdoorPvP_WG_SOUND_KEEP_CAPTURED_HORDE     = 8213,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_ALLIANCE = 8212,
+    OutdoorPvP_WG_SOUND_KEEP_ASSAULTED_HORDE    = 8174,
+    OutdoorPvP_WG_SOUND_NEAR_VICTORY            = 8456,
+    OutdoorPvP_WG_SOUND_HORDE_WINS              = 8454,
+    OutdoorPvP_WG_SOUND_ALLIANCE_WINS           = 8455,
+    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205, // время убивать орда
+    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298, // к оружию альянс
+    OutdoorPvP_WG_HORDE_CAPTAIN                 = 8333,
+    OutdoorPvP_WG_ALLIANCE_CAPTAIN              = 8232,
+//    OutdoorPvP_WG_SOUND_START_BATTLE            = 11803,   //L70ETC Concert
+    OutdoorPvP_WG_SOUND_START_BATTLE            = 3439, //Standart BG Start sound
 };
 
 enum WintergraspData
@@ -407,6 +440,7 @@ class BattlefieldWG : public Battlefield
         void PromotePlayer(Player* killer);
 
         void UpdateTenacity();
+        void RewardMarkOfHonor(Player *plr, uint32 count);
         void ProcessEvent(WorldObject *obj, uint32 eventId);
 
         bool FindAndRemoveVehicleFromList(Unit* vehicle);
@@ -452,6 +486,7 @@ enum WintergraspGameObjectBuildingType
     BATTLEFIELD_WG_OBJECTTYPE_DOOR_LAST,
     BATTLEFIELD_WG_OBJECTTYPE_KEEP_TOWER,
     BATTLEFIELD_WG_OBJECTTYPE_TOWER,
+    BATTLEFIELD_WG_OBJECTTYPE_WORKSHOP
 };
 
 enum WintergraspGameObjectState
@@ -1606,7 +1641,7 @@ struct WGWorkshop
     void UpdateGraveyardAndWorkshop()
     {
         if (workshopId < BATTLEFIELD_WG_WORKSHOP_KEEP_WEST)
-            bf->GetGraveyardById(workshopId)->GiveControlTo(TeamId(teamControl));
+            bf->GetGraveyardById(workshopId)->GiveControlTo(bf->GetAttackerTeam());
         else
             GiveControlTo(bf->GetDefenderTeam(), true);
     }

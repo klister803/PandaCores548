@@ -152,7 +152,7 @@ class BfGraveyard
         float GetDistance(Player* player);
 
         // Initialize the graveyard
-        void Initialize(TeamId startcontrol, uint32 gy);
+        void Initialize(TeamId startcontrol, uint32 gy, uint32 tp);
 
         // Set spirit service for the graveyard
         void SetSpirit(Creature* spirit, TeamId team);
@@ -188,9 +188,12 @@ class BfGraveyard
         // Get the graveyard's ID.
         uint32 GetGraveyardId() { return m_GraveyardId; }
 
+        // 
+        uint32 GetTypeId() const { return m_TypeId; }
     protected:
         TeamId m_ControlTeam;
         uint32 m_GraveyardId;
+        uint32 m_TypeId;
         uint64 m_SpiritGuide[2];
         GuidSet m_ResurrectQueue;
         Battlefield* m_Bf;
@@ -359,6 +362,7 @@ class Battlefield : public ZoneScript
 
         void SetGuid(uint64 guid) { m_Guid = guid; };
 
+        bool IsOnStartGrouping() const { return m_StartGrouping; }
     protected:
         uint64 StalkerGuid;
         uint32 m_Timer;                                         // Global timer for event

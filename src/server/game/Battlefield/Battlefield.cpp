@@ -31,6 +31,8 @@
 #include "CellImpl.h"
 #include "CreatureTextMgr.h"
 #include "GroupMgr.h"
+#include "Chat.h"
+#include "Language.h"
 
 Battlefield::Battlefield()
 {
@@ -85,6 +87,7 @@ void Battlefield::HandlePlayerEnterZone(Player* player, uint32 /*zone*/)
         else // No more vacant places
         {
             // TODO: Send a packet to announce it to player
+            //ChatHandler(player->GetSession()).PSendSysMessage(LANG_BG_WG_LEAVE_MAX_PLR);
             m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = time(NULL) + 10;
             InvitePlayerToQueue(player);
         }
@@ -194,9 +197,9 @@ bool Battlefield::Update(uint32 diff)
 
     if (m_LastResurectTimer <= diff)
     {
-        for (uint8 i = 0; i < m_GraveyardList.size(); i++)
-            if (GetGraveyardById(i))
-                m_GraveyardList[i]->Resurrect();
+        for (GraveyardVect::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
+            if (*itr)
+               (*itr)->Resurrect();
         m_LastResurectTimer = RESURRECTION_INTERVAL;
     }
     else
@@ -320,7 +323,11 @@ void Battlefield::KickPlayerFromBattlefield(uint64 guid)
     if (Player* player = sObjectAccessor->FindPlayer(guid))
     {
         if (player->GetZoneId() == GetZoneId())
-            player->TeleportTo(KickPosition);
+        {
+            player->TeleportToHomeBind();
+            //player->DelayTeleportToGomeBind();
+            //player->TeleportTo(KickPosition);
+        }
 
         if (player->GetTeamId() >= 2)
             return;
@@ -545,7 +552,7 @@ void Battlefield::HideNpc(Creature* creature)
 
 void Battlefield::ShowNpc(Creature* creature, bool aggressive)
 {
-    creature->SetPhaseMask(1, true);
+    creature->SetPhaseMask(49, true);
     creature->SetVisible(true);
     creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if (!creature->isAlive())
@@ -640,17 +647,17 @@ WorldSafeLocsEntry const * Battlefield::GetClosestGraveYard(Player* player)
 {
     BfGraveyard* closestGY = NULL;
     float maxdist = -1;
-    for (uint8 i = 0; i < m_GraveyardList.size(); i++)
+    for (GraveyardVect::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
     {
-        if (m_GraveyardList[i])
+        if (*itr)
         {
-            if (m_GraveyardList[i]->GetControlTeamId() != player->GetTeamId())
+            if ((*itr)->GetControlTeamId() != player->GetTeamId())
                 continue;
 
-            float dist = m_GraveyardList[i]->GetDistance(player);
+            float dist = (*itr)->GetDistance(player);
             if (dist < maxdist || maxdist < 0)
             {
-                closestGY = m_GraveyardList[i];
+                closestGY = *itr;
                 maxdist = dist;
             }
         }
@@ -664,14 +671,14 @@ WorldSafeLocsEntry const * Battlefield::GetClosestGraveYard(Player* player)
 
 void Battlefield::AddPlayerToResurrectQueue(uint64 npcGuid, uint64 playerGuid)
 {
-    for (uint8 i = 0; i < m_GraveyardList.size(); i++)
+    for (GraveyardVect::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
     {
-        if (!m_GraveyardList[i])
+        if (!(*itr))
             continue;
 
-        if (m_GraveyardList[i]->HasNpc(npcGuid))
+        if (!npcGuid || (*itr)->HasNpc(npcGuid))
         {
-            m_GraveyardList[i]->AddPlayer(playerGuid);
+            (*itr)->AddPlayer(playerGuid);
             break;
         }
     }
@@ -679,14 +686,14 @@ void Battlefield::AddPlayerToResurrectQueue(uint64 npcGuid, uint64 playerGuid)
 
 void Battlefield::RemovePlayerFromResurrectQueue(uint64 playerGuid)
 {
-    for (uint8 i = 0; i < m_GraveyardList.size(); i++)
+    for (GraveyardVect::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
     {
-        if (!m_GraveyardList[i])
+        if (!(*itr))
             continue;
 
-        if (m_GraveyardList[i]->HasPlayer(playerGuid))
+        if ((*itr)->HasPlayer(playerGuid))
         {
-            m_GraveyardList[i]->RemovePlayer(playerGuid);
+            (*itr)->RemovePlayer(playerGuid);
             break;
         }
     }
@@ -719,10 +726,11 @@ BfGraveyard::BfGraveyard(Battlefield* battlefield)
     m_ResurrectQueue.clear();
 }
 
-void BfGraveyard::Initialize(TeamId startControl, uint32 graveyardId)
+void BfGraveyard::Initialize(TeamId startControl, uint32 graveyardId, uint32 tp)
 {
     m_ControlTeam = startControl;
     m_GraveyardId = graveyardId;
+    m_TypeId      = tp;
 }
 
 void BfGraveyard::SetSpirit(Creature* spirit, TeamId team)
@@ -767,10 +775,10 @@ void BfGraveyard::Resurrect()
     if (m_ResurrectQueue.empty())
         return;
 
-    for (GuidSet::const_iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
+    for (GuidSet::const_iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end();)
     {
         // Get player object from his guid
-        Player* player = sObjectAccessor->FindPlayer(*itr);
+        Player* player = sObjectAccessor->FindPlayer(*itr++);
         if (!player)
             continue;
 
@@ -784,6 +792,7 @@ void BfGraveyard::Resurrect()
         player->ResurrectPlayer(1.0f);
         player->CastSpell(player, 6962, true);
         player->CastSpell(player, SPELL_SPIRIT_HEAL_MANA, true);
+        player->RemoveAurasDueToSpell(SPELL_WAITING_FOR_RESURRECT);
 
         sObjectAccessor->ConvertCorpseForPlayer(player->GetGUID());
     }
@@ -894,6 +903,7 @@ GameObject* Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z
     }
 
     // Add to world
+    go->SetPhaseMask(49, false);
     map->AddToMap(go);
     go->setActive(true);
 
