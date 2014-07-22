@@ -382,7 +382,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //323 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //324 SPELL_AURA_324
     &AuraEffect::HandleUnused,                                    //325 unused (4.3.4)
-    &AuraEffect::HandleNULL,                                      //326 SPELL_AURA_PHASE_2
+    &AuraEffect::HandlePhase,                                     //326 SPELL_AURA_PHASE_2
     &AuraEffect::HandleUnused,                                    //327 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //328 SPELL_AURA_PROC_ON_POWER_AMOUNT implemented in Unit::HandleAuraProcOnPowerAmount
     &AuraEffect::HandleNULL,                                      //329 SPELL_AURA_MOD_RUNE_REGEN_SPEED
@@ -2542,6 +2542,11 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
         Unit::AuraEffectList const& phases = target->GetAuraEffectsByType(SPELL_AURA_PHASE);	
         if (!phases.empty())	
             for (Unit::AuraEffectList::const_iterator itr = phases.begin(); itr != phases.end(); ++itr)	
+                newPhase |= (*itr)->GetMiscValue();
+
+        Unit::AuraEffectList const& phases2 = target->GetAuraEffectsByType(SPELL_AURA_PHASE_2);	
+        if (!phases2.empty())	
+            for (Unit::AuraEffectList::const_iterator itr = phases2.begin(); itr != phases2.end(); ++itr)	
                 newPhase |= (*itr)->GetMiscValue();
 
         if (!newPhase)
