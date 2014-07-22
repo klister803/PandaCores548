@@ -84,7 +84,6 @@ MailDraft& MailDraft::AddItem(Item* item)
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
         stmt->setUInt32(0, 0);
         stmt->setUInt32(1, item->GetGUIDLow());
-        trans->Append(stmt);
         CharacterDatabase.Execute(stmt);
 
         item->SetOwnerGUID(0);
