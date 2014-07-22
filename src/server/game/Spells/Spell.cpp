@@ -1366,7 +1366,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         {
             if (m_originalTarget)
             {
-                if (!m_caster->IsInPartyWith(m_originalTarget))
+                if (!m_caster->IsInRaidWith(m_originalTarget))
                 {
                     unitTargets.clear();
                     unitTargets.push_back(m_originalTarget);
