@@ -78,7 +78,17 @@ MailReceiver::MailReceiver(Player* receiver, uint32 receiver_lowguid) : m_receiv
 
 MailDraft& MailDraft::AddItem(Item* item)
 {
-    item->SetOwnerGUID(0);
+    if (item->GetOwnerGUID())
+    {
+        // just for disable error log and possible something else.
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
+        stmt->setUInt32(0, 0);
+        stmt->setUInt32(1, item->GetGUIDLow());
+        trans->Append(stmt);
+        CharacterDatabase.Execute(stmt);
+
+        item->SetOwnerGUID(0);
+    }
     m_items[item->GetGUIDLow()] = item; return *this;
 }
 
