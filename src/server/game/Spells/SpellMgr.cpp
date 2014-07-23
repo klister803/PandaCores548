@@ -4079,10 +4079,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
                     spellInfo->Effects[EFFECT_1].TargetB = 0;
                     break;
-                case 122507:// Rallying Cry
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                case 97463:// Rallying Cry
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                    spellInfo->Effects[EFFECT_0].BasePoints = 20;
                     break;                
                 case 324:    // Lightning Shield
                 case 50227:  // Sword and Board
