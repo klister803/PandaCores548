@@ -682,7 +682,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 }
                 case 73651: // Recuperate
                 {
-                    if (!caster->HasAura(56806))
+                    if (!caster->HasAura(146625))
                         amount = 0;
                     break;
                 }
