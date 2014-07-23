@@ -680,6 +680,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     }
                     break;
                 }
+                case 73651: // Recuperate
+                {
+                    if (!caster->HasAura(56806))
+                        amount = 0;
+                    break;
+                }
                 default:
                     break;
             }
@@ -1076,7 +1082,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 }
                 case 73651: // Recuperate
                 {
-                    amount = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56806) ? 3.5f: 3);
+                    int32 bp = m_spellInfo->Effects[0].BasePoints;
+                    
+                    if (caster->HasAura(56806))
+                        bp += 1;
+                    
+                    if (caster->HasAura(61249))
+                        bp += 1;
+                    
+                    amount = CalculatePct(caster->GetMaxHealth(), bp);
                     break;
                 }
                 case 28880:  // Warrior     - Gift of the Naaru
