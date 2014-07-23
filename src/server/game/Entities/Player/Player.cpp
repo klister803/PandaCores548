@@ -3527,6 +3527,9 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
         xp = 0;
         
+    if (SmallAreaLevel(GetZoneId()))
+        xp = uint32(xp / (sWorld->getRate(RATE_XP_QUEST)));
+        
     uint8 level = getLevel();
 
     sScriptMgr->OnGivePlayerXP(this, xp, victim);
@@ -29760,6 +29763,24 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
         case 870: // Pandaria
             if (getLevel() < 85)
                 return true;
+            break;
+    }
+
+    return false;
+}
+
+bool Player::SmallAreaLevel(uint32 zone)
+{
+    switch (zone)
+    {
+        case 4755: // Gilneas City (Worgens start loc)
+        case 4714: // Gilneas (Worgens start loc)
+        case 4298: // The Scarlet Enclave (Dk start loc)        
+        case 5736: // The Wandering Isle (Pandarens start loc)
+        case 4737: // Kezan (Goblins start loc)
+        case 4720: // The Lost Isles (Goblins start loc)
+                return true;
+        default:
             break;
     }
 

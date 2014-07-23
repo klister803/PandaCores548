@@ -1381,6 +1381,7 @@ class Player : public Unit, public GridObject<Player>
             TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
         }
         bool IsForbiddenMapForLevel(uint32 mapid, uint32 zone);
+        bool SmallAreaLevel(uint32 zone);
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
         {
