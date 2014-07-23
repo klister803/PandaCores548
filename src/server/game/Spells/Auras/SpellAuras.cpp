@@ -3031,8 +3031,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
             {
                 if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
                     if ((*itr)->GetTypeId() != TYPEID_PLAYER && (*itr) != caster)
-                        if ((*itr)->GetOwner() && (*itr)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                            continue;
+                        continue;
 
                 targets[*itr] = 1<<effIndex;
             }
