@@ -174,15 +174,24 @@ bool Battlefield::Update(uint32 diff)
         if (m_uiKickDontAcceptTimer <= diff)
         {
             for (int team = 0; team < 2; team++)
-                for (PlayerTimerMap::iterator itr = m_InvitedPlayers[team].begin(); itr != m_InvitedPlayers[team].end(); ++itr)
+                for (PlayerTimerMap::iterator itr = m_InvitedPlayers[team].begin(), next; itr != m_InvitedPlayers[team].end(); itr = next)
+                {
+                    next = itr;
+                    ++next;
+
                     if ((*itr).second <= time(NULL))
                         KickPlayerFromBattlefield((*itr).first);
+                }
 
             InvitePlayersInZoneToWar();
             for (int team = 0; team < 2; team++)
-                for (PlayerTimerMap::iterator itr = m_PlayersWillBeKick[team].begin(); itr != m_PlayersWillBeKick[team].end(); ++itr)
+                for (PlayerTimerMap::iterator itr = m_PlayersWillBeKick[team].begin(), next; itr != m_PlayersWillBeKick[team].end(); itr = next)
+                {
+                    next = itr;
+                    ++next;
                     if ((*itr).second <= time(NULL))
                         KickPlayerFromBattlefield((*itr).first);
+                }
 
             m_uiKickDontAcceptTimer = 1000;
         }
