@@ -474,6 +474,7 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
     m_castItemGUID = 0;
 
     unitTarget = NULL;
+    m_originalTarget = NULL;
     itemTarget = NULL;
     gameObjTarget = NULL;
     focusObject = NULL;
@@ -2238,7 +2239,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
         if (target->GetTypeId() != TYPEID_PLAYER && target != m_caster)
-            return;
+            if (target->GetOwner() && target->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                return;
 
     // Check for effect immune skip if immuned
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
@@ -7166,6 +7168,14 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (!IsTriggered())
             if (my_trade->GetSpell())
                 return SPELL_FAILED_ITEM_ALREADY_ENCHANTED;
+    }
+
+    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
+    {
+        if (m_originalTarget)
+            if (m_originalTarget->GetTypeId() != TYPEID_PLAYER)
+                if (m_originalTarget->GetOwner() && m_originalTarget->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    return SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED;
     }
 
     // check if caster has at least 1 combo point for spells that require combo points
