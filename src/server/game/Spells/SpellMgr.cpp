@@ -4532,6 +4532,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 67439: // Boulder
                     spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(10);//30yards
                     break;
+
+
                 //Terrace of Endless Spring
                 //Protectors of Endless
                 case 117052: //Sha Corruption
@@ -4679,6 +4681,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 134916: //Decapitate tr ef
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
+                case 135695: //Static shock base aura
+                    spellInfo->Effects[0].TargetA = 6;
+                    spellInfo->Effects[0].TargetB = 0;
                     break;
                 case 135703: //Static shock tr ef dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
