@@ -1166,56 +1166,6 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
         }
 };
 
-enum FriendOrFowl
-{
-    SPELL_TURKEY_VENGEANCE  = 25285,
-};
-
-class spell_gen_turkey_marker : public SpellScriptLoader
-{
-    public:
-        spell_gen_turkey_marker() : SpellScriptLoader("spell_gen_turkey_marker") { }
-
-        class spell_gen_turkey_marker_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_gen_turkey_marker_AuraScript);
-
-            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                // store stack apply times, so we can pop them while they expire
-                _applyTimes.push_back(getMSTime());
-                Unit* target = GetTarget();
-
-                // on stack 15 cast the achievement crediting spell
-                if (GetStackAmount() >= 15)
-                    target->CastSpell(target, SPELL_TURKEY_VENGEANCE, true, NULL, aurEff, GetCasterGUID());
-            }
-
-            void OnPeriodic(AuraEffect const* /*aurEff*/)
-            {
-                if (_applyTimes.empty())
-                    return;
-
-                // pop stack if it expired for us
-                if (_applyTimes.front() + GetMaxDuration() < getMSTime())
-                    ModStackAmount(-1, AURA_REMOVE_BY_EXPIRE);
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_gen_turkey_marker_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_turkey_marker_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-
-            std::list<uint32> _applyTimes;
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_gen_turkey_marker_AuraScript();
-        }
-};
-
 enum MagicRoosterSpells
 {
     SPELL_MAGIC_ROOSTER_NORMAL          = 66122,
@@ -3864,7 +3814,6 @@ void AddSC_generic_spell_scripts()
     new spell_generic_clone_weapon();
     new spell_gen_clone_weapon_aura();
     new spell_gen_seaforium_blast();
-    new spell_gen_turkey_marker();
     new spell_gen_magic_rooster();
     new spell_gen_allow_cast_from_item_only();
     new spell_gen_launch();

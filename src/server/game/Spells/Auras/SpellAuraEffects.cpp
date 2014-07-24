@@ -6733,6 +6733,18 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     }
                     break;
                 }
+                case 25281: // Turkey Marker
+                {
+                    if (Aura* aur = GetBase())
+                    {
+                        if (aur->GetStackAmount() >= 15)
+                        {
+                            target->CastSpell(target, 25285, true);
+                            target->RemoveAura(25281);
+                        }
+                    }
+                    break;
+                }
                 case 146184: // Wrath
                 {
                     caster->CastCustomSpell(target, 146202, &m_amount, 0, 0, true, 0, this);
