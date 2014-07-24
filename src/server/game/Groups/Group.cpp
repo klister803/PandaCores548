@@ -1456,7 +1456,7 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
             data.WriteGuidMask<0, 6, 3, 1, 5, 7, 4, 2>(guid);
             dataBuffer.WriteGuidBytes<6, 7, 2, 0, 5, 3, 1, 4>(guid);
             ++real_count;
-            if (real_count >= 40)
+            if (real_count >= 10)
                 break;
         }
     }
