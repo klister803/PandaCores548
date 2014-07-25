@@ -1313,7 +1313,7 @@ bool Item::CanTransmogrifyItemWithItem(Item const* transmogrified, Item const* t
     if (proto1->ItemId == proto2->ItemId)
         return false;
 
-    if (!transmogrified->CanTransmogrify() || !transmogrifier->CanBeTransmogrified())
+    if (!transmogrifier->CanTransmogrify() || !transmogrified->CanBeTransmogrified())
         return false;
 
     if (proto1->InventoryType == INVTYPE_BAG ||
