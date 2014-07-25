@@ -45,6 +45,8 @@ class BattlefieldMgr
     void HandlePlayerLeaveZone(Player * player, uint32 areaflag);
     // called when player resurrects
     void HandlePlayerResurrects(Player * player, uint32 areaflag);
+    // remove player from all queues.
+    void EventPlayerLoggedOut(Player * player);
     // return assigned battlefield
     Battlefield *GetBattlefieldToZoneId(uint32 zoneid);
     Battlefield *GetBattlefieldByBattleId(uint32 battleid);

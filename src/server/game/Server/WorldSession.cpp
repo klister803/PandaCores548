@@ -547,6 +547,8 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->SetPendingBind(0, 0);
         }
 
+        sBattlefieldMgr->EventPlayerLoggedOut(_player);
+
         //drop a flag if player is carrying it
         if (Battleground* bg = _player->GetBattleground())
             bg->EventPlayerLoggedOut(_player);

@@ -147,3 +147,10 @@ ZoneScript *BattlefieldMgr::GetZoneScript(uint32 zoneId)
     else
         return NULL;
 }
+
+void BattlefieldMgr::EventPlayerLoggedOut(Player * player)
+{
+    for (BattlefieldSet::iterator itr = m_BattlefieldSet.begin(); itr != m_BattlefieldSet.end(); ++itr)
+        if ((*itr)->IsEnabled())
+            (*itr)->AskToLeaveQueue(player);
+}
