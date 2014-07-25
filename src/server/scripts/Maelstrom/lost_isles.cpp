@@ -405,8 +405,9 @@ class npc_foreman_dampwick : public CreatureScript
         player->CLOSE_GOSSIP_MENU();
         if (action == 1)
         {
-            if (player->GetQuestStatus(QUEST_MINER_TROUBLES) != QUEST_STATUS_FAILED)
+            if (player->GetQuestStatus(QUEST_MINER_TROUBLES) != QUEST_STATUS_INCOMPLETE)
                 return true;
+
             player->IncompleteQuest(QUEST_MINER_TROUBLES);
             creature->AI()->OnStartQuest(player, sObjectMgr->GetQuestTemplate(QUEST_MINER_TROUBLES));
         }
@@ -420,13 +421,20 @@ class npc_foreman_dampwick : public CreatureScript
 
         }
 
+        uint64 guidMiner;
+
         void Reset()
         {
+            guidMiner = 0;
         }
 
         void OnStartQuest(Player* player, Quest const* quest)   
         {
             if (!quest || quest->GetQuestId() != QUEST_MINER_TROUBLES)
+                return;
+
+            // last summoned creature in world.
+            if (Unit::GetCreature(*me, guidMiner))
                 return;
 
             Position pos;
@@ -436,6 +444,7 @@ class npc_foreman_dampwick : public CreatureScript
                 summon->AddPlayerInPersonnalVisibilityList(player->GetGUID());
                 summon->AI()->SetGUID(player->GetGUID(), 0);
                 sCreatureTextMgr->SendChat(me, TEXT_FOREMAN_0, player->GetGUID());
+                guidMiner = summon->GetGUID();
             }
         }
 
@@ -2469,6 +2478,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
             events.Reset();
             me->SetCreateHealth(98260);
             me->SetMaxHealth(98260);
+            me->setFaction(14);
         }
 
         void EnterCombat(Unit* victim)
