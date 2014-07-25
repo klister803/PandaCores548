@@ -232,6 +232,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
     SetName(fields[7].GetString());
 
+    // ignore model info data for 
+    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.0f);
+    SetFloatValue(UNIT_FIELD_COMBATREACH, ATTACK_DISTANCE);
+
     Powers powerType = POWER_MANA;
     switch (cinfo->unit_class)
     {
