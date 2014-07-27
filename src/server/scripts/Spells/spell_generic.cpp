@@ -3077,7 +3077,7 @@ public:
     }
 };
 
-// TP to Stormwind (17334) or Orgrimmar (17609)
+// TP to Stormwind (121857) or Orgrimmar (121852)
 class spell_gen_tp_storm_orgri : public SpellScriptLoader
 {
     public:
@@ -3087,22 +3087,15 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
         {
             PrepareSpellScript(spell_gen_tp_storm_orgri_SpellScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(17334) || !sSpellMgr->GetSpellInfo(17609))
-                    return false;
-                return true;
-            }
-
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Tp to Stormwind
-                    if (GetSpellInfo()->Id == 17334)
+                    if (GetSpellInfo()->Id == 121857)
                         _player->TeleportTo(0, -8833.07f, 622.778f, 93.9317f, _player->GetOrientation());
                     // Tp to Orgrimmar
-                    else if (GetSpellInfo()->Id == 17609)
+                    else if (GetSpellInfo()->Id == 121852)
                         _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472f, _player->GetOrientation());
                 }
             }
