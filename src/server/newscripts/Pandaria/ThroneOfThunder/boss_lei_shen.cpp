@@ -240,6 +240,26 @@ class go_lei_shen_tp_platform : public GameObjectScript
         }
 };
 
+//218418
+class go_tp_platform_to_ra_den : public GameObjectScript
+{
+    public:
+        go_tp_platform_to_ra_den() : GameObjectScript("go_tp_platform_to_ra_den") { }
+
+        bool OnGossipHello(Player* player, GameObject* go)
+        {
+            InstanceScript* pInstance = (InstanceScript*)go->GetInstanceScript();
+
+            if (!pInstance || !player->GetMap()->IsHeroic())
+                return false;
+            
+            if (pInstance->GetBossState(DATA_LEI_SHEN) == DONE)
+                player->NearTeleportTo(5591.90f, 4692.89f, 55.7776f, 4.75735f);
+            
+            return true;
+        }
+};
+
 void AddSC_boss_lei_shen()
 {
     new boss_lei_shen();
@@ -247,4 +267,5 @@ void AddSC_boss_lei_shen()
     new spell_decapitate();
     new spell_lightning_whip();
     new go_lei_shen_tp_platform();
+    new go_tp_platform_to_ra_den();
 }

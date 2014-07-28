@@ -132,6 +132,8 @@ enum eGameObjects
     GO_TWIN_EX_DOOR         = 218394,
     //Lei Shen
     GO_TP_PLATFORM          = 218417,
+    GO_TP_TO_RA_DEN         = 218418,
+    GO_CHARGING_STATION     = 218397,
     //Ra Den
     GO_RA_DEN_ENT_DOOR      = 218555,
 };
