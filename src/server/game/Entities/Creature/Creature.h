@@ -94,6 +94,7 @@ enum CreatureFlagsExtra
 #define ENTRY_OBSERVER          58964
 #define ENTRY_WRATHGUARD        58965
 #define ENTRY_ABYSSAL           58997
+#define ENTRY_DOOMGUARD         11859
 #define ENTRY_TERRORGUARD       59000
 #define ENTRY_FERAL_SPIRIT      29264
 #define ENTRY_MIRROR_IMAGE      31216

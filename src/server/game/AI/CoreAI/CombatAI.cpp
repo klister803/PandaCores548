@@ -21,6 +21,8 @@
 #include "SpellInfo.h"
 #include "Vehicle.h"
 #include "ObjectAccessor.h"
+#include "Spell.h"
+#include "Group.h"
 
 int AggressorAI::Permissible(const Creature* creature)
 {
@@ -31,12 +33,176 @@ int AggressorAI::Permissible(const Creature* creature)
     return PERMIT_BASE_NO;
 }
 
-void AggressorAI::UpdateAI(const uint32 /*diff*/)
+void AggressorAI::UpdateAI(const uint32 diff)
 {
     if (!UpdateVictim())
         return;
 
-    DoMeleeAttackIfReady();
+    if (m_updateAlliesTimer <= diff)
+        // UpdateAllies self set update timer
+        UpdateAllies();
+    else
+        m_updateAlliesTimer -= diff;
+
+    if(!me->GetCasterPet())
+        DoMeleeAttackIfReady();
+    // Autocast (casted only in combat or persistent spells in any state)
+    else if (!me->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Unit* owner = me->GetCharmerOrOwner();
+
+        typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
+        TargetSpellList targetSpellStore;
+
+        for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
+        {
+            uint32 spellID = me->m_spells[i];
+            if (!spellID)
+                continue;
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
+            if (!spellInfo)
+                continue;
+
+            if (me->HasSpellCooldown(spellID))
+                continue;
+
+            if (spellInfo->IsPositive())
+            {
+                if (spellInfo->CanBeUsedInCombat())
+                {
+                    // check spell cooldown
+                    if (me->HasSpellCooldown(spellInfo->Id))
+                        continue;
+
+                    // Check if we're in combat
+                    if (!me->isInCombat())
+                        continue;
+                }
+
+                Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
+                bool spellUsed = false;
+
+                // Some spells can target enemy or friendly (DK Ghoul's Leap)
+                // Check for enemy first (pet then owner)
+                Unit* target = me->getAttackerForHelper();
+                if (!target && owner)
+                    target = owner->getAttackerForHelper();
+
+                if (target)
+                {
+                    if (me->IsWithinMeleeRange(target, me->GetAttackDist()) && spell->CanAutoCast(target))
+                    {
+                        targetSpellStore.push_back(std::make_pair(target, spell));
+                        spellUsed = true;
+                    }
+                }
+
+                // No enemy, check friendly
+                if (!spellUsed)
+                {
+                    for (std::set<uint64>::const_iterator tar = m_AllySet.begin(); tar != m_AllySet.end(); ++tar)
+                    {
+                        Unit* ally = ObjectAccessor::GetUnit(*me, *tar);
+
+                        //only buff targets that are in combat, unless the spell can only be cast while out of combat
+                        if (!ally)
+                            continue;
+
+                        if (spell->CanAutoCast(ally))
+                        {
+                            targetSpellStore.push_back(std::make_pair(ally, spell));
+                            spellUsed = true;
+                            break;
+                        }
+                    }
+                }
+
+                // No valid targets at all
+                if (!spellUsed)
+                    delete spell;
+            }
+            else if (me->getVictim() && me->IsWithinMeleeRange(me->getVictim(), me->GetAttackDist()) && spellInfo->CanBeUsedInCombat())
+            {
+                Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
+                if (spell->CanAutoCast(me->getVictim()))
+                    targetSpellStore.push_back(std::make_pair(me->getVictim(), spell));
+                else
+                    delete spell;
+            }
+        }
+
+        //found units to cast on to
+        if (!targetSpellStore.empty())
+        {
+            uint32 index = urand(0, targetSpellStore.size() - 1);
+
+            Spell* spell  = targetSpellStore[index].second;
+            Unit*  target = targetSpellStore[index].first;
+
+            targetSpellStore.erase(targetSpellStore.begin() + index);
+
+            SpellCastTargets targets;
+            targets.SetUnitTarget(target);
+
+            if (!me->HasInArc(M_PI, target))
+            {
+                me->SetInFront(target);
+                if (target && target->GetTypeId() == TYPEID_PLAYER)
+                    me->SendUpdateToPlayer(target->ToPlayer());
+
+                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                    me->SendUpdateToPlayer(owner->ToPlayer());
+            }
+
+            me->AddCreatureSpellCooldown(spell->m_spellInfo->Id);
+
+            spell->prepare(&targets);
+        }
+
+        // deleted cached Spell objects
+        for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)
+            delete itr->second;
+    }
+}
+
+void AggressorAI::UpdateAllies()
+{
+    Unit* owner = me->GetCharmerOrOwner();
+    Group* group = NULL;
+
+    m_updateAlliesTimer = 10*IN_MILLISECONDS;                //update friendly targets every 10 seconds, lesser checks increase performance
+
+    if (!owner)
+        return;
+    else if (owner->GetTypeId() == TYPEID_PLAYER)
+        group = owner->ToPlayer()->GetGroup();
+
+    //only pet and owner/not in group->ok
+    if (m_AllySet.size() == 2 && !group)
+        return;
+    //owner is in group; group members filled in already (no raid -> subgroupcount = whole count)
+    if (group && !group->isRaidGroup() && m_AllySet.size() == (group->GetMembersCount() + 2))
+        return;
+
+    m_AllySet.clear();
+    m_AllySet.insert(me->GetGUID());
+    if (group)                                              //add group
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player* Target = itr->getSource();
+            if (!Target || !group->SameSubGroup((Player*)owner, Target))
+                continue;
+
+            if (Target->GetGUID() == owner->GetGUID())
+                continue;
+
+            m_AllySet.insert(Target->GetGUID());
+        }
+    }
+    else                                                    //remove group
+        m_AllySet.insert(owner->GetGUID());
 }
 
 // some day we will delete these useless things

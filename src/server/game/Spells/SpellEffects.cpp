@@ -7541,7 +7541,17 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         if (!summon)
             return;
         if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        {
             ((Guardian*)summon)->InitStatsForLevel(level);
+            uint32 spellId = summon->GetCreatureTemplate()->spells[0];
+            if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+            {
+                ((Guardian*)summon)->addSpell(spellId, ACT_ENABLED);
+                ((Guardian*)summon)->ToggleAutocast(sInfo, true);
+                summon->SetCasterPet(true);
+                summon->SetAttackDist(sInfo->GetMaxRange(false));
+            }
+        }
 
         if (properties && properties->Category == SUMMON_CATEGORY_ALLY)
             summon->setFaction(caster->getFaction());

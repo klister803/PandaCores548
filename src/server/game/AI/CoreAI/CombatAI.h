@@ -32,6 +32,9 @@ class AggressorAI : public CreatureAI
 
         void UpdateAI(const uint32);
         static int Permissible(const Creature*);
+        void UpdateAllies();
+        std::set<uint64> m_AllySet;
+        uint32 m_updateAlliesTimer;
 };
 
 typedef std::vector<uint32> SpellVct;

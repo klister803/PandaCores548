@@ -21,6 +21,31 @@
 
 #include "Creature.h"
 
+enum PetSpellState
+{
+    PETSPELL_UNCHANGED = 0,
+    PETSPELL_CHANGED   = 1,
+    PETSPELL_NEW       = 2,
+    PETSPELL_REMOVED   = 3
+};
+
+enum PetSpellType
+{
+    PETSPELL_NORMAL = 0,
+    PETSPELL_FAMILY = 1,
+    PETSPELL_TALENT = 2,
+};
+
+struct PetSpell
+{
+    ActiveStates active;
+    PetSpellState state;
+    PetSpellType type;
+};
+
+typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
+typedef std::vector<uint32> AutoSpellList;
+
 class TempSummon : public Creature
 {
     public:
@@ -70,7 +95,9 @@ class Guardian : public Minion
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         void InitStats(uint32 duration);
         bool InitStatsForLevel(uint8 level);
+        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
         void InitSummon();
+        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
@@ -84,6 +111,9 @@ class Guardian : public Minion
 
         int32 GetBonusDamage() { return m_bonusSpellDamage; }
         void SetBonusDamage(int32 damage);
+        PetSpellMap     m_spells;
+        AutoSpellList   m_autospells;
+
     protected:
         int32   m_bonusSpellDamage;
         float   m_statFromOwner[MAX_STATS];

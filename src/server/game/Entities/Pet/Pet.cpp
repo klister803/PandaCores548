@@ -1278,6 +1278,55 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     return true;
 }
 
+void Guardian::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
+{
+    if (!spellInfo->IsAutocastable())
+        return;
+
+    uint32 spellid = spellInfo->Id;
+
+    PetSpellMap::iterator itr = m_spells.find(spellid);
+    if (itr == m_spells.end())
+        return;
+
+    uint32 i;
+
+    if (apply)
+    {
+        for (i = 0; i < m_autospells.size() && m_autospells[i] != spellid; ++i)
+            ;                                               // just search
+
+        if (i == m_autospells.size())
+        {
+            m_autospells.push_back(spellid);
+
+            if (itr->second.active != ACT_ENABLED)
+            {
+                itr->second.active = ACT_ENABLED;
+                if (itr->second.state != PETSPELL_NEW)
+                    itr->second.state = PETSPELL_CHANGED;
+            }
+        }
+    }
+    else
+    {
+        AutoSpellList::iterator itr2 = m_autospells.begin();
+        for (i = 0; i < m_autospells.size() && m_autospells[i] != spellid; ++i, ++itr2)
+            ;                                               // just search
+
+        if (i < m_autospells.size())
+        {
+            m_autospells.erase(itr2);
+            if (itr->second.active != ACT_DISABLED)
+            {
+                itr->second.active = ACT_DISABLED;
+                if (itr->second.state != PETSPELL_NEW)
+                    itr->second.state = PETSPELL_CHANGED;
+            }
+        }
+    }
+}
+
 bool Pet::HaveInDiet(ItemTemplate const* item) const
 {
     if (item->SubClass != ITEM_SUBCLASS_FOOD_DRINK)
@@ -1744,6 +1793,60 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     return true;
 }
 
+bool Guardian::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpellState state /*= PETSPELL_NEW*/, PetSpellType type /*= PETSPELL_NORMAL*/)
+{
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Guardian::addSpell spellId %u, GetEntry %u", spellId, GetEntry());
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return false;
+
+    PetSpellMap::iterator itr = m_spells.find(spellId);
+    if (itr != m_spells.end())
+    {
+        if (itr->second.state == PETSPELL_REMOVED)
+        {
+            m_spells.erase(itr);
+            state = PETSPELL_CHANGED;
+        }
+        else if (state == PETSPELL_UNCHANGED && itr->second.state != PETSPELL_UNCHANGED)
+        {
+            // can be in case spell loading but learned at some previous spell loading
+            itr->second.state = PETSPELL_UNCHANGED;
+
+            if (active == ACT_ENABLED)
+                ToggleAutocast(spellInfo, true);
+            else if (active == ACT_DISABLED)
+                ToggleAutocast(spellInfo, false);
+
+            return false;
+        }
+        else
+            return false;
+    }
+
+    PetSpell newspell;
+    newspell.state = state;
+    newspell.type = type;
+
+    if (active == ACT_DECIDE)                               // active was not used before, so we save it's autocast/passive state here
+    {
+        if (spellInfo->IsAutocastable())
+            newspell.active = ACT_DISABLED;
+        else
+            newspell.active = ACT_PASSIVE;
+    }
+    else
+        newspell.active = active;
+
+    m_spells[spellId] = newspell;
+
+    if (newspell.active == ACT_ENABLED)
+        ToggleAutocast(spellInfo, true);
+
+    return true;
+}
+
 bool Pet::learnSpell(uint32 spell_id)
 {
     // prevent duplicated entires in spell book
@@ -1880,55 +1983,6 @@ void Pet::InitPetCreateSpells()
     InitLevelupSpellsForLevel();
 
     CastPetAuras(false);
-}
-
-void Pet::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
-{
-    if (!spellInfo->IsAutocastable())
-        return;
-
-    uint32 spellid = spellInfo->Id;
-
-    PetSpellMap::iterator itr = m_spells.find(spellid);
-    if (itr == m_spells.end())
-        return;
-
-    uint32 i;
-
-    if (apply)
-    {
-        for (i = 0; i < m_autospells.size() && m_autospells[i] != spellid; ++i)
-            ;                                               // just search
-
-        if (i == m_autospells.size())
-        {
-            m_autospells.push_back(spellid);
-
-            if (itr->second.active != ACT_ENABLED)
-            {
-                itr->second.active = ACT_ENABLED;
-                if (itr->second.state != PETSPELL_NEW)
-                    itr->second.state = PETSPELL_CHANGED;
-            }
-        }
-    }
-    else
-    {
-        AutoSpellList::iterator itr2 = m_autospells.begin();
-        for (i = 0; i < m_autospells.size() && m_autospells[i] != spellid; ++i, ++itr2)
-            ;                                               // just search
-
-        if (i < m_autospells.size())
-        {
-            m_autospells.erase(itr2);
-            if (itr->second.active != ACT_DISABLED)
-            {
-                itr->second.active = ACT_DISABLED;
-                if (itr->second.state != PETSPELL_NEW)
-                    itr->second.state = PETSPELL_CHANGED;
-            }
-        }
-    }
 }
 
 bool Pet::IsPermanentPetFor(Player* owner)

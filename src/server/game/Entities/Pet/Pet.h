@@ -30,28 +30,6 @@ enum PetType
     MAX_PET_TYPE            = 4,
 };
 
-enum PetSpellState
-{
-    PETSPELL_UNCHANGED = 0,
-    PETSPELL_CHANGED   = 1,
-    PETSPELL_NEW       = 2,
-    PETSPELL_REMOVED   = 3
-};
-
-enum PetSpellType
-{
-    PETSPELL_NORMAL = 0,
-    PETSPELL_FAMILY = 1,
-    PETSPELL_TALENT = 2,
-};
-
-struct PetSpell
-{
-    ActiveStates active;
-    PetSpellState state;
-    PetSpellType type;
-};
-
 enum ActionFeedback
 {
     FEEDBACK_NONE            = 0,
@@ -85,9 +63,6 @@ enum PetNameInvalidReason
     PET_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END   = 15,
     PET_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME              = 16
 };
-
-typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
-typedef std::vector<uint32> AutoSpellList;
 
 #define ACTIVE_SPELLS_MAX           4
 
@@ -157,8 +132,6 @@ class Pet : public Guardian
         void UpdateDamagePhysical(WeaponAttackType attType);
         */
 
-        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
-
         bool HasSpell(uint32 spell) const;
 
         void LearnPetPassives();
@@ -180,8 +153,6 @@ class Pet : public Guardian
         bool removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
         void CleanupActionBar();
 
-        PetSpellMap     m_spells;
-        AutoSpellList   m_autospells;
         bool            m_Stampeded;
 
         void InitPetCreateSpells();

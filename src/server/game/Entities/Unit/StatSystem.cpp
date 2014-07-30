@@ -1339,6 +1339,7 @@ void Guardian::UpdateMaxHealth()
         case ENTRY_SUCCUBUS:
         case ENTRY_FELHUNTER:
         case ENTRY_INFERNAL:
+        case ENTRY_DOOMGUARD:
             multiplicator = 0.4f;
             break;
         case ENTRY_VOIDWALKER:
@@ -1522,6 +1523,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
                 break;
             }
             case ENTRY_INFERNAL:
+            case ENTRY_TERRORGUARD:
+            case ENTRY_DOOMGUARD:
             case ENTRY_ABYSSAL:
             case ENTRY_EARTH_ELEMENTAL: //Earth Elemental Totem
             {
