@@ -491,6 +491,8 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
     }
 
     Item* item = player->GetMItem(itemId);
+    if(!item)
+        return;
     item->SetOwnerGUID(player->GetGUID());
     ItemPosCountVec dest;
     uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);
