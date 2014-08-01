@@ -456,8 +456,8 @@ enum Opcodes
     CMSG_REQUEST_PARTY_MEMBER_STATS                   = 0x0841, // 5.4.1 17538
     CMSG_REQUEST_PET_INFO                             = 0x037C, // 5.4.1 17538
     CMSG_REQUEST_PVP_OPTIONS_ENABLED                  = 0x0069, // 5.4.1 17538
-    CMSG_REQUEST_PVP_REWARDS                          = 0x05E5, // 5.4.1 17538 5.0.5 - wrong
-    CMSG_REQUEST_RAID_INFO                            = 0x17FF, // 5.4.1 17538 5.0.5 - wrong
+    CMSG_REQUEST_PVP_REWARDS                          = 0x17FF, // 5.4.1 17538 5.0.5 - wrong
+    CMSG_REQUEST_RAID_INFO                            = 0x05E5, // 5.4.1 17538 5.0.5 - wrong
     CMSG_REQUEST_RATED_INFO                           = 0x0DE9, // 5.4.1 17538
     CMSG_REQUEST_RATED_BG_STATS                       = 0,      // 5.4.1 17538 obsolete
     CMSG_REQUEST_RESEARCH_HISTORY                     = 0x16D5, // 5.4.1 17538

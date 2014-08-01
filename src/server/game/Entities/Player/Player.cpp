@@ -25083,6 +25083,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     // SMSG_0x010E
     // SMSG_ACCOUNT_CRITERIA_UPDATE
+    SendPvpRatedStats();
 
     // First obj create should be with dynamic data
     if (GetSkillValue(SKILL_ARCHAEOLOGY) && sWorld->getBoolConfig(CONFIG_ARCHAEOLOGY_ENABLED))
