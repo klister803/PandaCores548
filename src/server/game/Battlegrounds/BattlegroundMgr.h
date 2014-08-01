@@ -131,6 +131,8 @@ class BattlegroundMgr
         void ToggleTesting();
 
         void SetHolidayWeekends(std::list<uint32> activeHolidayId);
+        void FillHolidayWorldStates(WorldPacket &data);
+        void SetHolidayWorldState(uint32 state) { holidayWS = state; }
         void LoadBattleMastersEntry();
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
         {
@@ -169,6 +171,7 @@ class BattlegroundMgr
         uint32 m_NextRatedArenaUpdate;
         bool   m_ArenaTesting;
         bool   m_Testing;
+        uint32 holidayWS;       //currend Call to Arms
 };
 
 #define sBattlegroundMgr ACE_Singleton<BattlegroundMgr, ACE_Null_Mutex>::instance()

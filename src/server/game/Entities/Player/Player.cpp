@@ -10737,6 +10737,9 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
     if (Battlefield *bf = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_TB))
         bf->FillInitialWorldStates(data);
 
+    // Current Call to Arms event
+    sBattlegroundMgr->FillHolidayWorldStates(data);
+
     if (mapid == 530)                                       // Outland
     {
         FillInitialWorldState(data, 0x9bf, 0x0);               // 7

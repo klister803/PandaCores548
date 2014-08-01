@@ -62,7 +62,8 @@ BattlegroundMgr::BattlegroundMgr() : m_ArenaTesting(false)
     for (uint32 i = BATTLEGROUND_TYPE_NONE; i < MAX_BATTLEGROUND_TYPE_ID; i++)
         m_Battlegrounds[i].clear();
     m_NextRatedArenaUpdate = sWorld->getIntConfig(CONFIG_ARENA_RATED_UPDATE_TIMER);
-    m_Testing=false;
+    m_Testing = false;
+    holidayWS = 0;
 }
 
 BattlegroundMgr::~BattlegroundMgr()
@@ -1383,6 +1384,14 @@ void BattlegroundMgr::SetHolidayWeekends(std::list<uint32> activeHolidayId)
             bg->SetHoliday(holidayActivate);
         }
     }
+}
+
+void BattlegroundMgr::FillHolidayWorldStates(WorldPacket &data)
+{
+    if (!holidayWS)
+        return;
+
+    FillInitialWorldState(data, holidayWS, 1);
 }
 
 void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
