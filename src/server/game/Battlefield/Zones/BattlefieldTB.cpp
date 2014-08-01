@@ -106,7 +106,8 @@ bool BattlefieldTB::SetupBattlefield()
         BuildingsInZone.insert(b);
     }
 
-    for (uint8 i = 0; i < 21; i++)
+    for (uint8 i = 0; i < 4; i++)
+    {
         if (Creature* creature = SpawnCreature(QuestGivers[i].entrya, QuestGivers[i].x, QuestGivers[i].y, QuestGivers[i].z, QuestGivers[i].o, TEAM_ALLIANCE))
         {
             HideNpc(creature);
@@ -114,21 +115,21 @@ bool BattlefieldTB::SetupBattlefield()
             questgiversA.insert(creature->GetObjectGuid());
         }
 
-    for (uint8 i = 0; i < 21; i++)
         if (Creature* creature = SpawnCreature(QuestGivers[i].entryh, QuestGivers[i].x, QuestGivers[i].y, QuestGivers[i].z, QuestGivers[i].o, TEAM_HORDE))
         {
             HideNpc(creature);
             creature->setFaction(TolBaradFaction[TEAM_HORDE]);
             questgiversH.insert(creature->GetObjectGuid());
         }
+    }
 
     uint32 a = 0;
     uint32 b = 0;
     genNumbers(a, b);
 
     uint32 i = 0;
-    GuidSet questgivers = (GetDefenderTeam() == TEAM_ALLIANCE ? questgiversA : questgiversH);
-    for (GuidSet::const_iterator itr = questgivers.begin(); itr != questgivers.end(); ++itr)
+    GuidSet qs = (GetDefenderTeam() == TEAM_ALLIANCE ? questgiversA : questgiversH);
+    for (GuidSet::const_iterator itr = qs.begin(); itr != qs.end(); ++itr)
     {
         ++i;
         if (a == i || b == i)
@@ -139,20 +140,6 @@ bool BattlefieldTB::SetupBattlefield()
                 ShowNpc(creature, true);
         }
     }
-
-    for (uint8 i = 0; i < 23; i++)
-        if (Creature* creature = SpawnCreature(AllianceSpawnNPC[i].entrya, AllianceSpawnNPC[i].x, AllianceSpawnNPC[i].y, AllianceSpawnNPC[i].z, AllianceSpawnNPC[i].o, TEAM_ALLIANCE))
-        {
-            creature->setFaction(TolBaradFaction[TEAM_ALLIANCE]);
-            npcAlliance.insert(creature->GetObjectGuid());
-        }
-
-    for (uint8 i = 0; i < 23; i++)
-        if (Creature* creature = SpawnCreature(HordeSpawnNPC[i].entrya, HordeSpawnNPC[i].x, HordeSpawnNPC[i].y, HordeSpawnNPC[i].z, HordeSpawnNPC[i].o, TEAM_HORDE))
-        {
-            creature->setFaction(TolBaradFaction[TEAM_HORDE]);
-            npcHorde.insert(creature->GetObjectGuid());
-        }
 
     for (uint8 i = 0; i < 3; i++)
         if (GameObject* go = SpawnGameObject(TBGameobjectsDoor[i].entrya, TBGameobjectsDoor[i].x, TBGameobjectsDoor[i].y, TBGameobjectsDoor[i].z, TBGameobjectsDoor[i].o))
@@ -245,6 +232,8 @@ bool BattlefieldTB::Update(uint32 diff)
 void BattlefieldTB::OnPlayerJoinWar(Player* player)
 {
     player->RemoveAurasDueToSpell(SPELL_PHASE_TB_NON_BATTLE);
+    player->RemoveAurasDueToSpell(SPELL_PHASE_HORDE_CONTROL);
+    player->RemoveAurasDueToSpell(SPELL_PHASE_ALLIANCE_CONTROL);
 
     bool onTb = player->GetZoneId() == m_ZoneId; 
     // resurect dead plr
@@ -271,12 +260,17 @@ void BattlefieldTB::OnPlayerLeaveWar(Player* player)
 void BattlefieldTB::OnPlayerEnterZone(Player* player)
 {
     if (!IsWarTime())
+    {
         player->AddAura(SPELL_PHASE_TB_NON_BATTLE, player);
+        player->AddAura(GetDefenderTeam() == TEAM_ALLIANCE ? SPELL_PHASE_ALLIANCE_CONTROL : SPELL_PHASE_HORDE_CONTROL, player);
+    }
 }
 
 void BattlefieldTB::OnPlayerLeaveZone(Player* player)
 {
     player->RemoveAurasDueToSpell(SPELL_PHASE_TB_NON_BATTLE);
+    player->RemoveAurasDueToSpell(SPELL_PHASE_ALLIANCE_CONTROL);
+    player->RemoveAurasDueToSpell(SPELL_PHASE_HORDE_CONTROL);
     player->RemoveAurasDueToSpell(SPELL_TB_SPIRITUAL_IMMUNITY);
     player->RemoveAurasDueToSpell(SPELL_TB_VETERAN);
 }
@@ -318,16 +312,6 @@ void BattlefieldTB::OnBattleStart()
         else
             m_GraveyardList[i]->GiveControlTo(GetAttackerTeam());
     }
-
-    for (GuidSet::const_iterator itr = npcAlliance.begin(); itr != npcAlliance.end(); ++itr)
-        if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-            if (Creature* creature = unit->ToCreature())
-                HideNpc(creature);
-
-    for (GuidSet::const_iterator itr = npcHorde.begin(); itr != npcHorde.end(); ++itr)
-        if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-            if (Creature* creature = unit->ToCreature())
-                HideNpc(creature);
 
     for (GuidSet::const_iterator itr = goDoors.begin(); itr != goDoors.end(); ++itr)
     {
@@ -416,31 +400,6 @@ void BattlefieldTB::OnBattleEnd(bool endbytimer)
     for (uint8 i = 0; i < BATTLEFIELD_TB_GY_MAX; i++)
         m_GraveyardList[i]->GiveControlTo(GetDefenderTeam());
 
-    if (GetDefenderTeam() == TEAM_ALLIANCE)
-    {
-        for (GuidSet::const_iterator itr = npcAlliance.begin(); itr != npcAlliance.end(); ++itr)
-            if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-                if (Creature* creature = unit->ToCreature())
-                    HideNpc(creature);
-
-        for (GuidSet::const_iterator itr = npcHorde.begin(); itr != npcHorde.end(); ++itr)
-            if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-                if (Creature* creature = unit->ToCreature())
-                    ShowNpc(creature, true);
-    }
-    else if (GetDefenderTeam() == TEAM_HORDE)
-    {
-        for (GuidSet::const_iterator itr = npcAlliance.begin(); itr != npcAlliance.end(); ++itr)
-            if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-                if (Creature* creature = unit->ToCreature())
-                    ShowNpc(creature, true);
-
-        for (GuidSet::const_iterator itr = npcHorde.begin(); itr != npcHorde.end(); ++itr)
-            if (Unit* unit = sObjectAccessor->FindUnit(*itr))
-                if (Creature* creature = unit->ToCreature())
-                    HideNpc(creature);
-    }
-
     for (GuidSet::const_iterator itr = goDoors.begin(); itr != goDoors.end(); ++itr)
     {
         if (GameObject* obj = ObjectAccessor::GetObjectInWorld(*itr, (GameObject*)NULL))
@@ -474,8 +433,8 @@ void BattlefieldTB::OnBattleEnd(bool endbytimer)
     genNumbers(a, b);
 
     uint32 i = 0;
-    GuidSet questgivers = (GetDefenderTeam() == TEAM_ALLIANCE ? questgiversA : questgiversH);
-    for (GuidSet::const_iterator itr = questgivers.begin(); itr != questgivers.end(); ++itr)
+    GuidSet qs = (GetDefenderTeam() == TEAM_ALLIANCE ? questgiversA : questgiversH);
+    for (GuidSet::const_iterator itr = qs.begin(); itr != qs.end(); ++itr)
     {
         ++i;
 
@@ -497,6 +456,8 @@ void BattlefieldTB::OnBattleEnd(bool endbytimer)
             if (Player* plr = ObjectAccessor::FindPlayer(*itr))
             {
                 plr->AddAura(SPELL_PHASE_TB_NON_BATTLE, plr);
+                plr->AddAura(GetDefenderTeam() == TEAM_ALLIANCE ? SPELL_PHASE_ALLIANCE_CONTROL : SPELL_PHASE_HORDE_CONTROL, plr);
+
                 plr->RemoveAurasDueToSpell(SPELL_TB_VETERAN);
 
                 if (endbytimer)
