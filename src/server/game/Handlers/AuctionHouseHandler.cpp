@@ -312,14 +312,6 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             _player->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-            // remove owner from item.
-            item->SetOwnerGUID(0);
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_OWNER);
-            stmt->setUInt32(0, 0);
-            stmt->setUInt32(1, item->GetGUIDLow());
-            trans->Append(stmt);
-
             item->DeleteFromInventoryDB(trans);
             item->SaveToDB(trans);
             AH->SaveToDB(trans);
@@ -340,9 +332,6 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
                 return;
             }
-
-            // should not have owner.
-            newItem->SetOwnerGUID(0);
 
             if (GetSecurity() > SEC_PLAYER && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
             {

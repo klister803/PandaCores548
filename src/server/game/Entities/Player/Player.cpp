@@ -80,6 +80,7 @@
 #include "TicketMgr.h"
 #include "Bracket.h"
 #include "BracketMgr.h"
+#include "AuctionHouseMgr.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -19539,6 +19540,13 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
         do
         {
             Field* fields = result->Fetch();
+
+            uint32 itemGuid  = fields[16].GetUInt32();
+
+            //item on auction
+            if (sAuctionMgr->GetAItem(itemGuid))
+                continue;
+
             if (Item* item = _LoadItem(trans, zoneId, timeDiff, fields))
             {
                 uint32 bagGuid  = fields[14].GetUInt32();
@@ -19548,11 +19556,16 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                 // Item is not in bag
                 if (!bagGuid)
                 {
+                    uint32 iGUIDfromInv = fields[18].GetUInt32();
+
                     item->SetContainer(NULL);
                     item->SetSlot(slot);
 
                     // check for already equiped item
                     if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                        err = EQUIP_ERR_ITEM_MAX_COUNT;
+                    // as at lost link item has 0 slot 0 bag this mean EQUIPMENT_SLOT_HEAD so could be stack with this slot
+                    if (!iGUIDfromInv)  
                         err = EQUIP_ERR_ITEM_MAX_COUNT;
 
                     if (err == EQUIP_ERR_OK)
@@ -19615,6 +19628,8 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                         sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which doesnt have a valid bag (Bag GUID: %u, slot: %u). Possible cheat?",
                             GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot);
                         item->DeleteFromInventoryDB(trans);
+                        RemoveItemDurations(item);
+                        RemoveTradeableItem(item);
                         delete item;
                         continue;
                     }
@@ -19629,6 +19644,8 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                     sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadInventory: player (GUID: %u, name: '%s') has item (GUID: %u, entry: %u) which can't be loaded into inventory (Bag GUID: %u, slot: %u) by reason %u. Item will be sent by mail.",
                         GetGUIDLow(), GetName(), item->GetGUIDLow(), item->GetEntry(), bagGuid, slot, err);
                     item->DeleteFromInventoryDB(trans);
+                    RemoveItemDurations(item);
+                    RemoveTradeableItem(item);
                     problematicItems.push_back(item);
                 }
             }
