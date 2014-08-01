@@ -458,6 +458,7 @@ void Battlefield::PlayerAcceptInviteToWar(Player* player)
         if (player->isAFK())
             player->ToggleAFK();
 
+        player->SetPvP(true);
         OnPlayerJoinWar(player);                               //for scripting
     }
 }
@@ -565,7 +566,7 @@ void Battlefield::HideNpc(Creature* creature)
 
 void Battlefield::ShowNpc(Creature* creature, bool aggressive)
 {
-    creature->SetPhaseMask(49, true);
+    creature->SetPhaseMask(305, true);
     creature->SetVisible(true);
     creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if (!creature->isAlive())
@@ -630,6 +631,16 @@ bool Battlefield::AddOrSetPlayerToCorrectBfGroup(Player* player)
         group->AddMember(player);
 
     return true;
+}
+
+void Battlefield::OnPlayerLeaveWar(Player* player)
+{
+    if (Group *group = GetGroupPlayer(player->GetGUID(), player->GetTeamId()))
+    {
+        uint64 gGUID = group->GetGUID();
+        if (!group->RemoveMember(player->GetGUID()))                // group was disbanded
+            m_Groups[player->GetTeamId()].erase(gGUID);
+    }
 }
 
 //***************End of Group System*******************
@@ -901,7 +912,7 @@ Creature* Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, fl
 GameObject* Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z, float o)
 {
     // Get map object
-    Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(571)); // *vomits*
+    Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(m_MapId)); // *vomits*
     if (!map)
         return 0;
 
@@ -921,6 +932,14 @@ GameObject* Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z
     go->setActive(true);
 
     return go;
+}
+
+void Battlefield::SendInitWorldStatesToAll()
+{
+    for (uint8 team = 0; team < 2; team++)
+        for (GuidSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
+            if (Player* player = sObjectAccessor->FindPlayer(*itr))
+                player->SendInitWorldStates(m_ZoneId, m_ZoneId);
 }
 
 // *******************************************************
@@ -1038,7 +1057,6 @@ bool BfCapturePoint::Update(uint32 diff)
         return false;
 
     float radius = m_capturePoint->GetGOInfo()->capturePoint.radius;
-
     for (uint8 team = 0; team < 2; ++team)
     {
         for (GuidSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end();)

@@ -284,24 +284,12 @@ void BattlefieldWG::OnBattleStart()
         if (*itr)
             (*itr)->UpdateGraveyardAndWorkshop();
 
-    for (uint8 team = 0; team < 2; ++team)
-        for (GuidSet::const_iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-        {
-            // Kick player in orb room, TODO: offline player ?
-            if (Player* player = sObjectAccessor->FindPlayer(*itr))
-            {
-                //Do it in other place
-                //float x, y, z;
-                //player->GetPosition(x, y, z);
-                //if (5500 > x && x > 5392 && y < 2880 && y > 2800 && z < 480)
-                //    player->TeleportTo(571, 5349.8686f, 2838.481f, 409.240f, 0.046328f);
-                SendInitWorldStatesTo(player);
-            }
-        }
     // Initialize vehicle counter
     UpdateCounterVehicle(true);
     // Send start warning to all players
     SendWarningToAllInZone(BATTLEFIELD_WG_TEXT_START);
+
+    SendInitWorldStatesToAll();
 }
 
 void BattlefieldWG::UpdateCounterVehicle(bool init)
@@ -915,11 +903,6 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
         if (GetData(BATTLEFIELD_WG_DATA_BROKEN_TOWER_ATT) > 0)
            player->SetAuraStack(SPELL_TOWER_CONTROL, player, GetData(BATTLEFIELD_WG_DATA_BROKEN_TOWER_ATT));
     }
-
-    if (!IsWarTime())
-        player->AddAura(SPELL_PHASE_NON_BATTLE, player);
-
-    SendInitWorldStatesTo(player);
 }
 
 void BattlefieldWG::OnPlayerLeaveWar(Player* player)
@@ -936,6 +919,8 @@ void BattlefieldWG::OnPlayerLeaveWar(Player* player)
     player->RemoveAurasDueToSpell(SPELL_ALLIANCE_CONTROLS_FACTORY_PHASE_SHIFT);
     player->RemoveAurasDueToSpell(SPELL_HORDE_CONTROL_PHASE_SHIFT);
     player->RemoveAurasDueToSpell(SPELL_ALLIANCE_CONTROL_PHASE_SHIFT);
+
+    Battlefield::OnPlayerLeaveWar(player);
 }
 
 void BattlefieldWG::OnPlayerLeaveZone(Player* player)
@@ -954,9 +939,10 @@ void BattlefieldWG::OnPlayerEnterZone(Player* player)
     if (!m_isActive)
         RemoveAurasFromPlayer(player);
 
+    if (!IsWarTime())
+        player->AddAura(SPELL_PHASE_NON_BATTLE, player);
+
     player->AddAura(m_DefenderTeam == TEAM_HORDE ? SPELL_HORDE_CONTROL_PHASE_SHIFT : SPELL_ALLIANCE_CONTROL_PHASE_SHIFT, player);
-    // Send worldstate to player
-    SendInitWorldStatesTo(player);
 }
 
 uint32 BattlefieldWG::GetData(uint32 data)
@@ -981,19 +967,8 @@ uint32 BattlefieldWG::GetData(uint32 data)
 }
 
 // Method sending worldsate to player
-WorldPacket BattlefieldWG::BuildInitWorldStates()
+void BattlefieldWG::FillInitialWorldStates(WorldPacket &data)
 {
-    WorldPacket data(SMSG_INIT_WORLD_STATES, (4 + 4 + 4 + 2 + (BuildingsInZone.size() * 8) + (WorkshopsList.size() * 8)));
-
-    data << uint32(m_ZoneId);
-    data << uint32(0);
-    data << uint32(m_MapId);
-
-    uint32 bpos = data.bitwpos();
-    data.WriteBits(4 + 2 + 4 + BuildingsInZone.size() + WorkshopsList.size(), 21);
-    data.FlushBits();
-    size_t countPos = data.wpos();
-
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_ATTACKER, GetAttackerTeam());
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_DEFENDER, GetDefenderTeam());
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_ACTIVE, IsWarTime()? 0 : 1); // Note: cleanup these two, their names look awkward
@@ -1013,25 +988,6 @@ WorldPacket BattlefieldWG::BuildInitWorldStates()
     for (Workshop::const_iterator itr = WorkshopsList.begin(); itr != WorkshopsList.end(); ++itr)
         if (*itr)
             FillInitialWorldState(data, WorkshopsData[(*itr)->workshopId].worldstate, (*itr)->state);
-
-    uint16 length = (data.wpos() - countPos) / 8;
-    data.PutBits<uint32>(bpos, length, 21);
-    return data;
-}
-
-void BattlefieldWG::SendInitWorldStatesTo(Player* player)
-{
-    WorldPacket data = BuildInitWorldStates();
-    player->GetSession()->SendPacket(&data);
-}
-
-void BattlefieldWG::SendInitWorldStatesToAll()
-{
-    WorldPacket data = BuildInitWorldStates();
-    for (uint8 team = 0; team < 2; team++)
-        for (GuidSet::iterator itr = m_players[team].begin(); itr != m_players[team].end(); ++itr)
-            if (Player* player = sObjectAccessor->FindPlayer(*itr))
-                player->GetSession()->SendPacket(&data);
 }
 
 void BattlefieldWG::BrokenWallOrTower(TeamId team)

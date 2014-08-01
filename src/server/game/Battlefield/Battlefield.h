@@ -30,12 +30,13 @@
 enum BattlefieldTypes
 {
     BATTLEFIELD_WG = 1,                                         // Wintergrasp
-    BATTLEFIELD_TB = 2,                                         // Tol Barad (cataclysm)
+    BATTLEFIELD_TB = 21,                                        // Tol Barad (cataclysm)
 };
 
 enum BattlefieldIDs
 {
     BATTLEFIELD_BATTLEID_WG                      = 1,       // Wintergrasp battle
+    BATTLEFIELD_BATTLEID_TB                      = 2        // Tol Barad battle
 };
 
 enum BattlefieldObjectiveStates
@@ -316,7 +317,7 @@ class Battlefield : public ZoneScript
         /// Called when a player accept to join the battle
         virtual void OnPlayerJoinWar(Player* /*player*/) {};
         /// Called when a player leave the battle
-        virtual void OnPlayerLeaveWar(Player* /*player*/) {};
+        virtual void OnPlayerLeaveWar(Player* /*player*/);
         /// Called when a player leave battlefield zone
         virtual void OnPlayerLeaveZone(Player* /*player*/) {};
         /// Called when a player enter in battlefield zone
@@ -335,7 +336,7 @@ class Battlefield : public ZoneScript
         virtual void DoCompleteOrIncrementAchievement(uint32 /*achievement*/, Player* /*player*/, uint8 /*incrementNumber = 1*/) {};
 
         /// Send all worldstate data to all player in zone.
-        virtual void SendInitWorldStatesToAll() {};
+        void SendInitWorldStatesToAll();
 
         /// Return if we can use mount in battlefield
         bool CanFlyIn() { return !m_isActive; }

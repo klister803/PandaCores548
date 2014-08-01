@@ -10726,6 +10726,16 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
     FillInitialWorldState(data, 0xC77, sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
                                                             // 8 Arena season id
     FillInitialWorldState(data, 0xF3D, sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
+                                                            // 9 Rated BG
+    FillInitialWorldState(data, 0x1584, sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
+
+    // Send Init states for WinterGrasp
+    if (Battlefield *bf = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG))
+        bf->FillInitialWorldStates(data);
+
+    // Send Init states for Tol Barad
+    if (Battlefield *bf = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_TB))
+        bf->FillInitialWorldStates(data);
 
     if (mapid == 530)                                       // Outland
     {
