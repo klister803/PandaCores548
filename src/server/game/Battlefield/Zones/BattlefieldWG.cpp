@@ -974,8 +974,8 @@ void BattlefieldWG::FillInitialWorldStates(WorldPacket &data)
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_ACTIVE, IsWarTime()? 0 : 1); // Note: cleanup these two, their names look awkward
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_SHOW_WORLDSTATE, IsWarTime() ? 1 : 0);
 
-    for (uint32 i = 0; i < 2; ++i)
-        FillInitialWorldState(data, ClockWorldState[i], uint32(time(NULL) + (m_Timer / 1000)));
+    FillInitialWorldState(data, ClockWorldState[0], IsWarTime() ? (uint32(time(NULL) + (m_Timer / 1000))) : 0);
+    FillInitialWorldState(data, ClockWorldState[1], !IsWarTime() ? (uint32(time(NULL) + (m_Timer / 1000))) : 0);
 
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_VEHICLE_H, GetData(BATTLEFIELD_WG_DATA_VEHICLE_H));
     FillInitialWorldState(data, BATTLEFIELD_WG_WORLD_STATE_MAX_VEHICLE_H, GetData(BATTLEFIELD_WG_DATA_MAX_VEHICLE_H));
