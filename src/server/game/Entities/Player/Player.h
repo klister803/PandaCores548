@@ -3146,7 +3146,7 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
         bool isWatchingMovie() const { return m_watching_movie; }
         void setWatchinMovie(bool s) { m_watching_movie = s; }
-
+        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

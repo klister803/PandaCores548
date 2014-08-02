@@ -1600,49 +1600,9 @@ struct WGWorkshop
         workshopId = _workshopId;
     }
 
-    void GiveControlTo(uint8 team, bool init /* for first call in setup*/)
-    {
-        switch (team)
-        {
-            case BATTLEFIELD_WG_TEAM_NEUTRAL:
-            {
-                // Send warning message to all player to inform a faction attack to a workshop
-                // alliance / horde attacking a workshop
-                bf->SendWarningToAllInZone(teamControl ? WorkshopsData[workshopId].text : WorkshopsData[workshopId].text + 1);
-                break;
-            }
-            case BATTLEFIELD_WG_TEAM_ALLIANCE:
-            case BATTLEFIELD_WG_TEAM_HORDE:
-            {
-                // Updating worldstate
-                state = team == BATTLEFIELD_WG_TEAM_ALLIANCE ? BATTLEFIELD_WG_OBJECTSTATE_ALLIANCE_INTACT : BATTLEFIELD_WG_OBJECTSTATE_HORDE_INTACT;
-                bf->SendUpdateWorldState(WorkshopsData[workshopId].worldstate, state);
+    void GiveControlTo(uint8 team, bool init /* for first call in setup*/);
 
-                // Warning message
-                if (!init)                              // workshop taken - alliance
-                    bf->SendWarningToAllInZone(team == BATTLEFIELD_WG_TEAM_ALLIANCE ? WorkshopsData[workshopId].text : WorkshopsData[workshopId].text+1);
-
-                // Found associate graveyard and update it
-                if (workshopId < BATTLEFIELD_WG_WORKSHOP_KEEP_WEST)
-                    if (bf->GetGraveyardById(workshopId))
-                        bf->GetGraveyardById(workshopId)->GiveControlTo(team == BATTLEFIELD_WG_TEAM_ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE);
-
-                teamControl = team;
-                break;
-            }
-        }
-
-        if (!init)
-            bf->UpdateCounterVehicle(false);
-    }
-
-    void UpdateGraveyardAndWorkshop()
-    {
-        if (workshopId < BATTLEFIELD_WG_WORKSHOP_KEEP_WEST)
-            bf->GetGraveyardById(workshopId)->GiveControlTo(bf->GetAttackerTeam());
-        else
-            GiveControlTo(bf->GetDefenderTeam(), true);
-    }
+    void UpdateGraveyardAndWorkshop();
 
     void Save()
     {

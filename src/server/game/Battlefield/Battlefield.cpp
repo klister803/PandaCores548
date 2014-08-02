@@ -654,16 +654,11 @@ void Battlefield::OnPlayerLeaveWar(Player* player)
 //--------------------
 BfGraveyard* Battlefield::GetGraveyardById(uint32 id)
 {
-    if (id < m_GraveyardList.size())
-    {
-        if (m_GraveyardList[id])
-            return m_GraveyardList[id];
-        else
-            sLog->outError(LOG_FILTER_BATTLEFIELD, "Battlefield::GetGraveyardById Id:%u not existed", id);
-    }
-    else
-        sLog->outError(LOG_FILTER_BATTLEFIELD, "Battlefield::GetGraveyardById Id:%u cant be found", id);
-
+    for (GraveyardVect::iterator itr = m_GraveyardList.begin(); itr != m_GraveyardList.end(); ++itr)
+        if ((*itr) && (*itr)->GetTypeId() == id)
+            return *itr;
+    
+    sLog->outError(LOG_FILTER_BATTLEFIELD, "Battlefield::GetGraveyardById Id:%u cant be found", id);
     return NULL;
 }
 
@@ -1202,7 +1197,14 @@ bool BfCapturePoint::Update(uint32 diff)
     {
         //sLog->outError(LOG_FILTER_BATTLEFIELD, "%u->%u", m_OldState, m_State);
         if (oldTeam != m_team)
+        {
             ChangeTeam(oldTeam);
+
+            for (uint8 team = 0; team < 2; ++team)
+                for (GuidSet::iterator itr = m_activePlayers[team].begin(); itr != m_activePlayers[team].end(); ++itr)
+                    if (Player* player = ObjectAccessor::FindPlayer(*itr))
+                        player->UpdateAreaDependentAuras(player->getCurrentUpdateAreaID());
+        }
         return true;
     }
 
