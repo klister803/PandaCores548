@@ -1325,7 +1325,7 @@ bool Item::CanTransmogrifyItemWithItem(Item const* transmogrified, Item const* t
         proto1->InventoryType == INVTYPE_QUIVER)
         return false;
 
-    if (proto1->SubClass != proto2->SubClass && (proto1->Class != ITEM_CLASS_WEAPON || !proto2->IsRangedWeapon() || !proto1->IsRangedWeapon()))
+    if (proto1->Class == ITEM_CLASS_ARMOR && proto1->SubClass != proto2->SubClass && proto1->SubClass != ITEM_SUBCLASS_ARMOR_COSMETIC)
         return false;
 
     if ((proto1->InventoryType != proto2->InventoryType && !((proto1->InventoryType == INVTYPE_RANGED && proto2->InventoryType == INVTYPE_RANGEDRIGHT) || (proto1->InventoryType == INVTYPE_RANGEDRIGHT && proto2->InventoryType == INVTYPE_RANGED))) &&
