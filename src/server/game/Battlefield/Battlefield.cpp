@@ -942,6 +942,46 @@ void Battlefield::SendInitWorldStatesToAll()
                 player->SendInitWorldStates(m_ZoneId, m_ZoneId);
 }
 
+bool Battlefield::IncrementQuest(Player *player, uint32 quest, bool complete)
+{
+    if (!player)
+        return false;
+
+    Quest const* pQuest = sObjectMgr->GetQuestTemplate(quest);
+
+    if (!pQuest || player->GetQuestStatus(quest) == QUEST_STATUS_NONE)
+        return false;
+
+    if (complete)
+    {
+        player->CompleteQuest(quest);
+        return true;
+    }
+    else
+    {
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        {
+            int32 creature = pQuest->RequiredNpcOrGo[i];
+            if (uint32 spell_id = pQuest->GetRequiredSpell())
+            {
+                player->CastedCreatureOrGO(creature, 0, spell_id);
+                return true;
+            }
+            else if (creature > 0)
+            {
+                player->KilledMonsterCredit(creature, 0);
+                return true;
+            }
+            else if (creature < 0)
+            {
+                player->CastedCreatureOrGO(creature, 0, 0);
+                return true;
+            }
+            return true;
+        }
+    }
+    return false;
+}
 // *******************************************************
 // ******************* CapturePoint **********************
 // *******************************************************

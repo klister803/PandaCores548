@@ -338,6 +338,9 @@ class Battlefield : public ZoneScript
         /// Send all worldstate data to all player in zone.
         void SendInitWorldStatesToAll();
 
+        ///
+        bool IncrementQuest(Player *player, uint32 quest, bool complete = false);
+
         /// Return if we can use mount in battlefield
         bool CanFlyIn() { return !m_isActive; }
 

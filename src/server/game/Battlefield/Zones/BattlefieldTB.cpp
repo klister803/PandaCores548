@@ -468,11 +468,11 @@ void BattlefieldTB::OnBattleEnd(bool endbytimer)
                         {
                             case TEAM_ALLIANCE:
                                 plr->CastSpell(plr, SPELL_TB_VICTORY_REWARD_ALLIANCE, true);
-                                //IncrementQuest(plr, 28882, true);
+                                IncrementQuest(plr, 28882, true);
                             break;
                             case TEAM_HORDE:
                                 plr->CastSpell(plr, SPELL_TB_VICTORY_REWARD_HORDE, true);
-                                //IncrementQuest(plr, 28884, true);
+                                IncrementQuest(plr, 28884, true);
                             break;
                         }
                         if (m_Data32[BATTLEFIELD_TB_DATA_DESTROYED] == 0)
@@ -483,10 +483,10 @@ void BattlefieldTB::OnBattleEnd(bool endbytimer)
                         switch (plr->GetTeamId())
                         {
                             case TEAM_ALLIANCE:
-                                //IncrementQuest(plr, 28882, true);
+                                IncrementQuest(plr, 28882, true);
                             break;
                             case TEAM_HORDE:
-                                //IncrementQuest(plr, 28884, true);
+                                IncrementQuest(plr, 28884, true);
                             break;
                         }
                         plr->CastSpell(plr, SPELL_TB_LOOSER_REWARD, true);
