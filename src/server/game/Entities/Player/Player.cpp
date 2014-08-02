@@ -13730,6 +13730,16 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                 CastSpell(this, trigger, true);
 
             ToPlayer()->UpdateRating(CR_HASTE_MELEE);
+
+            for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            {
+                if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                    continue;
+
+                (*itr)->RemoveAurasDueToSpell(120275);
+                (*itr)->RemoveAurasDueToSpell(108977);
+                (*itr)->AddAura(trigger, (*itr));
+            }
         }
     }
     // Assassin's Resolve - 84601

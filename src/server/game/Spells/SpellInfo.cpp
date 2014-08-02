@@ -2821,6 +2821,12 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
             if (Id == 119049)       // Kil'jaeden's Cunning
                 return true;
             break;
+        case SPELLFAMILY_MONK:
+        {
+            if (Id == 137639) // Storm, Earth and Fire
+                return true;
+            break;
+        }
         default:
             break;
     }

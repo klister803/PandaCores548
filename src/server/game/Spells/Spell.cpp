@@ -1301,6 +1301,13 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 120086: // Fists of Fury (stun)
+                    {
+                        for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
+                            if ((*itr)->HasAura(m_spellInfo->Id))
+                                itr = unitTargets.erase(itr);
+                        break;
+                    }
                     case 116670: // Uplift
                     {
                         for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)

@@ -713,36 +713,34 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_MONK:
             {
+                Unit* _caster = m_caster;
+
+                if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                    _caster = m_caster->GetOwner();
+
                 switch (m_spellInfo->Id)
                 {
                     // Custom MoP script
                     case 117418: // Fists of Fury
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 6.0f, 0.477f, 7);
+                        damage = CalculateMonkSpellDamage(_caster, 6.0f, 0.477f, 7);
                         break;
                     case 100780: // Jab
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 108557: // Jab (Staff)
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115698: // Jab (Polearm)
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115687: // Jab (Axes)
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115693: // Jab (Maces)
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115695: // Jab (Swords)
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.348f, 0.107f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.348f, 0.107f, 2);
                         break;
                     case 115080: // Touch of Death
                         if (Unit* caster = GetCaster())
@@ -750,29 +748,23 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                                 m_caster->DealDamage(victim, victim->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         return;
                     case 100787: // Tiger Palm
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 2.697f, 0.214f, 3);
+                        damage = CalculateMonkSpellDamage(_caster, 2.697f, 0.214f, 3);
                         break;
                     case 107270: // Spinning Crane Kick
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 1.573f, 0.125f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 1.573f, 0.125f, 2);
                         break;
                     case 107428: // Rising Sun Kick
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 11.52f, 0.915f, 13);
+                        damage = CalculateMonkSpellDamage(_caster, 11.52f, 0.915f, 13);
                         m_caster->CastSpell(unitTarget, 130320, true);
                         break;
                     case 100784: // Blackout Kick
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 6.4f, 0.509f, 7);
+                        damage = CalculateMonkSpellDamage(_caster, 6.4f, 0.509f, 7);
                         break;
                     case 124335: // Swift Reflexes
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 2.022f, 0.161f, 2);
+                        damage = CalculateMonkSpellDamage(_caster, 2.022f, 0.161f, 2);
                         break;
                     case 121253: // Keg Smash
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkSpellDamage(m_caster, 8.989f, 0.714f, 10);
+                        damage = CalculateMonkSpellDamage(_caster, 8.989f, 0.714f, 10);
                         break;
                     default:
                         break;
@@ -7571,7 +7563,8 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 summon->SetDisplayId(1126);
         }
 
-        summon->AI()->EnterEvadeMode();
+        if (properties->Id != 3390)
+            summon->AI()->EnterEvadeMode();
 
         ExecuteLogEffectGeneric(i, summon->GetGUID());
     }

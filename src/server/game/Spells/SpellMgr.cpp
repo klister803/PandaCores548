@@ -3523,6 +3523,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 138121: // Storm, Earth and Fire
+                case 138122: // Storm, Earth and Fire
+                case 138123: // Storm, Earth and Fire
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    break;
                 case 115175: // Soothing Mist
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     spellInfo->PowerPerSecondPercentage = 1;
@@ -4126,7 +4131,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 case 113656:// Fists of Fury
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
                 case 115315:// Summon Black Ox Statue

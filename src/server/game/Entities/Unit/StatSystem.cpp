@@ -20,6 +20,7 @@
 #include "Player.h"
 #include "Pet.h"
 #include "Creature.h"
+#include "CreatureAI.h"
 #include "SharedDefines.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
@@ -1250,7 +1251,8 @@ bool Guardian::UpdateAllStats()
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
-    UpdatePetMeleeHastMod();
+    if (GetEntry() != 69792 && GetEntry() != 69680 && GetEntry() != 69791)
+        UpdatePetMeleeHastMod();
 
     return true;
 }
@@ -1425,7 +1427,7 @@ void Guardian::UpdateMaxPower(Powers power)
 
 void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 {
-    if (ranged)
+    if (ranged  || GetEntry() == 69792 || GetEntry() == 69680 || GetEntry() == 69791)
         return;
 
     float val = 0.0f;
@@ -1565,12 +1567,12 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 
 void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
 {
-    if (attType > BASE_ATTACK)
+    if (attType > BASE_ATTACK || GetEntry() == 69792 || GetEntry() == 69680 || GetEntry() == 69791)
         return;
 
     float APCoefficient = 14.f;
     float bonusDamage = 0.0f;
-    if (m_owner->GetTypeId() == TYPEID_PLAYER)
+    if (Player* plr = m_owner->ToPlayer())
     {
         if (isHunterPet() && m_owner->getLevel() > 87)
         {

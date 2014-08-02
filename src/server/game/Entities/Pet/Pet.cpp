@@ -1181,6 +1181,22 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetSpeed(MOVE_SWIM, m_owner->GetSpeedRate(MOVE_SWIM));
             break;
         }
+        case 69792: // Earth (Storm, Earth and Fire)
+        case 69680: // Storm (Storm, Earth and Fire)
+        case 69791: // Fire (Storm, Earth and Fire)
+        {
+            AddAura(103985, this);
+            setPowerType(POWER_MANA);
+            SetMaxPower(POWER_MANA, 21262);
+            SetMaxHealth(CalculatePct(m_owner->GetMaxHealth(), 10));
+            countCrit = m_owner->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+            m_modMeleeHitChance = m_owner->m_modMeleeHitChance;
+            m_expertise = m_owner->GetFloatValue(PLAYER_EXPERTISE);
+
+            if (GetEntry() != 69792)
+                m_canDualWield = true;
+            break;
+        }
         case ENTRY_GARGOYLE:
         {
             SetPower(POWER_RAGE, 0);

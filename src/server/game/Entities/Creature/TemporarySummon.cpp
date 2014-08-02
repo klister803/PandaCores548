@@ -191,6 +191,9 @@ void TempSummon::InitStats(uint32 duration)
     {
         uint32 slot = m_Properties->Slot;
 
+        if (slot > MAX_SUMMON_SLOT)
+            slot = 0;
+
         switch(GetEntry())
         {
             case 59271:     //Warlock purge gateway
@@ -285,9 +288,14 @@ void TempSummon::RemoveFromWorld()
 
     if (m_Properties)
         if (uint32 slot = m_Properties->Slot)
+        {
+            if (slot > MAX_SUMMON_SLOT)
+                slot = 0;
+
             if (Unit* owner = GetSummoner())
                 if (owner->m_SummonSlot[slot] == GetGUID())
                     owner->m_SummonSlot[slot] = 0;
+        }
 
     //if (GetOwnerGUID())
     //    sLog->outError(LOG_FILTER_UNITS, "Unit %u has owner guid when removed from world", GetEntry());

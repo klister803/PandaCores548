@@ -99,6 +99,295 @@ enum MonkSpells
     SPELL_MONK_GUARD                            = 115295,
 };
 
+class spell_monk_storm_earth_and_fire : public SpellScriptLoader
+{
+    public:
+        spell_monk_storm_earth_and_fire() : SpellScriptLoader("spell_monk_storm_earth_and_fire") { }
+
+        class spell_monk_storm_earth_and_fire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_storm_earth_and_fire_SpellScript);
+
+            bool castspell;
+            bool addMainAura;
+
+            void CheckTarget(bool fullstack, Unit* caster, Unit* target)
+            {
+                std::list<Unit*> ControllUnit;
+                for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                {
+                    if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                        continue;
+
+                    if ((*itr)->getVictim() != target)
+                    {
+                        if (!fullstack)
+                            return;
+
+                        ControllUnit.push_back(*itr);
+                        continue;
+                    }
+                    else
+                    {
+                        (*itr)->ToCreature()->AI()->JustDied(caster);
+                        castspell = false;
+                        return;
+                    }
+                }
+
+                if (caster->m_Controlled.empty())
+                {
+                    caster->RemoveAura(137639);
+                    return;
+                }
+
+                for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
+                    (*i)->ToCreature()->AI()->JustDied(caster);
+
+                addMainAura = false;
+            }
+
+            SpellCastResult HandleCheckCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    Unit* target = GetExplTargetUnit();
+
+                    if (!target)
+                        return SPELL_FAILED_DONT_REPORT;
+
+                    std::vector<uint32> id;
+                    uint32 visualId = 0;
+                    uint32 thirdId = 0;
+                    bool addVisual = true;
+                    addMainAura = true;
+                    castspell = true;
+                    id.push_back(138121);
+                    id.push_back(138122);
+                    id.push_back(138123);
+                    std::random_shuffle(id.begin(), id.end());
+
+                    if (Aura* aura = caster->GetAura(137639))
+                        CheckTarget(aura->GetStackAmount() > 1, caster, target);
+
+                    if (!castspell)
+                        return SPELL_FAILED_DONT_REPORT;
+
+                    if (!addMainAura)
+                        return SPELL_CAST_OK;
+
+                    for (std::vector<uint32>::iterator iter = id.begin(); iter != id.end(); ++iter)
+                    {
+                        bool getVisual = false;
+
+                        switch (*iter)
+                        {
+                            case 138121: visualId = 138083; break;
+                            case 138122: visualId = 138080; break;
+                            case 138123: visualId = 138081; break;
+                        }
+
+                        if (caster->HasAura(visualId))
+                        {
+                            getVisual = true;
+                            addVisual = false;
+                        }
+
+                        for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                        {
+                            if (getVisual)
+                                break;
+
+                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                                continue;
+
+                            SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
+
+                            if ((*itr)->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                            {
+                                getVisual = true;
+                                addVisual = false;
+                                break;
+                            }
+                        }
+
+                        if (getVisual)
+                            continue;
+                        else if (thirdId && !getVisual)
+                            break;
+
+                        thirdId = *iter;
+                    }
+
+                    if (addVisual)
+                        caster->AddAura(visualId, caster);
+
+                    if (thirdId)
+                        caster->CastSpell(target, thirdId, true);
+                }
+                return SPELL_CAST_OK;
+            }
+
+            void HandleTargetSelect(WorldObject*& target)
+            {
+                if (!addMainAura)
+                    target = NULL;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_storm_earth_and_fire_SpellScript::HandleCheckCast);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_monk_storm_earth_and_fire_SpellScript::HandleTargetSelect, EFFECT_1, TARGET_UNIT_CASTER);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_monk_storm_earth_and_fire_SpellScript::HandleTargetSelect, EFFECT_2, TARGET_UNIT_CASTER);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_monk_storm_earth_and_fire_SpellScript::HandleTargetSelect, EFFECT_3, TARGET_UNIT_CASTER);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_monk_storm_earth_and_fire_SpellScript::HandleTargetSelect, EFFECT_4, TARGET_UNIT_CASTER);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_storm_earth_and_fire_SpellScript();
+        }
+
+        class spell_monk_storm_earth_and_fire_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_storm_earth_and_fire_AuraScript);
+
+            void RemoveEff(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    caster->RemoveAura(138083);
+                    caster->RemoveAura(138080);
+                    caster->RemoveAura(138081);
+
+                    if (!caster->m_Controlled.empty())
+                    {
+                        std::list<Unit*> ControllUnit;
+                        for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                        {
+                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                                continue;
+
+                            ControllUnit.push_back(*itr);
+                        }
+
+                        for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
+                            (*i)->ToCreature()->AI()->JustDied(caster);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire_AuraScript::RemoveEff, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_storm_earth_and_fire_AuraScript();
+        }
+};
+
+class spell_monk_storm_earth_and_fire_clone_visual : public SpellScriptLoader
+{
+public:
+    spell_monk_storm_earth_and_fire_clone_visual() : SpellScriptLoader("spell_monk_storm_earth_and_fire_clone_visual") { }
+
+    class spell_monk_storm_earth_and_fire_clone_visualAuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_storm_earth_and_fire_clone_visualAuraScript);
+
+        void ApplyEff(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* caster = GetCaster())
+                if (caster->GetTypeId() == TYPEID_PLAYER)
+                    if (caster->m_Controlled.empty())
+                        caster->RemoveAura(137639);
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_monk_storm_earth_and_fire_clone_visualAuraScript::ApplyEff, EFFECT_2, SPELL_AURA_MOD_SPELL_VISUAL, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_monk_storm_earth_and_fire_clone_visualAuraScript();
+    }
+};
+
+class spell_monk_clone_cast : public SpellScriptLoader
+{
+public:
+    spell_monk_clone_cast() : SpellScriptLoader("spell_monk_clone_cast") { }
+
+    class spell_monk_clone_cast_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_clone_cast_SpellScript);
+
+        void HandleOnCast()
+        {
+            if (Unit* caster = GetCaster())
+                if (Player* plr = caster->ToPlayer())
+                {
+                    for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                    {
+                        if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                            continue;
+
+                        (*itr)->CastSpell((*itr)->getVictim(), GetSpellInfo()->Id, true);
+                    }
+                }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_monk_clone_cast_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_monk_clone_cast_SpellScript();
+    }
+};
+
+class spell_monk_fists_of_fury_stun : public SpellScriptLoader
+{
+public:
+    spell_monk_fists_of_fury_stun() : SpellScriptLoader("spell_monk_fists_of_fury_stun") { }
+
+    class spell_monk_fists_of_fury_stun_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_monk_fists_of_fury_stun_SpellScript);
+
+        void HandleObjectAreaTargetSelect(std::list<WorldObject*>& targets)
+        {
+            std::list<Unit*> unitTargets;
+            for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                if (Unit * target = (*itr)->ToUnit())
+                    unitTargets.push_back(target);
+
+            for (std::list<Unit*>::const_iterator itr = unitTargets.begin(); itr != unitTargets.end(); ++itr)
+                if (((*itr))->HasAura(120086))
+                    targets.remove(*itr);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_fists_of_fury_stun_SpellScript::HandleObjectAreaTargetSelect, EFFECT_0, TARGET_UNIT_CONE_ENEMY_24);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_monk_fists_of_fury_stun_SpellScript();
+    }
+};
+
 // spell 119611 Renewing Mist
 class spell_monk_renewing_mist : public SpellScriptLoader
 {
@@ -1962,31 +2251,27 @@ class spell_monk_blackout_kick : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_blackout_kick_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        // Second effect by spec : Instant heal or DoT
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_WINDWALKER
-                            && caster->ToPlayer()->HasAura(128595))
+                        if (caster->HasAura(128595))
                         {
-                            // If behind : 20% damage on DoT
-                            if (target->isInBack(caster))
-                            {
-                                int32 bp = int32(GetHitDamage() * 0.2f) / 4;
-                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
-                            }
-                            // else : 20% damage on instant heal
-                            else
-                            {
-                                int32 bp = int32(GetHitDamage() * 0.2f);
-                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
-                            }
+                            uint32 triggered_spell_id = 128531;
+                            Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
+                            int32 basepoints0 = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                            if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
+                                triggered_spell_id = 128591;
+
+                            if (triggered_spell_id == 128531)
+                                basepoints0 /= 4;
+
+                            caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
                         }
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
                 }
@@ -1994,7 +2279,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_monk_blackout_kick_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_monk_blackout_kick_SpellScript::HandleAfterHit);
             }
         };
 
@@ -2226,12 +2511,25 @@ class spell_monk_rushing_jade_windc : public SpellScriptLoader
 
             void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* originalcaster = GetCaster())
                 {
-                    float mindamage;
-                    float maxdamage;
-                    int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
-                    _player->CalculateMinMaxDamage(BASE_ATTACK, false, true, mindamage, maxdamage);
+                    float mindamage = 0;
+                    float maxdamage = 0;
+                    Player* caster = NULL;
+                    int32 AP = originalcaster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    if (Player* plr = originalcaster->ToPlayer())
+                    {
+                        caster = plr;
+                    }
+                    else if (Unit* owner = originalcaster->GetOwner())
+                    {
+                        if (Player* plr = owner->ToPlayer())
+                            caster = plr;
+                    }
+
+                    if (caster)
+                        caster->CalculateMinMaxDamage(BASE_ATTACK, false, true, mindamage, maxdamage);
+
                     int32 mindmg = int32(1.59 * (0.880503 * (1 * 0.898882 * (mindamage + 1 * (mindamage / 2)) + (AP / 14) - 1)));
                     int32 maxdmg = int32(1.59 * (0.880503 * (1 * 0.898882 * (maxdamage + 1 * (maxdamage / 2)) + (AP / 14) + 1)));
                     int32 damage = irand(mindmg, maxdmg);
@@ -2253,6 +2551,10 @@ class spell_monk_rushing_jade_windc : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_clone_cast();
+    new spell_monk_storm_earth_and_fire_clone_visual();
+    new spell_monk_storm_earth_and_fire();
+    new spell_monk_fists_of_fury_stun();
     new spell_monk_renewing_mist();
     new spell_monk_diffuse_magic();
     new spell_monk_black_ox_statue();

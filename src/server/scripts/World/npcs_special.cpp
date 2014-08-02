@@ -117,6 +117,293 @@ SpawnAssociation spawnAssociations[] =
     {22126, 22122, SPAWNTYPE_ALARMBOT}                      //Air Force Trip Wire - Rooftop (Cenarion Expedition)
 };
 
+class npc_storm_earth_and_fire : public CreatureScript
+{
+public:
+    npc_storm_earth_and_fire() : CreatureScript("npc_storm_earth_and_fire") { }
+
+    struct npc_storm_earth_and_fireAI : ScriptedAI
+    {
+        npc_storm_earth_and_fireAI(Creature* creature) : ScriptedAI(creature) { }
+
+        bool addaura;
+        bool jumpontarget;
+        bool comeonhome;
+        bool startattack;
+        uint32 jump;
+        uint32 entryId;
+        Unit *firsttarget;
+        Unit *owner;
+        float oldHast;
+
+        void InitializeAI()
+        {
+            owner = me->ToTempSummon()->GetSummoner();
+            firsttarget = me->GetTargetUnit();
+            addaura = true;
+            jumpontarget = true;
+            comeonhome = false;
+            startattack = false;
+            jump = 0;
+            entryId = me->GetEntry();
+            oldHast = 0;
+        }
+
+        void CheckWayOfTheMonkAura()
+        {
+            if (owner->HasAura(108977))
+                me->AddAura(108977, me);
+            else if (owner->HasAura(120275))
+                me->AddAura(120275, me);
+        }
+
+        void RecalcDamage()
+        {
+            if (Player* plr = owner->ToPlayer())
+            {
+                Item* mainItem = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* offItem = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                bool greenClone = entryId == 69792;
+
+                float finaldmg = 0;
+                float mainattackspeed = 0;
+                float adddmg = 0;
+                float offattackspeed = 0;
+
+                if (mainItem)
+                {
+                    finaldmg = mainItem->GetTemplate()->DPS;
+                    mainattackspeed = mainItem->GetTemplate()->Delay / 1000.0f;
+                }
+                if (offItem)
+                {
+                    adddmg = offItem->GetTemplate()->DPS;
+                    offattackspeed = mainItem->GetTemplate()->Delay / 1000.0f;
+
+                    if (greenClone)
+                        adddmg /= 2;
+                }
+
+                finaldmg += adddmg;
+
+                if (!greenClone)
+                {
+                    float offfinaldmg = finaldmg / 2;
+                    finaldmg -= offfinaldmg;
+
+                    offfinaldmg = (offfinaldmg + me->GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f) * (offattackspeed ? offattackspeed: mainattackspeed);
+                    offfinaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT);
+                    offfinaldmg += me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE);
+                    offfinaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT);
+
+                    me->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, offfinaldmg);
+                    me->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, offfinaldmg);
+                }
+
+                finaldmg = (finaldmg + me->GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f) * mainattackspeed;
+                finaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT);
+                finaldmg += me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE);
+                finaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT);
+
+                me->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, finaldmg);
+                me->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, finaldmg);
+            }
+        }
+
+        void RecalcHast()
+        {
+            if (Player* plr = owner->ToPlayer())
+            {
+                float amount = plr->GetRatingBonusValue(CR_HASTE_MELEE);
+                amount += me->GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE_3);
+
+                if (amount == oldHast)
+                    return;
+
+                oldHast = amount;
+
+                Item* mainItem = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* offItem = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                float mainattackspeed = BASE_ATTACK_TIME;
+                float offattackspeed = 0;
+
+                if (mainItem)
+                    mainattackspeed = mainItem->GetTemplate()->Delay;
+
+                if (offItem)
+                    offattackspeed = mainItem->GetTemplate()->Delay;
+
+                ApplyPercentModFloatVar(mainattackspeed, amount, false);
+                ApplyPercentModFloatVar(offattackspeed, amount, false);
+
+                if (entryId != 69792)
+                    me->SetFloatValue(UNIT_FIELD_BASEATTACKTIME+OFF_ATTACK, offattackspeed ? offattackspeed: mainattackspeed);
+
+                me->SetFloatValue(UNIT_FIELD_BASEATTACKTIME+BASE_ATTACK, mainattackspeed);
+            }
+        }
+
+        void RecalcStats()
+        {
+            if (!owner || comeonhome)
+                return;
+
+            if (!me->IsWithinDist(owner, 100))
+            {
+                JustDied(me);
+                return;
+            }
+
+            if (Aura* aura = me->GetAura(138130))
+            {
+                if (AuraEffect* eff1 = aura->GetEffect(EFFECT_1))
+                    if (Aura* ownerAura = owner->GetAura(137639))
+                        if (ownerAura->GetEffect(EFFECT_1)->GetAmount() != eff1->GetAmount())
+                        {
+                            eff1->SetCanBeRecalculated(true);
+                            eff1->RecalculateAmount(me);
+                        }
+
+                if (AuraEffect* eff4 = aura->GetEffect(EFFECT_4))
+                {
+                    if (eff4->GetAmount() != owner->GetTotalAttackPowerValue(BASE_ATTACK))
+                    {
+                        eff4->SetAmount(owner->GetTotalAttackPowerValue(BASE_ATTACK));
+                        me->SetUInt32Value(UNIT_FIELD_ATTACK_POWER, me->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_ATTACK_POWER));
+                    }
+                }
+
+                RecalcHast();
+                RecalcDamage();
+
+                if (Player* plr = owner->ToPlayer())
+                {
+                    me->countCrit = plr->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+                    me->m_modMeleeHitChance = plr->m_modMeleeHitChance;
+                }
+            }
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (me->isAlive())
+            {
+                ComonOnHome();
+            }
+            else
+                me->ToTempSummon()->UnSummon();
+
+            if (owner)
+                if (Aura *aura = owner->GetAura(137639))
+                {
+                    switch (aura->GetStackAmount())
+                    {
+                        case 1: owner->RemoveAura(137639); break;
+                        case 2: aura->SetStackAmount(1);   break;
+                    }
+                }
+        }
+
+        void ComonOnHome()
+        {
+            if (owner)
+            {
+                me->CastSpell(owner, 124002, true);
+                owner->m_Controlled.erase(me);
+            }
+
+            me->ToTempSummon()->UnSummon(500);
+            comeonhome = true;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!comeonhome)
+            {
+                if (!me->getVictim())
+                {
+                    if (addaura)
+                    {
+                        if (owner)
+                        {
+                            uint32 visualAuraId = 0;
+                            switch (entryId)
+                            {
+                                case 69792: visualAuraId = 138083; break;
+                                case 69680: visualAuraId = 138080; break;
+                                case 69791: visualAuraId = 138081; break;
+                            }
+                            owner->CastSpell(me, 149716, true);
+                            me->CastSpell(me, visualAuraId, true);
+                            owner->AddAura(120272, me);
+                            owner->AddAura(115043, me);
+                            owner->AddAura(128595, me);
+                            me->AddAura(138130, me);
+                            CheckWayOfTheMonkAura();
+                        }
+                        addaura = false;
+                    }
+
+                    if (!jumpontarget)
+                        JustDied(me);
+
+                    if (jumpontarget)
+                    {
+                        jump += diff;
+                        if (jump >= 500)
+                        {
+                            me->CastSpell(firsttarget, 124002, true);
+                            AttackStart(firsttarget);
+                            jumpontarget = false;
+                        }
+                    }
+                }
+
+                if (me->getVictim() != firsttarget)
+                    if (!jumpontarget && !comeonhome)
+                        JustDied(me);
+
+                if (owner)
+                {
+                    if (me->HasUnitState(UNIT_STATE_CASTING))
+                    {
+                        startattack = false;
+                        if (!owner->HasUnitState(UNIT_STATE_CASTING))
+                            me->CastStop(113656);
+                        else
+                            return;
+                    }
+                }
+
+                Unit *victim = me->getVictim();
+
+                if (me->isAttackReady() && me->IsWithinMeleeRange(victim))
+                {
+                    me->AttackerStateUpdate(victim);
+                    me->resetAttackTimer();
+
+                    if (entryId != 69792 && !startattack)
+                    {
+                        me->setAttackTimer(OFF_ATTACK, 1000);
+                        startattack = true;
+                    }
+                }
+
+                if (entryId != 69792 && me->isAttackReady(OFF_ATTACK) && me->IsWithinMeleeRange(victim))
+                {
+                    me->AttackerStateUpdate(victim, OFF_ATTACK);
+                    me->resetAttackTimer(OFF_ATTACK);
+                }
+            }
+        }
+    };
+
+    ScriptedAI* GetAI(Creature* creature) const
+    {
+        return new npc_storm_earth_and_fireAI(creature);
+    }
+};
+
 class npc_force_of_nature_treant_for_Guardian : public CreatureScript
 {
 public:
@@ -5073,6 +5360,7 @@ class npc_shahram : public CreatureScript
 
 void AddSC_npcs_special()
 {
+    new npc_storm_earth_and_fire();
     new npc_force_of_nature_treant_for_Guardian();
     new npc_force_of_nature_treant_for_Restoration();
     new npc_force_of_nature_treant_for_boomkin();

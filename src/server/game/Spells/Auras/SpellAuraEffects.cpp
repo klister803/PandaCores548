@@ -582,6 +582,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
 
     float DoneActualBenefit = 0.0f;
+    bool CalcStack = true;
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
@@ -725,6 +726,16 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 137639: // Storm, Earth and Fire
+                {
+                    if (GetBase()->GetStackAmount() == 2)
+                    {
+                        SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
+                        amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints;
+                        CalcStack = false;
+                    }
+                    break;
+                }
                 case 145958: // Readiness - Death Knight Blood
                 case 145992: // Readiness - Warrior Protection
                 case 145962: // Readiness - Druid Guardian
@@ -1247,6 +1258,33 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 138130: // Storm, Earth and Fire (clone)
+                {
+                    if (m_effIndex != EFFECT_1)
+                        break;
+
+                    if (Unit* owner = caster->GetOwner())
+                        if (Aura* ownerAura = owner->GetAura(137639))
+                        {
+                            SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
+                            switch (ownerAura->GetStackAmount())
+                            {
+                                case 1: amount = -100 + _spellinf->Effects[EFFECT_0].BasePoints; break;
+                                case 2: amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints; break;
+                            }
+                        }
+                    break;
+                }
+                case 137639: // Storm, Earth and Fire
+                {
+                    if (GetBase()->GetStackAmount() == 2)
+                    {
+                        SpellInfo const* _spellinf = sSpellMgr->GetSpellInfo(138228);
+                        amount = -100 + _spellinf->Effects[EFFECT_1].BasePoints;
+                        CalcStack = false;
+                    }
+                    break;
+                }
                 case 116740: // Tigereye Brew
                 {
                     if (Aura * aura = caster->GetAura(125195))
@@ -1273,6 +1311,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         
                         amount *= stuck;
                     }
+
+                    if (m_effIndex == EFFECT_1)
+                        for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                        {
+                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
+                                continue;
+
+                            (*itr)->CastCustomSpell((*itr), m_spellInfo->Id, &amount, &amount, NULL, true);
+                        }
                     break;
                 }
                 default:
@@ -1417,8 +1464,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     }
 
     GetBase()->CallScriptEffectCalcAmountHandlers(const_cast<AuraEffect const*>(this), amount, m_canBeRecalculated);
-    amount *= GetBase()->GetStackAmount();
-    m_crit_amount *= GetBase()->GetStackAmount();
+
+    if (CalcStack)
+    {
+        amount *= GetBase()->GetStackAmount();
+        m_crit_amount *= GetBase()->GetStackAmount();
+    }
 
     switch (GetAuraType())
     {
@@ -6882,6 +6933,13 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_MONK:
             switch (GetId())
             {
+                case 138130: // Storm, Earth and Fire (clone)
+                {
+                    if (Creature* crt = caster->ToCreature())
+                        if (CreatureAI* ai = crt->AI())
+                            ai->RecalcStats();
+                    break;
+                }
                 case 116095: // Disable : duration refresh every 1 second if target remains within 10 yards of the Monk
                 {
                     if (caster && caster->getClass() == CLASS_MONK && target)
@@ -7151,6 +7209,12 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            case 113656: // Fists of Fury
+            {
+                if (caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+                break;
+            }
             // The Biggest Egg Ever: Mechachicken's Rocket Barrage Aura Effect
             case 71416:
                 // prock 71419 with this action.

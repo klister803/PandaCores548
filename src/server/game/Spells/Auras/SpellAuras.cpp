@@ -2172,7 +2172,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
         {
             switch (GetId())
             {
-                case 125195:
+                case 116740: // Tigereye Brew
+                case 120273: // Tiger Strikes
+                {
+                    if (Creature* crt = target->ToCreature())
+                        if (CreatureAI* ai = crt->AI())
+                            ai->RecalcStats();
+                    break;
+                }
+                case 125195: // Tigereye Brew
                 {
                     if (apply)
                     {
