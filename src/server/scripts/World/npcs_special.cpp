@@ -5023,6 +5023,54 @@ class npc_transcendence_spirit : public CreatureScript
         }
 };
 
+/*######
+# npc_shahram
+######*/
+
+enum
+{
+    SPELL_FLAMES            = 16596,
+    SPELL_CURSE             = 16597,
+    SPELL_WILL              = 16598,
+    SPELL_BLESSING          = 16599,
+    SPELL_MIGHT             = 16600,
+    SPELL_FIST              = 16601
+};
+
+static const uint32 aShahramCast[] = {SPELL_FLAMES, SPELL_CURSE, SPELL_WILL, SPELL_BLESSING, SPELL_MIGHT, SPELL_FIST};
+
+class npc_shahram : public CreatureScript
+{
+    public:
+        npc_shahram() : CreatureScript("npc_shahram") { }
+
+    struct npc_shahramAI : public ScriptedAI
+    {
+        npc_shahramAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 m_uiDeleteTimer;
+
+        void Reset()
+        {
+            m_uiDeleteTimer = 2500;
+            me->CastSpell(me, aShahramCast[urand(0, 5)], false);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (m_uiDeleteTimer < uiDiff)
+                me->DespawnOrUnsummon();
+            else
+                m_uiDeleteTimer -= uiDiff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_shahramAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_force_of_nature_treant_for_Guardian();
@@ -5089,4 +5137,5 @@ void AddSC_npcs_special()
     new npc_bloodworm();
     new npc_transcendence_spirit();
     new npc_past_self();
+    new npc_shahram();
 }
