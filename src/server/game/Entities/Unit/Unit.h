@@ -2193,7 +2193,6 @@ class Unit : public WorldObject
         float GetSpeedRate(UnitMoveType mtype) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false);
         float m_TempSpeed;
-        float m_anti_JupmSpeed;
         uint32 m_anti_JupmTime;
         uint32 m_anti_FlightTime;
 

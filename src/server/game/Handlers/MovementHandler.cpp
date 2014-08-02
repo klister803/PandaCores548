@@ -265,6 +265,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         mover->m_movementInfo.pos.m_positionZ = mover->GetPositionZ();
         WorldSession::WriteMovementInfo(data, &mover->m_movementInfo);
         mover->SendMessageToSet(&data, _player);
+        mover->ClearUnitState(UNIT_STATE_JUMPING);
     }
 }
 
@@ -544,35 +545,28 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 if(current_speed < mover->GetSpeed(MOVE_SWIM))
                     current_speed = mover->GetSpeed(MOVE_SWIM);
                 current_speed *= speed_plus;
-                bool ontransport = true;
+                bool speed_check = true;
 
                 if(mover->m_anti_JupmTime && mover->m_anti_JupmTime > 0)
                 {
-                    //sLog->outError(LOG_FILTER_NETWORKIO, "AC2 in m_anti_JupmSpeed %f, m_anti_JupmTime %u",mover->m_anti_JupmSpeed, mover->m_anti_JupmTime);
-                    if(current_speed < mover->m_anti_JupmSpeed)
-                        current_speed = mover->m_anti_JupmSpeed;
-
                     plrMover->m_anti_LastSpeedChangeTime = movementInfo.time + mover->m_anti_JupmTime;
-                    ontransport = false;
+                    speed_check = false;
 
                     if(mover->m_anti_JupmTime <= diff)
                     {
-                        mover->m_anti_JupmSpeed = 0.0f;
                         mover->m_anti_JupmTime = 0;
-                        ontransport = true;
+                        speed_check = true;
                     }
                     else
                         mover->m_anti_JupmTime -= diff;
                 }
-                /*else
-                    sLog->outError(LOG_FILTER_NETWORKIO, "AC2 out m_anti_JupmSpeed %f m_anti_JupmTime %u current_speed %f",mover->m_anti_JupmSpeed, mover->m_anti_JupmTime, current_speed);*/
                 // end current speed
 
                 // movement distance
-                const float delta_x = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : mover->GetPositionX() - movementInfo.pos.GetPositionX();
-                const float delta_y = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : mover->GetPositionY() - movementInfo.pos.GetPositionY();
-                const float delta_z = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : mover->GetPositionZ() - movementInfo.pos.GetPositionZ();
-                const float real_delta = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 0 : (pow(delta_x, 2) + pow(delta_y, 2));
+                const float delta_x = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionX() - movementInfo.pos.GetPositionX();
+                const float delta_y = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionY() - movementInfo.pos.GetPositionY();
+                const float delta_z = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionZ() - movementInfo.pos.GetPositionZ();
+                const float real_delta = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : (pow(delta_x, 2) + pow(delta_y, 2));
                  // end movement distance
 
                 const bool fly_auras = (plrMover->HasAuraType(SPELL_AURA_FLY) || plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
@@ -620,22 +614,20 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 if (current_speed < plrMover->m_anti_Last_HSpeed && plrMover->m_anti_LastSpeedChangeTime == 0)
                     plrMover->m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plrMover->m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
 
-                const float allowed_delta = (plrMover->m_transport || plrMover->m_temp_transport) && ontransport ? 2 : // movement distance allowed delta
+                const float allowed_delta = (plrMover->m_transport || plrMover->m_temp_transport) ? 2 : // movement distance allowed delta
                     pow(std::max(current_speed, plrMover->m_anti_Last_HSpeed) * time_delta, 2)
                     + 2                                                                             // minimum allowed delta
                     + (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                      // mountain fall allowed delta
 
                     if(World::GetEnableMvAnticheatDebug())
-                        sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmSpeed %f m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u no_swim_water %u, _vmapHeight %f, _Height %f, opcode[%s]",
-                                        mover->m_anti_JupmSpeed, mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, no_swim_water, _vmapHeight, _Height, GetOpcodeNameForLogging(opcode).c_str());
+                        sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u no_swim_water %u, _vmapHeight %f, _Height %f, opcode[%s]",
+                                        mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, no_swim_water, _vmapHeight, _Height, GetOpcodeNameForLogging(opcode).c_str());
 
                 if (movementInfo.time > plrMover->m_anti_LastSpeedChangeTime)
                 {
                     plrMover->m_anti_Last_HSpeed = current_speed;                                    // store current speed
                     plrMover->m_anti_Last_VSpeed = -2.3f;
                     plrMover->m_anti_LastSpeedChangeTime = 0;
-                    /*sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmSpeed %f m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f movementInfo.time %d m_anti_LastSpeedChangeTime %d m_anti_Last_HSpeed %f test 1 %u test2 %u",
-                                        mover->m_anti_JupmSpeed, mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, movementInfo.time, plrMover->m_anti_LastSpeedChangeTime, plrMover->m_anti_Last_HSpeed, 1, 2);*/
                 }
                 // end calculating section
 
@@ -648,7 +640,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                         else
                             sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f, opcode[%s]", plrMover->GetName(), real_delta, allowed_delta, current_speed, plrMover->m_anti_Last_HSpeed, time_delta, GetOpcodeNameForLogging(opcode).c_str());
 
-                    check_passed = false;
+                    if(speed_check || real_delta > 4900.0f)
+                        check_passed = false;
+
                     plrMover->FallGroundAnt();
                 }
  
@@ -886,6 +880,8 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
     WriteMovementInfo(data, &movementInfo);
 
     _player->SendMessageToSet(&data, false);
+    if(Unit* mover = _player->m_mover)
+        mover->ClearUnitState(UNIT_STATE_JUMPING);
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)

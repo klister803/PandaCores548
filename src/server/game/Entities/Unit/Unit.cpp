@@ -252,7 +252,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modSpellHitChance = 0.0f;
     m_expertise = 0.0f;
     m_baseSpellCritChance = 5;
-    m_anti_JupmSpeed = 0.0f;                // Jump cpeed
     m_anti_JupmTime = 0;                // Jump Time
     m_anti_FlightTime = 0;                // Jump Time
 
@@ -14806,11 +14805,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
         }
     }
     if(old_speed > speed)
-    {
-        if(m_anti_JupmSpeed < (old_speed * baseMoveSpeed[MOVE_RUN]))
-            m_anti_JupmSpeed = old_speed * baseMoveSpeed[MOVE_RUN];
         m_anti_JupmTime = 2000;
-    }
 
     SetSpeed(mtype, speed, forced);
 }
@@ -19844,9 +19839,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         GetMotionMaster()->MoveKnockbackFrom(x, y, speedXY, speedZ);
     else
     {
-        uint32 time = uint32(speedZ * 100);
-        m_anti_JupmSpeed = speedXY * 10;
-        m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
+        AddUnitState(UNIT_STATE_JUMPING);
 
         float vcos, vsin;
         GetSinCos(x, y, vsin, vcos);
@@ -20478,7 +20471,6 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
     else
     {
         uint32 time = uint32(speedZ * 100);
-        m_anti_JupmSpeed = speedXY + 30;
         m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
 
         float vcos = std::cos(angle+GetOrientation());
@@ -20828,7 +20820,6 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     DisableSpline();
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        m_anti_JupmSpeed = 50;
         m_anti_JupmTime = sWorld->GetUpdateTime() * 5;
         ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     }
