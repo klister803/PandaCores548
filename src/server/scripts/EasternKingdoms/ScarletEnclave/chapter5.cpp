@@ -298,6 +298,7 @@ public:
                 player->CLOSE_GOSSIP_MENU();
                 CAST_AI(npc_highlord_darion_mograine::npc_highlord_darion_mograineAI, creature->AI())->uiStep = 1;
                 CAST_AI(npc_highlord_darion_mograine::npc_highlord_darion_mograineAI, creature->AI())->Start(true, false, player->GetGUID());
+                CAST_AI(npc_highlord_darion_mograine::npc_highlord_darion_mograineAI, creature->AI())->SetMaxPlayerDistance(250.0f);
                 break;
         }
         return true;
@@ -308,7 +309,7 @@ public:
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
 
-        if (player->GetQuestStatus(12801) == QUEST_STATUS_INCOMPLETE)
+        if (player->GetQuestStatus(12801) == QUEST_STATUS_INCOMPLETE && !creature->FindNearestCreature(NPC_HIGHLORD_TIRION_FORDRING, 30.0f))
             player->ADD_GOSSIP_ITEM(0, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
@@ -1326,20 +1327,15 @@ public:
                             break;
 
                         case 72:
-                            SetHoldState(false); // Escort ends
-                            JumpToNextStep(25000);
-                            break;
-
-                        case 73:
                             if (Creature* temp = Unit::GetCreature(*me, uiKoltiraGUID))
-                                temp->DespawnOrUnsummon();
+                                temp->DespawnOrUnsummon(60000);
                             if (Creature* temp = Unit::GetCreature(*me, uiOrbazGUID))
-                                temp->DespawnOrUnsummon();
+                                temp->DespawnOrUnsummon(60000);
                             if (Creature* temp = Unit::GetCreature(*me, uiThassarianGUID))
-                                temp->DespawnOrUnsummon();
+                                temp->DespawnOrUnsummon(60000);
                             if (Creature* temp = Unit::GetCreature(*me, uiLichKingGUID))
-                                temp->DespawnOrUnsummon();
-                            me->DespawnOrUnsummon();
+                                temp->DespawnOrUnsummon(60000);
+                            SetHoldState(false); // Escort ends
                             break;
                     }
 
