@@ -3871,7 +3871,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 130616:// Glyph of Fear
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_STUN;
                     break;
                 case 118699:// Fear Effect
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_IGNORE_HIT_RESULT;
