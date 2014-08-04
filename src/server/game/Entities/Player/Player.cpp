@@ -19308,6 +19308,26 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         HandleAltVisSwitch();
     }
 
+    //dual spec check
+    if (GetSpecsCount() == 2)
+    {
+        PlayerSpellMap::iterator itr = m_spells.find(63645);
+        if (itr == m_spells.end())
+            learnSpell(63645, true);
+
+        itr = m_spells.find(63644);
+        if (itr == m_spells.end())
+            learnSpell(63644, true);
+    }else
+    {
+        PlayerSpellMap::iterator itr = m_spells.find(63645);
+        if(itr != m_spells.end())
+        {
+            SetSpecsCount(2);
+            SetActiveSpec(1);
+        }
+    }
+
     return true;
 }
 
