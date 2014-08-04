@@ -1199,7 +1199,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {
                 case 104993: // Jade Spirit
                 {
-                    if (caster->GetHealthPct() > 25 && m_effIndex == EFFECT_1)
+                    if (caster->GetManaPct() > 25 && m_effIndex == EFFECT_1)
                         amount = 0;
 
                     break;
