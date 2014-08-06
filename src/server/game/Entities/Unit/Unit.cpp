@@ -12347,8 +12347,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         // Default calculation
         if (DoneAdvertisedBenefit)
         {
-            if ((!bonus && !dbccoeff && !spellProto->SpellAPBonusMultiplier) || coeff < 0)
-                coeff = CalculateDefaultCoefficient(spellProto, damagetype);
+//             if ((!bonus && !dbccoeff && !spellProto->SpellAPBonusMultiplier) || coeff < 0)
+//                 coeff = CalculateDefaultCoefficient(spellProto, damagetype);
 
             float factorMod = CalculateLevelPenalty(spellProto);
 
@@ -12737,13 +12737,19 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         }
                     break;
                     case SPELLFAMILY_WARLOCK:
-                        // Chaos Bolt
-                        if (spellProto->Id == 116858)
-                            return true;
-                        // Soul Fire and Soul Fire (Metamorphosis)
-                        if (spellProto->Id == 6353 || spellProto->Id == 104027)
-                            return true;
+                    {
+                        switch (spellProto->Id)
+                        {
+                            case 116858: // Chaos Bolt
+                            case 104027: // Soul Fire (Metamorphosis)
+                            case 6353:   // Soul Fire
+                            case 31117:  // Unstable Affliction
+                                return true;
+                            default:
+                                break;
+                        }
                         break;
+                    }
                 }
             }
             break;

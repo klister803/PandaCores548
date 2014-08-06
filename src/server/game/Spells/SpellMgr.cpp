@@ -3523,6 +3523,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 77215:  // Mastery: Potent Afflictions
+                    spellInfo->Effects[EFFECT_2].SpellClassMask[1] &= ~2048;
+                    break;
                 case 138121: // Storm, Earth and Fire
                 case 138122: // Storm, Earth and Fire
                 case 138123: // Storm, Earth and Fire

@@ -1790,9 +1790,13 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                     if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
                     {
-                        int32 damage = aurEff->GetAmount() * 7;
+                        int32 damage = aurEff->GetAmount() * 8;
+                        Unit* dispeller = dispelInfo->GetDispeller();
+
+                        if (dispeller->GetTypeId() == TYPEID_PLAYER)
+                            caster->ApplyResilience(dispeller, &damage, true);
                         // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(dispeller, WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
                     }
             }
 
