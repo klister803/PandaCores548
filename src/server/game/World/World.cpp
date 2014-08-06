@@ -3140,15 +3140,13 @@ void World::InitInstanceHalfWeekResetTime()
 void World::InitInstanceWeeklyResetTime()
 {
     time_t insttime = uint64(sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME));
+    if (!insttime)
+        m_NextInstanceWeeklyReset = time_t(time(NULL));         // game time not yet init
 
     // generate time by config
     time_t curTime = time(NULL);
-    tm localTm;
-
-    ACE_OS::localtime_r(&curTime, &localTm);
-    int32 diff = 5 - localTm.tm_wday;
-    localTm.tm_mday += diff;
-    localTm.tm_wday = 5;
+    tm localTm = *localtime(&curTime);
+    localTm.tm_wday = 3;
     localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
     localTm.tm_min = 0;
     localTm.tm_sec = 0;
