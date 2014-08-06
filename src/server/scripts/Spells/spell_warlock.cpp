@@ -1838,7 +1838,7 @@ class spell_warl_unbound_will : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* player = GetCaster()->ToPlayer())
+                if (Unit* player = GetCaster())
                 {
                     player->ModifyHealth(-int32(player->CountPctFromMaxHealth(20)));
                     player->RemoveMovementImpairingAuras();

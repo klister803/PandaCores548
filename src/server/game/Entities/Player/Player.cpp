@@ -6260,11 +6260,11 @@ bool Player::FallGroundAnt()
     UpdatePosition(x, y, ground_Z, o, false);
 
     // Below formula for falling damage is from Player::HandleFall
-    if (z_diff >= 14.57f)
+    /*if (z_diff >= 14.57f)
     {
         uint32 damage = std::min(GetMaxHealth(), (uint32)((0.018f*z_diff-0.2426f)*GetMaxHealth()*sWorld->getRate(RATE_DAMAGE_FALL)));
         if (damage > 0) EnvironmentalDamage(DAMAGE_FALL, damage);
-    }
+    }*/
     return true;
 }
 

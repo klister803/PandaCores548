@@ -56,25 +56,19 @@ class instance_molten_core : public InstanceMapScript
                 _golemaggTheIncineratorGUID = 0;
                 _majordomoExecutusGUID = 0;
                 _cacheOfTheFirelordGUID = 0;
-                _executusSchedule = NULL;
+                _executusSchedule = false;
                 _deadBossCount = 0;
                 _ragnarosAddDeaths = 0;
                 _isLoading = false;
                 _summonedExecutus = false;
             }
 
-            ~instance_molten_core_InstanceMapScript()
-            {
-                delete _executusSchedule;
-            }
-
             void OnPlayerEnter(Player* /*player*/)
             {
                 if (_executusSchedule)
                 {
-                    SummonMajordomoExecutus(*_executusSchedule);
-                    delete _executusSchedule;
-                    _executusSchedule = NULL;
+                    SummonMajordomoExecutus(_executusSchedule);
+                    _executusSchedule = false;
                 }
             }
 
@@ -228,7 +222,7 @@ class instance_molten_core : public InstanceMapScript
                    }
 
                     if (executusCounter >= 8 && states[BOSS_RAGNAROS] != DONE)
-                        _executusSchedule = new bool(states[BOSS_MAJORDOMO_EXECUTUS] == DONE);
+                        _executusSchedule = bool(states[BOSS_MAJORDOMO_EXECUTUS] == DONE);
 
                     for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
                         SetBossState(i, states[i]);
@@ -244,7 +238,7 @@ class instance_molten_core : public InstanceMapScript
             uint64 _golemaggTheIncineratorGUID;
             uint64 _majordomoExecutusGUID;
             uint64 _cacheOfTheFirelordGUID;
-            bool* _executusSchedule;
+            bool _executusSchedule;
             uint8 _deadBossCount;
             uint8 _ragnarosAddDeaths;
             bool _isLoading;
