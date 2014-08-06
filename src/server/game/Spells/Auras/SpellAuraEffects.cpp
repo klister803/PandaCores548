@@ -3195,6 +3195,9 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         target->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
         target->ClearUnitState(UNIT_STATE_DIED);
+
+        Powers power = target->getPowerType();
+        target->SetPower(power, target->GetPower(power));
     }
 }
 
