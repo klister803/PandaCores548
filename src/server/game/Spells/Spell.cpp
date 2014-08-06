@@ -2068,6 +2068,15 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
         || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE
         || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC);
 
+    switch (m_spellInfo->Id)
+    {
+        case 102359: // Mass Entanglement
+            isBouncingFar = false;
+            break;
+        default:
+            break;
+    }
+
     // max dist which spell can reach
     float searchRadius = jumpRadius;
     if (isBouncingFar)
