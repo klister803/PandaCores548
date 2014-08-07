@@ -1315,10 +1315,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (m_effIndex == EFFECT_1)
                         for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
                         {
-                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                                continue;
+                            if(Unit* target = (*itr))
+                            {
+                                if (target->GetEntry() != 69792 && target->GetEntry() != 69680 && target->GetEntry() != 69791)
+                                    continue;
 
-                            (*itr)->CastCustomSpell((*itr), m_spellInfo->Id, &amount, &amount, NULL, true);
+                                target->CastCustomSpell(target, m_spellInfo->Id, &amount, &amount, NULL, true);
+                            }
                         }
                     break;
                 }

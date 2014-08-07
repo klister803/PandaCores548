@@ -335,10 +335,13 @@ public:
                 {
                     for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
                     {
-                        if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                            continue;
+                        if(Unit* target = (*itr))
+                        {
+                            if (target->GetEntry() != 69792 && target->GetEntry() != 69680 && target->GetEntry() != 69791)
+                                continue;
 
-                        (*itr)->CastSpell((*itr)->getVictim(), GetSpellInfo()->Id, true);
+                            target->CastSpell(target->getVictim(), GetSpellInfo()->Id, true);
+                        }
                     }
                 }
         }
