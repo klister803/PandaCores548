@@ -1652,6 +1652,12 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         // special cases
         switch (triggered_spell_id)
         {
+            case 32592: // Glyph of Mass Dispel
+            {
+                if (unitTarget->HasAura(55691))
+                    triggered_spell_id = 39897;
+                break;
+            }
             // Vanish (not exist)
             case 18461:
             {
