@@ -678,9 +678,12 @@ public:
             //TidalSurge_Timer
             if (TidalSurge_Timer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_TIDAL_SURGE);
-                // Hacky way to do it - won't trigger elseways
-                me->getVictim()->CastSpell(me->getVictim(), SPELL_TIDAL_SURGE_FREEZE, true);
+                if(Unit* victim = me->getVictim())
+                {
+                    DoCast(victim, SPELL_TIDAL_SURGE);
+                    // Hacky way to do it - won't trigger elseways
+                    victim->CastSpell(victim, SPELL_TIDAL_SURGE_FREEZE, true);
+                }
                 TidalSurge_Timer = 15000+rand()%5000;
             } else TidalSurge_Timer -= diff;
 

@@ -23872,6 +23872,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
+    if(pProto->GetMaxStackSize() < count)
+        count = pProto->GetMaxStackSize();
+
     Creature* creature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!creature)
     {
