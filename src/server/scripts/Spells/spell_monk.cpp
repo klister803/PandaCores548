@@ -114,26 +114,30 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
             void CheckTarget(bool fullstack, Unit* caster, Unit* target)
             {
                 std::list<Unit*> ControllUnit;
-                for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                {
-                    if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                        continue;
-
-                    if ((*itr)->getVictim() != target)
+                if (!caster->m_Controlled.empty())
+                    for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
                     {
-                        if (!fullstack)
-                            return;
+                        if (Unit* cloneUnit = (*itr))
+                        {
+                            if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                                continue;
 
-                        ControllUnit.push_back(*itr);
-                        continue;
+                            if (cloneUnit->getVictim() != target)
+                            {
+                                if (!fullstack)
+                                    return;
+
+                                ControllUnit.push_back(cloneUnit);
+                                continue;
+                            }
+                            else
+                            {
+                                cloneUnit->ToCreature()->AI()->JustDied(caster);
+                                castspell = false;
+                                return;
+                            }
+                        }
                     }
-                    else
-                    {
-                        (*itr)->ToCreature()->AI()->JustDied(caster);
-                        castspell = false;
-                        return;
-                    }
-                }
 
                 if (caster->m_Controlled.empty())
                 {
@@ -193,23 +197,27 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                             addVisual = false;
                         }
 
-                        for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                        {
-                            if (getVisual)
-                                break;
-
-                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                                continue;
-
-                            SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
-
-                            if ((*itr)->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                        if (!caster->m_Controlled.empty())
+                            for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
                             {
-                                getVisual = true;
-                                addVisual = false;
-                                break;
+                                if (Unit* cloneUnit = (*itr))
+                                {
+                                    if (getVisual)
+                                        break;
+
+                                    if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                                        continue;
+
+                                    SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
+
+                                    if (cloneUnit->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                                    {
+                                        getVisual = true;
+                                        addVisual = false;
+                                        break;
+                                    }
+                                }
                             }
-                        }
 
                         if (getVisual)
                             continue;
@@ -266,10 +274,13 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                         std::list<Unit*> ControllUnit;
                         for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
                         {
-                            if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                                continue;
+                            if (Unit* cloneUnit = (*itr))
+                            {
+                                if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                                    continue;
 
-                            ControllUnit.push_back(*itr);
+                                ControllUnit.push_back(cloneUnit);
+                            }
                         }
 
                         for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
@@ -333,16 +344,23 @@ public:
             if (Unit* caster = GetCaster())
                 if (Player* plr = caster->ToPlayer())
                 {
-                    for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                    {
-                        if(Unit* target = (*itr))
+                    if (!caster->m_Controlled.empty())
+                        for (Unit::ControlList::iterator itr = plr->m_Controlled.begin(); itr != plr->m_Controlled.end(); ++itr)
                         {
-                            if (target->GetEntry() != 69792 && target->GetEntry() != 69680 && target->GetEntry() != 69791)
-                                continue;
+                            if (Unit* cloneUnit = (*itr))
+                            {
+                                if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                                    continue;
 
-                            target->CastSpell(target->getVictim(), GetSpellInfo()->Id, true);
+                                if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
+                                    continue;
+
+                                if (plr->getVictim() == cloneUnit->getVictim())
+                                    continue;
+
+                                cloneUnit->CastSpell(cloneUnit->getVictim(), GetSpellInfo()->Id, true);
+                            }
                         }
-                    }
                 }
         }
 

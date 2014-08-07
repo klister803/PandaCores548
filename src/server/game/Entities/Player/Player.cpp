@@ -13731,15 +13731,19 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 
             ToPlayer()->UpdateRating(CR_HASTE_MELEE);
 
-            for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-            {
-                if ((*itr)->GetEntry() != 69792 && (*itr)->GetEntry() != 69680 && (*itr)->GetEntry() != 69791)
-                    continue;
+            if (!m_Controlled.empty())
+                for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+                {
+                    if (Unit* cloneUnit = (*itr))
+                    {
+                        if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                            continue;
 
-                (*itr)->RemoveAurasDueToSpell(120275);
-                (*itr)->RemoveAurasDueToSpell(108977);
-                (*itr)->AddAura(trigger, (*itr));
-            }
+                        cloneUnit->RemoveAurasDueToSpell(120275);
+                        cloneUnit->RemoveAurasDueToSpell(108977);
+                        cloneUnit->AddAura(trigger, cloneUnit);
+                    }
+                }
         }
     }
     // Assassin's Resolve - 84601
