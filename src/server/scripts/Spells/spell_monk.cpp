@@ -115,9 +115,13 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
             {
                 std::list<Unit*> ControllUnit;
                 if (!caster->m_Controlled.empty())
+                {
                     for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                        ControllUnit.push_back(*itr);
+
+                    for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                     {
-                        if (Unit* cloneUnit = (*itr))
+                        if (Unit* cloneUnit = (*i))
                         {
                             if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
                                 continue;
@@ -127,7 +131,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                 if (!fullstack)
                                     return;
 
-                                ControllUnit.push_back(cloneUnit);
+                                cloneUnit->ToCreature()->AI()->JustDied(caster);
                                 continue;
                             }
                             else
@@ -138,16 +142,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                             }
                         }
                     }
-
-                if (caster->m_Controlled.empty())
-                {
-                    caster->RemoveAura(137639);
-                    return;
                 }
-
-                for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                    (*i)->ToCreature()->AI()->JustDied(caster);
-
                 addMainAura = false;
             }
 
@@ -198,9 +193,14 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                         }
 
                         if (!caster->m_Controlled.empty())
+                        {
+                            std::list<Unit*> ControllUnit;
                             for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                                ControllUnit.push_back(*itr);
+
+                            for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                             {
-                                if (Unit* cloneUnit = (*itr))
+                                if (Unit* cloneUnit = (*i))
                                 {
                                     if (getVisual)
                                         break;
@@ -218,6 +218,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                     }
                                 }
                             }
+                        }
 
                         if (getVisual)
                             continue;
@@ -273,18 +274,18 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                     {
                         std::list<Unit*> ControllUnit;
                         for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+                            ControllUnit.push_back(*itr);
+
+                        for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                         {
-                            if (Unit* cloneUnit = (*itr))
+                            if (Unit* cloneUnit = (*i))
                             {
                                 if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
                                     continue;
 
-                                ControllUnit.push_back(cloneUnit);
+                                (*i)->ToCreature()->AI()->JustDied(caster);
                             }
                         }
-
-                        for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                            (*i)->ToCreature()->AI()->JustDied(caster);
                     }
                 }
             }
@@ -344,23 +345,32 @@ public:
             if (Unit* caster = GetCaster())
                 if (Player* plr = caster->ToPlayer())
                 {
-                    if (!caster->m_Controlled.empty())
-                        for (Unit::ControlList::iterator itr = plr->m_Controlled.begin(); itr != plr->m_Controlled.end(); ++itr)
+                    uint32 spellid = GetSpellInfo()->Id;
+
+                    std::list<Unit*> ControllUnit;
+                    for (Unit::ControlList::iterator itr = plr->m_Controlled.begin(); itr != plr->m_Controlled.end(); ++itr)
+                        ControllUnit.push_back(*itr);
+
+                    for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
+                    {
+                        if (Unit* cloneUnit = (*i))
                         {
-                            if (Unit* cloneUnit = (*itr))
-                            {
-                                if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                    continue;
 
-                                if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
-                                    continue;
+                            if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
+                                continue;
 
-                                if (plr->getVictim() == cloneUnit->getVictim())
-                                    continue;
+                            if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
+                                continue;
 
-                                cloneUnit->CastSpell(cloneUnit->getVictim(), GetSpellInfo()->Id, true);
-                            }
+                            if (spellid != 113656 && spellid != 101546 && spellid != 116847)
+                                if (Unit* cloneTarget = cloneUnit->getVictim())
+                                    if (Unit* _target = GetExplTargetUnit())
+                                        if (_target == cloneTarget)
+                                            continue;
+                                            
+                            cloneUnit->CastSpell(cloneUnit->getVictim(), spellid, true);
                         }
+                    }
                 }
         }
 
