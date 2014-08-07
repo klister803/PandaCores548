@@ -132,14 +132,14 @@ public:
         bool startattack;
         uint32 jump;
         uint32 entryId;
-        Unit *firsttarget;
+        uint64 firsttarget;
         Unit *owner;
         float oldHast;
 
         void InitializeAI()
         {
             owner = me->ToTempSummon()->GetSummoner();
-            firsttarget = me->GetTargetUnit();
+            firsttarget = me->GetTargetGUID();
             addaura = true;
             jumpontarget = true;
             comeonhome = false;
@@ -352,14 +352,17 @@ public:
                         jump += diff;
                         if (jump >= 500)
                         {
-                            me->CastSpell(firsttarget, 124002, true);
-                            AttackStart(firsttarget);
-                            jumpontarget = false;
+                            if(Unit* gettarget = ObjectAccessor::GetUnit(*me, firsttarget))
+                            {
+                                me->CastSpell(gettarget, 124002, true);
+                                AttackStart(gettarget);
+                                jumpontarget = false;
+                            }
                         }
                     }
                 }
 
-                if (me->getVictim() != firsttarget)
+                if (me->getVictim() && me->getVictim()->GetGUID() != firsttarget)
                     if (!jumpontarget && !comeonhome)
                         JustDied(me);
 
