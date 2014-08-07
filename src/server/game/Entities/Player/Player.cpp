@@ -21469,8 +21469,8 @@ void Player::_SaveInventory(SQLTransaction& trans)
             {
                 sLog->outError(LOG_FILTER_PLAYER, "Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u are incorrect, the item with guid %u is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
                 // save all changes to the item...
-                if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
-                    item->SaveToDB(trans);
+                //if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
+                    //item->SaveToDB(trans);
                 // ...but do not save position in inventory
                 sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Exploit guild bank2","System");
                 continue;
