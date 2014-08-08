@@ -182,6 +182,8 @@ void CliRunnable::run()
             {
 #if PLATFORM == PLATFORM_WINDOWS
                 printf("TC>");
+#else
+                free(command_str);
 #endif
                 continue;
             }
@@ -191,6 +193,8 @@ void CliRunnable::run()
             {
 #if PLATFORM == PLATFORM_WINDOWS
                 printf("TC>");
+#else
+                free(command_str);
 #endif
                 continue;
             }
@@ -199,6 +203,7 @@ void CliRunnable::run()
             sWorld->QueueCliCommand(new CliCommandHolder(NULL, command.c_str(), &utf8print, &commandFinished));
 #if PLATFORM != PLATFORM_WINDOWS
             add_history(command.c_str());
+            free(command_str);
 #endif
         }
         else if (feof(stdin))
