@@ -167,10 +167,7 @@ WorldSession::~WorldSession()
 
     int32 z_res = deflateEnd(_compressionStream);
     if (z_res != Z_OK && z_res != Z_DATA_ERROR) // Z_DATA_ERROR signals that internal state was BUSY
-    {
         sLog->outError(LOG_FILTER_NETWORKIO, "Can't close packet compression stream (zlib: deflateEnd) Error code: %i (%s)", z_res, zError(z_res));
-        return;
-    }
 
     delete _compressionStream;
 }
