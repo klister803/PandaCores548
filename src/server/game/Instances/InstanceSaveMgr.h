@@ -98,6 +98,12 @@ class InstanceSave
         typedef std::list<Group*> GroupListType;
     private:
         bool UnloadIfEmpty();
+        /* used to flag the InstanceSave as to be deleted, so the caller can delete it */
+        void SetToDelete(bool toDelete)
+        {
+            m_toDelete = toDelete;
+        }
+
         /* the only reason the instSave-object links are kept is because
            the object-instSave links need to be broken at reset time
            TODO: maybe it's enough to just store the number of players/groups */
@@ -107,6 +113,7 @@ class InstanceSave
         uint32 m_mapid;
         Difficulty m_difficulty;
         bool m_canReset;
+        bool m_toDelete;
 
         ACE_Thread_Mutex _lock;
 };
@@ -165,6 +172,7 @@ class InstanceSaveManager
 
         InstanceSave* AddInstanceSave(uint32 mapId, uint32 instanceId, Difficulty difficulty, bool canReset, bool load = false);
         void RemoveInstanceSave(uint32 InstanceId);
+        void UnloadInstanceSave(uint32 InstanceId);
         static void DeleteInstanceFromDB(uint32 instanceid);
 
         InstanceSave* GetInstanceSave(uint32 InstanceId);
