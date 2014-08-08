@@ -367,6 +367,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                     _player->MoveItemFromInventory(item2->GetBagSlot(), item2->GetSlot(), true);
                     item2->DeleteFromInventoryDB(trans);
                     item2->DeleteFromDB(trans);
+                    delete item2;
                 }
                 else // Item stack count is bigger than required count, update item stack count and save to database - cloned item will be used for auction
                 {
