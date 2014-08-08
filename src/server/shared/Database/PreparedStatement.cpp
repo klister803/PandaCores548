@@ -342,6 +342,7 @@ void MySQLPreparedStatement::setString(const uint8 index, const char* value)
     param->buffer = new char[len];
     param->buffer_length = len;
     param->is_null_value = 0;
+    delete param->length;
     param->length = new unsigned long(len-1);
 
     memcpy(param->buffer, value, len);
