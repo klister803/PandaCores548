@@ -325,7 +325,7 @@ void Minion::InitStats(uint32 duration)
 
 void Minion::RemoveFromWorld()
 {
-    if (!IsInWorld())
+    if (!IsInWorld() || !m_owner || !this)
         return;
 
     m_owner->SetMinion(this, false, PET_SLOT_UNK_SLOT);

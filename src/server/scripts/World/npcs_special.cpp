@@ -231,7 +231,7 @@ public:
                     mainattackspeed = mainItem->GetTemplate()->Delay;
 
                 if (offItem)
-                    offattackspeed = mainItem->GetTemplate()->Delay;
+                    offattackspeed = offItem->GetTemplate()->Delay;
 
                 ApplyPercentModFloatVar(mainattackspeed, amount, false);
                 ApplyPercentModFloatVar(offattackspeed, amount, false);
