@@ -523,7 +523,7 @@ class Battleground
         void RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID);
         void UpdateWorldState(uint32 Field, uint32 Value);
         void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player* Source);
-        void EndBattleground(uint32 winner);
+        virtual void EndBattleground(uint32 winner);
         void BlockMovement(Player* player);
 
         void SendWarningToAll(int32 entry, ...);
