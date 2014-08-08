@@ -1072,12 +1072,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             CAST_AI(SmartAI, me->AI())->SetDespawnTime(e.action.forceDespawn.delay + 1);//next tick
             CAST_AI(SmartAI, me->AI())->StartDespawn();
+            delete targets;
             break;
         }
         case SMART_ACTION_SET_INGAME_PHASE_MASK:
         {
             if (GetBaseObject())
                 GetBaseObject()->SetPhaseMask(e.action.ingamePhaseMask.mask, true);
+            delete targets;
             break;
         }
         case SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL:
