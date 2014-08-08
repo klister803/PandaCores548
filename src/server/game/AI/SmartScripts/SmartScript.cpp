@@ -382,6 +382,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             me->SetReactState(ReactStates(e.action.react.state));
             sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_SET_REACT_STATE: Creature guidLow %u set reactstate %u",
                 me->GetGUIDLow(), e.action.react.state);
+            delete targets;
             break;
         }
         case SMART_ACTION_RANDOM_EMOTE:
