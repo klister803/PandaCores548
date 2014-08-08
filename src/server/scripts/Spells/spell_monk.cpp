@@ -283,7 +283,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                 if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
                                     continue;
 
-                                (*i)->ToCreature()->AI()->JustDied(caster);
+                                cloneUnit->ToCreature()->AI()->JustDied(caster);
                             }
                         }
                     }
@@ -355,7 +355,6 @@ public:
                     {
                         if (Unit* cloneUnit = (*i))
                         {
-
                             if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
                                 continue;
 
@@ -368,7 +367,8 @@ public:
                                         if (_target == cloneTarget)
                                             continue;
                                             
-                            cloneUnit->CastSpell(cloneUnit->getVictim(), spellid, true);
+                            if (Unit* cloneTarget = cloneUnit->getVictim())
+                                cloneUnit->CastSpell(cloneTarget, spellid, true);
                         }
                     }
                 }
