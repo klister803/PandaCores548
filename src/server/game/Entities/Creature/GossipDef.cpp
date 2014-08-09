@@ -341,7 +341,7 @@ void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC Guid=%u, status=%u", GUID_LOPART(npcGUID), questStatus);
 }
 
-void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, bool activateAccept) const
+void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, bool activateAccept, bool isAreaTrigger /*=false*/) const
 {
     std::string questTitle           = quest->GetTitle();
     std::string questDetails         = quest->GetDetails();
@@ -436,17 +436,23 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     bool isAutoLaunched = true;                             //activateAccept ? 1 : 0
     ObjectGuid guid2 = isAutoLaunched ? 0 : npcGUID;
 
+    if (isAreaTrigger)
+    {
+        isAutoLaunched = false;
+        guid2 = npcGUID;
+    }
+
     data.WriteGuidMask<0>(npcGUID);
     data.WriteBits(questGiverTextWindow.size(), 10);
     data.WriteGuidMask<0>(guid2);
-    data.WriteBit(false);                                   // from areatrigger
+    data.WriteBit(isAreaTrigger);                           // from areatrigger
     data.WriteGuidMask<6>(guid2);
     data.WriteGuidMask<1, 7>(npcGUID);
     data.WriteBits(questTurnTargetName.size(), 8);
     data.WriteGuidMask<2>(guid2);
     data.WriteGuidMask<2>(npcGUID);
     data.WriteBit(isAutoLaunched);
-    data.WriteBit(false);                                   // IsFinished? value is sent back to server in quest accept packet
+    data.WriteBit(isAreaTrigger);                          // IsFinished? value is sent back to server in quest accept packet
     data.WriteGuidMask<1>(guid2);
     data.WriteBits(questTitle.size(), 9);
     data.WriteBits(questGiverTargetName.size(), 8);
@@ -697,7 +703,7 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
         data << uint32(0);                                      // Hide money rewarded
     else
         data << uint32(quest->GetRewOrReqMoney());              // reward money (below max lvl)
-    data << uint32(quest->GetFlags() & 0xFFFF);                 // quest flags
+    data << uint32(quest->GetFlags());                          // quest flags
     data << uint32(hideRewards ? 0 : quest->RewardChoiceItemCount[4]);
     data << uint32(quest->GetPointOpt());
     data << uint32(quest->GetQuestId());                        // quest id

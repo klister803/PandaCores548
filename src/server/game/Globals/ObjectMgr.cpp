@@ -7355,6 +7355,21 @@ void ObjectMgr::LoadCreatureQuestRelations()
     }
 }
 
+void ObjectMgr::LoadAreaQuestRelations()
+{
+    LoadQuestRelationsHelper(_areaQuestRelations, _areaQuestStarter, "area_queststart", false, false);
+
+    for (QuestRelations::iterator itr = _areaQuestRelations.begin(); itr != _areaQuestRelations.end(); ++itr)
+    {
+        AreaTableEntry const* fArea = GetAreaEntryByAreaID(itr->first);
+        if (!fArea)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `area_questrelation` have data for not existed area entry (%u) and existed quest %u", itr->first, itr->second);
+            continue;
+        }
+    }
+}
+
 void ObjectMgr::LoadCreatureInvolvedRelations()
 {
     LoadQuestRelationsHelper(_creatureQuestInvolvedRelations, _creatureQuestStarter, "creature_involvedrelation", false, false);

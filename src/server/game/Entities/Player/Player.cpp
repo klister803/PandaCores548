@@ -1339,30 +1339,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         }
     }
     // all item positions resolved
-
-    //Pandaren's start quest
-    if (createInfo->Race == RACE_PANDAREN_NEUTRAL)
-    {
-        Quest const* quest = NULL;
-        switch (createInfo->Class)
-        {
-            case CLASS_WARRIOR: quest = sObjectMgr->GetQuestTemplate(30045); break;
-            case CLASS_SHAMAN: quest = sObjectMgr->GetQuestTemplate(30044); break;
-            case CLASS_ROGUE: quest = sObjectMgr->GetQuestTemplate(30043); break;
-            case CLASS_PRIEST: quest = sObjectMgr->GetQuestTemplate(30042); break;
-            case CLASS_HUNTER: quest = sObjectMgr->GetQuestTemplate(30041); break;
-            case CLASS_MAGE: quest = sObjectMgr->GetQuestTemplate(30040); break;
-            case CLASS_MONK: quest = sObjectMgr->GetQuestTemplate(30039); break;
-            default: break;
-        }
-
-        if (quest)
-        {
-            this->AddQuest(quest, NULL);
-            if (CanCompleteQuest(quest->GetQuestId()))
-                CompleteQuest(quest->GetQuestId());
-        }
-    }
     return true;
 }
 
@@ -8961,6 +8937,8 @@ void Player::UpdateArea(uint32 newArea)
 
     UpdateAreaDependentAuras(newArea);
 
+    PrepareAreaQuest(newArea);
+
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.inNoPvPArea = false;
     if (area && area->IsSanctuary())    // in sanctuary
@@ -16335,6 +16313,29 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
 /*********************************************************/
 /***                    QUEST SYSTEM                   ***/
 /*********************************************************/
+
+void Player::PrepareAreaQuest(uint32 area)
+{
+    QuestRelationBounds objectQR = sObjectMgr->GetAreaQuestRelationBounds(area);
+
+    for (QuestRelations::const_iterator i = objectQR.first; i != objectQR.second; ++i)
+    {
+        uint32 quest_id = i->second;
+        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+        if (!quest)
+            continue;
+
+        QuestStatus status = GetQuestStatus(quest_id);
+        if (!CanTakeQuest(quest, false))
+            continue;
+
+        AddQuest(quest, this);
+        if (CanCompleteQuest(quest_id))
+            CompleteQuest(quest_id);
+
+        PlayerTalkClass->SendQuestGiverQuestDetails(quest, GetGUID(), false, true);
+    }
+}
 
 void Player::PrepareQuestMenu(uint64 guid)
 {

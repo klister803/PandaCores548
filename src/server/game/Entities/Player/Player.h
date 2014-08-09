@@ -1765,6 +1765,7 @@ class Player : public Unit, public GridObject<Player>
 
         int32 GetQuestLevel(Quest const* quest) const { return quest && (quest->GetQuestLevel() > 0) ? quest->GetQuestLevel() : getLevel(); }
 
+        void PrepareAreaQuest(uint32 area);
         void PrepareQuestMenu(uint64 guid);
         void SendPreparedQuest(uint64 guid);
         bool IsActiveQuest(uint32 quest_id) const;

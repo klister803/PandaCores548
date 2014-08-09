@@ -803,12 +803,15 @@ class ObjectMgr
             sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Start Quest Data...");
             LoadCreatureQuestRelations();
             sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature End Quest Data...");
+            LoadAreaQuestRelations();
+            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Area Quest Data...");
             LoadCreatureInvolvedRelations();
         }
         void LoadGameobjectQuestRelations();
         void LoadGameobjectInvolvedRelations();
         void LoadCreatureQuestRelations();
         void LoadCreatureInvolvedRelations();
+        void LoadAreaQuestRelations();
 
         QuestRelations* GetGOQuestRelationMap()
         {
@@ -847,6 +850,11 @@ class ObjectMgr
         QuestRelationBounds GetCreatureQuestInvolvedRelationBounds(uint32 creature_entry)
         {
             return _creatureQuestInvolvedRelations.equal_range(creature_entry);
+        }
+
+        QuestRelationBounds GetAreaQuestRelationBounds(uint32 area)
+        {
+            return _areaQuestRelations.equal_range(area);
         }
 
         void LoadGameObjectScripts();
@@ -1349,10 +1357,12 @@ class ObjectMgr
         QuestRelations _goQuestInvolvedRelations;
         QuestRelations _creatureQuestRelations;
         QuestRelations _creatureQuestInvolvedRelations;
+        QuestRelations _areaQuestRelations;
         CurrencysLoot  _currencysLoot;
 
         QuestStarter _goQuestStarter;
         QuestStarter _creatureQuestStarter;
+        QuestStarter _areaQuestStarter;
 
         //character reserved names
         typedef std::set<std::wstring> ReservedNamesContainer;
