@@ -830,7 +830,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target);
 
-            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != 15)
+            if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != 15 && itr->option != 20)
                 continue;
 
             if (!(itr->effectmask & (1<<effIndex)))
@@ -1157,6 +1157,21 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_CAST_SPELL: // 20
+                    {
+                        triggered_spell_id = abs(itr->spell_trigger);
+
+                        if (itr->aura)
+                        {
+                            if (m_caster->HasAura(itr->aura))
+                                m_caster->CastSpell(unitTarget, triggered_spell_id, true);
+                        }
+                        else
+                            m_caster->CastSpell(unitTarget, triggered_spell_id, true);
+
+                        check = true;
+                        break;
+                    }
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);

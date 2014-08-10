@@ -3522,6 +3522,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 51640: // Taunt Flag Targeting
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    break;
                 case 77215:  // Mastery: Potent Afflictions
                     spellInfo->Effects[EFFECT_2].SpellClassMask[1] &= ~2048;
                     break;

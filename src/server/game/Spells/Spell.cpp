@@ -6646,6 +6646,32 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_BAD_TARGETS;
 
                 }
+                
+                switch (m_spellInfo->Id)
+                {
+                    case 51640: // Taunt Flag Targeting
+                    {
+                        if (Unit* target = m_targets.GetUnitTarget())
+                            if (Player* plr = m_caster->ToPlayer())
+                            {
+                                if (Player* targetplr = target->ToPlayer())
+                                {
+                                    if (targetplr->isAlive())
+                                        return SPELL_FAILED_BAD_TARGETS;
+
+                                    if (targetplr->GetTeam() == HORDE && plr->GetTeam() == HORDE)
+                                        return SPELL_FAILED_BAD_TARGETS;
+
+                                    if (targetplr->GetTeam() == ALLIANCE && plr->GetTeam() == ALLIANCE)
+                                        return SPELL_FAILED_BAD_TARGETS;
+                                }
+                                else
+                                    return SPELL_FAILED_BAD_TARGETS;
+                            }
+                    }
+                    default:
+                        break;
+                }
                 break;
             }
             case SPELL_EFFECT_LEARN_SPELL:
