@@ -291,7 +291,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
-    m_SoulSwapTarget = NULL;
+    m_SpecialTarget = NULL;
 
     m_damage_counter_timer = 1 * IN_MILLISECONDS;
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
@@ -2846,6 +2846,9 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spell)
 // TODO need use unit spell resistances in calculations
 SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
 {
+    if (spell->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT)
+        return SPELL_MISS_NONE;
+
     // Can`t miss on dead target (on skinning for example)
     if (!victim->isAlive() && victim->GetTypeId() != TYPEID_PLAYER)
         return SPELL_MISS_NONE;
@@ -2870,13 +2873,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
     // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spell->Id, SPELLMOD_RESIST_MISS_CHANCE, modHitChance);
-
-    // Spells with SPELL_ATTR3_IGNORE_HIT_RESULT will ignore target's avoidance effects
-    if (!(spell->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT))
-    {
-        // Chance hit from victim SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE auras
-        modHitChance += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, schoolMask);
-    }
+        
+    // Chance hit from victim SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE auras
+    modHitChance += victim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, schoolMask);
 
     int32 HitChance = modHitChance * 100;
     // Increase hit chance from attacker SPELL_AURA_MOD_SPELL_HIT_CHANCE and attacker ratings
@@ -21152,7 +21151,16 @@ uint32 Unit::GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType 
     {
         if ((*i)->GetCasterGUID() != caster || (*i)->GetId() != spellId || (*i)->GetEffIndex() != effectIndex || !(*i)->GetTotalTicks())
             continue;
-        amount += uint32(((*i)->GetAmount() * std::max<int32>((*i)->GetTotalTicks() - int32((*i)->GetTickNumber()), 0)) / (*i)->GetTotalTicks());
+
+        int32 duration = (*i)->GetBase()->GetDuration();
+        int32 amplitude = (*i)->GetAmplitude();
+        uint16 ReallTicksleft = duration / amplitude;
+        bool addTick = (ReallTicksleft * amplitude) < duration;
+
+        if (addTick)
+            ReallTicksleft++;
+
+        amount += uint32(((*i)->GetAmount() * ReallTicksleft) / ((*i)->GetTotalTicks() + 1));
         break;
     }
 

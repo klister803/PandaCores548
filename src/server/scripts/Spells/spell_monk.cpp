@@ -1000,36 +1000,48 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_touch_of_karma_AuraScript);
 
+            uint64 eff1Target;
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                GetCaster()->m_SpecialTarget = GetUnitOwner();
+            }
+
+            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    caster->RemoveAura(122470);
+                    caster->m_SpecialTarget = NULL;
+                }
+            }
+
             void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 if (GetCaster())
                     amount = GetCaster()->GetMaxHealth();
             }
 
-            void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            void AfterAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
             {
                 if (Unit* caster = dmgInfo.GetVictim())
                 {
-                    if (Unit* attacker = dmgInfo.GetAttacker())
+                    if (Unit* target = caster->m_SpecialTarget)
                     {
-                        int32 bp = dmgInfo.GetDamage();
+                        int32 bp = dmgInfo.GetAbsorb();
 
-                        if (attacker->HasAura(aurEff->GetSpellInfo()->Id, caster->GetGUID()))
-                        {
-                            bp /= 6;
-                            bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
-                            
-                            if (bp)
-                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
-                        }
+                        if (bp)
+                            caster->CastCustomSpell(target, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
                     }
                 }
             }
 
             void Register()
             {
+                OnEffectApply += AuraEffectApplyFn(spell_monk_touch_of_karma_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_monk_touch_of_karma_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_touch_of_karma_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_monk_touch_of_karma_AuraScript::OnAbsorb, EFFECT_1);
+                AfterEffectAbsorb += AuraEffectAbsorbFn(spell_monk_touch_of_karma_AuraScript::AfterAbsorb, EFFECT_1);
             }
         };
 

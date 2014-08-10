@@ -2364,7 +2364,7 @@ class Unit : public WorldObject
         }
         Unit* GetTargetUnit() const;
 
-        Unit* m_SoulSwapTarget;
+        Unit* m_SpecialTarget;
 
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, uint64 target);

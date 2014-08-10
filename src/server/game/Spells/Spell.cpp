@@ -6567,7 +6567,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     {
                         if (Unit * target = m_targets.GetUnitTarget())
                         {
-                            if (m_caster->m_SoulSwapTarget == target)
+                            if (m_caster->m_SpecialTarget == target)
                             {
                                 return SPELL_FAILED_BAD_TARGETS;
                             }

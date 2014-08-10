@@ -924,6 +924,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
+                case 124280: // Touch of Karma (Dot)
+                {
+                    uint8 getticks = GetTotalTicks();
+                    uint32 oldBp = 0;
+
+                    oldBp += target->GetRemainingPeriodicAmount(caster->GetGUID(), 124280, SPELL_AURA_PERIODIC_DAMAGE);
+
+                    if (oldBp)
+                        getticks++;
+
+                    amount /= getticks;
+                    amount += oldBp;
+                    break;
+                }
                 case 106830: // Thrash (Cat)
                 case 77758:  // Thrash
                 {
