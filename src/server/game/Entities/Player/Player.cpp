@@ -10591,6 +10591,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             {
                 AutoStoreLoot(lootid, LootTemplates_Gameobject);
                 loot->clear();
+                m_session->DoLootRelease(guid);
             }
         }
     }
