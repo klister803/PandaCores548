@@ -303,7 +303,10 @@ void BattlegroundSSM::AddScore(uint32 team, int32 points)
     m_TeamScores[team] += points;
 
     if (m_TeamScores[team] >= 1600)
+    {
         EndBattleground(team == BG_TEAM_ALLIANCE ? ALLIANCE : HORDE);
+        CastSpellOnTeam(135787, (team == BG_TEAM_ALLIANCE ? ALLIANCE : HORDE)); // Quest credit "The Lion Roars"
+    }
 
     if (team == BG_TEAM_ALLIANCE)
     {

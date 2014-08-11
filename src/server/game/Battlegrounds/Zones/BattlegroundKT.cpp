@@ -309,8 +309,11 @@ void BattlegroundKT::EndBattleground(uint32 winner)
     //win reward
     if (winner == ALLIANCE)
         RewardHonorToTeam(GetBonusHonorFromKill(m_HonorWinKills), ALLIANCE);
+
     if (winner == HORDE)
         RewardHonorToTeam(GetBonusHonorFromKill(m_HonorWinKills), HORDE);
+        
+    CastSpellOnTeam(135788, (winner == BG_TEAM_ALLIANCE ? ALLIANCE : HORDE)); // Quest credit "The Lion Roars"
     //complete map_end rewards (even if no team wins)
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), ALLIANCE);
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), HORDE);
