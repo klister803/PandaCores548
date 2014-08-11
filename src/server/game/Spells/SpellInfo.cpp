@@ -1633,7 +1633,7 @@ bool SpellInfo::IsSingleTargetWith(SpellInfo const* spellInfo) const
     return false;
 }
 
-bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const
+bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool sameCaster) const
 {
     SpellSpecificType spellSpec1 = GetSpellSpecific();
     SpellSpecificType spellSpec2 = spellInfo->GetSpellSpecific();
@@ -1642,7 +1642,6 @@ bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const
         case SPELL_SPECIFIC_TRACKER:
         case SPELL_SPECIFIC_WARLOCK_ARMOR:
         case SPELL_SPECIFIC_MAGE_ARMOR:
-        case SPELL_SPECIFIC_ELEMENTAL_SHIELD:
         case SPELL_SPECIFIC_MAGE_POLYMORPH:
         case SPELL_SPECIFIC_PRESENCE:
         case SPELL_SPECIFIC_CHARM:
@@ -1661,6 +1660,8 @@ bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const
             return spellSpec2 == SPELL_SPECIFIC_FOOD
                 || spellSpec2 == SPELL_SPECIFIC_DRINK
                 || spellSpec2 == SPELL_SPECIFIC_FOOD_AND_DRINK;
+        case SPELL_SPECIFIC_ELEMENTAL_SHIELD:
+            return (spellSpec1 == spellSpec2) && sameCaster;
         default:
             return false;
     }

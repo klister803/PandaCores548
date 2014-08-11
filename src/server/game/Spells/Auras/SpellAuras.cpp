@@ -1850,7 +1850,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     }
                 }
                 break;
-            }    
+            }
         }
     }
     // mods at aura remove
@@ -2281,7 +2281,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
     }
 
     // check spell specific stack rules
-    if (m_spellInfo->IsAuraExclusiveBySpecificWith(existingSpellInfo)
+    if (m_spellInfo->IsAuraExclusiveBySpecificWith(existingSpellInfo, sameCaster)
         || (sameCaster && m_spellInfo->IsAuraExclusiveBySpecificPerCasterWith(existingSpellInfo)))
         return false;
 

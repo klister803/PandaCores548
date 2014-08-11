@@ -841,13 +841,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 default:
                     break;
             }
-            // Earth Shield
-            if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags[1] & 0x400)
-            {
-                amount = caster->SpellHealingBonusDone(target, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
-                amount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), amount, SPELL_DIRECT_DAMAGE);
-            }
-            else if(m_aura_amount && !m_baseAmount)
+            if(m_aura_amount && !m_baseAmount)
             {
                 amount = m_aura_amount;
                 return amount;

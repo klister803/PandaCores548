@@ -497,7 +497,7 @@ public:
 
     bool IsSingleTarget() const;
     bool IsSingleTargetWith(SpellInfo const* spellInfo) const;
-    bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo) const;
+    bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool sameCaster = false) const;
     bool IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInfo) const;
 
     SpellCastResult CheckShapeshift(uint32 form) const;
