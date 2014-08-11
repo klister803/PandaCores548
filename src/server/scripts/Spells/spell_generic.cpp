@@ -3077,41 +3077,6 @@ public:
     }
 };
 
-// TP to Stormwind (121857) or Orgrimmar (121852)
-class spell_gen_tp_storm_orgri : public SpellScriptLoader
-{
-    public:
-        spell_gen_tp_storm_orgri() : SpellScriptLoader("spell_gen_tp_storm_orgri") { }
-
-        class spell_gen_tp_storm_orgri_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_gen_tp_storm_orgri_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    // Tp to Stormwind
-                    if (GetSpellInfo()->Id == 121857)
-                        _player->TeleportTo(0, -8833.07f, 622.778f, 93.9317f, _player->GetOrientation());
-                    // Tp to Orgrimmar
-                    else if (GetSpellInfo()->Id == 121852)
-                        _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472f, _player->GetOrientation());
-                }
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_gen_tp_storm_orgri_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gen_tp_storm_orgri_SpellScript();
-        }
-};
-
 enum RunningWildMountIds
 {
     RUNNING_WILD_MODEL_MALE     = 29422,
@@ -3850,7 +3815,6 @@ void AddSC_generic_spell_scripts()
     new spell_gen_mount("spell_x53_touring_rocket", 0, 0, 0, SPELL_X53_TOURING_ROCKET_150, SPELL_X53_TOURING_ROCKET_280, SPELL_X53_TOURING_ROCKET_310);
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
-    new spell_gen_tp_storm_orgri();
     new spell_gen_running_wild();
     new spell_gen_two_forms();
     new spell_gen_darkflight();
