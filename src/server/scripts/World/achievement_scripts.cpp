@@ -313,6 +313,20 @@ class achievement_not_even_a_scratch : public AchievementCriteriaScript
         }
 };
 
+class achievement_a_test_of_valor : public AchievementCriteriaScript
+{
+    public:
+        achievement_a_test_of_valor() : AchievementCriteriaScript("achievement_a_test_of_valor") { }
+
+        bool OnCheck(Player* source, Unit* /*target*/)
+        {
+            if (source->GetQuestStatus(32474) == QUEST_STATUS_INCOMPLETE || source->GetQuestStatus(32476) == QUEST_STATUS_INCOMPLETE)
+                return true;
+
+            return false;
+        }
+};
+
 void AddSC_achievement_scripts()
 {
     new achievement_resilient_victory();
@@ -331,4 +345,5 @@ void AddSC_achievement_scripts()
     new achievement_bg_sa_defense_of_ancients();
     new achievement_tilted();
     new achievement_not_even_a_scratch();
+    new achievement_a_test_of_valor();
 }

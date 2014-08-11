@@ -317,8 +317,7 @@ void BattlegroundKT::EndBattleground(uint32 winner)
     {
         RewardHonorToTeam(GetBonusHonorFromKill(m_HonorWinKills), HORDE);
         CastSpellOnTeam(135788, HORDE); // Quest credit "The Lion Roars"
-    }
-        
+    }        
     
     //complete map_end rewards (even if no team wins)
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), ALLIANCE);
