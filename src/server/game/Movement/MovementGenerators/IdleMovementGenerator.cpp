@@ -61,7 +61,8 @@ bool RotateMovementGenerator::Update(Unit& owner, const uint32& diff)
         angle -= (float)diff * static_cast<float>(M_PI * 2) / m_maxDuration;
         while (angle < 0) angle += static_cast<float>(M_PI * 2);
     }
-    owner.SetOrientation(angle);
+    owner.SetOrientation(angle);//for server
+    owner.SetFacingTo(angle);//for client
     owner.SendMovementFlagUpdate(); // this is a hack. we do not have anything correct to send in the beginning
 
     if (m_duration > diff)
