@@ -2122,7 +2122,7 @@ void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
     SendAccountDataTimes(GLOBAL_CACHE_MASK, true);
 }
 
-void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreaIds)
+void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreaIds, uint32 flag /*=0x1F*/)
 {
     ObjectGuid guid = _player->GetObjectGuid();
 
@@ -2131,7 +2131,7 @@ void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<
 
     data.WriteGuidBytes<4, 1, 3>(guid);
     // 0x8 or 0x10 is related to areatrigger, if we send flags 0x00 areatrigger doesn't work in some case
-    data << uint32(0x1F); // flags, 0x18 most of time on retail sniff
+    data << uint32(flag); // flags, 0x18 most of time on retail sniff
 
     data << uint32(terrainswaps.size()) * 2;    // Active terrain swaps
     for (std::set<uint32>::const_iterator itr = terrainswaps.begin(); itr != terrainswaps.end(); ++itr)

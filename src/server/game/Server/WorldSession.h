@@ -271,7 +271,7 @@ class WorldSession
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res, uint32 val = 0);
         void SendGroupInvite(Player* player, bool AlowEnter);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2, 3);
-        void SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldareaids);
+        void SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldareaids, uint32 flags = 0x1F);
         void SendQueryTimeResponse();
         void HandleLearnPetSpecialization(WorldPacket& data);
 
