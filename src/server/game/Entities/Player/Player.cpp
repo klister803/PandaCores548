@@ -2994,7 +2994,7 @@ void Player::Regenerate(Powers power)
     }
 
     // Mana regen calculated in Player::UpdateManaRegen()
-    if (power != POWER_MANA && power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_BURNING_EMBERS && power != POWER_DEMONIC_FURY)
+    if (power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_BURNING_EMBERS && power != POWER_DEMONIC_FURY)
     {
         AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
         for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
