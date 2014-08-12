@@ -1,6 +1,91 @@
 #include "NewScriptPCH.h"
 #include "ScriptedEscortAI.h"
+#include "CreatureTextMgr.h"
 
+enum panda_text
+{
+    TEXT_GENERIC_0                                 = 0,
+    TEXT_GENERIC_1                                 = 1,
+    TEXT_GENERIC_2                                 = 2,
+    TEXT_GENERIC_3                                 = 3,
+    TEXT_GENERIC_4                                 = 4,
+    TEXT_GENERIC_5                                 = 5,
+    TEXT_GENERIC_6                                 = 6,
+    TEXT_GENERIC_7                                 = 7,
+};
+
+enum panda_npc
+{
+    NPC_ANNOUNCER_1                                = 60183,
+    NPC_ANNOUNCER_2                                = 60244,
+    NPC_ANNOUNCER_3                                = 54943,
+    NPC_ANNOUNCER_4                                = 54568,
+    NPC_AMBERLEAF_SCAMP                            = 54130, //Amberleaf Scamp
+    NPC_MIN_DIMWIND_OUTRO                          = 56503, //Min Dimwind
+    NPC_MASTER_LI_FAI                              = 54856, 
+};
+
+enum panda_quests
+{
+    QUEST_THE_DISCIPLE_CHALLENGE                   = 29409, //29409 The Disciple's Challenge
+    QUEST_AYSA_OF_TUSHUI                           = 29410, // Aysa of the Tushui
+    QUEST_PARCHEMIN_VOLANT                         = 29421,
+};
+
+class npc_panda_announcer : public CreatureScript
+{
+    public:
+        npc_panda_announcer() : CreatureScript("npc_panda_announcer") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_panda_announcerAI(creature);
+    }
+    
+    struct npc_panda_announcerAI : public ScriptedAI
+    {
+        npc_panda_announcerAI(Creature* creature) : ScriptedAI(creature)
+        {
+
+        }
+
+        void Reset()
+        {
+        }
+
+        std::set<uint64> m_player_for_event;
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+
+            switch(me->GetEntry())
+            {
+                case NPC_ANNOUNCER_1:
+                    if (who->ToPlayer()->GetQuestStatus(QUEST_THE_DISCIPLE_CHALLENGE) != QUEST_STATUS_INCOMPLETE)
+                        return;
+                    break;
+                case NPC_ANNOUNCER_2:
+                case NPC_ANNOUNCER_3:
+                    if (who->ToPlayer()->GetQuestStatus(QUEST_AYSA_OF_TUSHUI) == QUEST_STATUS_REWARDED)
+                        return;
+                    break;
+                default:
+                    break;
+            }
+
+            m_player_for_event.insert(who->GetGUID());
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
+        }
+    };
+};
+
+// Should be done by summon npc 59591
 class mob_master_shang_xi : public CreatureScript
 {
     public:
@@ -40,6 +125,7 @@ class mob_master_shang_xi : public CreatureScript
                     {
                         if (caster->ToPlayer()->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE)
                         {
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
                             me->CastSpell(caster, 114611, true);
                             me->RemoveAurasDueToSpell(114610);
                             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
@@ -59,9 +145,10 @@ class mob_master_shang_xi : public CreatureScript
                     bool playerWithQuestNear = false;
 
                     for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                        if ((*itr)->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE)
-                            if (!(*itr)->HasItemCount(80212))// Flamme du maitre
+                    {
+                        if ((*itr)->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE && !(*itr)->HasItemCount(80212))
                                 playerWithQuestNear = true;
+                    }
 
                     if (playerWithQuestNear && !me->HasAura(114610))
                     {
@@ -84,120 +171,7 @@ class mob_master_shang_xi : public CreatureScript
         };
 };
 
-class go_wandering_weapon_rack : public GameObjectScript
-{
-public:
-    go_wandering_weapon_rack() : GameObjectScript("go_wandering_weapon_rack") { }
-
-    bool OnGossipHello(Player* player, GameObject* go)
-    {
-        if (player->GetQuestStatus(30027) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73209))
-        {
-            player->AddItem(73209, 1);
-        }
-        else if (player->GetQuestStatus(30033) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(76392) || !player->HasItemCount(76390)))
-        {
-            player->AddItem(76392, 1);
-            player->AddItem(76390, 1);
-        }
-        else if (player->GetQuestStatus(30034) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73211))
-        {
-            player->AddItem(73211, 1);
-        }
-        else if (player->GetQuestStatus(30035) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(76393) || !player->HasItemCount(73207)))
-        {
-            player->AddItem(76393, 1);
-            player->AddItem(73207, 1);
-        }
-        else if (player->GetQuestStatus(30036) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(73212) || !player->HasItemCount(73208)))
-        {
-            player->AddItem(73212, 1);
-            player->AddItem(73208, 1);
-        }
-        else if (player->GetQuestStatus(30037) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(73213) || !player->HasItemCount(76391)))
-        {
-            player->AddItem(73213, 1);
-            player->AddItem(76391, 1);
-        }
-        else if (player->GetQuestStatus(30038) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73210))
-        {
-            player->AddItem(73210, 1);
-        }
-
-        return true;
-    }
-};
-
-class mob_training_target : public CreatureScript
-{
-public:
-    mob_training_target() : CreatureScript("mob_training_target") { }
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mob_training_targetAI(creature);
-    }
-    
-    struct mob_training_targetAI : public ScriptedAI
-    {
-    	mob_training_targetAI(Creature* creature) : ScriptedAI(creature) {}
-    	
-        void Reset()
-        {
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void EnterCombat()
-        {
-            return;
-        }
-    };
-};
-
-class mob_tushui_trainee : public CreatureScript
-{
-    public:
-        mob_tushui_trainee() : CreatureScript("mob_tushui_trainee") { }
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new mob_tushui_trainee_AI(creature);
-        }
-
-        struct mob_tushui_trainee_AI : public ScriptedAI
-        {
-            mob_tushui_trainee_AI(Creature* creature) : ScriptedAI(creature) {}
-
-            void Reset()
-            {
-                me->SetReactState(REACT_DEFENSIVE);
-                me->setFaction(2357);
-            }
-
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                if (me->HealthBelowPctDamaged(5, damage))
-                {
-                    if(attacker && attacker->GetTypeId() == TYPEID_PLAYER)
-                        attacker->ToPlayer()->KilledMonsterCredit(54586, 0);
-                    me->CombatStop();
-                    me->SetFullHealth();
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
-                    me->setFaction(35);
-                    me->DespawnOrUnsummon(3000);
-                    damage = 0;
-                }
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
-            }
-        };
-};
-
+// cast 88811 for check something
 class boss_jaomin_ro : public CreatureScript
 {
 public:
@@ -212,9 +186,6 @@ public:
     {
         boss_jaomin_roAI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetReactState(REACT_DEFENSIVE);
-            me->SetDisplayId(39755);
-            me->setFaction(14); //mechant!
         }
 
         enum eEvents
@@ -231,23 +202,21 @@ public:
 
         void EnterCombat(Unit* unit)
         {
-            Talk(0);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
             events.ScheduleEvent(EVENT_JAOMIN_JUMP, 1000);
             events.ScheduleEvent(EVENT_HIT_CIRCLE, 2000);
             events.ScheduleEvent(EVENT_CHECK_AREA, 2500);
         }
-        
+
         void Reset()
         {
             isInFalcon = false;
-            me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
-            me->setFaction(2357); //mechant!
-            me->CombatStop(true);
+            //me->CombatStop(true);
 
-            me->GetMotionMaster()->MovePoint(1, 1380.35f, 3170.68f, 136.93f);
+            //me->GetMotionMaster()->MovePoint(1, 1380.35f, 3170.68f, 136.93f);
         }
-        
+
         void DamageTaken(Unit* attacker, uint32& damage)
         {
             if (me->HealthBelowPctDamaged(30, damage) && !isInFalcon)
@@ -261,7 +230,7 @@ public:
 
             if (me->HealthBelowPctDamaged(5, damage))
             {
-                me->SetDisplayId(39755);
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
 
                 std::list<Player*> playerList;
                 GetPlayerListInGrid(playerList, me, 10.0f);
@@ -282,9 +251,11 @@ public:
         }
         
         void UpdateAI(const uint32 diff)
-        {            
+        {
+            if (!UpdateVictim())
+                return;
             events.Update(diff);
-            
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch(eventId)
@@ -339,6 +310,15 @@ public:
             if(me->GetHealthPct() < 90 && pDoneBy && pDoneBy->ToCreature() && pDoneBy->ToCreature()->GetEntry() == 54785)
                 uiDamage = 0;
         }
+
+        void JustDied(Unit* killer)
+        {
+            if (killer->GetTypeId() != TYPEID_PLAYER || !me->ToTempSummon())
+                return;
+
+            if (Creature* owner = Unit::GetCreature(*me, me->ToTempSummon()->GetSummonerGUID()))
+                owner->AI()->SetGUID(killer->GetGUID(), 0);
+        }
     };
 };
 
@@ -355,67 +335,81 @@ public:
     struct mob_min_dimwindAI : public ScriptedAI
     {
         EventMap events;
-        uint64 guidMob[4];
+        std::set<uint64> guidMob;
+        uint64 plrGUID;
+        std::set<uint64> m_player_for_event;
 
-        enum eEvents
-        {
-            EVENT_CHECK_MOBS    = 1,
-            EVENT_RESET         = 2
-        };
-        
         mob_min_dimwindAI(Creature* creature) : ScriptedAI(creature)
         {
-            for(int i = 0; i < 4; i++)
-                guidMob[i] = 0;
+        }
 
+        void Reset()
+        {
             ResetMobs();
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
         }
-        
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+            m_player_for_event.insert(who->GetGUID());
+            for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
+                if (Creature* c = Unit::GetCreature(*me, *itr))
+                {
+                    sCreatureTextMgr->SendChat(c, TEXT_GENERIC_0, who->GetGUID());
+                    break;
+                }
+        }
+
         void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
-            if(me->GetHealthPct() < 25 && pDoneBy && pDoneBy->ToCreature() && pDoneBy->ToCreature()->GetEntry() == 54130)
+            if(me->GetHealthPct() < 25 && pDoneBy && pDoneBy->ToCreature() && pDoneBy->ToCreature()->GetEntry() == NPC_AMBERLEAF_SCAMP)
                 uiDamage = 0;
         }
         
-        
-        bool VerifyMobs()
+        void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
-            bool HasRemainingAttacker = false;
-            for(int i = 0; i < 4; i++)
-            {
-                if(guidMob[i])
-                {
-                    if (Unit* unit = sObjectAccessor->FindUnit(guidMob[i]))
-                    {
-                        if(unit->isAlive())
-                            HasRemainingAttacker = true;
-                    }
-                    else
-                        guidMob[i] = 0;
-                }
-            }
+            plrGUID = guid;
+        }
 
-            return !HasRemainingAttacker;
+        void SummonedCreatureDespawn(Creature* summon)
+        {
+            guidMob.erase(summon->GetGUID());
+            if (guidMob.empty())
+            {
+                me->HandleEmoteCommand(EMOTE_STATE_STAND);
+                if (Player* target = sObjectAccessor->FindPlayer(plrGUID))
+                {
+                    target->KilledMonsterCredit(54855, 0);
+                    // by spell 106205
+                    if(TempSummon* mind = target->SummonCreature(NPC_MIN_DIMWIND_OUTRO, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000))
+                    {
+                        mind->AI()->SetGUID(plrGUID, 0);
+                        mind->setFaction(35);
+                    }
+                }
+                me->DespawnOrUnsummon(1000);
+            }
         }
         
         void ResetMobs()
         {
-            events.ScheduleEvent(EVENT_CHECK_MOBS, 1000);
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
+            for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
+                if (Creature* c = Unit::GetCreature(*me, *itr))
+                    c->DespawnOrUnsummon();
+            guidMob.clear();
 
             for(int i = 0; i < 4; i++)
             {
-                if(guidMob[i])
-                    if (Unit* unit = sObjectAccessor->FindUnit(guidMob[i]))
-                        if (unit->ToCreature())
-                            unit->ToCreature()->DespawnOrUnsummon();
-
-                guidMob[i] = 0;
-
-                if(TempSummon* temp = me->SummonCreature(54130, me->GetPositionX()-3+rand()%6, me->GetPositionY() + 4 + rand()%4, me->GetPositionZ()+2, 3.3f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000))
+                if(TempSummon* temp = me->SummonCreature(NPC_AMBERLEAF_SCAMP, me->GetPositionX()-3+rand()%6, me->GetPositionY() + 4 + rand()%4, me->GetPositionZ()+2, 3.3f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000))
                 {
-                    guidMob[i] = temp->GetGUID();
+                    guidMob.insert(temp->GetGUID());
                     
                     temp->SetFacingToObject(me);
                     temp->HandleEmoteCommand(EMOTE_STATE_READY2H);
@@ -427,37 +421,80 @@ public:
                 }
             }
         }
-        
-        void UpdateAI(const uint32 diff)
+    };
+};
+
+class npc_min_dimwind_outro : public CreatureScript
+{
+public:
+    npc_min_dimwind_outro() : CreatureScript("npc_min_dimwind_outro") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_min_dimwind_outroAI (creature);
+    }
+
+    struct npc_min_dimwind_outroAI : public npc_escortAI
+    {
+        npc_min_dimwind_outroAI(Creature* creature) : npc_escortAI(creature) {}
+
+        EventMap events;
+        uint64 playerGUID;
+
+        enum eEvents
         {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+        };
+
+        void Reset()
+        {
+            playerGUID = 0;
+        }
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            playerGUID = guid;
+            events.ScheduleEvent(EVENT_1, 1000);
+        }
+
+        void WaypointReached(uint32 pointId)
+        {            
+            switch(pointId)
+            {
+                case 3:
+                case 4:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGUID);
+                    break;
+                case 12:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGUID);
+                    me->DespawnOrUnsummon(30000);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            npc_escortAI::UpdateAI(diff);
             events.Update(diff);
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
-                    case EVENT_CHECK_MOBS:
-                    {
-                        if(VerifyMobs()) //plus de mobs, win!
-                        {
-                    	    me->HandleEmoteCommand(EMOTE_STATE_STAND);
-                    	    me->MonsterYell("Thank you!", LANG_UNIVERSAL, 0);
-                        
-                            std::list<Player*> PlayerList;
-                            GetPlayerListInGrid(PlayerList, me, 20.0f);
-                            for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
-                                (*itr)->KilledMonsterCredit(54855, 0);
-                        
-                            events.ScheduleEvent(EVENT_RESET, 30000);
-                        }
-                        else
-                            events.ScheduleEvent(EVENT_CHECK_MOBS, 1000);
-
+                    // emotes only when in vehicle.
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGUID);
+                        events.ScheduleEvent(EVENT_2, 1000);
                         break;
-                    }
-                    case EVENT_RESET:
-                    {
-                        ResetMobs();
-                    }
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGUID);
+                        Start(true, true);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -504,6 +541,11 @@ public:
             }
         }
 
+        void IsSummonedBy(Unit* /*summoner*/)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
         void WaypointReached(uint32 waypointId)
         {
             if (waypointId == 4)
@@ -516,7 +558,6 @@ public:
             {
                 if (IntroTimer <= diff)
                 {
-                    me->MonsterYell("Follow me!", LANG_UNIVERSAL, 0);
                     IntroTimer = 0;
                     me->GetMotionMaster()->MoveJump(1216.78f, 3499.44f, 91.15f, 10, 20, 10);
                 }
@@ -539,16 +580,7 @@ class mob_aysa : public CreatureScript
 {
 public:
     mob_aysa() : CreatureScript("mob_aysa") { }
-
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
-    {
-        if (quest->GetQuestId() == 29414) // La voie des tushui
-            if (Creature* tempSummon = creature->SummonCreature(56661, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
-                tempSummon->SetPhaseMask(1, true);
-
-        return true;
-    }
-    
+   
     CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_aysaAI(creature);
@@ -558,7 +590,7 @@ public:
     {
     	EventMap events;
         std::list<Player*> playersInvolved;
-        TempSummon* lifei;
+        uint64 lifeiGUID;
         bool inCombat;
         uint32 timer;
         
@@ -567,7 +599,7 @@ public:
             events.ScheduleEvent(1, 600); //Begin script
             inCombat = false;
             timer = 0;
-            lifei = NULL;
+            lifeiGUID = 0;
             me->SetReactState(REACT_DEFENSIVE);
             me->setFaction(2263);
         }
@@ -579,19 +611,30 @@ public:
             EVENT_PROGRESS      = 3,
             EVENT_END           = 4,
         };
+
+        enum eText
+        {
+            TEXT_TUSHI_0          = 0,
+            TEXT_TUSHI_1          = 1,
+            TEXT_TUSHI_2          = 2,
+            TEXT_TUSHI_3          = 3,
+            TEXT_TUSHI_4          = 4,
+            TEXT_TUSHI_5          = 5,
+            TEXT_TUSHI_6          = 6,
+        };
         
         void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->HealthBelowPctDamaged(5, uiDamage))
             {
-                if(lifei)
+                if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
                 {
-                    lifei->UnSummon();
-                    lifei = NULL;
+                    lifei->DespawnOrUnsummon(0);
+                    lifeiGUID = NULL;
+                    timer = 0;
                 }
                 
                 uiDamage = 0;
-                me->MonsterSay("I can't meditate!", LANG_UNIVERSAL, 0);
                 me->SetFullHealth();
                 me->SetReactState(REACT_DEFENSIVE);
                 
@@ -622,6 +665,20 @@ public:
             }
         }
         
+        uint32 getLang(uint32 timer) const
+        {
+            switch(timer)
+            {
+                case 30: return TEXT_TUSHI_2;
+                case 42: return TEXT_TUSHI_0;
+                case 54: return TEXT_TUSHI_1;
+                case 66: return TEXT_TUSHI_3;
+                case 78: return TEXT_TUSHI_5;
+                case 85: return TEXT_TUSHI_6;
+                default: return 0;
+            }
+            return 0;
+        }
         void UpdateAI(const uint32 diff)
         {
             events.Update(diff);
@@ -636,7 +693,7 @@ public:
                             events.ScheduleEvent(1, 600);
                         else
                         {
-                            me->MonsterSay("Keep those creatures at bay while I meditate. We'll soon have the answers we seek...", LANG_UNIVERSAL, 0);
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
                             me->SetReactState(REACT_PASSIVE);
                             timer = 0;
                             events.ScheduleEvent(EVENT_SPAWN_MOBS, 5000); //spawn mobs
@@ -666,39 +723,26 @@ public:
                     case EVENT_PROGRESS: //update energy
                     {
                         timer++;
-                        
-                        if(timer == 25 && !lifei)
+                        if(timer == 25 && !lifeiGUID)
                         {
-                            if (lifei = me->SummonCreature(54856, 1130.162231f, 3435.905518f, 105.496597f, 0.0f,TEMPSUMMON_MANUAL_DESPAWN))
-                                lifei->MonsterSay("The way of the Tushui... enlightenment through patience and mediation... the principled life", LANG_UNIVERSAL, 0);
+                            if (Creature *lifei = me->SummonCreature(NPC_MASTER_LI_FAI, 1130.162231f, 3435.905518f, 105.496597f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                            {
+                                sCreatureTextMgr->SendChat(lifei, TEXT_TUSHI_4);
+                                lifeiGUID = lifei->GetGUID();
+                            }
                         }
                         
-                        if(timer == 30)
-                            if (lifei)
-                                lifei->MonsterSay("It is good to see you again, Aysa. You've come with respect, and so I shall give you the answers you seek.", LANG_UNIVERSAL, 0);
-                        
-                        if(timer == 42)
-                            if (lifei)
-                                lifei->MonsterSay("Huo, the spirit of fire, is known for his hunger. He wants for tinder to eat. He needs the caress of the wind to rouse him.", LANG_UNIVERSAL, 0);
-                        
-                        if(timer == 54)
-                            if (lifei)
-                                lifei->MonsterSay("If you find these things and bring them to his cave, on the far side of Wu-Song Village, you will face a challenge within.", LANG_UNIVERSAL, 0);
-                        
-                        if(timer == 66)
-                            if (lifei)
-                                lifei->MonsterSay("Overcome that challenge, and you shall be graced by Huo's presence. Rekindle his flame, and if your spirit is pure, he shall follow you.", LANG_UNIVERSAL, 0);
-                        
-                        if(timer == 78)
-                            if (lifei)
-                                lifei->MonsterSay("Go, children. We shall meet again very soon.", LANG_UNIVERSAL, 0);
-                        
-                        if(timer == 85)
+                        if (uint32 lang = getLang(timer))
                         {
-                            if (lifei)
-                                lifei->UnSummon();
-
-                            lifei = NULL;
+                            if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
+                            {
+                                sCreatureTextMgr->SendChat(lifei, lang);
+                                if(timer == 85)
+                                {
+                                    lifei->DespawnOrUnsummon(0);
+                                    lifeiGUID = 0;
+                                }
+                            }
                         }
                         
                         updatePlayerList();
@@ -717,21 +761,22 @@ public:
                     }
                     case EVENT_END: //script end
                     {
-                        if(lifei)
+                        if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
                         {
-                            lifei->UnSummon();
-                            lifei = NULL;
+                            lifei->DespawnOrUnsummon(0);
+                            lifeiGUID = 0;
+                            timer = 0;
                         }
                         events.ScheduleEvent(EVENT_START, 10000);
                         events.CancelEvent(EVENT_SPAWN_MOBS);
                         events.CancelEvent(EVENT_PROGRESS);
-                        me->MonsterSay("And so our path lays before us. Speak to Master Shang Xi, he will tell you what comes next.", LANG_UNIVERSAL, 0);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
                         updatePlayerList();
                         me->SetReactState(REACT_DEFENSIVE);
                         for (std::list<Player*>::const_iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); ++itr)
                         {
                             Player* player = *itr;
-                            player->KilledMonsterCredit(54856, 0);
+                            player->KilledMonsterCredit(NPC_MASTER_LI_FAI, 0);
                             player->RemoveAura(116421);
                         }
                         break;
@@ -793,8 +838,6 @@ public:
     };
 };
 
-#define QUEST_PARCHEMIN_VOLANT  29421
-
 class boss_li_fei : public CreatureScript
 {
 public:
@@ -804,9 +847,13 @@ public:
     {
         if (quest->GetQuestId() == QUEST_PARCHEMIN_VOLANT) // La lecon du parchemin brulant
         {
-            if (Creature* tempSummon = creature->SummonCreature(54856, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
+            // used by spell 102445
+            if (Creature* tempSummon = creature->SummonCreature(54734, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
             {
-                tempSummon->SetPhaseMask(1024, true);
+                player->CastSpell(player, 108149);  //visib
+                //player->CastSpell(player, 108150);  //invis
+                
+                tempSummon->AddPlayerInPersonnalVisibilityList(player->GetGUID());
                 tempSummon->AI()->AttackStart(player);
                 tempSummon->AI()->SetGUID(player->GetGUID());
             }
@@ -874,7 +921,12 @@ public:
                 me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
 
                 if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
+                {
                     player->KilledMonsterCredit(54734, 0);
+                    player->RemoveAurasDueToSpell(108150);
+                }
+                if (Creature* owner = Unit::GetCreature(*me, me->ToTempSummon()->GetSummonerGUID()))
+                    sCreatureTextMgr->SendChat(owner, TEXT_GENERIC_0, attacker->GetGUID());
             }
         }
 
@@ -902,14 +954,7 @@ public:
                         bool checkPassed = true;
                         Player* player = ObjectAccessor::FindPlayer(playerGuid);
 
-                        if (!player)
-                        {
-                            me->DespawnOrUnsummon(1000);
-                            playerGuid = 0;
-                            break;
-                        }
-
-                        if (!player->isAlive())
+                        if (!player || !player->isAlive())
                         {
                             me->DespawnOrUnsummon(1000);
                             playerGuid = 0;
@@ -951,74 +996,6 @@ public:
     };
 };
 
-// Huo Benediction - 102630
-class spell_huo_benediction: public SpellScriptLoader
-{
-    public:
-        spell_huo_benediction() : SpellScriptLoader("spell_huo_benediction") { }
-
-        class spell_huo_benediction_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_huo_benediction_AuraScript);
-            
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-
-                if (!target)
-                    return;
-
-                std::list<Creature*> huoList;
-                GetCreatureListWithEntryInGrid(huoList, target, 54958, 20.0f);
-
-                for (std::list<Creature*>::const_iterator itr = huoList.begin(); itr != huoList.end(); ++itr)
-                {
-                    Creature* huo = *itr;
-                    if (huo->ToTempSummon())
-                        if (huo->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
-                            return;
-                }
-
-                // A partir d'ici on sait que le joueur n'a pas encore de Huo
-                if (TempSummon* tempHuo = target->SummonCreature(54958, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0, target->GetGUID()))
-                {
-                    tempHuo->SetOwnerGUID(target->GetGUID());
-                    tempHuo->GetMotionMaster()->MoveFollow(target, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-                }
-            }
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                Unit* target = GetTarget();
-
-                if (!target)
-                    return;
-
-                std::list<Creature*> huoList;
-                GetCreatureListWithEntryInGrid(huoList, target, 54958, 20.0f);
-
-                for (std::list<Creature*>::const_iterator itr = huoList.begin(); itr != huoList.end(); ++itr)
-                {
-                    Creature* huo = *itr;
-                    if (huo->ToTempSummon())
-                        if (huo->ToTempSummon()->GetOwnerGUID() == target->GetGUID())
-                            huo->DespawnOrUnsummon();
-                }
-            }
-
-            void Register()
-            {
-                OnEffectApply  += AuraEffectApplyFn (spell_huo_benediction_AuraScript::OnApply,  EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-                OnEffectRemove += AuraEffectRemoveFn(spell_huo_benediction_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_huo_benediction_AuraScript();
-        }
-};
-
 class AreaTrigger_at_temple_entrance : public AreaTriggerScript
 {
     public:
@@ -1056,17 +1033,15 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
 void AddSC_WanderingIsland_North()
 {
     new mob_master_shang_xi();
-    new go_wandering_weapon_rack();
-    new mob_training_target();
-    new mob_tushui_trainee();
     new boss_jaomin_ro();
+    new npc_panda_announcer();
     new mob_attacker_dimwind();
     new mob_min_dimwind();
+    new npc_min_dimwind_outro();
     new mob_aysa_lake_escort();
     new mob_aysa();
     new boss_living_air();
     new boss_li_fei();
     new boss_li_fei_fight();
-    new spell_huo_benediction();
     new AreaTrigger_at_temple_entrance();
 }
