@@ -8676,23 +8676,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!spellEnergize)
                         return false;
 
-                    int32 bp0 = spellEnergize->Effects[EFFECT_0].CalcValue(this);
+                    if (!HasAura(52127))
+                        return false;
+
+                    basepoints0 = spellEnergize->Effects[EFFECT_0].CalcValue(this);
 
                     switch (procSpell->Id)
                     {
                         case 8004: // Healing Surge
                         case 61295: // Riptide
                         case 73685: // Unleash life
-                            bp0 *= 0.6f;
+                            basepoints0 *= 0.6f;
                             break;
                         case 1064: // Chain Heal
-                            bp0 *= 0.33f;
+                            basepoints0 *= 0.33f;
                             break;
                     }
-                    if (dummySpell->Id == 16180)
-                        bp0 /= 2;
 
-                    EnergizeBySpell(this, 101033, bp0, POWER_MANA);
+                    triggered_spell_id = 101033;
 
                     break;
                 }

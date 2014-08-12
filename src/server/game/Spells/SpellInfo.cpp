@@ -548,7 +548,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                         AddPct(preciseBasePoints, cof);
                 }
 
-                if (Reqlvl != 1)
+                if (Reqlvl != 1 && !bp)
                 {
                     basePoints = int32(preciseBasePoints);
                     float rounding = preciseBasePoints - basePoints;
