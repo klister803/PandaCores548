@@ -1648,8 +1648,8 @@ bool Creature::canStartAttack(Unit const* who, bool force) const
             if (Unit* victim = who->getAttackerForHelper())
                 if (IsWithinDistInMap(victim, sWorld->getFloatConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS)))
                     force = true;
-
-        if (!force && (IsNeutralToAll() || !IsWithinDistInMap(who, GetAttackDistance(who) + m_CombatDistance)))
+        // this check never happent in LoS for neutralToALL creatures as they by default have reactorAI or PassiveAI
+        if (!force && (/*IsNeutralToAll() || */!IsWithinDistInMap(who, GetAttackDistance(who) + m_CombatDistance)))
             return false;
     }
 
