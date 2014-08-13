@@ -2526,6 +2526,7 @@ class Unit : public WorldObject
         class VisibilityUpdateTask;
         Position m_lastVisibilityUpdPos;
         bool m_VisibilityUpdScheduled;
+        bool m_VisibilityUpdateTask;
         uint32 m_rootTimes;
 
         uint32 m_state;                                     // Even derived shouldn't modify

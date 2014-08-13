@@ -290,6 +290,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
+    m_VisibilityUpdateTask = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
     m_SpecialTarget = NULL;
 
@@ -19759,18 +19760,13 @@ class Unit::AINotifyTask : public BasicEvent
 {
     Unit& m_owner;
 public:
-    explicit AINotifyTask(Unit * me) : m_owner(*me) {
-        m_owner.m_VisibilityUpdScheduled = true;
-    }
-
-    ~AINotifyTask() {
-        m_owner.m_VisibilityUpdScheduled = false;
-    }
+    explicit AINotifyTask(Unit * me) : m_owner(*me) {}
 
     virtual bool Execute(uint64 , uint32)
     {
         Trinity::AIRelocationNotifier notifier(m_owner);
         m_owner.VisitNearbyObject(m_owner.GetVisibilityRange(), notifier);
+        m_owner.m_VisibilityUpdScheduled = false;
         return true;
     }
 
@@ -19804,14 +19800,20 @@ public:
             }
         if (me->isType(TYPEMASK_PLAYER))
             ((Player*)me)->UpdateVisibilityForPlayer();
-        me->WorldObject::UpdateObjectVisibility(true);
+        else
+            me->WorldObject::UpdateObjectVisibility(true);
+        me->m_VisibilityUpdateTask = false;
     }
 };
 
 void Unit::OnRelocated()
 {
+    if (m_VisibilityUpdateTask)
+        return;
+
     if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit)) {
         m_lastVisibilityUpdPos = *this;
+        m_VisibilityUpdateTask = true;
         m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
     }
     AINotifyTask::ScheduleAINotify(this);
@@ -19822,7 +19824,12 @@ void Unit::UpdateObjectVisibility(bool forced)
     if (forced)
         VisibilityUpdateTask::UpdateVisibility(this);
     else
+    {
+        if (m_VisibilityUpdateTask)
+            return;
+        m_VisibilityUpdateTask = true;
         m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+    }
     AINotifyTask::ScheduleAINotify(this);
 }
 

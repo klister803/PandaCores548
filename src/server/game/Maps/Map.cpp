@@ -675,8 +675,6 @@ void Map::PlayerRelocation(Player* player, float x, float y, float z, float orie
         AddToGrid(player, new_cell);
     }
 
-    player->OnRelocated();
-
     player->UpdateObjectVisibility(false);
 }
 
@@ -711,7 +709,6 @@ void Map::CreatureRelocation(Creature* creature, float x, float y, float z, floa
         if (creature->IsVehicle())
             creature->GetVehicleKit()->RelocatePassengers();
         creature->OnRelocated();
-        creature->UpdateObjectVisibility(false);
         RemoveCreatureFromMoveList(creature);
     }
 
