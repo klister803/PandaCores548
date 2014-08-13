@@ -485,7 +485,15 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     preciseBasePoints += frand(-delta, delta);
                 }
 
-                if (m_castItem)
+                bool isEnchant = false;
+
+                for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
+                    if (Spell* spell = caster->GetCurrentSpell(i))
+                        if (SpellInfo const* _spellinfo = spell->GetSpellInfo())
+                            if (_spellinfo->HasEffect(SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY))
+                                isEnchant = true;
+
+                if (m_castItem && !isEnchant)
                 {
                     float cof = 0.0f;
 
@@ -548,7 +556,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                         AddPct(preciseBasePoints, cof);
                 }
 
-                if (Reqlvl != 1)
+                if (Reqlvl != 1 || isEnchant)
                 {
                     basePoints = int32(preciseBasePoints);
                     float rounding = preciseBasePoints - basePoints;
