@@ -89,6 +89,57 @@ enum ShamanSpells
     SPELL_DRUMS_OF_RAGE                     = 146555,
 };
 
+class spell_sha_resurgence : public SpellScriptLoader
+{
+    public:
+        spell_sha_resurgence() : SpellScriptLoader("spell_sha_resurgence") { }
+
+        class spell_sha_resurgence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_resurgence_SpellScript);
+
+            void HandleDummy(SpellEffIndex eff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    uint32 bp = GetEffectValue();
+                    for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
+                    {
+                        if (Spell* spell = caster->GetCurrentSpell(i))
+                        {
+                            SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
+
+                            switch (currentSpellInfo->Id)
+                            {
+                                case 8004:  // Healing Surge
+                                case 61295: // Riptide
+                                case 73685: // Unleash life
+                                    bp *= 0.6f;
+                                    break;
+                                case 1064: // Chain Heal
+                                    bp *= 0.33f;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    SetEffectValue(bp);
+                }
+            }
+
+            void Register()
+            {
+                 OnEffectHitTarget += SpellEffectFn(spell_sha_resurgence_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_ENERGIZE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_resurgence_SpellScript();
+        }
+};
+
 // Prowl - 113289
 class spell_sha_prowl : public SpellScriptLoader
 {
@@ -1757,6 +1808,7 @@ class spell_sha_maelstrom_weapon : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_resurgence();
     new spell_sha_prowl();
     new spell_sha_solar_beam();
     new spell_sha_glyph_of_shamanistic_rage();

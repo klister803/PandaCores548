@@ -392,6 +392,7 @@ class SpellScript : public _SpellScript
 
         // method avalible only in EffectHandler method
         int32 GetEffectValue();
+        void SetEffectValue(int32 val);
 
         // returns: cast item if present.
         Item* GetCastItem();

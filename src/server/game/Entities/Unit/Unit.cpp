@@ -8672,26 +8672,26 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 // Resurgence
                 case 16196:
                 {
-                    SpellInfo const* spellEnergize = sSpellMgr->GetSpellInfo(101033);
-                    if (!spellEnergize)
-                        return false;
+//                     SpellInfo const* spellEnergize = sSpellMgr->GetSpellInfo(101033);
+//                     if (!spellEnergize)
+//                         return false;
 
                     if (!HasAura(52127))
                         return false;
 
-                    basepoints0 = spellEnergize->Effects[EFFECT_0].CalcValue(this);
-
-                    switch (procSpell->Id)
-                    {
-                        case 8004: // Healing Surge
-                        case 61295: // Riptide
-                        case 73685: // Unleash life
-                            basepoints0 *= 0.6f;
-                            break;
-                        case 1064: // Chain Heal
-                            basepoints0 *= 0.33f;
-                            break;
-                    }
+//                     basepoints0 = spellEnergize->Effects[EFFECT_0].CalcValue(this);
+// 
+//                     switch (procSpell->Id)
+//                     {
+//                         case 8004: // Healing Surge
+//                         case 61295: // Riptide
+//                         case 73685: // Unleash life
+//                             basepoints0 *= 0.6f;
+//                             break;
+//                         case 1064: // Chain Heal
+//                             basepoints0 *= 0.33f;
+//                             break;
+//                     }
 
                     triggered_spell_id = 101033;
 
