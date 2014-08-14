@@ -1779,8 +1779,12 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
         while (groupEntry)
         {
             for (uint8 i = 0; i < MAX_GROUP_AREA_IDS; ++i)
+            {
                 if (groupEntry->AreaId[i] == zone_id || groupEntry->AreaId[i] == area_id)
                     found = true;
+                else if (groupEntry->AreaId[i])
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CheckLocation: spell %i only for %u area", Id, groupEntry->AreaId[i]);
+            }
             if (found || !groupEntry->nextGroup)
                 break;
             // Try search in next group

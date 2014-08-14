@@ -34,8 +34,10 @@ enum panda_quests
     QUEST_THE_DISCIPLE_CHALLENGE                   = 29409, //29409 The Disciple's Challenge
     QUEST_AYSA_OF_TUSHUI                           = 29410, // Aysa of the Tushui
     QUEST_PARCHEMIN_VOLANT                         = 29421,
+    QUEST_NEW_FRIEND                               = 29679,
     QUEST_SINGING_POOLS                            = 29521, // The Singing Pools
     QUEST_SOURCE_OF_OUR_LIVELIHOOD                 = 29680, // The Source of Our Livelihood
+    QUEST_NOT_IN_FACE                              = 29774,
 };
 
 enum spell_panda
@@ -43,6 +45,7 @@ enum spell_panda
     SPELL_SUMMON_CHILDREN                          = 116190,
     SPELL_CSA_AT_TIMER                             = 116219, //CSA Area Trigger Dummy Timer Aura A
     SPELL_SUMMON_SPIRIT_OF_WATTER                  = 103538,
+    SPELL_CREDIT_NOT_IN_FACE                       = 104017, // Quest credit Not In the Face!
 };
 
 class npc_panda_announcer : public CreatureScript
@@ -91,10 +94,12 @@ class npc_panda_announcer : public CreatureScript
                         return;
                     break;
                 case NPC_ANNOUNCER_5_TRAVEL:
-                    if (me->GetAreaId() == 5826 && who->ToPlayer()->GetQuestStatus(QUEST_SOURCE_OF_OUR_LIVELIHOOD) == QUEST_STATUS_COMPLETE) // Bassins chantants
+                    if (me->GetAreaId() == 5826 && who->ToPlayer()->GetQuestStatus(QUEST_NEW_FRIEND) != QUEST_STATUS_REWARDED) // Bassins chantants
                         return;
                     if (me->GetAreaId() == 5881) // Ferme Dai-Lo
                     {
+                        if (who->ToPlayer()->GetQuestStatus(QUEST_NOT_IN_FACE) != QUEST_STATUS_REWARDED)
+                            return;
                         text = TEXT_GENERIC_1;
                     }
                     if (me->GetAreaId() == 5833) // Epave du Chercheciel
@@ -1326,6 +1331,7 @@ public:
 
         void Reset()
         {
+            me->SetWalk(true);
             events.ScheduleEvent(EVENT_1, 1000);
         }
 
@@ -1692,6 +1698,7 @@ class spell_grab_carriage: public SpellScriptLoader
                 //carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
                 yak->AI()->SetGUID(carriage->GetGUID(), 0); // enable following
                 caster->EnterVehicle(carriage, 0);
+                caster->RemoveAllMinionsByEntry(55213);
             }
 
             void Register()
@@ -1703,6 +1710,21 @@ class spell_grab_carriage: public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_grab_carriage_SpellScript();
+        }
+};
+
+// Npc's : 57208
+class vehicle_carriage : public VehicleScript
+{
+    public:
+        vehicle_carriage() : VehicleScript("vehicle_carriage") {}
+
+
+        void OnRemovePassenger(Vehicle* veh, Unit* passenger)
+        {
+            if(Unit* u = veh->GetBase())
+                if (Creature * c = u->ToCreature())
+                    c->DespawnOrUnsummon(1000);
         }
 };
 
@@ -1748,12 +1770,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            if (waypointId == waypointToEject)
-            {
-                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
-                    if (vehicle->GetVehicleKit())
-                        vehicle->GetVehicleKit()->RemoveAllPassengers();
-            }
+
         }
 
         void UpdateAI(const uint32 diff)
@@ -1778,6 +1795,223 @@ public:
         return new npc_nourished_yakAI(creature);
     }
     
+};
+
+class mob_jojo_ironbrow_2 : public CreatureScript
+{
+public:
+    mob_jojo_ironbrow_2() : CreatureScript("mob_jojo_ironbrow_2") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_jojo_ironbrow_2_AI (creature);
+    }
+
+    struct mob_jojo_ironbrow_2_AI : public ScriptedAI
+    {
+        mob_jojo_ironbrow_2_AI(Creature* creature) : ScriptedAI(creature) {}
+
+        enum eEvents
+        {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+            EVENT_3    = 3,
+            EVENT_4    = 4,
+        };
+
+        enum eSpell
+        {
+            SUPER_DUPER_KULAK   = 129293,
+        };
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_1, 1000);
+            me->SetWalk(true);
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            if (pointId == EVENT_4)
+                me->DespawnOrUnsummon(1000);
+            else
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_1:
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 599.215f, 3132.27f, 89.06574f);
+                        events.ScheduleEvent(EVENT_2, 10000);
+                        break;
+                    case EVENT_2:
+                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        events.ScheduleEvent(EVENT_3, 3000);
+                        break;
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_4, 10000);
+                        break;
+                    case EVENT_4:
+                        me->GetMotionMaster()->MovePoint(EVENT_4, 568.2413f, 3155.377f, 84.04771f);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+
+class npc_water_spirit_dailo : public CreatureScript
+{
+public:
+    npc_water_spirit_dailo() : CreatureScript("npc_water_spirit_dailo") { }
+
+    enum Credit
+    {
+        CREDIT_1    = 55548,
+        CREDIT_2    = 55547,
+    };
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (action == 1)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            if (player->GetQuestStatus(QUEST_NOT_IN_FACE) == QUEST_STATUS_INCOMPLETE)
+            {
+                player->KilledMonsterCredit(CREDIT_1);
+                creature->AI()->SetGUID(player->GetGUID());
+            }
+        }
+
+        return true;
+    }
+
+    struct npc_water_spirit_dailoAI : public ScriptedAI
+    {
+        npc_water_spirit_dailoAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        uint64 playerGuid;
+        uint16 eventTimer;
+        uint8  eventProgress;
+
+        void Reset()
+        {
+            eventTimer = 0;
+            eventProgress = 0;
+            playerGuid = 0;
+        }
+
+        void SetGUID(uint64 guid, int32 /*type*/)
+        {
+            playerGuid = guid;
+            eventTimer = 2500;
+        }
+
+        void MovementInform(uint32 typeId, uint32 pointId)
+        {
+            if (typeId != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
+            {
+                case 1:
+                    eventTimer = 250;
+                    ++eventProgress;
+                    break;
+                case 2:
+                    eventTimer = 250;
+                    ++eventProgress;
+                    break;
+                case 3:
+                    if (Creature* wugou = GetClosestCreatureWithEntry(me, 60916, 20.0f))
+                        me->SetFacingToObject(wugou);
+                    me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READYUNARMED);
+                    eventTimer = 2000;
+                    ++eventProgress;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (eventTimer)
+            {
+                if (eventTimer <= diff)
+                {
+                    switch (eventProgress)
+                    {
+                        case 0:
+                            me->GetMotionMaster()->MovePoint(1, 650.30f, 3127.16f, 89.62f);
+                            eventTimer = 0;
+                            break;
+                        case 1:
+                            me->GetMotionMaster()->MovePoint(2, 625.25f, 3127.88f, 87.95f);
+                            eventTimer = 0;
+                            break;
+                        case 2:
+                            me->GetMotionMaster()->MovePoint(3, 624.44f, 3142.94f, 87.75f);
+                            eventTimer = 0;
+                            break;
+                        case 3:
+                            if (Creature* wugou = GetClosestCreatureWithEntry(me, 60916, 20.0f))
+                                wugou->CastSpell(wugou, 118027, false);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
+                            eventTimer = 3000;
+                            ++eventProgress;
+                            break;
+                        case 4:
+                            eventTimer = 0;
+                            if (Player* owner = ObjectAccessor::FindPlayer(playerGuid))
+                            {
+                                owner->KilledMonsterCredit(CREDIT_2);  //hack it already done in credit spell, but for cust it need already finished quest.
+                                owner->CastSpell(owner, SPELL_CREDIT_NOT_IN_FACE, false);
+                                me->GetMotionMaster()->MoveTargetedHome();
+                                //me->DespawnOrUnsummon(100);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                    eventTimer -= diff;
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_water_spirit_dailoAI(creature);
+    }
+};
+
+class AreaTrigger_at_middle_temple_from_east : public AreaTriggerScript
+{
+    public:
+        AreaTrigger_at_middle_temple_from_east() : AreaTriggerScript("AreaTrigger_at_middle_temple_from_east")
+        {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        {
+            player->RemoveAllMinionsByEntry(60916);
+            player->RemoveAllMinionsByEntry(55558);
+            return true;
+        }
 };
 
 void AddSC_WanderingIsland_North()
@@ -1806,5 +2040,9 @@ void AddSC_WanderingIsland_North()
     new spell_summon_spirit_of_watter();
     new mob_aysa_cloudsinger_watter_outro();
     new spell_grab_carriage();
+    new vehicle_carriage();
     new npc_nourished_yak();
+    new mob_jojo_ironbrow_2();
+    new npc_water_spirit_dailo();
+    new AreaTrigger_at_middle_temple_from_east();
 }

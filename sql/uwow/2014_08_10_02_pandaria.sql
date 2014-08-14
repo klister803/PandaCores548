@@ -29,7 +29,7 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 --
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
-114455, 109303, 108835, 108823, 108822) AND  area in(5736, 5862, 5827);
+114455, 109303, 108835, 108823, 108822, 104018, 118028) AND  area in(5736, 5862, 5827, 5881, 5826, 5860);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -59,28 +59,40 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 -- ('108150', '5736', '29421', '0', '0', '0', '2', '1', '8', '0'),
 -- 
 ('102872', '5736', '29521', '29662', '0', '0', '2', '1', '74', '64'),
-('108834', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
-('102869', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
-('108879', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'), --
-('102873', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
-('103051', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('108834', '5860', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('108834', '5826', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('102869', '5860', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('102869', '5826', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('108879', '5860', '29521', '0', '0', '0', '2', '1', '74', '0'), --
+('108879', '5826', '29521', '0', '0', '0', '2', '1', '74', '0'), --
+('102873', '5860', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('102873', '5826', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('103051', '5826', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('103051', '5860', '29521', '0', '0', '0', '2', '1', '74', '0'),
 --
 ('102874', '5736', '29666', '29678', '0', '0', '2', '1', '66', '66'), -- qgiver1
 ('102870', '5736', '29666', '29678', '0', '0', '2', '1', '66', '66'), -- qgiver2
 --
-('102875', '5736', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver1
-('102871', '5736', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver2
+('102875', '5826', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver1
+('102875', '5860', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver1
+('102871', '5826', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver2
+('102871', '5860', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver2
 ('128574', '5736', '29678', '29679', '0', '0', '2', '1', '66', '66'), -- watter spitit
 ('116571', '5862', '29678', '0', '0', '0', '2', '1', '74', '0'), -- not remove
 --
-('103538', '5736', '29679', '0', '0', '0', '2', '1', '66', '0'), -- Summon Spirit of Water
+('103538', '5736', '29679', '29680', '0', '0', '2', '1', '66', '66'), -- Summon Spirit of Water
 --
-('114455', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
-('109303', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'), -- slipping spirit of earth
-('108835', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
-('108823', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
-('108822', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'); -- quest giver
-
+('114455', '5881', '29680', '0', '0', '0', '2', '1', '74', '0'),
+('109303', '5881', '29680', '29774', '0', '0', '2', '1', '74', '66'), -- slipping spirit of earth
+('108835', '5881', '29680', '0', '0', '0', '2', '1', '74', '0'),
+('108823', '5881', '29680', '29771', '0', '0', '2', '1', '74', '66'),
+('108822', '5881', '29680', '29768', '0', '0', '2', '1', '74', '66'), -- quest giver
+--
+('104018', '5881', '29768', '29774', '0', '0', '2', '1', '66', '66'), -- quest giver
+('118028', '5881', '29768', '0', '0', '0', '2', '1', '66', '0'), -- quest giver
+--
+('104017', '5736', '29774', '29775', '0', '0', '2', '1', '66', '64'); -- Summon Spirit of Water and Earth
+118028
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND `SourceEntry` in(1, 2, 3) AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
@@ -252,7 +264,8 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 DELETE FROM smart_scripts WHERE entryorguid = 54786;
 INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
 (54786, 0, 0, 0, 9, 0, 100, 0, 30, 30, 60000, 60000, 1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At 54958 in range'),
-(54786, 0, 1, 0, 47, 0, 100, 0, 29521, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At start q: 29521');
+(54786, 0, 1, 0, 47, 0, 100, 0, 29521, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At start q: 29521'),
+(54786, 0, 2, 0, 50, 0, 100, 0, 29775, 0, 0, 0, 1, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29775');
 
 DELETE FROM `creature_text` WHERE entry =54786;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
@@ -317,7 +330,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 
 DELETE FROM `conditions` WHERE SourceEntry = 108798;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
-(13, 1, 108798, 0, 0, 31, 0, 3, 57636, 0, 0, 0, '', 'Cast - Only - 57636'); -- summon in ocean
+(13, 1, 108798, 0, 0, 31, 0, 3, 57636, 0, 0, 0, '', 'Cast - Only - 57636');
 
 DELETE FROM `spell_target_position` WHERE id in (108786, 108808);
 INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
@@ -359,12 +372,16 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 (57710, 115904, 1, 0),
 (57741, 115904, 1, 0),
 (59497, 115904, 1, 0);
+
+UPDATE `creature_template` SET `ScriptName` = 'vehicle_carriage' WHERE `creature_template`.`entry` = 57208;
 DELETE FROM `spell_script_names`  WHERE `spell_id` = 115904;
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('115904', 'spell_grab_carriage');
 
 UPDATE `creature_template` SET `VehicleId` = '1944' WHERE `entry` = 57208;
 
-UPDATE `creature_template` SET `ScriptName` = 'npc_nourished_yak' WHERE `entry` in (57207, 57743, 59499);
+UPDATE `creature_template_addon` SET `auras` = '' WHERE `entry` = 59499;
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_nourished_yak' WHERE `entry` in (57207, 59499, 57743);
 SET @id = 0;
 SET @entry = 57207;
 DELETE FROM `script_waypoint` WHERE `entry` = @entry;
@@ -387,6 +404,25 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 614.827, 3097.02, 86.6553, NULL), 
 (@entry, @id := @id+ 1, 617.181, 3139.57, 87.7514, NULL);
 
+SET @id = 0;
+SET @entry = 59499;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 577.366, 3148.85, 87.346, NULL), 
+(@entry, @id := @id+ 1, 554.24, 3161.87, 77.325, NULL), 
+(@entry, @id := @id+ 1, 538.584, 3211.28, 75.9284, NULL), 
+(@entry, @id := @id+ 1, 512.599, 3230.89, 74.053, NULL), 
+(@entry, @id := @id+ 1, 508.76, 3260.13, 77.5314, NULL), 
+(@entry, @id := @id+ 1, 519.125, 3313.21, 73.1593, NULL), 
+(@entry, @id := @id+ 1, 524.149, 3328.19, 78.111, NULL), 
+(@entry, @id := @id+ 1, 551.182, 3363.74, 77.8148, NULL), 
+(@entry, @id := @id+ 1, 647.98, 3400.74, 97.0092, NULL), 
+(@entry, @id := @id+ 1, 683.443, 3440.83, 110.622, NULL), 
+(@entry, @id := @id+ 1, 696.219, 3472.66, 118.161, NULL), 
+(@entry, @id := @id+ 1, 745.56, 3496.28, 135.538, NULL), 
+(@entry, @id := @id+ 1, 756.682, 3523.21, 139.03, NULL), 
+(@entry, @id := @id+ 1, 742.424, 3597.72, 140.545, NULL);
+
 
 UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 57712;
 DELETE FROM `creature_text` WHERE entry = 54975;
@@ -404,6 +440,39 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (55477, 2, 0, 'когда же', 12, 0, 100, 507, 0, 27352, 'Цзи Огненная Лапа'),
 (55477, 3, 0, '%s вздыхает.', 16, 0, 100, 0, 0, 0, 'Цзи Огненная Лапа');
 
+-- ----------------------------------------
+-- Q: 29771 Stronger Than Wood
+-- ----------------------------------------
+UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55478;
+DELETE FROM smart_scripts WHERE entryorguid = 55478;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
+(55478, 0, 0, 0, 50, 0, 100, 0, 29771, 0, 0, 0, 11, 108827, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29662');
+
+-- cast 129272 Jojo Ironbrow
+UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_2' WHERE `entry` = 57669;
+
+DELETE FROM `creature_text` WHERE entry = 54975;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
+(57669, 0, 0, 'Наши ремесленники выстругивают отличные доски. Эти доски могут выдержать даже самую сильную бурю. Для моего сокрушительного черепа они не прочнее воды.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
+(57669, 1, 0, 'Пандаренам не по силам соорудить барьер, который остановил бы меня.', 12, 0, 100, 2, 0, 0, 'Йо-Йо Железная Бровь');
+
+DELETE FROM `conditions` WHERE SourceEntry = 108831;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 108831, 0, 0, 31, 0, 3, 57667, 0, 0, 0, '', 'Cast - Only - 57667');
+
+DELETE FROM `spell_target_position` WHERE id in (108830, 108827);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('108830', '860', '598.3958', '3132.111', '89.17931', '0.122173'),
+('108827', '860', '601.6198', '3132.89', '89.0976', '3.316126');
+
+-- ----------------------------------------
+-- Q: 29774 Not In the Face!
+-- ----------------------------------------
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_water_spirit_dailo' WHERE  `entry` = 55556;
+DELETE FROM smart_scripts WHERE entryorguid = 55556;
+
+DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_middle_temple_from_east';
+INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES ('8588', 'AreaTrigger_at_middle_temple_from_east');
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';
