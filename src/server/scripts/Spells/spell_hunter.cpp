@@ -1234,7 +1234,7 @@ class spell_hun_cobra_shot : public SpellScriptLoader
                             serpentSting->SetDuration(serpentSting->GetDuration() + (GetSpellInfo()->Effects[EFFECT_2].BasePoints * 1000));
 
                             if (serpentSting->GetMaxDuration() < serpentSting->GetDuration())
-                                serpentSting->SetMaxDuration(serpentSting->GetDuration());
+                                serpentSting->RefreshTimers();
                         }
                     }
                 }
