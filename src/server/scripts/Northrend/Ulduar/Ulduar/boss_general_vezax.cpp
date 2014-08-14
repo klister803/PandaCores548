@@ -244,14 +244,18 @@ public:
                             std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
                             for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                             {
-                                Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                                if (me->GetDistance(pTarget) > 15.0f && pTarget->GetTypeId() == TYPEID_PLAYER)
-                                    if (me->getVictim())
-                                        if (pTarget->GetGUID() != me->getVictim()->GetGUID())
-                                        {
-                                            DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
-                                            break;
-                                        }
+                                if(Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
+                                {
+                                    if (me->GetDistance(pTarget) > 15.0f && pTarget->GetTypeId() == TYPEID_PLAYER)
+                                    {
+                                        if (me->getVictim())
+                                            if (pTarget->GetGUID() != me->getVictim()->GetGUID())
+                                            {
+                                                DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
+                                                break;
+                                            }
+                                    }
+                                }
                                 
                             }
                             events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));

@@ -175,7 +175,7 @@ public:
                     finaldmg = mainItem->GetTemplate()->DPS;
                     mainattackspeed = mainItem->GetTemplate()->Delay / 1000.0f;
                 }
-                if (offItem)
+                if (offItem && mainItem)
                 {
                     adddmg = offItem->GetTemplate()->DPS;
                     offattackspeed = mainItem->GetTemplate()->Delay / 1000.0f;
