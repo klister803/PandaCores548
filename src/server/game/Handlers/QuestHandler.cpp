@@ -424,6 +424,8 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         }
         // As quest complete send available quests. Need when questgiver from next quest chain staying near questtaker
         HandleQuestgiverStatusMultipleQuery(recvData);
+        // AutoTake system
+         _player->PrepareAreaQuest( _player->GetAreaId());
     }
     else 
         _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, guid, true);
