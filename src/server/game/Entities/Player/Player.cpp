@@ -1986,8 +1986,11 @@ void Player::Update(uint32 p_time)
 
     if (m_knockBackTimer)
     {
-        if( m_knockBackTimer + 2000 < getMSTime())
+        if (m_knockBackTimer + 2000 < getMSTime())
+        {
             m_knockBackTimer = 0;
+            ClearUnitState(UNIT_STATE_JUMPING);
+        }
     }
 
     UpdateEnchantTime(p_time);
