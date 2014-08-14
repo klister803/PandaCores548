@@ -10011,6 +10011,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 108215: // Paralysis
+        {
+            if (victim->HasAura(113953, GetGUID()))
+                return false;
+            break;
+        }
         case 145672: // Riposte
         case 145676: // Riposte
         {
