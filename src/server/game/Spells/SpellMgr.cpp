@@ -4952,6 +4952,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 70859: // Upper Spire Teleport
                 case 70860: // Frozen Throne Teleport
                 case 70861: // Sindragosa's Lair Teleport
+                case 108786:// Summon Stack of Reeds
+                case 108808:
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
                     break;
                 case 84964:  // Rayne's Seed

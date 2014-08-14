@@ -20,9 +20,13 @@ enum panda_npc
     NPC_ANNOUNCER_2                                = 60244,
     NPC_ANNOUNCER_3                                = 54943,
     NPC_ANNOUNCER_4                                = 54568,
+    NPC_ANNOUNCER_5_TRAVEL                         = 57712,
     NPC_AMBERLEAF_SCAMP                            = 54130, //Amberleaf Scamp
     NPC_MIN_DIMWIND_OUTRO                          = 56503, //Min Dimwind
     NPC_MASTER_LI_FAI                              = 54856, 
+    NPC_EAST_CHILDREN_CAI                          = 60250,
+    NPC_EAST_CHILDREN_DEN                          = 60249,
+    NPC_AYSA_WATTER_OUTRO_EVENT                    = 54975,
 };
 
 enum panda_quests
@@ -30,6 +34,15 @@ enum panda_quests
     QUEST_THE_DISCIPLE_CHALLENGE                   = 29409, //29409 The Disciple's Challenge
     QUEST_AYSA_OF_TUSHUI                           = 29410, // Aysa of the Tushui
     QUEST_PARCHEMIN_VOLANT                         = 29421,
+    QUEST_SINGING_POOLS                            = 29521, // The Singing Pools
+    QUEST_SOURCE_OF_OUR_LIVELIHOOD                 = 29680, // The Source of Our Livelihood
+};
+
+enum spell_panda
+{
+    SPELL_SUMMON_CHILDREN                          = 116190,
+    SPELL_CSA_AT_TIMER                             = 116219, //CSA Area Trigger Dummy Timer Aura A
+    SPELL_SUMMON_SPIRIT_OF_WATTER                  = 103538,
 };
 
 class npc_panda_announcer : public CreatureScript
@@ -64,6 +77,8 @@ class npc_panda_announcer : public CreatureScript
             if (itr != m_player_for_event.end())
                 return;
 
+            uint32 text = TEXT_GENERIC_0;
+
             switch(me->GetEntry())
             {
                 case NPC_ANNOUNCER_1:
@@ -75,12 +90,22 @@ class npc_panda_announcer : public CreatureScript
                     if (who->ToPlayer()->GetQuestStatus(QUEST_AYSA_OF_TUSHUI) == QUEST_STATUS_REWARDED)
                         return;
                     break;
+                case NPC_ANNOUNCER_5_TRAVEL:
+                    if (me->GetAreaId() == 5826 && who->ToPlayer()->GetQuestStatus(QUEST_SOURCE_OF_OUR_LIVELIHOOD) == QUEST_STATUS_COMPLETE) // Bassins chantants
+                        return;
+                    if (me->GetAreaId() == 5881) // Ferme Dai-Lo
+                    {
+                        text = TEXT_GENERIC_1;
+                    }
+                    if (me->GetAreaId() == 5833) // Epave du Chercheciel
+                        return;
+                    break;
                 default:
                     break;
             }
 
             m_player_for_event.insert(who->GetGUID());
-            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
+            sCreatureTextMgr->SendChat(me, text, who->GetGUID());
         }
     };
 };
@@ -1030,6 +1055,731 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
         }
 };
 
+/*
+========================================
+========= E A S T  P A R T =============
+========================================
+*/
+
+class at_going_to_east : public AreaTriggerScript
+{
+    public:
+        at_going_to_east() : AreaTriggerScript("at_going_to_east")
+        {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        {
+            if (player->HasAura(SPELL_CSA_AT_TIMER) || player->ToPlayer()->GetQuestStatus(QUEST_SINGING_POOLS) != QUEST_STATUS_COMPLETE) 
+                return true;
+
+            player->CastSpell(player, SPELL_CSA_AT_TIMER, true);
+            //player->CastSpell(player, SPELL_SUMMON_CHILDREN, true);
+            
+            if (Creature *cai = player->SummonCreature(NPC_EAST_CHILDREN_CAI, 934.0156f, 3513.154f, 188.1347f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+            {
+                cai->AI()->SetGUID(player->GetGUID(), 0);
+                cai->GetMotionMaster()->MoveFollow(player, 2.0f, M_PI / 4);
+            }
+            if (Creature *cai = player->SummonCreature(NPC_EAST_CHILDREN_DEN, 949.37f, 3510.0f, 187.7983f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+            {
+                cai->AI()->SetGUID(player->GetGUID(), 0);
+                cai->GetMotionMaster()->MoveFollow(player, 2.0f, M_PI / 2);
+            }
+            return true;
+        }
+};
+
+class npc_childrens_going_to_east : public CreatureScript
+{
+public:
+    npc_childrens_going_to_east() : CreatureScript("npc_childrens_going_to_east") { }
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_childrens_going_to_eastAI(creature);
+    }
+    
+    struct npc_childrens_going_to_eastAI : public ScriptedAI
+    {
+        npc_childrens_going_to_eastAI(Creature* creature) : ScriptedAI(creature)
+        {
+        }
+
+        enum eEvents
+        {
+            EVENT_1   = 1,
+            EVENT_2   = 2,
+            EVENT_3   = 3,
+            EVENT_DESPOWN   = 4,
+        };
+        
+        EventMap events;
+        uint64 plrGUID;
+
+        void SetGUID(uint64 guid, int32 /*id*/ = 0)
+        {
+            plrGUID = guid;
+        }
+
+        void Reset()
+        {
+            plrGUID = 0;
+            events.ScheduleEvent(EVENT_DESPOWN, 60000);
+
+            if (me->GetEntry() == NPC_EAST_CHILDREN_CAI)
+            {
+                events.ScheduleEvent(EVENT_1, 1000);
+                events.ScheduleEvent(EVENT_2, 25000);
+                events.ScheduleEvent(EVENT_3, 50000);
+            }else
+            {
+                events.ScheduleEvent(EVENT_1, 15000);
+                events.ScheduleEvent(EVENT_2, 40000);
+            }
+        }
+        
+        void UpdateAI(const uint32 diff)
+        {
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                    case EVENT_2:
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, eventId - 1, plrGUID);
+                        break;
+                    case EVENT_DESPOWN:
+                        sCreatureTextMgr->SendChat(me, me->GetEntry() == NPC_EAST_CHILDREN_CAI ? TEXT_GENERIC_3 : TEXT_GENERIC_2, plrGUID);
+                        me->DespawnOrUnsummon(5000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+
+class AreaTrigger_at_bassin_curse : public AreaTriggerScript
+{
+    public:
+        AreaTrigger_at_bassin_curse() : AreaTriggerScript("AreaTrigger_at_bassin_curse")
+        {}
+
+        enum eTriggers
+        {
+            AREA_CRANE              = 6991,
+            AREA_SKUNK              = 6988,
+            AREA_FROG2              = 6986,
+            AREA_FROG               = 6987,
+            AREA_FROG_EXIT          = 6986,
+            AREA_TURTLE             = 7012,
+            AREA_CROCODILE          = 6990
+        };
+
+        enum eSpells
+        {
+            SPELL_FROG              = 102938,
+            SPELL_SKUNK             = 102939,
+            SPELL_TURTLE            = 102940,
+            SPELL_CRANE             = 102941,
+            SPELL_CROCODILE         = 102942,
+        };
+
+        void AddOrRemoveSpell(Player* player, uint32 spellId)
+        {
+            RemoveAllSpellsExcept(player, spellId);
+
+            if (!player->HasAura(spellId))
+            {
+                if (!player->IsOnVehicle())
+                    player->AddAura(spellId, player);
+            }
+            else
+                player->RemoveAurasDueToSpell(spellId);
+        }
+
+        void RemoveAllSpellsExcept(Player* player, uint32 spellId)
+        {
+            uint32 spellTable[5] = {SPELL_FROG, SPELL_SKUNK, SPELL_TURTLE, SPELL_CRANE, SPELL_CROCODILE};
+
+            for (uint8 i = 0; i < 5; ++i)
+                if (spellId != spellTable[i])
+                    player->RemoveAurasDueToSpell(spellTable[i]);
+        }
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        {
+            if (player->IsOnVehicle())
+                return true;
+
+            switch(trigger->id)
+            {
+                case AREA_CRANE:     AddOrRemoveSpell(player, SPELL_CRANE);     break;
+                case AREA_SKUNK:     AddOrRemoveSpell(player, SPELL_SKUNK);     break;
+                case AREA_FROG: case AREA_FROG_EXIT:      AddOrRemoveSpell(player, SPELL_FROG);      break;
+                //case AREA_FROG_EXIT: RemoveAllSpellsExcept(player, 0);          break;
+                case AREA_TURTLE:    AddOrRemoveSpell(player, SPELL_TURTLE);    break;
+                case AREA_CROCODILE: AddOrRemoveSpell(player, SPELL_CROCODILE); break;
+            }
+
+            return true;
+        }
+};
+
+// Npc's : 54993 - 55083 - 57431
+class vehicle_balance_pole : public VehicleScript
+{
+    public:
+        vehicle_balance_pole() : VehicleScript("vehicle_balance_pole") {}
+
+        void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 /*seatId*/)
+        {
+            if (passenger->HasAura(102938))
+                //passenger->RemoveAurasDueToSpell(102938);
+                passenger->ExitVehicle();
+        }
+
+        void OnRemovePassenger(Vehicle* veh, Unit* passenger)
+        {
+            //passenger->AddAura(102938, passenger);
+        }
+};
+
+class mob_tushui_monk : public CreatureScript
+{
+public:
+    mob_tushui_monk() : CreatureScript("mob_tushui_monk") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_tushui_monkAI(creature);
+    }
+
+    struct mob_tushui_monkAI : public ScriptedAI
+    {
+        mob_tushui_monkAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        void Reset()
+        {
+            std::list<Creature*> poleList;
+            GetCreatureListWithEntryInGrid(poleList, me, 54993, 50.0f);
+
+            if (poleList.empty())
+            {
+                me->DespawnOrUnsummon(1000);
+                return;
+            }
+
+            Trinity::Containers::RandomResizeList(poleList, 1);
+
+            for (std::list<Creature*>::const_iterator itr = poleList.begin(); itr != poleList.end(); ++itr)
+            {
+                me->EnterVehicle(*itr);
+                break;
+            }
+
+            me->setFaction(2357);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            me->ExitVehicle();
+            me->DespawnOrUnsummon(1000);
+        }
+    };
+};
+
+class mob_jojo_ironbrow_1 : public CreatureScript
+{
+public:
+    mob_jojo_ironbrow_1() : CreatureScript("mob_jojo_ironbrow_1") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_jojo_ironbrow_1_AI (creature);
+    }
+
+    struct mob_jojo_ironbrow_1_AI : public ScriptedAI
+    {
+        mob_jojo_ironbrow_1_AI(Creature* creature) : ScriptedAI(creature) {}
+
+        enum eEvents
+        {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+            EVENT_3    = 3,
+            EVENT_4    = 4,
+        };
+
+        enum eSpell
+        {
+            SUPER_DUPER_KULAK   = 129272,
+        };
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_1, 1000);
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            if (pointId == EVENT_4)
+                me->DespawnOrUnsummon(1000);
+            else
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_1:
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 1039.0f, 3284.0f, 126.6f);
+                        events.ScheduleEvent(EVENT_2, 10000);
+                        break;
+                    case EVENT_2:
+                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        events.ScheduleEvent(EVENT_3, 3000);
+                        break;
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_4, 10000);
+                        break;
+                    case EVENT_4:
+                        me->GetMotionMaster()->MovePoint(EVENT_4, 1027.379f, 3287.417f, 126.2935f);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+
+// Rock Jump - 103069 / 103070 / 103077
+class spell_rock_jump: public SpellScriptLoader
+{
+    public:
+        spell_rock_jump() : SpellScriptLoader("spell_rock_jump") { }
+
+        class spell_rock_jump_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rock_jump_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->GetPositionZ() < 90.0f)
+                        caster->GetMotionMaster()->MoveJump(1045.36f, 2848.47f, 91.38f, 10.0f, 10.0f);
+                    else if (caster->GetPositionZ() < 92.0f)
+                        caster->GetMotionMaster()->MoveJump(1054.42f, 2842.65f, 92.96f, 10.0f, 10.0f);
+                    else if (caster->GetPositionZ() < 94.0f)
+                        caster->GetMotionMaster()->MoveJump(1063.66f, 2843.49f, 95.50f, 10.0f, 10.0f);
+                    else
+                    {
+                        caster->GetMotionMaster()->MoveJump(1078.42f, 2845.07f, 95.16f, 10.0f, 10.0f);
+
+                        if (caster->ToPlayer())
+                            caster->ToPlayer()->KilledMonsterCredit(57476);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_rock_jump_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_JUMP_DEST);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rock_jump_SpellScript();
+        }
+};
+
+Position rocksPos[4] =
+{
+    {1102.05f, 2882.11f, 94.32f, 0.11f},
+    {1120.01f, 2883.20f, 96.44f, 4.17f},
+    {1128.09f, 2859.44f, 97.64f, 2.51f},
+    {1111.52f, 2849.84f, 94.84f, 1.94f}
+};
+
+class mob_shu_water_spirit : public CreatureScript
+{
+public:
+    mob_shu_water_spirit() : CreatureScript("mob_shu_water_spirit") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_shu_water_spiritAI(creature);
+    }
+
+    struct mob_shu_water_spiritAI : public ScriptedAI
+    {
+        mob_shu_water_spiritAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap _events;
+        uint8 actualPlace;
+
+        uint64 waterSpoutGUID;
+
+        enum eShuSpells
+        {
+            SPELL_WATER_SPOUT_SUMMON    = 116810,
+            SPELL_WATER_SPOUT_WARNING   = 116695,
+            SPELL_WATER_SPOUT_EJECT     = 116696,
+            SPELL_WATER_SPOUT_VISUAL    = 117057,
+        };
+
+        enum eEvents
+        {
+            EVENT_CHANGE_PLACE          = 1,
+            EVENT_SUMMON_WATER_SPOUT    = 2,
+            EVENT_WATER_SPOUT_VISUAL    = 3,
+            EVENT_WATER_SPOUT_EJECT     = 4,
+            EVENT_WATER_SPOUT_DESPAWN   = 5,
+        };
+
+        void Reset()
+        {
+            _events.Reset();
+            actualPlace = 0;
+            waterSpoutGUID = 0;
+
+            _events.ScheduleEvent(EVENT_CHANGE_PLACE, 5000);
+        }
+
+        void MovementInform(uint32 typeId, uint32 pointId)
+        {
+            if (typeId != EFFECT_MOTION_TYPE)
+                return;
+
+            if (pointId == 1)
+            {
+                me->RemoveAurasDueToSpell(SPELL_WATER_SPOUT_WARNING);
+                if (Player* player = me->SelectNearestPlayerNotGM(50.0f))
+                {
+                    me->SetOrientation(me->GetAngle(player));
+                    me->SetFacingToObject(player);
+                    _events.ScheduleEvent(EVENT_SUMMON_WATER_SPOUT, 2000);
+                }
+                else
+                    _events.ScheduleEvent(EVENT_CHANGE_PLACE, 5000);
+            }
+        }
+
+        Creature* getWaterSpout()
+        {
+            return me->GetMap()->GetCreature(waterSpoutGUID);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            _events.Update(diff);
+
+            switch (_events.ExecuteEvent())
+            {
+                case EVENT_CHANGE_PLACE:
+                {
+                    uint8 newPlace = 0;
+
+                    do { newPlace = urand(0, 3); } while (newPlace == actualPlace);
+
+                    me->GetMotionMaster()->MoveJump(rocksPos[newPlace].GetPositionX(), rocksPos[newPlace].GetPositionY(), rocksPos[newPlace].GetPositionZ(), 10.0f, 10.0f, 1);
+                    me->AddAura(SPELL_WATER_SPOUT_WARNING, me); // Just visual
+                    actualPlace = newPlace;
+                    break;
+                }
+                case EVENT_SUMMON_WATER_SPOUT:
+                {
+                    float x = 0.0f, y = 0.0f;
+                    GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation() + frand(-M_PI, M_PI), x, y);
+                    waterSpoutGUID = 0;
+
+                    if (Creature* waterSpout = me->SummonCreature(60488, x, y, 92.189629f))
+                        waterSpoutGUID = waterSpout->GetGUID();
+
+                    _events.ScheduleEvent(EVENT_WATER_SPOUT_VISUAL, 500);
+                    _events.ScheduleEvent(EVENT_WATER_SPOUT_EJECT, 7500);
+                    break;
+                }
+                case EVENT_WATER_SPOUT_VISUAL:
+                {
+                    if (Creature* waterSpout = getWaterSpout())
+                        waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_WARNING, true);
+                    break;
+                }
+                case EVENT_WATER_SPOUT_EJECT:
+                {
+                    if (Creature* waterSpout = getWaterSpout())
+                    {
+                        std::list<Player*> playerList;
+                        GetPlayerListInGrid(playerList, waterSpout, 1.0f);
+
+                        for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                            (*itr)->CastSpell((*itr), SPELL_WATER_SPOUT_EJECT, true);
+
+                        waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_VISUAL, true);
+                    }
+                    _events.ScheduleEvent(EVENT_WATER_SPOUT_DESPAWN, 3000);
+                    break;
+                }
+                case EVENT_WATER_SPOUT_DESPAWN:
+                {
+                    if (Creature* waterSpout = getWaterSpout())
+                        waterSpout->DespawnOrUnsummon();
+
+                    waterSpoutGUID = 0;
+
+                    _events.ScheduleEvent(EVENT_CHANGE_PLACE, 2000);
+                    break;
+                }
+            }
+        }
+    };
+};
+
+// Summon Spirit of Water - 103538
+class spell_summon_spirit_of_watter: public SpellScriptLoader
+{
+    public:
+        spell_summon_spirit_of_watter() : SpellScriptLoader("spell_summon_spirit_of_watter") { }
+
+        class spell_summon_spirit_of_watter_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_summon_spirit_of_watter_AuraScript);
+            
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+
+                if (!target)
+                    return;
+
+                std::list<Creature*> shuList;
+                GetCreatureListWithEntryInGrid(shuList, target, NPC_AYSA_WATTER_OUTRO_EVENT, 20.0f);
+                for (std::list<Creature*>::const_iterator itr = shuList.begin(); itr != shuList.end(); ++itr)
+                {
+                    (*itr)->AI()->SetGUID(target->GetGUID(), 0);
+                }
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+
+                if (!target)
+                    return;
+
+            }
+
+            void Register()
+            {
+                OnEffectApply  += AuraEffectApplyFn (spell_summon_spirit_of_watter_AuraScript::OnApply,  EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                OnEffectRemove += AuraEffectRemoveFn(spell_summon_spirit_of_watter_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_summon_spirit_of_watter_AuraScript();
+        }
+};
+
+class mob_aysa_cloudsinger_watter_outro : public CreatureScript
+{
+public:
+    mob_aysa_cloudsinger_watter_outro() : CreatureScript("mob_aysa_cloudsinger_watter_outro") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_aysa_cloudsinger_watter_outroAI(creature);
+    }
+
+    struct mob_aysa_cloudsinger_watter_outroAI : public ScriptedAI
+    {
+        mob_aysa_cloudsinger_watter_outroAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap _events;
+        uint64 plrGUID;
+        enum eEvents
+        {
+            EVENT_1          = 1,
+            EVENT_2          = 2,
+
+        };
+
+        void Reset()
+        {
+            plrGUID = 0;
+            _events.Reset();
+        }
+
+        void SetGUID(uint64 guid, int32 /*id*/ = 0)
+        {
+            plrGUID = guid;
+            _events.ScheduleEvent(EVENT_1, 1000);
+            _events.ScheduleEvent(EVENT_2, 10000);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            _events.Update(diff);
+
+            while (uint32 eventId = _events.ExecuteEvent())
+                sCreatureTextMgr->SendChat(me, eventId - 1, plrGUID);
+        }
+    };
+};
+
+// Grab Carriage - 115904
+class spell_grab_carriage: public SpellScriptLoader
+{
+    public:
+        spell_grab_carriage() : SpellScriptLoader("spell_grab_carriage") { }
+
+        class spell_grab_carriage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_grab_carriage_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                Unit* caster = GetCaster();
+
+                if (!caster)
+                    return;
+
+                Creature* carriage = NULL;
+                Creature* yak      = NULL;
+                
+                if (caster->GetAreaId() == 5826) // Bassins chantants
+                {
+                    carriage = caster->SummonCreature(57208, 979.06f, 2863.87f, 87.88f, 4.7822f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(57207, 979.37f, 2860.29f, 88.22f, 4.4759f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
+                else if (caster->GetAreaId() == 5881) // Ferme Dai-Lo
+                {
+                    carriage = caster->SummonCreature(57208, 588.70f, 3165.63f, 88.86f, 4.4156f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(59499, 587.61f, 3161.91f, 89.31f, 4.3633f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
+                else if (caster->GetAreaId() == 5833) // Epave du Chercheciel
+                {
+                    carriage = caster->SummonCreature(57208, 264.37f, 3867.60f, 73.56f, 0.9948f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(57743, 268.38f, 3872.36f, 74.50f, 0.8245f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
+
+                if (!carriage || !yak)
+                    return;
+
+                //carriage->CastSpell(yak, 108627, true);
+                //carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
+                yak->AI()->SetGUID(carriage->GetGUID(), 0); // enable following
+                caster->EnterVehicle(carriage, 0);
+            }
+
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_grab_carriage_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_grab_carriage_SpellScript();
+        }
+};
+
+class npc_nourished_yak : public CreatureScript
+{
+public:
+    npc_nourished_yak() : CreatureScript("npc_nourished_yak") { }
+
+    struct npc_nourished_yakAI : public npc_escortAI
+    {        
+        npc_nourished_yakAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        uint32 IntroTimer;
+        uint8 waypointToEject;
+
+        void Reset()
+        {
+            uint8 waypointToEject = 100;
+
+            if (me->isSummon())
+            {
+                IntroTimer = 2500;
+
+                // Bassins chantants -> Dai-Lo
+                if (me->GetAreaId() == 5826)
+                    waypointToEject = 24;
+                // Dai-Lo -> Temple
+                else if (me->GetAreaId() == 5881) // Ferme Dai-Lo
+                    waypointToEject = 22;
+                // Epave -> Temple
+                else if (me->GetAreaId() == 5833) // Epave du Chercheciel
+                    waypointToEject = 18;
+            }
+            else
+                IntroTimer = 0;
+        }
+
+        void SetGUID(uint64 guid, int32 /*id*/ = 0)
+        {
+            SetFollowerGUID(guid);
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            if (waypointId == waypointToEject)
+            {
+                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 50.0f))
+                    if (vehicle->GetVehicleKit())
+                        vehicle->GetVehicleKit()->RemoveAllPassengers();
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (IntroTimer)
+            {
+                if (IntroTimer <= diff)
+                {
+                    Start(false, true);
+                    IntroTimer = 0;
+                }
+                else
+                    IntroTimer -= diff;
+            }
+
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_nourished_yakAI(creature);
+    }
+    
+};
+
 void AddSC_WanderingIsland_North()
 {
     new mob_master_shang_xi();
@@ -1044,4 +1794,17 @@ void AddSC_WanderingIsland_North()
     new boss_li_fei();
     new boss_li_fei_fight();
     new AreaTrigger_at_temple_entrance();
+    // east
+    new at_going_to_east();
+    new npc_childrens_going_to_east();
+    new AreaTrigger_at_bassin_curse();
+    new vehicle_balance_pole();
+    new mob_tushui_monk();
+    new mob_jojo_ironbrow_1();
+    new spell_rock_jump();
+    new mob_shu_water_spirit();
+    new spell_summon_spirit_of_watter();
+    new mob_aysa_cloudsinger_watter_outro();
+    new spell_grab_carriage();
+    new npc_nourished_yak();
 }

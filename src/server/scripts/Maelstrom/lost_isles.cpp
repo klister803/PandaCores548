@@ -522,7 +522,8 @@ public:
             summon->AddPlayerInPersonnalVisibilityList(plrGUID);
             summon->SetWalk(false);
             summon->SetSpeed(MOVE_RUN, 1.25f);
-            summon->GetMotionMaster()->MoveFollow(me, 1.0f, 0);
+            SetFollowerGUID(summon->GetGUID());
+            //summon->GetMotionMaster()->MoveFollow(me, 1.0f, 0);
             cartGUID = summon->GetGUID();
         }
 

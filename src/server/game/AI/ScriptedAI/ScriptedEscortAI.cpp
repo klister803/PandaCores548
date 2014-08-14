@@ -171,7 +171,7 @@ void npc_escortAI::MovePoint(uint32 point, float x, float y, float z)
 
     //ToDo: find fast way for find behind point in 3-5 range
     if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))
-        follower->GetMotionMaster()->MovePoint(point, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+        follower->GetMotionMaster()->MovePoint(point, x, y, z);
 }
 
 void npc_escortAI::EnterEvadeMode()

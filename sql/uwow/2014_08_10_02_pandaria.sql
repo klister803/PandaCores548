@@ -28,7 +28,8 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 
 --
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
-102399, 102400, 102521, 108150) AND  area = 5736;
+102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
+114455, 109303, 108835, 108823, 108822) AND  area in(5736, 5862, 5827);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -49,14 +50,36 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 --
 ('102396', '5736', '29414', '29523', '0', '0', '2', '1', '66', '66'),
 --
-('102397', '5736', '29523', '0', '0', '0', '2', '1', '66', '0'),
+('102397', '5736', '29523', '29521', '0', '0', '2', '1', '66', '74'),
 -- 102399
-('102399', '5736', '29420', '0', '0', '0', '2', '1', '74', '0'),
-('102400', '5736', '29420', '0', '0', '0', '2', '1', '74', '0'),
-('102521', '5736', '29420', '0', '0', '0', '2', '1', '74', '0');
+('102399', '5736', '29420', '29521', '0', '0', '2', '1', '74', '74'),
+('102400', '5736', '29420', '29521', '0', '0', '2', '1', '74', '74'),
+('102521', '5736', '29420', '29521', '0', '0', '2', '1', '74', '74'),
 --
 -- ('108150', '5736', '29421', '0', '0', '0', '2', '1', '8', '0'),
+-- 
+('102872', '5736', '29521', '29662', '0', '0', '2', '1', '74', '64'),
+('108834', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('102869', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('108879', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'), --
+('102873', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
+('103051', '5736', '29521', '0', '0', '0', '2', '1', '74', '0'),
 --
+('102874', '5736', '29666', '29678', '0', '0', '2', '1', '66', '66'), -- qgiver1
+('102870', '5736', '29666', '29678', '0', '0', '2', '1', '66', '66'), -- qgiver2
+--
+('102875', '5736', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver1
+('102871', '5736', '29678', '0', '0', '0', '2', '1', '66', '0'), -- qgiver2
+('128574', '5736', '29678', '29679', '0', '0', '2', '1', '66', '66'), -- watter spitit
+('116571', '5862', '29678', '0', '0', '0', '2', '1', '74', '0'), -- not remove
+--
+('103538', '5736', '29679', '0', '0', '0', '2', '1', '66', '0'), -- Summon Spirit of Water
+--
+('114455', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
+('109303', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'), -- slipping spirit of earth
+('108835', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
+('108823', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'),
+('108822', '5736', '29680', '0', '0', '0', '2', '1', '74', '0'); -- quest giver
 
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND `SourceEntry` in(1, 2, 3) AND SourceGroup = 5736;
@@ -241,6 +264,145 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (54786, 5, 0, 'Аиса, я хочу, чтобы ты отправилась к Поющим прудам и разыскала Шу, духа воды.', 12, 0, 100, 1, 0, 27793, 'Мастер Шан Си'),
 (54786, 6, 0, 'Ты же будешь направлять наши усилия. Поговори со мной перед тем, как отправиться на восток, к Поющим прудам, и встретиться с Аисой.', 12, 0, 100, 1, 0, 27794, 'Мастер Шан Си'),
 (54786, 7, 0, 'Ты снова здесь, вместе с духами воды и земли. Старый учитель гордится тобой.', 12, 0, 100, 1, 0, 27776, 'Мастер Шан Си');
+
+
+-- ----------------------------------------
+-- Q: 29521 The Singing Pools
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'npc_childrens_going_to_east' WHERE  `entry` in (60250, 60249);
+
+DELETE FROM `creature_text` WHERE entry =60250;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60250, 0, 0, 'Эй! Это благодаря тебе дух огня снова у нас?', 12, 0, 100, 3, 0, 0, 'Цай'),
+(60250, 1, 0, 'Конечно же он был горячим. Не будь дураком, Дэн.', 12, 0, 100, 5, 0, 0, 'Цай'),
+(60250, 2, 0, 'Ну-у, Дэн. Готов поспорить, тебя запросто можно запустить пинком во-он за тот холм! Ха!', 12, 0, 100, 274, 0, 0, 'Цай'),
+(60250, 3, 0, 'Пока.', 12, 0, 100, 3, 0, 0, 'Цай');
+
+DELETE FROM `creature_text` WHERE entry =60249;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60249, 0, 0, 'А он был горячий? Готов поспорить, что да!', 12, 0, 100, 6, 0, 0, 'Дэн'),
+(60249, 1, 0, 'Готов поспорить, силищи тебе не занимать, а? Ты, наверно, можешь одним ударом разломить пополам вон тот мост!', 12, 0, 100, 6, 0, 0, 'Дэн'),
+(60249, 2, 0, 'Прощай!', 12, 0, 100, 3, 0, 0, 'Дэн');
+
+DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'at_going_to_east';
+INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES ('7858', 'at_going_to_east');
+
+-- ----------------------------------------
+-- Q: 29521 The Singing Pools
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'vehicle_balance_pole' WHERE  `entry` in (54993, 55083, 57431);
+UPDATE `creature_template` SET `ScriptName` = 'mob_tushui_monk' WHERE  `entry` in (55019, 65468);
+UPDATE `creature_template` SET `IconName` = 'vehichleCursor' WHERE `entry` = 57626;
+DELETE FROM `npc_spellclick_spells` WHERE npc_entry = 57626;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(57626, 46598, 1, 0);
+UPDATE `creature_template` SET `AIName` = 'AggressorAI' WHERE `creature_template`.`entry` = 55015;
+
+-- ----------------------------------------
+-- Q: 29662 Stronger Than Reeds
+-- ----------------------------------------
+
+UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55021;
+DELETE FROM smart_scripts WHERE entryorguid = 55021;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
+(55021, 0, 0, 0, 50, 0, 100, 0, 29662, 0, 0, 0, 11, 108786, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29662');
+
+-- cast 129272 Jojo Ironbrow
+UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_1' WHERE `creature_template`.`entry` = 57638;
+
+DELETE FROM `creature_text` WHERE entry =57638;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(57638, 0, 0, 'Тростник Поющих прудов – прочнейший в этих краях, но для моего лба даже он – не прочнее воздуха.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
+(57638, 1, 0, 'Многие пытались испытать меня, но я несокрушим.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь');
+
+DELETE FROM `conditions` WHERE SourceEntry = 108798;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 108798, 0, 0, 31, 0, 3, 57636, 0, 0, 0, '', 'Cast - Only - 57636'); -- summon in ocean
+
+DELETE FROM `spell_target_position` WHERE id in (108786, 108808);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('108786', '860', '01038.554', '3286.385', '129.1765', '1.815142'),
+('108808', '860', '1039.491', '3283.111', '129.5231', '1.815142');
+
+-- ----------------------------------------
+-- Q: 29678 Shu, the Spirit of Water
+-- ----------------------------------------
+UPDATE `quest_template` SET `Flags` = '327688', `RequiredIdCount1` = '1', `RequiredIdCount2` = '1', `RequiredPOI1` = '251733', `RequiredPOI2` = '251734' WHERE `Id` = 29678;
+UPDATE `creature_template` SET `AIName` = '' WHERE `entry` = 65493;
+DELETE FROM smart_scripts WHERE entryorguid = 65493;
+
+DELETE FROM `creature_involvedrelation` WHERE `quest` = 29678; -- autosubmit
+
+-- ----------------------------------------
+-- Q: 29679 A New Friend
+-- ----------------------------------------
+DELETE FROM `creature_questrelation` WHERE `quest` = 29679;
+DELETE FROM `area_queststart` WHERE id = 5862
+INSERT INTO `area_queststart` (`id`, `quest`) VALUES ('5862', '29679');
+
+DELETE FROM `creature_text` WHERE entry = 54975;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
+(54975, 0, 0, 'Должна признать, за вами было интересно наблюдать!', 12, 0, 100, 0, 0, 27394, 'Аиса Воспевающая Облака'),
+(54975, 1, 0, 'И мне кажется, у тебя появился новый друг.', 12, 0, 100, 0, 0, 27395, 'Аиса Воспевающая Облака');
+
+DELETE FROM `spell_script_names` WHERE `spell_id` = 103538;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('103538', 'spell_summon_spirit_of_watter');
+
+UPDATE `creature_template` SET `ScriptName` = 'mob_aysa_cloudsinger_watter_outro' WHERE `entry` = 54975;
+
+-- ----------------------------------------
+-- Q: 29680 The Source of Our Livelihood
+-- ----------------------------------------
+UPDATE `creature_template` SET `IconName` = 'vehichleCursor' WHERE `entry` in (57710, 57741, 59497);
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` in (57710, 57741, 59497);
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(57710, 115904, 1, 0),
+(57741, 115904, 1, 0),
+(59497, 115904, 1, 0);
+DELETE FROM `spell_script_names`  WHERE `spell_id` = 115904;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('115904', 'spell_grab_carriage');
+
+UPDATE `creature_template` SET `VehicleId` = '1944' WHERE `entry` = 57208;
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_nourished_yak' WHERE `entry` in (57207, 57743, 59499);
+SET @id = 0;
+SET @entry = 57207;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 979.338, 2852.28, 87.276, NULL), 
+(@entry, @id := @id+ 1, 892.593, 2810.91, 86.4438, NULL), 
+(@entry, @id := @id+ 1, 875.519, 2806.39, 81.961, NULL), 
+(@entry, @id := @id+ 1, 854.392, 2800.24, 83.5591, NULL), 
+(@entry, @id := @id+ 1, 801.608, 2784.76, 76.2802, NULL), 
+(@entry, @id := @id+ 1, 749.569, 2827.86, 75.4519, NULL), 
+(@entry, @id := @id+ 1, 746.148, 2851.48, 75.5912, NULL), 
+(@entry, @id := @id+ 1, 755.357, 2883.45, 74.7007, NULL), 
+(@entry, @id := @id+ 1, 742.717, 2904.04, 74.6945, NULL), 
+(@entry, @id := @id+ 1, 680.361, 2958.9, 74.9462, NULL), 
+(@entry, @id := @id+ 1, 666.782, 2981.86, 74.6082, NULL), 
+(@entry, @id := @id+ 1, 659.627, 2990.9, 79.4118, NULL), 
+(@entry, @id := @id+ 1, 652.523, 2998.18, 74.6114, NULL), 
+(@entry, @id := @id+ 1, 626.525, 3018.83, 74.9584, NULL), 
+(@entry, @id := @id+ 1, 615.27, 3036.96, 76.3462, NULL), 
+(@entry, @id := @id+ 1, 614.827, 3097.02, 86.6553, NULL), 
+(@entry, @id := @id+ 1, 617.181, 3139.57, 87.7514, NULL);
+
+
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 57712;
+DELETE FROM `creature_text` WHERE entry = 54975;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
+(57712, 0, 0, 'Здравствуй, друг! Если хочешь, можешь взять мою повозку. Она отвезет тебя на крестьянский двор Дай-Ло.', 12, 0, 100, 3, 0, 0, 'Хозяин повозки'),
+(57712, 1, 0, 'Здравствуй, друг! Если хочешь, можешь взять мою повозку. Она отвезет тебя в Храм Пяти Рассветов.', 12, 0, 100, 3, 0, 0, 'Хозяин повозки');
+
+-- ----------------------------------------
+-- Q: 29680 Missing Mallet
+-- ----------------------------------------
+DELETE FROM `creature_text` WHERE entry = 54975;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
+(55477, 0, 0, 'Проснись уже!', 12, 0, 100, 15, 0, 27345, 'Цзи Огненная Лапа'),
+(55477, 1, 0, 'Да', 12, 0, 100, 509, 0, 27350, 'Цзи Огненная Лапа'),
+(55477, 2, 0, 'когда же', 12, 0, 100, 507, 0, 27352, 'Цзи Огненная Лапа'),
+(55477, 3, 0, '%s вздыхает.', 16, 0, 100, 0, 0, 0, 'Цзи Огненная Лапа');
 
 
 -- Pandashan
