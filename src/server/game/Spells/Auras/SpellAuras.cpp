@@ -1192,6 +1192,11 @@ bool Aura::CanBeSaved() const
             break;
     }
 
+    // not save area auras (phase auras, e.t.c)
+    SpellAreaMapBounds saBounds = sSpellMgr->GetSpellAreaMapBounds(GetId());
+    if (saBounds.first != saBounds.second)
+        return false;
+
     // for correct work it should send cast packets. Never save it. 
     // If need save it -> perfome manual cast for example spell_area table or by script.
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
