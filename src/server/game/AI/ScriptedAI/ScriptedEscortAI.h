@@ -56,6 +56,8 @@ struct npc_escortAI : public ScriptedAI
 
         void ReturnToLastPoint();
 
+        void MovePoint(uint32 point, float x, float y, float z);
+
         void EnterEvadeMode();
 
         void UpdateAI(uint32 const diff);                   //the "internal" update, calls UpdateEscortAI()
@@ -98,6 +100,7 @@ struct npc_escortAI : public ScriptedAI
         void SetCurentWP(uint32 id);
         uint32 GetCurentWP() { return CurrentWP->id; }
 
+        void SetFollowerGUID(uint64 guid) { m_uifollowerGUID = guid; } // add follower guid
     protected:
         Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*me, m_uiPlayerGUID); }
 
@@ -109,6 +112,7 @@ struct npc_escortAI : public ScriptedAI
         void AddEscortState(uint32 escortState) { m_uiEscortState |= escortState; }
         void RemoveEscortState(uint32 escortState) { m_uiEscortState &= ~escortState; }
 
+        uint64 m_uifollowerGUID;
         uint64 m_uiPlayerGUID;
         uint32 m_uiWPWaitTimer;
         uint32 m_uiPlayerCheckTimer;

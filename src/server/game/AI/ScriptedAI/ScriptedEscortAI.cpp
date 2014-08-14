@@ -21,6 +21,7 @@ enum ePoints
 
 npc_escortAI::npc_escortAI(Creature* creature) : ScriptedAI(creature),
     m_uiPlayerGUID(0),
+    m_uifollowerGUID(0),
     m_uiWPWaitTimer(2500),
     m_uiPlayerCheckTimer(1000),
     m_uiEscortState(STATE_ESCORT_NONE),
@@ -161,7 +162,16 @@ void npc_escortAI::ReturnToLastPoint()
 {
     float x, y, z, o;
     me->GetHomePosition(x, y, z, o);
-    me->GetMotionMaster()->MovePoint(POINT_LAST_POINT, x, y, z);
+    MovePoint(POINT_LAST_POINT, x, y, z);
+}
+
+void npc_escortAI::MovePoint(uint32 point, float x, float y, float z)
+{
+    me->GetMotionMaster()->MovePoint(point, x, y, z);
+
+    //ToDo: find fast way for find behind point in 3-5 range
+    if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))
+        follower->GetMotionMaster()->MovePoint(point, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
 }
 
 void npc_escortAI::EnterEvadeMode()
@@ -180,6 +190,8 @@ void npc_escortAI::EnterEvadeMode()
     else
     {
         me->GetMotionMaster()->MoveTargetedHome();
+        if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))
+            follower->GetMotionMaster()->MoveTargetedHome();
         if (HasImmuneToNPCFlags)
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
         Reset();
@@ -225,7 +237,7 @@ void npc_escortAI::UpdateAI(uint32 const diff)
                         float fRetX, fRetY, fRetZ;
                         me->GetRespawnPosition(fRetX, fRetY, fRetZ);
 
-                        me->GetMotionMaster()->MovePoint(POINT_HOME, fRetX, fRetY, fRetZ);
+                        MovePoint(POINT_HOME, fRetX, fRetY, fRetZ);
 
                         m_uiWPWaitTimer = 0;
 
@@ -237,9 +249,18 @@ void npc_escortAI::UpdateAI(uint32 const diff)
                     {
                         me->setDeathState(JUST_DIED);
                         me->Respawn();
+                        if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))
+                        {
+                            follower->setDeathState(JUST_DIED);
+                            follower->Respawn();
+                        }
                     }
                     else
+                    {
                         me->DespawnOrUnsummon();
+                        if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))
+                            follower->DespawnOrUnsummon();
+                    }
 
                     return;
                 }
@@ -253,7 +274,7 @@ void npc_escortAI::UpdateAI(uint32 const diff)
 
             if (!HasEscortState(STATE_ESCORT_PAUSED))
             {
-                me->GetMotionMaster()->MovePoint(CurrentWP->id, CurrentWP->x, CurrentWP->y, CurrentWP->z);
+                MovePoint(CurrentWP->id, CurrentWP->x, CurrentWP->y, CurrentWP->z);
                 sLog->outDebug(LOG_FILTER_TSCR, "EscortAI start waypoint %u (%f, %f, %f).", CurrentWP->id, CurrentWP->x, CurrentWP->y, CurrentWP->z);
 
                 WaypointStart(CurrentWP->id);
