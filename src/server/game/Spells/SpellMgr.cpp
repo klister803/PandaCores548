@@ -3524,6 +3524,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+            case 130121: // Item - Scotty's Lucky Coin
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
+                    break;
                 case 51640: // Taunt Flag Targeting
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
