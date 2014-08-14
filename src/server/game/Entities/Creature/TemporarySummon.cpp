@@ -277,7 +277,7 @@ void TempSummon::UnSummon(uint32 msTime)
 
 bool ForcedUnsummonDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    if(m_owner)
+    if (&m_owner)
         m_owner.UnSummon();
     return true;
 }
