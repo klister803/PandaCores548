@@ -3524,9 +3524,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-            case 130121: // Item - Scotty's Lucky Coin
-                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
-                    break;
                 case 51640: // Taunt Flag Targeting
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
@@ -3542,6 +3539,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     spellInfo->PowerPerSecondPercentage = 1;
                     break;
+                case 130121: // Item - Scotty's Lucky Coin
                 case 26364:  // Lightning Shield
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
@@ -3555,6 +3553,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].BasePoints = 120;
                     break;
                 case 96172: // Hand of Light
+                case 83077: // Improved Serpent Sting
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 case 53503: // Sword of Light

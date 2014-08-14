@@ -12018,11 +12018,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return pdamage;
 
-    // small exception for Improved Serpent Sting, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077) // Improved Serpent Sting and Archimonde's Vengeance
-        return pdamage;
-
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 89775) // Hemorrhage and Soul Link damage
@@ -12408,11 +12403,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     // small exception for Stagger Amount, can't find any general rules
     // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
     if (spellProto->Id == 124275 || spellProto->Id == 124274 || spellProto->Id == 124273)
-        return pdamage;
-
-    // small exception for Improved Serpent Sting, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 83077) // Improved Serpent Sting
         return pdamage;
 
     int32 TakenTotal = 0;

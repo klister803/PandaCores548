@@ -912,19 +912,21 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA))
+                        if (Aura* aura = _player->GetAura(HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA))
                         {
+                            uint16 pct = 0;
+                            if (AuraEffect* aeff = aura->GetEffect(EFFECT_0))
+                                pct = aeff->GetAmount();
+
                             if (Aura* serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
-                            {
-                                if (serpentSting->GetEffect(0))
+                                if (AuraEffect* aeff = serpentSting->GetEffect(EFFECT_0))
                                 {
-                                    int32 bp = _player->SpellDamageBonusDone(target, GetSpellInfo(), serpentSting->GetEffect(0)->GetAmount(), DOT);
-                                    bp *= serpentSting->GetMaxDuration() / serpentSting->GetEffect(0)->GetAmplitude();
-                                    bp = CalculatePct(bp, 15);
+                                    int32 bp = aeff->GetAmount();
+                                    bp *= aeff->GetTotalTicks();
+                                    bp = CalculatePct(bp, pct);
 
                                     _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, true);
                                 }
-                            }
                         }
                     }
                 }
