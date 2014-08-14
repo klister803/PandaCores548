@@ -8078,31 +8078,39 @@ int32 Spell::CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultipl
     float OHmax = 0;
 
     int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK) * APmultiplier;
-    bool dualwield = (mainItem && offItem) ? 1 : 0;
+    bool dualwield = mainItem && offItem;
 
     // Main Hand
     if (mainItem && coeff > 0)
-    {
-        MHmin = mainItem->GetTemplate()->DamageMin;
-        MHmax = mainItem->GetTemplate()->DamageMax;
-
-        MHmin /= mainItem->GetTemplate()->Delay / 1000.0f;
-        MHmax /= mainItem->GetTemplate()->Delay / 1000.0f;
-
-        if (mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
+        if (ItemTemplate const* tempMain = mainItem->GetTemplate())
         {
-            coeff *= 1.1125f;
-        }
-    }
-        // Off Hand
-    if (offItem && coeff > 0)
-    {
-        OHmin += offItem->GetTemplate()->DamageMin / 2;
-        OHmax += offItem->GetTemplate()->DamageMax / 2;
+            MHmin = tempMain->DamageMin;
+            MHmax = tempMain->DamageMax;
 
-        OHmin /= offItem->GetTemplate()->Delay / 1000.0f;
-        OHmax /= offItem->GetTemplate()->Delay / 1000.0f;
-    }
+            MHmin /= tempMain->Delay / 1000.0f;
+            MHmax /= tempMain->Delay / 1000.0f;
+
+            if (tempMain->InventoryType == INVTYPE_2HWEAPON)
+            {
+                coeff *= 1.1125f;
+            }
+        }
+
+    // Off Hand
+    if (offItem && coeff > 0)
+        if (ItemTemplate const* temp = offItem->GetTemplate())
+        {
+            if (temp->DamageMin && temp->DamageMax && temp->Delay)
+            {
+                OHmin += temp->DamageMin / 2;
+                OHmax += temp->DamageMax / 2;
+
+                OHmin /= temp->Delay / 1000.0f;
+                OHmax /= temp->Delay / 1000.0f;
+            }
+            else
+                dualwield = false;
+        }
 
     // DualWield coefficient
     if (dualwield)
