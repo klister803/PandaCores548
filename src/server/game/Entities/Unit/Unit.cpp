@@ -13082,13 +13082,9 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
         return healamount;
 
     // Healing taken percent
-    float minval = float(GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
-    if (minval)
-        AddPct(TakenTotalMod, minval);
-
-    float maxval = float(GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
-    if (maxval)
-        AddPct(TakenTotalMod, maxval);
+    float ModHealingPct = float(GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALING_PCT));
+    if (ModHealingPct != 1.0f)
+        TakenTotalMod *= ModHealingPct;
 
     // Tenacity increase healing % taken
     if (AuraEffect const* Tenacity = GetAuraEffect(58549, 0))
