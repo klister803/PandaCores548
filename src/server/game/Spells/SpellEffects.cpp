@@ -799,6 +799,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 113092: // Frost Bomb
+            {
+                if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    m_damage = CalculatePct(m_damage, 60);
+                break;
+            }
             case 114954: // Nether Tempest
             case 44461:  // Living Bomb
             {
