@@ -1,110 +1,6 @@
 #include "NewScriptPCH.h"
 #include "ScriptedEscortAI.h"
 
-#define GOSSIP_WIND     "I would like to go back on the top of the temple"
-
-class mob_master_shang_xi_temple : public CreatureScript
-{
-    public:
-        mob_master_shang_xi_temple() : CreatureScript("mob_master_shang_xi_temple") { }
-
-        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
-        {
-            if (quest->GetQuestId() == 29776) // Brise du matin
-            {
-                if (Creature* vehicle = player->SummonCreature(55685, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
-                {
-                    player->AddAura(99385, vehicle);
-                    player->EnterVehicle(vehicle);
-                }
-            }
-
-            return true;
-        }
-
-        bool OnGossipHello(Player* player, Creature* creature)
-        {
-            if (creature->isQuestGiver())
-                player->PrepareQuestMenu(creature->GetGUID());
-
-            if (player->GetQuestStatus(29776) != QUEST_STATUS_NONE)
-                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_WIND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-
-            player->PlayerTalkClass->SendGossipMenu(1, creature->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
-        {
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-            {
-                /* The vehicle bug for now on TaranZhu, too much lags
-                 *if (Creature* vehicle = player->SummonCreature(55685, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
-                {
-                    player->AddAura(99385, vehicle);
-                    player->EnterVehicle(vehicle);
-                }*/
-
-                player->NearTeleportTo(926.58f, 3605.33f, 251.63f, 3.114f);
-            }
-
-            player->PlayerTalkClass->SendCloseGossip();
-            return true;
-        }
-};
-
-class npc_wind_vehicle : public CreatureScript
-{
-public:
-    npc_wind_vehicle() : CreatureScript("npc_wind_vehicle") { }
-
-    struct npc_wind_vehicleAI : public npc_escortAI
-    {        
-        npc_wind_vehicleAI(Creature* creature) : npc_escortAI(creature)
-        {}
-
-        uint32 IntroTimer;
-
-        void Reset()
-        {
-            IntroTimer = 100;
-        }
-
-        void WaypointReached(uint32 waypointId)
-        {
-            if (waypointId == 6)
-            {
-                if (me->GetVehicleKit())
-                    me->GetVehicleKit()->RemoveAllPassengers();
-
-                me->DespawnOrUnsummon();
-            }
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            if (IntroTimer)
-            {
-                if (IntroTimer <= diff)
-                {
-                    Start(false, true);
-                    IntroTimer = 0;
-                }
-                else
-                    IntroTimer -= diff;
-            }
-
-            npc_escortAI::UpdateAI(diff);
-        }
-    };
-    
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_wind_vehicleAI(creature);
-    }
-    
-};
-
 class AreaTrigger_at_wind_temple_entrance : public AreaTriggerScript
 {
     public:
@@ -804,8 +700,6 @@ class mob_shang_xi_air_balloon : public VehicleScript
 
 void AddSC_WanderingIsland_West()
 {
-    new mob_master_shang_xi_temple();
-    new npc_wind_vehicle();
     new AreaTrigger_at_wind_temple_entrance();
     new mob_aysa_wind_temple_escort();
     new mob_frightened_wind();

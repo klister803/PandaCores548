@@ -21,12 +21,14 @@ enum panda_npc
     NPC_ANNOUNCER_3                                = 54943,
     NPC_ANNOUNCER_4                                = 54568,
     NPC_ANNOUNCER_5_TRAVEL                         = 57712,
+    NPC_ANNOUNCER_6                                = 55694,
     NPC_AMBERLEAF_SCAMP                            = 54130, //Amberleaf Scamp
     NPC_MIN_DIMWIND_OUTRO                          = 56503, //Min Dimwind
     NPC_MASTER_LI_FAI                              = 54856, 
     NPC_EAST_CHILDREN_CAI                          = 60250,
     NPC_EAST_CHILDREN_DEN                          = 60249,
     NPC_AYSA_WATTER_OUTRO_EVENT                    = 54975,
+    NPC_XO_TREVELER                                = 54958,
 };
 
 enum panda_quests
@@ -34,10 +36,13 @@ enum panda_quests
     QUEST_THE_DISCIPLE_CHALLENGE                   = 29409, //29409 The Disciple's Challenge
     QUEST_AYSA_OF_TUSHUI                           = 29410, // Aysa of the Tushui
     QUEST_PARCHEMIN_VOLANT                         = 29421,
+    QUEST_PASSION_OF_SHEN                          = 29423, //The Passion of Shen-zin Su
     QUEST_NEW_FRIEND                               = 29679,
     QUEST_SINGING_POOLS                            = 29521, // The Singing Pools
     QUEST_SOURCE_OF_OUR_LIVELIHOOD                 = 29680, // The Source of Our Livelihood
     QUEST_NOT_IN_FACE                              = 29774,
+    QUEST_SPIRIT_AND_BODY                          = 29775, //The Spirit and Body of Shen-zin Su
+    QUEST_MORNING_BREEZE_BILLAGE                   = 29776, // Morning Breeze Village
 };
 
 enum spell_panda
@@ -46,6 +51,7 @@ enum spell_panda
     SPELL_CSA_AT_TIMER                             = 116219, //CSA Area Trigger Dummy Timer Aura A
     SPELL_SUMMON_SPIRIT_OF_WATTER                  = 103538,
     SPELL_CREDIT_NOT_IN_FACE                       = 104017, // Quest credit Not In the Face!
+    SPELL_SUMMON_WIND_TELEPORTER                   = 104396,
 };
 
 class npc_panda_announcer : public CreatureScript
@@ -67,20 +73,30 @@ class npc_panda_announcer : public CreatureScript
 
         void Reset()
         {
+            text = TEXT_GENERIC_0;
+            targetGUID = 0;
         }
 
+        enum events
+        {
+            EVENT_1            = 1,
+            EVENT_2_ANNOUNCER6 = 2,
+            EVENT_CLEAR        = 3,
+        };
+
+        uint32 text;
+        uint32 targetGUID;
         std::set<uint64> m_player_for_event;
+        EventMap events;
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() != TYPEID_PLAYER)
+            if (who->GetTypeId() != TYPEID_PLAYER || who->IsOnVehicle())
                 return;
 
             std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
             if (itr != m_player_for_event.end())
                 return;
-
-            uint32 text = TEXT_GENERIC_0;
 
             switch(me->GetEntry())
             {
@@ -105,12 +121,43 @@ class npc_panda_announcer : public CreatureScript
                     if (me->GetAreaId() == 5833) // Epave du Chercheciel
                         return;
                     break;
+                case NPC_ANNOUNCER_6:
+                    if (!me->IsWithinDistInMap(who, 35.0f))
+                        return;
+                    break;
                 default:
                     break;
             }
 
             m_player_for_event.insert(who->GetGUID());
-            sCreatureTextMgr->SendChat(me, text, who->GetGUID());
+            events.ScheduleEvent(EVENT_1, 3000);
+            events.ScheduleEvent(EVENT_CLEAR, 60000);
+            targetGUID = who->GetGUID();
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, text, targetGUID);
+                        if (me->GetEntry() == NPC_ANNOUNCER_6)
+                            events.ScheduleEvent(EVENT_2_ANNOUNCER6, 5000);
+                        break;
+                    case EVENT_2_ANNOUNCER6:
+                        me->DespawnOrUnsummon(5000);
+//                        me->GetMotionMaster()->MovePoint(1, 919.6441f, 3631.506f, 251.9946f);
+                        me->GetMotionMaster()->MovePoint(1, 902.8281f, 3667.672f, 268.9162f);
+                        break;
+                    case EVENT_CLEAR:
+                        m_player_for_event.clear();
+                        break;
+                }
+            }
         }
     };
 };
@@ -1034,7 +1081,7 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
         {
-            if (player->GetQuestStatus(29423) == QUEST_STATUS_INCOMPLETE)
+            if (player->GetQuestStatus(QUEST_PASSION_OF_SHEN) == QUEST_STATUS_INCOMPLETE)
             {
                 player->KilledMonsterCredit(61128, 0);
 
@@ -2014,7 +2061,225 @@ class AreaTrigger_at_middle_temple_from_east : public AreaTriggerScript
         }
 };
 
-void AddSC_WanderingIsland_North()
+/*
+========================================
+========= W E S T  P A R T =============
+========================================
+*/
+
+class mob_master_shang_xi_temple : public CreatureScript
+{
+    public:
+        mob_master_shang_xi_temple() : CreatureScript("mob_master_shang_xi_temple") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_master_shang_xi_templeAI(creature);
+    }
+
+    struct mob_master_shang_xi_templeAI : public ScriptedAI
+    {
+        mob_master_shang_xi_templeAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        uint64 playerGuid;
+        std::set<uint64> m_player_for_event;
+        EventMap events;
+
+        enum events
+        {
+            EVENT_XO1    = 1,
+            EVENT_CLEAN  = 2,
+        };
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+
+            if (who->ToPlayer()->GetQuestStatus(QUEST_PASSION_OF_SHEN) == QUEST_STATUS_COMPLETE)
+                events.ScheduleEvent(EVENT_XO1, 1000);
+
+            events.ScheduleEvent(EVENT_CLEAN, 60000);
+            m_player_for_event.insert(who->GetGUID());
+        }
+
+        void Reset()
+        {
+            playerGuid = 0;
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_CLEAN:
+                        events.Reset();
+                        break;
+                    case EVENT_XO1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+                        break;
+                }
+            }
+        }
+    };
+
+    bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
+    {
+        switch(quest->GetQuestId())
+        {
+            case QUEST_SPIRIT_AND_BODY:
+                sCreatureTextMgr->SendChat(creature, TEXT_GENERIC_7);
+                break;
+        }
+        return true;
+    }
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        switch(quest->GetQuestId())
+        {
+            case QUEST_SINGING_POOLS:
+                sCreatureTextMgr->SendChat(creature, TEXT_GENERIC_1);
+                break;
+            case QUEST_MORNING_BREEZE_BILLAGE:
+            {
+                if (quest->GetQuestId() == QUEST_MORNING_BREEZE_BILLAGE) // Brise du matin
+                {
+                    player->CastSpell(player, SPELL_SUMMON_WIND_TELEPORTER, true);
+                }
+                break;
+            }
+        }
+
+
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    {
+        if (action == 1)
+        {
+            player->CastSpell(player, SPELL_SUMMON_WIND_TELEPORTER, true);
+            //player->NearTeleportTo(926.58f, 3605.33f, 251.63f, 3.114f);
+        }
+
+        player->PlayerTalkClass->SendCloseGossip();
+        return true;
+    }
+};
+
+class npc_wind_vehicle : public CreatureScript
+{
+public:
+    npc_wind_vehicle() : CreatureScript("npc_wind_vehicle") { }
+
+    struct npc_wind_vehicleAI : public npc_escortAI
+    {        
+        npc_wind_vehicleAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        void Reset()
+        {
+        }
+        
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (apply)
+                Start(false, true);
+
+            //if (!apply || who->GetTypeId() != TYPEID_PLAYER)
+            //    return;
+
+            // PlayerOn = true;
+            // Start(false, true, who->GetGUID());
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            if (waypointId == 16)
+            {
+                if (me->GetVehicleKit())
+                    me->GetVehicleKit()->RemoveAllPassengers();
+
+                me->DespawnOrUnsummon();
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wind_vehicleAI(creature);
+    }
+};
+
+class npc_panda_history_leason : public CreatureScript
+{
+    public:
+        npc_panda_history_leason() : CreatureScript("npc_panda_history_leason") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_panda_history_leasonAI(creature);
+    }
+    
+    struct npc_panda_history_leasonAI : public ScriptedAI
+    {
+        npc_panda_history_leasonAI(Creature* creature) : ScriptedAI(creature)
+        {
+
+        }
+
+        void Reset()
+        {
+            text = TEXT_GENERIC_0;
+            events.ScheduleEvent(EVENT_1, 10000);
+        }
+
+        enum datalocal
+        {
+            EVENT_1            = 1,
+            MAX_TEXT           = 15,
+
+        };
+
+        uint32 text;
+        EventMap events;
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                events.ScheduleEvent(EVENT_1, 10000);
+                sCreatureTextMgr->SendChat(me, text);
+                ++text;
+                if (text >= MAX_TEXT)
+                    text = TEXT_GENERIC_0;
+            }
+        }
+    };
+};
+
+void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
     new boss_jaomin_ro();
@@ -2045,4 +2310,8 @@ void AddSC_WanderingIsland_North()
     new mob_jojo_ironbrow_2();
     new npc_water_spirit_dailo();
     new AreaTrigger_at_middle_temple_from_east();
+    // west
+    new mob_master_shang_xi_temple();
+    new npc_wind_vehicle();
+    new npc_panda_history_leason();
 }

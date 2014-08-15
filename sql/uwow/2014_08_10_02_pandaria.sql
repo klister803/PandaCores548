@@ -29,7 +29,7 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 --
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
-114455, 109303, 108835, 108823, 108822, 104018, 118028) AND  area in(5736, 5862, 5827, 5881, 5826, 5860);
+114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005) AND  area in(5736, 5862, 5827, 5881, 5826, 5860, 5830);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -91,8 +91,13 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('104018', '5881', '29768', '29774', '0', '0', '2', '1', '66', '66'), -- quest giver
 ('118028', '5881', '29768', '0', '0', '0', '2', '1', '66', '0'), -- quest giver
 --
-('104017', '5736', '29774', '29775', '0', '0', '2', '1', '66', '64'); -- Summon Spirit of Water and Earth
-118028
+('104017', '5736', '29774', '29775', '0', '0', '2', '1', '66', '66'), -- Summon Spirit of Water and Earth
+--
+('108844', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
+('108842', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
+('105308', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'), -- aisa
+('105307', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
+('105005', '5830', '29776', '0', '0', '0', '2', '1', '74', '0');
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND `SourceEntry` in(1, 2, 3) AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
@@ -260,23 +265,6 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 -- ----------------------------------------
 -- Q: 29423 The Passion of Shen-zin Su
 -- ----------------------------------------
-
-DELETE FROM smart_scripts WHERE entryorguid = 54786;
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(54786, 0, 0, 0, 9, 0, 100, 0, 30, 30, 60000, 60000, 1, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At 54958 in range'),
-(54786, 0, 1, 0, 47, 0, 100, 0, 29521, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At start q: 29521'),
-(54786, 0, 2, 0, 50, 0, 100, 0, 29775, 0, 0, 0, 1, 7, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29775');
-
-DELETE FROM `creature_text` WHERE entry =54786;
-INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
-(54786, 0, 0, 'Добро пожаловать, Хо. Наш народ соскучился по твоему теплу.', 12, 0, 100, 2, 0, 27788, 'Мастер Шан Си'),
-(54786, 1, 0, 'Тебе удалось справиться со всеми моими испытаниями. У тебя получилось найти Хо и благополучно привести его в храм.', 12, 0, 100, 1, 0, 27789, 'Мастер Шан Си'),
-(54786, 2, 0, 'Нам предстоит решить гораздо более сложную задачу, мои ученики. Шэнь-Цзынь Су страдает от боли. Если мы ничего не предпримем, сама земля, на которой мы стоим, может погибнуть. И мы вместе с ней.', 12, 0, 100, 1, 0, 27790, 'Мастер Шан Си'),
-(54786, 3, 0, 'Мы должны поговорить с Шэнь-Цзынь Су и узнать, как исцелить его. А для этого нужно вернуть на свои места четырех духов стихий. Хо был первым.', 12, 0, 100, 1, 0, 27791, 'Мастер Шан Си'),
-(54786, 4, 0, 'Цзи, я хочу, чтобы ты отправился на крестьянский двор Дай-Ло и разыскал Угоу, духа земли.', 12, 0, 100, 1, 0, 27792, 'Мастер Шан Си'),
-(54786, 5, 0, 'Аиса, я хочу, чтобы ты отправилась к Поющим прудам и разыскала Шу, духа воды.', 12, 0, 100, 1, 0, 27793, 'Мастер Шан Си'),
-(54786, 6, 0, 'Ты же будешь направлять наши усилия. Поговори со мной перед тем, как отправиться на восток, к Поющим прудам, и встретиться с Аисой.', 12, 0, 100, 1, 0, 27794, 'Мастер Шан Си'),
-(54786, 7, 0, 'Ты снова здесь, вместе с духами воды и земли. Старый учитель гордится тобой.', 12, 0, 100, 1, 0, 27776, 'Мастер Шан Си');
 
 
 -- ----------------------------------------
@@ -473,6 +461,116 @@ DELETE FROM smart_scripts WHERE entryorguid = 55556;
 
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_middle_temple_from_east';
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES ('8588', 'AreaTrigger_at_middle_temple_from_east');
+
+-- ----------------------------------------
+-- Q: 29776 Morning Breeze Village
+-- ----------------------------------------
+UPDATE `creature_template` SET `gossip_menu_id` = '13158' WHERE `entry` = 54786;
+DELETE FROM `gossip_menu` WHERE `entry`= 13158;
+INSERT INTO `gossip_menu` (`entry`, `text_id`) VALUES
+(13158, 18536); -- 54786
+
+DELETE FROM `gossip_menu_option` WHERE `menu_id`=13158;
+INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`, `option_id`, `npc_option_npcflag`, `action_menu_id`, `action_poi_id`, `box_coded`, `box_money`, `box_text`) VALUES
+(13158, 0, 0, 'Я хочу вернуться на вершину храма!', 1, 2, 0, 0, 0, 0, '');
+DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 15 AND SourceGroup = 13158;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+('15', '13158', '0', '0', '0', '9', '0', '29776', '0', '0', '0', '0', '', NULL),
+('15', '13158', '0', '0', '1', '28', '0', '29776', '0', '0', '0', '0', '', NULL),
+('15', '13158', '0', '0', '2', '8', '0', '29776', '0', '0', '0', '0', '', NULL);
+
+DELETE FROM `conditions` WHERE SourceEntry = 104396;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 104396, 0, 0, 31, 0, 4, 0, 0, 0, 0, '', 'Cast - Only on Player'),
+(13, 2, 104396, 0, 0, 31, 0, 4, 0, 0, 0, 0, '', 'Cast - Only on Player');
+
+DELETE FROM `spell_target_position` WHERE id = 104450;
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('104450', '860', '909.137', '3610.38', '252.092', '3.997228');
+
+UPDATE `creature_template` SET `InhabitType` = '4', `VehicleId` = '1800', `ScriptName` = 'npc_wind_vehicle' WHERE `creature_template`.`entry` = 55685;
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55685;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES ('55685', '46598', '1', '0');
+
+SET @id = 0;
+SET @entry = 55685;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 922.8226, 3604.356, 196.415, NULL), 
+(@entry, @id := @id+ 1, 923.8143, 3604.228, 196.415, NULL), 
+(@entry, @id := @id+ 1, 930.6059, 3609.285, 201.1691, NULL), 
+(@entry, @id := @id+ 1, 938.9011, 3615.786, 203.6904, NULL), 
+(@entry, @id := @id+ 1, 950.2917, 3614.42, 204.5032, NULL), 
+(@entry, @id := @id+ 1, 960.1268, 3607.947, 209.4728, NULL), 
+(@entry, @id := @id+ 1, 951.7205, 3595.486, 218.8211, NULL), 
+(@entry, @id := @id+ 1, 941.7274, 3596.609, 228.3404, NULL), 
+(@entry, @id := @id+ 1, 932.559, 3604.833, 235.3123, NULL), 
+(@entry, @id := @id+ 1, 939.1528, 3613.667, 242.6738, NULL), 
+(@entry, @id := @id+ 1, 946.7136, 3611.303, 250.3387, NULL), 
+(@entry, @id := @id+ 1, 948.6129, 3602.809, 255.2892, NULL), 
+(@entry, @id := @id+ 1, 942.1215, 3596.853, 257.2684, NULL), 
+(@entry, @id := @id+ 1, 933.0104, 3600.142, 256.6022, NULL), 
+(@entry, @id := @id+ 1, 920.4496, 3604.771, 253.1732, NULL), 
+(@entry, @id := @id+ 1, 920.4496, 3604.771, 253.1732, NULL);
+
+UPDATE `creature_template` SET `AIName`='', `ScriptName` = 'mob_master_shang_xi_temple' WHERE `entry` = 54786;
+DELETE FROM smart_scripts WHERE entryorguid = 54786;
+
+DELETE FROM `creature_text` WHERE entry =54786;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(54786, 0, 0, 'Добро пожаловать, Хо. Наш народ соскучился по твоему теплу.', 12, 0, 100, 2, 0, 27788, 'Мастер Шан Си'),
+(54786, 1, 0, 'Тебе удалось справиться со всеми моими испытаниями. У тебя получилось найти Хо и благополучно привести его в храм.', 12, 0, 100, 1, 0, 27789, 'Мастер Шан Си'),
+(54786, 2, 0, 'Нам предстоит решить гораздо более сложную задачу, мои ученики. Шэнь-Цзынь Су страдает от боли. Если мы ничего не предпримем, сама земля, на которой мы стоим, может погибнуть. И мы вместе с ней.', 12, 0, 100, 1, 0, 27790, 'Мастер Шан Си'),
+(54786, 3, 0, 'Мы должны поговорить с Шэнь-Цзынь Су и узнать, как исцелить его. А для этого нужно вернуть на свои места четырех духов стихий. Хо был первым.', 12, 0, 100, 1, 0, 27791, 'Мастер Шан Си'),
+(54786, 4, 0, 'Цзи, я хочу, чтобы ты отправился на крестьянский двор Дай-Ло и разыскал Угоу, духа земли.', 12, 0, 100, 1, 0, 27792, 'Мастер Шан Си'),
+(54786, 5, 0, 'Аиса, я хочу, чтобы ты отправилась к Поющим прудам и разыскала Шу, духа воды.', 12, 0, 100, 1, 0, 27793, 'Мастер Шан Си'),
+(54786, 6, 0, 'Ты же будешь направлять наши усилия. Поговори со мной перед тем, как отправиться на восток, к Поющим прудам, и встретиться с Аисой.', 12, 0, 100, 1, 0, 27794, 'Мастер Шан Си'),
+(54786, 7, 0, 'Ты снова здесь, вместе с духами воды и земли. Старый учитель гордится тобой.', 12, 0, 100, 1, 0, 27776, 'Мастер Шан Си');
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 55694;
+DELETE FROM `creature_text` WHERE entry =55694;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(55694, 0, 0, 'Эй! Деревня Утреннего Бриза – это сюда.', 12, 0, 100, 0, 0, 27294, 'Цзи Огненная Лапа');
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 64885;
+DELETE FROM `creature_text` WHERE entry =64885;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(64885, 0, 0, 'Здравствуй, $n! Хранитель истории внизу как раз начинает урок, может, ты хочешь послушать?', 12, 0, 100, 3, 0, 0, 'Хранитель истории Цзань');
+
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_panda_history_leason' WHERE `entry` = 64875;
+DELETE FROM `creature_text` WHERE entry =64875;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(64875, 0, 0, 'Он открыл зонтик, воткнул в землю и сел в его прохладной тени.', 12, 0, 100, 6, 0, 0, 'Хранительница истории Амай'),
+(64875, 1, 0, 'Он закрыл глаза, и стал единым целым с землей. А потом – знаете, что случилось потом?', 12, 0, 100, 2, 0, 0, 'Хранительница истории Амай'),
+(64875, 2, 0, 'Его зонтик... пророс! У него выросли корни, он стал деревом, и на нем расцвели цветы!', 12, 0, 100, 5, 0, 0, 'Хранительница истории Амай'),
+(64875, 3, 0, 'Да, это правда. Можете пойти в Лес Посохов и увидеть его собственными глазами.', 12, 0, 100, 1, 0, 0, 'Хранительница истории Амай'),
+(64875, 4, 0, 'Окруженный посохами всех предков, что были до нас, посохами, выросшими в гигантские деревья.', 12, 0, 100, 274, 0, 0, 'Хранительница истории Амай'),
+(64875, 5, 0, 'Это не грустная история! Сам Лю Лан говорил: \"Не стоит сожалеть о жизни, прожитой не зря\".', 12, 0, 100, 1, 0, 0, 'Хранительница истории Амай'),
+(64875, 6, 0, 'А он, я думаю, прожил очень хорошую жизнь. Всем, что у нас есть, мы обязаны Лю Лану, первому пандарену-путешественнику.', 12, 0, 100, 273, 0, 0, 'Хранительница истории Амай'),
+(64875, 7, 0, 'Мы рассказываем его историю, чтобы память о нем не истерлась никогда.', 12, 0, 100, 2, 0, 0, 'Хранительница истории Амай'),
+(64875, 8, 0, 'Спасибо, Жуолинь! Это было прекрасно.', 12, 0, 100, 21, 0, 0, 'Хранительница истории Амай'),
+(64875, 9, 0, 'Можешь спеть ее еще раз, для тех, кто только что пришел?', 12, 0, 100, 6, 0, 0, 'Хранительница истории Амай'),
+(64875, 10, 0, 'Это песня о Лю Лане, первом пандарене-путешественнике.', 12, 0, 100, 1, 0, 0, 'Хранительница истории Амай'),
+(64875, 11, 0, 'Песня написана на древнем наречии, языке императоров и ученых. Вряд ли сейчас кто-то говорит на нем.', 12, 0, 100, 6, 0, 0, 'Хранительница истории Амай'),
+(64875, 12, 0, 'Она рассказывает о его приключениях.', 12, 0, 100, 273, 0, 0, 'Хранительница истории Амай'),
+(64875, 13, 0, 'Храбрый Лю Лан оседлал морскую черепаху и отправился исследовать мир.', 12, 0, 100, 1, 0, 0, 'Хранительница истории Амай'),
+(64875, 14, 0, 'Кто-нибудь помнит, как звали черепаху? Инь?', 12, 0, 100, 25, 0, 0, 'Хранительница истории Амай');
+
+-- ----------------------------------------
+-- Q: 29778 Rewritten Wisdoms
+-- ----------------------------------------
+-- spell: 104126
+
+DELETE FROM `db_script_string` WHERE `entry` in ( 2000009994, 2000009995, 2000009996, 2000009997, 2000009998, 2000009999);
+INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALUES 
+('2000009994', 'Хлопушки – бросать. Банану – есть.', 'Хлопушки – бросать. Банану – есть.'),
+('2000009995', 'С мокрый мех плохо спать.', 'С мокрый мех плохо спать.'),
+('2000009996', 'В каках не кататься, а то пахнуть плохо.', 'В каках не кататься, а то пахнуть плохо.'),
+('2000009997', 'Банану чистить, потом есть.', 'Банану чистить, потом есть.'),
+('2000009998', 'Свой хвост не тянуть, когда другой есть.', 'Свой хвост не тянуть, когда другой есть.'),
+('2000009999', 'Кака не для есть, а для бросать.', 'Кака не для есть, а для бросать.');
+
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';
