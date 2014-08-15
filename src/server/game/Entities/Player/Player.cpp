@@ -20688,7 +20688,8 @@ bool Player::CheckInstanceLoginValid()
     if (!GetMap())
         return false;
 
-    if (!GetMap()->IsDungeon() || isGameMaster())
+    MapEntry const* entry = sMapStore.LookupEntry(GetMap()->GetId());
+    if (entry && !GetMap()->IsDungeon() || isGameMaster() || entry->Expansion() <= 3)
         return true;
 
     if (GetMap()->IsRaid())

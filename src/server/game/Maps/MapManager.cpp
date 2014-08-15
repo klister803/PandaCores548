@@ -181,7 +181,11 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     //Bypass checks for GMs
     if (player->isGameMaster())
         return true;
-
+        
+    //Bypass checks for Old Raid Instance
+    if (entry->Expansion() <= 3)
+        return true;
+        
     char const* mapName = entry->name;
 
     if (!player->isAlive())

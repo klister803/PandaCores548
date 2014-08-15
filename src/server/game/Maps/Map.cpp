@@ -2305,6 +2305,10 @@ bool InstanceMap::CanEnter(Player* player)
     if (player->isGameMaster())
         return Map::CanEnter(player);
 
+    MapEntry const* entry = sMapStore.LookupEntry(GetId());
+    if (entry->Expansion() <= 3)
+        return true;
+        
     // cannot enter if the instance is full (player cap), GMs don't count
     uint32 maxPlayers = GetMaxPlayers();
     if (GetPlayersCountExceptGMs() >= maxPlayers)
