@@ -660,6 +660,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
+                    case 44461:  // Living Bomb
+                    {
+                        SpellInfo const* Living_Bomb_Dot = sSpellMgr->GetSpellInfo(44457);
+                        if (!Living_Bomb_Dot)
+                            return;
+
+                        float cof = Living_Bomb_Dot->Effects[EFFECT_2].BasePoints;
+                        int32 SPD = m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * Living_Bomb_Dot->Effects[EFFECT_0].BonusMultiplier;
+                        int32 eff1val = Living_Bomb_Dot->Effects[EFFECT_0].CalcValue(m_caster);
+                        uint8 totalticks = Living_Bomb_Dot->GetMaxDuration() / Living_Bomb_Dot->Effects[EFFECT_0].Amplitude;
+                        eff1val += SPD;
+                        eff1val *= totalticks;
+
+                        damage = (cof / 100.0f) * eff1val;
+                        break;
+                    }
                     case 31707: // Waterbolt
                     {
                         if (Unit* owner = m_caster->GetOwner())
@@ -783,6 +799,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 44461:  // Living Bomb
+            {
+                if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    m_damage = CalculatePct(m_damage, 70);
+                break;
+            }
             case 124468: // Mind Flay (Mastery)
             {
                 if (m_caster->HasAura(139139))

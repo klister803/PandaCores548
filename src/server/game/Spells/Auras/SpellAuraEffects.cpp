@@ -1013,6 +1013,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 44457: // Living Bomb
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        amount = CalculatePct(amount, 70);
+                    break;
+                }
                 case 15407: // Mind Flay
                 {
                     if (caster->HasAura(139139))
