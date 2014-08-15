@@ -799,6 +799,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 114954: // Nether Tempest
             case 44461:  // Living Bomb
             {
                 if (unitTarget->GetTypeId() == TYPEID_PLAYER)
