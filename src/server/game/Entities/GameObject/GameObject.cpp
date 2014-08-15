@@ -544,7 +544,17 @@ void GameObject::Update(uint32 diff)
 
                 //any return here in case battleground traps
                 if (GetGOInfo()->flags & GO_FLAG_NODESPAWN)
+                {
+                    // Test: This falg on Mop perdome despown go with some animation
+                    // Should despown some go with animations.
+                    if (GetGOInfo()->IsDespawnAtAction() && m_respawnDelayTime > 0)
+                    {
+                        SendObjectDeSpawnAnim(GetGUID());
+                        m_respawnTime = time(NULL) + m_respawnDelayTime;
+                        UpdateObjectVisibility();
+                    }
                     return;
+                }
             }
 
             loot.clear();
