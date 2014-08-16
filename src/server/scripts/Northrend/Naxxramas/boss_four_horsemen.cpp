@@ -136,24 +136,35 @@ public:
             if (!instance)
                 return false;
 
-            Creature* Thane = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_THANE)));
-            Creature* Lady = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_LADY)));
-            Creature* Baron = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_BARON)));
-            Creature* Sir = CAST_CRE(Unit::GetUnit(*me, instance->GetData64(DATA_SIR)));
+            Creature* Thane = Unit::GetCreature(*me, instance->GetData64(DATA_THANE));
+            Creature* Lady = Unit::GetCreature(*me, instance->GetData64(DATA_LADY));
+            Creature* Baron = Unit::GetCreature(*me, instance->GetData64(DATA_BARON));
+            Creature* Sir = Unit::GetCreature(*me, instance->GetData64(DATA_SIR));
 
             if (Thane && Lady && Baron && Sir)
             {
                 if (attack && who)
                 {
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->AI())->encounterActionAttack = true;
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->AI())->encounterActionAttack = true;
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->AI())->encounterActionAttack = true;
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->AI())->encounterActionAttack = true;
-
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->AI())->AttackStart(who);
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->AI())->AttackStart(who);
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->AI())->AttackStart(who);
-                    CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->AI())->AttackStart(who);
+                    if (boss_four_horsemen::boss_four_horsemenAI* ThaneAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->GetAI()))
+                    {
+                        ThaneAI->encounterActionAttack = true;
+                        ThaneAI->AttackStart(who);
+                    }
+                    if (boss_four_horsemen::boss_four_horsemenAI* LadyAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->GetAI()))
+                    {
+                        LadyAI->encounterActionAttack = true;
+                        LadyAI->AttackStart(who);
+                    }
+                    if (boss_four_horsemen::boss_four_horsemenAI* BaronAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->GetAI()))
+                    {
+                        BaronAI->encounterActionAttack = true;
+                        BaronAI->AttackStart(who);
+                    }
+                    if (boss_four_horsemen::boss_four_horsemenAI* SirAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->GetAI()))
+                    {
+                        SirAI->encounterActionAttack = true;
+                        SirAI->AttackStart(who);
+                    }
                 }
 
                 if (reset)
@@ -172,15 +183,26 @@ public:
                         if (!Sir->isAlive())
                             Sir->Respawn();
 
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->AI())->encounterActionReset = true;
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->AI())->encounterActionReset = true;
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->AI())->encounterActionReset = true;
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->AI())->encounterActionReset = true;
-
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->AI())->EnterEvadeMode();
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->AI())->EnterEvadeMode();
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->AI())->EnterEvadeMode();
-                        CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->AI())->EnterEvadeMode();
+                        if (boss_four_horsemen::boss_four_horsemenAI* ThaneAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Thane->GetAI()))
+                        {
+                            ThaneAI->encounterActionReset = true;
+                            ThaneAI->EnterEvadeMode();
+                        }
+                        if (boss_four_horsemen::boss_four_horsemenAI* LadyAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Lady->GetAI()))
+                        {
+                            LadyAI->encounterActionReset = true;
+                            LadyAI->EnterEvadeMode();
+                        }
+                        if (boss_four_horsemen::boss_four_horsemenAI* BaronAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Baron->GetAI()))
+                        {
+                            BaronAI->encounterActionReset = true;
+                            BaronAI->EnterEvadeMode();
+                        }
+                        if (boss_four_horsemen::boss_four_horsemenAI* SirAI = CAST_AI(boss_four_horsemen::boss_four_horsemenAI, Sir->GetAI()))
+                        {
+                            SirAI->encounterActionReset = true;
+                            SirAI->EnterEvadeMode();
+                        }
                     }
                 }
 
