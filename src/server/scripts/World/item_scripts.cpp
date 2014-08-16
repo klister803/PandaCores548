@@ -185,6 +185,26 @@ public:
 };
 
 /*#####
+# item_primal_egg
+#####*/
+
+class item_primal_egg : public ItemScript
+{
+public:
+    item_primal_egg() : ItemScript("item_primal_egg") { }
+
+    bool OnExpire(Player* player, ItemTemplate const* /*pItemProto*/)
+    {
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 94296, 1); // Cracked Primal Egg
+        if (msg == EQUIP_ERR_OK)
+            player->StoreNewItem(dest, 94296, true, Item::GenerateItemRandomPropertyId(94296));
+
+        return true;
+    }
+};
+
+/*#####
 # item_pile_fake_furs
 #####*/
 
@@ -519,5 +539,6 @@ void AddSC_item_scripts()
     new item_captured_frog();
     new item_titanium_seal_of_dalaran();
     new item_brewfest_sampler;
-    new item_brewfest_ram_reins;    
+    new item_brewfest_ram_reins;
+    new item_primal_egg();
 }
