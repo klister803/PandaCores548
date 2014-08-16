@@ -18579,9 +18579,9 @@ void Unit::PlayOneShotAnimKit(uint32 id)
     ObjectGuid guidd(GetGUID());
 
     WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
-    data.WriteGuidMask<1, 5, 4, 3, 7, 6, 0, 2>(guidd);
+    data.WriteGuidMask<2, 5, 7, 4, 0, 1, 6, 3>(guidd);
     data.WriteGuidBytes<3, 0, 7, 6, 5, 1, 4>(guidd);
-        data << uint16(id);
+    data << uint16(id);
     data.WriteGuidBytes<2>(guidd);
     SendMessageToSet(&data, true);
 }
