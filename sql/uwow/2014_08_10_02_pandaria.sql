@@ -29,7 +29,7 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 --
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
-114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005) AND  area in(5736, 5862, 5827, 5881, 5826, 5860, 5830);
+114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306) AND  area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -94,10 +94,13 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('104017', '5736', '29774', '29775', '0', '0', '2', '1', '66', '66'), -- Summon Spirit of Water and Earth
 --
 ('108844', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
-('108842', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
+('108842', '5830', '29776', '29782', '0', '0', '2', '1', '74', '64'),
 ('105308', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'), -- aisa
+('105308', '5946', '29776', '0', '0', '0', '2', '1', '74', '0'), -- aisa
 ('105307', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
-('105005', '5830', '29776', '0', '0', '0', '2', '1', '74', '0');
+('105005', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
+--
+('105306', '5831', '29780', '29784', '0', '0', '2', '1', '74', '74');
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND `SourceEntry` in(1, 2, 3) AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
@@ -560,8 +563,8 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 -- ----------------------------------------
 -- Q: 29778 Rewritten Wisdoms
 -- ----------------------------------------
--- spell: 104126
 
+-- spell: 104126
 DELETE FROM `db_script_string` WHERE `entry` in ( 2000009994, 2000009995, 2000009996, 2000009997, 2000009998, 2000009999);
 INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALUES 
 ('2000009994', 'Хлопушки – бросать. Банану – есть.', 'Хлопушки – бросать. Банану – есть.'),
@@ -570,6 +573,81 @@ INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALU
 ('2000009997', 'Банану чистить, потом есть.', 'Банану чистить, потом есть.'),
 ('2000009998', 'Свой хвост не тянуть, когда другой есть.', 'Свой хвост не тянуть, когда другой есть.'),
 ('2000009999', 'Кака не для есть, а для бросать.', 'Кака не для есть, а для бросать.');
+
+-- ----------------------------------------
+-- Q: 29783 Stronger Than Stone
+-- ----------------------------------------
+
+UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55585;
+DELETE FROM smart_scripts WHERE entryorguid = 55585;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
+(55585, 0, 0, 0, 50, 0, 100, 0, 29783, 0, 0, 0, 11, 108847, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29783'),
+(55585, 0, 1, 0, 50, 0, 100, 0, 29782, 0, 0, 0, 11, 108858, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29782');
+
+-- cast 129272 Jojo Ironbrow
+UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_3' WHERE `entry` = 57670;
+
+DELETE FROM `creature_text` WHERE entry =57670;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(57670, 0, 0, 'Эти камни – самые твердые, что есть на Шэнь-Цзынь Су, но и они не устоят перед мощью моих ударов.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
+(57670, 1, 0, 'Ни одно разумное создание не усомнится в моей мощи.', 12, 0, 100, 2, 0, 0, 'Йо-Йо Железная Бровь');
+
+-- 129294
+DELETE FROM `conditions` WHERE SourceEntry = 108846;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 108846, 0, 0, 31, 0, 3, 57668, 0, 0, 0, '', 'Cast - Only - 57668');
+
+DELETE FROM `spell_target_position` WHERE id in (108845, 108847);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('108845', '860', '1078.087', '4180.681', '205.8848', '3.892084'),
+('108847', '860', '1075.602', '4177.969', '205.6298', '0.7853982');
+
+-- ----------------------------------------
+-- Q: 29782 Stronger Than Bone
+-- ----------------------------------------
+
+UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_4' WHERE `entry` = 57692;
+DELETE FROM `creature_text` WHERE entry =57692;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(57692, 0, 0, 'Невероятно! Никогда не видел столь искусной работы.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
+(57692, 1, 0, 'Остается только одно. Разбить на куски! И тогда все раз и навсегда уверятся в силе моих могучих ударов.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
+(57692, 2, 0, 'Ох... моя голова... Как больно! Я... В этом пьедестале, должно быть, содержится невероятная мощь... он мощнее, чем мой лоб.', 12, 0, 100, 18, 0, 0, 'Йо-Йо Железная Бровь'),
+(57692, 3, 0, 'Я... я, пожалуй, прилягу... А то что-то голова разболелась...', 12, 0, 100, 0, 0, 0, 'Йо-Йо Железная Бровь');
+
+DELETE FROM `spell_target_position` WHERE id in (108857, 108858);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('108857', '860', '1078.087', '4180.681', '205.8848', '3.892084'),
+('108858', '860', '1075.535', '4177.896', '205.5825', '5.550147');
+
+UPDATE `creature_template_addon` SET `auras` = '' WHERE `creature_template_addon`.`entry` = 57692;
+UPDATE `creature_template` SET `VehicleId` = '1950' WHERE `creature_template`.`entry` = 57690;
+DELETE FROM `npc_spellclick_spells` `npc_entry` = 57690;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES ('57690', '46598', '1', '0');
+DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = 57690;
+INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
+('57690', '57691', '0', '1', '', '8', '0');
+-- ----------------------------------------
+-- Q: 29780 Do No Evil
+-- ----------------------------------------
+UPDATE `quest_template` SET `RequiredPOI1` = '263756', `RequiredUnkFlag1` = '1' WHERE `quest_template`.`Id` = 29780;
+UPDATE `creature_template` SET `mindmg` = '20', `maxdmg` = '30', `attackpower` = '15', `ScriptName` = 'mob_huojin_monk' WHERE `entry` = 65558;
+DELETE FROM `creature_text` WHERE entry =65558;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(65558, 0, 0, 'Давай возьмемся за это вместе!', 12, 0, 100, 5, 0, 27320, 'Цзи Огненная Лапа'),
+(65558, 1, 0, 'Мне нравится твой стиль боя!', 12, 0, 100, 5, 0, 27322, 'Цзи Огненная Лапа'),
+(65558, 1, 1, 'Это все, на что ты способен?!', 12, 0, 100, 5, 0, 27316, 'Цзи Огненная Лапа'),
+(65558, 1, 2, 'Эта обезьяна нарывается!', 12, 0, 100, 5, 0, 27317, 'Цзи Огненная Лапа'),
+(65558, 1, 3, 'Еще одной мартышкой меньше. Неплохо!', 12, 0, 100, 5, 0, 27315, 'Цзи Огненная Лапа'),
+(65558, 2, 0, 'Увидимся у причала!', 12, 0, 100, 0, 0, 27319, 'Цзи Огненная Лапа');
+
+DELETE FROM `spell_script_names` WHERE spell_id = 105306;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('105306', 'spell_summon_ji_yung');
+
+UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55633;
+DELETE FROM smart_scripts WHERE entryorguid = 55633;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
+(55633, 0, 0, 0, 60, 0, 100, 0, 1000, 1000, 3000, 3000, 11, 127940, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Cast Spell 127940'),
+(55633, 0, 1, 0, 60, 0, 100, 0, 12000, 12000, 10000, 10000, 75, 109104, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'add aura 127940');
 
 
 -- Pandashan

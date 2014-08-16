@@ -43,6 +43,7 @@ enum panda_quests
     QUEST_NOT_IN_FACE                              = 29774,
     QUEST_SPIRIT_AND_BODY                          = 29775, //The Spirit and Body of Shen-zin Su
     QUEST_MORNING_BREEZE_BILLAGE                   = 29776, // Morning Breeze Village
+    QUEST_BALANCED_PERSPECTIVE                     = 29784, // Balanced Perspective
 };
 
 enum spell_panda
@@ -2159,8 +2160,6 @@ class mob_master_shang_xi_temple : public CreatureScript
                 break;
             }
         }
-
-
         return true;
     }
 
@@ -2279,6 +2278,310 @@ class npc_panda_history_leason : public CreatureScript
     };
 };
 
+class mob_jojo_ironbrow_3 : public CreatureScript
+{
+public:
+    mob_jojo_ironbrow_3() : CreatureScript("mob_jojo_ironbrow_3") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_jojo_ironbrow_3_AI (creature);
+    }
+
+    struct mob_jojo_ironbrow_3_AI : public ScriptedAI
+    {
+        mob_jojo_ironbrow_3_AI(Creature* creature) : ScriptedAI(creature) {}
+
+        enum eEvents
+        {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+            EVENT_3    = 3,
+            EVENT_4    = 4,
+        };
+
+        enum eSpell
+        {
+            SUPER_DUPER_KULAK   = 129294,
+        };
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_1, 1000);
+            me->SetWalk(true);
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_1:
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 1077.31f, 4179.94f, 205.7737f);
+                        events.ScheduleEvent(EVENT_2, 10000);
+                        break;
+                    case EVENT_2:
+                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        events.ScheduleEvent(EVENT_3, 3000);
+                        break;
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_4, 10000);
+                        break;
+                    case EVENT_4:
+                        me->DespawnOrUnsummon(10000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+
+class mob_huojin_monk : public CreatureScript
+{
+public:
+    mob_huojin_monk() : CreatureScript("mob_huojin_monk") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_huojin_monk_AI (creature);
+    }
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUEST_BALANCED_PERSPECTIVE)
+        {
+            sCreatureTextMgr->SendChat(creature, TEXT_GENERIC_2);
+            creature->GetMotionMaster()->MovePoint(1, 1149.78f, 4550.93f, 223.17f);
+            creature->DespawnOrUnsummon(10000);
+        }
+        return true;
+    }
+
+    struct mob_huojin_monk_AI : public ScriptedAI
+    {
+        mob_huojin_monk_AI(Creature* creature) : ScriptedAI(creature) {}
+        
+        enum eEvents
+        {
+            EVENT_KICK              = 1,
+            EVENT_FIST_FURY         = 2,
+            EVENT_JAP               = 3,
+            EVENT_SPINING_KICK      = 4,
+            EVENT_CHECK_ZONE        = 5,
+        };
+
+        enum eSpell
+        {
+            SPELL_ROLL          = 117312,
+            SPELL_KICK          = 128631,
+            SPELL_FIST_FURY     = 128635,
+            SPELL_JAP           = 128630,
+            SPELL_SPINING_KICK  = 128632,
+            SPELL_SUM_HILING_SP = 128643, // use 128641
+            AREA                = 5831,
+        };
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+            events.ScheduleEvent(EVENT_KICK, 5000);
+            events.ScheduleEvent(EVENT_FIST_FURY, 7000);
+            events.ScheduleEvent(EVENT_JAP, 12000);
+            events.ScheduleEvent(EVENT_SPINING_KICK, 15000);
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void KilledUnit(Unit* /*victim*/)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+        }
+
+        void IsSummonedBy(Unit* /*summoner*/)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void DamageTaken(Unit* attacker, uint32& damage)
+        {
+            damage = 1;
+        }
+
+        void EnterCombat(Unit* victim)
+        {
+            if (me->GetDistance(victim) > 10)
+                me->CastSpell(victim, SPELL_ROLL, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_KICK:
+                        me->CastSpell(me->getVictim(), SPELL_KICK, true);
+                        events.ScheduleEvent(EVENT_KICK, 5000);
+                        break;
+                    case EVENT_FIST_FURY:
+                        me->CastSpell(me->getVictim(), SPELL_FIST_FURY, true);
+                        events.ScheduleEvent(EVENT_FIST_FURY, 5000);
+                        break;
+                    case EVENT_JAP:
+                        me->CastSpell(me->getVictim(), SPELL_JAP, true);
+                        events.ScheduleEvent(EVENT_JAP, 5000);
+                        break;
+                    case EVENT_SPINING_KICK:
+                        me->CastSpell(me->getVictim(), SPELL_SPINING_KICK, true);
+                        events.ScheduleEvent(EVENT_SPINING_KICK, 16000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+// Summon Ji Yuan 105306
+class spell_summon_ji_yung: public SpellScriptLoader
+{
+    public:
+        spell_summon_ji_yung() : SpellScriptLoader("spell_summon_ji_yung") { }
+
+        class spell_summon_ji_yung_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_summon_ji_yung_AuraScript);
+            
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+
+                if (!target)
+                    return;
+
+                target->RemoveAllMinionsByEntry(65558);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_summon_ji_yung_AuraScript::OnRemove, EFFECT_3, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_summon_ji_yung_AuraScript();
+        }
+};
+
+class mob_jojo_ironbrow_4 : public CreatureScript
+{
+public:
+    mob_jojo_ironbrow_4() : CreatureScript("mob_jojo_ironbrow_4") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_jojo_ironbrow_4_AI (creature);
+    }
+
+    struct mob_jojo_ironbrow_4_AI : public ScriptedAI
+    {
+        mob_jojo_ironbrow_4_AI(Creature* creature) : ScriptedAI(creature) {}
+
+        enum eEvents
+        {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+            EVENT_3    = 3,
+            EVENT_4    = 4,
+            EVENT_5    = 5,
+        };
+
+        enum eSpell
+        {
+            SUPER_DUPER_KULAK   = 129297,
+        };
+
+        EventMap events;
+
+        void Reset()
+        {
+            events.ScheduleEvent(EVENT_1, 1000);
+            me->SetWalk(true);
+        }
+
+        void MovementInform(uint32 moveType, uint32 pointId)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    // emotes only when in vehicle.
+                    case EVENT_1:
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 1077.31f, 4179.94f, 205.7737f);
+                        events.ScheduleEvent(EVENT_2, 5000);
+                        break;
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        events.ScheduleEvent(EVENT_3, 10000);
+                        break;
+                    case EVENT_3:
+                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                        me->PlayOneShotAnimKit(1078);
+                        events.ScheduleEvent(EVENT_4, 6000);
+                        break;
+                    case EVENT_4:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                        me->SetByteValue(UNIT_FIELD_BYTES_1, 0, UNIT_STAND_STATE_SLEEP);
+                        me->PlayOneShotAnimKit(0);
+                        events.ScheduleEvent(EVENT_5, 15000);
+                        break;
+                    case EVENT_5:
+                        me->DespawnOrUnsummon(30000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
+
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -2314,4 +2617,8 @@ void AddSC_WanderingIsland()
     new mob_master_shang_xi_temple();
     new npc_wind_vehicle();
     new npc_panda_history_leason();
+    new mob_jojo_ironbrow_3();
+    new mob_huojin_monk();
+    new spell_summon_ji_yung();
+    new mob_jojo_ironbrow_4();
 }
