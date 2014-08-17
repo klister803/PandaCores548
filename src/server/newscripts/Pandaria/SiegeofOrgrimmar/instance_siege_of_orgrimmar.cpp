@@ -15,6 +15,7 @@ public:
         instance_siege_of_orgrimmar_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //GameObjects
+        uint64 immerseusexdoorGuid;
         
         //Creature
         uint64 immerseusGuid;
@@ -46,31 +47,32 @@ public:
             SetBossNumber(15);
 
             //GameObject
+            immerseusexdoorGuid  = 0;
            
             //Creature
-            immerseusGuid  = 0;
-            rookGuid       = 0;
-            sunGuid        = 0;
-            heGuid         = 0;
-            noryshenGuid   = 0;
-            shaGuid        = 0;
-            galakrasGuid   = 0;
-            juggernautGuid = 0;
-            korkronGuid    = 0;
-            nazgrimGuid    = 0;
-            malkorokGuid   = 0;
-            thokGuid       = 0;
-            blackfuseGuid  = 0;
-            kilrukGuid     = 0;
-            xarilGuid      = 0;
-            kaztikGuid     = 0;
-            korvenGuid     = 0;
-            iyyokykGuid    = 0;
-            karozGuid      = 0;
-            skeerGuid      = 0;
-            rikkalGuid     = 0;
-            hisekGuid      = 0;
-            garroshGuid    = 0;
+            immerseusGuid       = 0;
+            rookGuid            = 0;
+            sunGuid             = 0;
+            heGuid              = 0;
+            noryshenGuid        = 0;
+            shaGuid             = 0;
+            galakrasGuid        = 0;
+            juggernautGuid      = 0;
+            korkronGuid         = 0;
+            nazgrimGuid         = 0;
+            malkorokGuid        = 0;
+            thokGuid            = 0;
+            blackfuseGuid       = 0;
+            kilrukGuid          = 0;
+            xarilGuid           = 0;
+            kaztikGuid          = 0;
+            korvenGuid          = 0;
+            iyyokykGuid         = 0;
+            karozGuid           = 0;
+            skeerGuid           = 0;
+            rikkalGuid          = 0;
+            hisekGuid           = 0;
+            garroshGuid         = 0;
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -155,6 +157,12 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {    
+            switch (go->GetEntry())
+            {
+            case GO_IMMERSEUS_EX_DOOR:
+                immerseusexdoorGuid = go->GetGUID();
+                break;
+            }
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -162,6 +170,13 @@ public:
             if (!InstanceScript::SetBossState(id, state))
                 return false;
 
+            switch (id)
+            {
+            case DATA_IMMEREUS:
+               // if (state == DONE)
+                   // HandleGameObject(immerseusexdoorGuid, true);
+                break;
+            }
             return true;
         }
 

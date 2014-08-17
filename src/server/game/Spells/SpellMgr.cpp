@@ -4715,6 +4715,32 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = 0;
                     break;
 
+
+                //Siege of Orgrimmar
+                //Immerseus
+                case 143524: //Purified residue
+                    spellInfo->Effects[0].TargetB = 30; 
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
+                case 143460: //Sha Pool Dmg
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
+                    break;
+                case 113762: //Swirl
+                    spellInfo->Effects[0].TriggerSpell = 125925;
+                    break;
+                case 143413: //Swirl dmg
+                    spellInfo->Effects[0].Effect = 2;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    break;
+                case 125925: //Swirlr tr ef (Cone Searcher)
+                    spellInfo->Effects[0].BasePoints = 0;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_110;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22); //200yards
+                    break;
+                    
+
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger

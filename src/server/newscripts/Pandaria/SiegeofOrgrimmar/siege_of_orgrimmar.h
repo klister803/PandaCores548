@@ -29,6 +29,10 @@ enum eData
 
 enum eCreatures
 {
+    //Npc or summons
+    NPC_SHA_PUDDLE          = 71603,
+    NPC_CONTAMINATED_PUDDLE = 71604,
+
     NPC_IMMERSEUS           = 71543,
     //Fallen Protectors
     NPC_ROOK_STONETOE       = 71475,
@@ -60,6 +64,7 @@ enum eCreatures
 
 enum eGameObjects
 {   
+    GO_IMMERSEUS_EX_DOOR    = 221663,
 };
 
 #endif SIEGEOFORGRIMMAR

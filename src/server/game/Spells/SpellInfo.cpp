@@ -1161,35 +1161,53 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     // custom spell effects (needed for rewrite targets, etc..)
     switch (Id)
     {
-    case 122855: //Sun Breath (Tsulong)
-    case 139900: //Stormcloud (StormBringer - ToT)
-    case 139901: //Stormcloud dmg (StormBringer - ToT)
-    case 137261: //Lightning storm dmg (Jinrokh)
-    case 140819: //Lightning storm dummy (Jinrokh)
-    case 136740: //Double swipe (Horridon)
+    //Tsulong
+    case 122855: //Sun Breath
+    //StormBringer - ToT
+    case 139900: //Stormcloud 
+    case 139901: //Stormcloud dmg 
+    //Jinrokh
+    case 137261: //Lightning storm dmg 
+    case 140819: //Lightning storm dummy 
+    //Horridon
+    case 136740: //Double swipe 
     case 136769: //Horridon charge
-    case 136992: //Bitting cold (Mallak)
-    case 136991: //Bitting cold tr ef (Mallak)
-    case 137122: //Reckless charge - point dmg (Kazrajin)
-    case 134920: //Quake stomp (Tortos)
-    case 133946: //Furios stone (Tortos)
-    case 134011: //Spinning shell dmg (Tortos)
-    case 135101: //Drain the weak dmg (Tortos)
-    case 139822: //Cinders dot (Megaera)
-    case 139836: //Cinders void zone dmg (Megaera)
-    case 136220: //Acidic explosion (Primordius)
-    case 134926: //Throw spear (Iron Qon)
-    case 136324: //Rising Anger (Iron Qon)
-    case 137341: //Beast of Nightmares (Twin Consorts) target aura
-    case 137405: //Tears of Sun (Twin Consorts)
-    case 137419: //Ice Comet tr ef (Twin Consorts)
-    case 134912: //Decapitate base aura (Lei Shen)
-    case 134916: //Decapitate tr ef dmg (Lei Shen)
-    case 135695: //Static shock base aura (Lei Shen)
-    case 135703: //Static shock tr ef dmg (Lei Shen)
-    case 138321: //Material of creation (Ra Den)
-    case 138334: //Fatal strike (Ra Den)
-    case 138329: //Unleashed anime (Ra Den)
+    //Mallak
+    case 136992: //Bitting cold 
+    case 136991: //Bitting cold tr ef 
+    //Kazrajin
+    case 137122: //Reckless charge - point dmg 
+    //Tortos
+    case 134920: //Quake stomp 
+    case 133946: //Furios stone 
+    case 134011: //Spinning shell dmg 
+    case 135101: //Drain the weak dmg 
+    //Megaera
+    case 139822: //Cinders dot
+    case 139836: //Cinders void zone dmg
+    //Primordius
+    case 136220: //Acidic explosion 
+    //Iron Qon
+    case 134926: //Throw spear 
+    case 136324: //Rising Anger 
+    //Twin Consorts
+    case 137341: //Beast of Nightmares - target aura
+    case 137405: //Tears of Sun 
+    case 137419: //Ice Comet tr ef 
+    //Lei Shen
+    case 134912: //Decapitate base aura 
+    case 134916: //Decapitate tr ef dmg 
+    case 135695: //Static shock base aura 
+    case 135703: //Static shock tr ef dmg 
+    //Ra Den
+    case 138321: //Material of creation 
+    case 138334: //Fatal strike 
+    case 138329: //Unleashed anime 
+    //Immerseus
+    case 143524: //Purified residue 
+    case 143460: //Sha Pool Dmg 
+    case 113762: //Swirl 
+    case 125925: //Swirlr tr ef (Cone Searcher!)
         return Effects[effect];
     }
 
