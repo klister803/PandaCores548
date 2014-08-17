@@ -2218,6 +2218,59 @@ class spell_item_hardened_shell : public SpellScriptLoader
         }
 };
 
+// item=104111 Elixir of Wandering Spirits
+// spell=147412
+enum ElixirModelSpells
+{
+    SPELL_LEVEN_DAWNBLADE   = 147402,
+    SPELL_ANJI_AUTUMNLIGHT  = 147403,
+    SPELL_KUN_AUTUMNLIGHT   = 147405,
+    SPELL_ROOK_STONETOE     = 147406,
+    SPELL_REN_FIRETONGUE    = 147407,
+    SPELL_HE_SOFTFOOT       = 147409,
+    SPELL_SUN_TENDERHEART   = 147410,
+    SPELL_CHE_WILDWALKER    = 147411,
+};
+
+static const uint32 ElixirModel[] = 
+{
+SPELL_LEVEN_DAWNBLADE, 
+SPELL_ANJI_AUTUMNLIGHT, 
+SPELL_KUN_AUTUMNLIGHT, 
+SPELL_ROOK_STONETOE, 
+SPELL_REN_FIRETONGUE, 
+SPELL_HE_SOFTFOOT,
+SPELL_SUN_TENDERHEART,
+SPELL_CHE_WILDWALKER
+};
+
+class spell_item_elixir_of_wandering_spirits : public SpellScriptLoader
+{
+    public:
+        spell_item_elixir_of_wandering_spirits() : SpellScriptLoader("spell_item_elixir_of_wandering_spirits") { }
+
+        class spell_item_elixir_of_wandering_spirits_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_elixir_of_wandering_spirits_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                caster->CastSpell(caster, ElixirModel[urand(0, 7)], true);
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_item_elixir_of_wandering_spirits_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_elixir_of_wandering_spirits_SpellScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2272,4 +2325,5 @@ void AddSC_item_spell_scripts()
     new spell_item_gen_alchemy_mop();
     new spell_alchemist_rejuvenation();
     new spell_item_hardened_shell();
+    new spell_item_elixir_of_wandering_spirits();
 }
