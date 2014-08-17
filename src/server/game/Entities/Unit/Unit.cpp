@@ -21118,11 +21118,14 @@ uint32 Unit::GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType 
     AuraEffectList const& periodicAuras = GetAuraEffectsByType(auraType);
     for (AuraEffectList::const_iterator i = periodicAuras.begin(); i != periodicAuras.end(); ++i)
     {
-        if ((*i)->GetCasterGUID() != caster || (*i)->GetId() != spellId || (*i)->GetEffIndex() != effectIndex || !(*i)->GetTotalTicks())
+        if ((*i)->GetCasterGUID() != caster || (*i)->GetId() != spellId || (*i)->GetEffIndex() != effectIndex || !(*i)->GetTotalTicks() || !(*i)->GetBase())
             continue;
 
         int32 duration = (*i)->GetBase()->GetDuration();
         int32 amplitude = (*i)->GetAmplitude();
+        if(!duration || !amplitude)
+            continue;
+
         uint16 ReallTicksleft = duration / amplitude;
         bool addTick = (ReallTicksleft * amplitude) < duration;
 
