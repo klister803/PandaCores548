@@ -21126,7 +21126,7 @@ uint32 Unit::GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType 
         if(!duration || !amplitude)
             continue;
 
-        uint16 ReallTicksleft = duration / amplitude;
+        uint32 ReallTicksleft = uint32(duration / amplitude);
         bool addTick = (ReallTicksleft * amplitude) < duration;
 
         if (addTick)
