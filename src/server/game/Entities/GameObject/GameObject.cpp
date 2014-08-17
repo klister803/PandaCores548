@@ -1114,6 +1114,21 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
         SetGoState(GO_STATE_READY);
 }
 
+//! Analog SwitchDoorOrButton but with force set state at enable/disable state
+void GameObject::EnableOrDisableGo(bool enable, bool alternative)
+{
+    if (enable)
+    {
+        SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);    //if closed -> open
+    }
+    else
+    {
+        RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+        SetGoState(GO_STATE_READY);                                                 //if open -> close
+    }        
+}
+
 void GameObject::Use(Unit* user)
 {
     // by default spell caster is user

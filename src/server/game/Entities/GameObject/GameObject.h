@@ -863,6 +863,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void setDynActive(bool active) { m_isDynActive = active; }
 
         GameObjectModel * m_model;
+
+        void EnableOrDisableGo(bool activate, bool alternative = false);
     protected:
         bool AIM_Initialize();
         uint32      m_spellId;
