@@ -109,6 +109,7 @@ class Vehicle : public TransportBase
 
         std::deque<VehicleJoinEvent*> _pendingJoinEvents;   ///< Collection of delayed join events for prospective passengers
         void CancelJoinEvent(VehicleJoinEvent* e);
+        void RemovePendingEvent(VehicleJoinEvent* e);
 };
 
 class VehicleJoinEvent : public BasicEvent
@@ -116,6 +117,7 @@ class VehicleJoinEvent : public BasicEvent
     friend class Vehicle;
     protected:
         VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()) {}
+        ~VehicleJoinEvent() { Target->RemovePendingEvent(this); }
         bool Execute(uint64, uint32);
         void Abort(uint64);
 
