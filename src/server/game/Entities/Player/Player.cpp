@@ -27797,18 +27797,27 @@ bool Player::canSeeSpellClickOn(Creature const* c) const
     if (clickPair.first == clickPair.second)
         return true;
 
+    bool res = true;
     for (SpellClickInfoContainer::const_iterator itr = clickPair.first; itr != clickPair.second; ++itr)
     {
         if (!itr->second.IsFitToRequirements(this, c))
-            return false;
+        {
+            res = false;
+            continue;
+        }
 
         ConditionList conds = sConditionMgr->GetConditionsForSpellClickEvent(c->GetEntry(), itr->second.spellId);
         ConditionSourceInfo info = ConditionSourceInfo(const_cast<Player*>(this), const_cast<Creature*>(c));
         if (!sConditionMgr->IsObjectMeetToConditions(info, conds))
-            return false;
+        {
+            res = false;
+            continue;
+        }
+
+        return true;
     }
 
-    return true;
+    return res;
 }
 
 void Player::BuildPlayerTalentsInfoData(WorldPacket* data)
