@@ -21,6 +21,7 @@
 
 #include "ObjectDefines.h"
 #include "VehicleDefines.h"
+#include "Unit.h"
 
 struct VehicleEntry;
 class Unit;
@@ -30,9 +31,6 @@ typedef std::set<uint64> GuidSet;
 class Vehicle : public TransportBase
 {
     public:
-        explicit Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
-        virtual ~Vehicle();
-
         void Install();
         void Uninstall(bool uninstallBeforeDelete = false);
         void Reset(bool evading = false);
@@ -69,7 +67,20 @@ class Vehicle : public TransportBase
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
 
+    protected:
+        friend bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura);
+        Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
+        friend void Unit::RemoveVehicleKit();
+        ~Vehicle();
+
     private:
+        enum Status
+        {
+            STATUS_NONE,
+            STATUS_INSTALLED,
+            STATUS_UNINSTALLING,
+        };
+
         SeatMap::iterator GetSeatIteratorForPassenger(Unit* passenger);
         void InitMovementInfoForBase();
 
@@ -85,6 +96,8 @@ class Vehicle : public TransportBase
         uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
         uint32 _creatureEntry;         // Can be different than me->GetBase()->GetEntry() in case of players
         uint32 _recAura;               // aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
+
+        Status _status;
 
         bool _isBeingDismissed;
         bool _passengersSpawnedByAI;
