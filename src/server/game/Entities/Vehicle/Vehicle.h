@@ -71,6 +71,9 @@ class Vehicle : public TransportBase
         inline bool CanBeCastedByPassengers() const { return _canBeCastedByPassengers; }
         void SetCanBeCastedByPassengers(bool canBeCastedByPassengers) { _canBeCastedByPassengers = canBeCastedByPassengers; }
 
+        void SetLastShootPos(Position const& pos) { _lastShootPos.Relocate(pos); }
+        Position GetLastShootPos() { return _lastShootPos; }
+
         SeatMap Seats;                                      ///< The collection of all seats on the vehicle. Including vacant ones.
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
@@ -105,8 +108,9 @@ class Vehicle : public TransportBase
         GuidSet vehiclePlayers;
         uint32 _creatureEntry;                              ///< Can be different than the entry of _me in case of players
         Status _status;                                     ///< Internal variable for sanity checks
-        uint32 _recAura;                                    ///< aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
+        Position _lastShootPos;
 
+        uint32 _recAura;                                    ///< aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
         bool _isBeingDismissed;
         bool _passengersSpawnedByAI;
         bool _canBeCastedByPassengers;
@@ -119,7 +123,7 @@ class VehicleJoinEvent : public BasicEvent
 {
     friend class Vehicle;
     protected:
-        VehicleJoinEvent(Vehicle* v, Unit* u, SeatMap::iterator seat) : Target(v), Passenger(u), Seat(seat) {}
+        VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()) {}
         ~VehicleJoinEvent() { Target->RemovePendingEvent(this); }
         bool Execute(uint64, uint32);
         void Abort(uint64);
