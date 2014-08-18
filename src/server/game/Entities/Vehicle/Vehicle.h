@@ -97,6 +97,11 @@ class Vehicle : public TransportBase
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
+        void CancelJoinEvent(VehicleJoinEvent* e);
+        void RemovePendingEvent(VehicleJoinEvent* e);
+        void RemovePendingEventsForSeat(int8 seatId);
+
+    private:
         Unit* _me;                                          ///< The underlying unit with the vehicle kit. Can be player or creature.
         VehicleEntry const* _vehicleInfo;                   ///< DBC data for vehicle
         GuidSet vehiclePlayers;
@@ -109,8 +114,6 @@ class Vehicle : public TransportBase
         bool _canBeCastedByPassengers;
 
         std::deque<VehicleJoinEvent*> _pendingJoinEvents;   ///< Collection of delayed join events for prospective passengers
-        void CancelJoinEvent(VehicleJoinEvent* e);
-        void RemovePendingEvent(VehicleJoinEvent* e);
 };
 
 class VehicleJoinEvent : public BasicEvent
