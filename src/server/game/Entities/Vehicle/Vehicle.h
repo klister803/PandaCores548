@@ -75,7 +75,7 @@ class Vehicle : public TransportBase
 
         SeatMap Seats;                                      ///< The collection of all seats on the vehicle. Including vacant ones.
 
-        VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger) const;
+        VehicleSeatEntry const* GetSeatForPassenger(Unit const* passenger) const;
 
     protected:
         friend class VehicleJoinEvent;
@@ -123,7 +123,7 @@ class VehicleJoinEvent : public BasicEvent
     friend class Vehicle;
     protected:
         VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()) {}
-        ~VehicleJoinEvent() { Target->RemovePendingEvent(this); }
+        ~VehicleJoinEvent();
         bool Execute(uint64, uint32);
         void Abort(uint64);
 
