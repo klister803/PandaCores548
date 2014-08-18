@@ -490,8 +490,7 @@ void BattlefieldWG::OnBattleEnd(bool endByTimer)
         for (GuidSet::const_iterator itr = m_vehicles[team].begin(); itr != m_vehicles[team].end(); ++itr)
             if (Unit* unit = sObjectAccessor->FindUnit(*itr))
                 if (Creature* creature = unit->ToCreature())
-                    if (creature->IsVehicle())
-                        creature->GetVehicleKit()->Dismiss();
+                    creature->DespawnOrUnsummon();
 
         m_vehicles[team].clear();
     }
@@ -910,8 +909,9 @@ void BattlefieldWG::OnPlayerLeaveWar(Player* player)
     // Remove all aura from WG // TODO: false we can go out of this zone on retail and keep Rank buff, remove on end of WG
     if (!player->GetSession()->PlayerLogout())
     {
-        if (player->GetVehicle())                              // Remove vehicle of player if he go out.
-            player->GetVehicle()->Dismiss();
+        if (Creature* vehicle = player->GetVehicleCreatureBase())   // Remove vehicle of player if he go out.
+            vehicle->DespawnOrUnsummon();
+
         RemoveAurasFromPlayer(player);
     }
 

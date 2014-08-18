@@ -62,7 +62,6 @@ class Vehicle : public TransportBase
         void RemovePassenger(Unit* passenger);
         void RelocatePassengers();
         void RemoveAllPassengers();
-        void Dismiss();
         bool IsVehicleInUse() { return Seats.begin() != Seats.end(); }
 
         inline bool ArePassengersSpawnedByAI() const { return _passengersSpawnedByAI; }
@@ -76,7 +75,7 @@ class Vehicle : public TransportBase
 
         SeatMap Seats;                                      ///< The collection of all seats on the vehicle. Including vacant ones.
 
-        VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
+        VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger) const;
 
     protected:
         friend class VehicleJoinEvent;
