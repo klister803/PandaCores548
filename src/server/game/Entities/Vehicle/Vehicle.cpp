@@ -43,7 +43,7 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, 
             if (VehicleSeatEntry const* veSeat = sVehicleSeatStore.LookupEntry(seatId))
             {
                 Seats.insert(std::make_pair(i, VehicleSeat(veSeat)));
-                if (veSeat->CanEnterOrExit())
+                if (veSeat->CanEnterOrExit() || veSeat->IsUsableByOverride())
                     ++UsableSeatNum;
             }
     }
