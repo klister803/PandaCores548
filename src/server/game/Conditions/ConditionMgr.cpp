@@ -760,7 +760,7 @@ ConditionList ConditionMgr::GetConditionsForPhaseDefinition(uint32 zone, uint32 
         if (i != (*itr).second.end())
         {
             cond = (*i).second;
-            sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForPhaseDefinition: found conditions for zone %u entry %u spell %u", zone, entry);
+            sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForPhaseDefinition: found conditions for zone %u entry %u size %u", zone, entry, cond.size());
         }
     }
 
