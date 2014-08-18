@@ -39,6 +39,7 @@
 #include "WorldSession.h"
 #include "PhaseMgr.h"
 #include "Object.h"
+#include "Opcodes.h"
 
 // for template
 #include "SpellMgr.h"
@@ -2031,6 +2032,11 @@ class Player : public Unit, public GridObject<Player>
             return mMitems.erase(id) ? true : false;
         }
 
+        void SendOnCancelExpectedVehicleRideAura()
+        {
+            WorldPacket data(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA, 0);
+            GetSession()->SendPacket(&data);
+        }
         void PetSpellInitialize();
         void CharmSpellInitialize();
         void PossessSpellInitialize();

@@ -34,7 +34,7 @@
 #include "Battleground.h"
 
 Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura) :
-    _me(unit), _vehicleInfo(vehInfo), UsableSeatNum(0), _creatureEntry(creatureEntry), _recAura(recAura),
+    UsableSeatNum(0), _me(unit), _vehicleInfo(vehInfo), _creatureEntry(creatureEntry), _recAura(recAura),
     _isBeingDismissed(false), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false), _status(STATUS_NONE)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
@@ -193,7 +193,7 @@ void Vehicle::Reset(bool evading /*= false*/)
         return;
 
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Reset (Entry: %u, GuidLow: %u, DBGuid: %u)", GetCreatureEntry(), _me->GetGUIDLow(), _me->ToCreature()->GetDBTableGUIDLow());
-    
+
     ApplyAllImmunities();
     InstallAllAccessories(evading);
 
@@ -394,8 +394,8 @@ SeatMap::const_iterator Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
  *
  * @param entry      The NPC entry of accessory.
  * @param seatId     Identifier for the seat to add the accessory to.
- * @param minion     true if accessory considered a 'minion'. Implies that the accessory will despawn when the vehicle despawns. 
- * 					 Essentially that it has no life without the vehicle. Their fates are bound.
+ * @param minion     true if accessory considered a 'minion'. Implies that the accessory will despawn when the vehicle despawns.
+ *                   Essentially that it has no life without the vehicle. Their fates are bound.
  * @param type       See enum @SummonType.
  * @param summonTime Time after which the minion is despawned in case of a timed despawn @type specified.
  */
@@ -406,7 +406,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
     if (_status == STATUS_UNINSTALLING)
     {
         sLog->outError(LOG_FILTER_VEHICLES, "Vehicle (GuidLow: %u, DB GUID: %u, Entry: %u) attempts to install accessory (Entry: %u) on seat %i with STATUS_UNINSTALLING! "
-            "Check Uninstall/PassengerBoarded script hooks for errors.", _me->GetGUIDLow(), 
+            "Check Uninstall/PassengerBoarded script hooks for errors.", _me->GetGUIDLow(),
             (_me->GetTypeId() == TYPEID_UNIT ? _me->ToCreature()->GetDBTableGUIDLow() : _me->GetGUIDLow()), GetCreatureEntry(), entry, (int32)seatId);
         return;
     }
@@ -477,7 +477,7 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 
     sLog->outDebug(LOG_FILTER_VEHICLES, "Unit %s scheduling enter vehicle (entry: %u, vehicleId: %u, guid: %u (dbguid: %s) on seat %d",
         unit->GetName(), _me->GetEntry(), _vehicleInfo->m_ID, _me->GetGUIDLow(), 
-        (_me->GetTypeId() == TYPEID_UNIT ? _me->ToCreature()->GetDBTableGUIDLow() : 0), seatId);
+        (_me->GetTypeId() == TYPEID_UNIT ? _me->ToCreature()->GetDBTableGUIDLow() : 0), (int32)seatId);
 
     // The seat selection code may kick other passengers off the vehicle.
     // While the validity of the following may be arguable, it is possible that when such a passenger
@@ -749,8 +749,8 @@ void Vehicle::CalculatePassengerOffset(float& x, float& y, float& z, float& o)
 /**
  * @fn void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
  *
- * @brief Aborts delayed @VehicleJoinEvent objects. 
- * 		  Implies that the related unit will not be boarding the vehicle after all.
+ * @brief Aborts delayed @VehicleJoinEvent objects.
+ *        Implies that the related unit will not be boarding the vehicle after all.
  *
  * @author Machiavelli
  * @date 17-2-2013
@@ -776,7 +776,7 @@ void Vehicle::CancelJoinEvent(VehicleJoinEvent* e)
  * @param parameter2 Unused.
  *
  * @return true, cannot fail.
- * 
+ *
  */
 
 bool VehicleJoinEvent::Execute(uint64, uint32)
@@ -805,12 +805,13 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     Player* player = Passenger->ToPlayer();
     if (player)
     {
-        // drop flag 
+        // drop flag
         if (Battleground* bg = player->GetBattleground())
             bg->EventPlayerDroppedFlag(player);
 
-        WorldPacket data(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA, 0);
-        player->GetSession()->SendPacket(&data);
+        player->StopCastingCharm();
+        player->StopCastingBindSight();
+        player->SendOnCancelExpectedVehicleRideAura();
         player->UnsummonPetTemporaryIfAny();
     }
 
@@ -863,7 +864,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     
     Movement::MoveSplineInit init(*Passenger);
     init.DisableTransportPathTransformations();
-    init.MoveTo(veSeat->m_attachmentOffsetX, veSeat->m_attachmentOffsetY, veSeat->m_attachmentOffsetZ);
+    init.MoveTo(veSeat->m_attachmentOffsetX, veSeat->m_attachmentOffsetY, veSeat->m_attachmentOffsetZ, false, true);
     init.SetFacing(0.0f);
     init.SetTransportEnter();
     init.Launch();
@@ -903,11 +904,11 @@ void VehicleJoinEvent::Abort(uint64)
     sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on vehicle GuidLow: %u, Entry: %u SeatId: %i cancelled",
         Passenger->GetGUIDLow(), Passenger->GetEntry(), Target->GetBase()->GetGUIDLow(), Target->GetBase()->GetEntry(), (int32)Seat->first);
 
-    /// @SPELL_AURA_CONTROL_VEHICLE auras can be applied even when the passenger is not (yet) on the vehicle. 
+    /// @SPELL_AURA_CONTROL_VEHICLE auras can be applied even when the passenger is not (yet) on the vehicle.
     /// When this code is triggered it means that something went wrong in @Vehicle::AddPassenger, and we should remove
     /// the aura manually.
     Target->GetBase()->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID());
-    
+
     if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
         Passenger->ToTempSummon()->UnSummon();
 }
