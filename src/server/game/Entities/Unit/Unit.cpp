@@ -13249,7 +13249,7 @@ int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask)
     if (GetTypeId() == TYPEID_PLAYER)
     {
         // Base value
-        AdvertisedBenefit += ToPlayer()->GetBaseSpellPowerBonus();
+        AdvertisedBenefit += SpellBaseDamageBonusDone(schoolMask);
 
         // Healing bonus from stats
         AuraEffectList const& mHealingDoneOfStatPercent = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT);
@@ -21127,7 +21127,7 @@ uint32 Unit::GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType 
             continue;
 
         uint32 ReallTicksleft = uint32(duration / amplitude);
-        bool addTick = (ReallTicksleft * amplitude) < duration;
+        bool addTick = int32(ReallTicksleft * amplitude) < duration;
 
         if (addTick)
             ReallTicksleft++;
