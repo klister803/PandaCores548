@@ -20524,13 +20524,13 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
     {
         //! First check simple relations from clicker to clickee
         if (!itr->second.IsFitToRequirements(clicker, this))
-            return continue;
+            continue;
 
         //! Check database conditions
         ConditionList conds = sConditionMgr->GetConditionsForSpellClickEvent(spellClickEntry, itr->second.spellId);
         ConditionSourceInfo info = ConditionSourceInfo(clicker, this);
         if (!sConditionMgr->IsObjectMeetToConditions(info, conds))
-            return continue;
+            continue;
 
         Unit* caster = (itr->second.castFlags & NPC_CLICK_CAST_CASTER_CLICKER) ? clicker : this;
         Unit* target = (itr->second.castFlags & NPC_CLICK_CAST_TARGET_CLICKER) ? clicker : this;
@@ -20579,7 +20579,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
     }
 
     if (!res)
-        returen false;
+        return false;
 
     Creature* creature = ToCreature();
     if (creature && creature->IsAIEnabled)
