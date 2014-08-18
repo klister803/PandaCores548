@@ -26,12 +26,19 @@
 
 struct VehicleEntry;
 class Unit;
+class VehicleJoinEvent;
 
 typedef std::set<uint64> GuidSet;
-class VehicleJoinEvent;
 
 class Vehicle : public TransportBase
 {
+    protected:
+        friend bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura);
+        Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
+
+        friend void Unit::RemoveVehicleKit();
+        ~Vehicle();
+
     public:
         void Install();
         void Uninstall(bool uninstallBeforeDelete = false);
@@ -65,19 +72,13 @@ class Vehicle : public TransportBase
         inline bool CanBeCastedByPassengers() const { return _canBeCastedByPassengers; }
         void SetCanBeCastedByPassengers(bool canBeCastedByPassengers) { _canBeCastedByPassengers = canBeCastedByPassengers; }
 
-        SeatMap Seats;  ///< The collection of all seats on the vehicle. Including vacant ones.
+        SeatMap Seats;                                      ///< The collection of all seats on the vehicle. Including vacant ones.
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
 
     protected:
         friend class VehicleJoinEvent;
-        uint32 UsableSeatNum;         ///< Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
-
-    protected:
-        friend bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura);
-        Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
-        friend void Unit::RemoveVehicleKit();
-        ~Vehicle();
+        uint32 UsableSeatNum;                               ///< Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
 
     private:
         enum Status
@@ -96,12 +97,12 @@ class Vehicle : public TransportBase
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
-        Unit* _me;  ///< The underlying unit with the vehicle kit. Can be player or creature.
-        VehicleEntry const* _vehicleInfo;   ///< DBC data for vehicle
+        Unit* _me;                                          ///< The underlying unit with the vehicle kit. Can be player or creature.
+        VehicleEntry const* _vehicleInfo;                   ///< DBC data for vehicle
         GuidSet vehiclePlayers;
-        uint32 _creatureEntry;         ///< Can be different than the entry of _me in case of players
-        Status _status;     ///< Internal variable for sanity checks
-        uint32 _recAura;               // aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
+        uint32 _creatureEntry;                              ///< Can be different than the entry of _me in case of players
+        Status _status;                                     ///< Internal variable for sanity checks
+        uint32 _recAura;                                    ///< aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
 
         bool _isBeingDismissed;
         bool _passengersSpawnedByAI;
@@ -125,4 +126,5 @@ class VehicleJoinEvent : public BasicEvent
         Unit* Passenger;
         SeatMap::iterator Seat;
 };
+
 #endif
