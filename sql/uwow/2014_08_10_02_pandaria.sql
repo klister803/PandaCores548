@@ -29,7 +29,9 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 --
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
-114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306) AND  area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831);
+114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
+126059, 105333, 106623, 105001, 105002) AND  
+area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -100,22 +102,48 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('105307', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
 ('105005', '5830', '29776', '0', '0', '0', '2', '1', '74', '0'),
 --
-('105306', '5831', '29780', '29784', '0', '0', '2', '1', '74', '74');
+('105306', '5831', '29780', '29784', '0', '0', '2', '1', '74', '74'),
+--
+('104567', '5886', '29785', '29786', '0', '0', '2', '1', '74', '74'),
+('104334', '5886', '29785', '29786', '0', '0', '2', '1', '74', '74'),
+('104566', '5886', '29785', '29786', '0', '0', '2', '1', '74', '74'),    -- aisa come to wind spirit
+--
+('126059', '5886', '29786', '29787', '0', '0', '2', '1', '74', '74'),    -- summon aisa & defang for battle
+-- 104762 phase spell, but already done by terrain phasing
+('105333', '5829', '29787', '29787', '0', '0', '2', '1', '8', '64'),
+-- 105001
+('106623', '5832', '29790', '29790', '0', '0', '2', '1', '8', '64'),
+--
+('105001', '5832', '29790', '0', '0', '0', '2', '1', '66', '0'),
+--
+('105002', '5832', '29791', '0', '0', '0', '2', '0', '74', '0');    -- no autocast
 
-DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND `SourceEntry` in(1, 2, 3) AND SourceGroup = 5736;
-INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
-(23, 5736, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Pandaren Start loc: world area', NULL),
-(23, 5736, 3, 0, 0, 28, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', NULL),
-(23, 5736, 3, 0, 1, 8, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', NULL),
-(23, 5736, 2, 0, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', NULL),
-(23, 5736, 2, 0, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', NULL);
 
--- World Map Area Id: 683
-DELETE FROM phase_definitions WHERE `zoneId` = 5736 AND entry in(1, 2, 3);
+DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND SourceGroup = 5736;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `Comment`, `ScriptName`) VALUES
+(23, 5736, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Pandaren Start loc: world area', ''),
+(23, 5736, 3, 0, 0, 28, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', ''),
+(23, 5736, 3, 0, 1, 8, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', ''),
+(23, 5736, 2, 0, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 2, 0, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 4, 0, 0, 8, 0, 29785, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not reward 29785', ''),
+(23, 5736, 5, 0, 0, 9, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while taken 29786', ''),
+(23, 5736, 6, 0, 0, 8, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
+(23, 5736, 6, 0, 1, 28, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
+(23, 5736, 7, 0, 0, 28, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29790', ''),
+(23, 5736, 7, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not complete 29790', ''),
+(23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', '');
+
+DELETE FROM phase_definitions WHERE `zoneId` = 5736;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `wmAreaId`, `comment`) VALUES
 (5736, 1, 0, 0, 0, 683, 'Pandaren Start loc: world area'),
 (5736, 2, 0, 0, 975, 0, 'Pandaren Start loc: tarrain 975'),
-(5736, 3, 0, 0, 976, 0, 'Pandaren Start loc: tarrain976');
+(5736, 3, 0, 0, 976, 0, 'Pandaren Start loc: tarrain976'),
+(5736, 4, 3, 34604, 0, 0, 'Pandaren Start loc: 3part. Wind cavern'), -- phase
+(5736, 5, 5, 34094, 0, 0, 'Pandaren Start loc: 3part. Battle for the Skies'), -- phase
+(5736, 6, 9, 524, 0, 0, 'Pandaren Start loc: 3part. Wind cavern. Finish'), -- phase
+(5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end');
+
 
 -- ----------------------------------------
 -- Q: 29408 The Lesson of the Burning Scroll
@@ -626,6 +654,7 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = 57690;
 INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
 ('57690', '57691', '0', '1', '', '8', '0');
+
 -- ----------------------------------------
 -- Q: 29780 Do No Evil
 -- ----------------------------------------
@@ -649,6 +678,169 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 (55633, 0, 0, 0, 60, 0, 100, 0, 1000, 1000, 3000, 3000, 11, 127940, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Cast Spell 127940'),
 (55633, 0, 1, 0, 60, 0, 100, 0, 12000, 12000, 10000, 10000, 75, 109104, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'add aura 127940');
 
+-- ----------------------------------------
+-- Q: 29785 Dafeng, the Spirit of Air
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'mob_aysa_wind_temple_escort' WHERE `entry` = 55744;
+DELETE FROM `creature_text` WHERE entry =55744;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(55744, 0, 0, 'Стой!', 12, 0, 100, 1, 0, 27401, 'Аиса Воспевающая Облака'),
+(55744, 1, 0, 'Когда ветер стихнет, нам нужно добежать до перехода между залами!', 12, 0, 100, 1, 0, 27401, 'Аиса Воспевающая Облака'),
+(55744, 2, 0, 'Дождись следующего удачного момента. Встретимся на той стороне зала.', 12, 0, 100, 1, 0, 27402, 'Аиса Воспевающая Облака');
+
+SET @id = 0;
+SET @entry = 55744;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 653.1528, 4224.64, 202.9091, NULL),
+(@entry, @id := @id+ 1, 649.3229, 4224.635, 202.6591, NULL),
+--
+(@entry, @id := @id+ 1, 619.8854, 4249.558, 202.6017, NULL),
+(@entry, @id := @id+ 1, 617.8068, 4251.757, 202.9503, NULL),
+(@entry, @id := @id+ 1, 611.4601, 4257.678, 203.2988, NULL),
+(@entry, @id := @id+ 1, 603.9288, 4261.938, 206.5522, NULL),
+(@entry, @id := @id+ 1, 598.5729, 4266.665, 206.5522, NULL), -- cast 104612
+--
+(@entry, @id := @id+ 1, 580.1649, 4283.193, 210.1953, NULL),
+(@entry, @id := @id+ 1, 562.1805, 4298.959, 210.5253, NULL),
+(@entry, @id := @id+ 1, 548.1077, 4310.887, 210.1953, NULL),
+(@entry, @id := @id+ 1, 544.1979, 4315.187, 212.2319, NULL); -- 104748
+
+UPDATE `creature_template` SET `flags_extra` = '128', `ScriptName` = 'mob_frightened_wind' WHERE `entry` = 55665;
+
+-- terrain phasing id 34604
+UPDATE creature set phaseMask = 2 WHERE id = 55665;
+UPDATE gameobject set phaseMask = 2 WHERE id = 209685;
+
+-- ----------------------------------------
+-- Q: 29786 Battle for the Skies
+-- ----------------------------------------
+DELETE FROM `creature_text` WHERE entry =64506;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(64506, 0, 0, 'Ты все правильно делаешь!', 12, 0, 100, 0, 0, 27380, 'Аиса Воспевающая Облака'),
+(64506, 1, 0, 'Получилось! Теперь атакуем его, пока он не взлетел!', 12, 0, 100, 0, 0, 27381, 'Аиса Воспевающая Облака'),
+(64506, 1, 1, 'Он на земле! Давай же прикончим его!', 12, 0, 100, 0, 0, 27382, 'Аиса Воспевающая Облака');
+
+UPDATE `creature_template` SET `ScriptName` = 'boss_zhao_ren' WHERE `entry` = 55786;
+UPDATE `creature_template` SET `ScriptName` = 'npc_rocket_launcher' WHERE `entry` = 64507;
+
+-- terrain phasing id 34094.
+UPDATE `creature` SET `phaseMask` = '4' WHERE id in (55786, 64506, 64505, 64507);
+
+-- terrain phasing id 524. Complete q29786
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802610 AND id = 55583;
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802611 AND id = 55595;
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802609 AND id = 55586;
+UPDATE `creature` SET `phaseMask` = '8' WHERE id = 55874;
+
+-- ----------------------------------------
+-- Q: 29787 Worthy of Passing
+-- ----------------------------------------
+DELETE FROM `creature_text` WHERE entry =56159;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56159, 0, 0, 'Идем, дитя. Нам осталось совершить вместе последнее путешествие, и твое обучение будет завершено.', 12, 0, 100, 1, 0, 27797, 'Мастер Шан Си'),
+(56159, 1, 0, 'Путь Старейшин приведет нас в Лес Посохов – священную землю, куда дозволено ступать лишь достойным.', 12, 0, 100, 1, 0, 27800, 'Мастер Шан Си'),
+(56159, 2, 0, 'Есть много способов проявить себя. Я же прошу от тебя простейшего. Я должен знать, что ты без колебаний будешь сражаться за наш народ и что с тобой наши люди будут в безопасности.', 12, 0, 100, 1, 0, 27801, 'Мастер Шан Си'),
+(56159, 3, 0, 'Одержи победу над Стражем Старейшин, и мы сможем пройти.', 12, 0, 100, 1, 0, 27802, 'Мастер Шан Си'),
+(56159, 4, 0, 'Теперь ты гораздо сильнее, чем раньше. Это хорошо. Вскоре тебе понадобится эта сила.', 12, 0, 100, 1, 0, 27803, 'Мастер Шан Си');
+
+DELETE FROM `creature` WHERE `id` = 56274;
+
+UPDATE `creature_template` SET `ScriptName` = 'mob_master_shang_xi_after_zhao_escort' WHERE `entry` = 56159;
+SET @id = 0;
+SET @entry = 56159;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 776.5261, 4178.652, 207.064, NULL),
+(@entry, @id := @id+ 1, 801.6656, 4189.778, 207.3955, NULL),
+(@entry, @id := @id+ 1, 827.309, 4205.264, 199.727, NULL),
+(@entry, @id := @id+ 1, 839.7535, 4215.792, 197.8256, NULL),
+(@entry, @id := @id+ 1, 840.4375, 4230.833, 198.0775, NULL),
+(@entry, @id := @id+ 1, 842.5364, 4245.484, 196.8491, NULL),
+(@entry, @id := @id+ 1, 845.007, 4267.588, 196.8246, NULL),
+-- say id 1
+(@entry, @id := @id+ 1, 843.8195, 4301.174, 210.9836, NULL),
+-- say id 2
+(@entry, @id := @id+ 1, 843.2621, 4339.104, 223.9808, NULL),
+-- say id 3
+(@entry, @id := @id+ 1, 828.719, 4351.882, 224.0418, NULL),
+(@entry, @id := @id+ 1, 830.4548, 4362.075, 223.7731, NULL),
+-- pause
+(@entry, @id := @id+ 1, 874.1077, 4459.631, 241.1889, NULL);
+
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 55672;
+DELETE FROM `creature_text` WHERE entry =55672;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(55672, 0, 0, 'Вот мы и на месте. Мне понадобится твоя помощь в приготовлениях.', 12, 0, 100, 1, 0, 27805, 'Мастер Шан Си');
+-- terrain phasing id 34653 show before complete 29790
+UPDATE creature set phaseMask = 2 WHERE id = 55672;
+DELETE FROM `locales_creature_text` WHERE `entry` = 55672;
+
+-- ----------------------------------------
+-- Q: 29790 Passing Wisdom
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'mob_master_shang_xi_thousand_staff' WHERE `entry` = 56686;
+DELETE FROM `smart_scripts` WHERE `entryorguid` = 56686;
+DELETE FROM `creature_text` WHERE entry =56686;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56686, 0, 0, 'Три тысячи лет мы передаем знания наших предков новым поколениям. Старики – молодым. Учителя – ученикам.', 12, 0, 100, 1, 0, 27807, 'Мастер Шан Си'),
+(56686, 1, 0, 'В конце своей жизни каждый старейшина должен уйти и воткнуть свой посох рядом с посохами предков. Сегодня и мой посох станет частью этого леса.', 12, 0, 100, 1, 0, 27808, 'Мастер Шан Си'),
+(56686, 2, 0, 'Наш народ очень давно живет на спине великой черепахи Шэнь-Цзынь Су. Но вот уже много веков никто не разговаривал с ним.', 12, 0, 100, 1, 0, 27809, 'Мастер Шан Си'),
+(56686, 3, 0, 'Сейчас Шэнь-Цзынь Су болен, и всем нам грозит опасность. С помощью духов стихий ты прервешь вековое молчание. Ты поговоришь с ним.', 12, 0, 100, 1, 0, 27810, 'Мастер Шан Си'),
+(56686, 4, 0, 'Аиса и Цзи привели сюда духов стихий. Ты отправишься с ними, поговоришь с великим Шэнь-Цзынь Су и сделаешь все, что потребуется для спасения нашего народа.', 12, 0, 100, 1, 0, 27811, 'Мастер Шан Си'),
+(56686, 5, 0, 'Тебе многого удалось достичь. Я вижу в тебе великого героя... Я оставляю судьбу этой земли в твоих руках.', 12, 0, 100, 396, 0, 27812, 'Мастер Шан Си');
+
+DELETE FROM `spell_target_position` WHERE id = 109335;
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('109335', '860', 873.09, 4462.25, 241.27, 3.80);
+
+DELETE FROM `conditions` WHERE SourceEntry = 109336;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 109336, 0, 0, 31, 0, 3, 57874, 0, 0, 0, '', 'Cast - Only - 57668');
+
+-- ----------------------------------------
+-- Q: 29791 The Suffering of Shen-zin Su
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'mob_aisa_pre_balon_event' WHERE `entry` = 56662;
+DELETE FROM `smart_scripts` WHERE `entryorguid` = 56662;
+DELETE FROM `creature_text` WHERE entry =56662;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56662, 0, 0, 'Мы готовы отправиться в любой момент, $n.', 12, 0, 100, 1, 0, 27428, 'Аиса Воспевающая Облака'),
+(56662, 1, 0, 'Забирайся.', 12, 0, 100, 1, 0, 27429, 'Аиса Воспевающая Облака'),
+(56662, 2, 0, 'Не слушай его. Нас ждут важные дела.', 12, 0, 100, 1, 0, 27430, 'Аиса Воспевающая Облака');
+
+DELETE FROM `creature_text` WHERE entry =56663;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56663, 0, 0, 'Слушай, если хочешь побродить по лесу, мы с Аисой подождем тебя здесь... Ну, ты понимаешь, да?', 12, 0, 100, 1, 0, 27296, 'Цзи Огненная Лапа');
+
+UPDATE `creature_template` SET `IconName` = 'vehichleCursor', `unit_flags` = '33536', `npcflag` = '16777216', `VehicleId` = '1887' WHERE `entry` = 55918;
+DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = 55918;
+INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
+('55918', '56663', '1', '1', '', '8', '0');
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55918;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(55918, 46598, 1, 0);
+UPDATE `creature_template_addon` SET `auras` = '49414' WHERE `entry` = 56663;
+
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55918;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(55918, 46598, 1, 0),
+(55918, 128815, 1, 0);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceEntry` = 72240;
+REPLACE INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ConditionTypeOrReference`, `ConditionTarget`,`ConditionValue1`,`ConditionValue2`,`NegativeCondition`,`Comment`)VALUES 
+(18, 55918, 128815, 9, 0, 29791, 0, 0, 'Required quest active for spellclick'),
+(18, 55918, 128815, 31, 0, 4, 0, 0, 'Spellclick for player'),
+(18, 55918, 46598, 31, 0, 3, 0, 0, 'Spellclick for npc');
+
+UPDATE `creature_template` SET `VehicleId` = '1820', `ScriptName` = 'mop_air_balloon' WHERE `entry` = 55649;
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55649;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(55649, 46598, 1, 0);
+DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = 55649;
+INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
+('55649', '56660', '2', '1', '', '8', '0'),
+('55649', '65476', '3', '1', '', '8', '0'),
+('55649', '65477', '4', '1', '', '8', '0');
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';

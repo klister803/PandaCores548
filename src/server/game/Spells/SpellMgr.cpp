@@ -4961,6 +4961,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108847:// Mop: quest
                 case 108857:// Mop: quest
                 case 108858:// Mop: quest
+                case 109335:// Mop: quest
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
                     break;
                 case 84964:  // Rayne's Seed

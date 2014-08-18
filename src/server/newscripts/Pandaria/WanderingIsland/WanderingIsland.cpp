@@ -22,6 +22,7 @@ enum panda_npc
     NPC_ANNOUNCER_4                                = 54568,
     NPC_ANNOUNCER_5_TRAVEL                         = 57712,
     NPC_ANNOUNCER_6                                = 55694,
+    NPC_ANNOUNCER_7                                = 55672,
     NPC_AMBERLEAF_SCAMP                            = 54130, //Amberleaf Scamp
     NPC_MIN_DIMWIND_OUTRO                          = 56503, //Min Dimwind
     NPC_MASTER_LI_FAI                              = 54856, 
@@ -44,6 +45,10 @@ enum panda_quests
     QUEST_SPIRIT_AND_BODY                          = 29775, //The Spirit and Body of Shen-zin Su
     QUEST_MORNING_BREEZE_BILLAGE                   = 29776, // Morning Breeze Village
     QUEST_BALANCED_PERSPECTIVE                     = 29784, // Balanced Perspective
+    QUST_DAFENG_SPIRIT_OF_AIR                      = 29785, // Dafeng, the Spirit of Air
+    QIEST_BATTLE_FOR_SKIES                         = 29786, // Battle for the Skies
+    QUEST_PASSING_WISDOM                           = 29790,
+    QUEST_SUF_SHUN_ZI                              = 29791,
 };
 
 enum spell_panda
@@ -132,7 +137,7 @@ class npc_panda_announcer : public CreatureScript
 
             m_player_for_event.insert(who->GetGUID());
             events.ScheduleEvent(EVENT_1, 3000);
-            events.ScheduleEvent(EVENT_CLEAR, 60000);
+            events.ScheduleEvent(EVENT_CLEAR, 30000);
             targetGUID = who->GetGUID();
         }
 
@@ -619,9 +624,10 @@ public:
             }
         }
 
-        void IsSummonedBy(Unit* /*summoner*/)
+        void IsSummonedBy(Unit* summoner)
         {
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
         }
 
         void WaypointReached(uint32 waypointId)
@@ -2415,9 +2421,10 @@ public:
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
         }
 
-        void IsSummonedBy(Unit* /*summoner*/)
+        void IsSummonedBy(Unit* summoner)
         {
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
         }
 
         void DamageTaken(Unit* attacker, uint32& damage)
@@ -2582,6 +2589,831 @@ public:
     };
 };
 
+class AreaTrigger_at_wind_temple_entrance : public AreaTriggerScript
+{
+    public:
+        AreaTrigger_at_wind_temple_entrance() : AreaTriggerScript("AreaTrigger_at_wind_temple_entrance")
+        {}
+
+        enum spell
+        {
+            SUMMON_SPELL    = 104571,
+        };
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        {
+            if (player->GetQuestStatus(QUST_DAFENG_SPIRIT_OF_AIR) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SUMMON_SPELL))
+            {
+                player->CastSpell(player, SUMMON_SPELL, true);
+                //if (Creature* aysa = player->SummonCreature(55744, 665.60f, 4220.66f, 201.93f, 1.93f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
+                //    aysa->AI()->SetGUID(player->GetGUID());
+            }
+
+            return true;
+        }
+};
+
+class mob_aysa_wind_temple_escort : public CreatureScript
+{
+    public:
+        mob_aysa_wind_temple_escort() : CreatureScript("mob_aysa_wind_temple_escort") { }
+
+    struct mob_aysa_wind_temple_escortAI : public npc_escortAI
+    {        
+        mob_aysa_wind_temple_escortAI(Creature* creature) : npc_escortAI(creature)
+        {}
+        
+        uint64 playerGuid;
+        EventMap events;
+
+        enum events
+        {
+            EVENT_1                 = 1,
+            EVENT_2                 = 2,
+            EVENT_JECK_DEAD         = 3,
+        };
+
+        void Reset()
+        {
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        void SetGUID(uint64 guid, int32)
+        {
+            playerGuid = guid;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            playerGuid = summoner->GetGUID();
+            events.ScheduleEvent(EVENT_1, 1000);
+        }
+
+        void DoAction(int32 const /*param*/)
+        {
+            SetEscortPaused(false);
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            switch (waypointId)
+            {
+                case 2:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                    SetEscortPaused(true);
+                    me->SetFacingTo(2.38f);
+                    break;
+                case 7:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                    SetEscortPaused(true);
+                    // cast 104612 on owner
+                    break;
+                case 11:
+                    //if (Player* player = ObjectAccessor::GetPlayer(*me, playerGuid))
+                    //    player->KilledMonsterCredit(55666);
+                    me->DespawnOrUnsummon(5000);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        events.ScheduleEvent(EVENT_2, 5000);
+                        break;
+                    case EVENT_2:
+                        Start(false, true);
+                        break;
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_aysa_wind_temple_escortAI(creature);
+    }
+};
+
+class mob_frightened_wind : public CreatureScript
+{
+public:
+    mob_frightened_wind() : CreatureScript("mob_frightened_wind") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_frightened_windAI(creature);
+    }
+
+    struct mob_frightened_windAI : public ScriptedAI
+    {
+        mob_frightened_windAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        uint32 tornadeTimer;
+        uint64 goWinder;
+        enum Spells
+        {
+            SPELL_TORNADE    = 104333,
+            SPELL_OFFTIME    = 105678,
+            GO_WIND          = 209685,
+        };
+
+        void Reset()
+        {
+            me->SetReactState(REACT_PASSIVE);
+            tornadeTimer = 8 * IN_MILLISECONDS;
+            if (GameObject* wind =  me->FindNearestGameObject(GO_WIND, 15.0f))
+                goWinder = wind->GetGUID();
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (tornadeTimer <= diff)
+            {
+                me->ToggleAura(SPELL_TORNADE, me);
+
+                bool enable = false;
+                if (!me->HasAura(SPELL_TORNADE))
+                {
+                    me->RemoveAurasDueToSpell(SPELL_OFFTIME);
+                    enable = true;
+                }else
+                {
+                    me->CastSpell(me, SPELL_OFFTIME, true);
+                    if (Creature* aysa = me->FindNearestCreature(55744, 200.0f, true))
+                        aysa->AI()->DoAction(1);
+                }
+
+                if (GameObject* g = me->GetMap()->GetGameObject(goWinder))
+                {
+                    //g->SetGoState(enable ? GO_STATE_ACTIVE : GO_STATE_READY);
+                    g->EnableOrDisableGo(!enable);
+                }
+                tornadeTimer = 8 * IN_MILLISECONDS;
+            }
+            else
+                tornadeTimer -= diff;
+        }
+    };
+};
+
+enum Enums
+{
+    NPC_ROCKET_LAUNCHER = 64507,
+    NPC_AISA_SHAO       = 64506,
+    SPELL_ROCKET_LAUNCH = 104855,
+            
+    EVENT_NEXT_MOVEMENT = 1,
+    EVENT_STUNNED       = 2,
+    EVENT_LIGHTNING     = 3,
+
+    SPELL_SERPENT_SWEEP = 125990,
+    SPELL_STUNNED       = 125992,
+    SPELL_LIGHTNING     = 126006,
+};
+
+Position ZhaoPos[] = 
+{
+    {719.36f, 4164.60f, 216.06f}, // Center
+    {745.91f, 4154.35f, 223.48f},
+    {717.04f, 4141.16f, 219.83f},
+    {689.62f, 4153.16f, 217.63f},
+    {684.53f, 4173.24f, 216.98f},
+    {704.77f, 4190.16f, 218.24f},
+    {736.90f, 4183.85f, 221.41f}
+};
+
+class boss_zhao_ren : public CreatureScript
+{
+public:
+    boss_zhao_ren() : CreatureScript("boss_zhao_ren") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_zhao_renAI(creature);
+    }
+
+    struct boss_zhao_renAI : public ScriptedAI
+    {
+        boss_zhao_renAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap _events;
+        bool eventStarted;
+        bool falling;
+        uint8 hitCount;
+        uint8 currentPos;
+
+        void Reset()
+        {
+            _events.Reset();
+            me->SetReactState(REACT_PASSIVE);
+
+            falling = false;
+            eventStarted = false;
+            hitCount = 0;
+            currentPos = 0;
+
+            me->SetFullHealth();
+            me->RemoveAurasDueToSpell(SPELL_STUNNED);
+
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MovePoint(0, ZhaoPos[0].GetPositionX(), ZhaoPos[0].GetPositionY(), ZhaoPos[0].GetPositionZ());
+        }
+
+        void SpellHit(Unit* caster, const SpellInfo* spell)
+        {
+            if (spell->Id == SPELL_ROCKET_LAUNCH)
+            {
+                if (++hitCount >= 5)
+                {
+                    falling = true;
+                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->MoveFall();
+                    _events.ScheduleEvent(EVENT_STUNNED, 12000);
+                    hitCount = 0;
+                }else if (hitCount == 1)
+                {
+                    if (Creature* aysa = me->FindNearestCreature(NPC_AISA_SHAO, 100.0f, true))
+                        sCreatureTextMgr->SendChat(aysa, TEXT_GENERIC_0);
+                }
+            }
+        }
+        
+        bool checkPlayers()
+        {
+            std::list<Player*> playerList;
+            GetPlayerListInGrid(playerList, me, 80.0f);
+
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
+                if (player->GetQuestStatus(QIEST_BATTLE_FOR_SKIES) == QUEST_STATUS_INCOMPLETE)
+                    if (player->isAlive())
+                        return true;
+            }
+
+            return false;
+        }
+
+        void GoToNextPos()
+        {
+            if (++currentPos > 6)
+                currentPos = 1;
+
+            me->GetMotionMaster()->MovePoint(currentPos, ZhaoPos[currentPos].GetPositionX(), ZhaoPos[currentPos].GetPositionY(), ZhaoPos[currentPos].GetPositionZ());
+        }
+
+        Player* GetRandomPlayer()
+        {
+            std::list<Player*> playerList;
+            GetPlayerListInGrid(playerList, me, 50.0f);
+
+            if (playerList.empty())
+                return NULL;
+
+            Trinity::Containers::RandomResizeList(playerList, 1);
+
+            return *playerList.begin();
+        }
+
+        void MovementInform(uint32 type, uint32 id)
+        {
+            if (falling)
+            {
+                me->CastSpell(me, SPELL_STUNNED, true);
+                falling = false;
+                if (Creature* aysa = me->FindNearestCreature(NPC_AISA_SHAO, 100.0f, true))
+                {
+                    sCreatureTextMgr->SendChat(aysa, TEXT_GENERIC_1);
+                    aysa->AI()->AttackStart(me);
+                }
+            }
+
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            if (!id)
+                return;
+
+            _events.ScheduleEvent(EVENT_NEXT_MOVEMENT, 200);
+        }
+
+        void JustDied(Unit* attacker)
+        {
+            std::list<Player*> playerList;
+            GetPlayerListInGrid(playerList, me, 50.0f);
+
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
+                if (player->GetQuestStatus(QIEST_BATTLE_FOR_SKIES) == QUEST_STATUS_INCOMPLETE)
+                    if (player->isAlive())
+                        player->KilledMonsterCredit(me->GetEntry());
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (checkPlayers())
+            {
+                if (!eventStarted)  // Event not started, player found
+                {
+                    _events.ScheduleEvent(EVENT_NEXT_MOVEMENT, 1000);
+                    _events.ScheduleEvent(EVENT_LIGHTNING, 5000);
+                    eventStarted = true;
+                }
+            }
+            else
+            {
+                if (eventStarted)  // Event started, no player found
+                    Reset();
+
+                return;
+            }
+
+            _events.Update(diff);
+
+            switch (_events.ExecuteEvent())
+            {
+                case EVENT_NEXT_MOVEMENT:
+                {
+                    if (me->HasAura(SPELL_STUNNED))
+                        _events.ScheduleEvent(EVENT_NEXT_MOVEMENT, 2000);
+
+                    GoToNextPos();
+                    break;
+                }
+                case EVENT_STUNNED:
+                {
+                    me->RemoveAurasDueToSpell(SPELL_STUNNED);
+                    me->CastSpell(me, SPELL_SERPENT_SWEEP, false);
+                    _events.ScheduleEvent(EVENT_NEXT_MOVEMENT, 3000);
+                    break;
+                }
+                case EVENT_LIGHTNING:
+                {
+                    if (Player* player = GetRandomPlayer())
+                        me->CastSpell(player, SPELL_LIGHTNING, false);
+
+                    _events.ScheduleEvent(EVENT_LIGHTNING, 5000);
+                    break;
+                }
+            }
+        }
+    };
+};
+
+class npc_rocket_launcher : public CreatureScript
+{
+public:
+    npc_rocket_launcher() : CreatureScript("npc_rocket_launcher") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_rocket_launcherAI (creature);
+    }
+
+    struct npc_rocket_launcherAI : public ScriptedAI
+    {
+        npc_rocket_launcherAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 cooldown;
+
+        void Reset()
+        {
+            cooldown = 0;
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+        }
+
+        void OnSpellClick(Unit* Clicker)
+        {
+            if (cooldown)
+                return;
+
+            if (Creature* zhao = GetClosestCreatureWithEntry(me, 55786, 50.0f))
+                Clicker->CastSpell(zhao, SPELL_ROCKET_LAUNCH, false);
+
+            cooldown = 5000;
+            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            return;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (cooldown)
+            {
+                if (cooldown <= diff)
+                {
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                    cooldown = 0;
+                }
+                else
+                    cooldown -= diff;
+            }
+        }
+    };
+};
+
+class mob_master_shang_xi_after_zhao_escort : public CreatureScript
+{
+    public:
+        mob_master_shang_xi_after_zhao_escort() : CreatureScript("mob_master_shang_xi_after_zhao_escort") { }
+
+    struct mob_master_shang_xi_after_zhao_escortAI : public npc_escortAI
+    {        
+        mob_master_shang_xi_after_zhao_escortAI(Creature* creature) : npc_escortAI(creature)
+        {}
+        
+        uint32 IntroTimer;
+
+        uint64 playerGuid;
+
+        void Reset()
+        {
+            IntroTimer = 250;
+            me->SetReactState(REACT_PASSIVE);
+            me->SetWalk(false);
+            //Start(false, true);
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            playerGuid = summoner->GetGUID();
+            Start(false, true);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            switch (waypointId)
+            {
+                case 7:
+                    me->SetWalk(true);
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                    break;
+                case 8:
+                    if (GameObject* gate =  me->FindNearestGameObject(209922, 200.0f))
+                        gate->EnableOrDisableGo(false);
+                    me->SummonCreature(56274, 845.89f, 4372.62f, 223.98f, 4.78f, TEMPSUMMON_CORPSE_DESPAWN, 0, playerGuid);
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                    break;
+                case 9:
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                    break;
+                case 11:
+                    me->SetFacingTo(0.0f);
+                    SetEscortPaused(true);
+                    break;
+                case 12:
+                    me->SetFacingTo(4.537860f);
+                    me->DespawnOrUnsummon(1000);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void SummonedCreatureDespawn(Creature* summon)
+        {
+            if (summon->GetEntry() == 56274)
+            {
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4);
+                if (GameObject* gate =  me->FindNearestGameObject(209922, 200.0f))
+                    gate->EnableOrDisableGo(true);
+                me->SetWalk(false);
+                SetEscortPaused(false);
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_master_shang_xi_after_zhao_escortAI(creature);
+    }
+};
+
+class mob_master_shang_xi_thousand_staff : public CreatureScript
+{
+    public:
+        mob_master_shang_xi_thousand_staff() : CreatureScript("mob_master_shang_xi_thousand_staff") { }
+
+    struct mob_master_shang_xi_thousand_staffAI : public ScriptedAI
+    {        
+        mob_master_shang_xi_thousand_staffAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap _events;
+        uint64 playerGuid;
+        enum events
+        {
+            EVENT_DESPAWN   = 1,
+            EVENT_1         = 2,
+            EVENT_2         = 3,
+            EVENT_3         = 4,
+            EVENT_4         = 5,
+            EVENT_5         = 6,
+        };
+
+        void Reset()
+        {
+            me->SetReactState(REACT_PASSIVE);
+            me->SetWalk(true);
+            playerGuid = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            playerGuid = summoner->GetGUID();
+            
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+            _events.ScheduleEvent(EVENT_1, 12000);
+        }
+
+         void MovementInform(uint32 moveType, uint32 waypointId)
+        {
+            switch (waypointId)
+            {
+                case 2:
+                    _events.ScheduleEvent(EVENT_3, 12000);
+                    break;
+                default:
+                    break;
+            }
+            if (Player* p = ObjectAccessor::GetPlayer(*me, playerGuid))
+                me->SetFacingToObject(p);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            _events.Update(diff);
+
+            while (uint32 eventId = _events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        me->GetMotionMaster()->MovePoint(1, 871.0573f, 4460.548f, 241.4504f);
+                        _events.ScheduleEvent(EVENT_2, 14000);
+                        break;
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                        me->GetMotionMaster()->MovePoint(2, 868.007f, 4464.838f, 241.6647f);
+                        break;
+                    case EVENT_3:
+                        me->GetMotionMaster()->MovePoint(3, 874.205f, 4464.75f, 241.3819f);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                        _events.ScheduleEvent(EVENT_4, 15000);
+                        break;
+                    case EVENT_4:
+                         me->RemoveAurasDueToSpell(126160);
+                         me->CastSpell(me, 128850, true);       //summon stuff
+                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4);
+                         _events.ScheduleEvent(EVENT_5, 15000);
+                        break;
+                    case EVENT_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5);
+                        me->SetByteValue(UNIT_FIELD_BYTES_1, 0, UNIT_STAND_STATE_KNEEL);
+                        me->CastSpell(me, 128851, true);
+                        me->CastSpell(me, 109336, true);
+                        me->CastSpell(me, 106625, true);
+                        _events.ScheduleEvent(EVENT_DESPAWN, 10000);
+                        break;
+                    case EVENT_DESPAWN:
+                    {
+                        me->CastSpell(me, 106625, true);
+                        me->DespawnOrUnsummon();
+                        //if (Player* owner = ObjectAccessor::GetPlayer(*me, playerGuid))
+                        //    owner->KilledMonsterCredit(56688);
+                        break;
+                    }
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_master_shang_xi_thousand_staffAI(creature);
+    }
+};
+
+class mob_aisa_pre_balon_event : public CreatureScript
+{
+    public:
+        mob_aisa_pre_balon_event() : CreatureScript("mob_aisa_pre_balon_event") { }
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUEST_SUF_SHUN_ZI)
+            sCreatureTextMgr->SendChat(creature, TEXT_GENERIC_1, player->GetGUID());
+
+        return true;
+    }
+
+    struct mob_aisa_pre_balon_eventAI : public ScriptedAI
+    {        
+        mob_aisa_pre_balon_eventAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        bool justSpeaking;
+        EventMap _events;
+        std::set<uint64> m_player_for_event;
+
+        enum events
+        {
+            EVENT_1    = 1,
+            EVENT_2    = 2,
+            EVENT_3    = 3,
+
+            NPC_FRIEND  = 56663,
+        };
+
+        void Reset()
+        {
+            justSpeaking = false;
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (justSpeaking || who->GetTypeId() != TYPEID_PLAYER || who->IsOnVehicle())
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+
+            if (who->ToPlayer()->GetQuestStatus(QUEST_PASSING_WISDOM) != QUEST_STATUS_COMPLETE)
+                return;
+
+            m_player_for_event.insert(who->GetGUID());
+            justSpeaking = true;
+            _events.ScheduleEvent(EVENT_1, 10000);
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            _events.Update(diff);
+
+            while (uint32 eventId = _events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_1:
+                    {
+                        _events.ScheduleEvent(EVENT_2, 8000);
+                        if (Creature* f = me->FindNearestCreature(NPC_FRIEND, 100.0f, true))
+                        {
+                            sCreatureTextMgr->SendChat(f, TEXT_GENERIC_0);
+                            f->SetFacingToObject(me);
+                        }
+                        break;
+                    }
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                        justSpeaking = false;
+                        break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_aisa_pre_balon_eventAI(creature);
+    }
+};
+
+class mop_air_balloon : public VehicleScript
+{
+    public:
+        mop_air_balloon() : VehicleScript("mop_air_balloon") { }
+
+    struct mop_air_balloonAI : public npc_escortAI
+    {        
+        mop_air_balloonAI(Creature* creature) : npc_escortAI(creature)
+        {}
+        
+        uint64 playerGuid;
+        EventMap events;
+
+        void Reset()
+        {
+            playerGuid = 0;
+            me->setActive(true);
+            me->SetReactState(REACT_PASSIVE);
+            me->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
+            me->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
+        }
+
+        enum localdata
+        {
+            NPC_AISA                          = 56661,
+            SPELL_AISA_ENTER_SEAT_2           = 63313, //106617
+
+            EVENT_1                           = 1,
+            EVENT_2                           = 2,
+            EVENT_3                           = 3,
+        };
+
+        void PassengerBoarded(Unit* passenger, int8 seatId, bool apply)
+        {
+            if (!apply && passenger->GetTypeId() == TYPEID_PLAYER)
+            {
+                me->DespawnOrUnsummon(1000);
+                return;
+            }
+
+            if (seatId == 0)
+                if (Player* player = passenger->ToPlayer())
+                    player->KilledMonsterCredit(56378);
+
+            if (passenger->GetTypeId() != TYPEID_PLAYER)
+            {
+                passenger->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
+                passenger->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
+            }
+
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            playerGuid = summoner->GetGUID();
+            summoner->EnterVehicle(me, 0);
+            events.ScheduleEvent(EVENT_1, 1000);
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            switch (waypointId)
+            {
+                case 19:
+                    if (me->GetVehicleKit())
+                    {
+                        if (Unit* passenger = me->GetVehicleKit()->GetPassenger(0))
+                            if (Player* player = passenger->ToPlayer())
+                            {
+                                player->KilledMonsterCredit(55939);
+                                player->AddAura(50550, player);
+                            }
+
+                        me->GetVehicleKit()->RemoveAllPassengers();
+                    }
+
+                    me->DespawnOrUnsummon();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_1:
+                    {
+                        if (Creature* f = me->FindNearestCreature(NPC_AISA, 100.0f, true))
+                            f->CastSpell(me, SPELL_AISA_ENTER_SEAT_2, true);
+                        Start(false, true);
+                        break;
+                    }
+                }
+            }
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mop_air_balloonAI(creature);
+    }
+};
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -2621,4 +3453,13 @@ void AddSC_WanderingIsland()
     new mob_huojin_monk();
     new spell_summon_ji_yung();
     new mob_jojo_ironbrow_4();
+    new AreaTrigger_at_wind_temple_entrance();
+    new mob_aysa_wind_temple_escort();
+    new mob_frightened_wind();
+    new boss_zhao_ren();
+    new npc_rocket_launcher();
+    new mob_master_shang_xi_after_zhao_escort();
+    new mob_master_shang_xi_thousand_staff();
+    new mob_aisa_pre_balon_event();
+    new mop_air_balloon();
 }
