@@ -2967,15 +2967,19 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         else if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
                         {
                             int32 origDuration = duration;
-                            duration = 0;
                             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                                 if (AuraEffect const* eff = m_spellAura->GetEffect(i))
                                     if (int32 amplitude = eff->GetAmplitude())  // amplitude is hastened by UNIT_MOD_CAST_SPEED
-                                        duration = int32(origDuration * (2.0f - m_originalCaster->GetFloatValue(UNIT_MOD_CAST_SPEED)));
+                                    {
+                                        int32 gettotalticks = origDuration / amplitude;
+                                        int32 rest = origDuration - (gettotalticks * amplitude);
+                                        int32 timer = eff->GetPeriodicTimer() == amplitude ? 0: eff->GetPeriodicTimer();
 
-                            // if there is no periodic effect
-                            if (!duration)
-                                duration = int32(origDuration * (2.0f - m_originalCaster->GetFloatValue(UNIT_MOD_CAST_SPEED)));
+                                        if (rest > (amplitude / 2))
+                                            gettotalticks++;
+
+                                        duration = gettotalticks * amplitude + timer;
+                                    }
                         }
                     }
 
@@ -3950,15 +3954,43 @@ void Spell::_handle_immediate_phase()
         return;
     // Handle procs on cast
     // TODO: finish new proc system:P
-    if (m_UniqueTargetInfo.empty() && m_targets.HasDst())
-    {
-        uint32 procAttacker = m_procAttacker;
-        if (!procAttacker)
-            procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
 
-        // Proc the spells that have DEST target
-        DamageInfo dmgInfoProc = DamageInfo(m_caster, NULL, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
-        m_originalCaster->ProcDamageAndSpell(NULL, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
+    uint32 procAttacker = m_procAttacker;
+    if (!procAttacker)
+        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
+
+    if (m_UniqueTargetInfo.empty())
+    {
+        if (m_targets.HasDst())
+        {
+            // Proc the spells that have DEST target
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, NULL, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+            m_originalCaster->ProcDamageAndSpell(NULL, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
+        }
+    }
+    else
+    {
+        if (m_spellInfo->StartRecoveryTime && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+        {
+            std::vector<uint32> spellId;
+            std::list<AuraType> auralist;
+
+            auralist.push_back(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+            auralist.push_back(SPELL_AURA_HASTE_SPELLS);
+            auralist.push_back(SPELL_AURA_MELEE_SLOW);
+
+            for (std::list<AuraType>::iterator auratype = auralist.begin(); auratype != auralist.end(); ++auratype)
+            {
+                Unit::AuraEffectList const& mModCastingSpeedNotStack = m_caster->GetAuraEffectsByType(*auratype);
+                for (Unit::AuraEffectList::const_iterator i = mModCastingSpeedNotStack.begin(); i != mModCastingSpeedNotStack.end(); ++i)
+                    if (SpellInfo const* sinfo = (*i)->GetSpellInfo())
+                        if (sinfo->ProcCharges && !(*i)->HasSpellClassMask())
+                            spellId.push_back(sinfo->Id);
+            }
+
+            for (std::vector<uint32>::iterator itr = spellId.begin(); itr != spellId.end(); ++itr)
+                m_caster->RemoveAura(*itr);
+        }
     }
 }
 

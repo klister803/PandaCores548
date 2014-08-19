@@ -2442,16 +2442,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                 addhealth += int32((ap * 0.35f) * 0.5f) + spd;
                 break;
             }
-            case 18562: // Swiftmend
-            {
-                // Soul of the Forest
-                if (Player* player = m_caster->ToPlayer())
-                {
-                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && player->HasAura(114107))
-                        player->CastSpell(player, 114108, true);    // haste
-                }
-                break;
-            }
             case 45064: // Vessel of the Naaru (Vial of the Sunwell trinket)
             {
                 int damageAmount = 0; // Amount of heal - depends from stacked Holy Energy

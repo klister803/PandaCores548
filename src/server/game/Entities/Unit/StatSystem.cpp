@@ -917,7 +917,6 @@ void Player::UpdateMeleeHastMod()
 void Player::UpdateHastMod()
 {
     float amount = GetRatingBonusValue(CR_HASTE_SPELL);
-    float castHast = amount;
 
     amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
     amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
@@ -930,14 +929,12 @@ void Player::UpdateHastMod()
     if(amount > 0)
     {
         ApplyPercentModFloatVar(value, amount, false);
-        ApplyPercentModFloatVar(castHastVal, castHast, false);
     }
     else
     {
         ApplyPercentModFloatVar(value, -amount, true);
-        ApplyPercentModFloatVar(castHastVal, -castHast, true);
     }
-    SetFloatValue(UNIT_MOD_CAST_HASTE, castHastVal);
+    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_SPEED, value);
 
     if (getClass() == CLASS_DEATH_KNIGHT)
