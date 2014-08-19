@@ -255,6 +255,18 @@ i_scriptLock(false)
     Map::InitVisibilityDistance();
 
     sScriptMgr->OnCreateMap(this);
+
+    switch(id)
+    {
+        case 609: // start DK
+        case 648: // start goblin
+        case 654: // start worgen
+        case 860: // start pandaren
+            m_VisibleDistance = MAX_VISIBILITY_DISTANCE;
+            break;
+        default:
+            break;
+    }
 }
 
 void Map::InitVisibilityDistance()
@@ -2925,4 +2937,20 @@ void Map::SetSpawnModeBy(Difficulty d)
         for (PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
             if (Player* iPlayer = i->getSource())
                 iPlayer->UpdateObjectVisibility(true);
+}
+
+WorldObject const* Map::GetActiveObjectWithEntry(uint32 entry)
+{
+    // non-player active objects, increasing iterator in the loop in case of object removal
+    for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
+    {
+        WorldObject* obj = *m_activeNonPlayersIter;
+        ++m_activeNonPlayersIter;
+
+        if (!obj || !obj->IsInWorld() || obj->GetEntry() !=entry)
+            continue;
+
+        return obj;
+    }
+    return NULL;
 }
