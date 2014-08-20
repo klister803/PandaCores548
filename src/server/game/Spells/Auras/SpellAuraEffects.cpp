@@ -4967,23 +4967,34 @@ void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint
         return;
 
     Unit* target = aurApp->GetTarget();
-    float bonusMultiplier = m_spellInfo->GetEffect(m_effIndex).BonusMultiplier;
+    int32 getHealth = target->GetHealth();
+    int32 getMaxHealth = target->GetMaxHealth();
+    int32 amount = GetAmount();
 
     if (apply)
     {
-        target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetAmount()), apply);
-        target->ModifyHealth(GetAmount());
+        target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(amount), apply);
+        target->ModifyHealth(amount);
     }
     else
     {
-        if (bonusMultiplier)
+        float pct = 0;
+        if (!(m_spellInfo->Attributes & SPELL_ATTR0_DONT_AFFECT_SHEATH_STATE))
         {
-            if (int32(target->GetHealth()) > GetAmount())
-                target->ModifyHealth(-GetAmount());
+            if (getHealth > amount)
+                target->ModifyHealth(-amount);
             else
                 target->SetHealth(1);
         }
-        target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetAmount()), apply);
+        else if (m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
+            pct = float(getMaxHealth) / float(getHealth);
+
+        target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(amount), apply);
+
+        if (pct)
+        {
+            target->SetHealth(target->GetMaxHealth() / pct);
+        }
     }
 }
 
