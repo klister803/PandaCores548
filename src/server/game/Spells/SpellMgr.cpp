@@ -5058,6 +5058,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 83116:
                     spellInfo->Effects[EFFECT_0].MiscValueB = 3302;  //SUMMON_TYPE_MINIPET
                     break;
+                case 50493: // D.I.S.C.O.
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
+                    break;
                 default:
                     break;
             }
