@@ -399,7 +399,7 @@ public:
             if (killer->GetTypeId() != TYPEID_PLAYER || !me->ToTempSummon())
                 return;
 
-            if (Creature* owner = Unit::GetCreature(*me, me->ToTempSummon()->GetSummonerGUID()))
+            if (Creature* owner = me->GetMap()->GetCreature(me->ToTempSummon()->GetSummonerGUID()))
                 owner->AI()->SetGUID(killer->GetGUID(), 0);
         }
     };
@@ -442,7 +442,7 @@ public:
                 return;
             m_player_for_event.insert(who->GetGUID());
             for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
-                if (Creature* c = Unit::GetCreature(*me, *itr))
+                if (Creature* c = me->GetMap()->GetCreature(*itr))
                 {
                     sCreatureTextMgr->SendChat(c, TEXT_GENERIC_0, who->GetGUID());
                     break;
@@ -484,7 +484,7 @@ public:
         {
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
             for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
-                if (Creature* c = Unit::GetCreature(*me, *itr))
+                if (Creature* c = me->GetMap()->GetCreature(*itr))
                     c->DespawnOrUnsummon();
             guidMob.clear();
 
@@ -711,7 +711,7 @@ public:
         {
             if(me->HealthBelowPctDamaged(5, uiDamage))
             {
-                if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
+                if (Creature* lifei = me->GetMap()->GetCreature(lifeiGUID))
                 {
                     lifei->DespawnOrUnsummon(0);
                     lifeiGUID = NULL;
@@ -818,7 +818,7 @@ public:
                         
                         if (uint32 lang = getLang(timer))
                         {
-                            if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
+                            if (Creature* lifei = me->GetMap()->GetCreature(lifeiGUID))
                             {
                                 sCreatureTextMgr->SendChat(lifei, lang);
                                 if(timer == 85)
@@ -845,7 +845,7 @@ public:
                     }
                     case EVENT_END: //script end
                     {
-                        if (Creature* lifei = Unit::GetCreature(*me, lifeiGUID))
+                        if (Creature* lifei = me->GetMap()->GetCreature(lifeiGUID))
                         {
                             lifei->DespawnOrUnsummon(0);
                             lifeiGUID = 0;
@@ -1009,7 +1009,7 @@ public:
                     player->KilledMonsterCredit(54734, 0);
                     player->RemoveAurasDueToSpell(108150);
                 }
-                if (Creature* owner = Unit::GetCreature(*me, me->ToTempSummon()->GetSummonerGUID()))
+                if (Creature* owner = me->GetMap()->GetCreature(me->ToTempSummon()->GetSummonerGUID()))
                     sCreatureTextMgr->SendChat(owner, TEXT_GENERIC_0, attacker->GetGUID());
             }
         }
@@ -3315,11 +3315,22 @@ class mop_air_balloon : public VehicleScript
         {}
         
         uint64 playerGuid;
+        uint64 aisaGUID;
+        uint64 firepawGUID;
+        uint64 shenZiGUID;
+        uint64 headGUID;
         EventMap events;
 
         void Reset()
         {
+            me->SetWalk(false);
+            //me->SetSpeed(MOVE_FLIGHT, 8.0f, false);
+
             playerGuid = 0;
+            aisaGUID = 0;
+            firepawGUID = 0;
+            shenZiGUID = 0;
+            headGUID = 0;
             me->setActive(true);
             me->SetReactState(REACT_PASSIVE);
             me->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
@@ -3329,31 +3340,182 @@ class mop_air_balloon : public VehicleScript
         enum localdata
         {
             NPC_AISA                          = 56661,
+            NPC_FIREPAW                       = 56660,
+            NPC_SHEN_ZI_SU                    = 56676,
+            NPC_TURTLE_HEAD                   = 57769,
+
+            SPELL_HEAD_ANIM_RISE              = 114888,
+            SPELL_HEAD_ANIM_1                 = 114898,
+            SPELL_HEAD_ANIM_2                 = 118571,
+            SPELL_HEAD_ANIM_3                 = 118572,
+            SPELL_VOICE_ANIM                  = 106759,
+
             SPELL_AISA_ENTER_SEAT_2           = 63313, //106617
 
-            EVENT_1                           = 1,
-            EVENT_2                           = 2,
-            EVENT_3                           = 3,
+            SPELL_CREDIT_1                    = 105895,
+            SPELL_CREDIT_2                    = 105010,
+            SPELL_EJECT_PASSANGER             = 60603,
+            SPELL_PARASHUT                    = 45472,
+
+            EVENT_1                           = 1, // 17:24:47.000
+
+            EVENT_AISA_TALK_0                 = 2,  //17:24:51.000
+            EVENT_AISA_TALK_1                 = 3,  //17:25:07.000
+            EVENT_AISA_TALK_2                 = 4,  //17:25:18.000
+            EVENT_AISA_TALK_3                 = 5,  //17:25:31.000
+            EVENT_AISA_TALK_4                 = 6,  //17:25:38.000
+            EVENT_AISA_TALK_5                 = 7,  //17:26:40.000
+            EVENT_AISA_TALK_6                 = 8,  //17:27:02.000
+            EVENT_AISA_TALK_7                 = 9,  //17:27:29.000
+            EVENT_AISA_TALK_8                 = 10, //17:27:50.000
+            EVENT_AISA_TALK_9                 = 11, //17:28:04.000
+            EVENT_AISA_TALK_10                = 12, //17:28:10.000
+
+            EVENT_FIREPAW_TALK_0              = 13, //17:24:47.000
+            EVENT_FIREPAW_TALK_1              = 14, //17:24:57.000
+            EVENT_FIREPAW_TALK_2              = 15, //17:25:13.000
+            EVENT_FIREPAW_TALK_3              = 16, //17:27:16.000
+            EVENT_FIREPAW_TALK_4              = 17, //17:27:22.000
+            EVENT_FIREPAW_TALK_5              = 18, //17:27:43.000
+            EVENT_FIREPAW_TALK_6              = 19, //17:27:57.000
+
+            EVENT_SHEN_ZI_SU_TALK_0           = 20, //17:25:44.000
+            EVENT_SHEN_ZI_SU_TALK_1           = 21, //17:25:58.000
+            EVENT_SHEN_ZI_SU_TALK_2           = 22, //17:26:12.000
+            EVENT_SHEN_ZI_SU_TALK_3           = 23, //17:26:25.000
+            EVENT_SHEN_ZI_SU_TALK_4           = 24, //17:26:47.000 
+            EVENT_SHEN_ZI_SU_TALK_5           = 25, //17:27:09.000
         };
+
+        void InitTalking(Player* player)
+        {
+            me->GetMap()->LoadGrid(865.222f, 4986.84f); //voice
+            me->GetMap()->LoadGrid(868.356f, 4631.19f); //head
+            if (WorldObject* head = me->GetMap()->GetActiveObjectWithEntry(NPC_TURTLE_HEAD))
+            {
+                head->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
+                head->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
+                player->AddToExtraLook(head);
+                headGUID = head->GetGUID();
+            }else
+            {
+                sLog->outU("SCRIPT::mop_air_balloon not find turtle heat entry 57769");
+                player->ExitVehicle();
+                return;
+            }
+
+            if (WorldObject* shen = me->GetMap()->GetActiveObjectWithEntry(NPC_SHEN_ZI_SU))
+                shenZiGUID = shen->GetGUID();
+            else
+            {
+                sLog->outU("SCRIPT::mop_air_balloon not find shen zi su entry 57769");
+                player->ExitVehicle();
+                return;
+            }
+
+            uint32 t = 3000;
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_0, t += 1000);       //17:24:47.000
+            events.ScheduleEvent(EVENT_AISA_TALK_0, t += 4000);          //17:24:51.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_1, t += 6000);       //17:24:57.000
+            events.ScheduleEvent(EVENT_AISA_TALK_1, t += 10000);         //17:25:07.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_2, t += 6000);       //17:25:13.000
+            events.ScheduleEvent(EVENT_AISA_TALK_2, t += 5000);          //17:25:18.000
+            events.ScheduleEvent(EVENT_AISA_TALK_3, t += 14000);         //17:25:31.000
+            events.ScheduleEvent(EVENT_AISA_TALK_4, t += 6000);          //17:25:38.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_0, t += 6000);    //17:25:44.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_1, t += 14000);   //17:25:58.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_2, t += 14000);   //17:26:12.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_3, t += 13000);   //17:26:25.000
+            events.ScheduleEvent(EVENT_AISA_TALK_5, t += 15000);         //17:26:40.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_4, t +=7000);     //17:26:47.000 
+            events.ScheduleEvent(EVENT_AISA_TALK_6, t += 15000);         //17:27:02.000
+            events.ScheduleEvent(EVENT_SHEN_ZI_SU_TALK_5, t +=7000);     //17:27:09.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_3, t += 7000);       //17:27:16.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_4, t += 6000);       //17:27:22.000
+            events.ScheduleEvent(EVENT_AISA_TALK_7, t += 7000);          //17:27:29.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_5, t += 14000);      //17:27:43.000
+            events.ScheduleEvent(EVENT_AISA_TALK_8, t += 7000);          //17:27:50.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_6, t += 7000);        //17:27:57.000
+            events.ScheduleEvent(EVENT_AISA_TALK_9, t += 7000);          //17:28:04.000
+            events.ScheduleEvent(EVENT_AISA_TALK_10, t += 7000);         //17:28:10.000
+        };
+
+        void TalkShenZiSU(uint32 text)
+        {
+            Creature *shen = me->GetMap()->GetCreature(shenZiGUID);
+
+            if (!shen)
+                return;
+
+            if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+            {
+                Creature *head = me->GetMap()->GetCreature(headGUID);
+                if (!head)
+                    return;
+
+                switch(text)
+                {
+                    //cast 114888                                   //17:25:31.000
+                    case TEXT_GENERIC_0:                            //17:25:44.000
+                        plr->CastSpell(shen, SPELL_HEAD_ANIM_1, false);     
+                        break;
+                    case TEXT_GENERIC_1:                            //17:25:58.000
+                        plr->CastSpell(shen, SPELL_VOICE_ANIM, false);
+                        break;
+                    case TEXT_GENERIC_2:                            //17:26:11.000
+                    case TEXT_GENERIC_3:                            //17:26:25.000
+                    case TEXT_GENERIC_5:                            //17:27:08.000
+                        plr->CastSpell(shen, SPELL_HEAD_ANIM_2, false);
+                        break;
+                    case TEXT_GENERIC_4:                            //17:26:47.000
+                        plr->CastSpell(shen, SPELL_HEAD_ANIM_3, false);
+                        break;
+                }
+                if (text == TEXT_GENERIC_5) // restore emote
+                {
+                    head->SetUInt32Value(UNIT_NPC_EMOTESTATE, ANIM_FLY_LAND);   //hack
+                    plr->RemoveFromExtraLook(head);
+                }
+            }
+            sCreatureTextMgr->SendChat(shen, text, playerGuid, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_AREA);
+        }
 
         void PassengerBoarded(Unit* passenger, int8 seatId, bool apply)
         {
-            if (!apply && passenger->GetTypeId() == TYPEID_PLAYER)
+            if (!apply)
             {
-                me->DespawnOrUnsummon(1000);
+                if (passenger->GetTypeId() == TYPEID_PLAYER)
+                {
+                    me->DespawnOrUnsummon(1000);
+                    me->CastSpell(passenger, SPELL_PARASHUT, true);
+                }
+                else
+                    passenger->ToCreature()->DespawnOrUnsummon(1000);
                 return;
             }
 
             if (seatId == 0)
+            {
                 if (Player* player = passenger->ToPlayer())
-                    player->KilledMonsterCredit(56378);
+                {
+                    playerGuid = player->GetGUID();
+                    me->CastSpell(player, SPELL_CREDIT_1, true);
+                    InitTalking(player);
+                }
+            }
 
             if (passenger->GetTypeId() != TYPEID_PLAYER)
             {
                 passenger->m_invisibilityDetect.AddFlag(INVISIBILITY_UNK5);
                 passenger->m_invisibilityDetect.AddValue(INVISIBILITY_UNK5, 999);
+                switch(passenger->GetEntry())
+                {
+                    case NPC_AISA: aisaGUID = passenger->GetGUID(); break;
+                    case NPC_FIREPAW: firepawGUID = passenger->GetGUID(); break;
+                    default:
+                        break;
+                }
             }
-
         }
 
         void IsSummonedBy(Unit* summoner)
@@ -3368,21 +3530,15 @@ class mop_air_balloon : public VehicleScript
         {
             switch (waypointId)
             {
-                case 19:
-                    if (me->GetVehicleKit())
-                    {
-                        if (Unit* passenger = me->GetVehicleKit()->GetPassenger(0))
-                            if (Player* player = passenger->ToPlayer())
-                            {
-                                player->KilledMonsterCredit(55939);
-                                player->AddAura(50550, player);
-                            }
-
-                        me->GetVehicleKit()->RemoveAllPassengers();
-                    }
-
-                    me->DespawnOrUnsummon();
+                case 8:
+                    me->SetSpeed(MOVE_FLIGHT, 3.0f, false);
                     break;
+                case 15:
+                {
+                    if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+                        me->CastSpell(plr, SPELL_CREDIT_2, true);
+                    break;
+                }
                 default:
                     break;
             }
@@ -3391,6 +3547,7 @@ class mop_air_balloon : public VehicleScript
         void UpdateAI(const uint32 diff)
         {
             events.Update(diff);
+            npc_escortAI::UpdateAI(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -3403,9 +3560,51 @@ class mop_air_balloon : public VehicleScript
                         Start(false, true);
                         break;
                     }
+                    case EVENT_AISA_TALK_3:
+                        if (Creature *head = me->GetMap()->GetCreature(headGUID))
+                            if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+                            {
+                                plr->CastSpell(plr, SPELL_HEAD_ANIM_RISE, false);    //17:25:31.000
+                                head->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);   //hack
+                            }
+                    case EVENT_AISA_TALK_0:
+                    case EVENT_AISA_TALK_1:
+                    case EVENT_AISA_TALK_2:
+                    case EVENT_AISA_TALK_4:
+                    case EVENT_AISA_TALK_5:
+                    case EVENT_AISA_TALK_6:
+                    case EVENT_AISA_TALK_7:
+                    case EVENT_AISA_TALK_8:
+                    case EVENT_AISA_TALK_9:
+                    case EVENT_AISA_TALK_10:
+                    {
+                        if (Creature *aisa = me->GetMap()->GetCreature(aisaGUID))
+                            sCreatureTextMgr->SendChat(aisa, eventId - 2, playerGuid);
+                        break;
+                    }
+                    
+                    case EVENT_FIREPAW_TALK_0:
+                    case EVENT_FIREPAW_TALK_1:
+                    case EVENT_FIREPAW_TALK_2:
+                    case EVENT_FIREPAW_TALK_3:
+                    case EVENT_FIREPAW_TALK_4:
+                    case EVENT_FIREPAW_TALK_5:
+                    case EVENT_FIREPAW_TALK_6:
+                    {
+                        if (Creature *paw = me->GetMap()->GetCreature(firepawGUID))
+                            sCreatureTextMgr->SendChat(paw, eventId - 13, playerGuid);
+                        break;
+                    }
+                    case EVENT_SHEN_ZI_SU_TALK_0:   // 114898
+                    case EVENT_SHEN_ZI_SU_TALK_1:   //cast 106759
+                    case EVENT_SHEN_ZI_SU_TALK_2:   //cast 118571
+                    case EVENT_SHEN_ZI_SU_TALK_3:   //118571
+                    case EVENT_SHEN_ZI_SU_TALK_4:   //118572
+                    case EVENT_SHEN_ZI_SU_TALK_5:   //118571
+                        TalkShenZiSU(eventId - 20);
+                        break;
                 }
             }
-            npc_escortAI::UpdateAI(diff);
         }
     };
     
