@@ -492,7 +492,7 @@ class Map : public GridRefManager<NGridType>
         void DeleteRespawnTimes();
 
         static void DeleteRespawnTimesInDB(uint16 mapId, uint32 instanceId);
-        WorldObject const* GetActiveObjectWithEntry(uint32 entry);    ///< Hard iteration of all active object on map
+        WorldObject* GetActiveObjectWithEntry(uint32 entry);    ///< Hard iteration of all active object on map
     private:
         void LoadMapAndVMap(int gx, int gy);
         void LoadVMap(int gx, int gy);

@@ -2067,6 +2067,9 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
         if (Player const* thisPlayer = ToPlayer())
         {
+            if (thisPlayer->HaveExtraLook(obj->GetGUID()))
+                return true;
+
             onArena = thisPlayer->InArena();
 
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state

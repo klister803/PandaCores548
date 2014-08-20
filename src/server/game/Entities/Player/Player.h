@@ -2853,9 +2853,15 @@ class Player : public Unit, public GridObject<Player>
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
+        ClientGUIDs m_extraLookList;
 
         bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
         void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); } 
+
+        ///! Extra look method not alow remove some creatures from player visibility by grid VisibleNotifier
+        void AddToExtraLook(WorldObject *u) { m_extraLookList.insert(u->GetGUID()); } 
+        void RemoveFromExtraLook(WorldObject *u) { m_extraLookList.erase(u->GetGUID()); } 
+        bool HaveExtraLook(uint64 guid) const { return m_extraLookList.find(guid) != m_clientGUIDs.end(); }
 
         bool IsNeverVisible() const;
 

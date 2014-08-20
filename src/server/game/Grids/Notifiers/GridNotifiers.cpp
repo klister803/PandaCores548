@@ -48,6 +48,10 @@ void VisibleNotifier::SendToSelf()
 
     for (Player::ClientGUIDs::const_iterator it = vis_guids.begin();it != vis_guids.end(); ++it)
     {
+        //extralook shouldn't be removed by missing creature in grid where is curently player
+        if (i_player.HaveExtraLook(*it))
+            continue;
+
         i_player.m_clientGUIDs.erase(*it);
         i_data.AddOutOfRangeGUID(*it);
 

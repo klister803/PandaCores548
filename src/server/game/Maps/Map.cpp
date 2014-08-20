@@ -2939,7 +2939,7 @@ void Map::SetSpawnModeBy(Difficulty d)
                 iPlayer->UpdateObjectVisibility(true);
 }
 
-WorldObject const* Map::GetActiveObjectWithEntry(uint32 entry)
+WorldObject* Map::GetActiveObjectWithEntry(uint32 entry)
 {
     // non-player active objects, increasing iterator in the loop in case of object removal
     for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
