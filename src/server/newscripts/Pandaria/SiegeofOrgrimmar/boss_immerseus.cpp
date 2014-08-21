@@ -375,10 +375,17 @@ class boss_immerseus : public CreatureScript
                         events.ScheduleEvent(EVENT_SHA_BOLT, 15000);
                         break;
                     case EVENT_SWIRL:
-                        me->AttackStop();
-                        me->SetReactState(REACT_PASSIVE);
-                        me->GetMotionMaster()->MoveRotate(10000, ROTATE_DIRECTION_RIGHT);
-                        DoCast(me, SPELL_SWIRL);
+                        if (me->getVictim())
+                        {
+                            uint64 vG = me->getVictim()->GetGUID();
+                            me->AttackStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            if (Unit* target = me->GetUnit(*me, vG))
+                            {
+                                me->SetFacingToObject(target);
+                                DoCast(me, SPELL_SWIRL);
+                            }
+                        }
                         events.ScheduleEvent(EVENT_SWIRL, 48500);
                         break;
                     }
@@ -760,7 +767,10 @@ class spell_swirl : public SpellScriptLoader
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster() && GetCaster()->ToCreature())
+                {
+                    GetCaster()->GetMotionMaster()->MoveRotate(10000, ROTATE_DIRECTION_RIGHT);
                     GetCaster()->AddAura(SPELL_SWIRL_SEARCHER, GetCaster());
+                }
             }
 
             void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
