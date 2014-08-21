@@ -6196,12 +6196,13 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
 
     // If dest location if present
     if (m_targets.HasDst())
-        destTarget->GetPosition(x, y, z);
+        destTarget->GetPosition(x, y, z, o);
     // Summon in random point all other units if location present
     else
+    {
         m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
-
-    o = m_caster->GetOrientation();
+        o = m_caster->GetOrientation();
+    }
 
     Map* map = m_caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map,
