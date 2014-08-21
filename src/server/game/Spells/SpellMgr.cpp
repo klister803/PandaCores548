@@ -4718,6 +4718,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
                 //Siege of Orgrimmar
                 //Immerseus
+                case 145377: //Erupting water
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
                 case 143524: //Purified residue
                     spellInfo->Effects[0].TargetB = 30; 
                     spellInfo->Effects[0].TargetB = 30;

@@ -19,6 +19,7 @@ public:
         
         //Creature
         uint64 immerseusGuid;
+        uint64 npcpointGuid;
         uint64 rookGuid;
         uint64 sunGuid;
         uint64 heGuid;
@@ -51,6 +52,7 @@ public:
            
             //Creature
             immerseusGuid       = 0;
+            npcpointGuid        = 0;
             rookGuid            = 0;
             sunGuid             = 0;
             heGuid              = 0;
@@ -81,6 +83,9 @@ public:
             {
             case NPC_IMMERSEUS:
                 immerseusGuid = creature->GetGUID();
+                break;
+            case NPC_PUDDLE_POINT:
+                npcpointGuid = creature->GetGUID();
                 break;
             //Fallen Protectors
             case NPC_ROOK_STONETOE: 
@@ -193,6 +198,8 @@ public:
             {
                 case NPC_IMMERSEUS:
                     return immerseusGuid;
+                case NPC_PUDDLE_POINT:
+                    return npcpointGuid;
                 //Fallen Protectors
                 case NPC_ROOK_STONETOE: 
                     return rookGuid;

@@ -28,6 +28,7 @@ enum eSpells
     SPELL_SWIRL_DMG          = 143413,
     SPELL_SWIRL_SEARCHER     = 113762,
     SPELL_SUBMERGE           = 139832,
+    SPELL_SUBMERGE_2         = 143281,
     //npc sha pool
     SPELL_SLEEPING_SHA       = 143281,
     SPELL_SHA_POOL           = 143462,
@@ -48,6 +49,7 @@ enum Events
     EVENT_INTRO_PHASE_TWO    = 4,
     //Summons
     EVENT_START_MOVING       = 5,
+    EVENT_CHECK_DIST         = 6,
 };
 
 enum Actions
@@ -177,6 +179,7 @@ class boss_immerseus : public CreatureScript
             }
 
             InstanceScript* instance;
+            uint32 checkvictim;
             uint8 donecp, donesp, maxpcount;
             bool phase_two;
 
@@ -185,11 +188,13 @@ class boss_immerseus : public CreatureScript
                 _Reset();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+                me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 100);
                 phase_two = false;
+                checkvictim = 0;
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
@@ -198,6 +203,7 @@ class boss_immerseus : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                checkvictim = 2000;
                 events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
                 events.ScheduleEvent(EVENT_SWIRL,           13000);
                 events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
@@ -270,6 +276,7 @@ class boss_immerseus : public CreatureScript
                 {
                     damage = 0;
                     phase_two = true;
+                    checkvictim = 0;
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
                     summons.DespawnAll();
@@ -277,6 +284,7 @@ class boss_immerseus : public CreatureScript
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->AddAura(SPELL_SUBMERGE, me);
+                    me->AddAura(SPELL_SUBMERGE_2, me);
                     me->SetFullHealth();
                     SpawnWave();
                 }
@@ -298,10 +306,12 @@ class boss_immerseus : public CreatureScript
                         return;
                     }
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+                    me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     phase_two = false;
+                    checkvictim = 2000;
                     events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
                     events.ScheduleEvent(EVENT_SWIRL,           13000);
                     events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
@@ -322,7 +332,21 @@ class boss_immerseus : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim()) 
+                    return;
+
+                if (checkvictim && !phase_two)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                            EnterEvadeMode();
+                    }
+                    else
+                        checkvictim -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -334,7 +358,6 @@ class boss_immerseus : public CreatureScript
                     case EVENT_CORROSIVE_BLAST:
                         if (me->getVictim())
                         {
-                            me->GetHomePosition();
                             uint64 vG = me->getVictim()->GetGUID();
                             me->AttackStop();
                             me->SetReactState(REACT_PASSIVE);
@@ -404,11 +427,11 @@ class npc_sha_pool : public CreatureScript
         }
 };
 
-void CalcPuddle(InstanceScript* instance, Creature* caller, uint64 iGuid, uint32 callerEntry, bool done)
+void CalcPuddle(InstanceScript* instance, Creature* caller, uint32 callerEntry, bool done)
 {
     if (caller && instance)
     {
-        if (Creature* i = caller->GetCreature(*caller, iGuid))
+        if (Creature* i = caller->GetCreature(*caller, instance->GetData64(NPC_IMMERSEUS)))
         {
             if (done)
             {
@@ -451,10 +474,12 @@ class npc_sha_puddle : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             uint8 index;
+            bool finish;
 
             void Reset()
             {
                 events.Reset();
+                finish = false;
                 index = 0;
             }
 
@@ -475,27 +500,12 @@ class npc_sha_puddle : public CreatureScript
 
             void MovementInform(uint32 type, uint32 pointId)
             {
-                if (type == POINT_MOTION_TYPE || type == EFFECT_MOTION_TYPE)
+                if (type == EFFECT_MOTION_TYPE)
                 {
-                    switch (pointId)
+                    if (pointId == 0)
                     {
-                    case 0:
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                         events.ScheduleEvent(EVENT_START_MOVING, 1000);  
-                        break;
-                    case 1:
-                        if (me->ToTempSummon())
-                        {
-                            if (Unit* i = me->ToTempSummon()->GetSummoner())
-                            {
-                                if (i->isAlive())
-                                {
-                                    DoCast(me, SPELL_ERUPTING_SHA);
-                                    CalcPuddle(instance, me, i->GetGUID(), me->GetEntry(), false);
-                                }
-                            }
-                        }
-                        break;
                     }
                 }
             }
@@ -514,14 +524,7 @@ class npc_sha_puddle : public CreatureScript
 
             void JustDied(Unit* killer)
             {
-                 if (me->ToTempSummon())
-                 {
-                     if (Unit* i = me->ToTempSummon()->GetSummoner())
-                     {
-                         if (i->isAlive())
-                             CalcPuddle(instance, me, i->GetGUID(), me->GetEntry(), true);
-                     }
-                 }
+                CalcPuddle(instance, me, me->GetEntry(), true);
             }
 
             void EnterEvadeMode(){}
@@ -537,20 +540,36 @@ class npc_sha_puddle : public CreatureScript
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if (eventId == EVENT_START_MOVING)
+                    switch (eventId)
                     {
-                        if (me->ToTempSummon())
+                    case EVENT_START_MOVING:
+                        if (instance)
                         {
-                            if (Unit* i = me->ToTempSummon()->GetSummoner())
+                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                             {
-                                if (i->isAlive())
-                                {
-                                    me->StopMoving();
-                                    me->GetMotionMaster()->Clear(false);
-                                    me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 2.0f, 1);
-                                }
+                                me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
+                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                             }
                         }
+                        break;
+                    case EVENT_CHECK_DIST:
+                        if (instance)
+                        {
+                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                            {
+                                if (me->GetDistance(pp) <= 20.0f && !finish)
+                                {
+                                    finish = true;
+                                    me->StopMoving();
+                                    me->GetMotionMaster()->Clear();
+                                    DoCast(me, SPELL_ERUPTING_SHA);
+                                    CalcPuddle(instance, me, me->GetEntry(), false);
+                                }
+                                else if (me->GetDistance(pp) > 20.0f && !finish)
+                                    events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                            }
+                        }
+                        break;
                     }
                 }
             }
@@ -578,15 +597,17 @@ class npc_contaminated_puddle : public CreatureScript
 
             InstanceScript* instance;
             EventMap events;
-            uint8 index;
-            bool done;
+            uint8 index, slowval;
+            bool done, finish;
 
             void Reset()
             {
                 events.Reset();
                 me->SetHealth(1);
+                finish = false;
                 done = false;
                 index = 0; 
+                slowval = 0;
             }
 
             void EnterEvadeMode(){}
@@ -595,18 +616,32 @@ class npc_contaminated_puddle : public CreatureScript
 
             void SpellHit(Unit* caster, SpellInfo const *spell)
             {
+                for (uint8 n = 0; n < MAX_SPELL_EFFECTS; n++)
+                {
+                    if (spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL_PCT)
+                    {
+                        if (HealthAbovePct(25) && !slowval)
+                        {
+                            slowval++;
+                            me->SetSpeed(MOVE_RUN, 0.8f);
+                        }
+                        else if (HealthAbovePct(50) && slowval == 1)
+                        {
+                            slowval++;
+                            me->SetSpeed(MOVE_RUN, 0.7f);
+                        }
+                        else if (HealthAbovePct(75) && slowval == 2)
+                        {
+                            slowval++;
+                            me->SetSpeed(MOVE_RUN, 0.6f);
+                        }
+                    }
+                }
+
                 if (me->GetHealth() == me->GetMaxHealth() && !done)
                 {
                     done = true;
                     DoCast(me, SPELL_PURIFIED_RESIDUE);
-                    if (me->ToTempSummon())
-                    {
-                        if (Unit* i = me->ToTempSummon()->GetSummoner())
-                        {
-                            if (i->isAlive())
-                                CalcPuddle(instance, me, i->GetGUID(), me->GetEntry(), true);
-                        }
-                    }
                 }
             }
 
@@ -627,27 +662,12 @@ class npc_contaminated_puddle : public CreatureScript
 
             void MovementInform(uint32 type, uint32 pointId)
             {
-                if (type == POINT_MOTION_TYPE || type == EFFECT_MOTION_TYPE)
+                if (type == EFFECT_MOTION_TYPE)
                 {
-                    switch (pointId)
+                    if (pointId == 0)
                     {
-                    case 0: 
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                         events.ScheduleEvent(EVENT_START_MOVING, 1000);
-                        break;
-                    case 1:
-                        if (me->ToTempSummon())
-                        {
-                            if (Unit* i = me->ToTempSummon()->GetSummoner())
-                            {
-                                if (i->isAlive())
-                                {
-                                    DoCast(me, SPELL_ERUPTING_WATER);
-                                    CalcPuddle(instance, me, i->GetGUID(), me->GetEntry(), false);
-                                }
-                            }
-                        }
-                        break;
                     }
                 }
             }
@@ -658,20 +678,36 @@ class npc_contaminated_puddle : public CreatureScript
                 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if (eventId == EVENT_START_MOVING)
+                    switch (eventId)
                     {
-                        if (me->ToTempSummon())
+                    case EVENT_START_MOVING:
+                        if (instance)
                         {
-                            if (Unit* i = me->ToTempSummon()->GetSummoner())
+                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                             {
-                                if (i->isAlive())
-                                {
-                                    me->StopMoving();
-                                    me->GetMotionMaster()->Clear(false);
-                                    me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 2.0f, 1);
-                                }
+                                me->GetMotionMaster()->MoveFollow(pp, 10.0f, 0.0f);
+                                events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                             }
                         }
+                        break;
+                    case EVENT_CHECK_DIST:
+                        if (instance)
+                        {
+                            if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                            {
+                                if (me->GetDistance(pp) <= 20.0f && !finish)
+                                {
+                                    finish = true;
+                                    me->StopMoving();
+                                    me->GetMotionMaster()->Clear();
+                                    DoCast(me, SPELL_ERUPTING_WATER);
+                                    CalcPuddle(instance, me, me->GetEntry(), done ? true : false);
+                                }
+                                else if (me->GetDistance(pp) > 20.0f && !finish)
+                                    events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
+                            }
+                        }
+                        break;
                     }
                 }
             }
