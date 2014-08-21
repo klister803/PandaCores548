@@ -919,6 +919,7 @@ enum Team
 
 enum SpellEffects
 {
+    SPELL_EFFECT_NONE                               = 0,
     SPELL_EFFECT_INSTAKILL                          = 1,
     SPELL_EFFECT_SCHOOL_DAMAGE                      = 2,
     SPELL_EFFECT_DUMMY                              = 3,
@@ -1089,7 +1090,7 @@ enum SpellEffects
     SPELL_EFFECT_CONTROL_PET                        = 168, // allow hunter and warlock control pet
     SPELL_EFFECT_DESTROY_ITEM                       = 169,
     SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES       = 170,
-    SPELL_EFFECT_171                                = 171, // Summons gamebject (player farm related)
+    SPELL_EFFECT_OBJECT_WITH_PERSONAL_VISIBILITY    = 171, // Summons gamebject (player farm related)
     SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
     SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,

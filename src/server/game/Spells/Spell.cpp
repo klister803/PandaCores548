@@ -401,25 +401,16 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(info),
-m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster)
-{
-    m_customError = SPELL_CUSTOM_ERROR_NONE;
-    m_skipCheck = skipCheck;
-    m_spellMissMask = 0;
-    m_selfContainer = NULL;
-    m_spellDynObj = NULL;
-    m_referencedFromCurrentSpell = false;
-    m_executedCurrently = false;
-    m_needComboPoints = m_spellInfo->NeedsComboPoints();
-    m_removeCooldown = true;
-    m_comboPointGain = 0;
-    m_delayStart = 0;
-    m_delayAtDamageCount = 0;
-    m_count_dispeling = 0;
-    m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
+m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster),
+m_customError(SPELL_CUSTOM_ERROR_NONE), m_skipCheck(skipCheck), m_spellMissMask(0), m_selfContainer(NULL), m_spellDynObj(NULL),
+m_referencedFromCurrentSpell(false), m_executedCurrently(false), m_needComboPoints(info->NeedsComboPoints()), m_removeCooldown(true),
+m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
+m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
+m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
+m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_currentExecutedEffect(SPELL_EFFECT_NONE)
 
-    m_applyMultiplierMask = 0;
-    m_auraScaleMask = 0;
+{
+    m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
     m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
 
     // Get data for type of attack
@@ -465,35 +456,11 @@ m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharme
             m_originalCaster = NULL;
     }
 
-    m_spellState = SPELL_STATE_NULL;
-    _triggeredCastFlags = triggerFlags;
     if (info->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
         _triggeredCastFlags = TRIGGERED_FULL_MASK;
 
-    m_CastItem = NULL;
-    m_castItemGUID = 0;
-
-    unitTarget = NULL;
-    m_originalTarget = NULL;
-    itemTarget = NULL;
-    gameObjTarget = NULL;
-    focusObject = NULL;
-    m_cast_count = 0;
-    m_glyphIndex = 0;
-    m_preCastSpell = 0;
-    m_triggeredByAuraSpell  = NULL;
-    m_spellAura = NULL;
-    find_target = false;
-
     //Auto Shot & Shoot (wand)
     m_autoRepeat = m_spellInfo->IsAutoRepeatRangedSpell();
-
-    m_runesState = 0;
-    m_powerCost = 0;                                        // setup to correct value in Spell::prepare, must not be used before.
-    m_casttime = 0;                                         // setup to correct value in Spell::prepare, must not be used before.
-    m_timer = 0;                                            // will set to castime in prepare
-
-    m_channelTargetEffectMask = 0;
 
     // Determine if spell can be reflected back to the caster
     // Patch 1.2 notes: Spell Reflection no longer reflects abilities
@@ -6142,7 +6109,9 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
 
     if (!preventDefault && eff < TOTAL_SPELL_EFFECTS)
     {
+        m_currentExecutedEffect = eff;
         (this->*SpellEffects[eff])((SpellEffIndex)i);
+        m_currentExecutedEffect = SPELL_EFFECT_NONE;
     }
 }
 
