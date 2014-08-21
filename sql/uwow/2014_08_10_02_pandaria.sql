@@ -30,8 +30,8 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
-126059, 105333, 106623, 105001, 105002) AND  
-area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829);
+126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447) AND  
+area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -116,7 +116,17 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 --
 ('105001', '5832', '29790', '0', '0', '0', '2', '1', '66', '0'),
 --
-('105002', '5832', '29791', '0', '0', '0', '2', '0', '74', '0');    -- no autocast
+('105002', '5832', '29791', '0', '0', '0', '2', '0', '74', '0'),    -- no autocast
+-- 105095
+('105095', '5820', '29791', '0', '0', '0', '2', '1', '74', '0'),    -- мастер в храме
+('106494', '5820', '29792', '0', '0', '0', '2', '1', '74', '0'),
+--
+('115426', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
+('115435', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
+-- 115446
+('115446', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115448', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115447', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'); -- mandori pre-event
 
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND SourceGroup = 5736;
@@ -132,7 +142,8 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (23, 5736, 6, 0, 1, 28, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
 (23, 5736, 7, 0, 0, 28, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29790', ''),
 (23, 5736, 7, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not complete 29790', ''),
-(23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', '');
+(23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', ''),
+(23, 5736, 8, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain not rewarded 29790', '');
 
 DELETE FROM phase_definitions WHERE `zoneId` = 5736;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `wmAreaId`, `comment`) VALUES
@@ -142,7 +153,8 @@ INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `ter
 (5736, 4, 3, 34604, 0, 0, 'Pandaren Start loc: 3part. Wind cavern'), -- phase
 (5736, 5, 5, 34094, 0, 0, 'Pandaren Start loc: 3part. Battle for the Skies'), -- phase
 (5736, 6, 9, 524, 0, 0, 'Pandaren Start loc: 3part. Wind cavern. Finish'), -- phase
-(5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end');
+(5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end'),
+(5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'); -- phase
 
 
 -- ----------------------------------------
@@ -798,6 +810,8 @@ DELETE FROM `conditions` WHERE SourceEntry = 109336;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
 (13, 1, 109336, 0, 0, 31, 0, 3, 57874, 0, 0, 0, '', 'Cast - Only - 57668');
 
+UPDATE creature set phaseMask = 16 WHERE id = 54786;
+
 -- ----------------------------------------
 -- Q: 29791 The Suffering of Shen-zin Su
 -- ----------------------------------------
@@ -919,6 +933,154 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 596.5712, 3689.253, 183.0423, NULL),
 (@entry, @id := @id+ 1, 745.1858, 3664.532, 194.0496, NULL); -- 60603 + 45472
 
+-- ----------------------------------------
+-- Q: 29792 Bidden to Greatness
+-- ----------------------------------------
+UPDATE `quest_template` SET `RequiredIdCount1` = '1', `RequiredIdCount2` = '1', `RequiredPOI1` = '263982', `RequiredPOI2` = '263983' WHERE `quest_template`.`Id` = 29792;
+
+UPDATE `creature_template` SET `ScriptName` = 'mob_mandori_escort' WHERE `entry` in (59986, 59988, 59989);
+
+DELETE FROM `creature_text` WHERE entry =59986;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(59986, 0, 0, 'Ладно, приступим.', 12, 0, 100, 432, 0, 27420, 'Аиса Воспевающая Облака'),
+(59986, 1, 0, 'Э-э...', 12, 0, 100, 432, 0, 27421, 'Аиса Воспевающая Облака'),
+(59986, 2, 0, 'Ворота заклинило.', 12, 0, 100, 274, 0, 27422, 'Аиса Воспевающая Облака'),
+(59986, 3, 0, 'Альянса? Если это их корабль потерпел крушение, мы должны с ними связаться. Йо-йо, не мог бы ты пойти со мной?', 12, 0, 100, 6, 0, 27419, 'Аиса Воспевающая Облака');
+
+DELETE FROM `creature_text` WHERE entry =59988;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(59988, 0, 0, 'Дай-ка попробую.', 12, 0, 100, 5, 0, 27339, 'Цзи Огненная Лапа'),
+(59988, 1, 0, 'Их там валуном что ли подперли? Не открываются!', 12, 0, 100, 23, 0, 27340, 'Цзи Огненная Лапа'),
+(59988, 2, 0, 'Молодчина, Йо-йо!', 12, 0, 100, 0, 0, 27341, 'Цзи Огненная Лапа'),
+(59988, 3, 0, 'Керга, мы должны убрать этот корабль с острова. Если мы поможем твоей команде, поможете ли вы нам?', 12, 0, 100, 1, 0, 27333, 'Цзи Огненная Лапа'),
+(59988, 4, 0, 'Уж что что, а пропавших мы искать умеем. Мы этим займемся.', 12, 0, 100, 1, 0, 27334, 'Цзи Огненная Лапа');
+
+DELETE FROM `creature_text` WHERE entry =60042;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60042, 0, 0, 'Это твои друзья, Вэй?', 12, 0, 100, 6, 0, 28120, 'Корга Крепкая Грива'),
+(60042, 1, 0, 'Я – Корга Крепкая Грива, некогда пленник Альянса, ныне же – свободный и, увы, безоружный таурен. Рад встрече с вами, пандарены.', 12, 0, 100, 66, 0, 28121, 'Корга Крепкая Грива'),
+(60042, 2, 0, 'С радостью, мой новый друг. Наш инженер пропал в лесу, сначала нам нужно найти его.', 12, 0, 100, 1, 0, 28122, 'Корга Крепкая Грива');
+
+DELETE FROM `creature_text` WHERE entry =55943;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(55943, 0, 0, 'Никогда в жизни не встречал их. Впрочем, пандарены не бывают плохими.', 12, 0, 100, 0, 0, 28090, 'Вэй Бледная Ярость');
+
+-- 115447
+DELETE FROM `spell_target_position` WHERE id in (115426, 115435);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('115426', '860', '695.26', '3600.99', '142.38', '3.04'),
+('115435', '860', '566.52', '3583.46', '92.16', '3.14');
+
+DELETE FROM `conditions` WHERE SourceEntry in (115332, 115335, 115337);
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 1, 115332, 0, 0, 31, 0, 3, 59962, 0, 0, 0, '', 'Cast - Only - 59962'),
+(13, 1, 115335, 0, 0, 31, 0, 3, 59960, 0, 0, 0, '', 'Cast - Only - 59960'),
+(13, 1, 115337, 0, 0, 31, 0, 3, 59963, 0, 0, 0, '', 'Cast - Only - 59963');
+
+-- CUSTOM VISIBILITY FOR TRIGERS - 59962, 59960, 59963
+UPDATE `creature_template` SET `ScriptName` = 'mob_mandori_triger', `flags_extra` = '0' WHERE `entry` = 59962;
+UPDATE `creature_addon` SET `auras` = '90066' WHERE `creature_addon`.`guid` = 802805;
+UPDATE `creature_addon` SET `auras` = '90066' WHERE `creature_addon`.`guid` = 802803;
+UPDATE `creature_addon` SET `auras` = '115672 90066' WHERE `creature_addon`.`guid` = 802804;
+UPDATE `creature_template_addon` SET `auras` = '115354 115672' WHERE `creature_template_addon`.`entry` = 59989;
+
+SET @id = 0;
+SET @entry = 59986;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 669.9549, 3601.26, 146.9476, NULL),
+(@entry, @id := @id+ 1, 658.6858, 3604.403, 146.6792, NULL),
+(@entry, @id := @id+ 1, 647.2552, 3614.688, 142.6406, NULL),
+(@entry, @id := @id+ 1, 638.5504, 3625.577, 137.8199, NULL),
+(@entry, @id := @id+ 1, 625.7934, 3630.421, 132.36, NULL),
+(@entry, @id := @id+ 1, 611.5254, 3625.836, 124.2662, NULL),
+(@entry, @id := @id+ 1, 602.8848, 3614.83, 115.7662, NULL),
+(@entry, @id := @id+ 1, 598.0799, 3601.406, 107.2206, NULL),
+(@entry, @id := @id+ 1, 588.3066, 3586.288, 97.52676, NULL),
+(@entry, @id := @id+ 1, 571.2014, 3584.595, 94.91946, NULL),
+(@entry, @id := @id+ 1, 571.2014, 3584.595, 94.91946, NULL), -- Дубль
+(@entry, @id := @id+ 1, 568.724, 3584.41, 94.76944, NULL),
+--
+(@entry, @id := @id+ 1, 571.8, 3586.57, 94.82584, NULL),
+(@entry, @id := @id+ 1, 499.3385, 3611.266, 85.44111, NULL),
+(@entry, @id := @id+ 1, 479.4809, 3622.007, 81.81779, NULL),
+(@entry, @id := @id+ 1, 462.6892, 3628.663, 78.4108, NULL),
+(@entry, @id := @id+ 1, 443.7552, 3632.061, 85.1813, NULL),
+(@entry, @id := @id+ 1, 436.3767, 3631.753, 88.03299, NULL),
+(@entry, @id := @id+ 1, 428.1528, 3631.595, 91.02669, NULL),
+(@entry, @id := @id+ 1, 422.5039, 3633.635, 92.88139, NULL),
+--
+(@entry, @id := @id+ 1, 424.3941, 3676.559, 78.70142, NULL),
+(@entry, @id := @id+ 1, 435.7865, 3704.581, 81.56339, NULL),
+(@entry, @id := @id+ 1, 445.507, 3718.959, 82.68839, NULL),
+(@entry, @id := @id+ 1, 457.1354, 3734.84, 82.35698, NULL),
+(@entry, @id := @id+ 1, 464.3438, 3756.657, 82.74565, NULL);
+
+SET @id = 0;
+SET @entry = 59988;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 675.0035, 3599.222, 146.6835, NULL),
+(@entry, @id := @id+ 1, 659.3333, 3601.18, 146.9494, NULL),
+(@entry, @id := @id+ 1, 649.132, 3609.039, 144.572, NULL),
+(@entry, @id := @id+ 1, 639.2743, 3619.913, 139.0959, NULL),
+(@entry, @id := @id+ 1, 630.9132, 3625.345, 134.73, NULL),
+(@entry, @id := @id+ 1, 620.4601, 3625.379, 129.0705, NULL),
+(@entry, @id := @id+ 1, 610.5703, 3618.582, 121.2662, NULL),
+(@entry, @id := @id+ 1, 605.4132, 3610.27, 114.0016, NULL),
+(@entry, @id := @id+ 1, 600.7188, 3595.637, 104.6699, NULL),
+(@entry, @id := @id+ 1, 593.5364, 3583.125, 98.30069, NULL),
+(@entry, @id := @id+ 1, 585.7361, 3577.585, 95.3511, NULL),
+(@entry, @id := @id+ 1, 573.84, 3577.94, 95.10342, NULL),
+--
+(@entry, @id := @id+ 1, 571.661, 3578.93, 94.99271, NULL),
+(@entry, @id := @id+ 1, 536.6077, 3584.865, 92.3869, NULL),
+(@entry, @id := @id+ 1, 519.8924, 3588.034, 90.32192, NULL),
+(@entry, @id := @id+ 1, 507.599, 3595.431, 87.50808, NULL),
+(@entry, @id := @id+ 1, 498, 3608.744, 85.53165, NULL),
+(@entry, @id := @id+ 1, 486.6979, 3617.666, 83.69584, NULL),
+(@entry, @id := @id+ 1, 461.1267, 3629.013, 78.84695, NULL),
+(@entry, @id := @id+ 1, 442.882, 3633.776, 85.53565, NULL),
+(@entry, @id := @id+ 1, 430.9445, 3634.43, 90.31693, NULL),
+(@entry, @id := @id+ 1, 424.5833, 3635.575, 92.82523, NULL),
+(@entry, @id := @id+ 1, 424.5833, 3635.575, 92.82523, NULL),
+--
+(@entry, @id := @id+ 1, 424.5833, 3635.575, 92.82523, NULL);
+
+SET @id = 0;
+SET @entry = 59989;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 677.283, 3600.503, 146.4497, NULL),
+(@entry, @id := @id+ 1, 665.5313, 3600.911, 147.0744, NULL),
+(@entry, @id := @id+ 1, 656.7413, 3604.108, 146.6406, NULL),
+(@entry, @id := @id+ 1, 645.9774, 3614.137, 142.466, NULL),
+(@entry, @id := @id+ 1, 638.6007, 3623.51, 138.1412, NULL),
+(@entry, @id := @id+ 1, 628.1059, 3628.785, 133.3819, NULL),
+(@entry, @id := @id+ 1, 616.4792, 3626.98, 127.1512, NULL),
+(@entry, @id := @id+ 1, 607.2969, 3622.048, 120.8303, NULL),
+(@entry, @id := @id+ 1, 602.5174, 3612.569, 114.3488, NULL),
+(@entry, @id := @id+ 1, 598.3073, 3598.223, 105.4915, NULL),
+(@entry, @id := @id+ 1, 594.8047, 3587.792, 100.2768, NULL),
+(@entry, @id := @id+ 1, 579.3159, 3582.013, 95.11411, NULL),
+--
+(@entry, @id := @id+ 1, 569.9028, 3582.063, 95.02676, NULL),
+(@entry, @id := @id+ 1, 499.5573, 3608.757, 85.59282, NULL),
+(@entry, @id := @id+ 1, 480.7305, 3618.067, 82.44596, NULL),
+(@entry, @id := @id+ 1, 458.9931, 3626.623, 79.32852, NULL),
+(@entry, @id := @id+ 1, 445.6858, 3629.406, 84.4866, NULL),
+(@entry, @id := @id+ 1, 432.7109, 3628.783, 89.40828, NULL),
+(@entry, @id := @id+ 1, 424.2535, 3628.505, 91.83723, NULL),
+(@entry, @id := @id+ 1, 418.0625, 3630.886, 93.03218, NULL),
+--
+(@entry, @id := @id+ 1, 418.0573, 3675.714, 80.21563, NULL),
+(@entry, @id := @id+ 1, 433.3663, 3706.94, 81.56339, NULL),
+(@entry, @id := @id+ 1, 443.5052, 3720.292, 82.90519, NULL),
+(@entry, @id := @id+ 1, 455.2448, 3735.099, 82.29875, NULL),
+(@entry, @id := @id+ 1, 461.1927, 3755.536, 82.85698, NULL),
+--
+(@entry, @id := @id+ 1, 461.1927, 3755.536, 82.85698, NULL);
+
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
@@ -935,10 +1097,6 @@ INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_temple_entrance';
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
 (7835, 'AreaTrigger_at_temple_entrance');
-
-DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_mandori';
-INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
-(7710, 'AreaTrigger_at_mandori');
 
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_rescue_soldiers';
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES

@@ -4965,6 +4965,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 105002:// Mop: quest
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
                     break;
+                case 115435:// Mop: quest
+                    spellInfo->Effects[EFFECT_0].MiscValueB = 1;
+                    break;
                 case 84964:  // Rayne's Seed
                 case 101847: // Shoe Baby
                 case 65203:  // Throw Oil

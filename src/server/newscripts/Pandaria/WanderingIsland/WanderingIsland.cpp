@@ -49,6 +49,7 @@ enum panda_quests
     QIEST_BATTLE_FOR_SKIES                         = 29786, // Battle for the Skies
     QUEST_PASSING_WISDOM                           = 29790,
     QUEST_SUF_SHUN_ZI                              = 29791,
+    QUEST_BIDDEN_TO_GREATNESS                      = 29792, // Bidden to Greatness
 };
 
 enum spell_panda
@@ -58,6 +59,9 @@ enum spell_panda
     SPELL_SUMMON_SPIRIT_OF_WATTER                  = 103538,
     SPELL_CREDIT_NOT_IN_FACE                       = 104017, // Quest credit Not In the Face!
     SPELL_SUMMON_WIND_TELEPORTER                   = 104396,
+    SUMMON_MANDORI_DOOR                            = 115426, // Summon Mandori Door
+    SUMMON_PEI_WU_DOOR                             = 115435, // Summon Pei-Wu Door
+    SUMMON_GO_TRIGER_CHECKER                       = 115343,
 };
 
 class npc_panda_announcer : public CreatureScript
@@ -3399,7 +3403,7 @@ class mop_air_balloon : public VehicleScript
                 headGUID = head->GetGUID();
             }else
             {
-                sLog->outU("SCRIPT::mop_air_balloon not find turtle heat entry 57769");
+                me->MonsterSay("SCRIPT::mop_air_balloon not find turtle heat entry 57769", LANG_UNIVERSAL, playerGuid);
                 player->ExitVehicle();
                 return;
             }
@@ -3408,7 +3412,7 @@ class mop_air_balloon : public VehicleScript
                 shenZiGUID = shen->GetGUID();
             else
             {
-                sLog->outU("SCRIPT::mop_air_balloon not find shen zi su entry 57769");
+                me->MonsterSay("SCRIPT::mop_air_balloon not find shen zi su entry 57769", LANG_UNIVERSAL, playerGuid);
                 player->ExitVehicle();
                 return;
             }
@@ -3435,7 +3439,7 @@ class mop_air_balloon : public VehicleScript
             events.ScheduleEvent(EVENT_AISA_TALK_7, t += 7000);          //17:27:29.000
             events.ScheduleEvent(EVENT_FIREPAW_TALK_5, t += 14000);      //17:27:43.000
             events.ScheduleEvent(EVENT_AISA_TALK_8, t += 7000);          //17:27:50.000
-            events.ScheduleEvent(EVENT_FIREPAW_TALK_6, t += 7000);        //17:27:57.000
+            events.ScheduleEvent(EVENT_FIREPAW_TALK_6, t += 7000);       //17:27:57.000
             events.ScheduleEvent(EVENT_AISA_TALK_9, t += 7000);          //17:28:04.000
             events.ScheduleEvent(EVENT_AISA_TALK_10, t += 7000);         //17:28:10.000
         };
@@ -3613,6 +3617,378 @@ class mop_air_balloon : public VehicleScript
         return new mop_air_balloonAI(creature);
     }
 };
+
+/*
+========================================
+========= S O U T H  P A R T ===========
+========================================
+*/
+
+class mob_mandori_triger : public CreatureScript
+{
+public:
+    mob_mandori_triger() : CreatureScript("mob_mandori_triger") { }
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_mandori_trigerAI(creature);
+    }
+    
+    struct mob_mandori_trigerAI : public ScriptedAI
+    {
+
+        enum spells
+        {
+            SUMMON_AYSA                 = 115332, // Summon Aysa
+            SUMMON_JI                   = 115335, // Summon Ji
+            SUMMON_JOJO                 = 115337, // Summon Jojo
+        };
+
+        mob_mandori_trigerAI(Creature* creature) : ScriptedAI(creature)
+        {
+        }
+
+        void Reset()
+        {
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            Player *player = who->ToPlayer();
+            if (!player)
+                return;
+
+           if (player->GetPositionX() < 710.0f)
+               return;
+
+           if (player->GetQuestStatus(QUEST_BIDDEN_TO_GREATNESS) != QUEST_STATUS_INCOMPLETE)
+               return;
+
+           if (player->HasAura(SUMMON_MANDORI_DOOR) || player->HasAura(SUMMON_PEI_WU_DOOR))
+               return;
+
+            //summon doors
+            player->CastSpell(player, SUMMON_MANDORI_DOOR, false);
+            player->CastSpell(player, SUMMON_PEI_WU_DOOR, false);
+
+            //summon escort
+            player->CastSpell(player, SUMMON_AYSA, true);
+            player->CastSpell(player, SUMMON_JI, true);
+            player->CastSpell(player, SUMMON_JOJO, true);
+            return;
+        }
+    };
+};
+
+class mob_mandori_escort : public CreatureScript
+{
+    public:
+        mob_mandori_escort() : CreatureScript("mob_mandori_escort") { }
+
+    struct mob_mandori_escortAI : public npc_escortAI
+    {        
+        mob_mandori_escortAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        enum escortEntry
+        {
+            NPC_AYSA                = 59986,
+            NPC_JI                  = 59988,
+            NPC_JOJO                = 59989,
+            NPC_KORGA_STRONGMANE    = 60042, //Korga Strongmane
+            NPC_WEI_PALERAGE        = 55943, //Wei Palerage <Hermit of the Forbidden Forest>
+
+            SPELL_CREDIT_1          = 115442,
+            SPELL_CREDIT_2          = 115443,
+
+            SPELL_VIS_28            = 115447,
+
+            EVENT_AISA_0            = 1,    //17:29:44.000 talk + credit
+            EVENT_AISA_1            = 2,    //17:29:48.000 start move
+            EVENT_AISA_2            = 3,    //17:30:12.000 stop move + emote stop
+            EVENT_AISA_3            = 4,    //17:30:15.000 talk
+            EVENT_AISA_4            = 5, 
+            EVENT_AISA_5            = 6,
+            EVENT_AISA_6            = 7,
+            EVENT_AISA_7            = 8,
+
+            EVENT_JI_0              = 9,
+            EVENT_JI_1              = 10,
+            EVENT_JI_2              = 11,
+            EVENT_JI_3              = 12,
+            EVENT_JI_4              = 13,
+            EVENT_JI_5              = 14,
+            EVENT_JI_6              = 15,
+            EVENT_JI_7              = 16,
+            EVENT_JI_8              = 17,
+
+            EVENT_JOJO_0            = 18,
+            EVENT_JOJO_1            = 19,
+            EVENT_JOJO_2            = 20,
+            EVENT_JOJO_3            = 21,
+            EVENT_JOJO_4            = 22,
+            EVENT_JOJO_5            = 23,
+
+            EVENT_KORGA_0           = 24,
+            EVENT_KORGA_1           = 25,
+            EVENT_KORGA_2           = 26,
+            EVENT_WEI_PALERAGE      = 27,
+        };
+        
+        EventMap events;
+        uint64 playerGuid;
+        
+        uint64 mandoriDoorGuid;
+        uint64 peiwuDoorGuid;
+
+        void Reset()
+        {
+            playerGuid      = 0;
+            mandoriDoorGuid = 0;
+            peiwuDoorGuid   = 0;
+
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        bool Is(uint32 npc_entry) const
+        {
+            return me->GetEntry() == npc_entry;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            Player *player = summoner->ToPlayer();
+            if (!player)
+            {
+                me->MonsterSay("SCRIPT::mob_mandori_escort summoner is not player", LANG_UNIVERSAL, 0);
+                return;
+            }
+
+            playerGuid = summoner->GetGUID();
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+
+            if (GameObject* mandoriDoor = summoner->GetGameObject(SUMMON_MANDORI_DOOR))
+                mandoriDoorGuid = mandoriDoor->GetGUID();
+            else
+            {
+                me->MonsterSay("SCRIPT::mob_mandori_escort no go summoned by SUMMON_MANDORI_DOOR 115426", LANG_UNIVERSAL, playerGuid);
+                return;
+            }
+
+            if (GameObject* mandoriDoor = summoner->GetGameObject(SUMMON_PEI_WU_DOOR))
+                peiwuDoorGuid = mandoriDoor->GetGUID();
+            else
+            {
+                me->MonsterSay("SCRIPT::mob_mandori_escort no go summoned by SUMMON_PEI_WU_DOOR 115435", LANG_UNIVERSAL, playerGuid);
+                return;
+            }
+
+            uint32 t = 4000;                                         //17:29:43.000
+            if (Is(NPC_AYSA))
+            {
+                events.ScheduleEvent(EVENT_AISA_0, t += 1000);       //17:29:44.000 talk + credit
+                events.ScheduleEvent(EVENT_AISA_1, t += 1000);       //17:29:48.000
+            }else// if (Is(NPC_JI) || Is(NPC_JOJO))
+            {
+                if (Is(NPC_JI))
+                    events.ScheduleEvent(EVENT_JI_0, t += 2000);     //17:29:48.000
+                if (Is(NPC_JOJO))
+                    events.ScheduleEvent(EVENT_JOJO_0, t += 2000);   //17:29:48.000
+            }
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            uint32 t = 0;
+            switch (waypointId)
+            {
+                //cast 9  - 17:30:05.000 cast 115346 trigger dummy. 
+                case 12:
+                    SetEscortPaused(true);
+
+                    if (Is(NPC_AYSA))
+                    {
+                        t = 1000;                                            //
+                        events.ScheduleEvent(EVENT_AISA_2, t += 2000);       //17:30:12.000 stop move + emote stop
+                        events.ScheduleEvent(EVENT_AISA_3, t += 2000);       //17:30:15.000 talk
+                        events.ScheduleEvent(EVENT_AISA_4, t += 1000);       //17:30:17.000 talk
+                        events.ScheduleEvent(EVENT_AISA_5, t += 16000);      //17:30:33.000 move continue
+                    }else if (Is(NPC_JI))
+                    {
+                        t = 1000;                                           //17:30:10.000
+                        events.ScheduleEvent(EVENT_JI_1, t += 9000);        //17:30:19.000 talk
+                        events.ScheduleEvent(EVENT_JI_2, t += 3000);        //17:30:22.000 move + emote
+                        events.ScheduleEvent(EVENT_JI_3, t += 2000);        //17:30:24.000
+                        events.ScheduleEvent(EVENT_JI_4, t += 4000);        //17:30:28.000
+                        events.ScheduleEvent(EVENT_JI_5, t += 5000);        //17:30:33.000
+                        events.ScheduleEvent(EVENT_JI_6, t += 5000);        //17:30:38.000
+                    }else if (Is(NPC_JOJO))
+                    {
+                        t = 0;                                              //17:30:10.000
+                        events.ScheduleEvent(EVENT_JOJO_1, t += 1000);      //17:30:10.000
+                        events.ScheduleEvent(EVENT_JOJO_2, t += 22000);     //17:30:32.000
+                        events.ScheduleEvent(EVENT_JOJO_3, t += 2000);      //17:30:34.000
+                        events.ScheduleEvent(EVENT_JOJO_4, t += 1000);      //17:30:35.000
+                    }
+                    break;
+                case 20:
+                    if (Is(NPC_AYSA))
+                    {
+                        SetEscortPaused(true);
+                        t = 1000;                                            //17:30:59.000
+                        events.ScheduleEvent(EVENT_AISA_6, t += 27000);      //17:31:27.000
+                        events.ScheduleEvent(EVENT_AISA_7, t += 7000);       //17:31:35.000
+                    }else if (Is(NPC_JOJO))
+                    {
+                        SetEscortPaused(true);
+                        events.ScheduleEvent(EVENT_JOJO_5, 37000);           //17:31:37.000 
+                    }
+                    break;
+                case 23:
+                    if (Is(NPC_JI))
+                    {
+                        SetEscortPaused(true);
+                        t = 1000;                                           //17:30:59.000
+                        events.ScheduleEvent(EVENT_KORGA_0, t +=2000);      //17:31:02.000
+                        events.ScheduleEvent(EVENT_WEI_PALERAGE, t +=4000); //17:31:06.000
+                        events.ScheduleEvent(EVENT_KORGA_1, t +=9000);      //17:31:15.000
+                        events.ScheduleEvent(EVENT_JI_7, t += 22000);       //17:31:37.000
+                        events.ScheduleEvent(EVENT_KORGA_2, t +=7000);      //17:31:44.000
+                        events.ScheduleEvent(EVENT_JI_8, t += 9000);        //17:31:53.000 + 17:33:58.000  despawn
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void LastWaypointReached()
+        {           
+            if (Is(NPC_AYSA))
+            {
+                if (GameObject* mandoriDoor = me->GetMap()->GetGameObject(mandoriDoorGuid))
+                    mandoriDoor->Delete();
+                if (GameObject* peiwuDoor = me->GetMap()->GetGameObject(peiwuDoorGuid))
+                    peiwuDoor->Delete();
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+            npc_escortAI::UpdateAI(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_AISA_0:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_AISA_1:
+                        if (GameObject* mandoriDoor = me->GetMap()->GetGameObject(mandoriDoorGuid))
+                            mandoriDoor->SetGoState(GO_STATE_ACTIVE);
+
+                        if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
+                        {
+                            player->CastSpell(player, SPELL_CREDIT_1, true);
+                            player->RemoveAurasDueToSpell(SPELL_VIS_28);
+                        }
+                        Start(false, true);
+                        break;
+                    case EVENT_AISA_2:
+                        me->HandleEmoteCommand(432);
+                        break;
+                    case EVENT_AISA_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_AISA_4:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_AISA_7:
+                    case EVENT_AISA_5:
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_AISA_6:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGuid);
+                        break;
+                    case EVENT_JI_0:
+                    case EVENT_JOJO_0:
+                    case EVENT_JOJO_5:
+                        Start(false, true);
+                        break;
+                    case EVENT_JI_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_JI_2:
+                        me->GetMotionMaster()->MovePoint(100, 569.153f, 3582.24f, 94.95621f);
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STEALTH_STAND);
+                        break;
+                    case EVENT_JI_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_JI_4:
+                        me->SendPlaySpellVisualKit(15801, 0);
+                        break;
+                    case EVENT_JI_5:
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_JI_6:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_JI_7:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGuid);
+                        break;
+                    case EVENT_JI_8:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, playerGuid);
+                        me->DespawnOrUnsummon(120000);
+                        break;
+                    case EVENT_JOJO_1:
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READYBOW);
+                        break;
+                    case EVENT_JOJO_2:
+                        me->HandleEmoteCommand(15);
+                        me->PlayDistanceSound(32037);
+                        break;
+                    case EVENT_JOJO_3:
+                        if (GameObject* peiwuDoor = me->GetMap()->GetGameObject(peiwuDoorGuid))
+                            peiwuDoor->SetGoState(GO_STATE_ACTIVE);
+                        if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
+                            player->CastSpell(player, SPELL_CREDIT_2, true);
+                        me->GetMotionMaster()->MoveCharge(567.99f, 3583.41f, 94.74f);
+                        break;
+                    case EVENT_JOJO_4:
+                        SetEscortPaused(false);
+                        me->SendPlaySpellVisualKit(28180, 0);
+                        break;
+                    case EVENT_WEI_PALERAGE:
+                        if (Creature* wei = me->FindNearestCreature(NPC_WEI_PALERAGE, 50.0f, true))
+                            sCreatureTextMgr->SendChat(wei, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_KORGA_0:
+                        if (Creature* korga = me->FindNearestCreature(NPC_KORGA_STRONGMANE, 50.0f, true))
+                            sCreatureTextMgr->SendChat(korga, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_KORGA_1:
+                        if (Creature* korga = me->FindNearestCreature(NPC_KORGA_STRONGMANE, 50.0f, true))
+                            sCreatureTextMgr->SendChat(korga, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_KORGA_2:
+                        if (Creature* korga = me->FindNearestCreature(NPC_KORGA_STRONGMANE, 50.0f, true))
+                            sCreatureTextMgr->SendChat(korga, TEXT_GENERIC_2, playerGuid);
+                        break;
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_mandori_escortAI(creature);
+    }
+};
+
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -3661,4 +4037,8 @@ void AddSC_WanderingIsland()
     new mob_master_shang_xi_thousand_staff();
     new mob_aisa_pre_balon_event();
     new mop_air_balloon();
+    // south
+    new mob_mandori_triger();
+    new mob_mandori_escort();
+
 }
