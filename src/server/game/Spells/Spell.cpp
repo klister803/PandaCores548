@@ -5440,7 +5440,7 @@ void Spell::SendLogExecute()
             case SPELL_EFFECT_DUEL:
             case SPELL_EFFECT_DISMISS_PET:
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT:
-            case SPELL_EFFECT_171:
+            case SPELL_EFFECT_OBJECT_WITH_PERSONAL_VISIBILITY:
             case SPELL_EFFECT_RESURRECT_WITH_AURA:
             case SPELL_EFFECT_RESURRECT_NEW:
             {
@@ -6099,7 +6099,7 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     gameObjTarget = pGOTarget;
     destTarget = &m_destTargets[i]._position;
 
-    uint8 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
+    uint16 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u", m_spellInfo->Id, eff);
 

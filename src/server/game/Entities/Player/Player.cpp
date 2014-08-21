@@ -26203,7 +26203,7 @@ float Player::GetsAFriendBonus(bool forXP)
                 }
                 // level difference must be small enough to get bonus, UNLESS we are lower level
                 int32 levelDiff = abs(getLevel() - player->getLevel());
-                if (levelDiff > sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE))
+                if (levelDiff > (int32)sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE))
                     return 0.0f;
                 if(player->IsInWorld())
                     goup_size++;
