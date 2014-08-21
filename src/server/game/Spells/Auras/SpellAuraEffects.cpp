@@ -7090,6 +7090,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     case 23170:
                         triggerSpellId = 23171;
                         break;
+                    // Party G.R.E.N.A.D.E
+                    case 51510:
+                        triggerSpellId = 51508;
+                        break;
                     // Restoration
                     case 24379:
                     case 23493:

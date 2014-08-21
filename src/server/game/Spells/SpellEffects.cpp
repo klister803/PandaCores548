@@ -5160,12 +5160,12 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     m_caster->CastSpell(unitTarget, 22682, true);
                     return;
                 }
-                // Piccolo of the Flaming Fire
-                case 17512:
+                case 17512: // Piccolo of the Flaming Fire
+                case 51508: // Party G.R.E.N.A.D.E.
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
-                    unitTarget->HandleEmoteCommand(EMOTE_STATE_DANCE);
+                    unitTarget->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
                     return;
                 }
                 // Decimate
