@@ -213,8 +213,8 @@ public:
                 case DATA_ANVEENA:              return Anveena;
                 case DATA_KALECGOS_KJ:          return KalecgosKJ;
                 case DATA_PLAYER_GUID:
-                    Player* Target = GetPlayerInMap();
-                    return Target->GetGUID();
+                    if(Player* Target = GetPlayerInMap())
+                        return Target->GetGUID();
             }
             return 0;
         }
