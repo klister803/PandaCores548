@@ -8621,6 +8621,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 51558:  // Ancestral Awakening
+                {
+                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        if (procSpell->Effects[i].Effect)
+                            if (procSpell->Effects[i].HasRadius())
+                                return false;
+                    break;
+                }
                 case 120676: // Stormlash Totem
                 {
                     if (!procSpell)
