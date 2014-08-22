@@ -2129,7 +2129,7 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_frenzied_regeneration_SpellScript);
 
-            void HandleOnHit()
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -2151,12 +2151,12 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
                             else
                                 healAmount = rageused * healAmount / 600;
 
-                            SetHitHeal(healAmount);
+                            SetEffectValue(healAmount);
                             _player->EnergizeBySpell(_player, 22842, -rageused, POWER_RAGE);
                         }
                         else
                         {
-                            SetHitHeal(0);
+                            SetEffectValue(0);
                             _player->CastSpell(_player, SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE, true);
                         }
                     }
@@ -2165,7 +2165,7 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_dru_frenzied_regeneration_SpellScript::HandleOnHit);
+                OnEffectLaunchTarget += SpellEffectFn(spell_dru_frenzied_regeneration_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_HEAL);
             }
         };
 
