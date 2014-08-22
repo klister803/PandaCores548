@@ -3436,6 +3436,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_anti_GravityCount;           // AntiGravity chech count
          // end movement anticheat
 
+        uint32 GetTimeSync() const { return m_timeSyncServer; }
     protected:
         //kill honor sistem
         KillInfoMap m_killsPerPlayer;

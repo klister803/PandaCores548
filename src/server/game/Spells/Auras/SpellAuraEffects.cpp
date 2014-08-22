@@ -6739,7 +6739,6 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
         return;
 
     uint32 vehicleId = GetMiscValue();
-
     if (apply)
     {
         if (!target->CreateVehicleKit(vehicleId, 0, GetId()))
@@ -6754,24 +6753,23 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode,
     WorldPacket data;
     if (apply)
     {
-        // Initialize vehicle
-        if (Vehicle * veh = target->GetVehicleKit())
-            veh->Reset();
-
-        data.Initialize(SMSG_FORCE_SET_VEHICLE_REC_ID, 16);
+        //send before init vehicle
+        WorldPacket data(SMSG_FORCE_SET_VEHICLE_REC_ID, 16);
         data.WriteGuidMask<1, 5, 0, 6, 4, 3, 7, 2>(target->GetObjectGuid());
         data.WriteGuidBytes<7, 2, 5, 6, 4>(target->GetObjectGuid());
         data << uint32(vehicleId);
         data.WriteGuidBytes<3, 1, 0>(target->GetObjectGuid());
-        data << uint32(781);          //unk
-        target->SendMessageToSet(&data, true);
+        data << uint32(target->ToPlayer()->GetTimeSync()+1);          //CMSG_TIME_SYNC_RESP incremenet counter
+        target->ToPlayer()->GetSession()->SendPacket(&data);
+
+        // Initialize vehicle
+        if (Vehicle * veh = target->GetVehicleKit())
+            veh->Reset();
+        else 
+            return;
     }
 
-    data.Initialize(SMSG_PLAYER_VEHICLE_DATA, 8 + 1 + 4);
-    data << uint32(apply ? vehicleId : 0);
-    data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(target->GetObjectGuid());
-    data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(target->GetObjectGuid());
-    target->SendMessageToSet(&data, true);
+    //SMSG_PLAYER_VEHICLE_DATA semd on HandleSetVehicleRecId
 
     if (apply)
         target->ToPlayer()->SendOnCancelExpectedVehicleRideAura();

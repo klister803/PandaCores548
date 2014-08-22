@@ -429,7 +429,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
 
     // Force enter for force vehicle aura - 296
     if (GetRecAura())
-        accessory->_EnterVehicle(this, -1);
+        accessory->EnterVehicle(_me, -1);
     else
     (void)_me->HandleSpellClick(accessory, seatId);
 
@@ -932,8 +932,7 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
         if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
             sScriptMgr->OnInstallAccessory(Target, Passenger->ToCreature());
     }
-
-    return true; 
+    return true;
 }
 
 /**
