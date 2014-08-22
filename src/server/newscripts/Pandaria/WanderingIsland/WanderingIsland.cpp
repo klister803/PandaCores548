@@ -3658,7 +3658,7 @@ public:
             if (!player)
                 return;
 
-           if (player->GetPositionX() < 710.0f)
+           if (player->GetPositionX() < 710.0f || !me->IsWithinDistInMap(who, 50.0f))
                return;
 
            if (player->GetQuestStatus(QUEST_BIDDEN_TO_GREATNESS) != QUEST_STATUS_INCOMPLETE)
@@ -3701,7 +3701,7 @@ class mob_mandori_escort : public CreatureScript
             SPELL_CREDIT_1          = 115442,
             SPELL_CREDIT_2          = 115443,
 
-            SPELL_VIS_28            = 115447,
+            SPELL_VIS_28            = 115449,
 
             EVENT_AISA_0            = 1,    //17:29:44.000 talk + credit
             EVENT_AISA_1            = 2,    //17:29:48.000 start move
@@ -3810,8 +3810,8 @@ class mob_mandori_escort : public CreatureScript
                     {
                         t = 1000;                                            //
                         events.ScheduleEvent(EVENT_AISA_2, t += 2000);       //17:30:12.000 stop move + emote stop
-                        events.ScheduleEvent(EVENT_AISA_3, t += 2000);       //17:30:15.000 talk
-                        events.ScheduleEvent(EVENT_AISA_4, t += 1000);       //17:30:17.000 talk
+                        events.ScheduleEvent(EVENT_AISA_3, t += 3000);       //17:30:15.000 talk
+                        events.ScheduleEvent(EVENT_AISA_4, t += 2000);       //17:30:17.000 talk
                         events.ScheduleEvent(EVENT_AISA_5, t += 16000);      //17:30:33.000 move continue
                     }else if (Is(NPC_JI))
                     {
@@ -3891,7 +3891,7 @@ class mob_mandori_escort : public CreatureScript
 
                         if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
                         {
-                            player->CastSpell(player, SPELL_CREDIT_1, true);
+                            me->CastSpell(player, SPELL_CREDIT_1, true);
                             player->RemoveAurasDueToSpell(SPELL_VIS_28);
                         }
                         Start(false, true);
@@ -3907,6 +3907,7 @@ class mob_mandori_escort : public CreatureScript
                         break;
                     case EVENT_AISA_7:
                     case EVENT_AISA_5:
+                    case EVENT_JOJO_5:
                         SetEscortPaused(false);
                         break;
                     case EVENT_AISA_6:
@@ -3914,7 +3915,6 @@ class mob_mandori_escort : public CreatureScript
                         break;
                     case EVENT_JI_0:
                     case EVENT_JOJO_0:
-                    case EVENT_JOJO_5:
                         Start(false, true);
                         break;
                     case EVENT_JI_1:
@@ -3955,7 +3955,7 @@ class mob_mandori_escort : public CreatureScript
                         if (GameObject* peiwuDoor = me->GetMap()->GetGameObject(peiwuDoorGuid))
                             peiwuDoor->SetGoState(GO_STATE_ACTIVE);
                         if (Player* player = ObjectAccessor::FindPlayer(playerGuid))
-                            player->CastSpell(player, SPELL_CREDIT_2, true);
+                            me->CastSpell(player, SPELL_CREDIT_2, true);
                         me->GetMotionMaster()->MoveCharge(567.99f, 3583.41f, 94.74f);
                         break;
                     case EVENT_JOJO_4:

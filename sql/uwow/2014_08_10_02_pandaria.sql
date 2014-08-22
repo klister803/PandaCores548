@@ -31,7 +31,7 @@ DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 1
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
 126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447) AND  
-area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820);
+area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -126,8 +126,9 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 -- 115446
 ('115446', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
 ('115448', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
-('115447', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'); -- mandori pre-event
-
+('115447', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115449', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'); -- mandori pre-event hack
+--
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `Comment`, `ScriptName`) VALUES
@@ -979,9 +980,9 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 
 -- CUSTOM VISIBILITY FOR TRIGERS - 59962, 59960, 59963
 UPDATE `creature_template` SET `ScriptName` = 'mob_mandori_triger', `flags_extra` = '0' WHERE `entry` = 59962;
-UPDATE `creature_addon` SET `auras` = '90066' WHERE `creature_addon`.`guid` = 802805;
-UPDATE `creature_addon` SET `auras` = '90066' WHERE `creature_addon`.`guid` = 802803;
-UPDATE `creature_addon` SET `auras` = '115672 90066' WHERE `creature_addon`.`guid` = 802804;
+UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802805;
+UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802803;
+UPDATE `creature_addon` SET `auras` = '115672 94222' WHERE `creature_addon`.`guid` = 802804;
 UPDATE `creature_template_addon` SET `auras` = '115354 115672' WHERE `creature_template_addon`.`entry` = 59989;
 
 SET @id = 0;
