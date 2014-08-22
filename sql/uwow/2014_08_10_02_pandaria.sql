@@ -1147,8 +1147,9 @@ UPDATE `creature_addon` SET `auras` = '97468' WHERE `guid` = 803073;
 -- ----------------------------------------
 -- Q: 30767 Risking It All
 -- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'mob_aysa_gunship_crash_escort' WHERE `entry` = 60729;
 
-DELETE FROM `creature_text` WHERE entry =56416;
+DELETE FROM `creature_text` WHERE entry =60729;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (60729, 0, 0, 'Если мы позволим Цзи сделать это, Шэнь-Цзынь Су может погибнуть! За мной, $p! Быстрее!', 12, 0, 100, 5, 0, 27412, 'Аиса Воспевающая Облака'),
 (60729, 1, 0, 'Остановись, Цзи! Это глупо и безрассудно!', 12, 0, 100, 5, 0, 27413, 'Аиса Воспевающая Облака'),
@@ -1157,6 +1158,33 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (60729, 4, 0, 'Цзи... если ты считаешь, что другого выхода нет, я не буду тебе мешать. Но ты ставишь на карту все. Надеюсь, ты окажешься прав.', 12, 0, 100, 1, 0, 27416, 'Аиса Воспевающая Облака'),
 (60729, 5, 0, 'Аиса вздыхает.', 16, 0, 100, 274, 0, 0, 'Аиса Воспевающая Облака');
 
+-- 117597
+DELETE FROM `creature_text` WHERE entry =60741;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60741, 0, 0, 'Аиса, это наш единственный шанс. Мы взорвем корабль и залечим рану. У нас нет другого выхода.', 12, 0, 100, 1, 0, 27329, 'Цзи Огненная Лапа'),
+(60741, 1, 0, 'Ты предлагаешь просто сидеть и ждать, пока нас осенит? Шэнь-Цзынь Су может погибнуть, если мы не взорвем корабль!', 12, 0, 100, 6, 0, 27330, 'Цзи Огненная Лапа'),
+(60741, 2, 0, 'Лучше рискнуть всем, пытаясь спасти его, чем бездействовать.', 12, 0, 100, 1, 0, 27331, 'Цзи Огненная Лапа');
+
+DELETE FROM `spell_target_position` WHERE id in (117497, 117597);
+INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
+('117497', '860', '286.9531', '4004.331', '74.77346', '5.064899'),
+('117597', '860', '230.314', '4006.68', '87.2803', '3.385939');
+
+SET @id = 0;
+SET @entry = 60729;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 291.7361, 4001.672, 75.32141, NULL),
+(@entry, @id := @id+ 1, 270.146, 4005.15, 67.9128, NULL),
+(@entry, @id := @id+ 1, 252.668, 4007.32, 78.1784, NULL),
+(@entry, @id := @id+ 1, 238.963, 4009.03, 77.0572, NULL),
+(@entry, @id := @id+ 1, 237.239, 3998.46, 76.2702, NULL),
+(@entry, @id := @id+ 1, 259.427, 3993.69, 89.0894, NULL),
+(@entry, @id := @id+ 1, 263.162, 3997.81, 89.3715, NULL),
+-- cast 117600
+(@entry, @id := @id+ 1, 235.0417, 4007.537, 87.66889, NULL),
+(@entry, @id := @id+ 1, 236.8106, 4007.705, 87.85663, NULL),
+(@entry, @id := @id+ 1, 239.453, 3942.2, 62.5987, NULL);
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';

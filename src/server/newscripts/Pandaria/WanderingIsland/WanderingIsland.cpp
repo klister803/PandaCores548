@@ -4214,19 +4214,19 @@ public:
         return new npc_aysa_cloudsinger_AI (creature);
     }
 
-
     enum eSpell
     {
         SPELL_ROLL          = 117312,
         SPELL_FIST_FURY     = 117275,
         SPELL_SUMMON_AISA   = 117497,
+        SPELL_SUMMON_JI     = 117597,
         NPC_NIGHMIRE        = 56009,
     };
 
     bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_RISKING_IT_ALL)
-            me->CastSpell(player, SPELL_SUMMON_AISA, true);
+            player->CastSpell(player, SPELL_SUMMON_AISA, true);
         return true;
     }
 
@@ -4339,6 +4339,172 @@ public:
         }
     };
 };
+
+class mob_aysa_gunship_crash_escort : public CreatureScript
+{
+public:
+    mob_aysa_gunship_crash_escort() : CreatureScript("mob_aysa_gunship_crash_escort") { }
+
+    struct mob_aysa_gunship_crash_escortAI : public npc_escortAI
+    {        
+        mob_aysa_gunship_crash_escortAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        EventMap events;
+        uint64 playerGuid;
+        uint64 jiGuid;
+
+        enum escortEntry
+        {
+            EVENT_AISA_0        = 1,
+            EVENT_AISA_1        = 2,
+            EVENT_AISA_2        = 3,
+            EVENT_AISA_3        = 4,
+            EVENT_AISA_4        = 5,
+            EVENT_AISA_5        = 6,
+            EVENT_AISA_6        = 7,
+            EVENT_AISA_7        = 8,
+            EVENT_AISA_8        = 9,
+
+            EVENT_JI_0          = 10,
+            EVENT_JI_1          = 11,
+            EVENT_JI_2          = 12,
+            EVENT_JI_3          = 13,
+            EVENT_JI_4          = 14,
+
+            SPELL_FINISH        = 106037,
+        };
+
+        void Reset()
+        {
+            playerGuid      = 0;
+            jiGuid          = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            Player *player = summoner->ToPlayer();
+            if (!player)
+            {
+                me->MonsterSay("SCRIPT::mob_aysa_gunship_crash_escort summoner is not player", LANG_UNIVERSAL, 0);
+                return;
+            }
+
+            playerGuid = summoner->GetGUID();
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+
+            // summoned by spell 117600
+            if (Creature* ji = me->SummonCreature(60741, 230.31f, 4006.67f, 87.27f, 3.38f, TEMPSUMMON_MANUAL_DESPAWN, 0, playerGuid))
+                jiGuid = ji->GetGUID();
+
+            uint32 t = 0;                                        //17:54:19.000
+            events.ScheduleEvent(EVENT_AISA_0, t += 2000);       //17:54:21.000
+            events.ScheduleEvent(EVENT_AISA_1, t += 3000);       //17:54:24.000
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            if (waypointId == 8)
+            {
+                SetEscortPaused(true);
+                uint32 t = 0;                                        //
+                events.ScheduleEvent(EVENT_AISA_2, t += 2000);       //17:54:41.000
+                events.ScheduleEvent(EVENT_JI_0, t += 4000);         //17:54:45.000
+                events.ScheduleEvent(EVENT_AISA_3, t += 9000);       //17:54:54.000
+                events.ScheduleEvent(EVENT_JI_1, t += 4000);         //17:54:58.000
+                events.ScheduleEvent(EVENT_AISA_4, t += 10000);      //17:55:08.000
+                events.ScheduleEvent(EVENT_JI_2, t += 4000);         //17:55:12.000
+                events.ScheduleEvent(EVENT_AISA_5, t += 6000);       //17:55:18.000
+                events.ScheduleEvent(EVENT_AISA_6, t += 6000);       //17:55:24.000
+                events.ScheduleEvent(EVENT_JI_3, t += 5000);         //17:55:29.000
+                events.ScheduleEvent(EVENT_AISA_7, t += 4000);       //17:55:33.000
+                events.ScheduleEvent(EVENT_AISA_8, t += 500);        //17:55:33.000
+            }
+        }
+
+        void LastWaypointReached()
+        {   
+            if (Creature* ji = getJi())
+                ji->DespawnOrUnsummon();
+        }
+
+        Creature* getJi()
+        {
+            return me->GetMap()->GetCreature(jiGuid);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+            npc_escortAI::UpdateAI(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_AISA_0:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_AISA_1:
+                        Start(false, true);
+                        break;
+                    case EVENT_AISA_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_AISA_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_AISA_4:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGuid);
+                        break;
+                    case EVENT_AISA_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, playerGuid);
+                        break;
+                    case EVENT_AISA_6:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, playerGuid);
+                        break;
+                    case EVENT_AISA_7:
+                        SetEscortPaused(false);
+                        if (Player* player = ObjectAccessor::GetPlayer(*me, playerGuid))
+                        {
+                            player->KilledMonsterCredit(60727);
+                            player->SendMovieStart(117);
+                        }
+                        break;
+                    case EVENT_AISA_8:
+                        if (Player* player = ObjectAccessor::GetPlayer(*me, playerGuid))
+                            player->NearTeleportTo(249.38f, 3939.55f, 65.61f, 1.501471f);
+                        break;
+                    case EVENT_JI_0:
+                        if (Creature* ji = getJi())
+                        {
+                            ji->SetFacingToObject(me);
+                            sCreatureTextMgr->SendChat(ji, TEXT_GENERIC_0, playerGuid);
+                        }
+                        break;
+                    case EVENT_JI_1:
+                        if (Creature* ji = getJi())
+                            sCreatureTextMgr->SendChat(ji, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_JI_2:
+                        if (Creature* ji = getJi())
+                            sCreatureTextMgr->SendChat(ji, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_JI_3:
+                        if (Creature* ji = getJi())
+                            ji->GetMotionMaster()->MovePoint(0, 230.4045f, 3975.614f, 87.7406f);
+                        break;
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_aysa_gunship_crash_escortAI(creature);
+    }
+    
+};
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -4395,5 +4561,5 @@ void AddSC_WanderingIsland()
     new npc_hurted_soldier();
     new boss_vordraka();
     new npc_aysa_cloudsinger();
-
+    new mob_aysa_gunship_crash_escort();
 }

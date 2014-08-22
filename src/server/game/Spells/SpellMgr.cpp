@@ -4963,6 +4963,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108858:// Mop: quest
                 case 109335:// Mop: quest
                 case 105002:// Mop: quest
+                case 117497:// Mop: quest
+                case 117597:// Mop: quest
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DB;
                     break;
                 case 115435:// Mop: quest
