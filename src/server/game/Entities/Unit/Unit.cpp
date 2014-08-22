@@ -13047,6 +13047,38 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             DoneTotal = 0;
     }
 
+    switch (getClass())
+    {
+        case CLASS_SHAMAN:
+        {
+            if (Aura* aura = GetAura(118473))
+                if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                {
+                    if (spellProto->StartRecoveryTime)
+                    {
+                        bool singleTarget = false;
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                            if (spellProto->Effects[i].Effect)
+                            {
+                                if (!spellProto->Effects[i].HasRadius())
+                                    singleTarget = true;
+                            }
+                            else break;
+
+                        if (singleTarget)
+                        {
+                            AddPct(DoneTotalMod, eff->GetAmount());
+                            RemoveAura(aura->GetId());
+                        }
+                        break;
+                    }
+                }
+            break;
+        }
+        default:
+            break;
+    }
+
     // use float as more appropriate for negative values and percent applying
     float heal = float(int32(healamount) + DoneTotal) * DoneTotalMod;
     // apply spellmod to Done amount
@@ -13105,23 +13137,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             HasAura(8936, caster->GetGUID()) ||    // Regrowth
             HasAura(774, caster->GetGUID()))       // Rejuvenation
             AddPct(TakenTotalMod, 20);
-    }
-
-    // Unleashed Fury - Earthliving
-    if (HasAura(118473) && GetAura(118473)->GetCaster() && GetAura(118473)->GetCaster()->GetGUID() == caster->GetGUID())
-    {
-        bool singleTarget = false;
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (spellProto->GetEffect(i, GetSpawnMode()).TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->GetEffect(i, GetSpawnMode()).TargetB.GetTarget() == 0)
-                singleTarget = true;
-
-        if (spellProto->Id == 77472)
-        {
-            singleTarget = true;
-        }
-
-        if (singleTarget)
-            AddPct(TakenTotalMod, 50);
     }
 
     // Check for table values
