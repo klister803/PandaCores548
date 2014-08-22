@@ -50,6 +50,9 @@ enum panda_quests
     QUEST_PASSING_WISDOM                           = 29790,
     QUEST_SUF_SHUN_ZI                              = 29791,
     QUEST_BIDDEN_TO_GREATNESS                      = 29792, // Bidden to Greatness
+    QUEST_NONE_LEFT_BEHINED                        = 29794, //None Left Behind
+    QUEST_ACIENT_EVIL                              = 29798,
+    QUEST_RISKING_IT_ALL                           = 30767, //Risking It All
 };
 
 enum spell_panda
@@ -3989,6 +3992,353 @@ class mob_mandori_escort : public CreatureScript
     }
 };
 
+// Ji Yuan
+class npc_ji_yuan : public CreatureScript
+{
+    public:
+        npc_ji_yuan() : CreatureScript("npc_ji_yuan") { }
+
+    struct npc_ji_yuanAI : public ScriptedAI
+    {        
+        npc_ji_yuanAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        void Reset()
+        {
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, summoner->GetGUID());
+            me->GetMotionMaster()->MovePoint(1, 495.061f, 4007.92f, 78.3662f);
+        }
+
+        void MovementInform(uint32 moveType, uint32 waypointId)
+        {
+            me->DespawnOrUnsummon(5000);
+        }
+    };
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_ji_yuanAI(creature);
+    }
+};
+
+//56476 Injured Sailor Rescue Controller
+class npc_injured_sailor_rescue_controller : public CreatureScript
+{
+public:
+    npc_injured_sailor_rescue_controller() : CreatureScript("npc_injured_sailor_rescue_controller") { }
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_injured_sailor_rescue_controllerAI(creature);
+    }
+    
+    struct npc_injured_sailor_rescue_controllerAI : public ScriptedAI
+    {
+
+        enum spells
+        {
+            SPELL_CANCEL_INJURED_SAILOR             = 117987,   //Cancel Injured Sailor Rescue Aura
+            NPC_SAILOR                              = 56236,
+            NPC_QUEST_CREDIT                        = 55999,
+        };
+
+        npc_injured_sailor_rescue_controllerAI(Creature* creature) : ScriptedAI(creature)
+        {
+        }
+
+        void Reset()
+        {
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+           if (!me->IsWithinDistInMap(who, 10.0f))
+               return;
+
+           Vehicle* veh = who->GetVehicle();
+           if (who->GetEntry() != NPC_SAILOR || !veh)
+               return;
+
+           Player* player = veh->GetBase()->ToPlayer();
+           if (!player || player->GetQuestStatus(QUEST_NONE_LEFT_BEHINED) != QUEST_STATUS_INCOMPLETE)
+               return;
+
+            player->KilledMonsterCredit(NPC_QUEST_CREDIT);
+
+            player->CastSpell(player, SPELL_CANCEL_INJURED_SAILOR, true);
+            sCreatureTextMgr->SendChat(who->ToCreature(), TEXT_GENERIC_0, player->GetGUID());
+            who->ToCreature()->DespawnOrUnsummon(5000);
+            return;
+        }
+    };
+
+};
+
+class npc_hurted_soldier : public CreatureScript
+{
+public:
+    npc_hurted_soldier() : CreatureScript("npc_hurted_soldier") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_hurted_soldierAI (creature);
+    }
+
+    struct npc_hurted_soldierAI : public ScriptedAI
+    {
+        npc_hurted_soldierAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 checkSavedTimer;
+        bool HasBeenSaved;
+
+        void Reset()
+        {
+            checkSavedTimer = 2500;
+            HasBeenSaved = false;
+        }
+
+        void OnSpellClick(Unit* Clicker)
+        {
+            HasBeenSaved = true;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (checkSavedTimer)
+            {
+                if (checkSavedTimer <= diff)
+                {
+                    if (HasBeenSaved && !me->GetVehicle())
+                    {
+                        me->DespawnOrUnsummon(5000);
+                        checkSavedTimer = 0;
+                    }
+                    else
+                        checkSavedTimer = 2500;
+                }
+                else
+                    checkSavedTimer -= diff;
+            }
+        }
+    };
+};
+
+class boss_vordraka : public CreatureScript
+{
+public:
+    boss_vordraka() : CreatureScript("boss_vordraka") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_vordrakaAI(creature);
+    }
+
+    struct boss_vordrakaAI : public ScriptedAI
+    {
+        boss_vordrakaAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap _events;
+
+        enum eEnums
+        {
+            QUEST_ANCIEN_MAL        = 29798,
+
+            EVENT_DEEP_ATTACK       = 1,
+            EVENT_DEEP_SEA_RUPTURE  = 2,
+
+            SPELL_DEEP_ATTACK       = 117287,
+            SPELL_DEEP_SEA_RUPTURE  = 117456,
+        };
+
+        void Reset()
+        {
+            _events.ScheduleEvent(EVENT_DEEP_ATTACK, 10000);
+            _events.ScheduleEvent(SPELL_DEEP_SEA_RUPTURE, 12500);
+        }
+
+        void JustDied(Unit* attacker)
+        {
+            std::list<Player*> playerList;
+            GetPlayerListInGrid(playerList, me, 50.0f);
+
+            for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                Player* player = *itr;
+                if (player->GetQuestStatus(QUEST_ANCIEN_MAL) == QUEST_STATUS_INCOMPLETE)
+                    if (player->isAlive())
+                        player->KilledMonsterCredit(me->GetEntry());
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            _events.Update(diff);
+
+            switch (_events.ExecuteEvent())
+            {
+                case EVENT_DEEP_ATTACK:
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 25.0f, true))
+                        me->CastSpell(target, SPELL_DEEP_ATTACK, false);
+
+                    _events.ScheduleEvent(EVENT_DEEP_ATTACK, 10000);
+                    break;
+                }
+                case EVENT_DEEP_SEA_RUPTURE:
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 25.0f, true))
+                        me->CastSpell(target, SPELL_DEEP_SEA_RUPTURE, false);
+
+                    _events.ScheduleEvent(EVENT_DEEP_ATTACK, 10000);
+                    break;
+                }
+            }
+        }
+    };
+};
+
+//Aysa Cloudsinger <Master of Tushui>
+class npc_aysa_cloudsinger : public CreatureScript
+{
+public:
+    npc_aysa_cloudsinger() : CreatureScript("npc_aysa_cloudsinger") {}
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_aysa_cloudsinger_AI (creature);
+    }
+
+
+    enum eSpell
+    {
+        SPELL_ROLL          = 117312,
+        SPELL_FIST_FURY     = 117275,
+        SPELL_SUMMON_AISA   = 117497,
+        NPC_NIGHMIRE        = 56009,
+    };
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUEST_RISKING_IT_ALL)
+            me->CastSpell(player, SPELL_SUMMON_AISA, true);
+        return true;
+    }
+
+    struct npc_aysa_cloudsinger_AI : public ScriptedAI
+    {
+        npc_aysa_cloudsinger_AI(Creature* creature) : ScriptedAI(creature) { bossGUID = 0; }
+        
+        enum eEvents
+        {
+            EVENT_FIST_FURY         = 1,
+            EVENT_1                 = 2,
+            EVENT_2                 = 3,
+            EVENT_3                 = 4,
+        };
+
+        EventMap events;
+        uint64 bossGUID;
+        std::set<uint64> m_player_for_event;
+
+        void Reset()
+        {
+            events.Reset();
+            events.ScheduleEvent(EVENT_FIST_FURY, 7000);
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            ScriptedAI::MoveInLineOfSight(who);
+
+            if (who->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+
+            if (who->ToPlayer()->GetQuestStatus(QUEST_ACIENT_EVIL) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            m_player_for_event.insert(who->GetGUID());
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
+            if (Creature* boss = me->FindNearestCreature(NPC_NIGHMIRE, 100.0f, true))
+            {
+                bossGUID = boss->GetGUID();
+                if (!boss->isAlive())
+                    boss->Respawn(true);
+                AttackStart(boss);
+
+                events.ScheduleEvent(EVENT_1, 10000);
+                events.ScheduleEvent(EVENT_2, 15000);
+                events.ScheduleEvent(EVENT_3, 35000);
+            }
+        }
+
+        void EnterEvadeMode()
+        {
+            if (bossGUID)
+            {
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4);
+                bossGUID = 0;
+            }
+        }
+
+        void KilledUnit(Unit* /*victim*/)
+        {
+            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+        }
+
+        void DamageTaken(Unit* attacker, uint32& damage)
+        {
+            damage = 1;
+        }
+
+        void EnterCombat(Unit* victim)
+        {
+            if (me->GetDistance(victim) > 10)
+                me->CastSpell(victim, SPELL_ROLL, true);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            UpdateVictim();
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1);
+                        break;
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2);
+                        break;
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3);
+                        break;
+                    case EVENT_FIST_FURY:
+                        me->CastSpell(me->getVictim(), SPELL_FIST_FURY, true);
+                        events.ScheduleEvent(EVENT_FIST_FURY, 5000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+};
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -4040,5 +4390,10 @@ void AddSC_WanderingIsland()
     // south
     new mob_mandori_triger();
     new mob_mandori_escort();
+    new npc_ji_yuan();
+    new npc_injured_sailor_rescue_controller();
+    new npc_hurted_soldier();
+    new boss_vordraka();
+    new npc_aysa_cloudsinger();
 
 }

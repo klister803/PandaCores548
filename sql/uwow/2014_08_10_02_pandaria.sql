@@ -30,8 +30,8 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
-126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447) AND  
-area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828);
+126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447, 115449, 117973, 105525, 117501) AND  
+area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828, 5944, 5833);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5736', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -124,11 +124,16 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('115426', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
 ('115435', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
 -- 115446
-('115446', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
-('115448', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
-('115447', '5736', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
-('115449', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'); -- mandori pre-event hack
+('115446', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115448', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115447', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event
+('115449', '5828', '29792', '29792', '0', '0', '2', '1', '8', '66'), -- mandori pre-event hack
 --
+('117973', '5944', '30589', '30589', '0', '0', '2', '1', '10', '64'),
+--
+('105525', '5833', '29794', '29794', '0', '0', '2', '1', '8', '66'),
+--
+('117501', '5736', '29796', '30767', '0', '0', '2', '1', '74', '74');
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `Comment`, `ScriptName`) VALUES
@@ -144,19 +149,22 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (23, 5736, 7, 0, 0, 28, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29790', ''),
 (23, 5736, 7, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not complete 29790', ''),
 (23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', ''),
-(23, 5736, 8, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain not rewarded 29790', '');
+(23, 5736, 8, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain not rewarded 29790', ''),
+(23, 5736, 9, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29793', ''),
+(23, 5736, 10, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29793', '');
 
 DELETE FROM phase_definitions WHERE `zoneId` = 5736;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `wmAreaId`, `comment`) VALUES
 (5736, 1, 0, 0, 0, 683, 'Pandaren Start loc: world area'),
-(5736, 2, 0, 0, 975, 0, 'Pandaren Start loc: tarrain 975'),
-(5736, 3, 0, 0, 976, 0, 'Pandaren Start loc: tarrain976'),
+(5736, 2, 0x40, 0, 975, 0, 'Pandaren Start loc: tarrain 975'),
+(5736, 3, 0x20, 0, 976, 0, 'Pandaren Start loc: tarrain976'),
 (5736, 4, 3, 34604, 0, 0, 'Pandaren Start loc: 3part. Wind cavern'), -- phase
 (5736, 5, 5, 34094, 0, 0, 'Pandaren Start loc: 3part. Battle for the Skies'), -- phase
 (5736, 6, 9, 524, 0, 0, 'Pandaren Start loc: 3part. Wind cavern. Finish'), -- phase
 (5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end'),
-(5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'); -- phase
-
+(5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'), -- phase
+(5736, 9, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end'),
+(5736, 10, 3, 34603, 0, 0, 'Pandaren Start loc: 3part end');
 
 -- ----------------------------------------
 -- Q: 29408 The Lesson of the Burning Scroll
@@ -1081,6 +1089,74 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 461.1927, 3755.536, 82.85698, NULL),
 --
 (@entry, @id := @id+ 1, 461.1927, 3755.536, 82.85698, NULL);
+
+-- ----------------------------------------
+-- Q: 30589 Wrecking the Wreck
+-- ----------------------------------------
+UPDATE `creature_template` SET `ScriptName` = 'npc_ji_yuan' WHERE `entry` = 60900;
+DELETE FROM `creature_text` WHERE entry =60900;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60900, 0, 0, 'Давай-ка разыщем этого инженера. Может быть, убрать занозу будет не так уж и сложно.', 12, 0, 100, 396, 0, 27335, 'Цзи Огненная Лапа');
+
+-- ----------------------------------------
+-- Q: 29794 None Left Behind
+-- ----------------------------------------
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_injured_sailor_rescue_controller' WHERE `entry` = 56476;
+UPDATE `creature_template` SET `npcflag` = '16777216', `AIName` = '', `ScriptName` = 'npc_hurted_soldier' WHERE `entry` = 55999;
+DELETE FROM smart_scripts WHERE entryorguid = 55999;
+
+-- 
+DELETE FROM `creature_text` WHERE entry =56236;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56236, 0, 0, 'Мне удалось выжить только благодаря тебе... Я этого не забуду.', 12, 0, 100, 18, 0, 0, 'Раненый матрос'),
+(56236, 0, 1, 'Смерть была совсем близко! Спасибо, $gнезнакомец:незнакомка;.', 12, 0, 100, 18, 0, 0, 'Раненый матрос'),
+(56236, 0, 2, 'Спасибо за своевременное освобождение, |3-6($c).', 12, 0, 100, 2, 0, 0, 'Раненый матрос');
+
+UPDATE `creature_template` SET `VehicleId` = '1785' WHERE `entry` = 56236;
+
+DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = '-105520';
+INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
+('-105520', '56236', '0', '1', 'q29794', '8', '30000');
+
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55999;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
+(55999, 105520, 3, 0);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceEntry` = 114746;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ConditionTypeOrReference`, `ConditionTarget`,`ConditionValue1`,`ConditionValue2`,`NegativeCondition`,`Comment`)
+VALUES (18, 55999, 105520, 9, 0, 29794, 0, 0, 'Required quest active for spellclick');
+
+-- ----------------------------------------
+-- Q: 29798 An Ancient Evil
+-- ----------------------------------------
+UPDATE `creature_template` SET `RegenHealth` = '1', `ScriptName` = 'boss_vordraka' WHERE `entry` = 56009;
+
+UPDATE `creature_template` SET `npcflag` =2, `mindmg` = '20', `maxdmg` = '30', `attackpower` = '15',`AIName` = '', `ScriptName` = 'npc_aysa_cloudsinger' WHERE `entry` = 56416;
+DELETE FROM smart_scripts WHERE entryorguid = 56416;
+DELETE FROM `creature_text` WHERE entry =56416;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56416, 0, 0, 'Хвала Шэнь-Цзынь Су, что ты здесь. Твоя помощь мне очень пригодится.', 12, 0, 100, 0, 0, 27384, 'Аиса Воспевающая Облака'),
+(56416, 1, 0, 'Отходи в сторону, когда он поднимет оружие. Он еще опаснее, чем кажется.', 12, 0, 100, 0, 0, 27385, 'Аиса Воспевающая Облака'),
+(56416, 2, 0, 'Он призывает помощников! Я отвлеку его, пока ты расправляешься с ними.', 12, 0, 100, 0, 0, 27386, 'Аиса Воспевающая Облака'),
+(56416, 3, 0, 'Мы изматываем его. Еще немного!', 12, 0, 100, 0, 0, 27387, 'Аиса Воспевающая Облака'),
+(56416, 4, 0, 'Не знаю, что бы я делала без тебя. Твоя помощь очень кстати.', 12, 0, 100, 0, 0, 0, 'Аиса Воспевающая Облака');
+
+-- 56416 in the ship near boss
+UPDATE `creature_addon` SET `auras` = '117326 97468' WHERE `guid` = 803083;
+UPDATE `creature_addon` SET `auras` = '97468' WHERE `guid` = 803073;
+
+-- ----------------------------------------
+-- Q: 30767 Risking It All
+-- ----------------------------------------
+
+DELETE FROM `creature_text` WHERE entry =56416;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60729, 0, 0, 'Если мы позволим Цзи сделать это, Шэнь-Цзынь Су может погибнуть! За мной, $p! Быстрее!', 12, 0, 100, 5, 0, 27412, 'Аиса Воспевающая Облака'),
+(60729, 1, 0, 'Остановись, Цзи! Это глупо и безрассудно!', 12, 0, 100, 5, 0, 27413, 'Аиса Воспевающая Облака'),
+(60729, 2, 0, 'Если ты дашь нам время, мы его найдем.', 12, 0, 100, 274, 0, 27414, 'Аиса Воспевающая Облака'),
+(60729, 3, 0, 'Поступая так, мы рискуем всем!', 12, 0, 100, 5, 0, 27415, 'Аиса Воспевающая Облака'),
+(60729, 4, 0, 'Цзи... если ты считаешь, что другого выхода нет, я не буду тебе мешать. Но ты ставишь на карту все. Надеюсь, ты окажешься прав.', 12, 0, 100, 1, 0, 27416, 'Аиса Воспевающая Облака'),
+(60729, 5, 0, 'Аиса вздыхает.', 16, 0, 100, 274, 0, 0, 'Аиса Воспевающая Облака');
+
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';
