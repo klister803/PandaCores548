@@ -36,6 +36,7 @@ enum eSpells
     SPELL_ERUPTING_SHA       = 143498,
     SPELL_SHA_RESIDUE        = 143459,//buff
     //npc contaminated puddle
+    SPELL_CONGEALING         = 143540,//slow, self buff
     SPELL_ERUPTING_WATER     = 145377,
     SPELL_PURIFIED_RESIDUE   = 143524,//buff
 };
@@ -180,6 +181,7 @@ class boss_immerseus : public CreatureScript
 
             InstanceScript* instance;
             uint32 checkvictim;
+            uint32 lasthp;
             uint8 donecp, donesp, maxpcount;
             bool phase_two;
 
@@ -195,6 +197,7 @@ class boss_immerseus : public CreatureScript
                 me->SetPower(POWER_ENERGY, 100);
                 phase_two = false;
                 checkvictim = 0;
+                lasthp = me->GetMaxHealth();
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
@@ -204,9 +207,9 @@ class boss_immerseus : public CreatureScript
             {
                 _EnterCombat();
                 checkvictim = 2000;
-                events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
-                events.ScheduleEvent(EVENT_SWIRL,           13000);
-                events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
+                events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  6000);
+                events.ScheduleEvent(EVENT_SWIRL,           14000);
+                events.ScheduleEvent(EVENT_SHA_BOLT,         8000);
             }
 
             void SpawnWave()
@@ -305,6 +308,13 @@ class boss_immerseus : public CreatureScript
                         me->Kill(me, true);
                         return;
                     }
+                    uint8 doneval = donesp + donecp;
+                    if (doneval)
+                    {
+                        uint32 modh = ((me->GetMaxHealth()/100)*doneval);
+                        me->SetHealth(lasthp - modh);
+                    }
+                    lasthp = me->GetHealth();
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -312,9 +322,9 @@ class boss_immerseus : public CreatureScript
                     DoZoneInCombat(me, 150.0f);
                     phase_two = false;
                     checkvictim = 2000;
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
-                    events.ScheduleEvent(EVENT_SWIRL,           13000);
-                    events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  6000);
+                    events.ScheduleEvent(EVENT_SWIRL,           14000);
+                    events.ScheduleEvent(EVENT_SHA_BOLT,         8000);
                     break;
                 }
             }
@@ -375,16 +385,12 @@ class boss_immerseus : public CreatureScript
                         events.ScheduleEvent(EVENT_SHA_BOLT, 15000);
                         break;
                     case EVENT_SWIRL:
-                        if (me->getVictim())
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         {
-                            uint64 vG = me->getVictim()->GetGUID();
                             me->AttackStop();
                             me->SetReactState(REACT_PASSIVE);
-                            if (Unit* target = me->GetUnit(*me, vG))
-                            {
-                                me->SetFacingToObject(target);
-                                DoCast(me, SPELL_SWIRL);
-                            }
+                            me->SetFacingToObject(target);
+                            DoCast(me, SPELL_SWIRL);
                         }
                         events.ScheduleEvent(EVENT_SWIRL, 48500);
                         break;
@@ -502,7 +508,7 @@ class npc_sha_puddle : public CreatureScript
             void DoAction(int32 const action)
             {
                 if (action == ACTION_SPAWN)
-                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 25.0f, 25.0f, 0);
+                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
             }
 
             void MovementInform(uint32 type, uint32 pointId)
@@ -512,7 +518,7 @@ class npc_sha_puddle : public CreatureScript
                     if (pointId == 0)
                     {
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        events.ScheduleEvent(EVENT_START_MOVING, 1000);  
+                        events.ScheduleEvent(EVENT_START_MOVING, 1500);  
                     }
                 }
             }
@@ -604,7 +610,7 @@ class npc_contaminated_puddle : public CreatureScript
 
             InstanceScript* instance;
             EventMap events;
-            uint8 index, slowval;
+            uint8 index;
             bool done, finish;
 
             void Reset()
@@ -614,12 +620,35 @@ class npc_contaminated_puddle : public CreatureScript
                 finish = false;
                 done = false;
                 index = 0; 
-                slowval = 0;
             }
 
             void EnterEvadeMode(){}
 
             void EnterCombat(Unit* who){}
+
+            void SendSlow(uint8 val)
+            {
+                switch (val)
+                {
+                case 1:
+                case 2:
+                    me->SetSpeed(MOVE_RUN, 0.9f);
+                    break;
+                case 3:
+                case 4:
+                    me->SetSpeed(MOVE_RUN, 0.8f);
+                    break;
+                case 5:
+                case 6:
+                    me->SetSpeed(MOVE_RUN, 0.7f);
+                    break;
+                case 7:
+                    me->SetSpeed(MOVE_RUN, 0.6f);
+                    break;
+                default:
+                    break;
+                }
+            }
 
             void SpellHit(Unit* caster, SpellInfo const *spell)
             {
@@ -627,21 +656,30 @@ class npc_contaminated_puddle : public CreatureScript
                 {
                     if (spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL || spell->GetEffect(n).Effect == SPELL_EFFECT_HEAL_PCT)
                     {
-                        if (HealthAbovePct(25) && !slowval)
+                        uint8 mod = (uint8)floor(me->GetHealthPct()/10);
+
+                        if (!mod)
+                            return;
+
+                        if (mod > 7)
+                            mod = 7;
+
+                        if (!me->HasAura(SPELL_CONGEALING))
                         {
-                            slowval++;
-                            me->SetSpeed(MOVE_RUN, 0.8f);
+                            me->CastCustomSpell(SPELL_CONGEALING, SPELLVALUE_AURA_STACK, mod, me);
+                            SendSlow(mod);
                         }
-                        else if (HealthAbovePct(50) && slowval == 1)
+                        else
                         {
-                            slowval++;
-                            me->SetSpeed(MOVE_RUN, 0.7f);
-                        }
-                        else if (HealthAbovePct(75) && slowval == 2)
-                        {
-                            slowval++;
-                            me->SetSpeed(MOVE_RUN, 0.6f);
-                        }
+                            if (Aura* aura = me->GetAura(SPELL_CONGEALING))
+                            {
+                                if (aura->GetStackAmount() < mod)
+                                {
+                                    aura->SetStackAmount(mod);
+                                    SendSlow(mod);
+                                }
+                            }
+                        }                        
                     }
                 }
 
@@ -664,7 +702,7 @@ class npc_contaminated_puddle : public CreatureScript
             void DoAction(int32 const action)
             {
                 if (action == ACTION_SPAWN)
-                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 25.0f, 25.0f, 0);
+                    me->GetMotionMaster()->MoveJump(psp[index].GetPositionX(), psp[index].GetPositionY(), psp[index].GetPositionZ(), 12.5f, 12.5f, 0);
             }
 
             void MovementInform(uint32 type, uint32 pointId)
@@ -674,7 +712,7 @@ class npc_contaminated_puddle : public CreatureScript
                     if (pointId == 0)
                     {
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        events.ScheduleEvent(EVENT_START_MOVING, 1000);
+                        events.ScheduleEvent(EVENT_START_MOVING, 1500);
                     }
                 }
             }
@@ -768,7 +806,7 @@ class spell_swirl : public SpellScriptLoader
             {
                 if (GetCaster() && GetCaster()->ToCreature())
                 {
-                    GetCaster()->GetMotionMaster()->MoveRotate(10000, ROTATE_DIRECTION_RIGHT);
+                    GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
                     GetCaster()->AddAura(SPELL_SWIRL_SEARCHER, GetCaster());
                 }
             }
@@ -778,6 +816,8 @@ class spell_swirl : public SpellScriptLoader
                 if (GetCaster() && GetCaster()->ToCreature())
                 {
                     GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
+                    GetCaster()->StopMoving();
+                    GetCaster()->GetMotionMaster()->Clear(false);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
                 }
             }
