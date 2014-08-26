@@ -22902,7 +22902,8 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
         m_spellMods[mod->op].push_back(mod);
     else
     {
-        m_spellMods[mod->op].remove(mod);
+        if (!m_spellMods[mod->op].empty())
+            m_spellMods[mod->op].remove(mod);
         // mods bound to aura will be removed in AuraEffect::~AuraEffect
         if (!mod->ownerAura)
             delete mod;

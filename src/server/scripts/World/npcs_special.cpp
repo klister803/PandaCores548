@@ -291,7 +291,7 @@ public:
                 ComonOnHome();
             }
             else
-                me->ToTempSummon()->DespawnOrUnsummon();
+                me->DespawnOrUnsummon();
 
             if (owner)
                 if (Aura *aura = owner->GetAura(137639))
@@ -312,7 +312,7 @@ public:
                 owner->m_Controlled.erase(me);
             }
 
-            me->ToTempSummon()->DespawnOrUnsummon(500);
+            me->DespawnOrUnsummon(500);
             comeonhome = true;
         }
 
