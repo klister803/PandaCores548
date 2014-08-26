@@ -22,56 +22,58 @@
 enum eSpells
 {
     //Immerseus
-    SPELL_CORROSIVE_BLAST    = 143436, 
-    SPELL_SHA_BOLT           = 143293, 
-    SPELL_SWIRL              = 143309, 
-    SPELL_SWIRL_DMG          = 143413,
-    SPELL_SWIRL_SEARCHER     = 113762,
-    SPELL_SUBMERGE           = 139832,
-    SPELL_SUBMERGE_2         = 143281,
-    //npc sha pool
-    SPELL_SLEEPING_SHA       = 143281,
-    SPELL_SHA_POOL           = 143462,
+    SPELL_CORROSIVE_BLAST       = 143436, 
+    SPELL_SHA_BOLT              = 143293, 
+    SPELL_SWIRL                 = 143309, 
+    SPELL_SWIRL_DMG             = 143413,
+    SPELL_SWIRL_SEARCHER        = 113762,
+    SPELL_SUBMERGE              = 139832,
+    SPELL_SUBMERGE_2            = 143281,
+    //HM
+    SPELL_SWELLING_CORRUPTION   = 143574,
+    //npc sha pool   
+    SPELL_SLEEPING_SHA          = 143281,
+    SPELL_SHA_POOL              = 143462,
     //npc sha puddle
-    SPELL_ERUPTING_SHA       = 143498,
-    SPELL_SHA_RESIDUE        = 143459,//buff
+    SPELL_ERUPTING_SHA          = 143498,
+    SPELL_SHA_RESIDUE           = 143459,//buff
     //npc contaminated puddle
-    SPELL_CONGEALING         = 143540,//slow, self buff
-    SPELL_ERUPTING_WATER     = 145377,
-    SPELL_PURIFIED_RESIDUE   = 143524,//buff
+    SPELL_CONGEALING            = 143540,//slow, self buff
+    SPELL_ERUPTING_WATER        = 145377,
+    SPELL_PURIFIED_RESIDUE      = 143524,//buff
 };
 
 enum Events
 {
     //Immerseus
-    EVENT_CORROSIVE_BLAST    = 1,
-    EVENT_SHA_BOLT           = 2,
-    EVENT_SWIRL              = 3,
-    EVENT_INTRO_PHASE_TWO    = 4,
+    EVENT_CORROSIVE_BLAST       = 1,
+    EVENT_SHA_BOLT              = 2,
+    EVENT_SWIRL                 = 3,
+    EVENT_INTRO_PHASE_TWO       = 4,
     //Summons
-    EVENT_START_MOVING       = 5,
-    EVENT_CHECK_DIST         = 6,
+    EVENT_START_MOVING          = 5,
+    EVENT_CHECK_DIST            = 6,
 };
 
 enum Actions
 {
     //Immerseus
-    ACTION_RE_ATTACK         = 1,
-    ACTION_INTRO_PHASE_ONE   = 2,
+    ACTION_RE_ATTACK            = 1,
+    ACTION_INTRO_PHASE_ONE      = 2,
     //Summons
-    ACTION_SPAWN             = 2,
+    ACTION_SPAWN                = 2,
 };
 
 enum SData
 {
     //Immerseus
-    DATA_SP_DONE             = 1, 
-    DATA_CP_DONE             = 2, 
-    DATA_P_FINISH_MOVE       = 3, 
-    DATA_SEND_F_P_COUNT      = 4, 
+    DATA_SP_DONE                = 1, 
+    DATA_CP_DONE                = 2, 
+    DATA_P_FINISH_MOVE          = 3, 
+    DATA_SEND_F_P_COUNT         = 4, 
 
     //Summons
-    DATA_SEND_INDEX          = 5, 
+    DATA_SEND_INDEX             = 5, 
 };
 
 //puddle spawn pos
@@ -265,6 +267,8 @@ class boss_immerseus : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                if (me->GetMap()->IsHeroic())
+                    me->DespawnOrUnsummon();
             }
 
             InstanceScript* instance;
