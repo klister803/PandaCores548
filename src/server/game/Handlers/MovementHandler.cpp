@@ -591,8 +591,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 LiquidData liquidStatus;
                 ZLiquidStatus status = _player->GetBaseMap()->getLiquidStatus(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
-                float _vmapHeight = plrMover->GetMap()->GetVmapHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
-                float _Height = plrMover->GetMap()->GetHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+                float _vmapHeight = 0.0f;
+                float _Height = 0.0f;
+                //if in fly crash on check VmapHeight
+                if(!fly_auras)
+                {
+                    _vmapHeight = plrMover->GetMap()->GetVmapHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+                    _Height = plrMover->GetMap()->GetHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
+                }
                 const float ground_Z = movementInfo.pos.GetPositionZ() - _vmapHeight;
                 const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
                 const bool no_swim_in_water = !_player->IsInWater();

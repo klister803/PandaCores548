@@ -3552,6 +3552,7 @@ class Player : public Unit, public GridObject<Player>
         BracketList m_BracketsList;
 
         bool m_watching_movie;
+        bool plrUpdate;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

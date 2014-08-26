@@ -51,6 +51,7 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
     m_name = "Pet";
     m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
     m_Stampeded = false;
+    m_Update    = false;
 }
 
 Pet::~Pet()
@@ -596,9 +597,11 @@ void Pet::Update(uint32 diff)
         return;
     
     Unit* owner = GetOwner();
-    if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+    if (!owner || owner->GetTypeId() != TYPEID_PLAYER || m_Update)
         return;
-    
+
+    m_Update = true;
+
     // Glyph of Animal Bond
     if (owner->HasAura(20895) && !owner->HasAura(24529))
         AddAura(24529, this);
@@ -613,6 +616,7 @@ void Pet::Update(uint32 diff)
             if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
             {
                 Remove(PET_SLOT_ACTUAL_PET_SLOT, false);               //hunters' pets never get removed because of death, NEVER!
+                m_Update = false;
                 return;
             }
             break;
@@ -624,6 +628,7 @@ void Pet::Update(uint32 diff)
             if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID()))
             {
                 Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
+                m_Update = false;
                 return;
             }
 
@@ -633,6 +638,7 @@ void Pet::Update(uint32 diff)
                 {
                     sLog->outError(LOG_FILTER_PETS, "Pet %u is not pet of owner %s, removed", GetEntry(), m_owner->GetName());
                     Remove(getPetType() == HUNTER_PET ? PET_SLOT_DELETED : PET_SLOT_ACTUAL_PET_SLOT);
+                    m_Update = false;
                     return;
                 }
             }
@@ -644,6 +650,7 @@ void Pet::Update(uint32 diff)
                 else
                 {
                     Remove(getPetType() != SUMMON_PET ? PET_SLOT_DELETED : PET_SLOT_ACTUAL_PET_SLOT, false);
+                    m_Update = false;
                     return;
                 }
             }
@@ -671,6 +678,7 @@ void Pet::Update(uint32 diff)
             break;
     }
     Creature::Update(diff);
+    m_Update = false;
 }
 
 void Creature::Regenerate(Powers power)

@@ -974,6 +974,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     realmTransferid = 0;
 
     m_watching_movie = false;
+    plrUpdate = false;
 }
 
 Player::~Player()
@@ -1674,8 +1675,10 @@ void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
 
 void Player::Update(uint32 p_time)
 {
-    if (!IsInWorld())
+    if (!IsInWorld() || plrUpdate)
         return;
+
+    plrUpdate = true;
 
     if(!m_Store)
     {
@@ -1690,7 +1693,10 @@ void Player::Update(uint32 p_time)
 		_skipDiff += p_time;
 
 		if (_skipCount < sObjectMgr->GetSkipUpdateCount())
+        {
+            plrUpdate = false;
 			return;
+        }
 
 		p_time = _skipDiff;
 		_skipCount = 0;
@@ -2027,6 +2033,7 @@ void Player::Update(uint32 p_time)
     //because we don't want player's ghost teleported from graveyard
     if (IsHasDelayedTeleport() && isAlive())
         TeleportTo(m_teleport_dest, m_teleport_options);
+    plrUpdate = false; 
 }
 
 void Player::setDeathState(DeathState s)

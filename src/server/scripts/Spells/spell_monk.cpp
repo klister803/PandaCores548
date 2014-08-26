@@ -1004,7 +1004,8 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
 
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetCaster()->m_SpecialTarget = GetUnitOwner();
+                if (Unit* caster = GetCaster())
+                    caster->m_SpecialTarget = GetUnitOwner();
             }
 
             void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
