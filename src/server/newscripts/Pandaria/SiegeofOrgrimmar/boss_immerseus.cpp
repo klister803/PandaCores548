@@ -75,42 +75,67 @@ enum SData
 };
 
 //puddle spawn pos
-Position const psp[24] =  
+Position const psp[25] =  
 {
     {1417.32f, 658.89f, 246.8535f},
     {1404.85f, 665.43f, 246.8601f},
     {1390.78f, 677.95f, 246.8363f},
-    //
     {1365.75f, 703.08f, 246.8346f},
     {1358.45f, 718.70f, 246.8346f},
     {1354.80f, 733.24f, 246.8355f},
-    //
     {1353.71f, 771.01f, 246.8345f},
     {1357.54f, 784.59f, 246.8345f},
     {1365.33f, 801.40f, 246.8345f},
-    //
     {1396.49f, 830.86f, 246.8346f}, 
     {1409.99f, 836.37f, 246.8346f}, 
     {1428.83f, 840.66f, 246.8346f},
-    //
+    {1440.99f, 844.04f, 246.8345f},
     {1454.44f, 842.49f, 246.8346f},
     {1474.15f, 835.67f, 246.8346f},
     {1492.23f, 825.11f, 246.8332f},
-    //
     {1520.68f, 798.13f, 246.8348f},
     {1526.22f, 783.98f, 246.8348f},
     {1529.01f, 771.96f, 246.8348f},
-    //
     {1529.04f, 730.04f, 246.7348f},
     {1525.13f, 718.31f, 246.8348f},
     {1517.43f, 701.80f, 246.8348f},
-    //
     {1487.90f, 673.78f, 246.8346f},
     {1478.02f, 665.65f, 246.8619f},
     {1462.59f, 657.93f, 246.8514f},
 };
 
-uint32 const spwave[24] = 
+//100 - 75
+uint32 const wave1[25] = 
+{
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE, 
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+};
+
+//75 - 50
+uint32 const wave2[25] =
 {
     NPC_SHA_PUDDLE,  
     NPC_SHA_PUDDLE,
@@ -124,8 +149,9 @@ uint32 const spwave[24] =
     NPC_SHA_PUDDLE,  
     NPC_SHA_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
     NPC_SHA_PUDDLE,  
-    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
     NPC_SHA_PUDDLE,  
     NPC_SHA_PUDDLE,
@@ -138,7 +164,38 @@ uint32 const spwave[24] =
     NPC_CONTAMINATED_PUDDLE,
 };
 
-uint32 const cpwave[24] =
+//50 - 30
+uint32 const wave3[25] =
+{
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_SHA_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+};
+
+//30 - 15
+uint32 const wave4[25] =
 {
     NPC_SHA_PUDDLE,  
     NPC_CONTAMINATED_PUDDLE,
@@ -152,8 +209,6 @@ uint32 const cpwave[24] =
     NPC_SHA_PUDDLE,  
     NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
-    NPC_SHA_PUDDLE,  
-    NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
     NPC_SHA_PUDDLE,  
     NPC_CONTAMINATED_PUDDLE,
@@ -162,6 +217,39 @@ uint32 const cpwave[24] =
     NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
     NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE, 
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+};
+
+//15
+uint32 const wave5[25] =
+{
+    NPC_CONTAMINATED_PUDDLE, 
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_SHA_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,  
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE,
+    NPC_CONTAMINATED_PUDDLE, 
     NPC_CONTAMINATED_PUDDLE,
     NPC_CONTAMINATED_PUDDLE,
 };
@@ -182,6 +270,7 @@ class boss_immerseus : public CreatureScript
             InstanceScript* instance;
             uint32 checkvictim;
             uint32 lasthp;
+            float lasthppct;
             uint8 donecp, donesp, maxpcount;
             bool phase_two;
 
@@ -198,6 +287,7 @@ class boss_immerseus : public CreatureScript
                 phase_two = false;
                 checkvictim = 0;
                 lasthp = me->GetMaxHealth();
+                lasthppct = me->GetHealthPct();
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
@@ -207,34 +297,51 @@ class boss_immerseus : public CreatureScript
             {
                 _EnterCombat();
                 checkvictim = 2000;
-                events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  6000);
+                events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  9000);
                 events.ScheduleEvent(EVENT_SWIRL,           14000);
-                events.ScheduleEvent(EVENT_SHA_BOLT,         8000);
+                events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
             }
 
             void SpawnWave()
             {
-                if (!donecp && !donesp) //first proc
+                if (lasthppct <= 100 && lasthppct > 75)
                 {
-                    for (uint8 n = 0; n < 24; n++)
+                    for (uint8 n = 0; n < 25; n++)
                     {
-                        if (Creature* p = me->SummonCreature(spwave[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                            p->AI()->SetData(DATA_SEND_INDEX, n);
+                    }
+
+                }
+                else if (lasthppct < 75 && lasthppct > 50)
+                {
+                    for (uint8 n = 0; n < 25; n++)
+                    {
+                        if (Creature* p = me->SummonCreature(wave2[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
                             p->AI()->SetData(DATA_SEND_INDEX, n);
                     }
                 }
-                else if (donesp > donecp)
+                else if (lasthppct < 50 && lasthppct > 30)
                 {
-                    for (uint8 n = 0; n < 24; n++)
+                    for (uint8 n = 0; n < 25; n++)
                     {
-                        if (Creature* p = me->SummonCreature(cpwave[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        if (Creature* p = me->SummonCreature(wave3[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
                             p->AI()->SetData(DATA_SEND_INDEX, n);
                     }
                 }
-                else if (donecp > donesp)
+                else if (lasthppct < 30 && lasthppct > 15)
                 {
-                    for (uint8 n = 0; n < 24; n++)
+                    for (uint8 n = 0; n < 25; n++)
                     {
-                        if (Creature* p = me->SummonCreature(spwave[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                        if (Creature* p = me->SummonCreature(wave4[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
+                            p->AI()->SetData(DATA_SEND_INDEX, n);
+                    }
+                }
+                else if (lasthppct <= 15)
+                {
+                    for (uint8 n = 0; n < 25; n++)
+                    {
+                        if (Creature* p = me->SummonCreature(wave5[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
                             p->AI()->SetData(DATA_SEND_INDEX, n);
                     }
                 }
@@ -315,6 +422,7 @@ class boss_immerseus : public CreatureScript
                         me->SetHealth(lasthp - modh);
                     }
                     lasthp = me->GetHealth();
+                    lasthppct = me->GetHealthPct();
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -322,9 +430,9 @@ class boss_immerseus : public CreatureScript
                     DoZoneInCombat(me, 150.0f);
                     phase_two = false;
                     checkvictim = 2000;
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  6000);
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  9000);
                     events.ScheduleEvent(EVENT_SWIRL,           14000);
-                    events.ScheduleEvent(EVENT_SHA_BOLT,         8000);
+                    events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
                     break;
                 }
             }
@@ -382,7 +490,7 @@ class boss_immerseus : public CreatureScript
                     case EVENT_SHA_BOLT:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
                             DoCast(target, SPELL_SHA_BOLT);
-                        events.ScheduleEvent(EVENT_SHA_BOLT, 15000);
+                        events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
                         break;
                     case EVENT_SWIRL:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
@@ -463,7 +571,7 @@ void CalcPuddle(InstanceScript* instance, Creature* caller, uint32 callerEntry, 
 
             caller->DespawnOrUnsummon();
 
-            if (i->AI()->GetData(DATA_SEND_F_P_COUNT) >= 24)
+            if (i->AI()->GetData(DATA_SEND_F_P_COUNT) >= 25)
                 i->AI()->DoAction(ACTION_INTRO_PHASE_ONE);
         }
     }
