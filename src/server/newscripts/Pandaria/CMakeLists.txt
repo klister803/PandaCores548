@@ -121,10 +121,7 @@ set(scripts_STAT_SRCS
   Pandaria/SiegeofOrgrimmar/boss_paragons_of_the_klaxxi.cpp
   Pandaria/SiegeofOrgrimmar/boss_garrosh_hellscream.cpp
   
-  Pandaria/WanderingIsland/WanderingIsland_North.cpp
-  Pandaria/WanderingIsland/WanderingIsland_East.cpp
-  Pandaria/WanderingIsland/WanderingIsland_West.cpp
-  Pandaria/WanderingIsland/WanderingIsland_South.cpp
+  Pandaria/wandering_island.cpp
 
   Pandaria/valley_of_the_four_winds.cpp
   Pandaria/krasarang_wilds.cpp

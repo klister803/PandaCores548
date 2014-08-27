@@ -174,7 +174,7 @@ INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `ter
 (5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'), -- phase
 (5736, 9, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end');
 
-
+UPDATE `gameobject` SET id = 210005 WHERE id = 210019;
 -- ----------------------------------------
 -- Q: 29408 The Lesson of the Burning Scroll
 -- ----------------------------------------
@@ -399,7 +399,7 @@ DELETE FROM `creature_involvedrelation` WHERE `quest` = 29678; -- autosubmit
 -- Q: 29679 A New Friend
 -- ----------------------------------------
 DELETE FROM `creature_questrelation` WHERE `quest` = 29679;
-DELETE FROM `area_queststart` WHERE id = 5862
+DELETE FROM `area_queststart` WHERE id = 5862;
 INSERT INTO `area_queststart` (`id`, `quest`) VALUES ('5862', '29679');
 
 DELETE FROM `creature_text` WHERE entry = 54975;
@@ -501,7 +501,7 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 
 
 UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 57712;
-DELETE FROM `creature_text` WHERE entry = 54975;
+DELETE FROM `creature_text` WHERE entry = 57712;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
 (57712, 0, 0, 'Здравствуй, друг! Если хочешь, можешь взять мою повозку. Она отвезет тебя на крестьянский двор Дай-Ло.', 12, 0, 100, 3, 0, 0, 'Хозяин повозки'),
 (57712, 1, 0, 'Здравствуй, друг! Если хочешь, можешь взять мою повозку. Она отвезет тебя в Храм Пяти Рассветов.', 12, 0, 100, 3, 0, 0, 'Хозяин повозки');
@@ -509,7 +509,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 -- ----------------------------------------
 -- Q: 29680 Missing Mallet
 -- ----------------------------------------
-DELETE FROM `creature_text` WHERE entry = 54975;
+DELETE FROM `creature_text` WHERE entry = 55477;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
 (55477, 0, 0, 'Проснись уже!', 12, 0, 100, 15, 0, 27345, 'Цзи Огненная Лапа'),
 (55477, 1, 0, 'Да', 12, 0, 100, 509, 0, 27350, 'Цзи Огненная Лапа'),
@@ -527,7 +527,7 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_2' WHERE `entry` = 57669;
 
-DELETE FROM `creature_text` WHERE entry = 54975;
+DELETE FROM `creature_text` WHERE entry = 57669;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES 
 (57669, 0, 0, 'Наши ремесленники выстругивают отличные доски. Эти доски могут выдержать даже самую сильную бурю. Для моего сокрушительного черепа они не прочнее воды.', 12, 0, 100, 1, 0, 0, 'Йо-Йо Железная Бровь'),
 (57669, 1, 0, 'Пандаренам не по силам соорудить барьер, который остановил бы меня.', 12, 0, 100, 2, 0, 0, 'Йо-Йо Железная Бровь');
@@ -706,7 +706,7 @@ INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `t
 
 UPDATE `creature_template_addon` SET `auras` = '' WHERE `creature_template_addon`.`entry` = 57692;
 UPDATE `creature_template` SET `VehicleId` = '1950' WHERE `creature_template`.`entry` = 57690;
-DELETE FROM `npc_spellclick_spells` `npc_entry` = 57690;
+DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 57690;
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES ('57690', '46598', '1', '0');
 DELETE FROM `vehicle_template_accessory` WHERE `EntryOrAura` = 57690;
 INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
@@ -785,9 +785,9 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_rocket_launcher' WHERE `entry
 UPDATE `creature` SET `phaseMask` = '4' WHERE id in (55786, 64506, 64505, 64507);
 
 -- terrain phasing id 524. Complete q29786
-UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802610 AND id = 55583;
-UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802611 AND id = 55595;
-UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802609 AND id = 55586;
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802610+6231 AND id = 55583;
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802611+6231 AND id = 55595;
+UPDATE `creature` SET `phaseMask` = '8' WHERE `guid` = 802609+6231 AND id = 55586;
 UPDATE `creature` SET `phaseMask` = '8' WHERE id = 55874;
 
 -- ----------------------------------------
@@ -1024,9 +1024,9 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 
 -- CUSTOM VISIBILITY FOR TRIGERS - 59962, 59960, 59963
 UPDATE `creature_template` SET `ScriptName` = 'mob_mandori_triger', `flags_extra` = '0' WHERE `entry` = 59962;
-UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802805;
-UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802803;
-UPDATE `creature_addon` SET `auras` = '115672 94222' WHERE `creature_addon`.`guid` = 802804;
+UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802805+6231;
+UPDATE `creature_addon` SET `auras` = '94222' WHERE `creature_addon`.`guid` = 802803+6231;
+UPDATE `creature_addon` SET `auras` = '115672 94222' WHERE `creature_addon`.`guid` = 802804+6231;
 UPDATE `creature_template_addon` SET `auras` = '115354 115672' WHERE `creature_template_addon`.`entry` = 59989;
 
 SET @id = 0;
@@ -1157,7 +1157,7 @@ INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `sea
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55999;
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
 (55999, 105520, 3, 0);
-DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceEntry` = 114746;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceEntry` = 105520;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ConditionTypeOrReference`, `ConditionTarget`,`ConditionValue1`,`ConditionValue2`,`NegativeCondition`,`Comment`)
 VALUES (18, 55999, 105520, 9, 0, 29794, 0, 0, 'Required quest active for spellclick');
 
@@ -1177,8 +1177,8 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (56416, 4, 0, 'Не знаю, что бы я делала без тебя. Твоя помощь очень кстати.', 12, 0, 100, 0, 0, 0, 'Аиса Воспевающая Облака');
 
 -- 56416 in the ship near boss
-UPDATE `creature_addon` SET `auras` = '117326 97468' WHERE `guid` = 803083;
-UPDATE `creature_addon` SET `auras` = '97468' WHERE `guid` = 803073;
+UPDATE `creature_addon` SET `auras` = '117326 97468' WHERE `guid` = 803083+6231;
+UPDATE `creature_addon` SET `auras` = '97468' WHERE `guid` = 803073+6231;
 
 -- ----------------------------------------
 -- Q: 30767 Risking It All

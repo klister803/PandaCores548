@@ -197,6 +197,32 @@ class npc_panda_announcer : public CreatureScript
     };
 };
 
+class mob_training_target : public CreatureScript
+{
+public:
+    mob_training_target() : CreatureScript("mob_training_target") { }
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_training_targetAI(creature);
+    }
+    
+    struct mob_training_targetAI : public Scripted_NoMovementAI
+    {
+    	mob_training_targetAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
+    	
+        void Reset()
+        {
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        void EnterCombat()
+        {
+            return;
+        }
+    };
+};
+
+
 // Should be done by summon npc 59591
 class mob_master_shang_xi : public CreatureScript
 {
@@ -5179,6 +5205,7 @@ public:
 };
 void AddSC_WanderingIsland()
 {
+    new mob_training_target();
     new mob_master_shang_xi();
     new boss_jaomin_ro();
     new npc_panda_announcer();

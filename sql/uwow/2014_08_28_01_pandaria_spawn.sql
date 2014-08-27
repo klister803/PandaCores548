@@ -4,7 +4,7 @@
 
 ALTER TABLE `creature` CHANGE `curhealth` `curhealth` INT(10) UNSIGNED NOT NULL DEFAULT '0';
 
-SET @CGUID = 800968;
+SET @CGUID = 807199;
 DELETE FROM `creature` WHERE map = 860;
 DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+2585;
 INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `MovementType`) VALUES
@@ -8186,5 +8186,5 @@ ALTER TABLE creature DROP INDEX id;
 update `creature` set `MovementType` = 2 WHERE `guid` in (SELECT guid FROM creature_addon WHERE `path_id`> 0);
 
 --
-UPDATE `creature` SET `phaseMask` = '97', `modelid` = '39406' WHERE `guid` = 802613;
-REPLACE INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES ('802148', '0', '0', '0', '0', '0', '49415');
+UPDATE `creature` SET `phaseMask` = '97', `modelid` = '39406' WHERE `guid` = @CGUID+1645;
+REPLACE INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES (@CGUID+1180, '0', '0', '0', '0', '0', '49415');
