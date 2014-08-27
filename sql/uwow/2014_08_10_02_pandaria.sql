@@ -30,7 +30,8 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 DELETE FROM spell_area WHERE spell in (107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
-126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447, 115449, 117973, 105525, 117501) AND  
+126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447, 115449, 117973, 105525, 117501, 117783, 108931,
+105096, 108914) AND  
 area in(5736, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828, 5944, 5833);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
@@ -133,25 +134,33 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 --
 ('105525', '5833', '29794', '29794', '0', '0', '2', '1', '8', '66'),
 --
-('117501', '5736', '29796', '30767', '0', '0', '2', '1', '74', '74');
+('117501', '5736', '29796', '30767', '0', '0', '2', '1', '74', '74'),
+-- 117501
+('117783', '5736', '29799', '29799', '0', '0', '2', '0', '8', '66'),    -- no autocast
+--
+('108931', '5736', '29800', '0', '0', '0', '2', '1', '74', '0'),
+--
+('105096', '5820', '29800', '0', '0', '0', '2', '1', '74', '0'),
+('108914', '5820', '29800', '0', '0', '0', '2', '1', '74', '0');
 
 DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 23 AND SourceGroup = 5736;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `Comment`, `ScriptName`) VALUES
 (23, 5736, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Pandaren Start loc: world area', ''),
-(23, 5736, 3, 0, 0, 28, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', ''),
 (23, 5736, 3, 0, 1, 8, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', ''),
-(23, 5736, 2, 0, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
-(23, 5736, 2, 0, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 2, 0, 0, 8, 0, 29799, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 and not rewarded 29799', ''),
+(23, 5736, 2, 1, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 2, 1, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
 (23, 5736, 4, 0, 0, 8, 0, 29785, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not reward 29785', ''),
 (23, 5736, 5, 0, 0, 9, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while taken 29786', ''),
+(23, 5736, 6, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29665', ''),
 (23, 5736, 6, 0, 0, 8, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
 (23, 5736, 6, 0, 1, 28, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
 (23, 5736, 7, 0, 0, 28, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29790', ''),
 (23, 5736, 7, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not complete 29790', ''),
 (23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', ''),
 (23, 5736, 8, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain not rewarded 29790', ''),
-(23, 5736, 9, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29793', ''),
-(23, 5736, 10, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29793', '');
+(23, 5736, 9, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: phase 3 while rewarded 29793', ''),
+(23, 5736, 9, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: phase 3 while not rewarded 29665', '');
 
 DELETE FROM phase_definitions WHERE `zoneId` = 5736;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `wmAreaId`, `comment`) VALUES
@@ -163,8 +172,8 @@ INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `ter
 (5736, 6, 9, 524, 0, 0, 'Pandaren Start loc: 3part. Wind cavern. Finish'), -- phase
 (5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end'),
 (5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'), -- phase
-(5736, 9, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end'),
-(5736, 10, 3, 34603, 0, 0, 'Pandaren Start loc: 3part end');
+(5736, 9, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end');
+
 
 -- ----------------------------------------
 -- Q: 29408 The Lesson of the Burning Scroll
@@ -413,15 +422,13 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 (57741, 115904, 1, 0),
 (59497, 115904, 1, 0);
 
-UPDATE `creature_template` SET `ScriptName` = 'vehicle_carriage' WHERE `creature_template`.`entry` = 57208;
+UPDATE `creature_template` SET `VehicleId` = '1944', `ScriptName` = 'vehicle_carriage' WHERE `entry` = 57208;
 DELETE FROM `spell_script_names`  WHERE `spell_id` = 115904;
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('115904', 'spell_grab_carriage');
 
-UPDATE `creature_template` SET `VehicleId` = '1944' WHERE `entry` = 57208;
-
 UPDATE `creature_template_addon` SET `auras` = '' WHERE `entry` = 59499;
+UPDATE `creature_template` SET `ScriptName` = 'npc_nourished_yak' WHERE `entry` in (57207, 59499, 57742);
 
-UPDATE `creature_template` SET `ScriptName` = 'npc_nourished_yak' WHERE `entry` in (57207, 59499, 57743);
 SET @id = 0;
 SET @entry = 57207;
 DELETE FROM `script_waypoint` WHERE `entry` = @entry;
@@ -462,6 +469,35 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 745.56, 3496.28, 135.538, NULL), 
 (@entry, @id := @id+ 1, 756.682, 3523.21, 139.03, NULL), 
 (@entry, @id := @id+ 1, 742.424, 3597.72, 140.545, NULL);
+
+SET @id = 0;
+SET @entry = 57742;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 270.537, 3877.86, 74.9582, NULL),
+(@entry, @id := @id+ 1, 307.495, 3885.75, 78.3896, NULL),
+(@entry, @id := @id+ 1, 364.188, 3885.47, 79.1601, NULL),
+(@entry, @id := @id+ 1, 429.778, 3885.23, 79.2903, NULL),
+(@entry, @id := @id+ 1, 449.465, 3871.15, 79.4622, NULL),
+(@entry, @id := @id+ 1, 464.343, 3841.58, 80.2196, NULL),
+(@entry, @id := @id+ 1, 468.031, 3821.4, 85.7641, NULL),
+(@entry, @id := @id+ 1, 467.986, 3800.75, 80.7985, NULL),
+(@entry, @id := @id+ 1, 463.745, 3761.22, 82.4899, NULL),
+(@entry, @id := @id+ 1, 454.268, 3733.09, 82.1149, NULL),
+(@entry, @id := @id+ 1, 422.182, 3690.9, 81.5705, NULL),
+(@entry, @id := @id+ 1, 403.836, 3661.79, 81.3348, NULL),
+(@entry, @id := @id+ 1, 403.782, 3629.5, 91.7523, NULL),
+(@entry, @id := @id+ 1, 423.51, 3624.41, 91.9309, NULL),
+(@entry, @id := @id+ 1, 454.175, 3626.22, 81.0594, NULL),
+(@entry, @id := @id+ 1, 510.762, 3627.2, 87.592, NULL),
+(@entry, @id := @id+ 1, 556.417, 3589.8, 93.4863, NULL),
+(@entry, @id := @id+ 1, 584.172, 3581.42, 95.4726, NULL),
+(@entry, @id := @id+ 1, 599.823, 3596.74, 104.971, NULL),
+(@entry, @id := @id+ 1, 608.711, 3627.78, 123.258, NULL),
+(@entry, @id := @id+ 1, 632.601, 3630.45, 135.198, NULL),
+(@entry, @id := @id+ 1, 655.783, 3607.51, 146.08, NULL),
+(@entry, @id := @id+ 1, 676.495, 3600.47, 146.439, NULL),
+(@entry, @id := @id+ 1, 737.531, 3604.66, 140.596, NULL);
 
 
 UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` = 57712;
@@ -1185,6 +1221,147 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 235.0417, 4007.537, 87.66889, NULL),
 (@entry, @id := @id+ 1, 236.8106, 4007.705, 87.85663, NULL),
 (@entry, @id := @id+ 1, 239.453, 3942.2, 62.5987, NULL);
+
+-- ----------------------------------------
+-- Q: 29799 The Healing of Shen-zin Su
+-- ----------------------------------------
+UPDATE `quest_template` SET `RequiredIdCount1` = '1' WHERE `quest_template`.`Id` = 29799;
+
+DELETE FROM `creature` WHERE `id` in (60780, 60858, 60878, 60896 ); 
+UPDATE `creature` SET phaseMask = 0x32 WHERE id = 60834;
+
+DELETE FROM `creature_text` WHERE entry =56418;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56418, 0, 0, 'Оставайся поблизости и защищай лекарей! От этого зависят наши жизни!', 14, 0, 100, 0, 0, 27287, 'Цзи Огненная Лапа'),
+(56418, 0, 1, 'Если лекари погибнут, Шэнь-Цзынь Су умрет, и все мы вместе с ним. Защищай их!', 14, 0, 100, 0, 0, 27288, 'Цзи Огненная Лапа'),
+(56418, 0, 2, 'Найди лекарей и помоги им в бою. Они должны заниматься раной.', 14, 0, 100, 0, 0, 27285, 'Цзи Огненная Лапа');
+
+UPDATE `creature_template` SET `ScriptName` = 'npc_ji_end_event' WHERE `entry` = 56418;
+UPDATE `creature_template` SET `ScriptName` = 'npc_shen_healer' WHERE `entry` in (60878, 60896);
+UPDATE `creature_template` SET  `mindmg` = '20', `maxdmg` = '26', `attackpower` = '13' WHERE `entry` in (60858, 60780);
+UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=60858;
+DELETE FROM smart_scripts WHERE entryorguid = 60858;
+INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
+(60858, 0, 0, 0, 0, 0, 100, 0, 5000, 5000, 10000, 10000, 11, 128533, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 'Cast Spell 128533');
+
+-- ----------------------------------------
+-- Q: 29800 New Allies
+-- ----------------------------------------
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_panda_announcer' WHERE `entry` in (60888, 60889);
+DELETE FROM `creature_text` WHERE entry =60888;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60888, 0, 0, 'Я терплю твое присутствие только из уважения к нашим новым союзникам. Не испытывай мое терпение.', 12, 0, 100, 0, 0, 28117, 'Корга Крепкая Грива');
+DELETE FROM `creature_text` WHERE entry =60889;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(60889, 0, 0, 'Отойди, таурен, или снова окажешься в цепях.', 12, 0, 100, 15, 0, 27522, 'Делора Львиное Сердце');
+
+-- ----------------------------------------
+-- Q: 31450 A New Fate
+-- ----------------------------------------
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_shang_xi_choose_faction' WHERE `entry` = 56013;
+DELETE FROM `gossip_menu_option` WHERE `menu_id` = 13726;
+INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`, `option_id`, `npc_option_npcflag`, `action_menu_id`, `action_poi_id`, `box_coded`, `box_money`, `box_text`) VALUES
+(13726, 0, 0, 'I''m ready to decide.', 1, 3, 0, 0, 0, 0, ''),
+(13726, 1, 0, 'I would like to go to Stormwind', 1, 3, 0, 0, 0, 0, ''),
+(13726, 2, 0, 'I would like to go to Orgrimmar', 1, 3, 0, 0, 0, 0, '');
+
+DELETE FROM `conditions` WHERE SourceTypeOrReferenceId = 15 AND SourceGroup = 13726;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+('15', '13726', '0', '0', '0', '16', '0', '8388616', '0', '0', '0', '0', '', 'RACE_PANDAREN_NEUTRAL'),
+('15', '13726', '1', '0', '0', '16', '0', '16777224', '0', '0', '0', '0', '', 'Req. RACE_PANDAREN_ALLI'),
+('15', '13726', '2', '0', '0', '16', '0', '33554440', '0', '0', '0', '0', '', 'Req. RACE_PANDAREN_HORDE');
+
+DELETE FROM `creature_text` WHERE entry =56013;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(56013, 0, 0, 'Вместе вы сделали большое дело – спасли Шэнь-Цзынь Су. Мы гордимся вами.', 12, 0, 100, 1, 0, 27784, 'Дух мастера Шан Си'),
+(56013, 1, 0, 'Но ваши приключения только начинаются. Эти новые союзники пришли из мира, которому требуется наша помощь.', 12, 0, 100, 1, 0, 27785, 'Дух мастера Шан Си'),
+(56013, 2, 0, 'А ты, Цзи? Ты присоединишься к Орде, когда они отправятся домой?', 12, 0, 100, 6, 0, 27786, 'Дух мастера Шан Си'),
+(56013, 3, 0, 'А ты? Каков твой выбор?', 12, 0, 100, 6, 0, 27787, 'Дух мастера Шан Си');
+
+DELETE FROM `creature_text` WHERE entry =57721;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(57721, 0, 0, 'Я бы хотела сопроводить этих воинов Альянса домой.', 12, 0, 100, 1, 0, 27405, 'Аиса Воспевающая Облака');
+
+DELETE FROM `creature_text` WHERE entry =57720;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(57720, 0, 0, 'Да... Наверное, это и к лучшему. Они понравились мне. И, похоже, я тоже могу оказаться им полезен.', 12, 0, 100, 273, 0, 27305, 'Цзи Огненная Лапа');
+
+-- ----------------------------------------
+-- Q: 31013 The Horde Way
+-- ----------------------------------------
+UPDATE `quest_template` SET `StartScript` = '31013' WHERE `Id` = 31013;
+DELETE FROM `quest_start_scripts` WHERE id = 31013;
+INSERT INTO `quest_start_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES
+ ('31013', '0', '15', '120753', '2', '0', '0', '0', '0', '0');
+
+UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'mob_garosh_hord_way' WHERE `entry` = 62087;
+
+-- 0xF130F287002E50A8
+DELETE FROM `creature_text` WHERE entry =62087;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(62087, 0, 0, 'Присоединиться к Орде – это правильное решение.', 12, 0, 100, 273, 0, 30746, 'Гаррош Адский Крик'),
+(62087, 1, 0, 'Некоторые зовут нас варварами... \"дикими расами\" Азерота.', 12, 0, 100, 396, 0, 30747, 'Гаррош Адский Крик'),
+(62087, 2, 0, 'Но они просто глупы и слепы. Посмотрите вокруг, пандарены!', 12, 0, 100, 274, 0, 30748, 'Гаррош Адский Крик'),
+(62087, 3, 0, 'Орки – самые лучшие воины в мире.', 12, 0, 100, 397, 0, 30749, 'Гаррош Адский Крик'),
+(62087, 4, 0, 'Таурены тоже доказали свою полезность. Посмотрите на этого шамана.', 12, 0, 100, 6, 0, 30750, 'Гаррош Адский Крик'),
+(62087, 5, 0, 'Даже эльфы крови могут держать в руках меч.', 12, 0, 100, 396, 0, 30751, 'Гаррош Адский Крик'),
+(62087, 6, 0, 'Каждый в моей Орде вносит вклад в общее дело, и вы не станете исключением.', 12, 0, 100, 396, 0, 30752, 'Гаррош Адский Крик'),
+(62087, 7, 0, 'Вы понимаете это, пандарены?', 12, 0, 100, 6, 0, 30753, 'Гаррош Адский Крик'),
+(62087, 8, 0, 'Хм. Хорошо.', 12, 0, 100, 0, 0, 30754, 'Гаррош Адский Крик'),
+(62087, 9, 0, 'Идем дальше. Я знаю, что кроме вас остров покинули и другие пандарены.', 12, 0, 100, 396, 0, 30755, 'Гаррош Адский Крик'),
+(62087, 10, 0, 'Некоторые из них решили присоединиться к Альянсу.', 12, 0, 100, 14, 0, 30756, 'Гаррош Адский Крик'),
+(62087, 11, 0, 'Теперь они ваши враги.', 12, 0, 100, 397, 0, 30757, 'Гаррош Адский Крик'),
+(62087, 12, 0, 'Среди них могут быть ваши друзья и родные, решившие противостоять Орде. Значит, больше они не друзья вам... и не члены вашей семьи.', 12, 0, 100, 396, 0, 30758, 'Гаррош Адский Крик'),
+(62087, 13, 0, 'В тот момент, когда они напялили на себя накидку Альянса, они умерли для вас. Я не потерплю никаких связей с противниками. Тех, кто предаст Орду, ждет смерть!', 12, 0, 100, 274, 0, 30759, 'Гаррош Адский Крик'),
+(62087, 14, 0, 'Я понятно выразился?', 12, 0, 100, 5, 0, 30760, 'Гаррош Адский Крик'),
+(62087, 15, 0, 'Хорошо.', 12, 0, 100, 0, 0, 30761, 'Гаррош Адский Крик'),
+(62087, 16, 0, 'Встретимся на Аллее Чести. У меня есть подарок для вас.', 12, 0, 100, 396, 0, 30762, 'Гаррош Адский Крик');
+
+SET @id = 0;
+SET @entry = 62087;
+DELETE FROM `script_waypoint` WHERE `entry` = @entry;
+INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `point_comment`) VALUES 
+(@entry, @id := @id+ 1, 1665.713, -4344.802, 26.26202, NULL),
+(@entry, @id := @id+ 1, 1661.795, -4346.851, 26.33014, NULL),   -- 18:12:25.000
+(@entry, @id := @id+ 1, 1658.884, -4348.58, 26.36691, NULL),
+(@entry, @id := @id+ 1, 1661.288, -4343.878, 26.33483, NULL),
+(@entry, @id := @id+ 1, 1662.198, -4341.984, 26.33634, NULL),
+(@entry, @id := @id+ 1, 1659.948, -4338.556, 26.34779, NULL),
+(@entry, @id := @id+ 1, 1659.629, -4345.505, 26.36073, NULL),
+(@entry, @id := @id+ 1, 1658.51, -4354.894, 26.37214, NULL),
+(@entry, @id := @id+ 1, 1656.589, -4357.963, 26.35595, NULL),
+(@entry, @id := @id+ 1, 1654.036, -4359.858, 26.33619, NULL),
+(@entry, @id := @id+ 1, 1650.467, -4360.143, 26.33435, NULL),
+(@entry, @id := @id+ 1, 1647.595, -4358.606, 26.36272, NULL),
+--
+(@entry, @id := @id+ 1, 1650.32, -4357.35, 26.33648, NULL),
+--
+(@entry, @id := @id+ 1, 1639.502, -4358.743, 26.75204, NULL),
+(@entry, @id := @id+ 1, 1637.854, -4359.377, 26.75178, NULL),
+--
+(@entry, @id := @id+ 1, 1637.854, -4359.377, 26.75178, NULL),
+--
+(@entry, @id := @id+ 1, 1627.727, -4365.224, 24.57568, NULL),
+(@entry, @id := @id+ 1, 1626.149, -4368.028, 24.59827, NULL),
+(@entry, @id := @id+ 1, 1624.148, -4373.868, 24.61423, NULL),
+(@entry, @id := @id+ 1, 1621.009, -4375.174, 24.6211, NULL),
+(@entry, @id := @id+ 1, 1617.45, -4374.219, 24.62789, NULL),
+(@entry, @id := @id+ 1, 1613.497, -4373.184, 24.62625, NULL),
+(@entry, @id := @id+ 1, 1610.83, -4373.624, 24.61312, NULL),
+(@entry, @id := @id+ 1, 1607.936, -4375.203, 23.12599, NULL),
+(@entry, @id := @id+ 1, 1604.688, -4377.604, 21.028, NULL),
+(@entry, @id := @id+ 1, 1600, -4379.834, 20.59395, NULL),
+(@entry, @id := @id+ 1, 1600, -4379.834, 20.59395, NULL);
+
+
+DELETE FROM `creature_text` WHERE entry =62081;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(62081, 0, 0, 'Смотри!', 12, 0, 100, 5, 0, 0, 'Цзи Огненная Лапа'),
+(62081, 1, 0, 'Ну, это хорошая новость. Как только присоединимся к Орде, у нас всегда будет полно интересных дел.', 12, 0, 100, 1, 0, 0, 'Цзи Огненная Лапа'),
+(62081, 2, 0, 'Император Адский Крик, я Цзи...', 12, 0, 100, 1, 0, 27289, 'Цзи Огненная Лапа'),
+(62081, 3, 0, 'Да, вождь.', 12, 0, 100, 2, 0, 27290, 'Цзи Огненная Лапа'),
+(62081, 4, 0, 'Да... Да, конечно...', 12, 0, 100, 273, 0, 27291, 'Цзи Огненная Лапа'),
+(62081, 5, 0, 'Он... Он разделил город?', 12, 0, 100, 1, 0, 0, 'Цзи Огненная Лапа');
 
 -- Pandashan
 DELETE FROM `areatrigger_scripts`  WHERE `ScriptName` LIKE 'AreaTrigger_at_bassin_curse';

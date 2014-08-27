@@ -8186,5 +8186,5 @@ ALTER TABLE creature DROP INDEX id;
 update `creature` set `MovementType` = 2 WHERE `guid` in (SELECT guid FROM creature_addon WHERE `path_id`> 0);
 
 --
-UPDATE `creature` SET `modelid` = '39406' WHERE `guid` = 802613;
+UPDATE `creature` SET `phaseMask` = '97', `modelid` = '39406' WHERE `guid` = 802613;
 REPLACE INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES ('802148', '0', '0', '0', '0', '0', '49415');

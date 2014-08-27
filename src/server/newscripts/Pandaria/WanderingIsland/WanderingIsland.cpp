@@ -1,6 +1,8 @@
 #include "NewScriptPCH.h"
 #include "ScriptedEscortAI.h"
 #include "CreatureTextMgr.h"
+#include "Battleground.h"
+#include "MapManager.h"
 
 enum panda_text
 {
@@ -12,6 +14,15 @@ enum panda_text
     TEXT_GENERIC_5                                 = 5,
     TEXT_GENERIC_6                                 = 6,
     TEXT_GENERIC_7                                 = 7,
+    TEXT_GENERIC_8                                 = 8,
+    TEXT_GENERIC_9                                 = 9,
+    TEXT_GENERIC_10                                = 10,
+    TEXT_GENERIC_11                                = 11,
+    TEXT_GENERIC_12                                = 12,
+    TEXT_GENERIC_13                                = 13,
+    TEXT_GENERIC_14                                = 14,
+    TEXT_GENERIC_15                                = 15,
+    TEXT_GENERIC_16                                = 16,
 };
 
 enum panda_npc
@@ -23,6 +34,7 @@ enum panda_npc
     NPC_ANNOUNCER_5_TRAVEL                         = 57712,
     NPC_ANNOUNCER_6                                = 55694,
     NPC_ANNOUNCER_7                                = 55672,
+    NPC_ANNOUNCER_8                                = 60889,
     NPC_AMBERLEAF_SCAMP                            = 54130, //Amberleaf Scamp
     NPC_MIN_DIMWIND_OUTRO                          = 56503, //Min Dimwind
     NPC_MASTER_LI_FAI                              = 54856, 
@@ -53,6 +65,8 @@ enum panda_quests
     QUEST_NONE_LEFT_BEHINED                        = 29794, //None Left Behind
     QUEST_ACIENT_EVIL                              = 29798,
     QUEST_RISKING_IT_ALL                           = 30767, //Risking It All
+    QUEST_HEALING_SHEN                             = 29799,
+    QUSRT_NEW_FATE                                 = 31450, //A New Fate
 };
 
 enum spell_panda
@@ -101,7 +115,6 @@ class npc_panda_announcer : public CreatureScript
         uint32 targetGUID;
         std::set<uint64> m_player_for_event;
         EventMap events;
-
         void MoveInLineOfSight(Unit* who)
         {
             if (who->GetTypeId() != TYPEID_PLAYER || who->IsOnVehicle())
@@ -110,6 +123,8 @@ class npc_panda_announcer : public CreatureScript
             std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
             if (itr != m_player_for_event.end())
                 return;
+
+            uint32 eTimer = 6000;
 
             switch(me->GetEntry())
             {
@@ -132,19 +147,26 @@ class npc_panda_announcer : public CreatureScript
                         text = TEXT_GENERIC_1;
                     }
                     if (me->GetAreaId() == 5833) // Epave du Chercheciel
-                        return;
+                    {
+                        if (who->ToPlayer()->GetQuestStatus(QUEST_NOT_IN_FACE) != QUEST_STATUS_REWARDED)
+                            return;
+                        text = TEXT_GENERIC_1;
+                    }
                     break;
                 case NPC_ANNOUNCER_6:
                     if (!me->IsWithinDistInMap(who, 35.0f))
                         return;
+                    break;
+                case NPC_ANNOUNCER_8:
+                    eTimer = 13000;
                     break;
                 default:
                     break;
             }
 
             m_player_for_event.insert(who->GetGUID());
-            events.ScheduleEvent(EVENT_1, 3000);
-            events.ScheduleEvent(EVENT_CLEAR, 30000);
+            events.RescheduleEvent(EVENT_1, eTimer);
+            events.RescheduleEvent(EVENT_CLEAR, 300000);
             targetGUID = who->GetGUID();
         }
 
@@ -1749,13 +1771,14 @@ class spell_grab_carriage: public SpellScriptLoader
                 else if (caster->GetAreaId() == 5833) // Epave du Chercheciel
                 {
                     carriage = caster->SummonCreature(57208, 264.37f, 3867.60f, 73.56f, 0.9948f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
-                    yak      = caster->SummonCreature(57743, 268.38f, 3872.36f, 74.50f, 0.8245f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    // spell 108932
+                    yak      = caster->SummonCreature(57742, 268.38f, 3872.36f, 74.50f, 0.8245f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
                 }
 
                 if (!carriage || !yak)
                     return;
 
-                //carriage->CastSpell(yak, 108627, true);
+                carriage->CastSpell(yak, 108627, true);
                 //carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
                 yak->AI()->SetGUID(carriage->GetGUID(), 0); // enable following
                 caster->EnterVehicle(carriage, 0);
@@ -1800,25 +1823,12 @@ public:
         {}
 
         uint32 IntroTimer;
-        uint8 waypointToEject;
 
         void Reset()
         {
-            uint8 waypointToEject = 100;
-
             if (me->isSummon())
             {
                 IntroTimer = 2500;
-
-                // Bassins chantants -> Dai-Lo
-                if (me->GetAreaId() == 5826)
-                    waypointToEject = 24;
-                // Dai-Lo -> Temple
-                else if (me->GetAreaId() == 5881) // Ferme Dai-Lo
-                    waypointToEject = 22;
-                // Epave -> Temple
-                else if (me->GetAreaId() == 5833) // Epave du Chercheciel
-                    waypointToEject = 18;
             }
             else
                 IntroTimer = 0;
@@ -2146,7 +2156,7 @@ class mob_master_shang_xi_temple : public CreatureScript
         }
     };
 
-    bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest)
     {
         switch(quest->GetQuestId())
         {
@@ -4505,6 +4515,668 @@ public:
     }
     
 };
+
+#define MAX_ENNEMIES_POS   2
+#define MAX_HEALER_COUNT   12
+#define UPDATE_POWER_TIMER 3000
+
+Position ennemiesPositions[MAX_ENNEMIES_POS] =
+{
+    {215.0f, 3951.0f, 71.4f},
+    {290.0f, 3939.0f, 86.7f}
+};
+
+
+enum eEnums
+{           
+    NPC_HEALER_A            = 60878,
+    NPC_HEALER_H            = 60896,
+    NPC_ENNEMY              = 60858,
+    NPC_ENEMY_2             = 60780,
+
+    NPC_SHEN_HEAL_CREDIT    = 56011,
+
+    EVENT_CHECK_PLAYERS     = 1,
+    EVENT_UPDATE_POWER      = 2,
+    EVENT_SUMMON_ENNEMY     = 3,
+    EVENT_SUMMON_HEALER     = 4,
+    EVENT_SEND_PHASE        = 5,
+
+    SPELL_SHEN_HEALING      = 117783,
+    SPELL_HEALER_A          = 117784,
+    SPELL_HEALER_H          = 117932,
+
+    SPELL_SCEAN_HEAL        = 117790,
+
+    WS_ENABLE               = 6489,
+    WS_HEALER_COUNT         = 6488,
+};
+
+class npc_ji_end_event : public CreatureScript
+{
+public:
+    npc_ji_end_event() : CreatureScript("npc_ji_end_event") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_ji_end_eventAI(creature);
+    }
+
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt)
+    {
+        switch(quest->GetQuestId())
+        {
+            case QUEST_HEALING_SHEN:
+                player->CastSpell(player, SPELL_SCEAN_HEAL, true);
+                break;
+        }
+        return true;
+    }
+
+    struct npc_ji_end_eventAI : public ScriptedAI
+    {
+        npc_ji_end_eventAI(Creature* creature) : ScriptedAI(creature), _summons(creature)
+        {}
+
+        EventMap   _events;
+        SummonList _summons;
+
+        bool       inProgress;
+        uint8      healerCount;
+        uint8      ennemiesCount;
+        uint16     actualPower;
+
+        std::set<uint64> m_player_for_event;
+
+        void Reset()
+        {
+            _summons.DespawnAll();
+
+            healerCount   = 0;
+            ennemiesCount = 0;
+            actualPower   = 0;
+
+            inProgress = false;
+
+            _events.Reset();
+            _events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
+        }
+
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            Player* player = who->ToPlayer();
+            if (!player)
+                return;
+
+            if (player->GetQuestStatus(QUEST_HEALING_SHEN) != QUEST_STATUS_INCOMPLETE)
+                return;
+
+            std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
+            if (itr != m_player_for_event.end())
+                return;
+
+            m_player_for_event.insert(who->GetGUID());
+            SendState(player, true);
+        }
+
+        void SendState(Player* p, bool enable)
+        {
+            WorldPacket data(SMSG_INIT_WORLD_STATES, 34);
+            data << uint32(5736);                                   // zone id
+            data << uint32(5833);                                   // area id
+            data << uint32(860);                                    // mapid
+
+            data.WriteBits(2, 21);                                  // count of uint64 blocks
+            data.FlushBits();
+
+            FillInitialWorldState(data, WS_ENABLE, enable);
+            FillInitialWorldState(data, WS_HEALER_COUNT, healerCount);
+
+            p->GetSession()->SendPacket(&data);            
+        }
+
+        void UpdateState()
+        {
+            for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); ++itr)
+                if (Player* player = sObjectAccessor->FindPlayer(*itr))
+                    player->SendUpdateWorldState(WS_HEALER_COUNT, healerCount);
+        }
+
+        bool CheckPlayers()
+        {
+            for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); ++itr)
+                if (Player* player = sObjectAccessor->FindPlayer(*itr))
+                    if (player->isAlive())
+                        return true;
+
+            return false;
+        }
+
+        void UpdatePower()
+        {
+            actualPower = (actualPower + healerCount <= 700) ? actualPower + healerCount: 700;
+            for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); )
+                if (Player* player = sObjectAccessor->FindPlayer(*itr))
+                {
+                    if (player->isAlive())
+                    {
+                        if (actualPower < 700) // IN_PROGRESS
+                        {
+                            if (!player->HasAura(SPELL_SHEN_HEALING))
+                                player->CastSpell(player, SPELL_SHEN_HEALING, true);
+
+                            player->SetPower(POWER_ALTERNATE_POWER, actualPower);
+                        }
+                        else
+                        {
+                            if (player->HasAura(SPELL_SHEN_HEALING))
+                                player->RemoveAurasDueToSpell(SPELL_SHEN_HEALING);
+
+                            player->KilledMonsterCredit(NPC_SHEN_HEAL_CREDIT);
+                            SendState(player, false);
+                            m_player_for_event.erase(itr++);
+                            continue;
+                        }
+                    }
+                    ++itr;
+                }
+
+            if (actualPower >= 700)
+                Reset();
+        }
+
+        void SummonEnnemy()
+        {
+            for(uint32 i = 0; i < 1; ++i)
+                me->SummonCreature(RAND(NPC_ENEMY_2, NPC_ENNEMY), ennemiesPositions[i], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+        }
+
+        void SummonHealer()
+        {
+            Map* map = sMapMgr->CreateMap(975, NULL);
+            if (!map)
+                return;
+
+            float posX = frand(228.0f, 270.0f);
+            float posY = frand(3949.0f, 3962.0f);
+
+            me->SummonCreature(RAND(NPC_HEALER_A, NPC_HEALER_H), posX, posY, map->GetHeight(me->GetPhaseMask(), posX, posY, 100.0f), 1.37f, TEMPSUMMON_CORPSE_DESPAWN);
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            _summons.Summon(summon);
+
+            switch (summon->GetEntry())
+            {
+                case NPC_HEALER_A:
+                case NPC_HEALER_H:
+                     _events.ScheduleEvent(EVENT_SEND_PHASE, 1000);
+                    ++healerCount;
+                    break;
+                case NPC_ENNEMY:
+                case NPC_ENEMY_2:
+                    AttackHealers(summon);
+                    ++ennemiesCount;
+                    break;
+            }
+        }
+
+        void AttackHealers(Creature* summon)
+        {
+            uint32 hAttack = urand(0, healerCount - 1);
+            uint32 i = 0;
+            for(SummonList::iterator itr = _summons.begin(); itr != _summons.end(); ++itr)
+            {
+                if (GUID_ENPART(*itr) == NPC_HEALER_A || GUID_ENPART(*itr) == NPC_HEALER_H)
+                {
+                    if (Creature* healer = me->GetMap()->GetCreature(*itr))
+                    {
+                        if (i == hAttack)
+                        {
+                            summon->JumpTo(healer, 20.0f);
+                            summon->AI()->AttackStart(healer);
+                        }
+
+                        summon->AddThreat(healer, 1000.0f);
+                        ++i;
+                    }
+                }
+            }
+        }
+
+        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+        {
+            _summons.Despawn(summon);
+
+            switch (summon->GetEntry())
+            {
+                case NPC_HEALER_A:
+                case NPC_HEALER_H:
+                    _events.ScheduleEvent(EVENT_SEND_PHASE, 1000);
+                    --healerCount;
+                    break;
+                case NPC_ENNEMY:
+                case NPC_ENEMY_2:
+                    --ennemiesCount;
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            _events.Update(diff);
+
+            switch (_events.ExecuteEvent())
+            {
+                case EVENT_CHECK_PLAYERS:
+                {
+                    bool playerNearWithQuest = CheckPlayers();
+
+                    if (inProgress && !playerNearWithQuest)
+                    {
+                        inProgress = false;
+                        Reset();
+                    }
+                    else if (!inProgress && playerNearWithQuest)
+                    {
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
+                        inProgress = true;
+                        _events.ScheduleEvent(EVENT_UPDATE_POWER,  UPDATE_POWER_TIMER);
+                        _events.ScheduleEvent(EVENT_SUMMON_ENNEMY, 6000);
+                        _events.ScheduleEvent(EVENT_SUMMON_HEALER, 5000);
+                    }
+                    _events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
+                    break;
+                }
+                case EVENT_UPDATE_POWER:
+                    UpdatePower();
+                    _events.ScheduleEvent(EVENT_UPDATE_POWER, UPDATE_POWER_TIMER);
+                    break;
+                case EVENT_SUMMON_ENNEMY:
+                    if (healerCount > 0 && ennemiesCount < 5 && ennemiesCount < healerCount*2)
+                        SummonEnnemy();
+                    _events.ScheduleEvent(EVENT_SUMMON_ENNEMY, 7000);
+                    break;
+                case EVENT_SUMMON_HEALER:
+                    if (healerCount < MAX_HEALER_COUNT)
+                        SummonHealer();
+
+                    _events.ScheduleEvent(EVENT_SUMMON_HEALER, 12500);
+                    break;
+                case EVENT_SEND_PHASE:
+                    UpdateState();
+                    break;
+            }
+        }
+    };
+};
+
+class npc_shen_healer : public CreatureScript
+{
+    public:
+        npc_shen_healer() : CreatureScript("npc_shen_healer") { }
+
+        struct npc_shen_healerAI : public ScriptedAI
+        {        
+            npc_shen_healerAI(Creature* creature) : ScriptedAI(creature)
+            {}
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->CastSpell(me, me->GetEntry() == NPC_HEALER_A ? SPELL_HEALER_A: SPELL_HEALER_H, true);
+            }
+
+            void EnterCombat(Unit*)
+            {
+                return;
+            }
+        };
+    
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_shen_healerAI(creature);
+        }
+};
+
+class npc_shang_xi_choose_faction : public CreatureScript
+{
+    public:
+        npc_shang_xi_choose_faction() : CreatureScript("npc_shang_xi_choose_faction") { }
+
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    {
+        if (action == 1)
+        {
+            if (player->GetQuestStatus(QUSRT_NEW_FATE) == QUEST_STATUS_REWARDED || 
+                player->GetQuestStatus(QUSRT_NEW_FATE) == QUEST_STATUS_INCOMPLETE)
+                player->ShowNeutralPlayerFactionSelectUI();
+        }
+        else if (action == 2)
+            player->TeleportTo(0, -8866.55f, 671.93f, 97.90f, 5.31f);
+        else if (action == 3)
+            player->TeleportTo(1, 1577.30f, -4453.64f, 15.68f, 1.84f);
+
+        player->PlayerTalkClass->SendCloseGossip();
+        return true;
+    }
+
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    {
+        if (quest->GetQuestId() == QUSRT_NEW_FATE)
+            creature->AI()->SetGUID(player->GetGUID(), 0);
+
+        return true;
+    }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_shang_xi_choose_factionAI(creature);
+    }
+
+    struct npc_shang_xi_choose_factionAI : public ScriptedAI
+    {        
+        npc_shang_xi_choose_factionAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        EventMap events;
+        uint64 playerGuid;
+        enum ev
+        {
+            EVENT_0        = 1, 
+            EVENT_1        = 2,
+            EVENT_2        = 3,
+            EVENT_3        = 4,
+            EVENT_4        = 5,
+            EVENT_5        = 6,
+        };
+
+        void SetGUID(uint64 guid, int32 id)
+        {
+            playerGuid = guid;
+            uint32 t = 0;
+            events.RescheduleEvent(EVENT_0, t += 1000);     //18:08:37.000
+            events.RescheduleEvent(EVENT_1, t += 9000);     //18:08:46.000
+            events.RescheduleEvent(EVENT_2, t += 11000);    //18:08:57.000
+            events.RescheduleEvent(EVENT_3, t += 7000);     //18:09:04.000 
+            events.RescheduleEvent(EVENT_4, t += 8000);     //18:09:12.000
+            events.RescheduleEvent(EVENT_5, t += 10000);    //18:09:22.000 
+        }
+
+        void Reset()
+        {
+            playerGuid      = 0;
+            events.Reset();
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_0:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_2:
+                        if (Creature* aysa = me->FindNearestCreature(57721, 100.0f, true))
+                            sCreatureTextMgr->SendChat(aysa, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_3:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_4:
+                        if (Creature* czi = me->FindNearestCreature(57720, 100.0f, true))
+                            sCreatureTextMgr->SendChat(czi, TEXT_GENERIC_0, playerGuid);
+                        break;
+                    case EVENT_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGuid);
+                        break;
+                }
+            }
+        }
+    };
+};
+
+// by spell 120753
+class mob_garosh_hord_way : public CreatureScript
+{
+public:
+    mob_garosh_hord_way() : CreatureScript("mob_garosh_hord_way") { }
+
+    struct mob_garosh_hord_wayAI : public npc_escortAI
+    {        
+        mob_garosh_hord_wayAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        EventMap events;
+        uint64 playerGuid;
+        uint64 CziGUID;
+
+        enum dataType
+        {
+            NPC_CZI        = 62081,
+            NPC_CREDIT     = 62089,
+
+            EVENT_0        = 1,
+            EVENT_1        = 2,
+            EVENT_2        = 3,
+            EVENT_3        = 4,
+            EVENT_4        = 5,
+            EVENT_5        = 6,
+            EVENT_6        = 7,
+            EVENT_7        = 8,
+            EVENT_8        = 9,
+            EVENT_9,
+            EVENT_10,
+            EVENT_11,
+            EVENT_12,
+            EVENT_13,
+            EVENT_14,
+            EVENT_15,
+            EVENT_16,
+            EVENT_17,
+            EVENT_18,
+            EVENT_19,
+            EVENT_20,
+
+            EVENT_CZI_0_1,
+            EVENT_CZI_0,
+            EVENT_CZI_1,
+
+        };
+
+        void Reset()
+        {
+            me->SetWalk(true);
+            playerGuid      = 0;
+            CziGUID         = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            Player *player = summoner->ToPlayer();
+            if (!player)
+            {
+                me->MonsterSay("SCRIPT::mob_garosh_hord_way summoner is not player", LANG_UNIVERSAL, 0);
+                return;
+            }
+
+            playerGuid = summoner->GetGUID();
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+
+            uint32 t = 0;                                        //
+            events.ScheduleEvent(EVENT_0, t += 2000);            //18:12:24.000 start + talk
+            events.ScheduleEvent(EVENT_1, t += 5000);            //18:12:29.000
+            events.ScheduleEvent(EVENT_2, t += 8000);            //18:12:37.000
+            events.ScheduleEvent(EVENT_3, t += 6000);            //18:12:43.000
+            events.ScheduleEvent(EVENT_4, t += 5000);            //18:12:48.000
+            events.ScheduleEvent(EVENT_5, t += 5000);            //18:12:54.000
+            events.ScheduleEvent(EVENT_6, t += 1000);            //18:12:55.000
+            events.ScheduleEvent(EVENT_7, t += 2000);            //18:12:57.000
+            events.ScheduleEvent(EVENT_8, t += 9000);            //18:13:06.000
+            events.ScheduleEvent(EVENT_CZI_0, t += 3000);        //18:13:09.000 Message: Да, вождь.
+            events.ScheduleEvent(EVENT_9, t += 3000);            //18:13:12.000
+            events.ScheduleEvent(EVENT_10, t += 3000);           //18:13:15.000
+            events.ScheduleEvent(EVENT_11, t += 8000);           //18:13:23.000
+            events.ScheduleEvent(EVENT_12, t += 6000);           //18:13:29.000
+            events.ScheduleEvent(EVENT_13, t += 5000);           //18:13:34.000
+            events.ScheduleEvent(EVENT_14, t += 13000);          //18:13:47.000
+            events.ScheduleEvent(EVENT_15, t += 5000);           //18:13:52.000 
+            events.ScheduleEvent(EVENT_16, t += 11000);          //18:14:03.000
+            events.ScheduleEvent(EVENT_CZI_1, t += 3000);        //18:14:06.000 Message: Да... Да, конечно...
+            events.ScheduleEvent(EVENT_17, t += 4000);           //18:14:10.000
+            events.ScheduleEvent(EVENT_18, t += 1000);           //18:14:11.000
+            events.ScheduleEvent(EVENT_19, t += 2000);           //18:14:13.000
+            //events.ScheduleEvent(EVENT_20, t += 20000);           //18:14:33.000
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            switch(waypointId)
+            {
+                case 3:
+                case 6:
+                case 7:
+                case 12: 
+                case 13:
+                case 16:
+                if (Player* target = sObjectAccessor->FindPlayer(playerGuid))
+                    me->SetFacingToObject(target);
+                    SetEscortPaused(true);
+                    break;
+                case 26:
+                    events.ScheduleEvent(EVENT_20, 1000);           //18:14:33.000
+                    SetEscortPaused(true);
+                    break;
+            }
+        }
+
+        void initSummon()
+        {
+            if (Player* target = sObjectAccessor->FindPlayer(playerGuid))
+                if (Creature* czi = me->FindNearestCreature(NPC_CZI, 200.0f, true))
+                {
+                    czi->GetMotionMaster()->MoveFollow(target, 2.0f, M_PI / 4);
+                    CziGUID = czi->GetGUID();
+                }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            events.Update(diff);
+            npc_escortAI::UpdateAI(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_0:
+                        Start(false, false);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, playerGuid);
+                        initSummon();
+                        break;
+                    case EVENT_1:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, playerGuid);
+                        break;
+                    case EVENT_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, playerGuid);
+                        break;
+                    case EVENT_3:
+                        SetEscortPaused(false);
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, playerGuid);
+                        break;
+                    case EVENT_4:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, playerGuid);
+                        break;
+                    case EVENT_5:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, playerGuid);
+                        break;
+                    case EVENT_6:
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_7:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, playerGuid);
+                        break;
+                    case EVENT_8:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_7, playerGuid);
+                        if (Creature* zu = me->GetMap()->GetCreature(CziGUID))
+                            me->SetFacingToObject(zu);
+                        break;
+                    case EVENT_9:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_8, playerGuid);
+                        break;
+                    case EVENT_10:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_9, playerGuid);
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_11:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_10, playerGuid);
+                        break;
+                    case EVENT_12:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_11, playerGuid);
+                        break;
+                    case EVENT_13:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_12, playerGuid);
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_14:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_13, playerGuid);
+                        SetEscortPaused(false);
+                        break;
+                    case EVENT_15:
+                        me->HandleEmoteCommand(397);
+                        break;
+                    case EVENT_16:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_14, playerGuid);
+                        if (Creature* zu = me->GetMap()->GetCreature(CziGUID))
+                            me->SetFacingToObject(zu);
+                        break;
+                    case EVENT_17:
+                        break;
+                    case EVENT_18:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_15, playerGuid);
+                        break;
+                    case EVENT_19:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_16, playerGuid);
+                        SetEscortPaused(false);
+                        if (Player* plr = sObjectAccessor->FindPlayer(playerGuid))
+                            plr->KilledMonsterCredit(NPC_CREDIT, 0);
+                        break;
+                    case EVENT_20:
+                        me->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 17719);
+                        me->SetSpeed(MOVE_RUN, 8.0f, false);
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0x3000000);
+                        me->DespawnOrUnsummon(10000);
+                        if (Creature* zu = me->GetMap()->GetCreature(CziGUID))
+                            zu->DespawnOrUnsummon(10000);
+                        break;
+                    case EVENT_CZI_0:
+                        if (Creature* zu = me->GetMap()->GetCreature(CziGUID))
+                            sCreatureTextMgr->SendChat(zu, TEXT_GENERIC_3, playerGuid);
+                        break;
+                    case EVENT_CZI_1:
+                        if (Creature* zu = me->GetMap()->GetCreature(CziGUID))
+                            sCreatureTextMgr->SendChat(zu, TEXT_GENERIC_4, playerGuid);
+                        break;
+                }
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new mob_garosh_hord_wayAI(creature);
+    }
+    
+};
 void AddSC_WanderingIsland()
 {
     new mob_master_shang_xi();
@@ -4562,4 +5234,8 @@ void AddSC_WanderingIsland()
     new boss_vordraka();
     new npc_aysa_cloudsinger();
     new mob_aysa_gunship_crash_escort();
+    new npc_ji_end_event();
+    new npc_shen_healer();
+    new npc_shang_xi_choose_faction();
+    new mob_garosh_hord_way();
 }
