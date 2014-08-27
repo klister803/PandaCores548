@@ -2271,6 +2271,39 @@ class spell_item_elixir_of_wandering_spirits : public SpellScriptLoader
         }
 };
 
+enum SkymirrorCloneSpell
+{
+    SKYMIRROR_IMAGE_CLONE_VISUAL = 127315,
+};
+
+class spell_item_ai_li_skymirror : public SpellScriptLoader
+{
+    public:
+        spell_item_ai_li_skymirror() : SpellScriptLoader("spell_item_ai_li_skymirror") { }
+
+        class spell_item_ai_li_skymirror_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_ai_li_skymirror_SpellScript);
+
+            void HandleScript(SpellEffIndex effIndex)
+            {
+                Unit* caster = GetCaster();
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(caster, SKYMIRROR_IMAGE_CLONE_VISUAL, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_item_ai_li_skymirror_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_ai_li_skymirror_SpellScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2326,4 +2359,5 @@ void AddSC_item_spell_scripts()
     new spell_alchemist_rejuvenation();
     new spell_item_hardened_shell();
     new spell_item_elixir_of_wandering_spirits();
+    new spell_item_ai_li_skymirror();
 }
