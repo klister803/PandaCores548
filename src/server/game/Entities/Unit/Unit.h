@@ -1804,6 +1804,7 @@ class Unit : public WorldObject
         Player* GetAffectingPlayer() const;
 
         void SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded = false);
+        Creature* GetMinionByEntry(uint32 entry);
         void GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry);
         void RemoveAllMinionsByEntry(uint32 entry);
         void SetCharm(Unit* target, bool apply);

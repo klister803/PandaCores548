@@ -11553,6 +11553,19 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
     }
 }
 
+Creature* Unit::GetMinionByEntry(uint32 entry)
+{
+    for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
+    {
+        Unit* unit = *itr;
+        ++itr;
+        if (unit->GetEntry() == entry && unit->GetTypeId() == TYPEID_UNIT
+            && unit->ToCreature()->isSummon()) // minion, actually
+            return unit->ToCreature();
+    }
+    return NULL;
+}
+
 void Unit::GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry)
 {
     for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
