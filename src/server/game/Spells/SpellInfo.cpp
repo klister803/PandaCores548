@@ -1209,6 +1209,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143460: //Sha Pool Dmg 
     case 113762: //Swirl 
     case 125925: //Swirlr tr ef (Cone Searcher!)
+    case 143574: //Swelling corruption
+    case 143579: //Sha Corruption
         return Effects[effect];
     }
 

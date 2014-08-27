@@ -27,10 +27,12 @@ enum eSpells
     SPELL_SWIRL                 = 143309, 
     SPELL_SWIRL_DMG             = 143413,
     SPELL_SWIRL_SEARCHER        = 113762,
+    SPELL_SEEPING_SHA           = 143286,
     SPELL_SUBMERGE              = 139832,
     SPELL_SUBMERGE_2            = 143281,
     //HM
     SPELL_SWELLING_CORRUPTION   = 143574,
+    SPELL_SWELLING_CORRUPTION_S = 143581,
     //npc sha pool   
     SPELL_SLEEPING_SHA          = 143281,
     SPELL_SHA_POOL              = 143462,
@@ -50,9 +52,10 @@ enum Events
     EVENT_SHA_BOLT              = 2,
     EVENT_SWIRL                 = 3,
     EVENT_INTRO_PHASE_TWO       = 4,
+    EVENT_SWELLING_CORRUPTION   = 5,
     //Summons
-    EVENT_START_MOVING          = 5,
-    EVENT_CHECK_DIST            = 6,
+    EVENT_START_MOVING          = 6,
+    EVENT_CHECK_DIST            = 7,
 };
 
 enum Actions
@@ -61,7 +64,8 @@ enum Actions
     ACTION_RE_ATTACK            = 1,
     ACTION_INTRO_PHASE_ONE      = 2,
     //Summons
-    ACTION_SPAWN                = 2,
+    ACTION_SPAWN                = 3,
+    ACTION_MOVE                 = 4,
 };
 
 enum SData
@@ -267,15 +271,13 @@ class boss_immerseus : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                if (me->GetMap()->IsHeroic())
-                    me->DespawnOrUnsummon();
             }
 
             InstanceScript* instance;
-            uint32 checkvictim;
-            uint32 lasthp;
-            float lasthppct;
+            uint32 checkvictim, lasthp;
             uint8 donecp, donesp, maxpcount;
+            std::vector<uint64> shapoollist;
+            float lasthppct;
             bool phase_two;
 
             void Reset()
@@ -284,26 +286,38 @@ class boss_immerseus : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
+                me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 100);
-                phase_two = false;
-                checkvictim = 0;
                 lasthp = me->GetMaxHealth();
                 lasthppct = me->GetHealthPct();
+                shapoollist.clear();
+                phase_two = false;
+                checkvictim = 0;
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
+            }
+
+            void JustSummoned(Creature* sum)
+            {
+                if (sum->GetEntry() == NPC_SHA_POOL)
+                    shapoollist.push_back(sum->GetGUID());
+
+                summons.Summon(sum);
             }
 
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
                 checkvictim = 2000;
-                events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  9000);
-                events.ScheduleEvent(EVENT_SWIRL,           14000);
-                events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
+                events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
+                events.ScheduleEvent(EVENT_SWIRL, 14000);
+                events.ScheduleEvent(EVENT_SHA_BOLT, 6000);               
             }
 
             void SpawnWave()
@@ -393,13 +407,22 @@ class boss_immerseus : public CreatureScript
                     checkvictim = 0;
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
-                    summons.DespawnAll();
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
                     me->AddAura(SPELL_SUBMERGE, me);
                     me->AddAura(SPELL_SUBMERGE_2, me);
                     me->SetFullHealth();
+                    if (!shapoollist.empty())
+                    {
+                        for (std::vector<uint64>::const_iterator guid = shapoollist.begin(); guid != shapoollist.end(); guid++)
+                        {
+                            if (Creature* sp = me->GetCreature(*me, *guid))
+                                sp->AI()->DoAction(ACTION_MOVE);
+                        }
+                        shapoollist.clear();
+                    }
                     SpawnWave();
                 }
             }
@@ -434,9 +457,11 @@ class boss_immerseus : public CreatureScript
                     DoZoneInCombat(me, 150.0f);
                     phase_two = false;
                     checkvictim = 2000;
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST,  9000);
-                    events.ScheduleEvent(EVENT_SWIRL,           14000);
-                    events.ScheduleEvent(EVENT_SHA_BOLT,         6000);
+                    if (me->GetMap()->IsHeroic())
+                        events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
+                    events.ScheduleEvent(EVENT_SWIRL, 14000);
+                    events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
                     break;
                 }
             }
@@ -506,6 +531,13 @@ class boss_immerseus : public CreatureScript
                         }
                         events.ScheduleEvent(EVENT_SWIRL, 48500);
                         break;
+                    //HM
+                    case EVENT_SWELLING_CORRUPTION:
+                        int32 mod = me->GetPower(POWER_ENERGY)/2;
+                        if (mod)
+                            me->CastCustomSpell(SPELL_SWELLING_CORRUPTION, SPELLVALUE_AURA_STACK, mod, me, true);
+                        events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 75000);
+                        break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -530,13 +562,34 @@ class npc_sha_pool : public CreatureScript
             {
                 me->SetDisplayId(11686);
                 me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             }
 
             void Reset()
             {
                 me->SetFloatValue(OBJECT_FIELD_SCALE_X, 2.0f);
                 me->AddAura(SPELL_SHA_POOL, me);
+            }
+
+            void DoAction(int32 const action)
+            {
+                if (action == ACTION_MOVE)
+                {
+                    if (me->ToTempSummon())
+                    {
+                        if (Unit* i = me->ToTempSummon()->GetSummoner())
+                            me->GetMotionMaster()->MoveCharge(i->GetPositionX(), i->GetPositionY(), i->GetPositionZ(), 4.0f, 0);
+                    }
+                }
+            }
+
+            void MovementInform(uint32 type, uint32 pointId)
+            {
+                if (type == POINT_MOTION_TYPE)
+                {
+                    if (pointId == 0)
+                        me->DespawnOrUnsummon();
+                }
             }
 
             void EnterEvadeMode(){}
@@ -658,9 +711,6 @@ class npc_sha_puddle : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
-                    return;
-
                 events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())

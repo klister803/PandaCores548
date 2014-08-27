@@ -10507,6 +10507,16 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
             break;
         }
+        case 143574: //Swelling corruption (Immerseus HM)
+            {
+                if (ToCreature())
+                {
+                    CastSpell(victim, trigger_spell_id, true);
+                    CastSpell(victim, 143581, true);
+                    RemoveAuraFromStack(143574);
+                    return true;
+                }
+            }
         default:
             break;
     }

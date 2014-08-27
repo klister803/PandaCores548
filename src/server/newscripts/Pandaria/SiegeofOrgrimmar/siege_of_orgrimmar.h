@@ -31,6 +31,7 @@ enum eCreatures
 {
     //Npc or summons
     NPC_PUDDLE_POINT        = 90000,//new trigger
+    NPC_SHA_POOL            = 71544,
     NPC_SHA_PUDDLE          = 71603,
     NPC_CONTAMINATED_PUDDLE = 71604,
 
