@@ -20605,12 +20605,12 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         }
     }
 
-    if (!res)
-        return false;
-
     Creature* creature = ToCreature();
     if (creature && creature->IsAIEnabled)
         creature->AI()->OnSpellClick(clicker);
+
+    if (!res)
+        return false;
 
     return true;
 }
