@@ -197,32 +197,6 @@ class npc_panda_announcer : public CreatureScript
     };
 };
 
-class mob_training_target : public CreatureScript
-{
-public:
-    mob_training_target() : CreatureScript("mob_training_target") { }
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mob_training_targetAI(creature);
-    }
-    
-    struct mob_training_targetAI : public Scripted_NoMovementAI
-    {
-    	mob_training_targetAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
-    	
-        void Reset()
-        {
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void EnterCombat()
-        {
-            return;
-        }
-    };
-};
-
-
 // Should be done by summon npc 59591
 class mob_master_shang_xi : public CreatureScript
 {
@@ -348,11 +322,8 @@ public:
 
         void Reset()
         {
-            isInFalcon = false;
             me->SetDisplayId(39755);
-            //me->CombatStop(true);
-
-            //me->GetMotionMaster()->MovePoint(1, 1380.35f, 3170.68f, 136.93f);
+            isInFalcon = false;
         }
 
         void DamageTaken(Unit* attacker, uint32& damage)
@@ -376,8 +347,9 @@ public:
                     (*itr)->KilledMonsterCredit(me->GetEntry(), 0);
 
                 me->CombatStop();
-                me->setFaction(35);
                 me->SetFullHealth();
+                isInFalcon = false;
+                me->SetDisplayId(39755);
                 me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                 events.Reset();
                 events.ScheduleEvent(EVENT_RESET, 5000);
@@ -407,13 +379,13 @@ public:
                         if (me->getVictim())
                             me->CastSpell(me->getVictim(), 119301, true);
 
-                        events.ScheduleEvent(EVENT_HIT_CIRCLE, 3000);
+                        events.ScheduleEvent(EVENT_HIT_CIRCLE, 8000);
                         break;
                     case EVENT_FALCON: //attaque du faucon
                         if (me->getVictim())
                             me->CastSpell(me->getVictim(), 108935, true);
 
-                        events.ScheduleEvent(EVENT_FALCON, 4000);
+                        events.ScheduleEvent(EVENT_FALCON, 6000);
                         break;
                     case EVENT_RESET: //remechant
                         Reset();
@@ -987,7 +959,7 @@ public:
         if (quest->GetQuestId() == QUEST_PARCHEMIN_VOLANT) // La lecon du parchemin brulant
         {
             // used by spell 102445
-            if (Creature* tempSummon = creature->SummonCreature(54734, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
+            if (Creature* tempSummon = creature->SummonCreature(54734, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000, player->GetGUID()))
             {
                 player->CastSpell(player, 108149);  //visib
                 //player->CastSpell(player, 108150);  //invis
@@ -1377,34 +1349,51 @@ public:
     struct mob_tushui_monkAI : public ScriptedAI
     {
         mob_tushui_monkAI(Creature* creature) : ScriptedAI(creature)
-        {}
+        {
+            me->setFaction(2357);
+        }
+
+        enum data
+        {
+            NPC_VEH         =   54993,
+        };
+
+        uint64 vehGUID;
+        EventMap events;
 
         void Reset()
         {
-            std::list<Creature*> poleList;
-            GetCreatureListWithEntryInGrid(poleList, me, 54993, 50.0f);
-
-            if (poleList.empty())
-            {
-                me->DespawnOrUnsummon(1000);
-                return;
-            }
-
-            Trinity::Containers::RandomResizeList(poleList, 1);
-
-            for (std::list<Creature*>::const_iterator itr = poleList.begin(); itr != poleList.end(); ++itr)
-            {
-                me->EnterVehicle(*itr);
-                break;
-            }
-
-            me->setFaction(2357);
+            events.ScheduleEvent(1, 1000);
+            vehGUID = 0;
         }
 
         void JustDied(Unit* /*killer*/)
         {
             me->ExitVehicle();
             me->DespawnOrUnsummon(1000);
+            if (Creature *v = me->GetMap()->GetCreature(vehGUID))
+                v->DespawnOrUnsummon(100);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            //UpdateVictim();
+
+            events.Update(diff);
+
+            while (events.ExecuteEvent())
+            {
+                if (me->GetVehicle())
+                    return;
+
+                if (Creature * c = me->GetMap()->SummonCreature(NPC_VEH, *me, NULL, 0, NULL, 0, 0, 1749))
+                {
+                    me->EnterVehicle(c);
+                    vehGUID = c->GetGUID();
+                }else
+                    events.ScheduleEvent(1, 1000);
+            }
+            DoMeleeAttackIfReady();
         }
     };
 };
@@ -1804,7 +1793,7 @@ class spell_grab_carriage: public SpellScriptLoader
                 if (!carriage || !yak)
                     return;
 
-                carriage->CastSpell(yak, 108627, true);
+                //carriage->CastSpell(yak, 108627, true);   //visual
                 //carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
                 yak->AI()->SetGUID(carriage->GetGUID(), 0); // enable following
                 caster->EnterVehicle(carriage, 0);
@@ -2516,6 +2505,7 @@ public:
                         break;
                 }
             }
+            DoMeleeAttackIfReady();
         }
     };
 };
@@ -3045,7 +3035,6 @@ public:
         {
             if (cooldown)
                 return;
-
             if (Creature* zhao = GetClosestCreatureWithEntry(me, 55786, 50.0f))
                 Clicker->CastSpell(zhao, SPELL_ROCKET_LAUNCH, false);
 
@@ -4372,6 +4361,7 @@ public:
                         break;
                 }
             }
+            DoMeleeAttackIfReady();
         }
     };
 };
@@ -5205,7 +5195,6 @@ public:
 };
 void AddSC_WanderingIsland()
 {
-    new mob_training_target();
     new mob_master_shang_xi();
     new boss_jaomin_ro();
     new npc_panda_announcer();
