@@ -400,7 +400,8 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
                             if (_player->CanCompleteQuest(nextQuest->GetQuestId()))
                                 _player->CompleteQuest(nextQuest->GetQuestId());
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, true);
-                        }
+                        }else
+                            _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, false);
                     }
                 }
                 break;
