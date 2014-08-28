@@ -383,20 +383,25 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
                 Creature *creatureQGiver = object->ToCreature();
                 if (!creatureQGiver || !(sScriptMgr->OnQuestReward(_player, creatureQGiver, quest, reward)))
                 {
+                    if (creatureQGiver)
+                        creatureQGiver->AI()->sQuestReward(_player, quest, reward);
                     // Send next quest
                     if (Quest const* nextQuest = _player->GetNextQuest(guid, quest))
                     {
                         if (nextQuest->IsAutoAccept() && _player->CanAddQuest(nextQuest, true) && _player->CanTakeQuest(nextQuest, true))
                         {
+                            if (creatureQGiver)
+                            {
+                                sScriptMgr->OnQuestAccept(_player, creatureQGiver, nextQuest);
+                                creatureQGiver->AI()->sQuestAccept(_player, nextQuest);
+                            }
+
                             _player->AddQuest(nextQuest, object);
                             if (_player->CanCompleteQuest(nextQuest->GetQuestId()))
                                 _player->CompleteQuest(nextQuest->GetQuestId());
+                            _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, true);
                         }
-
-                        _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, true);
                     }
-                    if (creatureQGiver)
-                        creatureQGiver->AI()->sQuestReward(_player, quest, reward);
                 }
                 break;
             }
