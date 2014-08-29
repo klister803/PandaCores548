@@ -5040,6 +5040,48 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
             switch (m_spellInfo->Id)
             {
+                // Seafood Magnifique Feast
+                case 87806: 
+                {
+                    if (!unitTarget)
+                        return;
+
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        float stat = 0.0f;
+                        uint32 spellId = 0;
+
+                        if (unitTarget->GetStat(STAT_STRENGTH) > stat) { spellId = 87584; stat = unitTarget->GetStat(STAT_STRENGTH); }
+                        if (unitTarget->GetStat(STAT_AGILITY)  > stat) { spellId = 87586; stat = unitTarget->GetStat(STAT_AGILITY); }
+                        if (unitTarget->GetStat(STAT_INTELLECT)  > stat) { spellId = 87587; stat = unitTarget->GetStat(STAT_INTELLECT); }
+                        if (unitTarget->GetStat(STAT_SPIRIT)  > stat) { spellId = 87588; }
+                        
+                        if (spellId)
+                            unitTarget->CastSpell(unitTarget, spellId, true);
+                    }
+                    return;
+                }
+                // Banquet of the Grill
+                case 126532: 
+                {
+                    if (!unitTarget)
+                        return;
+
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        float stat = 0.0f;
+                        uint32 spellId = 0;
+
+                        if (unitTarget->GetStat(STAT_STRENGTH) > stat) { spellId = 104263; stat = unitTarget->GetStat(STAT_STRENGTH); }
+                        if (unitTarget->GetStat(STAT_AGILITY)  > stat) { spellId = 104286; stat = unitTarget->GetStat(STAT_AGILITY); }
+                        if (unitTarget->GetStat(STAT_INTELLECT)  > stat) { spellId = 104266; stat = unitTarget->GetStat(STAT_INTELLECT); }
+                        if (unitTarget->GetStat(STAT_SPIRIT)  > stat) { spellId = 104291; }
+                        
+                        if (spellId)
+                            unitTarget->CastSpell(unitTarget, spellId, true);
+                    }
+                    return;
+                }
                 case 104126:    //Mop.Quest.Monkey Wisdom
                 {
                     if (Player *player = unitTarget->ToPlayer())
