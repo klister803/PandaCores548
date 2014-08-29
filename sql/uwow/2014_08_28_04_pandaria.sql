@@ -27,7 +27,8 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 (54587, 0, 5, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
 
 --
-DELETE FROM spell_area WHERE spell in (128700, 120749,
+
+DELETE FROM spell_area WHERE spell in (128700, 120749, 118036,
 107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102868, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 102398, 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
@@ -38,6 +39,7 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 -- unk. custom
 ('128700', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
 ('120749', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
+('118036', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
 --
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
 ('107028', '5834', '29406', '29409', '0', '0', '2', '1', '74', '66'),
@@ -167,8 +169,9 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (23, 5736, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Pandaren Start loc: world area', ''),
 (23, 5736, 3, 0, 1, 8, 0, 29799, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 976', ''),
 (23, 5736, 2, 0, 0, 8, 0, 29799, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 and not rewarded 29799', ''),
-(23, 5736, 2, 1, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
-(23, 5736, 2, 1, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 2, 0, 0, 28, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
+(23, 5736, 2, 0, 1, 8, 0, 29799, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 and not rewarded 29799', ''),
+(23, 5736, 2, 0, 1, 8, 0, 30767, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975', ''),
 (23, 5736, 4, 0, 0, 8, 0, 29785, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not reward 29785', ''),
 (23, 5736, 5, 0, 0, 9, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while taken 29786', ''),
 (23, 5736, 6, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29665', ''),
@@ -1196,8 +1199,9 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (56416, 4, 0, 'Не знаю, что бы я делала без тебя. Твоя помощь очень кстати.', 12, 0, 100, 0, 0, 0, 'Аиса Воспевающая Облака');
 
 -- 56416 in the ship near boss
-UPDATE `creature_addon` SET `auras` = '117326 97468' WHERE `guid` = 803083+6231;
-UPDATE `creature_addon` SET `auras` = '97468' WHERE `guid` = 803073+6231;
+UPDATE `creature_addon` SET `auras` = '117326 83305' WHERE `guid` = 803083+6231;
+UPDATE `creature_addon` SET `auras` = '83305' WHERE `guid` = 803073+6231;
+DELETE FROM `creature` WHERE `guid` = 809316 AND id = 56416;
 
 -- ----------------------------------------
 -- Q: 30767 Risking It All

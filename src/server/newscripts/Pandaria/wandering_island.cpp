@@ -4762,7 +4762,7 @@ public:
             }
         }
 
-        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             _summons.Despawn(summon);
 
