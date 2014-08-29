@@ -88,6 +88,7 @@ void DistractMovementGenerator::Initialize(Unit& owner)
 void DistractMovementGenerator::Finalize(Unit& owner)
 {
     owner.ClearUnitState(UNIT_STATE_DISTRACTED);
+    owner.GetMotionMaster()->MoveTargetedHome();
 }
 
 bool DistractMovementGenerator::Update(Unit& /*owner*/, const uint32& time_diff)
