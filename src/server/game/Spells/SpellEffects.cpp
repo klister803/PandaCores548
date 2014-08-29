@@ -5082,6 +5082,27 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     }
                     return;
                 }
+                // Great Pandaren Banquet
+                case 104924: 
+                {
+                    if (!unitTarget)
+                        return;
+
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        float stat = 0.0f;
+                        uint32 spellId = 0;
+
+                        if (unitTarget->GetStat(STAT_STRENGTH) > stat) { spellId = 104284; stat = unitTarget->GetStat(STAT_STRENGTH); }
+                        if (unitTarget->GetStat(STAT_AGILITY)  > stat) { spellId = 104287; stat = unitTarget->GetStat(STAT_AGILITY); }
+                        if (unitTarget->GetStat(STAT_INTELLECT)  > stat) { spellId = 104290; stat = unitTarget->GetStat(STAT_INTELLECT); }
+                        if (unitTarget->GetStat(STAT_SPIRIT)  > stat) { spellId = 104292; }
+                        
+                        if (spellId)
+                            unitTarget->CastSpell(unitTarget, spellId, true);
+                    }
+                    return;
+                }
                 case 104126:    //Mop.Quest.Monkey Wisdom
                 {
                     if (Player *player = unitTarget->ToPlayer())
