@@ -3162,6 +3162,10 @@ class Player : public Unit, public GridObject<Player>
         bool isWatchingMovie() const { return m_watching_movie; }
         void setWatchinMovie(bool s) { m_watching_movie = s; }
         uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
+
+        //
+        AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
+        void SetLastAreaTrigger(AreaTriggerEntry const* at) { LastAreaTrigger = at; }
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3568,6 +3572,8 @@ class Player : public Unit, public GridObject<Player>
 
         bool m_watching_movie;
         bool plrUpdate;
+
+        AreaTriggerEntry const *LastAreaTrigger;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

@@ -702,6 +702,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 #pragma warning(default:4355)
 #endif
 
+    LastAreaTrigger = NULL;
     m_vis = NULL;
     m_speakTime = 0;
     m_speakCount = 0;

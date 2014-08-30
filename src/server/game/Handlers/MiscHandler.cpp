@@ -1082,6 +1082,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     if (player->isDebugAreaTriggers)
         ChatHandler(player).PSendSysMessage(LANG_DEBUG_AREATRIGGER_REACHED, triggerId);
 
+    // set for future scrip using.
+    player->SetLastAreaTrigger(atEntry);
+
     if (sScriptMgr->OnAreaTrigger(player, atEntry))
         return;
 
