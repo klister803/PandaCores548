@@ -925,6 +925,7 @@ struct AccessRequirement
     uint32 quest_A;
     uint32 quest_H;
     uint32 achievement;
+    uint32 achievement_A;
     std::string questFailedText;
 };
 

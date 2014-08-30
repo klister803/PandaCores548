@@ -20651,22 +20651,32 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         }
 
         uint32 missingQuest = 0;
-        if (GetTeam() == ALLIANCE && ar->quest_A && !GetQuestRewardStatus(ar->quest_A))
-            missingQuest = ar->quest_A;
-        else if (GetTeam() == HORDE && ar->quest_H && !GetQuestRewardStatus(ar->quest_H))
+        uint32 checkAchievement = 0;
+        if(GetTeam() == ALLIANCE)
+        {
+            if (ar->quest_A && !GetQuestRewardStatus(ar->quest_A))
+                missingQuest = ar->quest_A;
+            if(ar->achievement_A != 0)
+                checkAchievement = ar->achievement_A;
+        }
+        else if (ar->quest_H && !GetQuestRewardStatus(ar->quest_H))
             missingQuest = ar->quest_H;
 
-        uint32 missingAchievement = 0;
+        if(checkAchievement == 0)
+            checkAchievement = ar->achievement;
+
         Player* leader = this;
         uint64 leaderGuid = GetGroup() ? GetGroup()->GetLeaderGUID() : GetGUID();
         if (leaderGuid != GetGUID())
             leader = ObjectAccessor::FindPlayer(leaderGuid);
 
-        if (ar->achievement)
-            if (!leader || !leader->GetAchievementMgr().HasAchieved(ar->achievement))
-                missingAchievement = ar->achievement;
+        uint32 missingAchievement = 0;
+        if (checkAchievement)
+            if (!leader || !leader->GetAchievementMgr().HasAchieved(checkAchievement))
+                missingAchievement = checkAchievement;
 
         Difficulty target_difficulty = GetDifficulty(mapEntry->IsRaid());
+
         MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(target_map, target_difficulty);
         if (!mapDiff)
             return false;
@@ -20677,7 +20687,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
             {
                 if (missingQuest && !ar->questFailedText.empty())
                     ChatHandler(GetSession()).PSendSysMessage("%s", ar->questFailedText.c_str());
-                else if (mapDiff->hasErrorMessage) // if (missingAchievement) covered by this case
+                else if (missingAchievement)
                     SendTransferAborted(target_map, TRANSFER_ABORT_DIFFICULTY, target_difficulty);
                 else if (missingItem)
                     GetSession()->SendNotification(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), LevelMin, sObjectMgr->GetItemTemplate(missingItem)->Name1.c_str());

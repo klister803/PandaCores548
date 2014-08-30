@@ -5960,8 +5960,8 @@ void ObjectMgr::LoadAccessRequirements()
 
     _accessRequirementStore.clear();                                  // need for reload case
 
-    //                                               0      1           2          3          4           5     6      7             8             9                      10
-    QueryResult result = WorldDatabase.Query("SELECT mapid, difficulty, level_min, level_max, item_level, item, item2, quest_done_A, quest_done_H, completed_achievement, quest_failed_text FROM access_requirement");
+    //                                               0      1           2          3          4           5     6      7             8             9                      10                        11
+    QueryResult result = WorldDatabase.Query("SELECT mapid, difficulty, level_min, level_max, item_level, item, item2, quest_done_A, quest_done_H, completed_achievement, quest_failed_text, completed_achievement_A FROM access_requirement");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 access requirement definitions. DB table `access_requirement` is empty.");
@@ -5991,6 +5991,7 @@ void ObjectMgr::LoadAccessRequirements()
         ar.quest_H                  = fields[8].GetUInt32();
         ar.achievement              = fields[9].GetUInt32();
         ar.questFailedText          = fields[10].GetString();
+        ar.achievement_A            = fields[11].GetUInt32();
 
         if (ar.item)
         {
@@ -6036,6 +6037,15 @@ void ObjectMgr::LoadAccessRequirements()
             {
                 sLog->outError(LOG_FILTER_SQL, "Required Achievement %u not exist for map %u difficulty %u, remove quest done requirement.", ar.achievement, mapid, difficulty);
                 ar.achievement = 0;
+            }
+        }
+
+        if (ar.achievement_A)
+        {
+            if (!sAchievementStore.LookupEntry(ar.achievement_A))
+            {
+                sLog->outError(LOG_FILTER_SQL, "Required achievement_A %u not exist for map %u difficulty %u, remove quest done requirement.", ar.achievement_A, mapid, difficulty);
+                ar.achievement_A = 0;
             }
         }
 
