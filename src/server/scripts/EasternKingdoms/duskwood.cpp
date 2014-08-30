@@ -43,7 +43,7 @@ class at_twilight_grove : public AreaTriggerScript
 public:
     at_twilight_grove() : AreaTriggerScript("at_twilight_grove") { }
 
-    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/, bool /*enter*/)
     {
         if (player->HasQuestForItem(21149))
         {

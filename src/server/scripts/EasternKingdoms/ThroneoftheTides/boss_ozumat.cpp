@@ -590,7 +590,7 @@ class at_tott_ozumat : public AreaTriggerScript
     public:
         at_tott_ozumat() : AreaTriggerScript("at_tott_ozumat") { }
 
-        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
         {
 		    if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
 		    {

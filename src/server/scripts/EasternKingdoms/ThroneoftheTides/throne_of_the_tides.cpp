@@ -72,7 +72,7 @@ class at_tott_lady_nazjar_event : public AreaTriggerScript
 public:
     at_tott_lady_nazjar_event() : AreaTriggerScript("at_tott_lady_nazjar_event") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
 		if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
 		{

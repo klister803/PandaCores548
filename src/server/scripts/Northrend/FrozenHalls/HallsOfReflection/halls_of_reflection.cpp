@@ -2107,7 +2107,7 @@ class at_hor_waves_restarter : public AreaTriggerScript
     public:
         at_hor_waves_restarter() : AreaTriggerScript("at_hor_waves_restarter") {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/)
         {
             InstanceScript* pInstance = player->GetInstanceScript();
 

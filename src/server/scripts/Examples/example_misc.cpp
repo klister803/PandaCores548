@@ -39,7 +39,7 @@ class AT_example_areatrigger : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/)
         {
             DoScriptText(SAY_HI, player);
             return true;

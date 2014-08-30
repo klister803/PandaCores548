@@ -1015,13 +1015,13 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
-bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
 {
     ASSERT(player);
     ASSERT(trigger);
 
     GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
-    return tmpscript->OnTrigger(player, trigger);
+    return tmpscript->OnTrigger(player, trigger, enter);
 }
 
 Battleground* ScriptMgr::CreateBattleground(BattlegroundTypeId /*typeId*/)

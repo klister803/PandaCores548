@@ -135,7 +135,7 @@ class AreaTrigger_at_map_chamber : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/)
         {
             if (player->GetQuestStatus(QUEST_HIDDEN_CHAMBER) == QUEST_STATUS_INCOMPLETE)
                 player->AreaExploredOrEventHappens(QUEST_HIDDEN_CHAMBER);

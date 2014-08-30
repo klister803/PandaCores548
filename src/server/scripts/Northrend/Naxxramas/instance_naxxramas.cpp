@@ -751,7 +751,7 @@ public:
 //public:
 //    AreaTrigger_at_naxxramas_frostwyrm_wing() : AreaTriggerScript("AreaTrigger_at_naxxramas_frostwyrm_wing") { }
 //
-//bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/)
+//bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/, bool /*enter*/)
 //{
 //    if (pPlayer->isGameMaster())
 //        return false;

@@ -494,7 +494,7 @@ class AreaTriggerScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when the area trigger is activated by a player.
-        virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
+        virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/, bool /*enter*/) { return false; }
 };
 
 class BattlegroundScript : public ScriptObject
@@ -950,7 +950,7 @@ class ScriptMgr
 
     public: /* AreaTriggerScript */
 
-        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
+        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter);
 
     public: /* BattlegroundScript */
 

@@ -658,7 +658,7 @@ class at_tyrannus_event_starter : public AreaTriggerScript
     public:
         at_tyrannus_event_starter() : AreaTriggerScript("at_tyrannus_event_starter") { }
 
-        bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+        bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/, bool /*enter*/)
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance)
@@ -680,7 +680,7 @@ class at_tyrannus_gauntlet_starter : public AreaTriggerScript
 {
     public:
         at_tyrannus_gauntlet_starter() : AreaTriggerScript("at_tyrannus_gauntlet_starter") { }
-        bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+        bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/, bool /*enter*/)
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance)

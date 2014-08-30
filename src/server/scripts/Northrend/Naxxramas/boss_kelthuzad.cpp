@@ -681,7 +681,7 @@ class at_kelthuzad_center : public AreaTriggerScript
 public:
     at_kelthuzad_center() : AreaTriggerScript("at_kelthuzad_center") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry * /*at*/, bool /*enter*/)
     {
         if (pPlayer->isGameMaster())
             return false;

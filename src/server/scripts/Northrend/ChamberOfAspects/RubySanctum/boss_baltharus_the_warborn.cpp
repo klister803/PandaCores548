@@ -398,7 +398,7 @@ class at_baltharus_plateau : public AreaTriggerScript
     public:
         at_baltharus_plateau() : AreaTriggerScript("at_baltharus_plateau") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*enter*/)
         {
             // Only trigger once
             if (InstanceScript* instance = player->GetInstanceScript())

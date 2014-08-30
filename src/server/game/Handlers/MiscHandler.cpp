@@ -1005,10 +1005,10 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 {
     uint32 triggerId;
     recvData >> triggerId;
-    recvData.ReadBit();
-    recvData.ReadBit();
+    bool enter = recvData.ReadBit();
+    bool b2 = recvData.ReadBit();
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u enter %u, bit2 %u", triggerId, enter, b2);
 
     Player* player = GetPlayer();
     if (player->isInFlight())
@@ -1085,7 +1085,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     // set for future scrip using.
     player->SetLastAreaTrigger(atEntry);
 
-    if (sScriptMgr->OnAreaTrigger(player, atEntry))
+    if (sScriptMgr->OnAreaTrigger(player, atEntry, enter))
         return;
 
     if (player->isAlive())

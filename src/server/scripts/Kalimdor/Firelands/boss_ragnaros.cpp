@@ -342,7 +342,7 @@ class at_sulfuron_keep : public AreaTriggerScript
     public:
         at_sulfuron_keep() : AreaTriggerScript("at_sulfuron_keep") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*enter*/)
         {
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (!ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_RAGNAROS)))

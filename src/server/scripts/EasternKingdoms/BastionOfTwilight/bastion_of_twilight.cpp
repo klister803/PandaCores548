@@ -384,7 +384,7 @@ class at_bt_entrance : public AreaTriggerScript
 public:
     at_bt_entrance() : AreaTriggerScript("at_bt_entrance") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -407,7 +407,7 @@ class at_bt_halfus: public AreaTriggerScript
 public:
     at_bt_halfus() : AreaTriggerScript("at_bt_halfus") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -428,7 +428,7 @@ class at_bt_valiona_theralion : public AreaTriggerScript
 public:
     at_bt_valiona_theralion() : AreaTriggerScript("at_bt_valiona_theralion") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -449,7 +449,7 @@ class at_bt_council_1 : public AreaTriggerScript
 public:
     at_bt_council_1() : AreaTriggerScript("at_bt_council_1") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -470,7 +470,7 @@ class at_bt_council_2 : public AreaTriggerScript
 public:
     at_bt_council_2() : AreaTriggerScript("at_bt_council_2") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -491,7 +491,7 @@ class at_bt_council_3 : public AreaTriggerScript
 public:
     at_bt_council_3() : AreaTriggerScript("at_bt_council_3") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -512,7 +512,7 @@ class at_bt_chogall : public AreaTriggerScript
 public:
     at_bt_chogall() : AreaTriggerScript("at_bt_chogall") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {
@@ -533,7 +533,7 @@ class at_bt_sinestra : public AreaTriggerScript
 public:
     at_bt_sinestra() : AreaTriggerScript("at_bt_sinestra") { }
 
-    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
         if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
         {

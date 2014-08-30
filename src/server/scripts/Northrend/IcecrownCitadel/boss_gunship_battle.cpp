@@ -3050,7 +3050,7 @@ class at_icc_land_frostwyrm : public AreaTriggerScript
     public:
         at_icc_land_frostwyrm() : AreaTriggerScript("at_icc_land_frostwyrm") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* areaTrigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* areaTrigger, bool /*enter*/)
         {
             if (InstanceScript* instance = player->GetInstanceScript())
             {

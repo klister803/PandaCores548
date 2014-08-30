@@ -563,7 +563,7 @@ class at_et_tyrande : public AreaTriggerScript
     public:
         at_et_tyrande() : AreaTriggerScript("at_et_tyrande") { }
 
-        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
         {
             if (!pPlayer)
                 return true;

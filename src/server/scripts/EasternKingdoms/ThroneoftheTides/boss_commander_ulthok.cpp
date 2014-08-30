@@ -177,7 +177,7 @@ class at_tott_commander_ulthok : public AreaTriggerScript
     public:
         at_tott_commander_ulthok() : AreaTriggerScript("at_tott_commander_ulthok") { }
 
-        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/)
+        bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
         {
             sLog->outError(LOG_FILTER_SERVER_LOADING, "ulthok");
 		    if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
