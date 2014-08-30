@@ -28455,7 +28455,7 @@ uint32 Player::GetReputation(uint32 factionentry)
 
 std::string Player::GetGuildName()
 {
-    return GetGuildId() ? sGuildMgr->GetGuildById(GetGuildId())->GetName() : "";
+    return GetGuildId() ? (sGuildMgr->GetGuildById(GetGuildId()) ? sGuildMgr->GetGuildById(GetGuildId())->GetName() : "") : "";
 }
 
 Guild* Player::GetGuild()

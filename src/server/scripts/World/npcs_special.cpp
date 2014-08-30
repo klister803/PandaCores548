@@ -2611,6 +2611,8 @@ class npc_mirror_image : public CreatureScript
                 // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
                 // Clone Me!
                 owner->CastSpell(me, 45204, true);
+                me->SetCasterPet(true);
+                me->SetAttackDist(40.0f);
 
                 if (owner->getVictim())
                     me->AI()->AttackStart(owner->getVictim());
@@ -2618,19 +2620,8 @@ class npc_mirror_image : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
-                if (spells.empty())
-                    return;
-
-                for (SpellVct::const_iterator itr = spells.begin(); itr != spells.end(); ++itr)
-                {
-                    if (AISpellInfo[*itr].condition == AICOND_AGGRO)
-                        me->CastSpell(who, *itr, false);
-                    else if (AISpellInfo[*itr].condition == AICOND_COMBAT)
-                    {
-                        uint32 cooldown = GetAISpellInfo(*itr)->realCooldown;
-                        events.ScheduleEvent(*itr, cooldown);
-                    }
-                }
+                me->CastSpell(who, 59638, false);
+                events.ScheduleEvent(59638, 2500);
             }
 
             void UpdateAI(const uint32 diff)
@@ -2664,8 +2655,7 @@ class npc_mirror_image : public CreatureScript
                         return;
                     }
                     DoCast(spellId);
-                    uint32 casttime = me->GetCurrentSpellCastTime(spellId);
-                    events.ScheduleEvent(spellId, (casttime ? casttime : 500) + GetAISpellInfo(spellId)->realCooldown);
+                    events.ScheduleEvent(spellId, 2500);
                 }
             }
 

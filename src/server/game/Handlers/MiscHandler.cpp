@@ -323,7 +323,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         }
 
         // do not process players which are not in world
-        if (!target->IsInWorld())
+        if (!target || !target->IsInWorld())
             continue;
 
         // check if target is globally visible for player

@@ -295,8 +295,8 @@ void CasterAI::InitializeAI()
     for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr)
         if (AISpellInfo[*itr].condition == AICOND_COMBAT && m_attackDist > GetAISpellInfo(*itr)->maxRange)
             m_attackDist = GetAISpellInfo(*itr)->maxRange;
-    if (m_attackDist == MAGIC_RANGE)
-        m_attackDist = MELEE_RANGE;
+    if (m_attackDist < MAGIC_RANGE)
+        m_attackDist = MAGIC_RANGE;
 }
 
 void CasterAI::EnterCombat(Unit* who)
