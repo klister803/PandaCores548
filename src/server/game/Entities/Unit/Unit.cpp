@@ -16398,6 +16398,8 @@ void Unit::RemoveFromWorld()
 
     if (IsInWorld())
     {
+        m_VisibilityUpdateTask  = false;
+        m_VisibilityUpdScheduled = false;
         m_duringRemoveFromWorld = true;
         if (IsVehicle())
             RemoveVehicleKit();
@@ -19851,7 +19853,8 @@ void Unit::OnRelocated()
     if (m_VisibilityUpdateTask)
         return;
 
-    if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit)) {
+    if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
+    {
         m_lastVisibilityUpdPos = *this;
         m_VisibilityUpdateTask = true;
         m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
@@ -20747,6 +20750,9 @@ void Unit::_ExitVehicle(Position const* exitPosition)
                                                 // because we calculate positions incorrect (sometimes under map)
     else
         pos = *exitPosition;
+
+    // Privent unomal relocation out of map while doing some spline at exit from vehicle
+    DisableSpline();
 
     AddUnitState(UNIT_STATE_MOVE);
 
