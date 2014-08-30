@@ -931,7 +931,7 @@ public:
     explicit DamageInfo(SpellNonMeleeDamage& dmgInfo);
 
     void ModifyDamage(int32 amount);
-    void AbsorbDamage(uint32 amount);
+    void AbsorbDamage(int32 amount);
     void ResistDamage(uint32 amount);
     void BlockDamage(uint32 amount);
 

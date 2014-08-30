@@ -2492,6 +2492,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         
         switch (m_spellInfo->Id)
         {
+            case 148009: // Spirit of Chi-Ji
+            {
+                addhealth /= m_UniqueTargetInfo.size();
+                break;
+            }
             case 130551: // Word of Glory
             case 114163: // Eternal Flame
             {

@@ -123,9 +123,9 @@ void DamageInfo::ModifyDamage(int32 amount)
     m_damage += amount;
 }
 
-void DamageInfo::AbsorbDamage(uint32 amount)
+void DamageInfo::AbsorbDamage(int32 amount)
 {
-    amount = std::min(amount, GetDamage());
+    amount = std::min(amount, int32(GetDamage()));
     m_absorb += amount;
     m_damage -= amount;
 }
@@ -1987,8 +1987,11 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         if (defaultPrevented)
             continue;
 
+        if (currentAbsorb != dmgInfo.GetAbsorb())
+            currentAbsorb = dmgInfo.GetAbsorb();
+
         // Check if our aura is using amount to count damage
-        if (absorbAurEff->GetAmount() >= 0)
+        if (absorbAurEff->GetAmount() >= 0 && currentAbsorb)
         {
             // Reduce shield amount
             absorbAurEff->SetAmount(absorbAurEff->GetAmount() - currentAbsorb);
@@ -6412,6 +6415,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 146200: // Spirit of Chi-Ji
+                {
+                    basepoints0 = damage - (target->GetMaxHealth() - target->GetHealth());
+
+                    if (basepoints0 > 0)
+                        triggered_spell_id = 148009;
+                    break;
+                }
                 case 146136: // Cleave
                 {
                     int32 rollchance = urand(0, 10000);
@@ -18466,6 +18477,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 if(procPPMmod->specId == specId)
                                     spellPPM *= procPPMmod->ppmRateMod + 1;
                         }
+                    spellPPM *= player->GetBaseMHastRatingPct();
                 }
                 uint32 WeaponSpeed = GetAttackTime(attType);
                 chance = GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);
@@ -18482,6 +18494,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 if(procPPMmod->specId == specId)
                                     spellPPM *= procPPMmod->ppmRateMod + 1;
                         }
+                    spellPPM *= player->GetBaseMHastRatingPct();
                 }
                 uint32 WeaponSpeed = victim->GetAttackTime(attType);
                 chance = victim->GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);

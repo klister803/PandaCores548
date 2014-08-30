@@ -850,6 +850,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
         case SPELL_AURA_PERIODIC_DUMMY:
         {
+            switch (m_spellInfo->Id)
+            {
+                case 146198: // Essence of Yu'lon
+                {
+                    SpellInfo const* _info = sSpellMgr->GetSpellInfo(148008);
+                    amount = caster->SpellBaseDamageBonusDone(_info->GetSchoolMask()) * _info->Effects[EFFECT_0].BonusMultiplier / GetTotalTicks(); 
+                    break;
+                }
+                default:
+                    break;
+            }
             if(m_aura_amount)
             {
                 amount = m_aura_amount;
@@ -6814,6 +6825,39 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_GENERIC:
             switch (GetId())
             {
+                case 146198: // Essence of Yu'lon
+                {
+                    caster->CastCustomSpell(target, 148008, &m_amount, 0, 0, true, 0, this);
+                    break;
+                }
+                case 146199: // Spirit of Chi-Ji
+                {
+                    if (!caster->isInCombat())
+                        if (roll_chance_i(50))
+                            caster->CastSpell(caster, 148956, true);
+                    break;
+                }
+                case 146195: // Flurry of Xuen
+                {
+                    if (!caster->isInCombat())
+                        if (roll_chance_i(50))
+                            caster->CastSpell(caster, 148957, true);
+                    break;
+                }
+                case 146193: // Endurance of Niuzao
+                {
+                    if (!caster->isInCombat())
+                        if (roll_chance_i(50))
+                            caster->CastSpell(caster, 148958, true);
+                    break;
+                }
+                case 146197: // Essence of Yu'lon
+                {
+                    if (!caster->isInCombat())
+                        if (roll_chance_i(50))
+                            caster->CastSpell(caster, 148954, true);
+                    break;
+                }
                 case 145108: // Ysera's Gift
                 {
                     uint32 triggerSpell = caster->IsFullHealth() ? 145110: 145109;

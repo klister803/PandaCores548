@@ -224,6 +224,18 @@ std::list<uint32> GetGameObjectsList()
 
 ItemUpgradeData const* GetItemUpgradeData(uint32 itemEntry)
 {
+    switch (itemEntry)
+    {
+        case 102248: itemEntry = 105277; break;
+        case 102249: itemEntry = 98147;  break;
+        case 102245: itemEntry = 98335;  break;
+        case 102250: itemEntry = 98146;  break;
+        case 102247: itemEntry = 98149;  break;
+        case 102246: itemEntry = 98150;  break;
+        default:
+            break;
+    }
+
     ItemUpgradeDataMap::iterator itr = sItemUpgradeDataMap.find(itemEntry);
     if (itr == sItemUpgradeDataMap.end())
         return NULL;

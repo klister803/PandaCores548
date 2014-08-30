@@ -3524,6 +3524,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 146194:
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
+                    break;
                 case 51640: // Taunt Flag Targeting
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;

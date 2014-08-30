@@ -1160,6 +1160,17 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             case SPELLFAMILY_GENERIC:
                 switch (m_spellInfo->Id)
                 {
+                    case 148008: // Essence of Yu'lon
+                    {
+                        maxSize = 5;
+                        break;
+                    }
+                    case 148009: // Spirit of Chi-Ji
+                    {
+                        maxSize = 5;
+                        power = POWER_HEALTH;
+                        break;
+                    }
                     case 113828: // Healing Touch
                     {
                         unitTargets.push_back(m_caster);

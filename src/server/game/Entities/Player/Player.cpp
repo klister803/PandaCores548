@@ -5578,6 +5578,20 @@ uint32 Player::GetRoleForGroup(uint32 specializationId)
     return roleId;
 }
 
+bool Player::isInTankSpec()
+{
+    switch (GetSpecializationId(GetActiveSpec()))
+    {
+        case SPEC_MONK_BREWMASTER:
+        case SPEC_DK_BLOOD:
+        case SPEC_WARRIOR_PROTECTION:
+        case SPEC_DROOD_BEAR:
+        case SPEC_PALADIN_PROTECTION:
+            return true;
+    }
+    return false;
+}
+
 Mail* Player::GetMail(uint32 id)
 {
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)

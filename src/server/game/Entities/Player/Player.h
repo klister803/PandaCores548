@@ -2088,6 +2088,7 @@ class Player : public Unit, public GridObject<Player>
         void SetSpecializationId(uint8 spec, uint32 id);
         uint32 GetSpecializationId(uint8 spec) const { return _talentMgr->SpecInfo[spec].SpecializationId; }
         uint32 GetRoleForGroup(uint32 specializationId);
+        bool isInTankSpec();
 
         bool ResetTalents(bool no_cost = false);
         uint32 GetNextResetTalentsCost() const;

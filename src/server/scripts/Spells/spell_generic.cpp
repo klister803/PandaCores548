@@ -34,6 +34,47 @@
 #include "Group.h"
 #include "LFGMgr.h"
 
+class spell_endurance_of_niuzao : public SpellScriptLoader
+{
+    public:
+        spell_endurance_of_niuzao() : SpellScriptLoader("spell_endurance_of_niuzao") { }
+
+        class spell_endurance_of_niuzao_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_endurance_of_niuzao_AuraScript);
+
+            void AfterAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* owner = GetUnitOwner())
+                {
+                    if (Player* plr = owner->ToPlayer())
+                        if (dmgInfo.GetAbsorb() < owner->GetHealth() || owner->HasAura(148010) || !plr->isInTankSpec())
+                        {
+                            dmgInfo.AbsorbDamage(-(int32(absorbAmount)));
+                            if (SpellInfo const* info = aurEff->GetSpellInfo())
+                                if (aurEff->GetAmount() != info->Effects[EFFECT_0].BasePoints)
+                                    aurEff->SetAmount(info->Effects[EFFECT_0].BasePoints);
+                        }
+                        else
+                        {
+                            owner->AddAura(148010, owner);
+                            owner->AddAura(148958, owner);
+                        }
+                }
+            }
+
+            void Register()
+            {
+                 AfterEffectAbsorb += AuraEffectAbsorbFn(spell_endurance_of_niuzao_AuraScript::AfterAbsorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_endurance_of_niuzao_AuraScript();
+        }
+};
+
 class spell_gen_absorb0_hitlimit1 : public SpellScriptLoader
 {
     public:
@@ -3749,6 +3790,7 @@ class spell_gen_drums_of_rage : public SpellScriptLoader
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_endurance_of_niuzao();
     new spell_gen_absorb0_hitlimit1();
     new spell_gen_aura_of_anger();
     new spell_gen_av_drekthar_presence();
