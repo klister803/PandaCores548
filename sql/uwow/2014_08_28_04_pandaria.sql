@@ -12,24 +12,21 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 
 INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
 (65471, 0, 0, 0, 25, 0, 100, 0, 0, 0, 0, 0, 42, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Reset - Invincibility HP Level 1'),
-(65471, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 2, 2263, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Set Faction To 35'),
-(65471, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Link - Talk Random Text'),
-(65471, 0, 3, 4, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
-(65471, 0, 4, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
-(65471, 0, 5, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
+(65471, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Talk Random Text'),
+(65471, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
+(65471, 0, 3, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
+(65471, 0, 4, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
 
 INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
 (54587, 0, 0, 0, 25, 0, 100, 0, 0, 0, 0, 0, 42, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Reset - Invincibility HP Level 1'),
-(54587, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 2, 2263, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Set Faction To 35'),
-(54587, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Link - Talk Random Text'),
-(54587, 0, 3, 4, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
-(54587, 0, 4, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
-(54587, 0, 5, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
+(54587, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Talk Random Text'),
+(54587, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
+(54587, 0, 3, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
+(54587, 0, 4, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
 
 --
-
 DELETE FROM spell_area WHERE spell in (128700, 120749, 118036,
-107027, 107032, 100709, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
+107027, 107032, 100709, 102403, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102868, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 102398, 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
 126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447, 115449, 117973, 105525, 117501, 117783, 108931,
@@ -42,6 +39,9 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('118036', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
 --
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
+--
+('102403', '5834', '29524', '29524', '0', '0', '2', '1', '8', '66'),
+--
 ('107028', '5834', '29406', '29409', '0', '0', '2', '1', '74', '66'),
 ('107027', '5834', '29406', '29409', '0', '0', '2', '1', '74', '66'),
 --
@@ -385,11 +385,10 @@ UPDATE `creature_template` SET `AIName` = 'AggressorAI' WHERE `creature_template
 -- ----------------------------------------
 -- Q: 29662 Stronger Than Reeds
 -- ----------------------------------------
-
-UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55021;
-DELETE FROM smart_scripts WHERE entryorguid = 55021;
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(55021, 0, 0, 0, 50, 0, 100, 0, 29662, 0, 0, 0, 11, 108786, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29662');
+UPDATE `quest_template` SET `CompleteScript` = '29662' WHERE `Id` = 29662;
+DELETE FROM `quest_end_scripts` WHERE id = 29662;
+INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
+('29662', '0', '15', '108786', '2', '0', '0', '0', '0', '0');
 
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_1' WHERE `creature_template`.`entry` = 57638;
@@ -541,10 +540,10 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 -- ----------------------------------------
 -- Q: 29771 Stronger Than Wood
 -- ----------------------------------------
-UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55478;
-DELETE FROM smart_scripts WHERE entryorguid = 55478;
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(55478, 0, 0, 0, 50, 0, 100, 0, 29771, 0, 0, 0, 11, 108827, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29662');
+UPDATE `quest_template` SET `CompleteScript` = '29771' WHERE `Id` = 29771;
+DELETE FROM `quest_end_scripts` WHERE id = 29771;
+INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
+('29771', '0', '15', '108827', '1', '0', '0', '0', '0', '0');
 
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_2' WHERE `entry` = 57669;
@@ -685,11 +684,10 @@ INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALU
 -- Q: 29783 Stronger Than Stone
 -- ----------------------------------------
 
-UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=55585;
-DELETE FROM smart_scripts WHERE entryorguid = 55585;
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(55585, 0, 0, 0, 50, 0, 100, 0, 29783, 0, 0, 0, 11, 108847, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29783'),
-(55585, 0, 1, 0, 50, 0, 100, 0, 29782, 0, 0, 0, 11, 108858, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'At finish q: 29782');
+UPDATE `quest_template` SET `CompleteScript` = '29783' WHERE `Id` = 29783;
+DELETE FROM `quest_end_scripts` WHERE id = 29783;
+INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
+('29783', '0', '15', '108847', '1', '0', '0', '0', '0', '0');
 
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_3' WHERE `entry` = 57670;
@@ -712,6 +710,10 @@ INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `t
 -- ----------------------------------------
 -- Q: 29782 Stronger Than Bone
 -- ----------------------------------------
+UPDATE `quest_template` SET `CompleteScript` = '29782' WHERE `Id` = 29782;
+DELETE FROM `quest_end_scripts` WHERE id = 29782;
+INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
+('29782', '0', '15', '108858', '1', '0', '0', '0', '0', '0');
 
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_4' WHERE `entry` = 57692;
 DELETE FROM `creature_text` WHERE entry =57692;
@@ -907,7 +909,7 @@ DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` = 55918;
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
 (55918, 46598, 1, 0),
 (55918, 128815, 1, 0);
-DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceEntry` = 72240;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 18 AND `SourceGroup` = 55918;
 REPLACE INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ConditionTypeOrReference`, `ConditionTarget`,`ConditionValue1`,`ConditionValue2`,`NegativeCondition`,`Comment`)VALUES 
 (18, 55918, 128815, 9, 0, 29791, 0, 0, 'Required quest active for spellclick'),
 (18, 55918, 128815, 31, 0, 4, 0, 0, 'Spellclick for player'),

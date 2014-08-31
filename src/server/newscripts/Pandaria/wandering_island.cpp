@@ -3,6 +3,7 @@
 #include "CreatureTextMgr.h"
 #include "Battleground.h"
 #include "MapManager.h"
+#include "ScriptMgr.h"
 
 enum panda_text
 {
@@ -1113,7 +1114,7 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
         AreaTrigger_at_temple_entrance() : AreaTriggerScript("AreaTrigger_at_temple_entrance")
         {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
         {
             if (player->GetQuestStatus(QUEST_PASSION_OF_SHEN) == QUEST_STATUS_INCOMPLETE)
             {
@@ -1153,7 +1154,7 @@ class at_going_to_east : public AreaTriggerScript
         at_going_to_east() : AreaTriggerScript("at_going_to_east")
         {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
         {
             if (player->HasAura(SPELL_CSA_AT_TIMER) || player->ToPlayer()->GetQuestStatus(QUEST_SINGING_POOLS) != QUEST_STATUS_COMPLETE) 
                 return true;
@@ -1250,6 +1251,23 @@ public:
     };
 };
 
+class checkArea : public BasicEvent
+{
+    Player* player;
+    uint32 spellId;
+public:
+    explicit checkArea(Player * me, uint32 sp) : player(me), spellId(sp) {}
+
+    virtual bool Execute(uint64 , uint32)
+    {
+        LiquidData liquidStatus;
+        ZLiquidStatus status = player->GetMap()->getLiquidStatus(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
+        if (!player->IsOnVehicle() && status == LIQUID_MAP_IN_WATER)
+            player->AddAura(spellId, player);
+        return true;
+    }
+};
+
 class AreaTrigger_at_bassin_curse : public AreaTriggerScript
 {
     public:
@@ -1276,16 +1294,15 @@ class AreaTrigger_at_bassin_curse : public AreaTriggerScript
             SPELL_CROCODILE         = 102942,
         };
 
-        void AddOrRemoveSpell(Player* player, uint32 spellId)
+        void AddOrRemoveSpell(Player* player, uint32 spellId, bool enter)
         {
             RemoveAllSpellsExcept(player, spellId);
 
             if (!player->HasAura(spellId))
             {
-                if (!player->IsOnVehicle())
-                    player->AddAura(spellId, player);
+                player->m_Events.AddEvent(new checkArea(player, spellId), player->m_Events.CalculateTime(1000));
             }
-            else
+            else if (!enter)
                 player->RemoveAurasDueToSpell(spellId);
         }
 
@@ -1298,19 +1315,19 @@ class AreaTrigger_at_bassin_curse : public AreaTriggerScript
                     player->RemoveAurasDueToSpell(spellTable[i]);
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
         {
-            if (player->IsOnVehicle())
-                return true;
+            //if (player->IsOnVehicle())
+            //    return true;
 
             switch(trigger->id)
             {
-                case AREA_CRANE:     AddOrRemoveSpell(player, SPELL_CRANE);     break;
-                case AREA_SKUNK:     AddOrRemoveSpell(player, SPELL_SKUNK);     break;
-                case AREA_FROG: case AREA_FROG_EXIT:      AddOrRemoveSpell(player, SPELL_FROG);      break;
+                case AREA_CRANE:     AddOrRemoveSpell(player, SPELL_CRANE, enter);     break;
+                case AREA_SKUNK:     AddOrRemoveSpell(player, SPELL_SKUNK, enter);     break;
+                case AREA_FROG: case AREA_FROG_EXIT: AddOrRemoveSpell(player, SPELL_FROG, enter);      break;
                 //case AREA_FROG_EXIT: RemoveAllSpellsExcept(player, 0);          break;
-                case AREA_TURTLE:    AddOrRemoveSpell(player, SPELL_TURTLE);    break;
-                case AREA_CROCODILE: AddOrRemoveSpell(player, SPELL_CROCODILE); break;
+                case AREA_TURTLE:    AddOrRemoveSpell(player, SPELL_TURTLE, enter);    break;
+                case AREA_CROCODILE: AddOrRemoveSpell(player, SPELL_CROCODILE, enter); break;
             }
 
             return true;
@@ -1326,16 +1343,25 @@ class vehicle_balance_pole : public VehicleScript
         void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 /*seatId*/)
         {
             if (passenger->HasAura(102938))
-                //passenger->RemoveAurasDueToSpell(102938);
                 passenger->ExitVehicle();
         }
 
         void OnRemovePassenger(Vehicle* veh, Unit* passenger)
         {
+            Player* p = passenger->ToPlayer();
+            if (!p || !p->GetLastAreaTrigger())
+                return;
+
+            sScriptMgr->OnAreaTrigger(p, p->GetLastAreaTrigger(), true);
             //passenger->AddAura(102938, passenger);
         }
 };
 
+/*
+blizz create random pole... one model set invisible. this enable all visible.
+UPDATE `creature_template` SET `modelid2` = '0' WHERE `entry` in (54993, 55083, 57431);
+UPDATE `creature_template` SET `modelid1` = '38347', `modelid2` = '0' WHERE `entry` = 57626;
+*/
 class mob_tushui_monk : public CreatureScript
 {
 public:
@@ -1386,8 +1412,11 @@ public:
                 if (me->GetVehicle())
                     return;
 
+                me->StopMoving();
+
                 if (Creature * c = me->GetMap()->SummonCreature(NPC_VEH, *me, NULL, 0, NULL, 0, 0, 1749))
                 {
+                    c->SetDisplayId(39004);
                     me->EnterVehicle(c);
                     vehGUID = c->GetGUID();
                 }else
@@ -1422,6 +1451,7 @@ public:
 
         enum eSpell
         {
+            NPC_TARGET          = 57636,
             SUPER_DUPER_KULAK   = 129272,
         };
 
@@ -1455,7 +1485,8 @@ public:
                         events.ScheduleEvent(EVENT_2, 10000);
                         break;
                     case EVENT_2:
-                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        if (Creature* target = me->FindNearestCreature(NPC_TARGET, 50.0f, true))
+                            me->CastSpell(target, SUPER_DUPER_KULAK, true);
                         events.ScheduleEvent(EVENT_3, 3000);
                         break;
                     case EVENT_3:
@@ -2092,7 +2123,7 @@ class AreaTrigger_at_middle_temple_from_east : public AreaTriggerScript
         AreaTrigger_at_middle_temple_from_east() : AreaTriggerScript("AreaTrigger_at_middle_temple_from_east")
         {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
         {
             player->RemoveAllMinionsByEntry(60916);
             player->RemoveAllMinionsByEntry(55558);
@@ -2633,7 +2664,7 @@ class AreaTrigger_at_wind_temple_entrance : public AreaTriggerScript
             SUMMON_SPELL    = 104571,
         };
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter)
         {
             if (player->GetQuestStatus(QUST_DAFENG_SPIRIT_OF_AIR) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SUMMON_SPELL))
             {
