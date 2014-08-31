@@ -543,7 +543,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 UPDATE `quest_template` SET `CompleteScript` = '29771' WHERE `Id` = 29771;
 DELETE FROM `quest_end_scripts` WHERE id = 29771;
 INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
-('29771', '0', '15', '108827', '1', '0', '0', '0', '0', '0');
+('29771', '0', '15', '108827', '2', '0', '0', '0', '0', '0');
 
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_2' WHERE `entry` = 57669;
@@ -687,7 +687,7 @@ INSERT INTO `db_script_string` (`entry`, `content_default`, `content_loc8`) VALU
 UPDATE `quest_template` SET `CompleteScript` = '29783' WHERE `Id` = 29783;
 DELETE FROM `quest_end_scripts` WHERE id = 29783;
 INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
-('29783', '0', '15', '108847', '1', '0', '0', '0', '0', '0');
+('29783', '0', '15', '108847', '2', '0', '0', '0', '0', '0');
 
 -- cast 129272 Jojo Ironbrow
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_3' WHERE `entry` = 57670;
@@ -713,7 +713,7 @@ INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `t
 UPDATE `quest_template` SET `CompleteScript` = '29782' WHERE `Id` = 29782;
 DELETE FROM `quest_end_scripts` WHERE id = 29782;
 INSERT INTO `quest_end_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES 
-('29782', '0', '15', '108858', '1', '0', '0', '0', '0', '0');
+('29782', '0', '15', '108858', '2', '0', '0', '0', '0', '0');
 
 UPDATE `creature_template` SET `ScriptName` = 'mob_jojo_ironbrow_4' WHERE `entry` = 57692;
 DELETE FROM `creature_text` WHERE entry =57692;

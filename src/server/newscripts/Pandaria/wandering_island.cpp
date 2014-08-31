@@ -1938,6 +1938,7 @@ public:
 
         enum eSpell
         {
+            NPC_TARGET          = 57667,
             SUPER_DUPER_KULAK   = 129293,
         };
 
@@ -1971,7 +1972,8 @@ public:
                         events.ScheduleEvent(EVENT_2, 10000);
                         break;
                     case EVENT_2:
-                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        if (Creature* target = me->FindNearestCreature(NPC_TARGET, 50.0f, true))
+                            me->CastSpell(target, SUPER_DUPER_KULAK, true);
                         events.ScheduleEvent(EVENT_3, 3000);
                         break;
                     case EVENT_3:
@@ -2371,6 +2373,7 @@ public:
 
         enum eSpell
         {
+            NPC_TARGET          = 57668,
             SUPER_DUPER_KULAK   = 129294,
         };
 
@@ -2401,7 +2404,8 @@ public:
                         events.ScheduleEvent(EVENT_2, 10000);
                         break;
                     case EVENT_2:
-                        me->CastSpell(me, SUPER_DUPER_KULAK, true);
+                        if (Creature* target = me->FindNearestCreature(NPC_TARGET, 50.0f, true))
+                            me->CastSpell(target, SUPER_DUPER_KULAK, true);
                         events.ScheduleEvent(EVENT_3, 3000);
                         break;
                     case EVENT_3:
