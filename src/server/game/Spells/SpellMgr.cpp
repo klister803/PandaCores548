@@ -3555,10 +3555,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 5487:  // Bear Form
                     spellInfo->Effects[2].BasePoints = 120;
                     break;
-                case 96172: // Hand of Light
-                case 83077: // Improved Serpent Sting
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
-                    break;
                 case 53503: // Sword of Light
                     spellInfo->Effects[2].SpellClassMask[2] |= 2097152;
                     break;
@@ -3589,9 +3585,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 74434: // Soulburn
                     spellInfo->Effects[1].BasePoints = -100;
                     spellInfo->Effects[1].SpellClassMask[0] |= 33024;
-                    break;
-                case 85288: // Raging Blow
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 case 81269: // Efflorescence
                     spellInfo->Effects[0].ScalingMultiplier = 1.5309f;
@@ -4187,11 +4180,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115268: // Mesmerize (succubus)
                     spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
                     break;
-                case 131740:// Corruption (Malefic Grasp)
-                case 131736:// Unstable Affliction (Malefic Grasp)
-                case 132566:// Seed of Corruption (Malefic Grasp)
-                case 131737:// Agony (Malefic Grasp)
-                case 148022:// Icicle
+                case 131740: // Corruption (Malefic Grasp)
+                case 131736: // Unstable Affliction (Malefic Grasp)
+                case 132566: // Seed of Corruption (Malefic Grasp)
+                case 131737: // Agony (Malefic Grasp)
+                case 148022: // Icicle
+                case 85288:  // Raging Blow
+                case 114908: // Spirit Shell
+                case 47753:  // Divine Aegis
+                case 77535:  // Mastery: Blood Shield
+                case 86273:  // Mastery: Illuminated Healing
+                case 96172:  // Hand of Light
+                case 83077:  // Improved Serpent Sting
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                     break;
                 case 44544: // Fingers of Frost

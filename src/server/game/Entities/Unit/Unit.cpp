@@ -2169,7 +2169,7 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
     if (!victim || !spellProto)
         return amount;
 
-    if (spellProto->Id == 114908 || spellProto->Id == 47753)
+    if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return amount;
 
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
