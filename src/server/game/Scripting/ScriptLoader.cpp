@@ -690,7 +690,8 @@ void AddSC_boss_void_reaver();
 void AddSC_boss_high_astromancer_solarian();
 void AddSC_instance_the_eye();
 void AddSC_the_eye();
-void AddSC_boss_gatewatcher_iron_hand();     //TK The Mechanar
+void AddSC_boss_gatewatcher_gyrokill();      //TK The Mechanar
+void AddSC_boss_gatewatcher_iron_hand();
 void AddSC_boss_nethermancer_sepethrea();
 void AddSC_boss_pathaleon_the_calculator();
 void AddSC_boss_mechano_lord_capacitus();
@@ -1355,7 +1356,8 @@ void AddOutlandScripts()
     AddSC_boss_high_astromancer_solarian();
     AddSC_instance_the_eye();
     AddSC_the_eye();
-    AddSC_boss_gatewatcher_iron_hand();     //TK The Mechanar
+    void AddSC_boss_gatewatcher_gyrokill();  //TK The Mechanar
+    AddSC_boss_gatewatcher_iron_hand();
     AddSC_boss_nethermancer_sepethrea();
     AddSC_boss_pathaleon_the_calculator();
     AddSC_boss_mechano_lord_capacitus();
