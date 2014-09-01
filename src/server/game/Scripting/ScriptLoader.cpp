@@ -1356,7 +1356,7 @@ void AddOutlandScripts()
     AddSC_boss_high_astromancer_solarian();
     AddSC_instance_the_eye();
     AddSC_the_eye();
-    void AddSC_boss_gatewatcher_gyrokill();  //TK The Mechanar
+    AddSC_boss_gatewatcher_gyrokill();  //TK The Mechanar
     AddSC_boss_gatewatcher_iron_hand();
     AddSC_boss_nethermancer_sepethrea();
     AddSC_boss_pathaleon_the_calculator();
