@@ -10,32 +10,18 @@ INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_
 (57748, 0, 0, 0, 1, 0, 100, 0, 4000, 4000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'master cung-fu panda'),
 (61411, 0, 0, 0, 1, 0, 100, 0, 4000, 4000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'master cung-fu panda');
 
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(65471, 0, 0, 0, 25, 0, 100, 0, 0, 0, 0, 0, 42, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Reset - Invincibility HP Level 1'),
-(65471, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Talk Random Text'),
-(65471, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
-(65471, 0, 3, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
-(65471, 0, 4, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
-
-INSERT INTO `smart_scripts` (`entryorguid`, `source_type`, `id`, `link`, `event_type`, `event_phase_mask`, `event_chance`, `event_flags`, `event_param1`, `event_param2`, `event_param3`, `event_param4`, `action_type`, `action_param1`, `action_param2`, `action_param3`, `action_param4`, `action_param5`, `action_param6`, `target_type`, `target_param1`, `target_param2`, `target_param3`, `target_x`, `target_y`, `target_z`, `target_o`, `comment`) VALUES
-(54587, 0, 0, 0, 25, 0, 100, 0, 0, 0, 0, 0, 42, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Reset - Invincibility HP Level 1'),
-(54587, 0, 1, 2, 2, 0, 100, 1, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'HP <5% - Talk Random Text'),
-(54587, 0, 2, 3, 61, 0, 100, 0, 0, 0, 0, 0, 33, 54586, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 'Link - Kill Credit'),
-(54587, 0, 3, 0, 61, 0, 100, 0, 0, 0, 0, 0, 41, 3000, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Despawn'),
-(54587, 0, 4, 0, 1, 0, 100, 0, 5000, 5000, 5000, 5000, 5, 543, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'cung-fu panda');
-
 --
 DELETE FROM spell_area WHERE spell in (128700, 120749, 118036,
 107027, 107032, 100709, 102403, 107028, 100711, 102194, 107033, 102429, 102393, 102395, 114735, 102396, 102397, 
 102399, 102400, 102868, 102521, 108150, 108879, 102873, 102869, 103051, 108834, 102872, 102874, 102870, 102875, 116571, 102871, 128574, 103538,
 102398, 114455, 109303, 108835, 108823, 108822, 104018, 118028, 104017, 108844, 108842, 105308, 105307, 105005, 105306, 104567, 104334, 104566,
-126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 115448, 115447, 115449, 117973, 105525, 117501, 117783, 108931,
+126059, 105333, 106623, 105001, 105002, 105095, 115426, 115435, 115446, 106494, 106622, 115448, 115447, 115449, 117973, 105525, 117501, 117783, 108931,
 105096, 108914, 104028) AND  
-area in(5834, 5843, 5825, 5835, 5736, 5846, 5849, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828, 5944, 5833);
+area in(5834, 5843, 5825, 5835, 5736, 5846, 5849, 5862, 5827, 5881, 5826, 5860, 5830, 5946, 5831, 5886, 5832, 5829, 5820, 5828, 5944, 5833, 5356);
 INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spell`, `racemask`, `gender`, `autocast`, `quest_start_status`, `quest_end_status`) VALUES 
 -- unk. custom
 ('128700', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
-('120749', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
+('120749', '5356', '0', '0', '0', '0', '2', '0', '0', '0'),
 ('118036', '5736', '0', '0', '0', '0', '2', '0', '0', '0'),
 --
 ('100709', '5736', '0', '29524', '0', '0', '2', '1', '0', '66'),
@@ -143,6 +129,8 @@ INSERT INTO `spell_area` (`spell`, `area`, `quest_start`, `quest_end`, `aura_spe
 ('105095', '5820', '29791', '0', '0', '0', '2', '1', '74', '0'),    -- мастер в храме
 ('106494', '5820', '29792', '0', '0', '0', '2', '1', '74', '0'),
 --
+('106622', '5832', '29787', '29790', '0', '0', '2', '1', '66', '74'),
+--
 ('115426', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
 ('115435', '5736', '29792', '29792', '0', '0', '2', '0', '8', '66'),    -- no autocast
 -- 115446
@@ -177,12 +165,8 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (23, 5736, 6, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29665', ''),
 (23, 5736, 6, 0, 0, 8, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
 (23, 5736, 6, 0, 1, 28, 0, 29786, 0, 0, 0, 0, 'Pandaren Start loc: tarrain 975 while rewarded 29786', ''),
-(23, 5736, 7, 0, 0, 28, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 while not rewarded 29790', ''),
-(23, 5736, 7, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not complete 29790', ''),
-(23, 5736, 7, 0, 0, 9, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain 975 or not taken 29790', ''),
-(23, 5736, 8, 0, 0, 8, 0, 29790, 0, 0, 1, 0, 'Pandaren Start loc: tarrain not rewarded 29790', ''),
-(23, 5736, 9, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: phase 3 while rewarded 29793', ''),
-(23, 5736, 9, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: phase 3 while not rewarded 29665', '');
+(23, 5736, 7, 0, 0, 8, 0, 29793, 0, 0, 0, 0, 'Pandaren Start loc: phase 3 while rewarded 29793', ''),
+(23, 5736, 7, 0, 0, 8, 0, 29665, 0, 0, 1, 0, 'Pandaren Start loc: phase 3 while not rewarded 29665', '');
 
 DELETE FROM phase_definitions WHERE `zoneId` = 5736;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `wmAreaId`, `comment`) VALUES
@@ -192,11 +176,32 @@ INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `ter
 (5736, 4, 3, 34604, 0, 0, 'Pandaren Start loc: 3part. Wind cavern'), -- phase
 (5736, 5, 5, 34094, 0, 0, 'Pandaren Start loc: 3part. Battle for the Skies'), -- phase
 (5736, 6, 9, 524, 0, 0, 'Pandaren Start loc: 3part. Wind cavern. Finish'), -- phase
-(5736, 7, 3, 34653, 0, 0, 'Pandaren Start loc: 3part end'),
-(5736, 8, 17, 0, 0, 0, 'Master Shan SI is Alive'), -- phase
-(5736, 9, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end');
+(5736, 7, 3, 34095, 0, 0, 'Pandaren Start loc: 3part end');
 
 UPDATE `gameobject` SET id = 210005 WHERE id = 210019;
+
+-- ----------------------------------------
+-- Q: 29524 The Lesson of Stifled Pride
+-- ----------------------------------------
+UPDATE  `creature_template` SET  `AIName`='', `ScriptName` =  'mob_tushui_trainee' WHERE  `entry`  in (54587, 65471);
+DELETE FROM `creature_text` WHERE entry =65471;
+DELETE FROM `locales_creature_text` WHERE `entry` = 65471;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(65471, 0, 0, 'Моему искусству не сравниться с твоим. Я признаю поражение.', 12, 0, 100, 1, 0, 33646, 'Ученик Тушуй'),
+(65471, 0, 1, 'Прекрасный бой. Мне можно будет многому у тебя научиться.', 12, 0, 100, 1, 0, 33645, 'Ученик Тушуй'),
+(65471, 0, 2, 'Мне никогда не приходилось видеть таких способных новичков. Я должна рассказать остальным.', 12, 0, 100, 1, 0, 33643, 'Ученик Тушуй'),
+(65471, 0, 3, 'Достойный поединок, друг.', 12, 0, 100, 1, 0, 33646, 'Ученик Тушуй'),
+(65471, 0, 4, 'Моему искусству не сравниться с твоим. Я признаю поражение.', 12, 0, 100, 1, 0, 33646, 'Ученик Тушуй');
+
+DELETE FROM `creature_text` WHERE entry =54587;
+DELETE FROM `locales_creature_text` WHERE `entry` = 54587;
+INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+(54587, 0, 0, 'Это был хороший бой. Благодарю тебя.', 12, 0, 100, 1, 0, 33643, 'Ученик Тушуй'),
+(54587, 0, 1, 'Твое мастерство не вызывает сомнений. Я сдаюсь.', 12, 0, 100, 1, 0, 33646, 'Ученик Тушуй'),
+(54587, 0, 2, 'Достойный поединок, друг.', 12, 0, 100, 1, 0, 33643, 'Ученик Тушуй'),
+(54587, 0, 3, 'Прекрасный бой. Мне можно будет многому у тебя научиться.', 12, 0, 100, 1, 0, 33645, 'Ученик Тушуй'),
+(54587, 0, 4, 'Спасибо за напоминание о том, что нужно тренироваться усерднее.', 12, 0, 100, 1, 0, 33643, 'Ученик Тушуй');
+
 -- ----------------------------------------
 -- Q: 29408 The Lesson of the Burning Scroll
 -- ----------------------------------------
@@ -854,8 +859,9 @@ DELETE FROM `creature_text` WHERE entry =55672;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (55672, 0, 0, 'Вот мы и на месте. Мне понадобится твоя помощь в приготовлениях.', 12, 0, 100, 1, 0, 27805, 'Мастер Шан Си');
 -- terrain phasing id 34653 show before complete 29790
-UPDATE creature set phaseMask = 2 WHERE id = 55672;
+UPDATE creature set phaseMask = 1 WHERE id = 55672;
 DELETE FROM `locales_creature_text` WHERE `entry` = 55672;
+UPDATE `creature_template_addon` SET `auras` = '108900 65499 126160' WHERE `entry` = 55672;
 
 -- ----------------------------------------
 -- Q: 29790 Passing Wisdom

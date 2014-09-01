@@ -2439,7 +2439,8 @@ enum Emote
     EMOTE_STATE_ATTACKTHROWN                    = 537,
     EMOTE_STATE_SPELL_CHANNEL_DIRECTED_NOSOUND  = 538,
     EMOTE_ONESHOT_WORK                          = 539,
-    EMOTE_STATE_READYUNARMED_NOSOUND            = 540
+    EMOTE_STATE_READYUNARMED_NOSOUND            = 540,
+    EMOTE_MONK_TRAIN                            = 543
 };
 
 // AnimationData.dbc

@@ -125,7 +125,7 @@ class npc_panda_announcer : public CreatureScript
             if (itr != m_player_for_event.end())
                 return;
 
-            uint32 eTimer = 6000;
+            uint32 eTimer = 4000;
 
             switch(me->GetEntry())
             {
@@ -196,6 +196,85 @@ class npc_panda_announcer : public CreatureScript
             }
         }
     };
+};
+
+class mob_tushui_trainee : public CreatureScript
+{
+    public:
+        mob_tushui_trainee() : CreatureScript("mob_tushui_trainee") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_tushui_trainee_AI(creature);
+        }
+
+        struct mob_tushui_trainee_AI : public ScriptedAI
+        {
+            mob_tushui_trainee_AI(Creature* creature) : ScriptedAI(creature) {}
+
+            enum data
+            {
+                EVENT_1     = 1,
+                EVENT_2     = 2,
+                SPELL       = 109080,
+            };
+
+            EventMap events;
+
+            void Reset()
+            {
+                events.Reset();
+                me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                events.ScheduleEvent(EVENT_2, 5000);
+            }
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(EVENT_1, 5000);
+                events.CancelEvent(EVENT_2);
+            }
+
+            void DamageTaken(Unit* attacker, uint32& damage)
+            {
+                if (me->HealthBelowPctDamaged(5, damage))
+                {
+                    if(attacker && attacker->GetTypeId() == TYPEID_PLAYER)
+                        attacker->ToPlayer()->KilledMonsterCredit(54586, 0);
+                    //me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+                    sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, attacker->GetGUID());
+                    me->CombatStop();
+                    me->SetFullHealth();
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                    me->DespawnOrUnsummon(4000);
+                    damage = 0;
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                UpdateVictim();
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch(eventId)
+                    {
+                        case EVENT_1:
+                            if (me->getVictim())
+                                me->CastSpell(me->getVictim(), SPELL, true);
+                            events.ScheduleEvent(EVENT_1, 5000);
+                            break;
+                        case EVENT_2:
+                            me->HandleEmoteCommand(EMOTE_MONK_TRAIN);
+                            events.ScheduleEvent(EVENT_2, 5000);
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
 };
 
 // Should be done by summon npc 59591
@@ -323,6 +402,7 @@ public:
 
         void Reset()
         {
+            events.Reset();
             me->SetDisplayId(39755);
             isInFalcon = false;
         }
@@ -348,6 +428,8 @@ public:
                     (*itr)->KilledMonsterCredit(me->GetEntry(), 0);
 
                 me->CombatStop();
+                attacker->DeleteFromThreatList(me);
+                attacker->ClearInCombat();
                 me->SetFullHealth();
                 isInFalcon = false;
                 me->SetDisplayId(39755);
@@ -4740,7 +4822,7 @@ public:
         void SummonEnnemy()
         {
             for(uint32 i = 0; i < 1; ++i)
-                me->SummonCreature(RAND(NPC_ENEMY_2, NPC_ENNEMY), ennemiesPositions[i], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                me->SummonCreature(RAND(NPC_ENEMY_2, NPC_ENNEMY), ennemiesPositions[i], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
         }
 
         void SummonHealer()
@@ -5230,6 +5312,7 @@ public:
 };
 void AddSC_WanderingIsland()
 {
+    new mob_tushui_trainee();
     new mob_master_shang_xi();
     new boss_jaomin_ro();
     new npc_panda_announcer();
