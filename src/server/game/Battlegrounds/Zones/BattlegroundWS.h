@@ -246,7 +246,11 @@ private:
         bool _bothFlagsKept;            ///< shows if both flags are kept
         uint8 _flagDebuffState;         ///< This maintain the debuff state of the flag carrier. If the flag is on a player for more then X minutes, the player will be cursed with an debuff. (0 - No debuff, 1 - Focus assault, 2 - Brutal assault)
         uint8 _minutesElapsed;          ///< Elapsed time since the beginning of the battleground (It counts as well the beginning time(when the doors are closed))
-
+        
+        uint32 m_ReputationCapture;
+        uint32 m_HonorWinKills;
+        uint32 m_HonorEndKills;
+        
         int32 _flagPosTimer;
 };
 

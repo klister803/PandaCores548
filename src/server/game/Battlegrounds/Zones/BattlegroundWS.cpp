@@ -44,6 +44,8 @@ BattlegroundWS::BattlegroundWS()
     _flagSpellForceTimer = 0;
     _bothFlagsKept = false;
     _flagDebuffState = 0;
+    
+    m_ReputationCapture = 0;
 }
 
 BattlegroundWS::~BattlegroundWS()
@@ -286,6 +288,19 @@ void BattlegroundWS::Reset()
 
         /// Reset score
         m_TeamScores[team] = 0;
+        
+        if (sBattlegroundMgr->IsBGWeekend(GetTypeID()))
+        {
+            m_ReputationCapture = 45;
+            //m_HonorWinKills = 3;
+            //m_HonorEndKills = 4;
+        }
+        else
+        {
+            m_ReputationCapture = 35;
+            //m_HonorWinKills = 1;
+            //m_HonorEndKills = 2;
+        }
     }
 
     _flagsTimer = 0;
@@ -642,6 +657,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
 
     /// Reward flag capture with 2x honorable kills
     RewardHonorToTeam(GetBonusHonorFromKill(2), source->GetTeam());
+    RewardReputationToTeam(890, m_ReputationCapture, source->GetTeam());
 
     AddPoint(team == TEAM_ALLIANCE ? ALLIANCE : HORDE);
 
