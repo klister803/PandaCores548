@@ -3882,8 +3882,22 @@ void Unit::RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode)
 Aura* Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, Aura* except) const
 {
     for (AuraMap::const_iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId); ++itr)
-        if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
-            return itr->second;
+    {
+        switch (spellId)
+        {                //Immerseus
+            case 143459: //Sha residue
+            case 143524: //Purified residue
+            {
+                if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && casterGUID && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
+                    return itr->second;
+            }
+            default:
+            {
+                if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
+                    return itr->second;
+            }
+        }
+    }
     return NULL;
 }
 

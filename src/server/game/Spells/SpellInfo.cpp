@@ -1204,10 +1204,13 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 138334: //Fatal strike 
     case 138329: //Unleashed anime 
     //Immerseus
+    case 143462: //Sha pool
+    case 143297: //Sha splash
     case 145377: //Erupting water
     case 143524: //Purified residue 
     case 143460: //Sha Pool Dmg 
     case 113762: //Swirl 
+    case 143412: //Swirl dmg
     case 125925: //Swirlr tr ef (Cone Searcher!)
     case 143574: //Swelling corruption
     case 143579: //Sha Corruption

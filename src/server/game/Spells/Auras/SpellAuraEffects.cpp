@@ -7272,6 +7272,25 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     case 46736:
                         triggerSpellId = 46737;
                         break;
+                    //Sha pool (Immerseus)
+                    case 143462: 
+                        {
+                            if (caster && caster->ToCreature())
+                            {
+                                switch (caster->GetEntry())
+                                {
+                                case 71544: //npc_sha_pool
+                                    triggerSpellId = 143297; //Sha splash
+                                    break;
+                                case 71543: //boss_immerseus
+                                    triggerSpellId = 143460; //Sha pool dmg
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        break;
                 }
                 break;
             }

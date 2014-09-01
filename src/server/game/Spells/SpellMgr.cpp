@@ -4721,6 +4721,20 @@ void SpellMgr::LoadSpellCustomAttr()
 
                 //Siege of Orgrimmar
                 //Immerseus
+                case 143462: //Sha pool
+                    spellInfo->Effects[0].TriggerSpell = 0;
+                    spellInfo->Effects[1].Effect = 0;
+                    spellInfo->Effects[1].ApplyAuraName = 0;
+                    break;
+                case 143460: //Sha Pool Dmg
+                    spellInfo->Effects[0].TargetB = 7;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
+                    break;                
+                case 143297: //Sha splash
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
+                    break;
                 case 145377: //Erupting water
                     spellInfo->Effects[0].TargetB = 30;
                     break;
@@ -4728,13 +4742,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 30; 
                     spellInfo->Effects[0].TargetB = 30;
                     break;
-                case 143460: //Sha Pool Dmg
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
-                    break;
                 case 113762: //Swirl
                     spellInfo->Effects[0].TriggerSpell = 125925;
                     break;
-                case 143413: //Swirl dmg
+                case 143412: //Swirl dmg
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[1].TargetA = 1;
                     spellInfo->Effects[0].Effect = 2;
                     spellInfo->Effects[0].ApplyAuraName = 0;
                     break;

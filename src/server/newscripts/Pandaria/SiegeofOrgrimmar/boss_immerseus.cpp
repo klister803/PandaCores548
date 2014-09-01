@@ -25,16 +25,16 @@ enum eSpells
     SPELL_CORROSIVE_BLAST       = 143436, 
     SPELL_SHA_BOLT              = 143293, 
     SPELL_SWIRL                 = 143309, 
-    SPELL_SWIRL_DMG             = 143413,
+    SPELL_SWIRL_DMG             = 143412,
     SPELL_SWIRL_SEARCHER        = 113762,
     SPELL_SEEPING_SHA           = 143286,
     SPELL_SUBMERGE              = 139832,
     SPELL_SUBMERGE_2            = 143281,
+    SPELL_BERSERK               = 64238,
     //HM
     SPELL_SWELLING_CORRUPTION   = 143574,
     SPELL_SWELLING_CORRUPTION_S = 143581,
     //npc sha pool   
-    SPELL_SLEEPING_SHA          = 143281,
     SPELL_SHA_POOL              = 143462,
     //npc sha puddle
     SPELL_ERUPTING_SHA          = 143498,
@@ -274,7 +274,7 @@ class boss_immerseus : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint32 checkvictim, lasthp;
+            uint32 checkvictim, lasthp, berserk;
             uint8 donecp, donesp, maxpcount;
             std::vector<uint64> shapoollist;
             float lasthppct;
@@ -284,6 +284,7 @@ class boss_immerseus : public CreatureScript
             {
                 _Reset();
                 me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveAurasDueToSpell(SPELL_BERSERK);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                 me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
@@ -296,6 +297,7 @@ class boss_immerseus : public CreatureScript
                 shapoollist.clear();
                 phase_two = false;
                 checkvictim = 0;
+                berserk = 0;
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
@@ -312,12 +314,13 @@ class boss_immerseus : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                berserk = 600000;
                 checkvictim = 2000;
                 if (me->GetMap()->IsHeroic())
                     events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
                 events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
                 events.ScheduleEvent(EVENT_SWIRL, 14000);
-                events.ScheduleEvent(EVENT_SHA_BOLT, 6000);               
+                events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
             }
 
             void SpawnWave()
@@ -492,6 +495,18 @@ class boss_immerseus : public CreatureScript
                     else
                         checkvictim -= diff;
                 }
+                
+                if (berserk)
+                {
+                    if (berserk <= diff)
+                    {
+                        berserk = 0;
+                        DoCast(me, SPELL_BERSERK, true);
+                    }
+                    else
+                        berserk -= diff;
+                }
+
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -517,10 +532,19 @@ class boss_immerseus : public CreatureScript
                         events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
                         break;
                     case EVENT_SHA_BOLT:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 50.0f, true))
-                            DoCast(target, SPELL_SHA_BOLT);
-                        events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
+                        {
+                            std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+                            if (!threatlist.empty())
+                            {
+                                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
+                                {
+                                    if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                        DoCast(pl, SPELL_SHA_BOLT);
+                                }
+                            }
+                        events.ScheduleEvent(EVENT_SHA_BOLT, 10000);
                         break;
+                        }
                     case EVENT_SWIRL:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         {
@@ -659,6 +683,7 @@ class npc_sha_puddle : public CreatureScript
                 events.Reset();
                 finish = false;
                 index = 0;
+                me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
             }
 
             void SetData(uint32 type, uint32 data)
@@ -692,12 +717,9 @@ class npc_sha_puddle : public CreatureScript
             {
                 if (damage >= me->GetHealth())
                 {
-                    DoCast(me, SPELL_SHA_RESIDUE, true);
+                    DoCastAOE(SPELL_SHA_RESIDUE);
                     return;
                 }
-
-                if (attacker->HasAura(SPELL_SHA_RESIDUE))
-                    damage += damage/4;
             }
 
             void JustDied(Unit* killer)
