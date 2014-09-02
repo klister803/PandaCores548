@@ -48,6 +48,7 @@ enum panda_npc
 enum panda_quests
 {
     QUEST_THE_DISCIPLE_CHALLENGE                   = 29409, //29409 The Disciple's Challenge
+    QUEST_MISSING_DRIVER                           = 29419,
     QUEST_AYSA_OF_TUSHUI                           = 29410, // Aysa of the Tushui
     QUEST_PARCHEMIN_VOLANT                         = 29421,
     QUEST_PASSION_OF_SHEN                          = 29423, //The Passion of Shen-zin Su
@@ -541,25 +542,24 @@ public:
         void Reset()
         {
             me->setActive(true);
-            ResetMobs();
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
         }
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() != TYPEID_PLAYER)
+            if (who->GetTypeId() != TYPEID_PLAYER || who->ToPlayer()->GetQuestStatus(QUEST_MISSING_DRIVER) != QUEST_STATUS_INCOMPLETE)
                 return;
-
+            
             std::set<uint64>::iterator itr = m_player_for_event.find(who->GetGUID());
             if (itr != m_player_for_event.end())
                 return;
+
             m_player_for_event.insert(who->GetGUID());
-            for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
-                if (Creature* c = me->GetMap()->GetCreature(*itr))
-                {
-                    sCreatureTextMgr->SendChat(c, TEXT_GENERIC_0, who->GetGUID());
-                    break;
-                }
+            if (!mt)
+            {
+                mt = true;
+                InitMobs(who);
+            }
         }
 
         void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
@@ -578,6 +578,7 @@ public:
             guidMob.erase(summon->GetGUID());
             if (guidMob.empty())
             {
+                mt = false;
                 me->HandleEmoteCommand(EMOTE_STATE_STAND);
                 if (Player* target = sObjectAccessor->FindPlayer(plrGUID))
                 {
@@ -593,12 +594,8 @@ public:
             }
         }
         
-        void ResetMobs()
+        void InitMobs(Unit* who)
         {
-            if (mt)
-                return;
-            mt = true;
-
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
             for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
                 if (Creature* c = me->GetMap()->GetCreature(*itr))
@@ -611,16 +608,15 @@ public:
                 {
                     guidMob.insert(temp->GetGUID());
                     
+                    if (i == 0)
+                        sCreatureTextMgr->SendChat(temp->ToCreature(), TEXT_GENERIC_0, who->GetGUID());
+
                     temp->SetFacingToObject(me);
                     temp->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                    
-                    temp->GetMotionMaster()->Clear(false);
-                    temp->GetMotionMaster()->MoveChase(me);
                     temp->Attack(me, true);
-                    temp->getThreatManager().addThreat(me, 250.0f);
+                    //temp->getThreatManager().addThreat(me, 250.0f);
                 }
             }
-            mt = false;
         }
     };
 };
