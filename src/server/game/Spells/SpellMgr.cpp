@@ -4733,6 +4733,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143297: //Sha splash
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(65); // 1.5s
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
                     break;
                 case 145377: //Erupting water
