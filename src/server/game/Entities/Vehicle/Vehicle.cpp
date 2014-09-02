@@ -846,7 +846,9 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     Seat->second.Passenger = Passenger->GetGUID();
     if (Seat->second.SeatInfo->CanEnterOrExit())
     {
-        ASSERT(Target->UsableSeatNum);
+        //ASSERT(Target->UsableSeatNum);
+        if(!Target->UsableSeatNum)
+            return false;
         --(Target->UsableSeatNum);
         if (!Target->UsableSeatNum)
         {
