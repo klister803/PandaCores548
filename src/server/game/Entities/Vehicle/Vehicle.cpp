@@ -422,7 +422,9 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
         entry, (int32)seatId);
 
     TempSummon* accessory = _me->SummonCreature(entry, *_me, TempSummonType(type), summonTime);
-    ASSERT(accessory);
+    //ASSERT(accessory);
+    if(!accessory)
+        return;
 
     if (minion)
         accessory->AddUnitTypeMask(UNIT_MASK_ACCESSORY);
