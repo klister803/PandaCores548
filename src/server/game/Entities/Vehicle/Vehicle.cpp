@@ -972,5 +972,5 @@ void VehicleJoinEvent::Abort(uint64)
             Passenger->GetGUIDLow(), Passenger->GetEntry(), (int32)Seat->first);
 
     if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
-        Passenger->ToTempSummon()->UnSummon(1000);
+        Passenger->ToTempSummon()->UnSummon();
 }
