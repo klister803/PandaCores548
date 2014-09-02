@@ -6827,7 +6827,8 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
             {
                 case 146198: // Essence of Yu'lon
                 {
-                    caster->CastCustomSpell(target, 148008, &m_amount, 0, 0, true, 0, this);
+                    if(caster && target)
+                        caster->CastCustomSpell(target, 148008, &m_amount, 0, 0, true, 0, this);
                     break;
                 }
                 case 146199: // Spirit of Chi-Ji
@@ -6868,7 +6869,8 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 146285: // Cruelty
                 {
-                    caster->CastCustomSpell(target, 146293, &m_amount, 0, 0, true, 0, this);
+                    if(caster && target)
+                        caster->CastCustomSpell(target, 146293, &m_amount, 0, 0, true, 0, this);
                     break;
                 }
                 case 146310: // Restless Agility
