@@ -602,7 +602,7 @@ public:
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
             for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
                 if (Creature* c = me->GetMap()->GetCreature(*itr))
-                    c->DespawnOrUnsummon();
+                    c->DespawnOrUnsummon(1000);
             guidMob.clear();
 
             for(int i = 0; i < 4; i++)
