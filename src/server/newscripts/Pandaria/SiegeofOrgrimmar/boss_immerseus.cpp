@@ -31,6 +31,7 @@ enum eSpells
     SPELL_SUBMERGE              = 139832,
     SPELL_SUBMERGE_2            = 143281,
     SPELL_BERSERK               = 64238,
+    SPELL_SHA_SPLASH_DUMMY      = 130063,
     //HM
     SPELL_SWELLING_CORRUPTION   = 143574,
     SPELL_SWELLING_CORRUPTION_S = 143581,
@@ -52,10 +53,12 @@ enum Events
     EVENT_SHA_BOLT              = 2,
     EVENT_SWIRL                 = 3,
     EVENT_INTRO_PHASE_TWO       = 4,
+    //HM
     EVENT_SWELLING_CORRUPTION   = 5,
+    EVENT_SHA_POOL              = 6,
     //Summons
-    EVENT_START_MOVING          = 6,
-    EVENT_CHECK_DIST            = 7,
+    EVENT_START_MOVING          = 7,
+    EVENT_CHECK_DIST            = 8,
 };
 
 enum Actions
@@ -283,7 +286,9 @@ class boss_immerseus : public CreatureScript
             void Reset()
             {
                 _Reset();
+                me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
                 me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
@@ -309,6 +314,15 @@ class boss_immerseus : public CreatureScript
                     shapoollist.push_back(sum->GetGUID());
 
                 summons.Summon(sum);
+            }
+
+            void SpellHitTarget(Unit* target, SpellInfo const *spell)
+            {
+                if (spell->Id == 143460 && target->ToPlayer())
+                {
+                    if (me->GetFloatValue(OBJECT_FIELD_SCALE_X) >= 1.3f)
+                        me->SetFloatValue(OBJECT_FIELD_SCALE_X, me->GetFloatValue(OBJECT_FIELD_SCALE_X) - 0.3f);
+                }
             }
 
             void EnterCombat(Unit* who)
@@ -366,6 +380,8 @@ class boss_immerseus : public CreatureScript
                             p->AI()->SetData(DATA_SEND_INDEX, n);
                     }
                 }
+                if (me->GetMap()->IsHeroic())
+                    events.ScheduleEvent(EVENT_SHA_POOL, 3000);
                 maxpcount = 0; 
                 donecp = 0; 
                 donesp = 0;
@@ -453,6 +469,7 @@ class boss_immerseus : public CreatureScript
                     }
                     lasthp = me->GetHealth();
                     lasthppct = me->GetHealthPct();
+                    me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -477,6 +494,15 @@ class boss_immerseus : public CreatureScript
                     _JustDied();
                     me->setFaction(35);
                     me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
+                    Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                    if (!players.isEmpty())
+                    {
+                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        {
+                            if (Player* pPlayer = itr->getSource())
+                                me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
+                        }
+                    }
                 }
             }
 
@@ -557,10 +583,15 @@ class boss_immerseus : public CreatureScript
                         break;
                     //HM
                     case EVENT_SWELLING_CORRUPTION:
-                        int32 mod = me->GetPower(POWER_ENERGY)/2;
-                        if (mod)
-                            me->CastCustomSpell(SPELL_SWELLING_CORRUPTION, SPELLVALUE_AURA_STACK, mod, me, true);
-                        events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 75000);
+                        {
+                            int32 mod = me->GetPower(POWER_ENERGY)/2;
+                            if (mod)
+                                me->CastCustomSpell(SPELL_SWELLING_CORRUPTION, SPELLVALUE_AURA_STACK, mod, me, true);
+                            events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 75000);
+                            break;
+                        }
+                    case EVENT_SHA_POOL:
+                        me->AddAura(SPELL_SHA_POOL, me);
                         break;
                     }
                 }
@@ -653,7 +684,10 @@ void CalcPuddle(InstanceScript* instance, Creature* caller, uint32 callerEntry, 
             caller->DespawnOrUnsummon();
 
             if (i->AI()->GetData(DATA_SEND_F_P_COUNT) >= 25)
+            {
+                i->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
                 i->AI()->DoAction(ACTION_INTRO_PHASE_ONE);
+            }
         }
     }
 }
@@ -754,7 +788,7 @@ class npc_sha_puddle : public CreatureScript
                         {
                             if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                             {
-                                if (me->GetDistance(pp) <= 20.0f && !finish)
+                                if (me->GetDistance(pp) <= 18.0f && !finish)
                                 {
                                     finish = true;
                                     me->StopMoving();
@@ -762,7 +796,7 @@ class npc_sha_puddle : public CreatureScript
                                     DoCast(me, SPELL_ERUPTING_SHA);
                                     CalcPuddle(instance, me, me->GetEntry(), false);
                                 }
-                                else if (me->GetDistance(pp) > 20.0f && !finish)
+                                else if (me->GetDistance(pp) > 18.0f && !finish)
                                     events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                             }
                         }
@@ -924,7 +958,7 @@ class npc_contaminated_puddle : public CreatureScript
                         {
                             if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
                             {
-                                if (me->GetDistance(pp) <= 20.0f && !finish)
+                                if (me->GetDistance(pp) <= 18.0f && !finish)
                                 {
                                     finish = true;
                                     me->StopMoving();
@@ -932,7 +966,7 @@ class npc_contaminated_puddle : public CreatureScript
                                     DoCast(me, SPELL_ERUPTING_WATER);
                                     CalcPuddle(instance, me, me->GetEntry(), done ? true : false);
                                 }
-                                else if (me->GetDistance(pp) > 20.0f && !finish)
+                                else if (me->GetDistance(pp) > 18.0f && !finish)
                                     events.ScheduleEvent(EVENT_CHECK_DIST, 1000);
                             }
                         }
@@ -1047,6 +1081,89 @@ class spell_swirl_searcher : public SpellScriptLoader
         }
 };
 
+class ExactDistanceCheck
+{
+    public:
+        ExactDistanceCheck(WorldObject* source, float dist) : _source(source), _dist(dist) {}
+
+        bool operator()(WorldObject* unit)
+        {
+            return _source->GetExactDist2d(unit) > _dist;
+        }
+
+    private:
+        WorldObject* _source;
+        float _dist;
+};
+
+//143460
+class spell_sha_pool : public SpellScriptLoader
+{
+    public:
+        spell_sha_pool() : SpellScriptLoader("spell_sha_pool") { }
+
+        class spell_sha_pool_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_pool_SpellScript);
+
+            void ScaleRange(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_pool_SpellScript();
+        }
+};
+
+//143461 puddle searcher
+class spell_sha_pool_p_s : public SpellScriptLoader
+{
+    public:
+        spell_sha_pool_p_s() : SpellScriptLoader("spell_sha_pool_p_s") { }
+
+        class spell_sha_pool_p_s_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_pool_p_s_SpellScript);
+
+            void ScaleRange(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(ExactDistanceCheck(GetCaster(), 20.0f * GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X)));
+            }
+
+            void HitHandler()
+            {
+                if (GetCaster() && GetHitUnit() && GetHitUnit()->ToCreature())
+                {
+                    if (GetHitUnit()->GetEntry() == NPC_SHA_PUDDLE || GetHitUnit()->GetEntry() == NPC_CONTAMINATED_PUDDLE)
+                    {
+                        GetHitUnit()->AddAura(SPELL_SHA_SPLASH_DUMMY, GetHitUnit());
+                        GetCaster()->SetFloatValue(OBJECT_FIELD_SCALE_X, GetCaster()->GetFloatValue(OBJECT_FIELD_SCALE_X) + 0.1f);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_pool_p_s_SpellScript::ScaleRange, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+                OnHit += SpellHitFn(spell_sha_pool_p_s_SpellScript::HitHandler);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_pool_p_s_SpellScript();
+        }
+};
+
+
 void AddSC_boss_immerseus()
 {
     new boss_immerseus();
@@ -1056,4 +1173,6 @@ void AddSC_boss_immerseus()
     new spell_corrosive_blast();
     new spell_swirl();
     new spell_swirl_searcher();
+    new spell_sha_pool();
+    new spell_sha_pool_p_s();
 }

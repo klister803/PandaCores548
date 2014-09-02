@@ -4723,18 +4723,19 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Immerseus
                 case 143462: //Sha pool
                     spellInfo->Effects[0].TriggerSpell = 0;
-                    spellInfo->Effects[1].Effect = 0;
-                    spellInfo->Effects[1].ApplyAuraName = 0;
                     break;
-                case 143460: //Sha Pool Dmg
-                    spellInfo->Effects[0].TargetB = 7;
-                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
-                    break;                
+                case 143461: //Sha pool dummy
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    break;
                 case 143297: //Sha splash
                     spellInfo->Effects[0].TargetA = 22;
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(65); // 1.5s
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(7); //2yards
+                    break;
+                case 130063: //Sha splash Dummy
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21);
                     break;
                 case 145377: //Erupting water
                     spellInfo->Effects[0].TargetB = 30;
