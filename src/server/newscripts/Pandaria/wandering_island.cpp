@@ -531,13 +531,16 @@ public:
         std::set<uint64> guidMob;
         uint64 plrGUID;
         std::set<uint64> m_player_for_event;
+        bool mt;
 
         mob_min_dimwindAI(Creature* creature) : ScriptedAI(creature)
         {
+            mt = false;
         }
 
         void Reset()
         {
+            me->setActive(true);
             ResetMobs();
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
         }
@@ -592,6 +595,10 @@ public:
         
         void ResetMobs()
         {
+            if (mt)
+                return;
+            mt = true;
+
             me->HandleEmoteCommand(EMOTE_STATE_READY2H);
             for(std::set<uint64>::iterator itr = guidMob.begin(); itr != guidMob.end(); ++itr)
                 if (Creature* c = me->GetMap()->GetCreature(*itr))
@@ -613,6 +620,7 @@ public:
                     temp->getThreatManager().addThreat(me, 250.0f);
                 }
             }
+            mt = false;
         }
     };
 };
