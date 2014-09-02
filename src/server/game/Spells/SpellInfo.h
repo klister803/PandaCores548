@@ -496,7 +496,6 @@ public:
     bool IsNeedDelayForSpell() const;
 
     bool IsSingleTarget() const;
-    bool IsSingleTargetWith(SpellInfo const* spellInfo) const;
     bool IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool sameCaster = false) const;
     bool IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInfo) const;
 

@@ -1642,30 +1642,6 @@ bool SpellInfo::IsSingleTarget() const
     return false;
 }
 
-bool SpellInfo::IsSingleTargetWith(SpellInfo const* spellInfo) const
-{
-    // TODO - need better check
-    // Equal icon and spellfamily
-    if (SpellFamilyName == spellInfo->SpellFamilyName &&
-        SpellIconID == spellInfo->SpellIconID)
-        return true;
-
-    SpellSpecificType spec = GetSpellSpecific();
-    // spell with single target specific types
-    switch (spec)
-    {
-        case SPELL_SPECIFIC_JUDGEMENT:
-        case SPELL_SPECIFIC_MAGE_POLYMORPH:
-            if (spellInfo->GetSpellSpecific() == spec)
-                return true;
-            break;
-        default:
-            break;
-    }
-
-    return false;
-}
-
 bool SpellInfo::IsAuraExclusiveBySpecificWith(SpellInfo const* spellInfo, bool sameCaster) const
 {
     SpellSpecificType spellSpec1 = GetSpellSpecific();
