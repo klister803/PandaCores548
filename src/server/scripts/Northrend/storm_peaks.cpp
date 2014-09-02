@@ -591,8 +591,7 @@ public:
             {
                 if (who->IsVehicle() && me->IsWithinDist(who, 25.0f, true) && who->ToCreature() && who->ToCreature()->GetEntry() == 29709)
                 {
-                    SeatMap::const_iterator _Seat = who->GetVehicleKit()->GetNextEmptySeat(0, true); 
-                    uint8 seat = _Seat->first;
+                    uint8 seat = who->GetVehicleKit()->GetNextEmptySeat(0, true);
                     if (seat <= 0)
                         return;
 
@@ -647,8 +646,7 @@ public:
             else
                 return;
 
-            SeatMap::const_iterator _Seat = hitter->GetVehicleKit()->GetNextEmptySeat(0, true);
-            if (_Seat != hitter->GetVehicleKit()->Seats.end())
+            if (hitter->GetVehicleKit()->GetNextEmptySeat(0, true))
                 hasEmptySeats = true;
         }
     };

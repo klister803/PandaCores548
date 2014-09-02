@@ -1170,10 +1170,6 @@ bool Aura::CanBeSaved() const
     if (HasEffectType(SPELL_AURA_OPEN_STABLE))
         return false;
 
-    // Can't save vehicle auras, it requires both caster & target to be in world
-    if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
-        return false;
-
     switch (GetId())
     {
         // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking
@@ -2369,7 +2365,20 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         }
     }
 
-    if (GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE) && existingAura->GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE))
+    bool isVehicleAura1 = false;
+    bool isVehicleAura2 = false;
+    uint8 i = 0;
+    while (i < MAX_SPELL_EFFECTS && !(isVehicleAura1 && isVehicleAura2))
+    {
+        if (m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura1 = true;
+        if (existingSpellInfo->Effects[i].ApplyAuraName == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura2 = true;
+
+        ++i;
+    }
+
+    if (isVehicleAura1 && isVehicleAura2)
     {
         Vehicle* veh = NULL;
         if (GetOwner()->ToUnit())
@@ -2381,7 +2390,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         if (!veh->GetAvailableSeatCount())
             return false;   // No empty seat available
 
-        return true; // Empty seat available (skip rest)
+        return true;        // Empty seat available (skip rest)
     }
 
     // spell of same spell rank chain

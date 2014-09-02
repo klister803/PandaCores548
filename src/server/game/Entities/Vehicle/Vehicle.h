@@ -21,25 +21,18 @@
 
 #include "ObjectDefines.h"
 #include "VehicleDefines.h"
-#include "Unit.h"
-#include <list>
 
 struct VehicleEntry;
 class Unit;
-class VehicleJoinEvent;
 
 typedef std::set<uint64> GuidSet;
 
 class Vehicle : public TransportBase
 {
-    protected:
-        friend bool Unit::CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura);
-        Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
-
-        friend void Unit::RemoveVehicleKit();
-        ~Vehicle();
-
     public:
+        explicit Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry, uint32 recAura);
+        virtual ~Vehicle();
+
         void Install();
         void Uninstall(bool uninstallBeforeDelete = false);
         void Reset(bool evading = false);
@@ -53,7 +46,7 @@ class Vehicle : public TransportBase
 
         bool HasEmptySeat(int8 seatId) const;
         Unit* GetPassenger(int8 seatId) const;
-        SeatMap::const_iterator GetNextEmptySeat(int8 seatId, bool next) const;
+        int8 GetNextEmptySeat(int8 seatId, bool next) const;
         uint8 GetAvailableSeatCount() const;
         uint32 GetRecAura() const { return _recAura; }
         bool CheckCustomCanEnter();
@@ -62,6 +55,8 @@ class Vehicle : public TransportBase
         void RemovePassenger(Unit* passenger);
         void RelocatePassengers();
         void RemoveAllPassengers();
+        void Dismiss();
+        void TeleportVehicle(float x, float y, float z, float ang);
         bool IsVehicleInUse() { return Seats.begin() != Seats.end(); }
 
         inline bool ArePassengersSpawnedByAI() const { return _passengersSpawnedByAI; }
@@ -70,27 +65,11 @@ class Vehicle : public TransportBase
         inline bool CanBeCastedByPassengers() const { return _canBeCastedByPassengers; }
         void SetCanBeCastedByPassengers(bool canBeCastedByPassengers) { _canBeCastedByPassengers = canBeCastedByPassengers; }
 
-        void SetLastShootPos(Position const& pos) { _lastShootPos.Relocate(pos); }
-        Position GetLastShootPos() { return _lastShootPos; }
+        SeatMap Seats;
 
-        SeatMap Seats;                                      ///< The collection of all seats on the vehicle. Including vacant ones.
-
-        VehicleSeatEntry const* GetSeatForPassenger(Unit const* passenger) const;
-
-        void RemovePendingEventsForPassenger(Unit* passenger);
-
-    protected:
-        friend class VehicleJoinEvent;
-        uint32 UsableSeatNum;                               ///< Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
+        VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
 
     private:
-        enum Status
-        {
-            STATUS_NONE,
-            STATUS_INSTALLED,
-            STATUS_UNINSTALLING,
-        };
-
         SeatMap::iterator GetSeatIteratorForPassenger(Unit* passenger);
         void InitMovementInfoForBase();
 
@@ -100,38 +79,15 @@ class Vehicle : public TransportBase
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
-        void RemovePendingEvent(VehicleJoinEvent* e);
-        void RemovePendingEventsForSeat(int8 seatId);
-
-    private:
-        Unit* _me;                                          ///< The underlying unit with the vehicle kit. Can be player or creature.
-        VehicleEntry const* _vehicleInfo;                   ///< DBC data for vehicle
+        Unit* _me;
+        VehicleEntry const* _vehicleInfo;
         GuidSet vehiclePlayers;
-        uint32 _creatureEntry;                              ///< Can be different than the entry of _me in case of players
-        Status _status;                                     ///< Internal variable for sanity checks
-        Position _lastShootPos;
+        uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
+        uint32 _creatureEntry;         // Can be different than me->GetBase()->GetEntry() in case of players
+        uint32 _recAura;               // aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
 
-        uint32 _recAura;                                    ///< aura 296 SPELL_AURA_SET_VEHICLE_ID create vehicle from players.
         bool _isBeingDismissed;
         bool _passengersSpawnedByAI;
         bool _canBeCastedByPassengers;
-
-        typedef std::list<VehicleJoinEvent*> PendingJoinEventContainer;
-        PendingJoinEventContainer _pendingJoinEvents;       ///< Collection of delayed join events for prospective passengers
 };
-
-class VehicleJoinEvent : public BasicEvent
-{
-    friend class Vehicle;
-    protected:
-        VehicleJoinEvent(Vehicle* v, Unit* u) : Target(v), Passenger(u), Seat(Target->Seats.end()) {}
-        ~VehicleJoinEvent();
-        bool Execute(uint64, uint32);
-        void Abort(uint64);
-
-        Vehicle* Target;
-        Unit* Passenger;
-        SeatMap::iterator Seat;
-};
-
 #endif

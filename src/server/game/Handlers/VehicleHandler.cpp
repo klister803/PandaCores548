@@ -153,16 +153,14 @@ void WorldSession::HandleEnterPlayerVehicle(WorldPacket& recvData)
 void WorldSession::HandleSetVehicleRecId(WorldPacket& recvData)
 {
     recvData.rfinish();
-    uint32 vehicleId = 0;
+    /*uint32 vehicleId = 0;
     Unit::AuraEffectList const& transforms = _player->GetAuraEffectsByType(SPELL_AURA_SET_VEHICLE_ID);
-    for (Unit::AuraEffectList::const_iterator i = transforms.begin(); i != transforms.end(); ++i)
-        vehicleId = (*i)->GetMiscValue();
-
+    
     WorldPacket data(SMSG_PLAYER_VEHICLE_DATA, 8 + 1 + 4);
     data << uint32(vehicleId);
     data.WriteGuidMask<5, 3, 6, 2, 1, 4, 0, 7>(_player->GetObjectGuid());
     data.WriteGuidBytes<6, 0, 1, 3, 5, 7, 2, 4>(_player->GetObjectGuid());
-    SendPacket(&data);
+    _player->SendMessageToSet(&data, true);*/
 }
 
 void WorldSession::HandleEjectPassenger(WorldPacket& data)
