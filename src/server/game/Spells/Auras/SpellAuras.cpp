@@ -2369,7 +2369,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         }
     }
 
-    if (GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE) && existingAura->GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE))
+    if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE) && existingAura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
     {
         Vehicle* veh = NULL;
         if (GetOwner()->ToUnit())
