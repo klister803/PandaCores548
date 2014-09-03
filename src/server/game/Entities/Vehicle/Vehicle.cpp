@@ -974,6 +974,6 @@ void VehicleJoinEvent::Abort(uint64)
         sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on uninstalled vehicle SeatId: %d cancelled",
             Passenger->GetGUIDLow(), Passenger->GetEntry(), (int32)Seat->first);
 
-    if (Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
-        Passenger->ToTempSummon()->UnSummon();
+    if (Passenger->IsInWorld() && Passenger->HasUnitTypeMask(UNIT_MASK_ACCESSORY))
+        Passenger->ToCreature()->DespawnOrUnsummon();
 }
