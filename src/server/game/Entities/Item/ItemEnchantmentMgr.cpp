@@ -187,9 +187,9 @@ uint32 GenerateEnchSuffixFactor(ItemTemplate const* itemProto, uint32 level)
             return randomProperty->UncommonPropertiesPoints[suffixFactor];
         case ITEM_QUALITY_RARE:
             return randomProperty->RarePropertiesPoints[suffixFactor];
+        case ITEM_QUALITY_LEGENDARY:
         case ITEM_QUALITY_EPIC:
             return randomProperty->EpicPropertiesPoints[suffixFactor];
-        case ITEM_QUALITY_LEGENDARY:
         case ITEM_QUALITY_ARTIFACT:
             return 0;                                       // not have random properties
         default:
