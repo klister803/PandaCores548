@@ -24,7 +24,7 @@
 
 TempSummon::TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) :
 Creature(isWorldObject), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
-m_timer(0), m_lifetime(0)
+m_timer(0), m_lifetime(0), onUnload(false)
 {
     m_summonerGUID = owner ? owner->GetGUID() : 0;
     m_unitTypeMask |= UNIT_MASK_SUMMON;
@@ -245,11 +245,16 @@ void TempSummon::UnSummon(uint32 msTime)
 {
     if (msTime)
     {
+        m_Events.KillAllEvents(false);
         ForcedUnsummonDelayEvent* pEvent = new ForcedUnsummonDelayEvent(*this);
 
         m_Events.AddEvent(pEvent, m_Events.CalculateTime(msTime));
         return;
     }
+
+    if (onUnload)
+        return;
+    onUnload = true;
 
     //ASSERT(!isPet());
     if (isPet())

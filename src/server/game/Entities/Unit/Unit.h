@@ -367,6 +367,7 @@ class UnitAI;
 class Totem;
 class Transport;
 class Vehicle;
+class VehicleJoinEvent;
 class TransportBase;
 
 typedef std::list<Unit*> UnitList;
@@ -2292,6 +2293,7 @@ class Unit : public WorldObject
         Unit* GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
         uint64 GetMisdirectionTargetGuid() { return m_misdirectionTargetGUID; }
 
+        friend class VehicleJoinEvent;
         bool IsAIEnabled, NeedChangeAI;
         uint64 LastCharmerGUID;
         bool CreateVehicleKit(uint32 id, uint32 creatureEntry, uint32 RecAura = 0);
