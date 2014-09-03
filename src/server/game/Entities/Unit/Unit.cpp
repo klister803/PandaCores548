@@ -12342,10 +12342,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 coeff = bonus->dot_damage;
                 if (bonus->ap_dot_bonus > 0)
                 {
-                    WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+                    WeaponAttackType attType;
+
+                    if (Player* plr = ToPlayer())
+                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
+                    else
+                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
+
                     float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    if (ToPlayer() && ToPlayer()->getClass() == CLASS_MONK)
-                        attType = BASE_ATTACK;
                     APbonus += GetTotalAttackPowerValue(attType);
                     DoneTotal += int32(bonus->ap_dot_bonus * stack * APbonus);
                 }
@@ -12355,10 +12359,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 coeff = bonus->direct_damage;
                 if (bonus->ap_bonus > 0)
                 {
-                    WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+                    WeaponAttackType attType;
+
+                    if (Player* plr = ToPlayer())
+                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
+                    else
+                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
+
                     float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    if (spellProto && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
-                        attType = BASE_ATTACK;
                     APbonus += GetTotalAttackPowerValue(attType);
                     DoneTotal += int32(bonus->ap_bonus * stack * APbonus);
                 }
@@ -12374,10 +12382,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 ApCoeffMod = spellProto->SpellAPBonusMultiplier;
 
                 //code for bonus AP from dbc
-                WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
+
+                WeaponAttackType attType;
+
+                if (Player* plr = ToPlayer())
+                    attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
+                else
+                    attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
+
                 float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || ToPlayer() && ToPlayer()->getClass() == CLASS_MONK)
-                    attType = BASE_ATTACK;
                 APbonus += GetTotalAttackPowerValue(attType);
                 DoneTotal += int32(stack * ApCoeffMod * APbonus);
 
