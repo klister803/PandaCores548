@@ -376,7 +376,7 @@ public:
             events.ScheduleEvent(EVENT_BERSERK, 300000, 0, PHASE_1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -594,7 +594,7 @@ public:
                 pThorim->AI()->DoAction(INCREASE_PREADDS_COUNT);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -696,7 +696,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -791,7 +791,7 @@ public:
                 pInstance->SetData(DATA_RUNIC_DOOR, GO_STATE_ACTIVE);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             // I cannot find the real spell
             if (!me->IsWithinMeleeRange(me->getVictim()))
@@ -889,7 +889,7 @@ public:
                 pInstance->SetData(DATA_STONE_DOOR, GO_STATE_ACTIVE);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -948,7 +948,7 @@ public:
             NovaTimer = urand(20000, 25000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim()) //|| me->HasUnitState(UNIT_STATE_CASTING))
                 return;

@@ -184,7 +184,7 @@ class boss_ra_den : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -386,7 +386,7 @@ class npc_corrupted_sphere : public CreatureScript
                 }
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -434,7 +434,7 @@ class npc_sanguine_horror : public CreatureScript
                 events.ScheduleEvent(EVENT_SANGUINE_VOLLEY, 3000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -500,7 +500,7 @@ class npc_crackling_stalker : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

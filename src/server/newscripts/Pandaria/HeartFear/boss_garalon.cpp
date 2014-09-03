@@ -74,7 +74,7 @@ class boss_garalon : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -135,7 +135,7 @@ class npc_pheromones_trail : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (unsummon)
                 {

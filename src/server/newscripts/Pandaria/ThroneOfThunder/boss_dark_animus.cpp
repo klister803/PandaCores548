@@ -114,7 +114,7 @@ class boss_dark_animus : public CreatureScript
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TOUCH_OF_THE_ANIMUS);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -227,7 +227,7 @@ class npc_massive_anima_golem : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -274,7 +274,7 @@ class npc_large_anima_golem : public CreatureScript
             
             void JustDied(Unit* /*killer*/){}
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -310,7 +310,7 @@ class npc_anima_golem : public CreatureScript
             
             void JustDied(Unit* /*killer*/){}
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

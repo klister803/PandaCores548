@@ -66,7 +66,7 @@ public:
 
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -137,7 +137,7 @@ class npc_dark_blaze : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (unsummon)
                 {

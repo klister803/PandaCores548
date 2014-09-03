@@ -180,7 +180,7 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (AggroTimer)
             {
@@ -257,7 +257,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -368,7 +368,7 @@ public:
             DoScriptText(SAY_STRAWMAN_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (AggroTimer)
             {
@@ -474,7 +474,7 @@ public:
             DoScriptText(SAY_TINHEAD_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (AggroTimer)
             {
@@ -582,7 +582,7 @@ public:
             DoScriptText(SAY_ROAR_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (AggroTimer)
             {
@@ -675,7 +675,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -729,7 +729,7 @@ public:
         {
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->HasAura(SPELL_KNOCKBACK))
                 DoCast(me, SPELL_KNOCKBACK, true);
@@ -860,7 +860,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1112,7 +1112,7 @@ public:
            DoScriptText(SAY_JULIANNE_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff);
+        void UpdateAI(uint32 diff);
     };
 
 };
@@ -1268,7 +1268,7 @@ public:
             DoScriptText(SAY_ROMULO_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || IsFakingDeath)
                 return;

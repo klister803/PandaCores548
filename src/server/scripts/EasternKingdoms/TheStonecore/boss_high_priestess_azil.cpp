@@ -145,7 +145,7 @@ class boss_high_priestess_azil : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -224,7 +224,7 @@ class npc_gravity_well : public CreatureScript
                 DoCast(me, SPELL_GRAVITY_WELL_AURA_0);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uidespawnTimer <= diff)
                     me->DespawnOrUnsummon();

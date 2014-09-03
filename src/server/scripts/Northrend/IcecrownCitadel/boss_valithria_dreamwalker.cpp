@@ -368,7 +368,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                     DoSummon(entry, Pos[urand(0, RAID_MODE(1,3,1,3))]);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -618,7 +618,7 @@ class npc_risen_archmage : public CreatureScript
                 //DoScriptText(SAY_VALITHRIA_PLAYER_DEATH, pValithria);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -685,7 +685,7 @@ class npc_blazing_skeleton : public CreatureScript
                 //DoScriptText(SAY_VALITHRIA_PLAYER_DEATH, pValithria);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -734,7 +734,7 @@ class npc_suppresser : public CreatureScript
                 m_uiCheckTimer = 2500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -792,7 +792,7 @@ class npc_gluttonous_abomination : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -838,7 +838,7 @@ class npc_blistering_zombie : public CreatureScript
                 //DoScriptText(SAY_VALITHRIA_PLAYER_DEATH, pValithria);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -892,7 +892,7 @@ class npc_dream_portal : public CreatureScript
                 return (type == MISSED_PORTALS && _used) ? 1 : 0;
             }
 
-            void UpdateAI(uint32 const /*diff*/)
+            void UpdateAI(uint32 /*diff*/)
             {
                 UpdateVictim();
             }
@@ -927,7 +927,7 @@ class npc_dream_cloud : public CreatureScript
                 me->LoadCreaturesAddon(true);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 // trigger
                 if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)

@@ -173,7 +173,7 @@ class boss_lorewalker_stonestep : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -315,7 +315,7 @@ class mob_sun : public CreatureScript
                 me->GetInstanceScript()->SetData(TYPE_NUMBER_SUN_DEFEATED, 1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -384,7 +384,7 @@ class mob_zao : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (suns.empty())
                 {
@@ -494,7 +494,7 @@ class mob_haunting_sha : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!me->getVictim())
                 {
@@ -569,7 +569,7 @@ class mob_strife : public CreatureScript
                 events.ScheduleEvent(1, 1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -666,7 +666,7 @@ class mob_peril : public CreatureScript
                 events.ScheduleEvent(1, 1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -749,7 +749,7 @@ class mob_nodding_tiger: public CreatureScript
                 events.ScheduleEvent(1, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -795,7 +795,7 @@ class mob_golden_beetle: public CreatureScript
                 events.ScheduleEvent(3, 6000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -848,7 +848,7 @@ class mob_jiang_xiang: public CreatureScript
                 events.ScheduleEvent(2, 4000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -896,7 +896,7 @@ class mob_songbird_queen: public CreatureScript
                 events.ScheduleEvent(1, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -949,7 +949,7 @@ class mob_talking_fish: public CreatureScript
                 events.ScheduleEvent(1, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

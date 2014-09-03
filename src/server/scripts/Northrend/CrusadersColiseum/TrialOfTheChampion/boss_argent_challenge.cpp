@@ -199,7 +199,7 @@ public:
                 return;
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
@@ -351,7 +351,7 @@ public:
                 return;    
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (bDone && uiResetTimer <= uiDiff)
             {
@@ -525,7 +525,7 @@ public:
             uiWakingNightmare = 7000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -727,7 +727,7 @@ public:
             uiWaypoint = uiType;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             npc_escortAI::UpdateAI(uiDiff);
 

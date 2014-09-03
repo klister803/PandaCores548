@@ -367,7 +367,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -678,7 +678,7 @@ public:
              }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -829,7 +829,7 @@ public:
              }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -954,7 +954,7 @@ public:
              }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -1026,7 +1026,7 @@ public:
         uint32 uiScaleTimer;
         uint32 uiLifebindersGiftTimer;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiLifebindersGiftTimer <= diff)
             {
@@ -1071,7 +1071,7 @@ public:
 
         uint32 uiExplosionTimer;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiExplosionTimer <= diff)
             {
@@ -1115,7 +1115,7 @@ public:
             uiSwitchTargetTimer = urand(6000, 8000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1189,7 +1189,7 @@ public:
             healthySporesSpawned = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || (me->HasUnitState(UNIT_STATE_CASTING)))
                 return;
@@ -1257,7 +1257,7 @@ public:
             me->SetInCombatWithZone();
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->HasAura(SPELL_HEALTHY_SPORE_VISUAL))
             {
@@ -1298,7 +1298,7 @@ public:
             uiStormboltTimer = 15000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || (me->HasUnitState(UNIT_STATE_CASTING)))
                 return;
@@ -1386,7 +1386,7 @@ public:
             uiTidalWaveTimer = 10000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

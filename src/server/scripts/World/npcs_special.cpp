@@ -316,7 +316,7 @@ public:
             comeonhome = true;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!comeonhome)
             {
@@ -424,7 +424,7 @@ public:
             firsttarget = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!firsttarget)
             {
@@ -495,7 +495,7 @@ public:
         }
         
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (target && firstcast)
             {
@@ -542,7 +542,7 @@ public:
             firsttarget = true;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
@@ -585,7 +585,7 @@ public:
             firsttarget = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!firsttarget)
             {
@@ -832,7 +832,7 @@ class npc_chicken_cluck : public CreatureScript
 
             void EnterCombat(Unit* /*who*/) {}
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 // Reset flags after a certain time has passed so that the next player has to start the 'event' again
                 if (me->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
@@ -930,7 +930,7 @@ class npc_dancing_flames : public CreatureScript
                 me->SendMovementFlagUpdate(false);  //send update position to client
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!Active)
                 {
@@ -1174,7 +1174,7 @@ class npc_doctor : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff);
+            void UpdateAI(uint32 diff);
 
             void EnterCombat(Unit* /*who*/){}
         };
@@ -1283,7 +1283,7 @@ class npc_injured_patient : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const /*diff*/)
+            void UpdateAI(uint32 /*diff*/)
             {
                 //lower HP on every world tick makes it a useful counter, not officlone though
                 if (me->isAlive() && me->GetHealth() > 6)
@@ -1309,7 +1309,7 @@ class npc_injured_patient : public CreatureScript
         }
 };
 
-void npc_doctor::npc_doctorAI::UpdateAI(uint32 const diff)
+void npc_doctor::npc_doctorAI::UpdateAI(uint32 diff)
 {
     if (Event && SummonPatientCount >= 20)
     {
@@ -1546,7 +1546,7 @@ class npc_garments_of_quests : public CreatureScript
 
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (CanRun && !me->isInCombat())
                 {
@@ -1618,7 +1618,7 @@ class npc_guardian : public CreatureScript
             {
             }
 
-            void UpdateAI(uint32 const /*diff*/)
+            void UpdateAI(uint32 /*diff*/)
             {
                 if (!UpdateVictim())
                     return;
@@ -2049,7 +2049,7 @@ class npc_tonk_mine : public CreatureScript
             void AttackStart(Unit* /*who*/) {}
             void MoveInLineOfSight(Unit* /*who*/) {}
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (ExplosionTimer <= diff)
                 {
@@ -2441,7 +2441,7 @@ class npc_snake_trap : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -2519,7 +2519,7 @@ class mob_mojo : public CreatureScript
 
             void EnterCombat(Unit* /*who*/){}
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->HasAura(20372))
                 {
@@ -2624,7 +2624,7 @@ class npc_mirror_image : public CreatureScript
                 events.ScheduleEvent(59638, 2500);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -2753,7 +2753,7 @@ class npc_ebon_gargoyle : public CreatureScript
                 despawnTimer = 4 * IN_MILLISECONDS;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (despawnTimer > 0)
                 {
@@ -2885,7 +2885,7 @@ class npc_training_dummy : public CreatureScript
                     return;
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -2942,7 +2942,7 @@ class npc_fire_elemental : public CreatureScript
                 FireBlastTimer = 6000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -2990,7 +2990,7 @@ class npc_earth_elemental : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NATURE, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -3726,7 +3726,7 @@ class npc_spring_rabbit : public CreatureScript
                     owner->CastSpell(owner, SPELL_SPRING_FLING, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (inLove)
                 {
@@ -3907,7 +3907,7 @@ class npc_capacitor_totem : public CreatureScript
                     CastTimer = 3000;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (CastTimer <= diff)
             {
@@ -3947,7 +3947,7 @@ class npc_feral_spirit : public CreatureScript
                 SpiritBiteTimer = 6000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -4000,7 +4000,7 @@ class npc_spirit_link_totem : public CreatureScript
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (CastTimer >= diff)
             {
@@ -4060,7 +4060,7 @@ class npc_shadowy_apparition : public CreatureScript
                 targetGUID = guid;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 Unit* owner = me->GetOwner();
 
@@ -4113,7 +4113,7 @@ class npc_demoralizing_banner : public CreatureScript
                     owner->CastSpell(creature, 114205, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 Unit* owner = me->GetOwner();
 
@@ -4189,7 +4189,7 @@ class npc_frozen_orb : public CreatureScript
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 Unit* owner = me->GetOwner();
 
@@ -4281,7 +4281,7 @@ class npc_guardian_of_ancient_kings : public CreatureScript
                         me->GetOwner()->CastSpell(me->GetOwner(), SPELL_ANCIENT_HEALER, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -4430,7 +4430,7 @@ class npc_xuen_the_white_tiger : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -4475,7 +4475,7 @@ class npc_murder_of_crows : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->GetReactState() != REACT_DEFENSIVE)
                     me->SetReactState(REACT_DEFENSIVE);
@@ -4553,7 +4553,7 @@ class npc_wild_imp : public CreatureScript
                         AttackStart(me->GetOwner()->getVictim());
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->GetReactState() != REACT_AGGRESSIVE)
                     me->SetReactState(REACT_AGGRESSIVE);
@@ -4622,7 +4622,7 @@ class npc_earthgrab_totem : public CreatureScript
             creature->CastSpell(creature, EARTHGRAB, true);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->HasAura(EARTHGRAB))
                 me->CastSpell(me, EARTHGRAB, true);
@@ -4653,7 +4653,7 @@ class npc_windwalk_totem : public CreatureScript
             creature->CastSpell(creature, WINDWALK, true);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->HasAura(WINDWALK))
                 me->CastSpell(me, WINDWALK, true);
@@ -4714,7 +4714,7 @@ class npc_wild_mushroom : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (CastTimer <= diff && !stealthed)
                 {
@@ -4780,7 +4780,7 @@ class npc_fungal_growth : public CreatureScript
                 me->CastSpell(me, FUNGAL_GROWTH_AREA, true);        // Persistent Area
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!me->HasAura(FUNGAL_GROWTH_PERIODIC))
                     me->CastSpell(me, FUNGAL_GROWTH_PERIODIC, true);
@@ -4837,7 +4837,7 @@ class npc_psyfiend : public CreatureScript
                     me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
                     DoCast(me, SPELL_PSYCHIC_HORROR, false);
@@ -4975,7 +4975,7 @@ class npc_spectral_guise : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff) {}
+            void UpdateAI(uint32 diff) {}
 
             void EnterCombat(Unit* /*who*/) {}
 
@@ -5040,7 +5040,7 @@ class npc_bloodworm : public CreatureScript
                 uiCheckBloodChargesTimer = 1500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uiBurstTimer <= diff)
                     Burst();
@@ -5336,7 +5336,7 @@ class npc_shahram : public CreatureScript
             me->CastSpell(me, aShahramCast[urand(0, 5)], false);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (m_uiDeleteTimer < uiDiff)
                 me->DespawnOrUnsummon();

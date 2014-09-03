@@ -60,7 +60,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -201,7 +201,7 @@ class mob_animated_staff : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

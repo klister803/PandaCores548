@@ -102,7 +102,7 @@ class boss_ascendant_lord_obsidius : public CreatureScript
 			    summons.Summon(summon);
 		    }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -200,7 +200,7 @@ class npc_shadow_of_obsidius : public CreatureScript
 				}
 			}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
 				if (!UpdateVictim())
 					return;

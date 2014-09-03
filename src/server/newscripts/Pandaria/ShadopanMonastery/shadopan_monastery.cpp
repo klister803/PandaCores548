@@ -92,7 +92,7 @@ class npc_shadopan_ambusher : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -141,7 +141,7 @@ class npc_shadopan_archery : public CreatureScript
                 me->setActive(true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !pInstance->GetData(DATA_ARCHERY))
                     return;
@@ -233,7 +233,7 @@ class npc_shadopan_hatred : public CreatureScript
                     damage = 0;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

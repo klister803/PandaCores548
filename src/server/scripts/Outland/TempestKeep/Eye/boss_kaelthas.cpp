@@ -245,7 +245,7 @@ struct advisorbase_ai : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 diff)
     {
         if (DelayRes_Timer)
         {
@@ -470,7 +470,7 @@ class boss_kaelthas : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 //Phase 1
                 switch (Phase)
@@ -1056,7 +1056,7 @@ class boss_thaladred_the_darkener : public CreatureScript
                     DoScriptText(SAY_THALADRED_DEATH, me);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 advisorbase_ai::UpdateAI(diff);
 
@@ -1148,7 +1148,7 @@ class boss_lord_sanguinar : public CreatureScript
                     DoScriptText(SAY_SANGUINAR_DEATH, me);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 advisorbase_ai::UpdateAI(diff);
 
@@ -1237,7 +1237,7 @@ class boss_grand_astromancer_capernian : public CreatureScript
                     return;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 advisorbase_ai::UpdateAI(diff);
 
@@ -1363,7 +1363,7 @@ class boss_master_engineer_telonicus : public CreatureScript
                 DoScriptText(SAY_TELONICUS_AGGRO, me);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 advisorbase_ai::UpdateAI(diff);
 
@@ -1436,7 +1436,7 @@ class mob_kael_flamestrike : public CreatureScript
 
             void EnterCombat(Unit* /*who*/) {}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!Casting)
                 {
@@ -1497,7 +1497,7 @@ class mob_phoenix_tk : public CreatureScript
                 me->SummonCreature(NPC_PHOENIX_EGG, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 16000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1563,7 +1563,7 @@ class mob_phoenix_egg_tk : public CreatureScript
                 summoned->CastSpell(summoned, SPELL_REBIRTH, false);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!Rebirth_Timer)
                     return;

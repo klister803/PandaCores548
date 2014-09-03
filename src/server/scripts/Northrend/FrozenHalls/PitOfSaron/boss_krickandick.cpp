@@ -209,7 +209,7 @@ class boss_ick : public CreatureScript
                 me->AddThreat(target, _tempThreat);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(instance->GetBossState(DATA_GARFROST)==NOT_STARTED || instance->GetBossState(DATA_GARFROST)==SPECIAL) {
                 me->SetReactState(REACT_PASSIVE);
@@ -373,7 +373,7 @@ class boss_krick : public CreatureScript
                 _events.ScheduleEvent(EVENT_OUTRO_1, 1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 InstanceScript* pInstance = me->GetInstanceScript();
                 if (_phase != PHASE_OUTRO)

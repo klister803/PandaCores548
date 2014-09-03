@@ -223,7 +223,7 @@ class boss_murozond : public CreatureScript
                 BossAI::JustReachedHome();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() && phase != 1)
                     return;
@@ -412,7 +412,7 @@ class npc_murozond_mirror_image : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || pInstance->GetBossState(DATA_MUROZOND) != IN_PROGRESS)
                 {
@@ -462,7 +462,7 @@ class npc_end_time_nozdormu : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bTalk)
                     return;

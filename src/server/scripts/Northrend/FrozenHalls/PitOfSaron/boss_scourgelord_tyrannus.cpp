@@ -325,7 +325,7 @@ class boss_tyrannus : public CreatureScript
             
     
     
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             InstanceScript* pInstance = me->GetInstanceScript();
             if(m_startPhaseIntroTyr)
@@ -491,7 +491,7 @@ class boss_rimefang : public CreatureScript
                 _events.ScheduleEvent(EVENT_HOARFROST, 1000);
             }
         }
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 _events.Update(diff);
             
@@ -569,7 +569,7 @@ class player_overlord_brandAI : public PlayerAI
                 tyrannus->SetHealth(uint32(tyrannus->GetHealth() + (addHealth * 5.5f))); // Hack fix
         }
 
-        void UpdateAI(const uint32 /*diff*/) { }
+        void UpdateAI(uint32 /*diff*/) { }
 
     private:
         Creature* tyrannus;
@@ -860,7 +860,7 @@ public:
     }
     
     
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(uint32 uiDiff)
     {
         InstanceScript* pInstance = me->GetInstanceScript();
           if (pInstance->GetBossState(DATA_TYRANNUS) == IN_PROGRESS && GetClosestCreatureWithEntry(me, 36661, 125.0f))
@@ -1210,7 +1210,7 @@ public:
     }
     
     
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                          if(m_uiSpeech_Timerz < diff)
             {
@@ -1318,7 +1318,7 @@ public:
     }
 
     
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 diff)
     {
         InstanceScript* pInstance = me->GetInstanceScript();
         if (pInstance->GetBossState(DATA_TYRANNUS) == DONE)
@@ -1404,7 +1404,7 @@ public:
         m_uiSpeech_Timer    = 1000;
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 diff)
     {
     if(m_uiSpeech_Timer < diff)
             {
@@ -1483,7 +1483,7 @@ public:
         m_uiAddEntry = 0;
         }
             
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 diff)
     {
     InstanceScript* pInstance = me->GetInstanceScript();
         

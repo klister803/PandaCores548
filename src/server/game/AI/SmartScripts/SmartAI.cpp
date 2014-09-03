@@ -337,7 +337,7 @@ void SmartAI::UpdatePath(const uint32 diff)
     }
 }
 
-void SmartAI::UpdateAI(const uint32 diff)
+void SmartAI::UpdateAI(uint32 diff)
 {
     GetScript()->OnUpdate(diff);
     UpdatePath(diff);

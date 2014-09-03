@@ -59,7 +59,7 @@ class boss_hoptallus : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -119,7 +119,7 @@ class npc_hopper : public CreatureScript
                 explose = false;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;

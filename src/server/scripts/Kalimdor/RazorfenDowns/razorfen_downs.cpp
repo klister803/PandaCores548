@@ -141,7 +141,7 @@ public:
             uiWebTimer = urand(5000, 8000);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;

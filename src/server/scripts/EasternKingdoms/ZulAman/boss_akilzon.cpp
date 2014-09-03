@@ -119,7 +119,7 @@ class boss_akilzon : public CreatureScript
                 Talk(SAY_KILL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -224,7 +224,7 @@ class npc_akilzon_soaring_eagle : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -293,7 +293,7 @@ class npc_akilzon_amani_kidnapper : public CreatureScript
                     Start(false, false);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

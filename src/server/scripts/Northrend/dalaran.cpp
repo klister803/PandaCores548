@@ -115,7 +115,7 @@ public:
             return;
         }
 
-        void UpdateAI(const uint32 /*diff*/){}
+        void UpdateAI(uint32 /*diff*/){}
     };
 
     CreatureAI* GetAI(Creature* creature) const

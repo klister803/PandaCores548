@@ -254,7 +254,7 @@ class npc_gizmo : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -320,7 +320,7 @@ class npc_doc_zapnnozzle : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -596,7 +596,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             events.Update(diff);
@@ -761,7 +761,7 @@ class npc_orc_scout : public CreatureScript
             damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             UpdateVictim();
 
@@ -825,7 +825,7 @@ class npc_strangle_vine : public CreatureScript
                 
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             DoMeleeAttackIfReady();
         }
@@ -1000,7 +1000,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -1064,7 +1064,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -1253,7 +1253,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -1323,7 +1323,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -1384,7 +1384,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
         }
@@ -1435,7 +1435,7 @@ class npc_wild_clucker_egg : public CreatureScript
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
 
         }
@@ -1522,7 +1522,7 @@ class npc_hobart_grapplehammer : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -1597,7 +1597,7 @@ class npc_elm_bunny : public CreatureScript
                 events.Reset();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -1670,7 +1670,7 @@ class npc_vashjelan_siren : public CreatureScript
             events.ScheduleEvent(EVENT_GENERIC_2, 4000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1770,7 +1770,7 @@ class npc_naga_hatchling : public CreatureScript
             SetGUID(who->GetGUID(), EVENT_GENERIC_1);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -1866,7 +1866,7 @@ class npc_faceless_of_the_deep : public CreatureScript
             me->CastSpell(me, SPELL_SOE_STRANGE_TENTACLE, true);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (events.GetPhaseMask() & PHASE_MASK_COMBAT && !UpdateVictim())
                 return;
@@ -1995,7 +1995,7 @@ public:
             damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             events.Update(diff);
@@ -2092,7 +2092,7 @@ class npc_super_booster_rocket_boots : public CreatureScript
                 passenger->RemoveAura(SPELL_ZVSBRB_DAMAGE_AURA); 
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             DoMeleeAttackIfReady();
         }
@@ -2216,7 +2216,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -2384,7 +2384,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             
@@ -2436,7 +2436,7 @@ class npc_captured_goblin : public CreatureScript
                 me->DespawnOrUnsummon(0);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
 
             events.Update(diff);
@@ -2531,7 +2531,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
             damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (events.GetPhaseMask() & PHASE_MASK_PRINCE_COMBAT && !UpdateVictim())
                 return;

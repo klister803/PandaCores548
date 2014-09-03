@@ -68,7 +68,7 @@ public:
                 me->AddAura(SPELL_RUSTING, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -127,7 +127,7 @@ class npc_bone_pile : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff){}
+            void UpdateAI(uint32 diff){}
         };
 
         CreatureAI* GetAI(Creature* creature) const

@@ -460,7 +460,7 @@ class boss_algalon_the_observer : public CreatureScript
                 me->SummonGameObject(RAID_MODE(194821, 194822), 1632.53f, -295.983f, 417.323f, 1.56774f, 0, 0, 0.706026f, 0.708186f, 604800);
             }
             
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return; 
@@ -569,7 +569,7 @@ class npc_living_constellation : public CreatureScript
                 CheckHeightTimer = 1500;
             }
             
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     me->DespawnOrUnsummon();
@@ -687,7 +687,7 @@ class npc_black_hole : public CreatureScript
                 despawn = false;
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (SummonMatter)
                 {
@@ -745,7 +745,7 @@ class npc_dark_matter : public CreatureScript
 
             void Reset(){}
  
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 DoMeleeAttackIfReady();
             }
@@ -819,7 +819,7 @@ class npc_brann_bronzebeard_algalon : public CreatureScript //Algalon add in wor
                 _events.ScheduleEvent(EVENT_BRANN_MOVE_INTRO, delay);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 UpdateVictim();
 

@@ -57,7 +57,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

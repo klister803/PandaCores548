@@ -309,7 +309,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!CanAttack && Intro)
             {
@@ -598,7 +598,7 @@ public:
 
         void MoveInLineOfSight(Unit* /*who*/) {}
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!instance)
                 return;
@@ -676,7 +676,7 @@ public:
             me->AddThreat(who, 0.1f);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             // PoisonBoltTimer
             if (PoisonBoltTimer <= diff)

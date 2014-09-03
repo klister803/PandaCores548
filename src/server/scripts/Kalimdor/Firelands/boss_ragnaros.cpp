@@ -515,7 +515,7 @@ public:
             Talk(SAY_SLAY);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!(events.GetPhaseMask() & PHASE_SUBMERGED))
                 if (!UpdateVictim())
@@ -882,7 +882,7 @@ class npc_molten_seed : public CreatureScript
                 }
             }
 
-             void UpdateAI(uint32 const diff)
+             void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -947,7 +947,7 @@ class npc_magma_trap : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -992,7 +992,7 @@ class npc_engulfing_flame : public CreatureScript
                 events.ScheduleEvent(EVENT_EXPLODE, 3000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1044,7 +1044,7 @@ class npc_sulfuras_hammer : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1118,7 +1118,7 @@ class npc_son_of_flame : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1244,7 +1244,7 @@ class npc_living_meteor : public CreatureScript
                     DoCastAOE(SPELL_LIVING_METEOR_BUFF);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1314,7 +1314,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 

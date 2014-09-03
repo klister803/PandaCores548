@@ -143,7 +143,7 @@ class boss_general_umbriss : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!pInstance || !UpdateVictim())
                     return;
@@ -252,7 +252,7 @@ class npc_malignant_trogg : public CreatureScript
                     DoCast(me, SPELL_MODGUD_MALICE_AURA, true);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -301,7 +301,7 @@ class npc_umbriss_trogg_dweller : public CreatureScript
                 events.ScheduleEvent(EVENT_CLAW_PUNCTURE, 5000);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;

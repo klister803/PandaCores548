@@ -89,7 +89,7 @@ class boss_gatewatcher_gyrokill : public CreatureScript
                 Talk(SAY_SLAY);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

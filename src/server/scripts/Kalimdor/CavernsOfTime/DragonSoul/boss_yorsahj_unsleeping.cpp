@@ -268,7 +268,7 @@ class boss_yorsahj_the_unsleeping: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -613,7 +613,7 @@ class npc_yorsahj_the_unsleeping_globule: public CreatureScript
                 DoCastAOE(SPELL_FUSING_VAPORS_IMMUNE, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -706,7 +706,7 @@ class npc_yorsahj_the_unsleeping_forgotten_one: public CreatureScript
                 me->DespawnOrUnsummon(3000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

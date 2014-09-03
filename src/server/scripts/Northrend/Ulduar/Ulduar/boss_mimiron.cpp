@@ -323,7 +323,7 @@ public:
             ++uiStep;
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -835,7 +835,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!UpdateVictim())
                 return;
@@ -914,7 +914,7 @@ public:
 
         uint32 uiNapalmShell;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!UpdateVictim())
                 return;
@@ -970,7 +970,7 @@ public:
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiBoomTimer <= diff)
             {
@@ -1121,7 +1121,7 @@ public:
                 }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!UpdateVictim())
                 return;
@@ -1330,7 +1330,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!UpdateVictim())
                 return;
@@ -1511,7 +1511,7 @@ public:
         }
         
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -1562,7 +1562,7 @@ public:
 
         uint32 uiSprayTimer;
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (uiSprayTimer <= uiDiff)
             {
@@ -1635,7 +1635,7 @@ public:
         
         uint32 uiFlameTimer;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiFlameTimer <= diff)
             {
@@ -1669,7 +1669,7 @@ public:
 
         InstanceScript* pInstance;
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (pInstance && pInstance->GetBossState(BOSS_MIMIRON) != IN_PROGRESS)
                 me->DespawnOrUnsummon();
@@ -1700,7 +1700,7 @@ public:
 
         uint32 uiFrostTimer;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiFrostTimer <= diff)
             {
@@ -1752,7 +1752,7 @@ public:
             Boom = true;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->getVictim() && me->GetDistance(me->getVictim()) <= 3.0f)
                 if (Boom)

@@ -112,7 +112,7 @@ void ScriptedAI::AttackStartNoMove(Unit* who)
         DoStartNoMovement(who);
 }
 
-void ScriptedAI::UpdateAI(uint32 const /*diff*/)
+void ScriptedAI::UpdateAI(uint32 /*diff*/)
 {
     //Check if we have a current target
     if (!UpdateVictim())
@@ -588,7 +588,7 @@ void BossAI::SummonedCreatureDespawn(Creature* summon)
     summons.Despawn(summon);
 }
 
-void BossAI::UpdateAI(uint32 const diff)
+void BossAI::UpdateAI(uint32 diff)
 {
     if (!UpdateVictim())
         return;
@@ -675,7 +675,7 @@ void WorldBossAI::SummonedCreatureDespawn(Creature* summon)
     summons.Despawn(summon);
 }
 
-void WorldBossAI::UpdateAI(uint32 const diff)
+void WorldBossAI::UpdateAI(uint32 diff)
 {
     if (!UpdateVictim())
         return;

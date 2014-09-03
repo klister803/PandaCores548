@@ -265,7 +265,7 @@ class boss_spirit_kings_controler : public CreatureScript
                 }
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!fightInProgress)
                     return;
@@ -442,7 +442,7 @@ class boss_spirit_kings : public CreatureScript
                     } 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -630,7 +630,7 @@ class mob_undying_shadow : public CreatureScript
                     damage = 0;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (switchPhaseTimer)
                 {

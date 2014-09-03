@@ -166,7 +166,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -258,7 +258,7 @@ public:
             SummonTimer = 3000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -314,7 +314,7 @@ public:
             me->SetAuraStack(SPELL_FERAL_ESSENCE, me, Lifes);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 me->DespawnOrUnsummon();
@@ -420,7 +420,7 @@ public:
             CheckTimer = 1000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -508,7 +508,7 @@ public:
             DoCast(me, SPELL_SEEPING_ESSENCE);
         }
     
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (pInstance && pInstance->GetBossState(BOSS_AURIAYA) != IN_PROGRESS)
                 me->DespawnOrUnsummon();

@@ -142,7 +142,7 @@ class boss_asaad : public CreatureScript
             }
             
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -259,7 +259,7 @@ class npc_unstable_grounding_field : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
      };

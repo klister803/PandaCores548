@@ -138,7 +138,7 @@ class boss_ammunae : public CreatureScript
 			    _JustReachedHome();
 		    }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -242,7 +242,7 @@ class npc_ammunae_seedling_pod : public CreatureScript
                     DoCast(pAmmunae, SPELL_ENERGIZE);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
             }
 
@@ -302,7 +302,7 @@ class npc_ammunae_spore : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };

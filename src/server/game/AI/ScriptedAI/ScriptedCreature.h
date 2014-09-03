@@ -93,7 +93,7 @@ struct ScriptedAI : public CreatureAI
     void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
 
     //Called at World update tick
-    virtual void UpdateAI(uint32 const diff);
+    virtual void UpdateAI(uint32 diff);
 
     //Called at creature death
     void JustDied(Unit* /*killer*/) {}
@@ -296,7 +296,7 @@ class BossAI : public ScriptedAI
         void JustSummoned(Creature* summon);
         void SummonedCreatureDespawn(Creature* summon);
 
-        virtual void UpdateAI(uint32 const diff);
+        virtual void UpdateAI(uint32 diff);
         virtual bool _EnterEvadeMode();
 
         // Hook used to execute events scheduled into EventMap without the need
@@ -366,7 +366,7 @@ class WorldBossAI : public ScriptedAI
         void JustSummoned(Creature* summon);
         void SummonedCreatureDespawn(Creature* summon);
 
-        virtual void UpdateAI(uint32 const diff);
+        virtual void UpdateAI(uint32 diff);
 
         // Hook used to execute events scheduled into EventMap without the need
         // to override UpdateAI

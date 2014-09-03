@@ -157,7 +157,7 @@ class npc_end_time_image_of_nozdormu : public CreatureScript
                     events.ScheduleEvent(EVENT_TALK_1, 25000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bTalk)
                     return;
@@ -218,7 +218,7 @@ class npc_end_time_infinite_warden : public CreatureScript
                 events.ScheduleEvent(EVENT_VOID_STRIKE, urand(5000, 10000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -281,7 +281,7 @@ class npc_end_time_infinite_suppressor : public CreatureScript
                 events.ScheduleEvent(EVENT_TEMPORAL_VORTEX, 5000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

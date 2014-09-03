@@ -162,7 +162,7 @@ public:
 
         void AttackStart(Unit* who) {}
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
                         
             if (Phase != INTRO)
@@ -699,7 +699,7 @@ public:
                 pInstance->SetData(DATA_KNIGHT, DONE);
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             ScriptedAI::UpdateAI(uiDiff);
 

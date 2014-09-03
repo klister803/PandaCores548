@@ -326,7 +326,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -444,7 +444,7 @@ public:
         {
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
         }
     };
@@ -520,7 +520,7 @@ public:
             }            
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             Position pos;
 
@@ -583,7 +583,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;
@@ -643,7 +643,7 @@ class npc_abnoxious_fiend : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;

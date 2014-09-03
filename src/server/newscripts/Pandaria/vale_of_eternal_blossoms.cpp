@@ -54,7 +54,7 @@ class mob_zhao_jin : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -141,7 +141,7 @@ class npc_lao_softfoot : public CreatureScript
                         player->FailQuest(30634); // Barring Entry
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 npc_escortAI::UpdateAI(uiDiff);
 
@@ -175,7 +175,7 @@ class mob_reanimated_jade_warrior : public CreatureScript
                 jadeStrenghtTimer = urand(5000, 7000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -229,7 +229,7 @@ class mob_subjuged_serpent : public CreatureScript
                 lightningWhirlTimer  = urand(3000, 6000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

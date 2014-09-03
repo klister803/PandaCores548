@@ -254,7 +254,7 @@ class boss_echo_of_tyrande : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() && !eventphase)
                     return;
@@ -507,7 +507,7 @@ class npc_echo_of_tyrande_pool_of_moonlight : public CreatureScript
                 uiDespawnTimer = 60000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uiDespawnTimer <= diff)
                 {

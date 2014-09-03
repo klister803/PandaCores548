@@ -207,7 +207,7 @@ class boss_garfrost : public CreatureScript
                 return _permafrostStack;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -432,7 +432,7 @@ public:
     }
     
             
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(uint32 uiDiff)
     {
         InstanceScript* pInstance = me->GetInstanceScript();
         if (m_bIsOutro && pInstance->GetBossState(DATA_TYRANNUS) == NOT_STARTED)

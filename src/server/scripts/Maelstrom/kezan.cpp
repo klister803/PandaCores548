@@ -122,7 +122,7 @@ class npc_defiant_troll : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             //If work send working animation
             if (work)
@@ -219,7 +219,7 @@ class npc_hot_rod : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -386,7 +386,7 @@ class npc_roling_friends : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
 
         }
@@ -498,7 +498,7 @@ class npc_roling_friends_guard : public CreatureScript
             return 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
              events.Update(diff);
 
@@ -658,7 +658,7 @@ class npc_bilgewater_buccaneer : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             while (uint32 eventId = events.ExecuteEvent())
@@ -783,7 +783,7 @@ class npc_bilgewater_buccaneer_2 : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             while (uint32 eventId = events.ExecuteEvent())
@@ -911,7 +911,7 @@ class npc_steamwheedle_shark : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             while (uint32 eventId = events.ExecuteEvent())
@@ -964,7 +964,7 @@ public:
 
         void Reset() {}
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             Unit* target = NULL;
             target = me->SelectNearestTarget(5.0f);
@@ -1228,7 +1228,7 @@ class npc_hack_bank_controller : public CreatureScript
             _select = 100;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 

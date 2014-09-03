@@ -91,7 +91,7 @@ class boss_general_pavalak : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -183,7 +183,7 @@ class npc_blade_rush : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff){}
+            void UpdateAI(uint32 diff){}
             
         };
 

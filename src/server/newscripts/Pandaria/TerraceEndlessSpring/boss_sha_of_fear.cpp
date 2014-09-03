@@ -139,7 +139,7 @@ class boss_sha_of_fear : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -227,7 +227,7 @@ class npc_dread_spawn : public CreatureScript
                     damage = 0; 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

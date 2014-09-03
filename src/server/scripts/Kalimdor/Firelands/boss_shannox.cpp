@@ -264,7 +264,7 @@ class boss_shannox : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -502,7 +502,7 @@ class npc_shannox_riplimb : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (bFetch)
                 {
@@ -677,7 +677,7 @@ class npc_shannox_rageface : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -825,7 +825,7 @@ class npc_shannox_immolation_trap : public CreatureScript
             bool bExplode;
             uint32 uiReadyTimer;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bReady)
                 {
@@ -895,7 +895,7 @@ class npc_shannox_crystal_prison_trap : public CreatureScript
             bool bExplode;
             uint32 uiReadyTimer;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bReady)
                 {
@@ -992,7 +992,7 @@ class npc_shannox_crystal_prison : public CreatureScript
                 me->DespawnOrUnsummon(800);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!trappedUnit)
                     return;

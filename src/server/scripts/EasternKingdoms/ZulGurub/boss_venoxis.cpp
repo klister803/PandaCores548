@@ -176,7 +176,7 @@ class boss_venoxis : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -285,7 +285,7 @@ class npc_venoxis_bloodvenom : public CreatureScript
                     DoCast(pVenoxis, SPELL_VENOM_TOTEM_BEAM_CENTER);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || pInstance->GetBossState(DATA_VENOXIS) != IN_PROGRESS)
                 {
@@ -360,7 +360,7 @@ class npc_venoxis_venomous_effusion_stalker : public CreatureScript
                     DoZoneInCombat(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || pInstance->GetBossState(DATA_VENOXIS) != IN_PROGRESS)
                 {
@@ -402,7 +402,7 @@ class npc_venoxis_venomous_effusion : public CreatureScript
 
             InstanceScript* pInstance;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || pInstance->GetBossState(DATA_VENOXIS) != IN_PROGRESS)
                 {

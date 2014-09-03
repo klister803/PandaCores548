@@ -71,7 +71,7 @@ public:
 
         void Reset() { }
 
-        void UpdateAI(const uint32 /*uiDiff*/)
+        void UpdateAI(uint32 /*uiDiff*/)
         {
             if (!UpdateVictim())
                 return;
@@ -194,7 +194,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IsNihil)
             {
@@ -467,7 +467,7 @@ public:
             OgreGUID = 0;
         }
 
-        void UpdateAI(const uint32 /*uiDiff*/) {}
+        void UpdateAI(uint32 /*uiDiff*/) {}
     };
 };
 
@@ -527,7 +527,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (!UpdateVictim())
                 return;
@@ -653,7 +653,7 @@ class npc_simon_bunny : public CreatureScript
             EventMap _events;
             std::list<uint8> colorSequence, playableSequence, playerSequence;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 _events.Update(diff);
 

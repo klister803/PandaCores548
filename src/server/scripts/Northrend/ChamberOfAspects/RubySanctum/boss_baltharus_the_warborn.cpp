@@ -118,7 +118,7 @@ class npc_xerestrasza : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
@@ -196,7 +196,7 @@ class boss_baltharus_the_warborn : public CreatureScript
                 Talk(SAY_AGGRO);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || !CheckInRoom())
                     return;
@@ -311,7 +311,7 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
                 events.ScheduleEvent(EVENT_CAST_BLADE_TEMPEST, urand(7000,7500));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

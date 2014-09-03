@@ -175,7 +175,7 @@ public:
             DoScriptText(say_event_start[rand()%8], me, target);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             switch (phase)
             {
@@ -474,7 +474,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
             {
@@ -552,7 +552,7 @@ public:
             TargetGUID = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!Intro || !TargetGUID)
                 return;
@@ -824,7 +824,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (!me->isInCombat())
             {
@@ -1032,7 +1032,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IntroPhase)
             {
@@ -1122,7 +1122,7 @@ public:
                 //me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if(me->isCharmed())
             {

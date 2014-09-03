@@ -197,7 +197,7 @@ class boss_vizier_zorlok : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -301,7 +301,7 @@ class npc_gas_controller : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

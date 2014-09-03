@@ -51,7 +51,7 @@ public:
         }
 
         //Timed events
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             //Out of combat
             if (!me->getVictim())
@@ -115,7 +115,7 @@ public:
                 tSay = DELAY_SAY_GILNEAS_CITY_GUARD_GATE; //Reset timer
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             //Out of combat and
             if (me->GetGUIDLow() == 3486400)
@@ -186,7 +186,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -267,7 +267,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             //If creature has no target
             if (!UpdateVictim())
@@ -419,7 +419,7 @@ public:
             }
         }
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -498,7 +498,7 @@ public:
             willCastEnrage = urand(0, 1);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tRun <= diff && onceRun)
             {
@@ -750,7 +750,7 @@ public:
             z = me->m_positionZ;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tRun <= diff && onceRun)
             {
@@ -839,7 +839,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -911,7 +911,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -974,7 +974,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -1024,7 +1024,7 @@ public:
                 damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -1126,7 +1126,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!EventActive)
                 return;
@@ -1193,7 +1193,7 @@ public:
             tAttack = urand(1700, 2400);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
         if (!UpdateVictim())
             {
@@ -1271,7 +1271,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->GetPositionX() == -1611.40f && me->GetPositionY() == 1498.49f) // I was spawned in location 1
             {
@@ -1401,7 +1401,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->GetPositionX() == -1732.81f && me->GetPositionY() == 1526.34f) // I was spawned in location 1
             {
@@ -1531,7 +1531,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->GetPositionX() == -1618.86f && me->GetPositionY() == 1505.68f) // I was spawned in location 1 on NW Rooftop
             {
@@ -1661,7 +1661,7 @@ public:
             willCastEnrage      = urand(0, 1);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->GetPositionX() == -1732.81f && me->GetPositionY() == 1526.34f) // I was just spawned
             {
@@ -1764,7 +1764,7 @@ public:
             tEvent      = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (Creature* Lorna = me->FindNearestCreature(NPC_LORNA_CROWLEY_P4, 60.0f, true))
             if (Creature* BadAvery = me->FindNearestCreature(NPC_JOSIAH_AVERY_P4, 80.0f, true))
@@ -1875,7 +1875,7 @@ public:
             Talk        = false;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tPlayerCheck <= diff)
             {
@@ -1996,7 +1996,7 @@ public:
             me->GetCharmInfo()->SetIsFollowing(true);
         }
 
-        void UpdateAI(uint32 const /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             Player* player = me->GetOwner()->ToPlayer();
 
@@ -2067,7 +2067,7 @@ public:
             DoCast(me, SPELL_SHADOWSTALKER_STEALTH);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -2152,7 +2152,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSay <= diff) // Time for next spawn wave
             {
@@ -2212,7 +2212,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if(tYell <= diff)
             {
@@ -2285,7 +2285,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (tSeek <= diff)
             {
@@ -2491,7 +2491,7 @@ public:
         {
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             Player* player = GetPlayerForEscort();
@@ -2553,7 +2553,7 @@ public:
             SayTimer        = 500;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (Creature* krennan = me->FindNearestCreature(NPC_KRENNAN_ARANAS_TREE, 50.0f))
             {
@@ -2627,7 +2627,7 @@ public:
             EventStart      = false;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!EventStart)
                 return;
@@ -2843,7 +2843,7 @@ public:
         {
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
 
@@ -2911,7 +2911,7 @@ public:
             Burning = false;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if(me->HasAura(SPELL_THROW_TORCH))
             {
@@ -3041,7 +3041,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!Move)
                 return;
@@ -3124,7 +3124,7 @@ public:
         {
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             Player* player = GetPlayerForEscort();

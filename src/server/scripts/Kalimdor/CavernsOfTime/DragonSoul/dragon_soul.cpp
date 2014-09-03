@@ -177,7 +177,7 @@ class npc_dragon_soul_ancient_water_lord : public CreatureScript
                 events.ScheduleEvent(EVENT_DRENCHED, urand(3000, 6000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -250,7 +250,7 @@ class npc_dragon_soul_earthen_destroyer : public CreatureScript
                 events.ScheduleEvent(EVENT_DUST_STORM, urand(7000, 11000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -326,7 +326,7 @@ class npc_dragon_soul_earthen_soldier : public CreatureScript
                 events.ScheduleEvent(EVENT_TWILIGHT_CORRUPTION, urand(6000, 7000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -405,7 +405,7 @@ class npc_dragon_soul_twilight_siege_captain : public CreatureScript
                 events.ScheduleEvent(EVENT_TWILIGHT_SUBMISSION, urand(10000, 12000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -477,7 +477,7 @@ class npc_dragon_soul_twilight_portal : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -535,7 +535,7 @@ class npc_dragon_soul_crimson_globule : public CreatureScript
                 events.ScheduleEvent(EVENT_SEARING_BLOOD, urand(7000, 14000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -595,7 +595,7 @@ class npc_dragon_soul_acidic_globule : public CreatureScript
                 events.ScheduleEvent(EVENT_DIGESTIVE_ACID, urand(7000, 14000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -655,7 +655,7 @@ class npc_dragon_soul_dark_globule : public CreatureScript
                 events.ScheduleEvent(EVENT_PSYCHIC_SLICE, urand(7000, 14000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -715,7 +715,7 @@ class npc_dragon_soul_shadowed_globule : public CreatureScript
                 events.ScheduleEvent(EVENT_DEEP_CORRUPTION, urand(12000, 24000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -781,7 +781,7 @@ class npc_dragon_soul_cobalt_globule : public CreatureScript
                 DoCastAOE(SPELL_MANA_DIFFUSION);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

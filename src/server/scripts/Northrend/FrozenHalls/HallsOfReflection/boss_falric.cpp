@@ -201,7 +201,7 @@ public:
              m_pInstance->DoUpdateWorldState(WORLD_STATE_HOR_WAVE_COUNT, uiWaveCount);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if(!m_pInstance) return;
 

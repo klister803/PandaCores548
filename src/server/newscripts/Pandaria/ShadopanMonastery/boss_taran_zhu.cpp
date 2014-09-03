@@ -96,7 +96,7 @@ class boss_taran_zhu : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -159,7 +159,7 @@ public:
             me->CastSpell(me, SPELL_POOL_OF_SHADOWS, true);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->HasUnitState(UNIT_STATE_CASTING))
                 me->CastSpell(me, SPELL_GRIP_OF_HATE, false);

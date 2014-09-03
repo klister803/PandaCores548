@@ -423,7 +423,7 @@ struct boss_faction_championsAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(uint32 uiDiff)
     {
         if (ThreatTimer < uiDiff)
         {
@@ -566,7 +566,7 @@ public:
             } else m_uiLifebloomTimer -= uiDiff;
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -736,7 +736,7 @@ public:
             } else m_uiHealingWaveTimer -= uiDiff;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -917,7 +917,7 @@ public:
             } else m_uiHolyShockTimer -= uiDiff;
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -1109,7 +1109,7 @@ public:
             } else m_uiRenewTimer -= uiDiff;
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -1233,7 +1233,7 @@ public:
             boss_faction_championsAI::EnterCombat(pWho);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -1388,7 +1388,7 @@ public:
             DoCast(SPELL_SUMMON_FELHUNTER);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -1536,7 +1536,7 @@ public:
             SetEquipmentSlots(false, 47524, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -1784,7 +1784,7 @@ public:
             } else m_uiCommonTimer -= uiDiff;
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
 			if (!UpdateVictim()) return;
 
@@ -1885,7 +1885,7 @@ public:
             DoCastVictim(SPELL_INSECT_SWARM);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
             
@@ -2119,7 +2119,7 @@ public:
             } else m_uiCommonTimer -= uiDiff;
         }
             
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
             
@@ -2276,7 +2276,7 @@ public:
 
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -2407,7 +2407,7 @@ public:
                 me->CastSpell(target, SPELL_WOUND_POISON, true);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
             
@@ -2583,7 +2583,7 @@ public:
             Summons.DespawnAll();
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -2724,7 +2724,7 @@ public:
             DoCast(me, SPELL_AVENGING_WRATH );
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -2859,7 +2859,7 @@ public:
             m_uiSpellLockTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 
@@ -2908,7 +2908,7 @@ public:
             m_uiClawTimer = urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim()) return;
 

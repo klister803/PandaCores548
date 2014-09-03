@@ -111,7 +111,7 @@ class boss_slabhide : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -179,7 +179,7 @@ class npc_lava_fissure : public CreatureScript
                 DoCast(SPELL_LAVA_FISSURE_DUM);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uidespawnTimer <= diff)
                     me->DespawnOrUnsummon();

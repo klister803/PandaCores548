@@ -121,7 +121,7 @@ class boss_anraphet : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -190,7 +190,7 @@ class npc_alpha_beam : public CreatureScript
 				DoCast(me, SPELL_ALPHA_BEAM);
 			}
 			
-			void UpdateAI(const uint32 diff)
+			void UpdateAI(uint32 diff)
 			{				
 			}
         };

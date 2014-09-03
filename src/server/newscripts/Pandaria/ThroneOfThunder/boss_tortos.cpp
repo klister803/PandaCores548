@@ -105,7 +105,7 @@ class boss_tortos : public CreatureScript
                 return true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -229,7 +229,7 @@ class npc_whirl_turtle : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {    
                 events.Update(diff);
 
@@ -276,7 +276,7 @@ class npc_vampiric_cave_bat : public CreatureScript
 
             void Reset(){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {    
                if (!UpdateVictim())
                    return;

@@ -332,7 +332,7 @@ class boss_master_snowdrift : public CreatureScript
                 }
             }*/
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -503,7 +503,7 @@ class npc_snowdrift_novice : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -605,7 +605,7 @@ class npc_snowdrift_miniboss : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!stillInFight)
                     return;
@@ -693,7 +693,7 @@ class npc_snowdrift_clone : public CreatureScript
                 fireBallTimer = 500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (fireBallTimer <= diff)
                 {
@@ -735,7 +735,7 @@ class npc_snowdrift_fireball : public CreatureScript
                 damageTimer = 500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (damageTimer <= diff)
                 {

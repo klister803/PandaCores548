@@ -87,7 +87,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -155,7 +155,7 @@ public:
             DoCast(me, me->m_spells[0]);
         }
 
-        void UpdateAI(const uint32 /*diff*/){}
+        void UpdateAI(uint32 /*diff*/){}
     };
 
 };

@@ -117,7 +117,7 @@ class boss_sha_of_doubt : public CreatureScript
                 events.ScheduleEvent(EVENT_BOUNDS_OF_REALITY, 3000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -237,7 +237,7 @@ class mob_figment_of_doubt : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

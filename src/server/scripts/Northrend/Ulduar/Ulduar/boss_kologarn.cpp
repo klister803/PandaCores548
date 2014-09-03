@@ -268,7 +268,7 @@ public:
             events.ScheduleEvent(EVENT_GRIP, 40000);
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -459,7 +459,7 @@ public:
 
         InstanceScript* pInstance;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -512,7 +512,7 @@ public:
         }
 
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (DamageTimer)
             {
@@ -673,7 +673,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

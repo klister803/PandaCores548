@@ -76,7 +76,7 @@ class boss_ook_ook : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -162,7 +162,7 @@ class npc_barrel : public CreatureScript
                 me->CastSpell(me, SPELL_BAREL_EXPLOSION, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (CheckIfAgainstWall() || CheckIfAgainstUnit())
                     DoExplode();

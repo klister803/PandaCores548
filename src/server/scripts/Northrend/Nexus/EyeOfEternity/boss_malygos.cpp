@@ -394,7 +394,7 @@ public:
             _JustDied();
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -616,7 +616,7 @@ public:
 
         void EnterEvadeMode(){}
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (bufftimer)
             {
@@ -674,7 +674,7 @@ public:
 
         void EnterEvadeMode(){}
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (CheckDist)
             {
@@ -756,7 +756,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (HasteTimer)
             {
@@ -841,7 +841,7 @@ public:
             DoCast(me, SPELL_ARCANE_OVERLOAD, false);
         }
 
-        void UpdateAI(uint32 const /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             // we dont do melee damage!
         }
@@ -876,7 +876,7 @@ public:
         
         void EnterEvadeMode(){}
         
-        void UpdateAI(uint32 const /*diff*/){}
+        void UpdateAI(uint32 /*diff*/){}
     };
 };
 
@@ -955,7 +955,7 @@ public:
             events.ScheduleEvent(EVENT_YELL_5, 1000);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 

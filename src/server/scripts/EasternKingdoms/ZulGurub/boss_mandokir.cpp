@@ -139,7 +139,7 @@ class boss_mandokir : public CreatureScript
                     events.ScheduleEvent(EVENT_OHGAN_RES, 10000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -259,7 +259,7 @@ class npc_mandokir_chained_spirit : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (res)
                 {
@@ -308,7 +308,7 @@ class npc_mandokir_ohgan : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
 

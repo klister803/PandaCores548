@@ -188,7 +188,7 @@ class boss_ahune : public CreatureScript
                     pChest->SetRespawnTime(pChest->GetRespawnDelay());
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -311,7 +311,7 @@ public:
                     }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
         }
     };
@@ -341,7 +341,7 @@ public:
             uiStartTimer = 120000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (uiStartTimer <= uiDiff)
             {

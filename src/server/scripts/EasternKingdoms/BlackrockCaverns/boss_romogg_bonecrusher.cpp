@@ -106,7 +106,7 @@ class boss_romogg_bonecrusher : public CreatureScript
                 
             }
      
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return; 
@@ -209,7 +209,7 @@ class boss_romogg_bonecrusher : public CreatureScript
 
             }
      
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !UpdateVictim())
                     return;

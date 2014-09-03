@@ -44,7 +44,7 @@ class mob_sikthik_guardian : public CreatureScript
                 malleableResinTimer = urand(5000, 8000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -84,7 +84,7 @@ class mob_resin_flake : public CreatureScript
                 residueTimer = urand(5000, 7000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -128,7 +128,7 @@ class mob_sikthik_amber_weaver : public CreatureScript
                 resinShellOnlyOne = true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

@@ -341,7 +341,7 @@ class boss_chogall : public CreatureScript
                 Talk(IsHeroic()? SAY_DEATH_2: SAY_DEATH_1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -530,7 +530,7 @@ class npc_chogall_fire_portal : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -585,7 +585,7 @@ class npc_chogall_shadow_portal : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -646,7 +646,7 @@ class npc_chogall_fire_elemental : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -717,7 +717,7 @@ class npc_chogall_shadow_lord : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -779,7 +779,7 @@ class npc_chogall_blaze : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };
@@ -817,7 +817,7 @@ class npc_chogall_corruption : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };
@@ -870,7 +870,7 @@ class npc_chogall_darkened_creation : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -934,7 +934,7 @@ class npc_chogall_malformation : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                 {
@@ -1048,7 +1048,7 @@ class npc_chogall_corrupting_adherent : public CreatureScript
                 DoZoneInCombat(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1148,7 +1148,7 @@ class npc_chogall_blood_of_the_old_god : public CreatureScript
                     AddCorruption(victim, 2);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                     me->DespawnOrUnsummon();

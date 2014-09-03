@@ -96,7 +96,7 @@ class boss_occuthar : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -200,7 +200,7 @@ class npc_occuthar_eye_of_occuthar : public CreatureScript
             uint32 uiDestructionTimer;
             bool bDestruction;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uiDestructionTimer <= diff && !bDestruction)
                 {

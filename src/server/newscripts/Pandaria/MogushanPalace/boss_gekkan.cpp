@@ -108,7 +108,7 @@ class boss_gekkan : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -175,7 +175,7 @@ class mob_glintrok_skulker : public CreatureScript
                     me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -228,7 +228,7 @@ class mob_glintrok_ironhide : public CreatureScript
                     me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -283,7 +283,7 @@ class mob_glintrok_oracle : public CreatureScript
                     me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -342,7 +342,7 @@ class mob_glintrok_hexxer : public CreatureScript
                     me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

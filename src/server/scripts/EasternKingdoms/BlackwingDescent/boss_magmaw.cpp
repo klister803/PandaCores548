@@ -247,7 +247,7 @@ public:
             summons.Despawn(summon);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -463,7 +463,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {            
         }
     };
@@ -499,7 +499,7 @@ class npc_lava_parasite : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance && pInstance->GetBossState(DATA_MAGMAW) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -563,7 +563,7 @@ public:
                     summon->SetInCombatWithZone();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiFlameTimer <= diff && !bFlame)
             {

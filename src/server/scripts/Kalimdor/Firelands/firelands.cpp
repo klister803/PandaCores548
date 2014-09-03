@@ -190,7 +190,7 @@ class npc_firelands_ancient_core_hound : public CreatureScript
                 events.ScheduleEvent(EVENT_FLAME_BREATH, urand(5000, 10000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -252,7 +252,7 @@ class npc_firelands_ancient_lava_dweller : public CreatureScript
                 events.ScheduleEvent(EVENT_LAVA_SHOWER, urand(15000, 20000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -341,7 +341,7 @@ class npc_firelands_fire_turtle_hatchling : public CreatureScript
                 events.ScheduleEvent(EVENT_SHELL_SPIN, urand(10000, 20000));
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -407,7 +407,7 @@ class npc_firelands_flame_archon : public CreatureScript
                 events.ScheduleEvent(EVENT_FIERY_TORMENT, 20000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -513,7 +513,7 @@ class npc_firelands_molten_lord : public CreatureScript
                 events.ScheduleEvent(EVENT_SUMMON_LAVA_JETS, 10000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -601,7 +601,7 @@ class npc_firelands_molten_flamefather : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -671,7 +671,7 @@ class npc_firelands_magma_conduit : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                 {
@@ -699,7 +699,7 @@ class npc_firelands_magmakin : public CreatureScript
                 me->SetSpeed(MOVE_RUN, 2.0f);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                 {
@@ -1056,7 +1056,7 @@ class npc_firelands_volcanus : public CreatureScript
                 me->DespawnOrUnsummon(500);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

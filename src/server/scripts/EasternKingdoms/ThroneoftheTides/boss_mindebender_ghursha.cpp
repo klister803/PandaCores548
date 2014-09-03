@@ -153,7 +153,7 @@ class boss_erunak_stonespeaker : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -276,7 +276,7 @@ class boss_mindbender_ghursha : public CreatureScript
                 instance->SetBossState(DATA_MINDBENDER_GHURSHA, IN_PROGRESS);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -356,7 +356,7 @@ class npc_erunak_earth_shards : public CreatureScript
                 DoCast(me, SPELL_EARTH_SHARDS_AURA);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (uiDespawnTimer <= diff)
                 {
@@ -393,7 +393,7 @@ class npc_ghursha_mind_fog : public CreatureScript
                 DoCast(me, SPELL_MIND_FOG_VISUAL, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };

@@ -428,7 +428,7 @@ public:
             ScriptedAI::AttackStart(who);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!pInstance)
                 return;
@@ -532,7 +532,7 @@ public:
             ScriptedAI::AttackStart(who);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!pInstance)
                 return;
@@ -620,7 +620,7 @@ public:
             uiStrikeTimer = 6000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!pInstance) return;
 

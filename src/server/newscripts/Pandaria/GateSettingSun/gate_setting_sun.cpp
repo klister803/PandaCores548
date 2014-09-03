@@ -36,7 +36,7 @@ public:
             damage = 0;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->isInCombat())
             {
@@ -88,7 +88,7 @@ public:
                 me->AddAura(SPELL_BOMB_AURA, target);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (bombTimer <= diff)
             {
@@ -191,7 +191,7 @@ class vehicle_artillery_to_wall : public VehicleScript
                 launchEventTimer = 2500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!launchEventTimer)
                     return;

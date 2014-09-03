@@ -155,7 +155,7 @@ public:
         void MoveInLineOfSight(Unit* /*who*/) { }
 
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             //Return since we have no target
             if (!UpdateVictim())
@@ -252,7 +252,7 @@ public:
             uiRangeCheck_Timer = 1000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             //Return since we have no target
             if (!UpdateVictim())

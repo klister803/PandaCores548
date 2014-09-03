@@ -100,7 +100,7 @@ class boss_baleroc : public CreatureScript
                 me->SummonCreature(NPC_Crystal_Shard, SummonRangeRange[urand(1, 3)]);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -159,7 +159,7 @@ class Crystal_Shard : public CreatureScript
                 events.ScheduleEvent(Event_Torment, 1500);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 while (uint32 eventId = events.ExecuteEvent())
                 {

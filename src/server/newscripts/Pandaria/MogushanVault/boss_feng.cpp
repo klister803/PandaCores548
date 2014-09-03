@@ -364,7 +364,7 @@ class boss_feng : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -522,7 +522,7 @@ class mob_lightning_fist : public CreatureScript
                     DoCast(target, SPELL_FIST_CHARGE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (unsummon)
                 {
@@ -576,7 +576,7 @@ class mob_wild_spark : public CreatureScript
                         }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };

@@ -421,7 +421,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                             me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -551,7 +551,7 @@ class npc_proto_behemoth : public CreatureScript
                 damage = 0;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !UpdateVictim())
                     return;
@@ -627,7 +627,7 @@ class npc_orphaned_whelp : public CreatureScript
                     pHalfus->AI()->DoAction(ACTION_WHELP_DIED);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !UpdateVictim())
                     return;
@@ -761,7 +761,7 @@ class npc_halfus_dragon : public CreatureScript{
                 }
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!pInstance || !UpdateVictim())
                     return;

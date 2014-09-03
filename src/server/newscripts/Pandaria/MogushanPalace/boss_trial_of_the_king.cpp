@@ -73,7 +73,7 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -221,7 +221,7 @@ class boss_ming_the_cunning : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -326,7 +326,7 @@ class mob_whirling_dervish : public CreatureScript
                 events.ScheduleEvent(1, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -460,7 +460,7 @@ class mob_adepts : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (status == STATUS_ATTACK_GRUNTS && me->getVictim() && me->getVictim()->ToPlayer())
                     me->AttackStop();
@@ -608,7 +608,7 @@ class boss_kuai_the_brute : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -715,7 +715,7 @@ class mob_mu_shiba : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -846,7 +846,7 @@ class boss_haiyan_the_unstoppable : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

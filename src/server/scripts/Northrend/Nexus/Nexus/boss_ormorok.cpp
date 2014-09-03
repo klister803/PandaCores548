@@ -118,7 +118,7 @@ public:
             DoScriptText(SAY_KILL, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
             {
@@ -247,7 +247,7 @@ public:
             SpellCrystalSpikePrevisualTimer = 1*IN_MILLISECONDS;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (SpellCrystalSpikePrevisualTimer <= diff)
             {
@@ -286,7 +286,7 @@ public:
             uiRootsTimer = 1*IN_MILLISECONDS;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiRootsTimer <= diff)
             {

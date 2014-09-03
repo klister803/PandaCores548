@@ -189,7 +189,7 @@ public:
             RWORGGUID = 0;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             npc_escortAI::UpdateAI(uiDiff);
 
@@ -261,7 +261,7 @@ public:
 
         void MoveInLineOfSight(Unit* /*who*/) {}
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (!UpdateVictim())
                 return;
@@ -366,7 +366,7 @@ public:
             m_uiPhase = 1;
         }
 
-        void UpdateAI(const uint32 /*uiDiff*/)
+        void UpdateAI(uint32 /*uiDiff*/)
         {
             if (m_uiPhase == 1)
             {
@@ -413,7 +413,7 @@ public:
             m_uiPhase = 1;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             // call this each update tick?
             if (me->FindNearestCreature(TALLHORN_STAG, 0.2f))
@@ -509,7 +509,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (!UpdateVictim())
                 return;
@@ -557,7 +557,7 @@ public:
             uiChargedSentryTotem = urand(10000, 12000);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -627,7 +627,7 @@ class npc_venture_co_straggler : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (uiPlayerGUID && uiRunAwayTimer <= uiDiff)
                 {

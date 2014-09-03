@@ -172,7 +172,7 @@ class boss_halazzi : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -288,7 +288,7 @@ class npc_halazzi_lynx : public CreatureScript
                 events.ScheduleEvent(EVENT_FIXATE, urand(6000, 9000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -381,7 +381,7 @@ class npc_halazzi_lightning_totem : public CreatureScript
                 events.ScheduleEvent(EVENT_LIGHTNING, 1000);
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

@@ -122,7 +122,7 @@ class boss_admiral_ripsnarl : public CreatureScript
                 stage = 0;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -228,7 +228,7 @@ class npc_vapor : public CreatureScript
             {
             }
      
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

@@ -345,7 +345,7 @@ struct boss_twin_baseAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(uint32 uiDiff)
     {
         if (!m_pInstance || !UpdateVictim())
             return;
@@ -653,7 +653,7 @@ public:
     {
         mob_unleashed_darkAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature) {}
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (m_uiRangeCheckTimer < uiDiff)
             {
@@ -698,7 +698,7 @@ public:
     {
         mob_unleashed_lightAI(Creature *pCreature) : mob_unleashed_ballAI(pCreature) {}
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (m_uiRangeCheckTimer < uiDiff)
             {

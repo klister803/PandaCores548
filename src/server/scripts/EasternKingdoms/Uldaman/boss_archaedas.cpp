@@ -134,7 +134,7 @@ class boss_archaedas : public CreatureScript
                 DoPlaySoundToSet(me, SOUND_KILL);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!instance)
                     return;
@@ -286,7 +286,7 @@ class mob_archaedas_minions : public CreatureScript
                     ScriptedAI::MoveInLineOfSight(who);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 // we're still in the awaken animation
                 if (bWakingUp && iAwakenTimer >= 0)
@@ -357,7 +357,7 @@ class mob_stonekeepers : public CreatureScript
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
-            void UpdateAI(const uint32 /*diff*/)
+            void UpdateAI(uint32 /*diff*/)
             {
                 //Return since we have no target
                 if (!UpdateVictim())

@@ -477,7 +477,7 @@ class boss_alysrazor : public CreatureScript
                 return false;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -849,7 +849,7 @@ class npc_alysrazor_fiery_vortex : public CreatureScript
                 events.ScheduleEvent(EVENT_HARSH_WIND, 5000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1045,7 +1045,7 @@ class npc_alysrazor_fiery_tornado : public CreatureScript
                 events.ScheduleEvent(EVENT_MOVE_TORNADO, 31000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
@@ -1138,7 +1138,7 @@ class npc_alysrazor_blazing_talon_initiate : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1205,7 +1205,7 @@ class npc_alysrazor_brushfire : public CreatureScript
                 timerDespawn = 20000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!started)
                     return;
@@ -1288,7 +1288,7 @@ class npc_alysrazor_blazing_talon_clawshaper : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1386,7 +1386,7 @@ class npc_alysrazor_blazing_broodmother : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1434,7 +1434,7 @@ class npc_alysrazor_molten_egg : public CreatureScript
                 started = true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!started)
                     return;
@@ -1509,7 +1509,7 @@ class npc_alysrazor_voracious_hatchling : public CreatureScript // 53509
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (bDespawn)
                     return;
@@ -1597,7 +1597,7 @@ class npc_alysrazor_plump_lava_worm : public CreatureScript
                 //events.ScheduleEvent(EVENT_ROTATE, 4000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

@@ -82,7 +82,7 @@ class boss_lord_meljarak : public CreatureScript
                 events.ScheduleEvent(EVENT_RAIN_BLADES, 30000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -336,7 +336,7 @@ class npc_generic_soldier : public CreatureScript
                 events.ScheduleEvent(EVENT_HEAL, urand(60000, 120000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;

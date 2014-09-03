@@ -221,7 +221,7 @@ class boss_twin_consorts : public CreatureScript
                 TwinsDoneCheck(instance, me, me->GetEntry());
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -334,7 +334,7 @@ class npc_beast_of_nightmare : public CreatureScript
                 me->DespawnOrUnsummon(1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {    
                 if (!UpdateVictim())
                     return;

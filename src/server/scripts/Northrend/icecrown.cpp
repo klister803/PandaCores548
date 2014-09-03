@@ -281,7 +281,7 @@ public:
             DoScriptText(NPC_ARGENT_VAILIANT_TEXT_SAY_START, me);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -510,7 +510,7 @@ class npc_tournament_training_dummy : public CreatureScript
                         isVulnerable = true;
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -640,7 +640,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -1021,7 +1021,7 @@ public:
         DoScriptText(NPC_ARGENT_CHAMPION_TEXT_SAY_START, me);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
         if (!UpdateVictim())
             return;
@@ -1157,7 +1157,7 @@ public:
             uiStep = 0;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (bTalkTime && uiTalkTimer <= uiDiff)
             {
@@ -1298,7 +1298,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (ShielTimer <= diff)
             {
@@ -1621,7 +1621,7 @@ class npc_tg_tirion_fordring : public CreatureScript
 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 Events.Update(diff);
                 while (uint32 EventId = Events.ExecuteEvent())

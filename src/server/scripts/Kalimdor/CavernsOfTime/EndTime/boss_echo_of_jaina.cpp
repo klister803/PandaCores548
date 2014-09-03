@@ -199,7 +199,7 @@ class boss_echo_of_jaina : public CreatureScript
                     me->Attack(who, false);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -319,7 +319,7 @@ class npc_echo_of_jaina_flarecore : public CreatureScript
                 events.ScheduleEvent(EVENT_EXPLODE, 10000);
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

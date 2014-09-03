@@ -54,7 +54,7 @@ public:
             events.ScheduleEvent(EVENT_STORMCLOUD,       24000);
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;

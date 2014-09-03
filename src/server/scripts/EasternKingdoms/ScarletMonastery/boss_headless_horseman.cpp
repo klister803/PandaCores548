@@ -201,7 +201,7 @@ public:
                 DoCast(who, SPELL_SQUASH_SOUL);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (delay)
             {
@@ -318,7 +318,7 @@ public:
         }
 
         void Disappear();
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!withbody)
             {
@@ -629,7 +629,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (withhead)
             {
@@ -848,7 +848,7 @@ public:
                 DoStartMovement(who);
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
             if (sprouted && UpdateVictim())
                 DoMeleeAttackIfReady();

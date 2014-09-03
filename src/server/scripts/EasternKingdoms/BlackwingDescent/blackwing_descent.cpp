@@ -383,7 +383,7 @@ public:
             events.ScheduleEvent(EVENT_LASER_STRIKE, urand(7000, 12000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -458,7 +458,7 @@ public:
             me->DespawnOrUnsummon();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;
@@ -517,7 +517,7 @@ public:
             me->DespawnOrUnsummon();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;
@@ -601,7 +601,7 @@ public:
             events.ScheduleEvent(EVENT_THUNDERCLAP, urand(4000, 5000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -685,7 +685,7 @@ public:
             events.ScheduleEvent(EVENT_CONSTRICTING_CHAINS, urand(10000, 20000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -771,7 +771,7 @@ public:
             events.ScheduleEvent(EVENT_TAIL_LASH, urand(4000, 6000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -857,7 +857,7 @@ public:
             events.ScheduleEvent(EVENT_CURSE_OF_MENDING, urand(5000, 10000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -936,7 +936,7 @@ public:
             events.ScheduleEvent(EVENT_FLAME_BUFFET, urand(6000, 7000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -1016,7 +1016,7 @@ public:
             events.ScheduleEvent(EVENT_MORTAL_STRIKE, urand(3000, 10000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -1102,7 +1102,7 @@ public:
             events.ScheduleEvent(EVENT_MONGREL_CHARGE, urand(7000, 12000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -1371,7 +1371,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance || !UpdateVictim())
                 return;
@@ -1588,7 +1588,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;
@@ -1760,7 +1760,7 @@ public:
             events.ScheduleEvent(EVENT_FIERY_SLASH, urand(8000, 12000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (pInstance && pInstance->GetBossState(DATA_MAGMAW) != IN_PROGRESS)
                 me->DespawnOrUnsummon();

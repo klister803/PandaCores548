@@ -225,7 +225,7 @@ class boss_daakara : public CreatureScript
                     }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -365,7 +365,7 @@ class npc_daakara_vortex : public CreatureScript
 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (startTimer <= diff && !bStart)
                 {
@@ -406,7 +406,7 @@ class npc_daakara_pillar_of_flame : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (explodeTimer <= diff && !bExplode)
                 {
@@ -449,7 +449,7 @@ class npc_daakara_amani_lynx : public CreatureScript
                 events.ScheduleEvent(EVENT_FERAL_SWIPE, urand(6000, 9000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

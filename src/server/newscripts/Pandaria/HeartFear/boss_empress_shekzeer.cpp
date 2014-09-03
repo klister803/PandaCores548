@@ -213,7 +213,7 @@ class boss_empress_shekzeer : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || (me->HasUnitState(UNIT_STATE_CASTING) && phase == PHASE_THREE))
                     return;
@@ -355,7 +355,7 @@ class npc_generic_royal_sentinel : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;

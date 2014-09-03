@@ -148,7 +148,7 @@ public:
             //DoScriptText(-1666203, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -217,7 +217,7 @@ public:
             me->SetRespawnDelay(7*DAY);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
 
             if (pInstance && pInstance->GetData(TYPE_ZARITHRIAN) != IN_PROGRESS)

@@ -151,7 +151,7 @@ class boss_lord_tayak : public CreatureScript
                 _JustDied();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -226,7 +226,7 @@ class mob_tempest_slash : public CreatureScript
 
             void EnterEvadeMode(){}
 
-            void UpdateAI(const uint32 diff){}
+            void UpdateAI(uint32 diff){}
         };
 
         CreatureAI* GetAI(Creature* creature) const

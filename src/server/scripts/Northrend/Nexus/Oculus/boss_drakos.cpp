@@ -87,7 +87,7 @@ public:
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             //Return since we have no target
             if (!UpdateVictim())
@@ -176,7 +176,7 @@ public:
             deathTimer = 19000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (pulseTimer <= diff)
             {

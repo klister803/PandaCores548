@@ -57,7 +57,7 @@ class boss_paragons_of_the_klaxxi : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

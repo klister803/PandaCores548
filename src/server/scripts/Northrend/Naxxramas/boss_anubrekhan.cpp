@@ -151,7 +151,7 @@ public:
             DoScriptText(EMOTE_CORPSE_SCARABS, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || !CheckInRoom())
                 return;

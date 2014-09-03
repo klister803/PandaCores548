@@ -85,7 +85,7 @@ public:
           _JustDied();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -147,7 +147,7 @@ class npc_failed_student : public CreatureScript
                 DoZoneInCombat(me, 75.0f);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 DoMeleeAttackIfReady();
             }

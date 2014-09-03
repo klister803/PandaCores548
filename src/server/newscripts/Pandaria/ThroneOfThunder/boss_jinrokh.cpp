@@ -69,7 +69,7 @@ class boss_jinrokh : public CreatureScript
                 events.ScheduleEvent(EVENT_LIGHTNING_STORM, urand(80000, 90000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -155,7 +155,7 @@ public:
             me->DespawnOrUnsummon();
         }
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (CheckDist)
             {

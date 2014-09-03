@@ -220,7 +220,7 @@ public:
             _JustDied();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -518,7 +518,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             ScriptedAI::UpdateAI(uiDiff);
             if (uiTimer <= uiDiff)
@@ -608,7 +608,7 @@ public:
             SummonTimer = 6000;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -693,7 +693,7 @@ public:
             LightTimer = urand(1000, 3000);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -746,7 +746,7 @@ public:
             killedByRzr = false;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;
@@ -805,7 +805,7 @@ public:
             ShoutTimer = urand(15000, 30000);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;

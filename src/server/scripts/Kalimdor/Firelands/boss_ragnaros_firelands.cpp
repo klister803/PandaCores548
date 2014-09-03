@@ -578,7 +578,7 @@ class boss_ragnaros_firelands : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1135,7 +1135,7 @@ class npc_ragnaros_firelands_lava_wave : public CreatureScript
                 events.ScheduleEvent(EVENT_CONTINUE, 400);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1191,7 +1191,7 @@ class npc_ragnaros_firelands_magma_trap : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_PLAYER, 500);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1307,7 +1307,7 @@ class npc_ragnaros_firelands_son_of_flame : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1406,7 +1406,7 @@ class npc_ragnaros_firelands_molten_elemental : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (bStart)
                     return;
@@ -1485,7 +1485,7 @@ class npc_ragnaros_firelands_lava_scion : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1674,7 +1674,7 @@ class npc_ragnaros_firelands_living_meteor : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1769,7 +1769,7 @@ class npc_ragnaros_firelands_cenarius : public CreatureScript
                     DoCast(summon, SPELL_BREADTH_OF_FROST);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -1855,7 +1855,7 @@ class npc_ragnaros_firelands_malfurion_stormrage : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -1931,7 +1931,7 @@ class npc_ragnaros_firelands_hamuul_runetotem : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -1995,7 +1995,7 @@ class npc_ragnaros_firelands_dreadflame_spawn : public CreatureScript
                     DoZoneInCombat(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -2086,7 +2086,7 @@ class npc_ragnaros_firelands_dreadflame : public CreatureScript
                     _id = data;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

@@ -82,7 +82,7 @@ public:
             berserk = 900000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -197,7 +197,7 @@ class npc_bitter_thoughths : public CreatureScript
 
             void EnterEvadeMode(){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (unsummon <= diff)
                 {
@@ -229,7 +229,7 @@ class npc_ire : public CreatureScript
                     AttackStart(target);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 DoMeleeAttackIfReady();
             }

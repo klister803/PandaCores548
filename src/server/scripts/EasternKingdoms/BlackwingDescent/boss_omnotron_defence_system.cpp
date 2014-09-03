@@ -439,7 +439,7 @@ class boss_arcanotron : public CreatureScript
                         pNefarius->AI()->DoAction(ACTION_OMNOTRON_DEATH);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -638,7 +638,7 @@ class boss_electron : public CreatureScript
                     omnotroncontroller->Kill(omnotroncontroller);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -821,7 +821,7 @@ class boss_magmatron : public CreatureScript
                     omnotroncontroller->Kill(omnotroncontroller);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1029,7 +1029,7 @@ class boss_toxitron : public CreatureScript
                     omnotroncontroller->Kill(omnotroncontroller);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1138,7 +1138,7 @@ class npc_poison_bomb : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1187,7 +1187,7 @@ class npc_poison_puddle : public CreatureScript
                 DoCast(me, SPELL_POISON_PUDDLE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -1229,7 +1229,7 @@ class npc_power_generator : public CreatureScript
                     events.ScheduleEvent(EVENT_OVERCHARGED, 2000);                
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

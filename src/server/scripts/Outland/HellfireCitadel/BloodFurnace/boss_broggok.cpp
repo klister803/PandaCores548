@@ -72,7 +72,7 @@ class boss_broggok : public CreatureScript
                 Talk(SAY_AGGRO);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -158,7 +158,7 @@ class npc_broggok_poison_cloud : public CreatureScript
                 DoCast(me, SPELL_POISON_CLOUD_PASSIVE, true);
             }
 
-            void UpdateAI(const uint32 /*diff*/) { }
+            void UpdateAI(uint32 /*diff*/) { }
         };
 
         CreatureAI* GetAI(Creature* creature) const

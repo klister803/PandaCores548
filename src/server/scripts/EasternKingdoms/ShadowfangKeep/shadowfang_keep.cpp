@@ -171,7 +171,7 @@ public:
             uiDarkOffering = urand(290, 10);
         }
 
-        void UpdateAI(uint32 const uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!UpdateVictim())
                 return;

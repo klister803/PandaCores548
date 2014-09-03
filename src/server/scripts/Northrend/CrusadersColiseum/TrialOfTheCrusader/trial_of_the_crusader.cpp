@@ -273,7 +273,7 @@ class boss_lich_king_toc : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!m_pInstance) return;
                 if (m_pInstance->GetData(TYPE_EVENT_NPC) != NPC_LICH_KING_1) return;
@@ -406,7 +406,7 @@ class npc_fizzlebang_toc : public CreatureScript
                 Summons.Summon(pSummoned);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!m_pInstance) return;
 
@@ -532,7 +532,7 @@ class npc_tirion_toc : public CreatureScript
 
             void AttackStart(Unit* /*pWho*/) {}
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!m_pInstance) return;
                 if (m_pInstance->GetData(TYPE_EVENT_NPC) != NPC_TIRION) return;
@@ -846,7 +846,7 @@ class npc_garrosh_toc : public CreatureScript
 
             void AttackStart(Unit* /*pWho*/) {}
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!m_pInstance) return;
                 if (m_pInstance->GetData(TYPE_EVENT_NPC) != NPC_GARROSH) return;
@@ -924,7 +924,7 @@ class npc_varian_toc : public CreatureScript
 
             void AttackStart(Unit* /*pWho*/) {}
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!m_pInstance) return;
                 if (m_pInstance->GetData(TYPE_EVENT_NPC) != NPC_VARIAN) return;

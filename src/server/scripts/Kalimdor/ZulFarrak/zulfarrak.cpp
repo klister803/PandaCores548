@@ -123,7 +123,7 @@ public:
             me->setFaction(FACTION_FRIENDLY);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (postGossipStep>0 && postGossipStep<4)
             {
@@ -330,7 +330,7 @@ public:
                 instance->SetData(0, DONE);*/
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

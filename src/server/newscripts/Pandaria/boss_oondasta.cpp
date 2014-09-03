@@ -46,7 +46,7 @@ public:
             events.ScheduleEvent(EVENT_PIERCING_ROAR, urand(25000, 30000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;

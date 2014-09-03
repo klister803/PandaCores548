@@ -67,7 +67,7 @@ class mob_ymirjar_flamebearer : public CreatureScript
                 _events.ScheduleEvent(EVENT_TACTICAL_BLINK, 15000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -132,7 +132,7 @@ class mob_iceborn_protodrake : public CreatureScript
                 _vehicle->RemoveAllPassengers();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -182,7 +182,7 @@ class mob_wrathbone_laborer : public CreatureScript
                 _events.ScheduleEvent(EVENT_SHOVELLED, 5000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -251,7 +251,7 @@ class mob_geist_ambusher : public CreatureScript
                     DoCast(who, SPELL_LEAPING_FACE_MAUL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1033,7 +1033,7 @@ public:
                 
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
                 InstanceScript* pInstance = me->GetInstanceScript();
                 if(m_bIsIntro && !m_bIsIntroEnd && pInstance->GetBossState(DATA_TYRANNUS) == NOT_STARTED && pInstance->GetBossState(DATA_ICK) == NOT_STARTED
@@ -1938,7 +1938,7 @@ public:
                 
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
                 InstanceScript* pInstance = me->GetInstanceScript();
                 if(m_bIsIntro && !m_bIsIntroEnd && pInstance->GetBossState(DATA_TYRANNUS) == NOT_STARTED && pInstance->GetBossState(DATA_ICK) == NOT_STARTED

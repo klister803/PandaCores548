@@ -260,7 +260,7 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (checkFeugenAlive && checkStalaggAlive)
                 uiAddsTimer = 0;
@@ -397,7 +397,7 @@ public:
                         pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (bChainReset)
             {
@@ -539,7 +539,7 @@ public:
                         pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (bChainReset)
             {

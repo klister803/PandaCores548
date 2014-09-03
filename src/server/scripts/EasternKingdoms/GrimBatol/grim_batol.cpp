@@ -274,7 +274,7 @@ class npc_ascended_flameseeker : public CreatureScript
                 events.ScheduleEvent(EVENT_ERUPTING_FIRE, urand(7000, 12000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -337,7 +337,7 @@ class npc_ascended_rockbreaker : public CreatureScript
                 events.ScheduleEvent(EVENT_ROCK_SMASH, urand(8000, 12000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -402,7 +402,7 @@ class npc_ascended_waterlasher : public CreatureScript
                 events.ScheduleEvent(EVENT_WATER_SPOUT, urand(3000, 10000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -464,7 +464,7 @@ class npc_ascended_windwalker: public CreatureScript
                 events.ScheduleEvent(EVENT_ABSORB_WATER, urand(25000, 30000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -519,7 +519,7 @@ class npc_azureborne_guardian: public CreatureScript
                 events.ScheduleEvent(EVENT_CURSE_OF_THE_AZUREBORNE, urand(6000, 7000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -579,7 +579,7 @@ class npc_azureborne_seer: public CreatureScript
                 events.ScheduleEvent(EVENT_TWILIGHT_BOLT, urand(1000, 2000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!me->HasAura(SPELL_TWISTED_ARCANE_TRIGGER) &&
                     !me->HasAura(SPELL_TWISTED_ARCANE) &&
@@ -646,7 +646,7 @@ class npc_azureborne_warlord: public CreatureScript
                 events.ScheduleEvent(EVENT_CONJURE_TWISTED_VISAGE, urand(7000, 12000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -704,7 +704,7 @@ class npc_crimsonborne_guardian: public CreatureScript
                 events.ScheduleEvent(EVENT_CRIMSON_CHARGE, urand(3000, 5000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -760,7 +760,7 @@ class npc_crimsonborne_seer: public CreatureScript
                 events.ScheduleEvent(EVENT_CORRUPTED_FLAME, urand(6000, 10000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -820,7 +820,7 @@ class npc_crimsonborne_warlord: public CreatureScript
                 events.ScheduleEvent(EVENT_EMPOWERING_TWILIGHT, urand(9000, 12000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -878,7 +878,7 @@ class npc_enslaved_burning_ember: public CreatureScript
                 events.ScheduleEvent(EVENT_FLAME_SHOCK, urand(3000, 4000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -933,7 +933,7 @@ class npc_enslaved_rock_elemental: public CreatureScript
                 events.ScheduleEvent(EVENT_JAGGED_ROCK_SHIELD, 10000);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -987,7 +987,7 @@ class npc_enslaved_gronn_brute: public CreatureScript
                 events.ScheduleEvent(EVENT_CRUNCH_ARMOR, urand(2000, 4000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1052,7 +1052,7 @@ class npc_faceless_corruptor : public CreatureScript
                 events.ScheduleEvent(EVENT_SIPHON_ESSENSE, urand(5000, 7000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1107,7 +1107,7 @@ class npc_trogg_dweller : public CreatureScript
                 events.ScheduleEvent(EVENT_CLAW_PUNCTURE, urand(5000, 7000));
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1163,7 +1163,7 @@ class npc_twilight_armsmaster : public CreatureScript
                 events.ScheduleEvent(EVENT_FLURRY_OF_BLOWS, urand(8000, 10000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1223,7 +1223,7 @@ class npc_twilight_beguiler : public CreatureScript
                 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1284,7 +1284,7 @@ class npc_twilight_drake : public CreatureScript
                 events.ScheduleEvent(EVENT_TWILIGHT_BREATH, urand(5000, 7000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1340,7 +1340,7 @@ class npc_twilight_earthshaper : public CreatureScript
                 events.ScheduleEvent(EVENT_STONE_SKIN, urand(4000, 7000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1399,7 +1399,7 @@ class npc_twilight_enforcer : public CreatureScript
                 events.ScheduleEvent(EVENT_MEAT_GRINDER, urand(5000, 6000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1456,7 +1456,7 @@ class npc_twilight_firecatcher : public CreatureScript
                 events.ScheduleEvent(EVENT_FLAME_CONDUIT, urand(6000, 9000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1519,7 +1519,7 @@ class npc_twilight_shadow_weaver : public CreatureScript
                     events.ScheduleEvent(EVENT_SHADOW_WEAVE, urand(5000, 6000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1580,7 +1580,7 @@ class npc_twilight_stormbreaker : public CreatureScript
                     events.ScheduleEvent(EVENT_WATER_SHELL, urand(5000, 8000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1640,7 +1640,7 @@ class npc_twilight_thundercaller : public CreatureScript
                 events.ScheduleEvent(EVENT_OVERCHARGE, urand(9000, 12000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1713,7 +1713,7 @@ class npc_twilight_wyrmcaller : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1781,7 +1781,7 @@ class npc_twilight_war_mage : public CreatureScript
                 events.ScheduleEvent(EVENT_POLYMORPH, urand(5000, 7000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1834,7 +1834,7 @@ class npc_ascended_rockbreaker_fissure : public CreatureScript
                 DoCast(me, SPELL_FISSURE_TRIGGER);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
             }
         };
@@ -1864,7 +1864,7 @@ class npc_crimsonborne_warlord_empowering_flames : public CreatureScript
                 DoCast(me, SPELL_EMPOWERING_TWILIGHT_AURA);
             }
 
-            void UpdateAI(const uint32 uiDiff)
+            void UpdateAI(uint32 uiDiff)
             {
             }
         };

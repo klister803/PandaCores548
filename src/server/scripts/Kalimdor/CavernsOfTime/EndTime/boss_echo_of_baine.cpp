@@ -144,7 +144,7 @@ class boss_echo_of_baine : public CreatureScript
                         DoCastAOE(SPELL_PULVERIZE_DMG);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

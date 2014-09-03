@@ -78,7 +78,7 @@ class mob_cursed_mogu_sculpture : public CreatureScript
                 me->RemoveAurasDueToSpell(120663);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -182,7 +182,7 @@ class mob_enormous_stone_quilen : public CreatureScript
                 //me->AddAura(SPELL_PETRIFICATION, me);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (nextMovementTimer)
                 {
@@ -258,7 +258,7 @@ class mob_stone_quilen : public CreatureScript
                 events.ScheduleEvent(EVENT_fOCUSED_ASSAULT,  urand (500, 5000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -346,7 +346,7 @@ class mob_zandalari_skullcharger : public CreatureScript
 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

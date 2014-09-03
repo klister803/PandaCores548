@@ -276,7 +276,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -470,7 +470,7 @@ public:
             me->DespawnOrUnsummon();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (Exposed)
             {
@@ -566,7 +566,7 @@ public:
                 me->GetMotionMaster()->MoveFollow(pXT002, 0.0f, 0.0f);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (Creature* pXT002 = me->GetCreature(*me, m_pInstance->GetData64(DATA_XT002)))
             {
@@ -632,7 +632,7 @@ public:
             uiUppercutTimer = 17000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -695,7 +695,7 @@ public:
                 me->GetMotionMaster()->MoveFollow(pXT002, 0.0f, 0.0f);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (me->IsWithinMeleeRange(me->getVictim()))
             {
@@ -739,7 +739,7 @@ public:
             uiVoidZoneTimer = 2000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (uiVoidZoneTimer <= diff)
             {
@@ -783,7 +783,7 @@ public:
             uiShockTimer = 0; // first one is immediate.
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (m_pInstance && m_pInstance->GetBossState(BOSS_XT002) != IN_PROGRESS)
                 me->DespawnOrUnsummon();

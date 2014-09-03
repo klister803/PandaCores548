@@ -89,7 +89,7 @@ public:
             DoScriptText(SAY_SLAY, me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -229,7 +229,7 @@ class boss_illidan_woe : public CreatureScript
                 DoScriptText(SAY_ILLIDAN_AGRO, me);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 npc_escortAI::UpdateAI(diff);
             }

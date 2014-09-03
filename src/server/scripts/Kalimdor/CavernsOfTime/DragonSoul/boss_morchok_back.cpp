@@ -138,7 +138,7 @@ public:
             DoScriptText(YELL_KILL_1, me);
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             if (!me->isInCombat())
             {
@@ -385,7 +385,7 @@ public:
             DoScriptText(YELL_KILL_1, me);
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             if (!UpdateVictim())
                 return;
@@ -721,7 +721,7 @@ public:
             events.ScheduleEvent(EVENT_DESPAWN, 10*IN_MILLISECONDS);
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             events.Update(diff);
 

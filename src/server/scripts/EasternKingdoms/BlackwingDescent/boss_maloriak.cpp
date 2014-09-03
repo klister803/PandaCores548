@@ -301,7 +301,7 @@ class boss_maloriak : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -584,7 +584,7 @@ class npc_maloriak_flash_freeze : public CreatureScript
                 me->DespawnOrUnsummon(800);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!trappedPlayer)
                     return;
@@ -636,7 +636,7 @@ class npc_absolute_zero : public CreatureScript
                 DoCast(SPELL_ABSOLUTE_ZERO_AURA);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if ((uiPauseTimer <= diff) && !bCanExplode)
                 {
@@ -696,7 +696,7 @@ class npc_magma_jet : public CreatureScript
                 events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -742,7 +742,7 @@ class npc_magma_jet_summon : public CreatureScript
                 summonTimer = 15000;
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (summonTimer <= diff)
                     me->DespawnOrUnsummon();
@@ -773,7 +773,7 @@ class npc_aberration : public CreatureScript
             {
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -813,7 +813,7 @@ class npc_prime_subject : public CreatureScript
                 events.ScheduleEvent(EVENT_REND, 12000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -872,7 +872,7 @@ class npc_vile_swill : public CreatureScript
                 events.ScheduleEvent(EVENT_DARK_SLUDGE, urand(5000, 10000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

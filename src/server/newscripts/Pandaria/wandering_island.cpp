@@ -172,7 +172,7 @@ class npc_panda_announcer : public CreatureScript
             targetGUID = who->GetGUID();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -252,7 +252,7 @@ class mob_tushui_trainee : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 UpdateVictim();
 
@@ -328,7 +328,7 @@ class mob_master_shang_xi : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (checkPlayersTime <= diff)
                 {
@@ -444,7 +444,7 @@ public:
                 damage = 0;
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -672,7 +672,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             events.Update(diff);
@@ -750,7 +750,7 @@ public:
                 me->DespawnOrUnsummon(500);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IntroTimer)
             {
@@ -877,7 +877,7 @@ public:
             }
             return 0;
         }
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             while (uint32 eventId = events.ExecuteEvent())
@@ -1010,7 +1010,7 @@ public:
             events.ScheduleEvent(2, 5000);
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1139,7 +1139,7 @@ public:
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             
@@ -1311,7 +1311,7 @@ public:
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
 
             events.Update(diff);
@@ -1487,7 +1487,7 @@ public:
                 v->DespawnOrUnsummon(100);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             //UpdateVictim();
 
@@ -1557,7 +1557,7 @@ public:
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -1710,7 +1710,7 @@ public:
             return me->GetMap()->GetCreature(waterSpoutGUID);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -1860,7 +1860,7 @@ public:
             _events.ScheduleEvent(EVENT_2, 10000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -1976,7 +1976,7 @@ public:
 
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IntroTimer)
             {
@@ -2044,7 +2044,7 @@ public:
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -2152,7 +2152,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (eventTimer)
             {
@@ -2271,7 +2271,7 @@ class mob_master_shang_xi_temple : public CreatureScript
             playerGuid = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -2374,7 +2374,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
         }
@@ -2419,7 +2419,7 @@ class npc_panda_history_leason : public CreatureScript
         uint32 text;
         EventMap events;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -2476,7 +2476,7 @@ public:
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -2591,7 +2591,7 @@ public:
                 me->CastSpell(victim, SPELL_ROLL, true);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -2703,7 +2703,7 @@ public:
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -2833,7 +2833,7 @@ class mob_aysa_wind_temple_escort : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             npc_escortAI::UpdateAI(diff);
             events.Update(diff);
@@ -2892,7 +2892,7 @@ public:
                 goWinder = wind->GetGUID();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (tornadeTimer <= diff)
             {
@@ -3079,7 +3079,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (checkPlayers())
             {
@@ -3168,7 +3168,7 @@ public:
             return;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (cooldown)
             {
@@ -3315,7 +3315,7 @@ class mob_master_shang_xi_thousand_staff : public CreatureScript
                 me->SetFacingToObject(p);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -3424,7 +3424,7 @@ class mob_aisa_pre_balon_event : public CreatureScript
             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->GetGUID());
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -3697,7 +3697,7 @@ class mop_air_balloon : public VehicleScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             npc_escortAI::UpdateAI(diff);
@@ -4022,7 +4022,7 @@ class mob_mandori_escort : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             npc_escortAI::UpdateAI(diff);
@@ -4253,7 +4253,7 @@ public:
             HasBeenSaved = true;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (checkSavedTimer)
             {
@@ -4322,7 +4322,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -4452,7 +4452,7 @@ public:
                 me->CastSpell(victim, SPELL_ROLL, true);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             UpdateVictim();
 
@@ -4580,7 +4580,7 @@ public:
             return me->GetMap()->GetCreature(jiGuid);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             npc_escortAI::UpdateAI(diff);
@@ -4901,7 +4901,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             _events.Update(diff);
 
@@ -5048,7 +5048,7 @@ class npc_shang_xi_choose_faction : public CreatureScript
             events.Reset();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
@@ -5206,7 +5206,7 @@ public:
                 }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
             npc_escortAI::UpdateAI(diff);

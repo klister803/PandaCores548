@@ -271,7 +271,7 @@ class npc_neptulon : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bActive)
                     return;
@@ -423,7 +423,7 @@ class npc_vicious_mindslasher : public CreatureScript
                         pNeptulon->AI()->Talk(SAY_KILL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -493,7 +493,7 @@ class npc_unyielding_behemoth : public CreatureScript
                 events.ScheduleEvent(EVENT_BLIGHT_SPRAY, urand(8000, 12000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -549,7 +549,7 @@ class npc_faceless_sapper : public CreatureScript
 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {   
             }
         };
@@ -579,7 +579,7 @@ class npc_blight_of_ozumat : public CreatureScript
                 DoCast(me, SPELL_BLIGHT_OF_OZUMAT_AURA);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };

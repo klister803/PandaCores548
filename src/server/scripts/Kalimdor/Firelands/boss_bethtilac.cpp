@@ -229,7 +229,7 @@ class boss_bethtilac : public CreatureScript
                 }
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || !CheckInArea(diff, 5764))
                     return;
@@ -455,7 +455,7 @@ class npc_bethtilac_spiderweb_filament : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_BETHTILAC) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -548,7 +548,7 @@ class npc_bethtilac_cinderweb_spinner : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance->GetBossState(DATA_BETHTILAC) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
@@ -631,7 +631,7 @@ class npc_bethtilac_cinderweb_drone : public CreatureScript
                     events.ScheduleEvent(EVENT_FIXATE, urand(12000, 15000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -718,7 +718,7 @@ class npc_bethtilac_cinderweb_spiderling : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_DRONE, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -794,7 +794,7 @@ class npc_bethtilac_engorged_broodling : public CreatureScript
                 bBurst = false;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!bBurst && me->SelectNearestPlayer(3.0f))
                 {

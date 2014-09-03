@@ -957,7 +957,7 @@ class npc_muradin_gunship : public CreatureScript
                     me->DespawnOrUnsummon(1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->HasUnitState(UNIT_STATE_CASTING) || me->IsInEvadeMode())
                     return;
@@ -1352,7 +1352,7 @@ class npc_korkron_axethrower_rifleman : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
@@ -1458,7 +1458,7 @@ class npc_sergeant : public CreatureScript
                 return true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
@@ -1589,7 +1589,7 @@ class npc_marine_or_reaver : public CreatureScript
                 return true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
@@ -1732,7 +1732,7 @@ class npc_gunship_mage : public CreatureScript
                  }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
@@ -1803,7 +1803,7 @@ class npc_gunship_cannon : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(me->HasAura(SPELL_BELOW_ZERO))
                 {
@@ -1865,7 +1865,7 @@ class npc_mortar_soldier_or_rocketeer : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if(_instance->GetBossState(DATA_GUNSHIP_EVENT) != IN_PROGRESS)
                     return;
@@ -2183,7 +2183,7 @@ class npc_saurfang_gunship : public CreatureScript
                     me->DespawnOrUnsummon(1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (me->HasUnitState(UNIT_STATE_CASTING) || me->IsInEvadeMode())
                     return;
@@ -2474,7 +2474,7 @@ class npc_gunship_trigger : public CreatureScript
                 damage = 0;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
 
             }
@@ -2535,7 +2535,7 @@ class npc_korkron_primalist: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!instance)
                     return;
@@ -2654,7 +2654,7 @@ class npc_korkron_defender: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!instance)
                     return;
@@ -2767,7 +2767,7 @@ class npc_skybreaker_vindicator: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!instance)
                     return;
@@ -2874,7 +2874,7 @@ class npc_skybreaker_protector: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!instance)
                     return;
@@ -2997,7 +2997,7 @@ class npc_icc_spire_frostwyrm: public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

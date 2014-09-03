@@ -123,7 +123,7 @@ class boss_horridon : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() ||me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -239,7 +239,7 @@ class boss_jalak : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

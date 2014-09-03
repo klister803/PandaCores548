@@ -208,7 +208,7 @@ class boss_kilnara : public CreatureScript
                 }
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -312,7 +312,7 @@ class npc_kilnara_pride_of_bethekk : public CreatureScript
                 uiGapingWound = urand(5000, 15000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

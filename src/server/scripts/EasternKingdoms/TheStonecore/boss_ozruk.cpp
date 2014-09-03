@@ -100,7 +100,7 @@ class boss_ozruk : public CreatureScript
                 Talk(SAY_KILL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

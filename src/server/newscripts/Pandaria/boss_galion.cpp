@@ -67,7 +67,7 @@ public:
             events.ScheduleEvent(EVENT_BERSERK,900000);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -137,7 +137,7 @@ class npc_galion : public CreatureScript
         {
             events.ScheduleEvent(EVENT_EMPALLING, 50000);
         }
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

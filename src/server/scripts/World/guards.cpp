@@ -72,7 +72,7 @@ public:
                 DoCast(who, spell->Id);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
              //Always decrease our global cooldown first
             if (globalCooldown > diff)
@@ -275,7 +275,7 @@ public:
             canTeleport = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -340,7 +340,7 @@ public:
             canTeleport = false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

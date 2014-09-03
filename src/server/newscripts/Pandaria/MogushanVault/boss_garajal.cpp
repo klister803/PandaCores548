@@ -141,7 +141,7 @@ class boss_garajal : public CreatureScript
                     DoCast(me, SPELL_FRENESIE, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -336,7 +336,7 @@ class mob_spirit_totem : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance)
                     if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)
@@ -404,7 +404,7 @@ class mob_shadowy_minion : public CreatureScript
                                 summoner->ToCreature()->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance)
                     if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)
@@ -475,7 +475,7 @@ class mob_soul_cutter : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (pInstance)
                     if (pInstance->GetBossState(DATA_GARAJAL) != IN_PROGRESS)

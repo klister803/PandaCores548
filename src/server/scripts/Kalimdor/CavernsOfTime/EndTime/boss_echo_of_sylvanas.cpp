@@ -195,7 +195,7 @@ class boss_echo_of_sylvanas : public CreatureScript
                 return deadghouls >= 2; 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -397,7 +397,7 @@ class npc_echo_of_sylvanas_risen_ghoul : public CreatureScript
                             pSylvanas->GetAI()->DoAction(ACTION_GHOUL);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

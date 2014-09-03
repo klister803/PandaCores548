@@ -129,7 +129,7 @@ class boss_saboteur_kiptilak : public CreatureScript
                 summons.Summon(summoned);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -231,7 +231,7 @@ public:
             return;
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (checkTimer <= diff)
             {
@@ -371,7 +371,7 @@ class npc_rope : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
             }
         };

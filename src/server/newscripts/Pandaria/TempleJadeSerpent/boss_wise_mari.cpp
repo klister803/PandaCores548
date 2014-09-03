@@ -218,7 +218,7 @@ class boss_wase_mari : public CreatureScript
                 
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -413,7 +413,7 @@ class mob_corrupt_living_water : public CreatureScript
                 me->CastSpell(me, SPELL_SHA_RESIDUE, true);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

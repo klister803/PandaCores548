@@ -50,7 +50,7 @@ class mob_nessos_the_oracle : public CreatureScript
             {
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -150,7 +150,7 @@ class mob_ski_thik : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -234,7 +234,7 @@ class mob_mogujia_soul_caller : public CreatureScript
                 events.ScheduleEvent(EVENT_SHADOW_CRASH,    32000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

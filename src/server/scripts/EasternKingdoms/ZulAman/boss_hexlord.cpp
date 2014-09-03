@@ -254,7 +254,7 @@ class boss_hex_lord_malacrass : public CreatureScript
                 Talk(SAY_DEATH);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -365,7 +365,7 @@ class npc_alyson_antille : public CreatureScript
                 dispelmagic_timer = 10000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -422,7 +422,7 @@ class npc_gazakroth : public CreatureScript
                 firebolt_timer = 2000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -459,7 +459,7 @@ class npc_darkheart : public CreatureScript
             {
                 psychicwail_timer = 8000;
             }
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -499,7 +499,7 @@ class npc_slither : public CreatureScript
                 venomspit_timer = 5000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

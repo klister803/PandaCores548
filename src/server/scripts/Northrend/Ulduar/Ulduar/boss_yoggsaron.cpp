@@ -520,7 +520,7 @@ class boss_sara : public CreatureScript
             events.ScheduleEvent(EVENT_SUMMON_GUARDIAN, 0, 0, PHASE_1);
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -797,7 +797,7 @@ class boss_yoggsaron : public CreatureScript
             return drivecrazy;
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1108,7 +1108,7 @@ class boss_brain_yoggsaron : public CreatureScript
             _EnterCombat();
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if(!UpdateVictim())
                 return;
@@ -1217,7 +1217,7 @@ class npc_ominous_cloud : public CreatureScript
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1284,7 +1284,7 @@ class npc_guardian_yoggsaron : public CreatureScript
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 me->DespawnOrUnsummon();
@@ -1326,7 +1326,7 @@ class npc_death_orb : public CreatureScript
             RayTimer = 5000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1478,7 +1478,7 @@ class npc_crusher_tentacle : public CreatureScript
         InstanceScript* pInstance;
         int32 DiminishTimer;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1565,7 +1565,7 @@ class npc_corruptor_tentacle : public CreatureScript
         int32 PlagueTimer;
         int32 CurseTimer;
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1641,7 +1641,7 @@ class npc_immortal_guardian : public CreatureScript
             uiDrainLifeTimer = 10000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -1805,7 +1805,7 @@ class npc_ys_freya : public CreatureScript
             summons.DespawnAll();
         }
         
-        void UpdateAI(uint32 const uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!applyaura)
             {
@@ -1862,7 +1862,7 @@ class npc_sanity_well : public CreatureScript
         InstanceScript* pInstance;
         uint32 sanityTimer;
         
-        void UpdateAI(uint32 const uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (sanityTimer <= uiDiff)
             {
@@ -1921,7 +1921,7 @@ class npc_ys_thorim : public CreatureScript
             applyaura = false;
         }
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!applyaura)
             {
@@ -1979,7 +1979,7 @@ class npc_ys_mimiron : public CreatureScript
             applyaura = false;
         }
         
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!applyaura)
             {
@@ -2048,7 +2048,7 @@ class npc_ys_hodir : public CreatureScript
             applyaura = false;
         }
             
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
              if (!applyaura)
             {

@@ -415,7 +415,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -669,7 +669,7 @@ public:
 
         uint32 NapalmTimer;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -783,7 +783,7 @@ public:
             me->GetMap()->CreatureRelocation(me, x,y,z,0);
         }
 
-        void UpdateAI(const uint32 /*diff*/)
+        void UpdateAI(uint32 /*diff*/)
         {
         }
     };
@@ -837,7 +837,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (MoveTimer <= diff)
             {
@@ -923,7 +923,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -965,7 +965,7 @@ public:
         uint32 hammerTimer;
         bool done;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (hammerTimer <= diff && !done)
             {
@@ -1008,7 +1008,7 @@ public:
         uint32 pauseTimer;
         uint32 infernoTimer;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (pauseTimer <= diff && pause)
             {
@@ -1067,7 +1067,7 @@ public:
         uint32 chaseTimer;
         bool pause;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (pause)
             {
@@ -1133,7 +1133,7 @@ public:
 
         uint32 summonTimer ;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (summonTimer <= diff)
             {
@@ -1172,7 +1172,7 @@ public:
         InstanceScript* pInstance;
         uint32 lashTimer ;
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (pInstance && pInstance->GetBossState(BOSS_LEVIATHAN) != IN_PROGRESS)
                 me->DespawnOrUnsummon();

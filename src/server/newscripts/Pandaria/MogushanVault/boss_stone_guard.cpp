@@ -198,7 +198,7 @@ class boss_stone_guard_controler : public CreatureScript
                 }
             } 
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!fightInProgress)
                     return;
@@ -483,7 +483,7 @@ class boss_generic_guardian : public CreatureScript
                 return false;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -643,7 +643,7 @@ class mob_cobalt_mine : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (active)
                 {

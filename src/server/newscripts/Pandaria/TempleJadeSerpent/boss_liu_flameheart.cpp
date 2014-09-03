@@ -157,7 +157,7 @@ class boss_liu_flameheart : public CreatureScript
                 events.ScheduleEvent(EVENT_JADE_SERPENT_KICK, 5000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -365,7 +365,7 @@ class boss_yu_lon : public CreatureScript
                 me->CastSpell(me, 132387, false);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -409,7 +409,7 @@ class mob_trigger_liu_flameheart: public CreatureScript
             }
             uint32 timer;
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (timer <= diff)
                 {
@@ -448,7 +448,7 @@ class mob_minion_of_doubt: public CreatureScript
                 events.ScheduleEvent(2, 4000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -499,7 +499,7 @@ class mob_lesser_sha: public CreatureScript
                 events.ScheduleEvent(1, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

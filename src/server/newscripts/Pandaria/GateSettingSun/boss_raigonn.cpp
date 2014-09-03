@@ -317,7 +317,7 @@ class boss_raigonn : public CreatureScript
                 return true;
             }*/
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -508,7 +508,7 @@ class npc_krikthik_engulfer : public CreatureScript
                 engulfingTimer = 10000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (engulfingTimer <= diff)
                 {
@@ -548,7 +548,7 @@ class npc_krikthik_swarm_bringer : public CreatureScript
                 swarmTimer = 10000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (swarmTimer <= diff)
                 {
@@ -602,7 +602,7 @@ class vehicle_artillery : public VehicleScript
                 launchEventTimer = 2500;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!launchEventTimer)
                     return;

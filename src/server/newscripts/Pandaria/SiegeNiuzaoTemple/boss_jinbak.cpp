@@ -75,7 +75,7 @@ class boss_jinbak : public CreatureScript
                 ExploseTimer = 60000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -177,7 +177,7 @@ class npc_puddle : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (modradius)
                 {

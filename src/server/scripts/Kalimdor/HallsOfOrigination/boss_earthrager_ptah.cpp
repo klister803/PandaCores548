@@ -128,7 +128,7 @@ class boss_earthrager_ptah : public CreatureScript
                 Talk(SAY_KILL);
             }
       
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -226,7 +226,7 @@ class npc_ptah_dustbone_horror: public CreatureScript
                 events.ScheduleEvent(EVENT_SMASH, urand(2000, 8000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

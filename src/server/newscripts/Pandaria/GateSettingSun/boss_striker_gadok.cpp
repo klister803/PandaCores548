@@ -340,7 +340,7 @@ class boss_striker_gadok : public CreatureScript
                 }
             }*/
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -433,7 +433,7 @@ struct npc_krikthik : public ScriptedAI
         y = CenterPos.GetPositionY() + (me->GetObjectSize() + RADIUS_CIRCLE) * std::sin(actualAngle);
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(uint32 diff)
     {
         if (nextMovementTimer)
         {
@@ -488,7 +488,7 @@ public:
                 AttackStart(player);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!isAttackerStriker)
                 npc_krikthik::UpdateAI(diff);
@@ -525,7 +525,7 @@ public:
             events.ScheduleEvent(EVENT_DISRUPTOR_BOMBARD, urand(5000, 20000));
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;

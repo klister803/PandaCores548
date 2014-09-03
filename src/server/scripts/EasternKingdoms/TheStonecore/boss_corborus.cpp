@@ -137,7 +137,7 @@ class boss_corborus : public CreatureScript
                 summons.Despawn(summon);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -244,7 +244,7 @@ class npc_rock_borer : public CreatureScript
                 events.ScheduleEvent(EVENT_ROCK_BORE, 2000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -293,7 +293,7 @@ class npc_crystal_shard : public CreatureScript
                 me->SetSpeed(MOVE_RUN, 0.5f);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

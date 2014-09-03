@@ -184,7 +184,7 @@ public:
             DoScriptText(-1666403,me);
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

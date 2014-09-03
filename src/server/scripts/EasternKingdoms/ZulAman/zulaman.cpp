@@ -169,7 +169,7 @@ class npc_zulaman_hostage : public CreatureScript
                     player->SendLoot(me->GetGUID(), LOOT_CORPSE);
             }
 
-            void UpdateAI(const uint32 /*diff*/)
+            void UpdateAI(uint32 /*diff*/)
             {
                 if (IsLoot)
                     DoCast(me, 7, false);
@@ -265,7 +265,7 @@ class npc_amanishi_tempest : public CreatureScript
                 events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(6000, 12000));
 			}
 
-			void UpdateAI(const uint32 diff)
+			void UpdateAI(uint32 diff)
 			{
 				if (!UpdateVictim())
 					return;

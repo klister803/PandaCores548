@@ -506,7 +506,7 @@ class boss_immerseus : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim()) 
                     return;
@@ -651,7 +651,7 @@ class npc_sha_pool : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff){}
+            void UpdateAI(uint32 diff){}
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -762,7 +762,7 @@ class npc_sha_puddle : public CreatureScript
 
             void EnterCombat(Unit* who){}
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -933,7 +933,7 @@ class npc_contaminated_puddle : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
                 

@@ -212,7 +212,7 @@ class boss_janalai : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -348,7 +348,7 @@ class npc_janalai_hatcher : public CreatureScript
                     WaitTimer = 1;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !(pInstance->GetBossState(DATA_JANALAI) == IN_PROGRESS))
                 {
@@ -483,7 +483,7 @@ class npc_janalai_hatchling : public CreatureScript
                 events.ScheduleEvent(EVENT_FLAMEBUFFET, urand(7000, 15000));
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance || !(pInstance->GetBossState(DATA_JANALAI) == IN_PROGRESS))
                 {

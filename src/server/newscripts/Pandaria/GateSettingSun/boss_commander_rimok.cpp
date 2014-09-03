@@ -72,7 +72,7 @@ class boss_commander_rimok : public CreatureScript
                 summons.Summon(summoned);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -128,7 +128,7 @@ class npc_krikthik_swarmer : public CreatureScript
                 attackTimer = 2000;
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (attackTimer)
                 {
@@ -171,7 +171,7 @@ class npc_krikthik_saboteur : public CreatureScript
                 checkTimer = urand(17500, 22500);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (attackTimer)
                 {
@@ -292,7 +292,7 @@ class npc_viscous_fluid : public CreatureScript
 
             void EnterEvadeMode(){}
 
-            void UpdateAI(const uint32 diff){}
+            void UpdateAI(uint32 diff){}
             
         };
 

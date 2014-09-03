@@ -103,7 +103,7 @@ class boss_corla_herald_of_twilight : public CreatureScript
                     pInstance->SetData(DATA_CORLA, IN_PROGRESS);
             }
      
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

@@ -221,7 +221,7 @@ public:
             RareCache = true;
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;
@@ -413,7 +413,7 @@ public:
             IcicleTimer = 2000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IcicleTimer <= diff)
             {
@@ -454,7 +454,7 @@ public:
             IcicleTimer = 2000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (IcicleTimer <= diff)
             {
@@ -495,7 +495,7 @@ public:
             DespawnTimer = 12000;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (DespawnTimer <= diff)
             {
@@ -543,7 +543,7 @@ public:
             AttackStartCaster(who, 30);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (pInstance)
                 if (pInstance->GetBossState(BOSS_HODIR) == DONE)
@@ -635,7 +635,7 @@ public:
             AttackStartCaster(who, 30);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
              if (pInstance)
                 if (pInstance->GetBossState(BOSS_HODIR) == DONE)
@@ -717,7 +717,7 @@ public:
             AttackStartCaster(who, 30);
         }
         
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
              if (pInstance)
                 if (pInstance->GetBossState(BOSS_HODIR) == DONE)
@@ -795,7 +795,7 @@ public:
             AttackStartCaster(who, 30);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
              if (pInstance)
                 if (pInstance->GetBossState(BOSS_HODIR) == DONE)
@@ -929,7 +929,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!me->ToTempSummon()->GetSummoner())
             {

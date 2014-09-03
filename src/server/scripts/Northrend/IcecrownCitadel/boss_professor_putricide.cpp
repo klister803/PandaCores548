@@ -516,7 +516,7 @@ class boss_professor_putricide : public CreatureScript
                 return 0;
             }
 
-            void UpdateAI(uint32 const diff)
+            void UpdateAI(uint32 diff)
             {
                 if ((!(events.GetPhaseMask() & PHASE_MASK_NOT_SELF) && !UpdateVictim()) || !CheckInRoom())
                     return;
@@ -723,7 +723,7 @@ class npc_volatile_ooze : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 Diff)
+            void UpdateAI(uint32 Diff)
             {
                 if (!m_uiTargetGUID)
                 {
@@ -873,7 +873,7 @@ class npc_gas_cloud : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 Diff)
+            void UpdateAI(uint32 Diff)
             {
                 if (!m_uiTargetGUID)
                 {

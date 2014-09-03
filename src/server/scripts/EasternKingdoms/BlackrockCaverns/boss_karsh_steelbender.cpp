@@ -78,7 +78,7 @@ class boss_karsh_steelbender : public CreatureScript
                     pInstance->SetData(DATA_KARSH, IN_PROGRESS);
             }
      
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

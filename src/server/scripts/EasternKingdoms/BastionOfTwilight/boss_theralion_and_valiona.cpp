@@ -509,7 +509,7 @@ class boss_theralion : public CreatureScript
                 }
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -856,7 +856,7 @@ class boss_valiona : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -1048,7 +1048,7 @@ class npc_unstable_twilight : public CreatureScript
                 events.ScheduleEvent(EVENT_UNSTABLE_TWILIGHT, 1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 
@@ -1166,7 +1166,7 @@ class npc_twilight_rift : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -1215,7 +1215,7 @@ class npc_collapsing_twilight_portal : public CreatureScript
                 events.ScheduleEvent(EVENT_COLLAPSING_TWILIGHT_PORTAL, 55000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
 

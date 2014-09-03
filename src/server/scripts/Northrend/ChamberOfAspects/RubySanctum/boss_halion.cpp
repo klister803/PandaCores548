@@ -429,7 +429,7 @@ public:
                 
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
                 return;
@@ -724,7 +724,7 @@ public:
             }
         }
         
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (ChangeVictim && phase == PHASE_THREE)
             {
@@ -1008,7 +1008,7 @@ public:
             return false;
         }
 
-        void UpdateAI(const uint32 diff)
+        void UpdateAI(uint32 diff)
         {
             if (!pInstance)
             {
@@ -1239,7 +1239,7 @@ public:
             return;
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!pInstance) 
                 me->DespawnOrUnsummon();
@@ -1466,7 +1466,7 @@ public:
                 me->DespawnOrUnsummon();
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!pInstance) 
                 me->DespawnOrUnsummon();
@@ -1629,7 +1629,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             switch (getStage())
             {
@@ -1726,7 +1726,7 @@ public:
             me->SetInCombatWithZone();
         }
 
-        void UpdateAI(const uint32 uiDiff)
+        void UpdateAI(uint32 uiDiff)
         {
             if (!me->HasAura(SPELL_METEOR_FLAME))
                 DoCast(SPELL_METEOR_FLAME);

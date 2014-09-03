@@ -241,7 +241,7 @@ public:
                 DoCast(me, SPELL_BLACK_BLOOD);
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             if (!UpdateVictim())
                 return;
@@ -453,7 +453,7 @@ public:
             }
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             events.Update(diff);
 
@@ -516,7 +516,7 @@ public:
             DoZoneInCombat();
         }
 
-        void UpdateAI(const uint32 diff) 
+        void UpdateAI(uint32 diff) 
         {
             events.Update(diff);
 

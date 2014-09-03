@@ -117,7 +117,7 @@ class boss_grand_vizier_ertan : public CreatureScript
                 Talk(SAY_DEATH);
             }
             
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -253,7 +253,7 @@ class npc_ertan_vortex : public CreatureScript
                 }
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
