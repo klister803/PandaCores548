@@ -4236,28 +4236,6 @@ void Spell::finish(bool ok)
     // Hack codes
     switch (m_spellInfo->Id)
     {
-        case 32379: // Shadow Word: Death
-        {
-            if (Player* _player = m_caster->ToPlayer())
-            {
-                if (_player->GetSpecializationId(_player->GetActiveSpec()) != SPEC_PRIEST_SHADOW)
-                    break;
-
-                if (m_caster->HasAura(95652))
-                    break;
-
-                if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f)
-                {
-                    m_caster->CastSpell(m_caster, 125927, true); // Shadow Orb energize
-                    break;
-                }
-
-                m_caster->CastSpell(m_caster, 125927, true); // Shadow Orb energize
-                m_caster->CastSpell(m_caster, 95652, true); // Effect cooldown marker
-                _player->RemoveSpellCooldown(m_spellInfo->Id, true);
-            }
-            break;
-        }
         case 53351: // Kill Shot
         {
             if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f || m_caster->HasAura(90967))

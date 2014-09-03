@@ -1627,6 +1627,80 @@ class spell_pri_void_shift : public SpellScriptLoader
         }
 };
 
+// 129176 - Shadow Word: Death (Glyph)
+class spell_pri_shadow_word_death : public SpellScriptLoader
+{
+public:
+    spell_pri_shadow_word_death() : SpellScriptLoader("spell_pri_shadow_word_death") { }
+
+    class spell_pri_shadow_word_death_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_pri_shadow_word_death_SpellScript);
+
+        bool resetCooldown;
+        bool isSP;
+
+        void HandleBeforeHit()
+        {
+            isSP = false;
+            resetCooldown = false;
+            if (Unit* target = GetHitUnit())
+                if (target->GetHealthPct() < 20)
+                    if (Unit* caster = GetCaster())
+                        if (Player* plr = caster->ToPlayer())
+                        {
+                            if (plr->GetSpecializationId(plr->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                            {
+                                caster->CastSpell(caster, 125927, true);
+                                isSP = true;
+                            }
+
+                            resetCooldown = true;
+                        }
+        }
+
+        void HandleAfterHit()
+        {
+            if(Unit* caster = GetCaster())
+                if (Unit* target = GetHitUnit())
+                    if (Player* plr = caster->ToPlayer())
+                    {
+                        bool hasCD = caster->HasAura(95652);
+
+                        if (target->isAlive())
+                        {
+                            caster->AddAura(32409, caster);
+
+                            if (!hasCD)
+                            {
+                                if (resetCooldown)
+                                {
+                                    caster->AddAura(95652, caster);
+                                    plr->RemoveSpellCooldown(GetSpellInfo()->Id, true);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (isSP && !hasCD)
+                                caster->CastSpell(caster, 125927, true);
+                        }
+                    }
+        }
+
+        void Register()
+        {
+            AfterHit += SpellHitFn(spell_pri_shadow_word_death_SpellScript::HandleAfterHit);
+            BeforeHit += SpellHitFn(spell_pri_shadow_word_death_SpellScript::HandleBeforeHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_pri_shadow_word_death_SpellScript();
+    }
+};
+
 // 32379 - Shadow Word : Death
 class spell_pri_shadow_orb : public SpellScriptLoader
 {
@@ -1640,19 +1714,21 @@ class spell_pri_shadow_orb : public SpellScriptLoader
             void HandleDamage()
             {
                 if(Unit* caster = GetCaster())
-                {
-                    int32 damage = GetFinalHitDamage();
+                    if (Unit* target = GetHitUnit())
+                        if (Player* plr = caster->ToPlayer())
+                            if (plr->GetSpecializationId(plr->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                            {
+                                if (!caster->HasAura(95652))
+                                {
+                                    caster->CastSpell(caster, 125927, true);
 
-                    // Pain and Suffering reduces damage
-                    if (AuraEffect* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
-                        AddPct(damage, aurEff->GetAmount());
-
-                    // Item - Priest T13 Shadow 2P Bonus (Shadow Word: Death)
-                    if (AuraEffect *auraEff = caster->GetAuraEffect(105843, 1))
-                        AddPct(damage, -auraEff->GetAmount());
-
-                    caster->CastCustomSpell(caster, PRIEST_SHADOW_WORD_DEATH, &damage, 0, 0, true);
-                }
+                                    if (target->isAlive())
+                                    {
+                                        caster->AddAura(95652, caster);
+                                        plr->RemoveSpellCooldown(GetSpellInfo()->Id, true);
+                                    }
+                                }
+                            }
             }
 
             void Register()
@@ -2499,6 +2575,7 @@ void AddSC_priest_spell_scripts()
     new spell_pri_inner_fire_or_will();
     new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
+    new spell_pri_shadow_word_death();
     new spell_pri_shadow_orb();
     new spell_pri_psychic_horror();
     new spell_pri_guardian_spirit();

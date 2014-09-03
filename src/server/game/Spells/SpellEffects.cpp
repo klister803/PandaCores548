@@ -799,6 +799,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 129176: // Shadow Word: Death (Glyph)
+            {
+                if (unitTarget->GetHealthPct() < 20)
+                    m_damage *= 4;
+                break;
+            }
+            case 32379:  // Shadow Word: Death
+            {
+                if (effIndex == EFFECT_0)
+                    m_damage = 0;
+                break;
+            }
             case 113092: // Frost Bomb
             {
                 if (unitTarget->GetTypeId() == TYPEID_PLAYER)

@@ -3524,7 +3524,7 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 146194:
+                case 146194: // Flurry of Xuen
                     spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
                     break;
                 case 51640: // Taunt Flag Targeting

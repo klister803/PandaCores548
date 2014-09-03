@@ -1024,6 +1024,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 32409:  // Shadow Word: Death (DoT)
+                {
+                    if (Aura* aura = caster->GetAura(105843))
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                            AddPct(amount, -(eff->GetAmount()));
+                    break;
+                }
                 case 114923: // Nether Tempest
                 case 44457:  // Living Bomb
                 {
