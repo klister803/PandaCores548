@@ -750,10 +750,7 @@ class npc_sha_puddle : public CreatureScript
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
                 if (damage >= me->GetHealth())
-                {
                     DoCastAOE(SPELL_SHA_RESIDUE);
-                    return;
-                }
             }
 
             void JustDied(Unit* killer)
@@ -824,6 +821,7 @@ class npc_contaminated_puddle : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
 
             InstanceScript* instance;
