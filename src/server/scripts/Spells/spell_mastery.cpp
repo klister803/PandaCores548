@@ -75,7 +75,7 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 Unit* caster = dmgInfo.GetVictim();
                 Unit* target = dmgInfo.GetAttacker();
 
-                if (!target || !caster || !caster->HasAura(33202))
+                if (!target || !caster || !caster->HasAura(33202, GetCasterGUID()) || GetSpellInfo()->Id != 17)
                     return;
 
                 int32 reflectiveDamage = int32((dmgInfo.GetDamage() > absorbAmount ? absorbAmount : dmgInfo.GetDamage()) * 0.7f);
