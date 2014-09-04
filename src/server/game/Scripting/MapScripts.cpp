@@ -682,7 +682,21 @@ void Map::ScriptsProcess()
                     }
 
                     if (GameObject* pGO = target->ToGameObject())
+                    {
+                        //fix freeze
+                        if(pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER && pGO->GetGOInfo()->goober.spellId)
+                        {
+                            if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pGO->GetGOInfo()->goober.spellId))
+                            {
+                                for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
+                                {
+                                    if (spellInfo->Effects[j].Effect == SPELL_EFFECT_ACTIVATE_OBJECT)
+                                        break;
+                                }
+                            }
+                        }
                         pGO->Use(unit);
+                    }
                 }
                 break;
 
