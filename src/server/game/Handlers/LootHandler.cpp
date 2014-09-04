@@ -108,6 +108,12 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
             loot = &creature->loot;
         }
 
+        if(Group* group = player->GetGroup())
+        {
+            // Already rolled?
+            if (group->isRolledSlot(lootSlot))
+                return;
+        }
         player->StoreLootItem(lootSlot, loot);
     }
 }

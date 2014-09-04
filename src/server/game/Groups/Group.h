@@ -328,6 +328,13 @@ class Group
         void DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*, LootItem&, Player*);
         void EndRoll(Loot* loot);
         void ClearAoeSlots() { m_aoe_slots = 0; };
+        bool isRolledSlot(uint8 _slot)
+        {
+            for (Rolls::iterator iter=RollId.begin(); iter != RollId.end(); ++iter)
+                if ((*iter)->aoeSlot == _slot && (*iter)->isValid())
+                    return true;
+            return false;
+        }
 
         // related to disenchant rolls
         void ResetMaxEnchantingLevel();
