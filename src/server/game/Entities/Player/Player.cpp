@@ -29913,8 +29913,8 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
         case 530:
             if (getLevel() < 58)
             {
-                // Nagrand, Terrokar Forest, Netherstorm, Blade's Edge Mountains, Hellfire Peninsula, Zangarmarsh, Shadowmoon Valley
-                if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520)
+                // Nagrand, Terrokar Forest, Netherstorm, Blade's Edge Mountains, Hellfire Peninsula, Zangarmarsh, Shadowmoon Valley, Silvermoon City
+                if (zone == 3518 || zone == 3519 || zone == 3523 || zone == 3522 || zone == 3483 || zone == 3521 || zone == 3520 || zone == 3487)
                     return true;
             }
             // Isle of Quel'Danas
