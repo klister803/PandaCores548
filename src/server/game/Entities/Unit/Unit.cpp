@@ -17371,7 +17371,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_TRANSFORM:
                     {
                         if (procExtra & PROC_EX_INTERNAL_HOT) // temporarily
-                            if (spellInfo->Id == 6770 || spellInfo->Id == 2094)
+                            if (spellInfo->Id == 6770 || spellInfo->Id == 2094 || spellInfo->Id == 115078)
                                 return;
 
 
