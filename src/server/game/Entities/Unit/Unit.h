@@ -2386,6 +2386,7 @@ class Unit : public WorldObject
         Movement::MoveSpline * movespline;
 
         void OnRelocated();
+        bool onVisibleUpdate() const { return m_VisibilityUpdateTask; }
 
         std::deque<uint64> m_livingBombTargets;
 

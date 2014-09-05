@@ -46,6 +46,7 @@ namespace Trinity
 
         VisibleNotifier(Player &player) : i_player(player), i_data(player.GetMapId()), vis_guids(player.m_clientGUIDs) {}
         template<class T> void Visit(GridRefManager<T> &m);
+        void Visit(PlayerMapType &);
         void SendToSelf(void);
     };
 

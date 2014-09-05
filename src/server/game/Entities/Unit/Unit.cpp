@@ -19894,12 +19894,13 @@ void Unit::OnRelocated()
 
 void Unit::UpdateObjectVisibility(bool forced)
 {
+    if (m_VisibilityUpdateTask)
+        return;
+
     if (forced)
         VisibilityUpdateTask::UpdateVisibility(this);
     else
     {
-        if (m_VisibilityUpdateTask)
-            return;
         m_VisibilityUpdateTask = true;
         m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
     }

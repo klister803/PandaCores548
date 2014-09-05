@@ -42,7 +42,8 @@ void VisibleNotifier::SendToSelf()
                 vis_guids.erase((*itr)->GetGUID());
 
                 i_player.UpdateVisibilityOf((*itr), i_data, i_visibleNow);
-                (*itr)->UpdateVisibilityOf(&i_player);
+                if (!(*itr)->onVisibleUpdate())
+                    (*itr)->UpdateVisibilityOf(&i_player);
             }
         }
 
@@ -58,7 +59,7 @@ void VisibleNotifier::SendToSelf()
         if (IS_PLAYER_GUID(*it))
         {
             Player* player = ObjectAccessor::FindPlayer(*it);
-            if (player && player->IsInWorld())
+            if (player && player->IsInWorld() && !player->onVisibleUpdate())
                 player->UpdateVisibilityOf(&i_player);
         }
     }
@@ -70,6 +71,21 @@ void VisibleNotifier::SendToSelf()
 
     for (std::set<Unit*>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
         i_player.SendInitialVisiblePackets(*it);
+}
+
+void VisibleNotifier::Visit(PlayerMapType &m)
+{
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        Player* player = iter->getSource();
+
+        vis_guids.erase(player->GetGUID());
+
+        i_player.UpdateVisibilityOf(player, i_data, i_visibleNow);
+
+        if (!player->onVisibleUpdate())
+            player->UpdateVisibilityOf(&i_player);
+    }
 }
 
 void VisibleChangesNotifier::Visit(PlayerMapType &m)
