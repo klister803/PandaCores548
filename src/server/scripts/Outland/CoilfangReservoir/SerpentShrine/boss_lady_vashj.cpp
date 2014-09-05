@@ -753,7 +753,7 @@ public:
                 MovementTimer = 0;
         }
 
-        void UpdateAI (const uint32 diff)
+        void UpdateAI (uint32 diff)
         {
             // Random movement
             if (MovementTimer <= diff)
@@ -833,7 +833,7 @@ public:
 
         void MoveInLineOfSight(Unit* /*who*/) {}
 
-        void UpdateAI (const uint32 diff)
+        void UpdateAI (uint32 diff)
         {
             if (!instance)
                 return;
