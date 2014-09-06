@@ -454,6 +454,7 @@ public:
 
         void InitializeAI()
         {
+            if(me->ToTempSummon())
             if (Unit* owner = me->ToTempSummon()->GetSummoner())
             {
                 std::list<Unit*> targets;
