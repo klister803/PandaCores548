@@ -19845,7 +19845,10 @@ public:
     static void ScheduleAINotify(Unit* me)
     {
         if (!me->m_VisibilityUpdScheduled)
+        {
+            me->m_VisibilityUpdScheduled = true;
             me->m_Events.AddEvent(new AINotifyTask(me), me->m_Events.CalculateTime(World::Visibility_AINotifyDelay));
+        }
     }
 };
 
