@@ -894,7 +894,9 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint32 m_lootRecipientGroup;
         bool   m_manual_anim;
         bool   m_isDynActive;
+        bool   m_onUse;
     private:
+        void _Use(Unit* user);
         void RemoveFromOwner();
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         void UpdateModel();                                 // updates model in case displayId were changed

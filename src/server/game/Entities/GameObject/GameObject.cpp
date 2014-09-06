@@ -35,33 +35,16 @@
 #include "SpellAuraEffects.h"
 
 GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL), 
-    m_manual_anim(false)
+    m_manual_anim(false), m_onUse(false), m_respawnTime(0), m_respawnDelayTime(300),
+    m_lootState(GO_NOT_READY), m_spawnedByDefault(true), m_usetimes(0), m_spellId(0), m_cooldownTime(0), 
+    m_goInfo(NULL), m_ritualOwner(NULL), m_goData(NULL), m_DBTableGuid(0), m_rotation(0), m_lootRecipient(0),
+    m_lootRecipientGroup(0), m_groupLootTimer(0), lootingGroupLowGUID(0), m_isDynActive(false)
 {
+    m_valuesCount = GAMEOBJECT_END;
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
 
     m_updateFlag = (UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION);
-
-    m_valuesCount = GAMEOBJECT_END;
-    m_respawnTime = 0;
-    m_respawnDelayTime = 300;
-    m_lootState = GO_NOT_READY;
-    m_spawnedByDefault = true;
-    m_usetimes = 0;
-    m_spellId = 0;
-    m_cooldownTime = 0;
-    m_goInfo = NULL;
-    m_ritualOwner = NULL;
-    m_goData = NULL;
-
-    m_DBTableGuid = 0;
-    m_rotation = 0;
-
-    m_lootRecipient = 0;
-    m_lootRecipientGroup = 0;
-    m_groupLootTimer = 0;
-    lootingGroupLowGUID = 0;
-    m_isDynActive = false;
 }
 
 GameObject::~GameObject()
@@ -1130,6 +1113,20 @@ void GameObject::EnableOrDisableGo(bool enable, bool alternative)
 }
 
 void GameObject::Use(Unit* user)
+{
+    if (m_onUse)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "GameObject::Use(): unit (type: %u, guid: %u, name: %s) MT issue of double use / Dead Loop issue with gameobject (guid: %u, entry: %u, name: %s) type %u",
+            user->GetTypeId(), user->GetGUIDLow(), user->GetName(), GetGUIDLow(), GetEntry(), GetGOInfo()->name.c_str(), GetGoType());
+        return;
+    }
+
+    m_onUse = true;
+    _Use(user);
+    m_onUse = false;
+}
+
+void GameObject::_Use(Unit* user)
 {
     // by default spell caster is user
     Unit* spellCaster = user;
