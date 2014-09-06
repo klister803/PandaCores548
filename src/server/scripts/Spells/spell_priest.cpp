@@ -118,6 +118,35 @@ enum PriestSpells
     PRIEST_SPELL_MINDBENDER_TRIGGERED           = 123050,
 };
 
+ class spell_pri_glyph_of_mass_dispel : public SpellScriptLoader
+ {
+ public:
+     spell_pri_glyph_of_mass_dispel() : SpellScriptLoader("spell_pri_glyph_of_mass_dispel") { }
+
+     class spell_pri_glyph_of_mass_dispel_SpellScript : public SpellScript
+     {
+         PrepareSpellScript(spell_pri_glyph_of_mass_dispel_SpellScript);
+
+         void HandleDispel()
+         {
+             if (Unit* caster = GetCaster())
+                if (caster->HasAura(55691)) // Glyph
+                    if (WorldLocation const* dest = GetExplTargetDest())
+                        caster->CastSpell(dest->GetPositionX(), dest->GetPositionY(), dest->GetPositionZ(), 39897, true);
+         }
+
+         void Register()
+         {
+             AfterCast += SpellCastFn(spell_pri_glyph_of_mass_dispel_SpellScript::HandleDispel);
+         }
+     };
+
+     SpellScript* GetSpellScript() const
+     {
+         return new spell_pri_glyph_of_mass_dispel_SpellScript;
+     }
+ };
+
 // Called by Prayer of Mending - 33076
 // Item : S12 4P bonus - Heal
 class spell_pri_item_s12_4p_heal : public SpellScriptLoader
@@ -2543,6 +2572,7 @@ class spell_pri_t15_healer_4p : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_glyph_of_mass_dispel();
     new spell_pri_item_s12_4p_heal();
     new spell_pri_item_s12_2p_heal();
     new spell_pri_item_s12_2p_shadow();
