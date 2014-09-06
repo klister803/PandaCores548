@@ -497,9 +497,9 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
             aura = new UnitAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID, stackAmount);
+            aura->LoadScripts();
             aura->_InitEffects(effMask, caster, baseAmount);
             aura->GetUnitOwner()->_AddAura((UnitAura*)aura, caster);
-            aura->LoadScripts();
             break;
         case TYPEID_DYNAMICOBJECT:
             aura = new DynObjAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID, stackAmount);
