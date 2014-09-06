@@ -114,6 +114,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
             void CheckTarget(bool fullstack, Unit* caster, Unit* target)
             {
                 std::list<Unit*> ControllUnit;
+                std::list<Unit*> removeAllClones;
                 if (!caster->m_Controlled.empty())
                 {
                     for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
@@ -131,17 +132,22 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                 if (!fullstack)
                                     return;
 
-                                cloneUnit->ToCreature()->AI()->JustDied(caster);
+                                removeAllClones.push_back(cloneUnit);
                                 continue;
                             }
                             else
                             {
-                                cloneUnit->ToCreature()->AI()->JustDied(caster);
+                                cloneUnit->ToCreature()->AI()->ComonOnHome();
                                 castspell = false;
                                 return;
                             }
                         }
                     }
+
+                    for (std::list<Unit*>::const_iterator i = removeAllClones.begin(); i != removeAllClones.end(); ++i)
+                        if (Creature* crt = (*i)->ToCreature())
+                            if (CreatureAI* ai = crt->AI())
+                                ai->ComonOnHome();
                 }
                 addMainAura = false;
             }
@@ -283,7 +289,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                 if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
                                     continue;
 
-                                cloneUnit->ToCreature()->AI()->JustDied(caster);
+                                cloneUnit->ToCreature()->AI()->ComonOnHome();
                             }
                         }
                     }

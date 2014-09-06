@@ -152,6 +152,8 @@ class CreatureAI : public UnitAI
 
         virtual void RecalcStats() {}
 
+        virtual void ComonOnHome() {}
+
         /// == Triggered Actions Requested ==================
 
         // Called when creature attack expected (if creature can and no have current victim)

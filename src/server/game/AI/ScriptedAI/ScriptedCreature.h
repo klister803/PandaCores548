@@ -100,6 +100,8 @@ struct ScriptedAI : public CreatureAI
 
     void RecalcStats() {}
 
+    void ComonOnHome() {}
+
     //Called at creature killing another unit
     void KilledUnit(Unit* /*victim*/) {}
 

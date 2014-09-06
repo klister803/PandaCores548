@@ -250,7 +250,7 @@ public:
 
             if (!me->IsWithinDist(owner, 100))
             {
-                JustDied(me);
+                ComonOnHome();
                 return;
             }
 
@@ -284,36 +284,30 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void ComonOnHome()
         {
+            if (!owner)
+                return;
+
+            comeonhome = true;
+
             if (me->isAlive())
             {
-                ComonOnHome();
+                me->CastSpell(owner, 124002, true);
+                owner->m_Controlled.erase(me);
+                me->DespawnOrUnsummon(500);
             }
             else
                 me->DespawnOrUnsummon();
 
-            if (owner)
-                if (Aura *aura = owner->GetAura(137639))
-                {
-                    switch (aura->GetStackAmount())
-                    {
-                        case 1: owner->RemoveAura(137639); break;
-                        case 2: aura->SetStackAmount(1);   break;
-                    }
-                }
-        }
-
-        void ComonOnHome()
-        {
-            if (owner)
+            if (Aura *aura = owner->GetAura(137639))
             {
-                me->CastSpell(owner, 124002, true);
-                owner->m_Controlled.erase(me);
+                switch (aura->GetStackAmount())
+                {
+                    case 1: owner->RemoveAura(137639); break;
+                    case 2: aura->SetStackAmount(1);   break;
+                }
             }
-
-            me->DespawnOrUnsummon(500);
-            comeonhome = true;
         }
 
         void UpdateAI(uint32 diff)
@@ -345,7 +339,7 @@ public:
                     }
 
                     if (!jumpontarget)
-                        JustDied(me);
+                        ComonOnHome();
 
                     if (jumpontarget)
                     {
@@ -364,7 +358,7 @@ public:
 
                 if (me->getVictim() && me->getVictim()->GetGUID() != firsttarget)
                     if (!jumpontarget && !comeonhome)
-                        JustDied(me);
+                        ComonOnHome();
 
                 if (owner)
                 {
