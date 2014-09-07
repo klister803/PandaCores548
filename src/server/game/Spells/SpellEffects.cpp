@@ -4815,6 +4815,12 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             }   
             break;
         }
+        case 25504: // Windfury Weapon MH
+        case 33750: // Windfury Weapon OH
+        {
+            AddPct(m_damage, 50); // Hotfix 24th September MOP (5.4): Windfury Now deals 50% additional damage.
+            break;
+        }
         case 60103:        // Lava Lash
         {
             if (m_caster->GetTypeId() != TYPEID_PLAYER)
