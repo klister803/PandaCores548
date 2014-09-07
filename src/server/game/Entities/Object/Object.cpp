@@ -2703,7 +2703,7 @@ void WorldObject::SetZoneScript()
     }
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint64 targetGuid, TempSummonType spwtype, uint32 duration) const
+TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint64 targetGuid, TempSummonType spwtype, uint32 duration, uint32 spellId /*= 0*/, SummonPropertiesEntry const* properties /*= NULL*/) const
 {
     if (Map* map = FindMap())
     {
@@ -2714,7 +2714,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint6
             if(creatures.size() > 50)
                 return NULL;
         }
-        if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, targetGuid))
+        if (TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, targetGuid, spellId))
         {
             summon->SetTempSummonType(spwtype);
             return summon;

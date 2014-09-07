@@ -58,16 +58,6 @@ void Totem::InitStats(uint32 duration)
         && m_Properties->Slot >= SUMMON_SLOT_TOTEM
         && m_Properties->Slot < MAX_TOTEM_SLOT)
     {
-        ObjectGuid guid = GetGUID();
-        //! 5.4.1
-        WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
-        data << uint32(duration);
-        data << uint8(m_Properties->Slot - 1);
-        data << uint32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
-        data.WriteGuidMask<6, 0, 5, 2, 1, 3, 7, 4>(guid);
-        data.WriteGuidBytes<0, 2, 1, 3, 5, 4, 6, 7>(guid);
-        m_owner->ToPlayer()->SendDirectMessage(&data);
-
         // set display id depending on caster's race
         if (uint32 display = m_owner->GetModelForTotem(PlayerTotemType(m_Properties->Id)))
             SetDisplayId(display);

@@ -3636,7 +3636,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             // randomize position for multiple summons
                             m_caster->GetRandomPoint(*destTarget, radius, pos);
 
-                        summon = m_originalCaster->SummonCreature(entry, *destTarget, m_targets.GetUnitTargetGUID(), summonType, duration);
+                        summon = m_originalCaster->SummonCreature(entry, *destTarget, m_targets.GetUnitTargetGUID(), summonType, duration, m_spellInfo->Id, properties);
                         if (!summon)
                             continue;
 
@@ -3665,8 +3665,10 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         if (properties->Category == SUMMON_CATEGORY_ALLY)
                         {
                             summon->SetOwnerGUID(m_originalCaster->GetGUID());
+                            summon->SetCreatorGUID(m_originalCaster->GetGUID());
                             summon->setFaction(m_originalCaster->getFaction());
                             summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
+                            summon->SetUInt32Value(UNIT_FIELD_DEMON_CREATOR, m_originalCaster->GetGUID());
                         }
 
                         // Explosive Decoy and Explosive Decoy 2.0
