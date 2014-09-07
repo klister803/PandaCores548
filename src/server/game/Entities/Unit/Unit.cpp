@@ -9007,6 +9007,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 // If not ready, we should  return, shouldn't we?!
                 else
                     return false;
+
+                if (HasAura(131554))
+                    CastSpell(target, 147732, true);
             }
             break;
         }
