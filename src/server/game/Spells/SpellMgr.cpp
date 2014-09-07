@@ -5024,6 +5024,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 1543: // Flare. Hack from wait to fix areatrigger
                     spellInfo->Effects[0].TriggerSpell = 94528;
                     break;
+                case 30823:
                 case 498:    // Divine Protection
                 case 137562: // Nimble Brew
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
