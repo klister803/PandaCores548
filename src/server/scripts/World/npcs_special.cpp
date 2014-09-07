@@ -2801,6 +2801,39 @@ class npc_lightwell : public CreatureScript
         }
 };
 
+class npc_lightwell_mop : public CreatureScript
+{
+    public:
+        npc_lightwell_mop() : CreatureScript("npc_lightwell_mop") { }
+
+        struct npc_lightwell_mopAI : public PassiveAI
+        {
+            npc_lightwell_mopAI(Creature* creature) : PassiveAI(creature)
+            {
+                if (TempSummon* summon = me->ToTempSummon())
+                    if(Unit* owner = summon->GetSummoner())
+                        me->SetLevel(owner->getLevel());
+                DoCast(me, 126138, true);
+                me->SetAuraStack(126150, me, 17);
+            }
+
+            void EnterEvadeMode()
+            {
+                if (!me->isAlive())
+                    return;
+
+                me->DeleteThreatList();
+                me->CombatStop(true);
+                me->ResetPlayerDamageReq();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_lightwell_mopAI(creature);
+        }
+};
+
 enum eTrainingDummy
 {
     NPC_ADVANCED_TARGET_DUMMY                  = 2674,
@@ -5372,6 +5405,7 @@ void AddSC_npcs_special()
     new npc_mirror_image();
     new npc_ebon_gargoyle();
     new npc_lightwell();
+    new npc_lightwell_mop();
     new mob_mojo();
     new npc_training_dummy();
     new npc_wormhole();

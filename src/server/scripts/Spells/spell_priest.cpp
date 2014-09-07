@@ -84,7 +84,10 @@ enum PriestSpells
     PRIEST_EVANGELISM_STACK                     = 81661,
     PRIEST_ARCHANGEL                            = 81700,
     LIGHTWELL_CHARGES                           = 59907,
-    LIGHTSPRING_RENEW                           = 126154,
+    LIGHTWELL_CHARGES_MOP                       = 126150,
+    LIGHTSPRING_RENEW                           = 7001,
+    LIGHTSPRING_RENEW_MOP                       = 126154,
+    LIGHTSPRING_RENEW_VISUAL                    = 126141,
     PRIEST_SMITE                                = 585,
     PRIEST_HOLY_WORD_CHASTISE                   = 88625,
     PRIEST_HOLY_WORD_SANCTUARY_AREA             = 88685,
@@ -2570,6 +2573,66 @@ class spell_pri_t15_healer_4p : public SpellScriptLoader
         }
 };
 
+// Lightwell Triger - 126137
+class spell_pri_lightwell_trigger : public SpellScriptLoader
+{
+    public:
+        spell_pri_lightwell_trigger() : SpellScriptLoader("spell_pri_lightwell_trigger") { }
+
+        class spell_pri_lightwell_trigger_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_lightwell_trigger_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* m_caster = GetCaster())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isSummon())
+                            return;
+
+                        // proc a spellcast
+                        if (Aura* chargesAura = m_caster->GetAura(LIGHTWELL_CHARGES_MOP))
+                        {
+                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW_MOP, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW_VISUAL, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                            if (chargesAura->ModStackAmount(-1))
+                                m_caster->ToTempSummon()->UnSummon();
+                        }
+                    }
+                }
+            }
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                std::list<WorldObject*> unitList;
+                for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
+                {
+                    if(Unit* targer = (*itr)->ToUnit())
+                        if (targer->GetHealthPct() <= 50.0f && !targer->HasAura(LIGHTSPRING_RENEW_MOP))
+                            unitList.push_back((*itr));
+                }
+                targets.clear();
+                targets = unitList;
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_lightwell_trigger_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+                OnHit += SpellHitFn(spell_pri_lightwell_trigger_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_lightwell_trigger_SpellScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
@@ -2625,4 +2688,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_binding_heal();
     new spell_pri_dispel_magic();
     new spell_pri_t15_healer_4p();
+    new spell_pri_lightwell_trigger();
 }
