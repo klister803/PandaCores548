@@ -10056,6 +10056,32 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 146199: // Spirit of Chi-Ji
+        {
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (procSpell->Effects[i].Effect)
+                    if (procSpell->Effects[i].HasRadius())
+                        return false;
+
+            break;
+        }
+        case 146195: // Flurry of Xuen
+        case 146197: // Essence of Yu'lon
+        {
+            if (victim->GetTypeId() == TYPEID_PLAYER)
+                return false;
+
+            if (Unit* owner = victim->GetOwner())
+                if (owner->GetTypeId() == TYPEID_PLAYER)
+                    return false;
+
+            if (procSpell)
+                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                    if (procSpell->Effects[i].Effect)
+                        if (procSpell->Effects[i].HasRadius())
+                            return false;
+            break;
+        }
         case 108215: // Paralysis
         {
             if (victim->HasAura(113953, GetGUID()))
