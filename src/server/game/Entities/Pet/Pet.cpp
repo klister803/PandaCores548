@@ -1819,8 +1819,6 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
 
 bool Guardian::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpellState state /*= PETSPELL_NEW*/, PetSpellType type /*= PETSPELL_NORMAL*/)
 {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Guardian::addSpell spellId %u, GetEntry %u", spellId, GetEntry());
-
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return false;
@@ -1864,6 +1862,11 @@ bool Guardian::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, Pe
         newspell.active = active;
 
     m_spells[spellId] = newspell;
+
+    if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
+        CastSpell(this, spellId, true);
+    else if(m_charmInfo)
+        m_charmInfo->AddSpellToActionBar(spellInfo);
 
     if (newspell.active == ACT_ENABLED)
         ToggleAutocast(spellInfo, true);

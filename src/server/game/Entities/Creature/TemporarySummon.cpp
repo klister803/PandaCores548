@@ -388,7 +388,7 @@ Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool is
                 break;
         }
 
-        if (properties->Type == SUMMON_TYPE_PET && controlable)
+        if ((properties->Type == SUMMON_TYPE_PET || properties->Category == SUMMON_CATEGORY_PET) && controlable)
         {
             m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
             InitCharmInfo();
