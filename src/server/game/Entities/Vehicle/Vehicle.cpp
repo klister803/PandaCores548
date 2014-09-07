@@ -960,7 +960,7 @@ void VehicleJoinEvent::Abort(uint64)
     if(!Passenger)
         return;
     /// Check if the Vehicle was already uninstalled, in which case all auras were removed already
-    if (Target)
+    if (Target && Target->GetBase())
     {
         //sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on vehicle GuidLow: %u, Entry: %u SeatId: %d cancelled",
             //Passenger->GetGUIDLow(), Passenger->GetEntry(), Target->GetBase()->GetGUIDLow(), Target->GetBase()->GetEntry(), (int32)Seat->first);
