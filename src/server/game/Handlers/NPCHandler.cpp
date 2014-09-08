@@ -603,14 +603,11 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
             if (petSlot > PET_SLOT_STABLE_LAST)
                 continue;
 
+            //Find free slot and move pet there
             if (petSlot == PET_SLOT_FULL_LIST)
-            {
-                //Find free slot and move pet there
-                petSlot = GetPlayer()->getSlotForNewPet(true);
-                GetPlayer()->setPetSlotWithStableMoveOrRealDelete(PetSlot(petSlot), petNumber, true);
-            }
+                petSlot = GetPlayer()->SetOnAnyFreeSlot(petNumber);
 
-            if (petSlot < PET_SLOT_STABLE_LAST)
+            if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
             {
                 std::string name = fields[3].GetString();
                 buf.WriteString(name);

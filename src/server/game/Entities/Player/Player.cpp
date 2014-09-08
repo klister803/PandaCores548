@@ -1302,7 +1302,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
                     break;
             }
         }
-        setPetSlotWithStableMoveOrRealDelete(PET_SLOT_HUNTER_FIRST, m_currentPetNumber, true);
+        SetOnAnyFreeSlot(m_currentPetNumber);
         SetTemporaryUnsummonedPetNumber(m_currentPetNumber);
     }
 
@@ -22416,11 +22416,16 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
         return;
 
     if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+    {
         mode = PetSlot(pet->GetSlot());
+        if (!pet->m_Stampeded)
+            m_currentPetNumber = pet->GetCharmInfo()->GetPetNumber();   //just protection.
+    }
 
     pet->CombatStop();
     // only if current pet in slot
-    pet->SavePetToDB(mode);
+    if (!pet->m_Stampeded)
+        pet->SavePetToDB(mode);
 
     if (pet->getPetType() != HUNTER_PET)
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
@@ -29767,6 +29772,20 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
 
     m_PetSlots[slot] = petID;
 }
+
+int16 Player::SetOnAnyFreeSlot(uint32 petID)
+{
+    ASSERT(slot < PET_SLOT_LAST);
+
+    for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
+        if (!m_PetSlots[i])
+        {
+            m_PetSlots[i] = petID;
+            return i;
+        }
+    return PET_SLOT_FULL_LIST;
+}
+
 
 PetSlot Player::getSlotForNewPet(bool full/*=false*/)
 {
