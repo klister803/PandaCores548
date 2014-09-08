@@ -48,6 +48,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     GetPlayer()->SetSemaphoreTeleportFar(false);
     GetPlayer()->SetIgnoreMovementCount(5);
+    if(Unit* mover = _player->m_mover)
+        mover->ClearUnitState(UNIT_STATE_JUMPING);
 
     // get the teleport destination
     WorldLocation const loc = GetPlayer()->GetTeleportDest();
@@ -600,14 +602,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     _Height = plrMover->GetMap()->GetHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ());
                 }
                 const float ground_Z = movementInfo.pos.GetPositionZ() - _vmapHeight;
-                const bool no_swim_flags = (movementInfo.flags & MOVEMENTFLAG_SWIMMING) == 0;
-                const bool no_swim_in_water = !_player->IsInWater();
-                const float water_level = _player->GetBaseMap()->GetWaterLevel(movementInfo.pos.GetPositionX(),movementInfo.pos.GetPositionY());
-                const bool no_swim_above_water = movementInfo.pos.GetPositionZ()-7.0f >= water_level;
-                const bool no_swim_water = no_swim_in_water && no_swim_above_water;
-
-                const bool no_waterwalk_flags = (movementInfo.flags & MOVEMENTFLAG_WATERWALKING) == 0;
-                const bool no_waterwalk_auras = !(plrMover->HasAuraType(SPELL_AURA_WATER_WALK) || plrMover->HasAuraType(SPELL_AURA_GHOST));
 
                 if(cClientTimeDelta == 0)
                     cClientTimeDelta = 1500;
@@ -615,7 +609,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     cClientTimeDelta = 0;
                 const float time_delta = cClientTimeDelta < 1500 ? float(cClientTimeDelta)/1000.0f : 1.5f; // normalize time - 1.5 second allowed for heavy loaded server
 
-                const float tg_z = (real_delta != 0 && !fly_auras && no_swim_flags) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
+                const float tg_z = (real_delta != 0 && !fly_auras && !status) ? (pow(delta_z, 2) / real_delta) : -99999; // movement distance tangents
 
                 if (current_speed < plrMover->m_anti_Last_HSpeed && plrMover->m_anti_LastSpeedChangeTime == 0)
                     plrMover->m_anti_LastSpeedChangeTime = movementInfo.time + uint32(floor(((plrMover->m_anti_Last_HSpeed / current_speed) * 1500)) + 100); // 100ms above for random fluctuation
@@ -626,8 +620,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     + (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                      // mountain fall allowed delta
 
                     if(World::GetEnableMvAnticheatDebug())
-                        sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u no_swim_water %u, _vmapHeight %f, _Height %f, opcode[%s]",
-                                        mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, no_swim_water, _vmapHeight, _Height, GetOpcodeNameForLogging(opcode).c_str());
+                        sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u _vmapHeight %f, _Height %f, ZLiquidStatus %u, opcode[%s]",
+                                        mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, _vmapHeight, _Height, status, GetOpcodeNameForLogging(opcode).c_str());
 
                 if (movementInfo.time > plrMover->m_anti_LastSpeedChangeTime)
                 {
@@ -653,7 +647,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 }
  
                 // Fly hack checks
-                if (!fly_auras && (fly_flags || ground_Z > 2.3f) && !forvehunit && exeption_fly)
+                if (!fly_auras && (fly_flags || ground_Z > 2.3f) && !forvehunit && exeption_fly && !status)
                 {
                     if(World::GetEnableMvAnticheatDebug())
                         sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plrMover->GetVehicle()=[%X]} forvehunit=[%X], opcode[%s]",
@@ -669,7 +663,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 }
 
                 // Teleport To Plane checks
-                if (no_swim_in_water && movementInfo.pos.GetPositionZ() < 0.0001f && movementInfo.pos.GetPositionZ() > -0.0001f)
+                if (!status && movementInfo.pos.GetPositionZ() < 0.0001f && movementInfo.pos.GetPositionZ() > -0.0001f)
                 {
                     if (const Map *map = plrMover->GetMap())
                     {
@@ -705,6 +699,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         mover->SendMessageToSet(&data, _player);
 
         mover->m_movementInfo = movementInfo;
+
+        if(opcode == CMSG_MOVE_FALL_LAND)
+            mover->ClearUnitState(UNIT_STATE_JUMPING);
 
         // this is almost never true (not sure why it is sometimes, but it is), normally use mover->IsVehicle()
         if (mover->GetVehicle())

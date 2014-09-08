@@ -3026,7 +3026,8 @@ void Player::Regenerate(Powers power)
                 CastSpell(this, 131755, true);
             else if (GetPower(POWER_DEMONIC_FURY) >= 500)
             {
-                CastSpell(this, 122738, true);
+                if (!HasAura(122738))
+                    CastSpell(this, 122738, true);
 
                 if (HasAura(131755))
                     RemoveAura(131755);
@@ -19624,7 +19625,7 @@ void Player::_LoadGlyphAuras()
                 {
                     if (gp->TypeFlags == gs->TypeFlags)
                     {
-                        CastSpell(this, gp->SpellId, true);
+                        //CastSpell(this, gp->SpellId, true);
                         continue;
                     }
                     else
@@ -28452,7 +28453,8 @@ void Player::ActivateSpec(uint8 spec)
         // remove secondary glyph
         if (uint32 oldglyph = GetGlyph(GetActiveSpec(), slot))
             if (GlyphPropertiesEntry const* old_gp = sGlyphPropertiesStore.LookupEntry(oldglyph))
-                RemoveAurasDueToSpell(old_gp->SpellId);
+                removeSpell(old_gp->SpellId);
+                //RemoveAurasDueToSpell(old_gp->SpellId);
 
     SetActiveSpec(spec);
 
@@ -28472,7 +28474,8 @@ void Player::ActivateSpec(uint8 spec)
         // apply primary glyph
         if (glyph)
             if (GlyphPropertiesEntry const* gp = sGlyphPropertiesStore.LookupEntry(glyph))
-                CastSpell(this, gp->SpellId, true);
+                learnSpell(gp->SpellId, false);
+                //CastSpell(this, gp->SpellId, true);
 
         SetGlyph(slot, glyph);
     }

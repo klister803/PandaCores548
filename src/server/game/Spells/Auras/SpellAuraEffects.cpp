@@ -7907,6 +7907,13 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
                     }
                 break;
             }
+            case 114635:
+            {
+                // Mastery: Emberstorm
+                if (AuraEffect const* aurEff = caster->GetAuraEffect(77220, EFFECT_0))
+                    AddPct(damage, aurEff->GetAmount());
+                break;
+            }
             default:
                 break;
         }

@@ -206,6 +206,7 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
                 switch (eff->GetAuraType())
                 {
                     case SPELL_AURA_SCHOOL_ABSORB:
+                    case SPELL_AURA_SCHOOL_HEAL_ABSORB:
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
@@ -250,6 +251,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
                 switch (eff->GetAuraType())
                 {
                     case SPELL_AURA_SCHOOL_ABSORB:
+                    case SPELL_AURA_SCHOOL_HEAL_ABSORB:
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:

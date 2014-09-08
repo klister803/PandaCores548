@@ -4116,7 +4116,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114695:// Pursuit of Justice
                     spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
-                case 6262:  // Health Stone
                 case 34299: // Leader of the pack - healing
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_HEAL_PCT;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;

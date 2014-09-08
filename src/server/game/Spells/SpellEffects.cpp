@@ -2604,10 +2604,6 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
-        case 6262:  // Healthstone
-            if (m_caster->HasAura(56224)) // Glyph of Healthstone
-                return;
-            break;
         case 59754: // Rune Tap - Party
             if (unitTarget == m_caster)
                 return;
@@ -3004,14 +3000,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
 
             if (int32(m_caster->GetHealth()) < damage)
-            {
                 damage = m_caster->GetHealth() - 1;
-                m_caster->SetHealth(1);
-            }
-            else
-            {
-                m_caster->SetHealth(m_caster->GetHealth() - damage);
-            }
             break;
         }
         case 9512:                                          // Restore Energy
@@ -6103,12 +6092,14 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
             {
                 if (GlyphPropertiesEntry const* old_gp = sGlyphPropertiesStore.LookupEntry(oldglyph))
                 {
-                    player->RemoveAurasDueToSpell(old_gp->SpellId);
+                    player->removeSpell(old_gp->SpellId);
+                    //player->RemoveAurasDueToSpell(old_gp->SpellId);
                     player->SetGlyph(m_glyphIndex, 0);
                 }
             }
 
-            player->CastSpell(m_caster, gp->SpellId, true);
+            player->learnSpell(gp->SpellId, false);
+            //player->CastSpell(m_caster, gp->SpellId, true);
             player->SetGlyph(m_glyphIndex, glyph);
             player->SendTalentsInfoData(false);
         }
@@ -6120,7 +6111,8 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
         {
             if (GlyphPropertiesEntry const* old_gp = sGlyphPropertiesStore.LookupEntry(oldglyph))
             {
-                player->RemoveAurasDueToSpell(old_gp->SpellId);
+                player->removeSpell(old_gp->SpellId);
+                //player->RemoveAurasDueToSpell(old_gp->SpellId);
                 player->SetGlyph(m_glyphIndex, 0);
                 player->SendTalentsInfoData(false);
             }
@@ -6444,22 +6436,16 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
     if (target->IsRessurectRequested())       // already have one active request
         return;
 
-    uint32 health = target->CountPctFromMaxHealth(damage);
-    uint32 mana   = CalculatePct(target->GetMaxPower(POWER_MANA), damage);
-
-    // Rebirth, soulstone ...
-    if (m_spellInfo->Id == 20484 || m_spellInfo->Id == 3026)
-        health = target->CountPctFromMaxHealth(60);
-
-    if (m_spellInfo->Id == 61999) // Raise Ally
-        mana = target->CountPctFromMaxMana(60);
+    int32 hpPerc = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
+    if(!hpPerc)
+        hpPerc = damage;
 
     // Rebirth (Symbiosis)
     if (m_spellInfo->Id == 113269)
-    {
-        health = target->CountPctFromMaxHealth(60);
-        mana = target->CountPctFromMaxMana(20);
-    }
+        hpPerc = 60;
+
+    uint32 health = target->CountPctFromMaxHealth(hpPerc);
+    uint32 mana   = CalculatePct(target->GetMaxPower(POWER_MANA), damage);
 
     ExecuteLogEffectGeneric(effIndex, target->GetGUID());
 
@@ -6601,6 +6587,10 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     uint32 health = 0;
     uint32 mana = 0;
 
+    int32 hpPerc = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
+    if(!hpPerc)
+        hpPerc = damage;
+
     // flat case
     if (damage < 0)
     {
@@ -6610,18 +6600,9 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     // percent case
     else
     {
-        if (m_spellInfo->Id == 3026) // Soulstone resurrect
-        {
-            health = m_caster->CountPctFromMaxHealth(60);
-            if (m_caster->GetMaxPower(POWER_MANA) > 0)
-                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
-        }
-        else
-        {
-            health = m_caster->CountPctFromMaxHealth(damage);
-            if (m_caster->GetMaxPower(POWER_MANA) > 0)
-                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
-        }
+        health = m_caster->CountPctFromMaxHealth(hpPerc);
+        if (m_caster->GetMaxPower(POWER_MANA) > 0)
+            mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
     }
 
     Player* player = m_caster->ToPlayer();
@@ -7170,6 +7151,10 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
     //m_ObjToDel.push_back(pGameObj);
 
     cMap->AddToMap(pGameObj);
+
+    // Glyph of Soulwell, Create Soulwell - 29893
+    if (m_spellInfo->Id == 29893 && m_caster->HasAura(58094))
+        m_caster->CastSpell(fx, fy, fz, 34145, true);
 
     if (uint32 linkedEntry = pGameObj->GetGOInfo()->GetLinkedGameObjectEntry())
     {

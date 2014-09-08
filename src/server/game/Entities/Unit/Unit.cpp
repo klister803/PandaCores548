@@ -13211,17 +13211,20 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return healamount;
 
-    // No bonus for Eminence (statue) and Eminence
-    if (spellProto->Id == 117895 || spellProto->Id == 126890)
-        return healamount;
-
-    // No bonus for Living Seed
-    if (spellProto->Id == 48503)
-        return healamount;
-
-    // No bonus for Lifebloom : Final heal
-    if (spellProto->Id == 33778)
-        return healamount;
+    // No bonus
+    switch (spellProto->Id)
+    {
+        // Eminence (statue) and Eminence
+        case 117895:
+        case 126890:
+        //Living Seed
+        case 48503:
+        //Lifebloom : Final heal
+        case 33778:
+        //Healthstone
+        case 6262:
+            return healamount;
+    }
 
     // Healing taken percent
     float ModHealingPct = float(GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALING_PCT));
@@ -19941,6 +19944,8 @@ void Unit::UpdateObjectVisibility(bool forced)
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)
 {
+    AddUnitState(UNIT_STATE_JUMPING);
+
     ObjectGuid guid = GetGUID();
     //! 5.4.1
     WorldPacket data(SMSG_MOVE_KNOCK_BACK, (1+8+4+4+4+4+4));
@@ -19973,8 +19978,6 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         GetMotionMaster()->MoveKnockbackFrom(x, y, speedXY, speedZ);
     else
     {
-        AddUnitState(UNIT_STATE_JUMPING);
-
         float vcos, vsin;
         GetSinCos(x, y, vsin, vcos);
         SendMoveKnockBack(player, speedXY, -speedZ, vcos, vsin);
@@ -20604,9 +20607,6 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
     else
     {
-        uint32 time = uint32(speedZ * 100);
-        m_anti_JupmTime = time + sWorld->GetUpdateTime() * 3;
-
         float vcos = std::cos(angle+GetOrientation());
         float vsin = std::sin(angle+GetOrientation());
         SendMoveKnockBack(ToPlayer(), speedXY, -speedZ, vcos, vsin);

@@ -523,7 +523,7 @@ class spell_warl_demonic_call : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(WARLOCK_DEMONIC_CALL))
+                        if (_player->HasAura(WARLOCK_DEMONIC_CALL) && !_player->HasAura(114736))
                         {
                             _player->CastSpell(_player, WARLOCK_WILD_IMP_SUMMON, true);
                             _player->RemoveAura(WARLOCK_DEMONIC_CALL);
@@ -1412,38 +1412,37 @@ class spell_warl_life_tap : public SpellScriptLoader
     public:
         spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
 
-        class spell_warl_life_tap_SpellScript : public SpellScript
+        class spell_warl_life_tap_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_warl_life_tap_SpellScript);
+            PrepareAuraScript(spell_warl_life_tap_AuraScript);
 
-            SpellCastResult CheckLife()
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster()->GetHealthPct() > 15.0f)
-                    return SPELL_CAST_OK;
-                return SPELL_FAILED_FIZZLE;
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if(Unit* caster = GetCaster())
                 {
-                    int32 healthCost = int32(_player->GetMaxHealth() * 0.15f);
+                    amount = CalculatePct(caster->GetMaxHealth(), 15);
 
-                    _player->SetHealth(_player->GetHealth() - healthCost);
-                    _player->EnergizeBySpell(_player, 1454, healthCost, POWER_MANA);
+                    if (int32(caster->GetHealth()) < amount)
+                    {
+                        amount = caster->GetHealth() - 1;
+                        if (!caster->HasAura(63320))
+                            caster->SetHealth(1);
+                    }
+                    else if (!caster->HasAura(63320))
+                        caster->SetHealth(caster->GetHealth() - amount);
+                    amount += aurEff->GetOldBaseAmount();
                 }
             }
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckLife);
-                OnHit += SpellHitFn(spell_warl_life_tap_SpellScript::HandleOnHit);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_life_tap_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_SCHOOL_HEAL_ABSORB);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_warl_life_tap_SpellScript();
+            return new spell_warl_life_tap_AuraScript();
         }
 };
 
@@ -2092,6 +2091,92 @@ class spell_warl_siphon_life : public SpellScriptLoader
         }
 };
 
+// Healthstone - 6262
+class spell_warl_healthstone : public SpellScriptLoader
+{
+    public:
+        spell_warl_healthstone() : SpellScriptLoader("spell_warl_healthstone") { }
+
+        class spell_warl_healthstone_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_healthstone_SpellScript);
+
+            void HandleHeal(SpellEffIndex effIndex)
+            {
+                int32 percent = GetSpellInfo()->Effects[effIndex].BasePoints;
+
+                if (Unit* caster = GetCaster())
+                    SetHitHeal(caster->HasAura(56224) ? 0 : CalculatePct(caster->GetMaxHealth(), percent));
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_healthstone_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        class spell_warl_healthstone_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_healthstone_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()].BasePoints / 10);
+                if (Unit* caster = GetCaster())
+                    amount = CalculatePct(caster->GetMaxHealth(), percent);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_healthstone_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_healthstone_AuraScript();
+        }
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_healthstone_SpellScript();
+        }
+};
+
+//Imp Swarm - 104316
+class spell_warl_imp_swarm : public SpellScriptLoader
+{
+    public:
+        spell_warl_imp_swarm() : SpellScriptLoader("spell_warl_imp_swarm") { }
+
+        class spell_warl_imp_swarm_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_imp_swarm_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                if (Unit* target = GetHitUnit())
+                {
+                    caster->CastSpell(target, WARLOCK_WILD_IMP_SUMMON, true);
+                    caster->CastSpell(target, WARLOCK_WILD_IMP_SUMMON, true);
+                    caster->CastSpell(target, WARLOCK_WILD_IMP_SUMMON, true);
+                    caster->CastSpell(target, WARLOCK_WILD_IMP_SUMMON, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_imp_swarm_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_imp_swarm_SpellScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2140,4 +2225,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_metamorphosis();
     new spell_warl_corruption();
     new spell_warl_siphon_life();
+    new spell_warl_healthstone();
+    new spell_warl_imp_swarm();
 }
