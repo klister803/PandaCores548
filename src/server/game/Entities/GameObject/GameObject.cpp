@@ -535,6 +535,9 @@ void GameObject::Update(uint32 diff)
                         SendObjectDeSpawnAnim(GetGUID());
                         m_respawnTime = time(NULL) + m_respawnDelayTime;
                         UpdateObjectVisibility();
+
+                        loot.clear();
+                        SetLootState(GO_READY);
                     }
                     return;
                 }
