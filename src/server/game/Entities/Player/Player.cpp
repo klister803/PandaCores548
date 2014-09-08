@@ -29775,8 +29775,6 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
 
 int16 Player::SetOnAnyFreeSlot(uint32 petID)
 {
-    ASSERT(slot < PET_SLOT_LAST);
-
     for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
         if (!m_PetSlots[i])
         {

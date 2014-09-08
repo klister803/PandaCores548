@@ -605,7 +605,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
             //Find free slot and move pet there
             if (petSlot == PET_SLOT_FULL_LIST)
-                petSlot = GetPlayer()->SetOnAnyFreeSlot(petNumber);
+                petSlot = (PetSlot)GetPlayer()->SetOnAnyFreeSlot(petNumber);
 
             if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
             {
