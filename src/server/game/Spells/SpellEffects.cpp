@@ -6042,7 +6042,7 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!gameObjTarget)
+    if (!gameObjTarget || m_spellInfo->Id == gameObjTarget->GetGOInfo()->GetSpell())
         return;
 
     ScriptInfo activateCommand;

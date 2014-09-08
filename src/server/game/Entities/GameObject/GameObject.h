@@ -577,6 +577,26 @@ struct GameObjectTemplate
             default: return 0;
         }
     }
+
+    uint32 GetSpell() const
+    {
+        switch(type)
+        {
+            case GAMEOBJECT_TYPE_TRAP:
+                return trap.spellId;
+            case GAMEOBJECT_TYPE_GOOBER:
+                return goober.spellId;
+            case GAMEOBJECT_TYPE_DUEL_ARBITER:
+            case GAMEOBJECT_TYPE_FISHINGNODE:
+            case GAMEOBJECT_TYPE_SUMMONING_RITUAL:
+                return summoningRitual.spellId;
+            case GAMEOBJECT_TYPE_SPELLCASTER: 
+                return summoningRitual.spellId;
+            case GAMEOBJECT_TYPE_UNK36:
+                return type36.spellId;
+           default: return 0;
+        }
+    }
 };
 
 // Benchmarked: Faster than std::map (insert/find)
@@ -896,7 +916,6 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         bool   m_isDynActive;
         bool   m_onUse;
     private:
-        void _Use(Unit* user);
         void RemoveFromOwner();
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         void UpdateModel();                                 // updates model in case displayId were changed
