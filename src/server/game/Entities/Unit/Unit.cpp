@@ -5740,6 +5740,60 @@ bool Unit::HandleHasteAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     return true;
 }
 
+bool Unit::HandleProcTriggerSpellCopy(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, double cooldown)
+{
+    if (!procSpell || !victim)
+        return false;
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (procSpell->Effects[i].Effect)
+            if (procSpell->Effects[i].HasRadius())
+                return false;
+
+    int32 procSpellId = procSpell->Id;
+    int32 triggeredByAuraId = triggeredByAura->GetId();
+    Player* plr = ToPlayer();
+    uint32 roll = 0;
+
+    Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
+        ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
+
+    if (G3D::fuzzyGt(cooldown, 0.0) && plr && plr->HasSpellCooldown(triggeredByAuraId))
+        return false;
+
+    if (plr)
+    {
+        switch (plr->GetSpecializationId(plr->GetActiveSpec()))
+        {
+            case SPEC_SHAMAN_ELEMENTAL:
+            case SPEC_SHAMAN_RESTORATION:
+                roll = 6;
+                break;
+            case SPEC_SHAMAN_ENHANCEMENT:
+                roll = 30;
+                break;
+            default:
+                break;
+        }
+
+        if (procSpell->Id == 117014)
+            roll = 6;
+
+        if (roll)
+            if (!roll_chance_i(roll))
+                return false;
+
+        plr->RemoveSpellCooldown(procSpellId);
+    }
+
+    CastSpell(victim, procSpellId, true, castItem, triggeredByAura);
+
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggeredByAuraId, 0, getPreciseTime() + cooldown);
+
+    return true;
+}
+
 bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, AuraEffect* triggeredByAura, SpellInfo const* /*procSpell*/, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
 {
     SpellInfo const* triggeredByAuraSpell = triggeredByAura->GetSpellInfo();
@@ -17321,6 +17375,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_MOD_MELEE_HASTE: casting spell id %u (triggered by %s haste aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
                         if (HandleHasteAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
+                    }
+                    case SPELL_AURA_PROC_TRIGGER_SPELL_COPY:
+                    {
+                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: casting copy spell %u (triggered by %s aura of spell %u)", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
+                        if (HandleProcTriggerSpellCopy(target, dmgInfoProc, triggeredByAura, procSpell, cooldown))
                             takeCharges = true;
                         break;
                     }

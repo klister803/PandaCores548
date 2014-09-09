@@ -2498,6 +2498,7 @@ class Unit : public WorldObject
         bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleHasteAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        bool HandleProcTriggerSpellCopy(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, double cooldown);
         bool HandleSpellCritChanceAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleObsModEnergyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleModDamagePctTakenAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);

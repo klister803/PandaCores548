@@ -3903,9 +3903,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114942:// Healing Tide
                     spellInfo->SpellFamilyFlags[0] = 0x00002000;
                     break;
-                case 108283:// Echo of the Elements
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    break;
                 case 116943:// Earthgrab
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;

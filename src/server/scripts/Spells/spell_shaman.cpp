@@ -401,93 +401,6 @@ class spell_sha_conductivity : public SpellScriptLoader
         }
 };
 
-// Echo of the Elements - 108283
-class spell_sha_echo_of_the_elements : public SpellScriptLoader
-{
-    public:
-        spell_sha_echo_of_the_elements() : SpellScriptLoader("spell_sha_echo_of_the_elements") { }
-
-        class spell_sha_echo_of_the_elements_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_echo_of_the_elements_AuraScript);
-
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-            {
-                PreventDefaultAction();
-
-                if (!GetCaster())
-                    return;
-
-                Player* _player = GetCaster()->ToPlayer();
-                if (!_player)
-                    return;
-
-                if (_player->HasSpellCooldown(108283))
-                    return;
-
-                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
-                    return;
-
-                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
-                    return;
-
-                bool singleTarget = false;
-                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
-                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
-                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
-                        singleTarget = true;
-
-                if (!singleTarget)
-                    return;
-
-                int32 roll = 0;
-
-                // devs told that proc chance is 6% for Elemental and Restoration specs and 30% for Enhancement
-                if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
-                    roll = 6;
-                else
-                    roll = 30;
-
-                // Elemental blast is an exception : It only has a 6% proc chance for Enhancement
-                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_SHA_ELEMENTAL_BLAST)
-                    roll = 6;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
-                    return;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
-                    return;
-
-                if (!roll)
-                    return;
-
-                if (!roll_chance_i(roll))
-                    return;
-
-                if (Unit* target = eventInfo.GetActionTarget())
-                {
-                    uint32 spellId = eventInfo.GetDamageInfo()->GetSpellInfo()->Id;
-                    if (!spellId)
-                        return;
-
-                    _player->CastSpell(target, spellId, true);
-                    _player->AddSpellCooldown(108283, 0, getPreciseTime() + 1.0); // This prevent from multiple procs
-                }
-            }
-
-            void Register()
-            {
-                OnEffectProc += AuraEffectProcFn(spell_sha_echo_of_the_elements_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_echo_of_the_elements_AuraScript();
-        }
-};
-
 // Earthgrab - 64695
 class spell_sha_earthgrab : public SpellScriptLoader
 {
@@ -1093,61 +1006,44 @@ class spell_sha_elemental_blast : public SpellScriptLoader
                 return true;
             }
 
-            void HandleAfterCast()
+            void HandleOnCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetExplTargetUnit())
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
                     {
-                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
-                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
-                    }
-                }
-            }
+                        _player->CastSpell(_player, SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, true);
 
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    int32 randomEffect = irand(0, 2);
-
-                    _player->CastSpell(_player, SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, true);
-
-                    AuraApplication* aura = _player->GetAuraApplication(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID());
-
-                    if (aura)
-                    {
-                        switch (randomEffect)
+                        if (AuraApplication* aura = _player->GetAuraApplication(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID()))
                         {
-                            case 0:
-                            {
-                                aura->GetBase()->GetEffect(1)->ChangeAmount(0);
-                                aura->GetBase()->GetEffect(2)->ChangeAmount(0);
-                                break;
-                            }
-                            case 1:
-                            {
-                                aura->GetBase()->GetEffect(0)->ChangeAmount(0);
-                                aura->GetBase()->GetEffect(2)->ChangeAmount(0);
-                                break;
-                            }
-                            case 2:
-                            {
-                                aura->GetBase()->GetEffect(0)->ChangeAmount(0);
-                                aura->GetBase()->GetEffect(1)->ChangeAmount(0);
-                                break;
-                            }
-                            default:
-                                break;
+                            uint8 maxeffect = _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ENHANCEMENT ? 3: 2;
+                            int32 randomEffect = irand(0, maxeffect);
+
+                            for (uint8 i = 0; i < 4; ++i)
+                                if (randomEffect != i)
+                                    if (Aura* auraBase = aura->GetBase())
+                                        if (AuraEffect* eff = auraBase->GetEffect(i))
+                                            eff->ChangeAmount(0);
                         }
                     }
-                }
+            }
+
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetExplTargetUnit())
+                        {
+                            _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
+                            _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
+                        }
+                    }
             }
 
             void Register()
             {
+                OnCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleOnCast);
                 AfterCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleAfterCast);
-                OnHit += SpellHitFn(spell_sha_elemental_blast_SpellScript::HandleOnHit);
             }
         };
 
@@ -1815,7 +1711,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_glyph_of_lakestrider();
     new spell_sha_call_of_the_elements();
     new spell_sha_conductivity();
-    new spell_sha_echo_of_the_elements();
     new spell_sha_earthgrab();
     new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
