@@ -4793,7 +4793,7 @@ public:
         void UpdatePower()
         {
             actualPower = (actualPower + healerCount <= 700) ? actualPower + healerCount: 700;
-            for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); )
+            for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); ++itr)
                 if (Player* player = sObjectAccessor->FindPlayer(*itr))
                 {
                     if (player->isAlive())
@@ -4812,15 +4812,17 @@ public:
 
                             player->KilledMonsterCredit(NPC_SHEN_HEAL_CREDIT);
                             SendState(player, false);
-                            m_player_for_event.erase(itr++);
                             continue;
                         }
                     }
-                    ++itr;
+                    
                 }
 
             if (actualPower >= 700)
+            {
+                m_player_for_event.clear();
                 Reset();
+            }
         }
 
         void SummonEnnemy()
