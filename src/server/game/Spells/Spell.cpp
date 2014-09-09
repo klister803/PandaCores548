@@ -5958,7 +5958,7 @@ void Spell::TakeRunePower(bool didHit)
 
                 bool takePower = didHit;
                 if (uint32 spell = player->GetRuneConvertSpell(i))
-                    takePower = spell != 54637;
+                    takePower = (spell != 54637 && rune != RUNE_BLOOD);
 
                 // keep Death Rune type if missed or player has Blood of the North
                 if (takePower)
@@ -5976,7 +5976,13 @@ void Spell::TakeRunePower(bool didHit)
     // you can gain some runic power when use runes
     if (didHit)
         if (int32 rp = int32(runeCostData->runePowerGain * sWorld->getRate(RATE_POWER_RUNICPOWER_INCOME)))
+        {
+            Unit::AuraEffectList const& ModRuneRegen = player->GetAuraEffectsByType(SPELL_AURA_MOD_RUNE_REGEN_SPEED);
+            for (Unit::AuraEffectList::const_iterator i = ModRuneRegen.begin(); i != ModRuneRegen.end(); ++i)
+                AddPct(rp, (*i)->GetAmount());
+
             player->ModifyPower(POWER_RUNIC_POWER, int32(rp));
+        }
 }
 
 void Spell::TakeReagents()
@@ -6618,7 +6624,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     m_spellInfo->Id == 122282)
                 {
                     Unit* target = m_targets.GetUnitTarget();
-                    if (!target || target == m_caster || (target->IsFriendlyTo(m_caster) && target->GetCreatureType() != CREATURE_TYPE_UNDEAD && !m_caster->HasAura(63333)))
+                    if (!target || (target == m_caster && !m_caster->HasAura(49039)) || (target->IsFriendlyTo(m_caster) && target->GetCreatureType() != CREATURE_TYPE_UNDEAD && !m_caster->HasAura(63333)))
                         return SPELL_FAILED_BAD_TARGETS;
                     if (!target->IsFriendlyTo(m_caster) && !m_caster->HasInArc(static_cast<float>(M_PI), target))
                         return SPELL_FAILED_UNIT_NOT_INFRONT;

@@ -6472,6 +6472,20 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     }
                     break;
                 }
+                case SPELL_TRIGGER_ADD_DURATION_OR_CAST: //25
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger)))
+                    {
+                        int32 _duration = int32(aura->GetDuration() + aura->CalcMaxDuration(target));
+                        aura->SetDuration(_duration, true);
+                        if (_duration > aura->GetMaxDuration())
+                            aura->SetMaxDuration(_duration);
+                    }
+                    else
+                        _caster->CastSpell(target, itr->spell_trigger, true);
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -9086,44 +9100,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 target = this;
                 break;
             }
-            // Runic Empowerment
-            if (dummySpell->Id == 81229 || dummySpell->Id == 51462)
-            {
-                if (!ToPlayer())
-                    return false;
-
-                if (!procSpell)
-                    return false;
-
-                if (procSpell->Id != 56815 && // Runic Strike
-                    procSpell->Id != 49143 && // Frost Strike
-                    procSpell->Id != 47632)   // Death Coil (damage)
-                    return false;
-
-                // Runic Corruption - maybe only this need
-                if (AuraEffect const* runicCorruption = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 4068, 0))
-                {
-                    int32 basepoints0 = runicCorruption->GetAmount();
-                    if (Aura* aur = GetAura(51460))
-                        aur->SetDuration(aur->GetDuration() + 3000);
-                    else
-                        CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, true);
-                    return true;
-                }
-
-                std::set<uint8> runes;
-                for (uint8 i = 0; i < MAX_RUNES; i++)
-                    if (this->ToPlayer()->GetRuneCooldown(i) == this->ToPlayer()->GetRuneBaseCooldown(i))
-                        runes.insert(i);
-                if (!runes.empty())
-                {
-                    std::set<uint8>::iterator itr = runes.begin();
-                    std::advance(itr, urand(0, runes.size()-1));
-                    this->ToPlayer()->SetRuneCooldown((*itr), 0);
-                    this->ToPlayer()->ResyncRunes(MAX_RUNES);
-                }
-                return true;
-            }
             // Dancing Rune Weapon
             if (dummySpell->Id == 49028)
             {
@@ -10297,14 +10273,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
 
             if (!(procEx & PROC_EX_CRITICAL_HIT))
-                return false;
-
-            break;
-        }
-        // Sudden Doom
-        case 49530:
-        {
-            if (!roll_chance_i(15))
                 return false;
 
             break;
@@ -18351,11 +18319,12 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)
 {
-    if(!procSpell)
-        return true;
-
     bool procCheck = false;
     Unit* _checkTarget = this;
+    uint32 spellProcId = procSpell ? procSpell->Id : 0;
+    uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
+    uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
+
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
         for (std::vector<SpellPrcoCheck>::const_iterator itr = spellCheck->begin(); itr != spellCheck->end(); ++itr)
@@ -18364,10 +18333,17 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 continue;
             if(itr->target == 1 && victim)
                 _checkTarget = victim;
+            if(itr->target == 3 && ToPlayer()) //get target owner pet
+                if (Pet* pet = ToPlayer()->GetPet())
+                    _checkTarget = (Unit*)pet;
+            if(itr->target == 4 && victim && victim->ToPlayer()) //get target pet
+                if (Pet* pet = victim->ToPlayer()->GetPet())
+                    _checkTarget = (Unit*)pet;
+
             //if this spell exist not proc
             if (itr->checkspell < 0)
             {
-                if (-(itr->checkspell) == procSpell->Id)
+                if (-(itr->checkspell) == spellProcId)
                 {
                     if(itr->hastalent != 0)
                     {
@@ -18388,24 +18364,34 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 }
             }
             //if this spell not exist not proc
-            else if (itr->checkspell == procSpell->Id)
+            else if (itr->checkspell == spellProcId)
             {
                 if(itr->hastalent != 0)
                 {
                     if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
                     {
+                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                        {
+                            procCheck = true;
+                            break;
+                        }
                         procCheck = false;
                         break;
                     }
                     else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
                     {
+                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                        {
+                            procCheck = true;
+                            break;
+                        }
                         procCheck = false;
                         break;
                     }
                     procCheck = true;
                     continue;
                 }
-                if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                else if(itr->chance != 0 && !roll_chance_i(itr->chance))
                 {
                     procCheck = true;
                     break;
@@ -18437,18 +18423,18 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 }
                 if(itr->powertype != 0 && itr->dmgclass != 0)
                 {
-                    if(itr->powertype == procSpell->PowerType && itr->dmgclass == procSpell->DmgClass)
+                    if(itr->powertype == procPowerType && itr->dmgclass == procDmgClass)
                     {
                         procCheck = false;
                         break;
                     }
                 }
-                else if(itr->dmgclass != 0 && itr->dmgclass == procSpell->DmgClass)
+                else if(itr->dmgclass != 0 && itr->dmgclass == procDmgClass)
                 {
                     procCheck = false;
                     break;
                 }
-                else if(itr->powertype != 0 && itr->powertype == procSpell->PowerType)
+                else if(itr->powertype != 0 && itr->powertype == procPowerType)
                 {
                     procCheck = false;
                     break;
@@ -18461,7 +18447,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     //if check true false proc
     if(procCheck)
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, procSpell->Id %i", spellProto->Id, effect, procSpell->Id);
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i", spellProto->Id, effect, spellProcId);
         return false;
     }
 

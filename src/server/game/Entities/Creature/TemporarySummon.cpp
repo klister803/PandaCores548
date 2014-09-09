@@ -217,17 +217,20 @@ void TempSummon::InitStats(uint32 duration)
             }
             owner->m_SummonSlot[slot] = GetGUID();
 
-            if(Player* player = owner->ToPlayer())
+            if(slot >= SUMMON_SLOT_TOTEM && slot < MAX_TOTEM_SLOT)
             {
-                ObjectGuid guid = GetGUID();
-                //! 5.4.1
-                WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
-                data << uint32(duration);
-                data << uint32(spellid);
-                data << uint8(slot - 1);
-                data.WriteGuidMask<6, 0, 5, 2, 1, 3, 7, 4>(guid);
-                data.WriteGuidBytes<0, 2, 1, 3, 5, 4, 6, 7>(guid);
-                player->SendDirectMessage(&data);
+                if(Player* player = owner->ToPlayer())
+                {
+                    ObjectGuid guid = GetGUID();
+                    //! 5.4.1
+                    WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
+                    data << uint32(duration);
+                    data << uint32(spellid);
+                    data << uint8(slot - 1);
+                    data.WriteGuidMask<6, 0, 5, 2, 1, 3, 7, 4>(guid);
+                    data.WriteGuidBytes<0, 2, 1, 3, 5, 4, 6, 7>(guid);
+                    player->SendDirectMessage(&data);
+                }
             }
         }
     }

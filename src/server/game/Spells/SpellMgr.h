@@ -127,6 +127,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_ADD_DURATION                  = 22,           // Add duration for select spell
     SPELL_TRIGGER_MODIFY_COOLDOWN               = 23,           // Modify cooldown for trigger spell
     SPELL_TRIGGER_VENGEANCE                     = 24,
+    SPELL_TRIGGER_ADD_DURATION_OR_CAST          = 25,           // Add duration for select spell or cast his
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

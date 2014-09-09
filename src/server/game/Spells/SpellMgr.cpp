@@ -3930,9 +3930,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61999: // Raise Ally
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ALLY;
                     break;
-                case 49016: // Unholy Frenzy
-                    spellInfo->Effects[EFFECT_0].BasePoints = 30;
-                    break;
                 case 31935: // Avenger's Shield
                     spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                     break;
@@ -4856,9 +4853,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 111397: // Blood Horror
                 case 115191:
                     spellInfo->AuraInterruptFlags = 0;
-                    break;
-                case 50371: // Improved Blood Presence disable not need efect
-                    spellInfo->Effects[EFFECT_1].BasePoints = 0;
                     break;
                 case 11327: //Vanish
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_TRIGGERED;

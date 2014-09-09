@@ -4980,6 +4980,7 @@ void AuraEffect::HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, b
 
     //Note: an increase in regen does NOT cause threat.
     target->ToPlayer()->UpdateManaRegen();
+    target->ToPlayer()->UpdateAllRunesRegen();
 }
 
 void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7070,13 +7071,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
-                // Hysteria
-                case 49016:
-                {
-                    uint32 damage = uint32(target->CountPctFromMaxHealth(1));
-                    target->DealDamage(target, damage, NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                    break;
-                }
                 // Death's Advance
                 case 96268:
                 {
@@ -8516,7 +8510,7 @@ void AuraEffect::HandleAuraStrangulate(AuraApplication const* aurApp, uint8 mode
     // Asphyxiate
     if (m_spellInfo->Id == 108194)
     {
-        int32 newZ = 10;
+        int32 newZ = 1;
         target->SetControlled(apply, UNIT_STATE_STUNNED);
 
         if (apply)

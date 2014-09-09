@@ -5585,6 +5585,8 @@ void Player::ResetSpec(bool takeMoney)
 
     SetSpecializationResetCost(cost);
     SetSpecializationResetTime(time(NULL));
+    if (getClass() == CLASS_DEATH_KNIGHT)
+        SetPower(POWER_RUNIC_POWER, 0);
 }
 
 void Player::SetSpecializationId(uint8 spec, uint32 id)
@@ -19297,7 +19299,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         {
             uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
-            SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
+            if(i != POWER_RUNIC_POWER)
+                SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
             if (++loadedPowers >= MAX_POWERS_PER_CLASS)
                 break;
         }
@@ -27281,6 +27284,8 @@ void Player::SendDeathRuneUpdate()
         data << uint8(i);
         GetSession()->SendPacket(&data);
     }
+
+    SetPower(POWER_RUNIC_POWER, 0);
 }
 
 void Player::AddRunePower(uint8 index)
