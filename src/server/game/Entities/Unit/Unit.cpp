@@ -19845,8 +19845,8 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
         return;
 
     for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-        if (Unit* unit = (*itr))
-            unit->SetPhaseMask(newPhaseMask, true);
+        if ((*itr)->GetTypeId() == TYPEID_UNIT)
+            (*itr)->SetPhaseMask(newPhaseMask, true);
 
     for (uint8 i = 0; i < MAX_SUMMON_SLOT; ++i)
         if (m_SummonSlot[i])
