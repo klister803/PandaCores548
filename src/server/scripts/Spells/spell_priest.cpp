@@ -140,7 +140,7 @@ enum PriestSpells
 
          void Register()
          {
-             AfterCast += SpellCastFn(spell_pri_glyph_of_mass_dispel_SpellScript::HandleDispel);
+             OnCast += SpellCastFn(spell_pri_glyph_of_mass_dispel_SpellScript::HandleDispel);
          }
      };
 
