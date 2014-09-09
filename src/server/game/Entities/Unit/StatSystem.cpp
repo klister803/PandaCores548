@@ -143,10 +143,10 @@ void Player::UpdateSpellDamageAndHealingBonus()
     // Magic damage modifiers implemented in Unit::SpellDamageBonusDone
     // This information for client side use only
     // Get healing bonus for all schools
-    int32 spellHeal = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) - m_baseSpellPower;
+    int32 spellHeal = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
     int32 spellDamage = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
 
-    SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, spellHeal + spellDamage);
+    SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, spellHeal);
     // Get damage bonus for all schools
     for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
         SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)));
