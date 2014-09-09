@@ -1164,10 +1164,12 @@ class spell_dk_plague_leech : public SpellScriptLoader
                         target->RemoveAura(DK_SPELL_FROST_FEVER);
                         target->RemoveAura(DK_SPELL_BLOOD_PLAGUE);
 
+                        int32 runesRestor = 0;
                         for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetRuneCooldown(i))
+                            if (_player->GetRuneCooldown(i) && runesRestor <= 2)
                             {
+                                runesRestor++;
                                 _player->SetRuneCooldown(i, 0);
                                 if (_player->GetCurrentRune(i) != RUNE_DEATH)
                                     _player->ConvertRune(i, RUNE_DEATH);
