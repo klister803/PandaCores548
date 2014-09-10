@@ -5,27 +5,6 @@
 #include "MapManager.h"
 #include "ScriptMgr.h"
 
-enum panda_text
-{
-    TEXT_GENERIC_0                                 = 0,
-    TEXT_GENERIC_1                                 = 1,
-    TEXT_GENERIC_2                                 = 2,
-    TEXT_GENERIC_3                                 = 3,
-    TEXT_GENERIC_4                                 = 4,
-    TEXT_GENERIC_5                                 = 5,
-    TEXT_GENERIC_6                                 = 6,
-    TEXT_GENERIC_7                                 = 7,
-    TEXT_GENERIC_8                                 = 8,
-    TEXT_GENERIC_9                                 = 9,
-    TEXT_GENERIC_10                                = 10,
-    TEXT_GENERIC_11                                = 11,
-    TEXT_GENERIC_12                                = 12,
-    TEXT_GENERIC_13                                = 13,
-    TEXT_GENERIC_14                                = 14,
-    TEXT_GENERIC_15                                = 15,
-    TEXT_GENERIC_16                                = 16,
-};
-
 enum panda_npc
 {
     NPC_ANNOUNCER_1                                = 60183,

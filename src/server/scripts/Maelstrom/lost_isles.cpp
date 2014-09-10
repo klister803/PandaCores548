@@ -166,18 +166,6 @@ enum isle_events
     EVENT_POINT_MINE                               = 1000,
 };
 
-enum isle_text
-{
-    TEXT_GENERIC_0                                 = 0,
-    TEXT_GENERIC_1                                 = 1,
-    TEXT_GENERIC_2                                 = 2,
-    TEXT_GENERIC_3                                 = 3,
-    TEXT_GENERIC_4                                 = 4,
-    TEXT_GENERIC_5                                 = 5,
-    TEXT_GENERIC_6                                 = 6,
-    TEXT_GENERIC_7                                 = 7,
-};
-
 enum isle_emote
 {
     EMOTE_FIND_MINE                                = 396,
