@@ -780,6 +780,7 @@ void AddSC_boss_twin_consorts();
 void AddSC_boss_lei_shen();
 void AddSC_boss_ra_den();
 void AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
+void AddSC_siege_of_orgrimmar();
 void AddSC_boss_immerseus();
 void AddSC_boss_fallen_protectors();
 void AddSC_boss_norushen();
@@ -1614,6 +1615,7 @@ void AddPandarieScripts()
     AddSC_boss_lei_shen();
     AddSC_boss_ra_den();
     AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
+    AddSC_siege_of_orgrimmar();
     AddSC_boss_immerseus();
     AddSC_boss_fallen_protectors();
     AddSC_boss_norushen();

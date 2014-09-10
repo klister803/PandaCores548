@@ -274,6 +274,8 @@ class boss_immerseus : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                intro = false;
+                SetCanSeeEvenInPassiveMode(true);
             }
 
             InstanceScript* instance;
@@ -282,6 +284,7 @@ class boss_immerseus : public CreatureScript
             std::vector<uint64> shapoollist;
             float lasthppct;
             bool phase_two;
+            bool intro;
 
             void Reset()
             {
@@ -306,6 +309,15 @@ class boss_immerseus : public CreatureScript
                 donecp = 0; 
                 donesp = 0;
                 maxpcount = 0;
+            }
+
+            void MoveInLineOfSight(Unit* who)
+            {
+                if (intro || who->GetTypeId() != TYPEID_PLAYER || !me->IsWithinDistInMap(who, 60.0f))
+                    return;
+                intro = true;
+                if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
+                    cho->AI()->SetData(DATA_IMMEREUS, IN_PROGRESS);
             }
 
             void JustSummoned(Creature* sum)
@@ -504,6 +516,7 @@ class boss_immerseus : public CreatureScript
                         }
                     }
                 }
+                BossAI::JustDied(killer);
             }
 
             void UpdateAI(uint32 diff)

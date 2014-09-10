@@ -105,6 +105,7 @@ set(scripts_STAT_SRCS
   Pandaria/ThroneOfThunder/boss_ra_den.cpp
 
   Pandaria/SiegeofOrgrimmar/instance_siege_of_orgrimmar.cpp
+  Pandaria/SiegeofOrgrimmar/siege_of_orgrimmar.cpp
   Pandaria/SiegeofOrgrimmar/siege_of_orgrimmar.h
   Pandaria/SiegeofOrgrimmar/boss_immerseus.cpp
   Pandaria/SiegeofOrgrimmar/boss_fallen_protectors.cpp

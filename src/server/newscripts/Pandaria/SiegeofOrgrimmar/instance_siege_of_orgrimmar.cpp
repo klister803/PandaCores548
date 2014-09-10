@@ -4,6 +4,18 @@
 #include "NewScriptPCH.h"
 #include "VMapFactory.h"
 #include "siege_of_orgrimmar.h"
+#include "AccountMgr.h"
+
+Position const LorewalkerChoSpawn[2]  = {
+    {1448.236f, 312.6528f, 289.2837f, 4.652967f},
+    {1441.406f, 988.1795f, 340.1876f, 1.985304f},   //fallen
+};
+
+DoorData const doorData[] =
+{
+    {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMEREUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
+    {0,                                      0,                          DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+};
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
 {
@@ -14,10 +26,13 @@ public:
     {
         instance_siege_of_orgrimmar_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
+        //Misc
+        uint32 TeamInInstance;
+
         //GameObjects
-        uint64 immerseusexdoorGuid;
         
         //Creature
+        uint64 LorewalkerChoGUIDtmp;
         uint64 immerseusGuid;
         uint64 npcpointGuid;
         uint64 rookGuid;
@@ -45,12 +60,15 @@ public:
         
         void Initialize()
         {
-            SetBossNumber(15);
+            SetBossNumber(DATA_MAX);
+            LoadDoorData(doorData);
+
+            TeamInInstance = 0;
 
             //GameObject
-            immerseusexdoorGuid  = 0;
            
             //Creature
+            LorewalkerChoGUIDtmp= 0;
             immerseusGuid       = 0;
             npcpointGuid        = 0;
             rookGuid            = 0;
@@ -75,6 +93,32 @@ public:
             rikkalGuid          = 0;
             hisekGuid           = 0;
             garroshGuid         = 0;
+        }
+
+        void OnPlayerEnter(Player* player)
+        {
+            if (!TeamInInstance)
+                TeamInInstance = player->GetTeam();
+
+            //not handle lorewalker summon if already done.
+            if (LorewalkerChoGUIDtmp)
+                return;
+
+            if (GetBossState(DATA_IMMEREUS) != DONE)
+            {
+                if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
+                {
+                    LorewalkerChoGUIDtmp = cho->GetGUID();
+                    cho->AI()->SetData(DATA_IMMEREUS, NOT_STARTED);
+                }
+            }else if (GetBossState(DATA_F_PROTECTORS) != DONE)
+            {
+                if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
+                {
+                    LorewalkerChoGUIDtmp = cho->GetGUID();
+                    cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
+                }
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -165,7 +209,7 @@ public:
             switch (go->GetEntry())
             {
             case GO_IMMERSEUS_EX_DOOR:
-                immerseusexdoorGuid = go->GetGUID();
+                AddDoor(go, true);
                 break;
             }
         }
@@ -177,15 +221,26 @@ public:
 
             switch (id)
             {
-            case DATA_IMMEREUS:
-               // if (state == DONE)
-                   // HandleGameObject(immerseusexdoorGuid, true);
-                break;
+                case DATA_IMMEREUS:
+                    if (state == DONE)
+                    {
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->AI()->SetData(DATA_IMMEREUS, DONE);
+                        //Protectors intro
+                        if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
+                        {
+                            LorewalkerChoGUIDtmp = cho->GetGUID();
+                            cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
+                        }
+                    }
+                    break;
             }
             return true;
         }
 
-        void SetData(uint32 type, uint32 data){}
+        void SetData(uint32 type, uint32 data)
+        {
+        }
 
         uint32 GetData(uint32 type)
         {
@@ -248,6 +303,8 @@ public:
                 //
                 case NPC_GARROSH:
                     return garroshGuid;
+                case NPC_LOREWALKER_CHO:
+                    return LorewalkerChoGUIDtmp;
             }
             return 0;
         }
@@ -286,6 +343,30 @@ public:
             uint32 buff;
             for (uint32 i = 0; i < 15; ++i)
                 loadStream >> buff;
+        }
+
+        
+        bool CheckRequiredBosses(uint32 bossId, Player const* player = NULL) const
+        {
+            //ToDo: for live server remove return.
+            return true;
+
+            if (player && AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
+                return true;
+
+            switch (bossId)
+            {
+                case DATA_IMMEREUS:
+                    return true;
+                case DATA_NORUSHEN:
+                    return GetBossState(DATA_F_PROTECTORS) == DONE;
+                    //no break
+                case DATA_F_PROTECTORS:
+                    return GetBossState(DATA_IMMEREUS) == DONE;
+                    break;
+            }
+
+            return true;
         }
     };
 

@@ -11,6 +11,7 @@
 
 enum eData
 {
+    // Encounter States/Boss GUIDs
     DATA_IMMEREUS           = 1,
     DATA_F_PROTECTORS       = 2,
     DATA_NORUSHEN           = 3,
@@ -25,21 +26,34 @@ enum eData
     DATA_BLACKFUSE          = 12,
     DATA_KLAXXI             = 13,
     DATA_GARROSH            = 14,
+    DATA_MAX,
+
+    // Additional data
+    DATA_IMMERSEUS_INTRO,
 };
 
 enum eCreatures
 {
     //Npc or summons
+    NPC_LOREWALKER_CHO      = 73330,
     NPC_PUDDLE_POINT        = 90000,//new trigger
     NPC_SHA_POOL            = 71544,
     NPC_SHA_PUDDLE          = 71603,
     NPC_CONTAMINATED_PUDDLE = 71604,
+    NPC_AQUEOUS_DEFENDER    = 73191,
 
     NPC_IMMERSEUS           = 71543,
     //Fallen Protectors
     NPC_ROOK_STONETOE       = 71475,
     NPC_SUN_TENDERHEART     = 71480,
     NPC_HE_SOFTFOOT         = 71479,
+    NPC_EMBODIED_DESPIRE    = 71474,
+    NPC_EMBODIED_MISERY     = 71476,
+    NPC_EMBODIED_GLOOM      = 71477,
+    NPC_EMBODIED_ANGUISH    = 71478,
+    NPC_EMBODIED_SORROW     = 71481,
+    NPC_EMBODIED_DESPERATION= 71482,
+    
     //  
     NPC_NORUSHEN            = 71965,
     NPC_SHA_OF_PRIDE        = 71734,
