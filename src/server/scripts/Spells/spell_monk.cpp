@@ -2599,6 +2599,45 @@ class spell_monk_rushing_jade_windc : public SpellScriptLoader
         }
 };
 
+class spell_monk_remove_zen_flight : public SpellScriptLoader
+{
+    public:
+        spell_monk_remove_zen_flight() : SpellScriptLoader("spell_monk_remove_zen_flight") { }
+
+        class spell_monk_remove_zen_flight_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_remove_zen_flight_AuraScript);
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                Player* player = target->ToPlayer();
+                if (!player)
+                    return;
+
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+
+                if (removeMode != AURA_REMOVE_BY_CANCEL)
+                {
+                    player->CastSpell(player, 54649, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_monk_remove_zen_flight_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_remove_zen_flight_AuraScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -2649,4 +2688,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_tigereye_brew_stacks();
     new spell_monk_rushing_jade_windc();
     new spell_mastery_bottled_fury();
+    new spell_monk_remove_zen_flight();
 }

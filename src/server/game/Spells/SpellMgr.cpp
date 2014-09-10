@@ -3631,7 +3631,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 125883: // Zen Flight
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_MELEE_ATTACK;
-                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_DIRECT_DAMAGE;
                     break;
                 case 31665: // Master of subtlety
                     spellInfo->Effects[EFFECT_0].BasePoints = 10;
