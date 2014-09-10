@@ -4,7 +4,7 @@
 
 -- Intro
 DELETE FROM creature WHERE id in (73330, 71476, 71477, 71481, 71482, 71474, 71478, 71712, 71993);
-UPDATE `u_world`.`creature` SET `spawnMask` = '16632' WHERE id in (71475, 71480, 71479);
+UPDATE `creature` SET `spawnMask` = '16632' WHERE id in (71475, 71480, 71479);
 UPDATE `creature_template` SET `AIName` = '', `ScriptName` = 'npc_lorewalker_cho' WHERE `entry` = 73330;
 DELETE FROM `creature_text` WHERE entry =73330;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
