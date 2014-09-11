@@ -1149,8 +1149,8 @@ class spell_dk_plague_leech : public SpellScriptLoader
                     }
                     return SPELL_CAST_OK;
                 }
-                else
-                    return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_FAILED_DONT_REPORT;
             }
 
             void HandleOnHit()
