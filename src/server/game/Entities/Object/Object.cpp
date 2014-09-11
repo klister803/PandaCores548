@@ -2556,7 +2556,7 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(this);
 }
 
-TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint64 targetGuid /*= 0*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
+TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint64 targetGuid /*= 0*/, uint32 spellId /*= 0*/, int32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
 {
     if(summoner)
     {
@@ -2708,13 +2708,6 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint6
 {
     if (Map* map = FindMap())
     {
-        if(!ToUnit())
-        {
-            std::list<Creature*> creatures;
-            GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
-            if(creatures.size() > 50)
-                return NULL;
-        }
         if (TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, targetGuid, spellId))
         {
             summon->SetTempSummonType(spwtype);
@@ -2725,18 +2718,11 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint6
     return NULL;
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, uint32 /*vehId*/, uint64 viewerGuid, std::list<uint64>* viewersList) const
+TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, int32 vehId, uint64 viewerGuid, std::list<uint64>* viewersList) const
 {
     if (Map* map = FindMap())
     {
-        if(!ToUnit())
-        {
-            std::list<Creature*> creatures;
-            GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
-            if(creatures.size() > 50)
-                return NULL;
-        }
-        if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, 0, 0, 0, viewerGuid, viewersList))
+        if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, 0, 0, vehId, viewerGuid, viewersList))
         {
             summon->SetTempSummonType(spwtype);
             return summon;

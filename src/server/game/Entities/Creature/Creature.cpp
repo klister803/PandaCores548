@@ -160,7 +160,7 @@ m_PlayerDamageReq(0), m_lootRecipient(0), m_lootRecipientGroup(0), m_LootOtherRe
 m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f), m_reactState(REACT_AGGRESSIVE),
 m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
-m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
+m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_onVehicleAccessory(false)
 {
     m_regenTimer = CREATURE_REGEN_INTERVAL;
     m_valuesCount = UNIT_END;
@@ -770,7 +770,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     IsAIEnabled = true;
     i_AI->InitializeAI();
     // Initialize vehicle
-    if (GetVehicleKit())
+    if (GetVehicleKit() && !m_onVehicleAccessory)
         GetVehicleKit()->Reset();
     return true;
 }
@@ -790,7 +790,7 @@ void Creature::Motion_Initialize()
         i_motionMaster.Initialize();
 }
 
-bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data)
+bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, int32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data)
 {
     ASSERT(map);
     SetMap(map);
@@ -1374,7 +1374,7 @@ float Creature::GetSpellDamageMod(int32 Rank)
     }
 }
 
-bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data)
+bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, int32 vehId, uint32 team, const CreatureData* data)
 {
     SetZoneScript();
     if (m_zoneScript && data)
@@ -1393,7 +1393,9 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint3
 
     SetOriginalEntry(Entry);
 
-    if (!vehId)
+    //Privent setup own accessory if we are part of accessory enother vehicle.. do it after enter.
+    m_onVehicleAccessory = vehId == -1;
+    if (vehId <= 0)
         vehId = cinfo->VehicleId;
 
     Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
@@ -1612,6 +1614,10 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
 
 bool Creature::IsNeverVisible() const
 {
+    //not see befor enter vehicle.
+    if (onVehicleAccessoryInit())
+        return true;
+
     CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
     if (data && data->spawnMask & 256)  // challenge
     {

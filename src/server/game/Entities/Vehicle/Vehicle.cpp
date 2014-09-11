@@ -422,11 +422,18 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
         _me->GetGUIDLow(), (_me->GetTypeId() == TYPEID_UNIT ? _me->ToCreature()->GetDBTableGUIDLow() : _me->GetGUIDLow()), GetCreatureEntry(),
         entry, (int32)seatId);
 
-    TempSummon* accessory = _me->SummonCreature(entry, *_me, TempSummonType(type), summonTime);
+    Map* map = _me->FindMap();
+    if (!map)
+        return;
+
+    // For correct initialization accessory should set owner 
+    TempSummon* accessory = map->SummonCreature(entry, *_me, NULL, summonTime, _me, 0, 0, GetRecAura() ? 0 : -1);
+
     //ASSERT(accessory);
     if(!accessory)
         return;
 
+    accessory->SetTempSummonType(TempSummonType(type));
     if (minion)
         accessory->AddUnitTypeMask(UNIT_MASK_ACCESSORY);
 
@@ -929,6 +936,21 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
     init.SetFacing(0.0f);
     init.SetTransportEnter();
     init.Launch();
+
+    //not we could install accessory
+    if (Creature *c = Passenger->ToCreature())
+    {
+        if (c->onVehicleAccessoryInit())
+        {
+            // Before add to map call initialization accasorys if it has.
+            if (c->GetVehicleKit())
+                c->GetVehicleKit()->Reset();
+
+            // and after initialization we finally could see
+            c->SetVehicleAccessoryInit(false);
+            Passenger->UpdateObjectVisibility(true);
+        }
+    }
 
     if (Target->GetBase()->GetTypeId() == TYPEID_UNIT)
     {

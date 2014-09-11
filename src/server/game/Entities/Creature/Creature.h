@@ -558,7 +558,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void DisappearAndDie();
 
-        bool Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = NULL);
+        bool Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, int32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureTemplate* cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
@@ -832,8 +832,12 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool m_LOSCheck_creature;
         bool m_LOSCheck_player;
 
+        bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
+        void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }
     protected:
-        bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = NULL);
+        bool m_onVehicleAccessory;
+
+        bool CreateFromProto(uint32 guidlow, uint32 Entry, int32 vehId, uint32 team, const CreatureData* data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
 
         // vendor items

@@ -916,7 +916,7 @@ class WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
+        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, int32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
         TempSummon* SummonCreature(uint32 id, const Position &pos, uint64 targetGuid, TempSummonType spwtype, uint32 despwtime, uint32 spellId = 0, SummonPropertiesEntry const* properties = NULL) const;
         TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
         {
