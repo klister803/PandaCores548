@@ -1080,40 +1080,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     // TODO: remove those
     switch (m_spellInfo->Id)
     {
-        // Corpse Explosion
-        case 49158:
-        case 51325:
-        case 51326:
-        case 51327:
-        case 51328:
-            // check if our target is not valid (spell can target ghoul or dead unit)
-            if (!(m_targets.GetUnitTarget() && m_targets.GetUnitTarget()->GetDisplayId() == m_targets.GetUnitTarget()->GetNativeDisplayId() &&
-                ((m_targets.GetUnitTarget()->GetEntry() == 26125 && m_targets.GetUnitTarget()->GetOwnerGUID() == m_caster->GetGUID())
-                || m_targets.GetUnitTarget()->isDead())))
-            {
-                // remove existing targets
-                CleanupTargetList();
-
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                {
-                    switch ((*itr)->GetTypeId())
-                    {
-                        case TYPEID_UNIT:
-                        case TYPEID_PLAYER:
-                            if (!(*itr)->ToUnit()->isDead())
-                                break;
-                            AddUnitTarget((*itr)->ToUnit(), 1 << effIndex, false);
-                            return;
-                        default:
-                            break;
-                    }
-                }
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
-                SendCastResult(SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW);
-                finish(false);
-            }
-            return;
         case 121414:
         case 120761:
         {
@@ -3032,7 +2998,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         int _duration = 0;
         for (HitTriggerSpellList::const_iterator i = m_hitTriggerSpells.begin(); i != m_hitTriggerSpells.end(); ++i)
         {
-            if (CanExecuteTriggersOnHit(effMask, i->triggeredByAura) && roll_chance_i(i->chance))
+            if (CanExecuteTriggersOnHit(effMask, i->triggeredByAura) && roll_chance_i(i->chance) && !m_spellInfo->IsPassive())
             {
                 m_caster->CastSpell(unit, i->triggeredSpell, true);
                 sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %d triggered spell %d by SPELL_AURA_ADD_TARGET_TRIGGER aura", m_spellInfo->Id, i->triggeredSpell->Id);
@@ -4271,15 +4237,23 @@ void Spell::finish(bool ok)
             break;
         }
         case 49576: // Glyph of Resilient Grip
-            if (!unitTarget || !m_caster->ToPlayer())
+        {
+            if (!unitTarget || !m_caster->ToPlayer() || !m_caster->HasAura(59309))
                 break;
 
             for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
             {
-                if (ihit->missCondition == SPELL_MISS_IMMUNE && m_caster->HasAura(59309))
+                if (ihit->missCondition == SPELL_MISS_IMMUNE)
                     m_caster->CastSpell(m_caster, 90289, true);
             }
             break;
+        }
+        case 90289: // Glyph of Resilient Grip
+        {
+            if (Player* _player = m_caster->ToPlayer())
+                _player->RemoveSpellCooldown(49576, true);
+            break;
+        }
         default:
             break;
     }
@@ -5941,6 +5915,19 @@ void Spell::TakeRunePower(bool didHit)
         player->SetRuneCooldown(i, cooldown);
         player->SetDeathRuneUsed(i, false);
         runeCost[rune]--;
+        if (rune == RUNE_DEATH)
+        {
+            bool takePower = didHit;
+            if (uint32 spell = player->GetRuneConvertSpell(i))
+                takePower = (spell != 54637 && rune != RUNE_BLOOD);
+
+            // keep Death Rune type if missed or player has Blood of the North
+            if (takePower)
+            {
+                player->RestoreBaseRune(i);
+                player->SetDeathRuneUsed(i, true);
+            }
+        }
     }
 
     runeCost[RUNE_DEATH] += runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];

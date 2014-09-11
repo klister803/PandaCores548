@@ -6486,6 +6486,24 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_REMOVE_CD_RUNE: //26
+                {
+                    if(Player* _player = _caster->ToPlayer())
+                    {
+                        int32 runesRestor = 0;
+                        for (int i = 0; i < MAX_RUNES ; i++)
+                        {
+                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1)
+                            {
+                                runesRestor++;
+                                _player->SetRuneCooldown(i, 0);
+                                _player->AddRunePower(i);
+                            }
+                        }
+                    }
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -9103,6 +9121,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             // Dancing Rune Weapon
             if (dummySpell->Id == 49028)
             {
+                int32 modify = 0;
+                if (AuraEffect const* aurEff = GetAuraEffect(63330, 1))
+                    modify = aurEff->GetAmount();
+
                 // 1 dummy aura for dismiss rune blade
                 if (effIndex != 1)
                     return false;
@@ -9115,11 +9137,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         break;
                     }
 
-                if (pPet && pPet->getVictim() && damage && procSpell)
+                if (pPet && pPet->getVictim() && damage)
                 {
                     uint32 procDmg = damage / 2;
-                    pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
-                    pPet->DealDamage(pPet->getVictim(), procDmg, NULL, SPELL_DIRECT_DAMAGE, procSpell->GetSchoolMask(), procSpell, true);
+                    if(modify)
+                        procDmg += int32((procDmg * modify) / 100);
+
+                    if(procSpell)
+                        pPet->CastSpell(pPet->getVictim(), procSpell->Id, true);
+                    else
+                    {
+                        pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
+                        pPet->DealDamage(pPet->getVictim(), procDmg);
+                    }
                     break;
                 }
                 else

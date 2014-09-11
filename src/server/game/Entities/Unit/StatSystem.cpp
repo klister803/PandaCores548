@@ -1478,6 +1478,16 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         }
         switch (GetEntry())
         {
+            case ENTRY_RUNE_WEAPON:
+            {
+                int32 modify = 0;
+                if (AuraEffect const* aurEff = owner->GetAuraEffect(63330, 1))
+                    modify = aurEff->GetAmount();
+                AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
+                if(modify)
+                    AP += int32((AP * modify) / 100);
+                break;
+            }
             case ENTRY_WATER_ELEMENTAL: //water elementals benefit from mage's frost damage
             {
                 int32 maximum = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) + owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);

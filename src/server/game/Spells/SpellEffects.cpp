@@ -1279,19 +1279,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         m_caster->CastCustomSpell(m_caster, 79638, &bp0, 0, 0, true);
                     break;
                 }
-                case 47468: // Ghoul: Claw
-                {
-                    if (!unitTarget)
-                        return;
-
-                    // Dark Transformation - Replace spell
-                    if (m_caster->HasAura(63560))
-                        m_caster->CastSpell(unitTarget, 91778, true); // Sweeping Claws
-                    else
-                        m_caster->CastSpell(unitTarget, 91776, true); // Claw
-
-                    break;
-                }
                 case 47484: // Ghoul: Huddle
                 {
                     if (!unitTarget)
@@ -1570,6 +1557,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
                     if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
                         bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
+
+            if (Player* player = m_caster->ToPlayer())
+                if(player->InArena() || player->InRBG())
+                    bp /= 2;
 
             m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
             break;
@@ -2495,6 +2486,10 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                 int32 bp0 = int32(addhealth * float(aur->GetEffect(0)->GetAmount() / 100.0f));
                 if (Aura* aurShield = m_caster->GetAura(77535))
                     bp0 += aurShield->GetEffect(0)->GetAmount();
+
+                //Scent of Blood
+                if (Aura* aurBoold = m_caster->GetAura(50421))
+                    bp0 += CalculatePct(bp0, aurBoold->GetEffect(0)->GetAmount());
 
                 if (bp0 > int32(m_caster->GetMaxHealth()))
                     bp0 = int32(m_caster->GetMaxHealth());
@@ -5759,16 +5754,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 }
             }
             break;
-            // Glyph of Resilient Grip
-            if (m_spellInfo->Id == 90289)
-            {
-                if (!m_caster || !m_caster->ToPlayer())
-                    return;
-
-                m_caster->ToPlayer()->RemoveSpellCooldown(49576, true);
-                return;
-            }
-            break;
         }
         case SPELLFAMILY_WARRIOR:
         {
@@ -7448,9 +7433,6 @@ void Spell::EffectActivateRune(SpellEffIndex effIndex)
     {
         if (player->GetRuneCooldown(j) && player->GetCurrentRune(j) == RuneType(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue))
         {
-            if (m_spellInfo->Id == 45529)
-                if (player->GetBaseRune(j) != RuneType(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValueB))
-                    continue;
             player->SetRuneCooldown(j, 0);
             --count;
         }

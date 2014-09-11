@@ -25839,6 +25839,15 @@ bool Player::InArena() const
     return true;
 }
 
+bool Player::InRBG() const
+{
+    Battleground* bg = GetBattleground();
+    if (!bg || !bg->IsRBG())
+        return false;
+
+    return true;
+}
+
 bool Player::GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const
 {
     // get a template bg instead of running one
@@ -27233,9 +27242,6 @@ void Player::RestoreBaseRune(uint8 index)
     uint32 spell_id = m_runes.runes[index].spell_id;
     ConvertRune(index, GetBaseRune(index));
     SetRuneConvertSpell(index, 0);
-    // Only Blood Tap can be removed
-    if (spell_id == 45529)
-        RemoveAura(45529);
 }
 
 void Player::ConvertRune(uint8 index, RuneType newType)

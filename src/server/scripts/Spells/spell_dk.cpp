@@ -788,28 +788,34 @@ class spell_dk_blood_tap : public SpellScriptLoader
 
             SpellCastResult CheckBloodCharges()
             {
-                if (GetCaster()->ToPlayer())
+                if (GetCaster())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (Aura* bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
+                    if (Aura* bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
                     {
                         if (bloodCharges->GetStackAmount() < 5)
+                        {
+                            Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_INSUFFICIENT_BLOOD_CHARGES);
                             return SPELL_FAILED_DONT_REPORT;
+                        }
                     }
                     else
-                        return SPELL_FAILED_DONT_REPORT;
-
-                    bool cooldown = false;
-
-                    for (uint8 i = 0; i < MAX_RUNES; ++i)
                     {
-                        if (GetCaster()->ToPlayer()->GetCurrentRune(i) == RUNE_DEATH || !GetCaster()->ToPlayer()->GetRuneCooldown(i))
-                            continue;
-
-                        cooldown = true;
+                        Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_INSUFFICIENT_BLOOD_CHARGES);
+                        return SPELL_FAILED_DONT_REPORT;
                     }
 
+
+                    int32 cooldown = 0;
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        if (_player->GetCurrentRune(i) != RUNE_DEATH && _player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i))
+                            cooldown++;
+
                     if (!cooldown)
+                    {
+                        Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_NO_DEPLETED_RUNES);
                         return SPELL_FAILED_DONT_REPORT;
+                    }
                 }
 
                 return SPELL_CAST_OK;
@@ -831,24 +837,16 @@ class spell_dk_blood_tap : public SpellScriptLoader
                                 bloodCharges->SetStackAmount(newAmount - 5);
                         }
 
-                        bool runeActivated = false;
-
-                        for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        int32 runesRestor = 0;
+                        for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetCurrentRune(i) == RUNE_DEATH || !_player->GetRuneCooldown(i))
-                                continue;
-
-                            if (runeActivated)
-                                break;
-
-                            // Should always update the rune with the lowest cd
-                            if (_player->GetRuneCooldown(i) >= _player->GetRuneCooldown(i+1))
-                                i++;
-
-                            _player->SetRuneCooldown(i, 0);
-                            _player->ResyncRunes(MAX_RUNES);
-                            _player->ConvertRune(i, RUNE_DEATH);
-                            runeActivated = true;
+                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1 && _player->GetCurrentRune(i) != RUNE_DEATH)
+                            {
+                                runesRestor++;
+                                _player->SetRuneCooldown(i, 0);
+                                _player->ConvertRune(i, RUNE_DEATH);
+                                _player->AddRunePower(i);
+                            }
                         }
                     }
                 }
@@ -1132,7 +1130,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        if (_player->GetRuneCooldown(i))
+                        if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i))
                             runesUsed++;
 
                     if (!runesUsed)
@@ -1143,7 +1141,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
 
                     if (Unit* target = GetExplTargetUnit())
                     {
-                        if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) && !target->HasAura(DK_SPELL_FROST_FEVER))
+                        if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) || !target->HasAura(DK_SPELL_FROST_FEVER))
                         {
                             Spell::SendCastResult(_player, GetSpellInfo(), 1, SPELL_FAILED_CUSTOM_ERROR, SPELL_CUSTOM_ERROR_FEVER_PLAGUE_MUST_BE_PRESENT);
                             return SPELL_FAILED_DONT_REPORT;
@@ -1167,16 +1165,15 @@ class spell_dk_plague_leech : public SpellScriptLoader
                         int32 runesRestor = 0;
                         for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetRuneCooldown(i) && runesRestor <= 2)
+                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 2)
                             {
                                 runesRestor++;
                                 _player->SetRuneCooldown(i, 0);
+                                _player->AddRunePower(i);
                                 if (_player->GetCurrentRune(i) != RUNE_DEATH)
                                     _player->ConvertRune(i, RUNE_DEATH);
                             }
                         }
-
-                        _player->ResyncRunes(MAX_RUNES);
                     }
                 }
             }
@@ -1409,15 +1406,33 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
                 Unit* target = GetTarget();
                 // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
                 // This, if I'm not mistaken, shows that we get back ~20% of the absorbed damage as runic power.
-                int32 bp = absorbAmount * 2 / 10;
-                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                int32 bp = int32(absorbAmount / 1400) * 80;
+                if(bp > 0)
+                    target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                    {
+                        double cooldown = player->GetSpellCooldownDelay(GetSpellInfo()->Id);
+                        int32 percent = int32(float(aurEff->GetAmount() * 100.0f) / player->GetMaxHealth());
+                        percent = percent < 50 ? percent : 50;
+                        cooldown = (cooldown * percent) / 100;
+                        player->ModifySpellCooldown(GetSpellInfo()->Id, -(cooldown * IN_MILLISECONDS));
+                    }
+                }
             }
 
             void Register()
             {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_anti_magic_shell_self_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_anti_magic_shell_self_AuraScript::Absorb, EFFECT_0);
-                 AfterEffectAbsorb += AuraEffectAbsorbFn(spell_dk_anti_magic_shell_self_AuraScript::Trigger, EFFECT_0);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_anti_magic_shell_self_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_anti_magic_shell_self_AuraScript::Absorb, EFFECT_0);
+                AfterEffectAbsorb += AuraEffectAbsorbFn(spell_dk_anti_magic_shell_self_AuraScript::Trigger, EFFECT_0);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_anti_magic_shell_self_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1730,6 +1745,8 @@ class spell_dk_blood_boil : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        int32 damge = GetHitDamage();
+
                         if (_player->HasAura(DK_SPELL_SCARLET_FEVER))
                         {
                             _player->CastSpell(target, DK_SPELL_WEAKENED_BLOWS, true);
@@ -1741,23 +1758,27 @@ class spell_dk_blood_boil : public SpellScriptLoader
                                 if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER))
                                     aura->SetDuration(aura->GetMaxDuration());
                         }
+
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
-                        if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
+                        if (target->HasAura(DK_SPELL_FROST_FEVER))
                         {
-                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                            SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
                             if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
                                 _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
-                        else if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
+                        else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
                         {
-                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                            SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
                             if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
                                 _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
+                        else if (_player->HasAura(146650))
+                            SetHitDamage(int32(damge * 1.223f));
+
                         if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
                         {
                             bool blood = false;
@@ -2011,6 +2032,69 @@ class spell_dk_unholy_frenzy : public SpellScriptLoader
         }
 };
 
+// Corpse Explosion - 127344
+class spell_dk_corpse_explosion : public SpellScriptLoader
+{
+    public:
+        spell_dk_corpse_explosion() : SpellScriptLoader("spell_dk_corpse_explosion") {}
+
+        class spell_dk_corpse_explosion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_corpse_explosion_SpellScript);
+
+            SpellCastResult CheckClass()
+            {
+                if (Unit* target = GetExplTargetUnit())
+                {
+                    if(!target->isDead() || target->GetDisplayId() != target->GetNativeDisplayId())
+                        return SPELL_FAILED_TARGET_NOT_DEAD;
+                }
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dk_corpse_explosion_SpellScript::CheckClass);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_corpse_explosion_SpellScript();
+        }
+};
+
+// Soul Reaper - 114868
+class spell_dk_soul_reaper_speed : public SpellScriptLoader
+{
+    public:
+        spell_dk_soul_reaper_speed() : SpellScriptLoader("spell_dk_soul_reaper_speed") { }
+
+        class spell_dk_soul_reaper_speed_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_soul_reaper_speed_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*AuraEffect**/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(!caster->HasAura(146645))
+                        amount = 0;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_soul_reaper_speed_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_SPEED_ALWAYS);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_soul_reaper_speed_AuraScript();
+        }
+};
+
 void AddSC_deathknight_spell_scripts()
 {
     new spell_dk_might_of_ursoc();
@@ -2056,4 +2140,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_gorefiends_grasp();
     new spell_dk_presence();
     new spell_dk_unholy_frenzy();
+    new spell_dk_corpse_explosion();
+    new spell_dk_soul_reaper_speed();
 }

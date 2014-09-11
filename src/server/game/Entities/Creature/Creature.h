@@ -88,6 +88,7 @@ enum CreatureFlagsExtra
 #define ENTRY_GHOUL             26125
 #define ENTRY_BLOODWORM         28017
 #define ENTRY_GARGOYLE          27829
+#define ENTRY_RUNE_WEAPON       27893
 #define ENTRY_FEL_IMP           58959
 #define ENTRY_VOIDLORD          58960
 #define ENTRY_SHIVARRA          58963
