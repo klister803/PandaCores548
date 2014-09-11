@@ -306,7 +306,7 @@ class npc_hot_rod : public CreatureScript
                             //if we not complite we should add visibility state for finding them
                             if(itr->second.CreatureOrGOCount[j])
                             {
-                                player->RemoveAllMinionsByEntry(QuestTemplateData[j][0]);
+                                //player->RemoveAllMinionsByEntry(QuestTemplateData[j][0]);
                                 player->CastSpell(player, QuestTemplateData[j][2], true);
                             }
                         }
