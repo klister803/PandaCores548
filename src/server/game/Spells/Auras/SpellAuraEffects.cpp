@@ -1273,6 +1273,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     amount = CalculatePct(caster->GetMaxHealth(), amount);
                     break;
                 }
+                case 137211: // Tremendous Fortitude
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), amount);
+                    if (amount > 18000)
+                        amount = 18000;
+                    break;
+                }
                 default:
                     break;
             }
