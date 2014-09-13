@@ -2179,10 +2179,11 @@ class spell_pri_psychic_terror : public SpellScriptLoader
                         {
                             if (Unit* m_target = (*itr))
                             {
-                                if (m_target->GetDistance2d(caster) <= 20.0f && !m_target->HasAura(SPELL_PSYCHIC_HORROR))
+                                if (m_target->GetDistance2d(caster) <= 20.0f && !m_target->HasAura(SPELL_PSYCHIC_HORROR) && !m_target->HasAura(122300) && !m_target->HasInvisibilityAura() && !m_target->HasStealthAura())
                                 {
                                     targets.clear();
                                     targets.push_back(m_target);
+                                    caster->AddAura(122300, m_target);
                                     return;
                                 }
                             }
@@ -2193,14 +2194,20 @@ class spell_pri_psychic_terror : public SpellScriptLoader
                     for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
                     {
                         if(Unit* targer = (*itr)->ToUnit())
-                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(113792) && !targer->HasAura(119032))
+                        if (targer->IsWithinDist(caster, 20) && !targer->HasAura(SPELL_PSYCHIC_HORROR) && !targer->HasAura(119032) && !targer->HasAura(122300) && !targer->HasInvisibilityAura() && !targer->HasStealthAura())
                             unitList.push_back((*itr));
                     }
-                }
-                targets.clear();
-                targets = unitList;
+                
+                    targets.clear();
+                    targets = unitList;
 
-                Trinity::Containers::RandomResizeList(targets, 1);
+                    Trinity::Containers::RandomResizeList(targets, 1);
+                    for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    {
+                        if (Unit* target = (*itr)->ToUnit())
+                            caster->AddAura(122300, target);
+                    }
+                }
             }
 
             void Register()

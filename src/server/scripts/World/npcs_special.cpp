@@ -4835,6 +4835,7 @@ enum PsyfiendSpells
 {
     SPELL_PSYCHIC_HORROR    = 113792,
     SPELL_ROOT_FOR_EVER     = 31366,
+    SPELL_SHADOW_FORM       = 142024,
 };
 
 class npc_psyfiend : public CreatureScript
@@ -4851,25 +4852,24 @@ class npc_psyfiend : public CreatureScript
 
             void Reset()
             {
+                Unit * owner = me->GetOwner();
+                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
                 if (!me->HasAura(SPELL_ROOT_FOR_EVER))
                     me->AddAura(SPELL_ROOT_FOR_EVER, me);
-            }
 
-            void IsSummonedBy(Unit* owner)
-            {
-                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                {
-                    me->SetLevel(owner->getLevel());
-                    me->SetMaxHealth(owner->GetMaxHealth() / 2);
-                    me->SetHealth(me->GetMaxHealth());
-                    // Set no damage
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
-                    me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+                if (!me->HasAura(SPELL_SHADOW_FORM))
+                    me->AddAura(SPELL_SHADOW_FORM, me);
 
-                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
-                }
-                else
-                    me->DespawnOrUnsummon();
+                me->SetLevel(owner->getLevel());
+                me->SetMaxPower(POWER_RAGE, 0);
+                me->SetMaxHealth(CalculatePct(owner->GetMaxHealth(), 2.5f));
+                me->SetFullHealth();
+                // Set no damage
+                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
+                
             }
 
             void UpdateAI(uint32 diff)

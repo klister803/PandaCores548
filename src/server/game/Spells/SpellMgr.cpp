@@ -4232,7 +4232,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     spellInfo->MaxAffectedTargets = 3;
                     break;
-                case 115308:// Elusive Brew
+                case 115308: // Elusive Brew
+                case 122300: // Psyfiend Visual
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                     break;
                 case 115129:// Expel Harm - Damage to a nearby ennemy within 10 yards
