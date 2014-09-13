@@ -649,6 +649,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 48707: // Anti-Magic Shell
+                {
+                    amount = caster->CountPctFromMaxHealth(m_spellInfo->Effects[m_effIndex].BasePoints);
+                    break;
+                }
                 case 108416: // Sacrificial Pact
                 {
                     Unit* spelltarget = caster->GetGuardianPet() ? caster->GetGuardianPet(): caster;
