@@ -963,8 +963,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_knockBackTimer = 0;
 
-    m_ignoreMovementCount = 0;
-
     m_groupUpdateDelay = 5000;
 
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));

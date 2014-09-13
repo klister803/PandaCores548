@@ -3124,9 +3124,6 @@ class Player : public Unit, public GridObject<Player>
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
 
-        void SetIgnoreMovementCount(uint8 count) { m_ignoreMovementCount = count; }
-        uint8 GetIgnoreMovementCount() const { return m_ignoreMovementCount; }
-
         float GetBaseRHastRatingPct() const { return m_baseRHastRatingPct; }
 
         void _LoadStore();
@@ -3564,7 +3561,6 @@ class Player : public Unit, public GridObject<Player>
         float m_PersonnalXpRate;
 
         uint32 m_knockBackTimer;
-        uint8  m_ignoreMovementCount;
 
         uint32 m_groupUpdateDelay;
 
