@@ -135,7 +135,6 @@ class Pet : public Guardian
         bool HasSpell(uint32 spell) const;
 
         void LearnPetPassives();
-        void CastPetAuras(bool current, uint32 spellId = 0);
         bool IsPetAura(Aura const* aura);
 
         void _LoadSpellCooldowns();

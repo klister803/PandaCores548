@@ -85,6 +85,7 @@ enum CreatureFlagsExtra
 #define ENTRY_FIRE_ELEMENTAL    15438
 #define ENTRY_FIRE_ELEMENTAL2   15439
 #define ENTRY_FIRE_ELEMENTAL3   61029
+#define ENTRY_ARMY_OF_THE_DEAD  24207
 #define ENTRY_GHOUL             26125
 #define ENTRY_BLOODWORM         28017
 #define ENTRY_GARGOYLE          27829

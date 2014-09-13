@@ -112,7 +112,7 @@ void LoadDB2Stores(const std::string& dataPath)
         if (entry->CreatureEntry == 73356)
             const_cast<BattlePetSpeciesEntry*>(entry)->spellId = 148050;
 
-        sBattlePetSpeciesBySpellId[entry->spellId] = entry;
+        sBattlePetSpeciesBySpellId[entry->CreatureEntry] = entry;
     }
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
     LoadDB2(bad_db2_files, sItemCurrencyCostStore,  db2Path, "ItemCurrencyCost.db2");

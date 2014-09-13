@@ -1362,6 +1362,7 @@ void Guardian::UpdateMaxHealth()
         case ENTRY_TERRORGUARD:
         case ENTRY_GHOUL:
         case ENTRY_GARGOYLE:
+        case ENTRY_ARMY_OF_THE_DEAD:
             multiplicator = 0.5f;
             break;
         case ENTRY_VOIDLORD:
@@ -1453,10 +1454,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             SPD = uint32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.5f); // Bonus damage is equal to 50% of owner's AP
         }
         else if (IsPetGhoul()) // ghouls benefit from deathknight's attack power (may be summon pet or not)
-        {
             AP = owner->GetTotalAttackPowerValue(BASE_ATTACK);
-            SPD = uint32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.7f);
-        }
         else if (IsWarlockPet()) // demons benefit from warlocks shadow or fire damage
         {
             int32 fire  = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE)) + owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FIRE);
@@ -1478,6 +1476,11 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
         }
         switch (GetEntry())
         {
+            case ENTRY_ARMY_OF_THE_DEAD:
+            {
+                AP = int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) / 2);
+                break;
+            }
             case ENTRY_RUNE_WEAPON:
             {
                 int32 modify = 0;

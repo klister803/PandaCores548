@@ -99,6 +99,7 @@ class Guardian : public Minion
         void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
         void InitSummon();
         bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
+        void CastPetAuras(bool current, uint32 spellId = 0);
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();

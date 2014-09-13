@@ -6504,6 +6504,111 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_BP_SPELLID: //27
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    if(itr->bp0)
+                        basepoints0 = procSpell->Id;
+                    if(itr->bp1)
+                        basepoints1 = procSpell->Id;
+                    if(itr->bp2)
+                        basepoints2 = procSpell->Id;
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_BP_SPD_AP: //28
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    WeaponAttackType attType = BASE_ATTACK;
+                    if (procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
+                        attType = RANGED_ATTACK;
+
+                    int32 SPD = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 SPDH = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 AP = GetTotalAttackPowerValue(attType);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    switch (int32(itr->bp0))
+                    {
+                        case 1:
+                            basepoints0 = SPD;
+                            break;
+                        case 2:
+                            basepoints0 = SPDH;
+                            break;
+                        case 3:
+                            basepoints0 = AP;
+                            break;
+                    }
+                    switch (int32(itr->bp0))
+                    {
+                        case 1:
+                            basepoints1 = SPD;
+                            break;
+                        case 2:
+                            basepoints1 = SPDH;
+                            break;
+                        case 3:
+                            basepoints1 = AP;
+                            break;
+                    }
+                    switch (int32(itr->bp0))
+                    {
+                        case 1:
+                            basepoints2 = SPD;
+                            break;
+                        case 2:
+                            basepoints2 = SPDH;
+                            break;
+                        case 3:
+                            basepoints2 = AP;
+                            break;
+                    }
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
+                    }
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -14953,7 +15058,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     }
 
     // Apply strongest slow aura mod to speed
-    int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+    int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED) - GetMaxPositiveAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
         AddPct(speed, slow);
 
@@ -15740,6 +15845,12 @@ void Unit::ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell
     else if (spellProto->SpellVisual[0] == 3881 && HasAura(67556)) // cooking with Chef Hat.
         castTime = 500;
 
+    if(getClass() == CLASS_DEATH_KNIGHT)
+    {
+        if(AuraEffect const* aurEff = GetAuraEffect(77616, 0))
+            if(aurEff->GetAmount() == spellProto->Id)
+                castTime = 0;
+    }
     if (isMoving())
     {
         float mod = 1.0f;
@@ -16971,6 +17082,8 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING] = true;
     isTriggerAura[SPELL_AURA_ADD_PCT_MODIFIER] = true;
     isTriggerAura[SPELL_AURA_ADD_FLAT_MODIFIER] = true;
+    isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS] = true;
+    isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
@@ -17348,6 +17461,13 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_DUMMY: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
                         if (HandleDummyAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
+                    }
+                    case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2:
+                    {
+                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
+                        if (procSpell && (procSpell->Id == triggeredByAura->GetAmount()))
                             takeCharges = true;
                         break;
                     }
@@ -18451,7 +18571,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = false;
                     break;
                 }
-                if(itr->powertype != 0 && itr->dmgclass != 0)
+                if(itr->powertype != -1 && itr->dmgclass != -1)
                 {
                     if(itr->powertype == procPowerType && itr->dmgclass == procDmgClass)
                     {
@@ -18459,12 +18579,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         break;
                     }
                 }
-                else if(itr->dmgclass != 0 && itr->dmgclass == procDmgClass)
+                else if(itr->dmgclass != -1 && itr->dmgclass == procDmgClass)
                 {
                     procCheck = false;
                     break;
                 }
-                else if(itr->powertype != 0 && itr->powertype == procPowerType)
+                else if(itr->powertype != -1 && itr->powertype == procPowerType)
                 {
                     procCheck = false;
                     break;
@@ -20294,6 +20414,9 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
         }
         case FORM_BEAR:
         {
+            // Hack for Druid of the Flame, Fandral's Flamescythe
+            if (HasAura(99245) || HasAura(138927))
+                return 38150;
             // check Incarnation
             bool epic = HasAura(102558);
 

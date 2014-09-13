@@ -3200,7 +3200,8 @@ void SmartScript::GetScript()
     SmartAIEventList e;
     if (me)
     {
-        e = sSmartScriptMgr->GetScript(-((int32)me->GetDBTableGUIDLow()), mScriptType);
+        if(me->GetDBTableGUIDLow())
+            e = sSmartScriptMgr->GetScript(-((int32)me->GetDBTableGUIDLow()), mScriptType);
         if (e.empty())
             e = sSmartScriptMgr->GetScript((int32)me->GetEntry(), mScriptType);
         FillScript(e, me, NULL);

@@ -129,6 +129,8 @@ enum SpellTriggeredType
     SPELL_TRIGGER_VENGEANCE                     = 24,
     SPELL_TRIGGER_ADD_DURATION_OR_CAST          = 25,           // Add duration for select spell or cast his
     SPELL_TRIGGER_REMOVE_CD_RUNE                = 26,           // Add duration for select spell or cast his
+    SPELL_TRIGGER_BP_SPELLID                    = 27,           // set basepoint to spellId from proc
+    SPELL_TRIGGER_BP_SPD_AP                     = 28,           // set basepoint to spellId from SPD or AP
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

@@ -2008,6 +2008,8 @@ public:
                 target->GetSession()->m_muteTime = muteTime;
         }
 
+        WorldDatabase.EscapeString(muteReasonStr);
+
         if (target)
             ChatHandler(target).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, muteReasonStr.c_str());
 

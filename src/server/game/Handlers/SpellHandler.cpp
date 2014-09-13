@@ -1240,17 +1240,18 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
     recvPacket >> slotId;
     recvPacket.ReadGuidMask<3, 5, 2, 0, 4, 1, 6, 7>(guid);
     recvPacket.ReadGuidBytes<4, 1, 5, 2, 3, 6, 7, 0>(guid);
+    uint64 logGuid = guid;
 
     ++slotId;
+
     if (slotId >= MAX_TOTEM_SLOT)
         return;
 
     if (!_player->m_SummonSlot[slotId])
         return;
 
-    Creature* totem = GetPlayer()->GetMap()->GetCreature(_player->m_SummonSlot[slotId]);
-    if (totem && totem->isTotem() && totem->GetGUID() == guid)
-        totem->ToTotem()->UnSummon();
+    if(Creature* summon = GetPlayer()->GetMap()->GetCreature(_player->m_SummonSlot[slotId]))
+        summon->DespawnOrUnsummon();
 }
 
 void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)
@@ -1329,7 +1330,10 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     // Get creator of the unit (SPELL_AURA_CLONE_CASTER does not stack)
     Unit* creator = unit->GetAuraEffectsByType(SPELL_AURA_CLONE_CASTER).front()->GetCaster();
     if (!creator)
-        return;
+    {
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GET_MIRRORIMAGE_DATA displayId %u, creator not found", displayId);
+        creator = unit;
+    }
 
     Player* player = creator->ToPlayer();
     ObjectGuid guildGuid;

@@ -33,6 +33,10 @@ int AggressorAI::Permissible(const Creature* creature)
     return PERMIT_BASE_NO;
 }
 
+void AggressorAI::EnterEvadeMode()
+{
+}
+
 void AggressorAI::UpdateAI(uint32 diff)
 {
     if (!UpdateVictim())
@@ -44,13 +48,16 @@ void AggressorAI::UpdateAI(uint32 diff)
     else
         m_updateAlliesTimer -= diff;
 
-    if(!me->GetCasterPet())
-        DoMeleeAttackIfReady();
-    // Autocast (casted only in combat or persistent spells in any state)
-    else if (!me->HasUnitState(UNIT_STATE_CASTING))
-    {
-        Unit* owner = me->GetCharmerOrOwner();
+    Unit* owner = me->GetCharmerOrOwner();
+    Unit* target = NULL;
+    if (owner)
+        target = owner->getAttackerForHelper();
+    if (!target)
+        target = me->getAttackerForHelper();
 
+    // Autocast (casted only in combat or persistent spells in any state)
+    if (!me->HasUnitState(UNIT_STATE_CASTING))
+    {
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
 
@@ -82,12 +89,6 @@ void AggressorAI::UpdateAI(uint32 diff)
 
                 Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
                 bool spellUsed = false;
-
-                // Some spells can target enemy or friendly (DK Ghoul's Leap)
-                // Check for enemy first (pet then owner)
-                Unit* target = me->getAttackerForHelper();
-                if (!target && owner)
-                    target = owner->getAttackerForHelper();
 
                 if (target)
                 {
@@ -122,11 +123,11 @@ void AggressorAI::UpdateAI(uint32 diff)
                 if (!spellUsed)
                     delete spell;
             }
-            else if (me->getVictim() && me->IsWithinMeleeRange(me->getVictim(), me->GetAttackDist()) && spellInfo->CanBeUsedInCombat())
+            else if (target && me->IsWithinMeleeRange(target, me->GetAttackDist()) && spellInfo->CanBeUsedInCombat())
             {
                 Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
-                if (spell->CanAutoCast(me->getVictim()))
-                    targetSpellStore.push_back(std::make_pair(me->getVictim(), spell));
+                if (spell->CanAutoCast(target))
+                    targetSpellStore.push_back(std::make_pair(target, spell));
                 else
                     delete spell;
             }
@@ -138,18 +139,18 @@ void AggressorAI::UpdateAI(uint32 diff)
             uint32 index = urand(0, targetSpellStore.size() - 1);
 
             Spell* spell  = targetSpellStore[index].second;
-            Unit*  target = targetSpellStore[index].first;
+            Unit* targetSpell = targetSpellStore[index].first;
 
             targetSpellStore.erase(targetSpellStore.begin() + index);
 
             SpellCastTargets targets;
-            targets.SetUnitTarget(target);
+            targets.SetUnitTarget(targetSpell);
 
-            if (!me->HasInArc(M_PI, target))
+            if (!me->HasInArc(M_PI, targetSpell))
             {
-                me->SetInFront(target);
-                if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    me->SendUpdateToPlayer(target->ToPlayer());
+                me->SetInFront(targetSpell);
+                if (targetSpell && targetSpell->GetTypeId() == TYPEID_PLAYER)
+                    me->SendUpdateToPlayer(targetSpell->ToPlayer());
 
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
                     me->SendUpdateToPlayer(owner->ToPlayer());
@@ -164,6 +165,8 @@ void AggressorAI::UpdateAI(uint32 diff)
         for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)
             delete itr->second;
     }
+    if(!me->GetCasterPet())
+        DoMeleeAttackIfReady();
 }
 
 void AggressorAI::UpdateAllies()

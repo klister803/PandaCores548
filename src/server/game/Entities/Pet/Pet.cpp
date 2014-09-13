@@ -359,7 +359,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         _LoadSpellCooldowns();
         LearnPetPassives();
         InitLevelupSpellsForLevel();
-        CastPetAuras(true);
     }
 
     if(owner->HasSpell(108415)) // active talent Soul Link
@@ -956,15 +955,6 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     switch (GetEntry())
     {
-        case ENTRY_GHOUL:
-        {
-            float basedmg = petlevel * 3.06f * (BASE_ATTACK_TIME / 1000);
-            CastSpell(this, 47466, true);
-            setPowerType(POWER_ENERGY);
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, basedmg);
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, basedmg + 1.0f);
-            break;
-        }
         case ENTRY_IMP:
         case ENTRY_VOIDWALKER:
         case ENTRY_SUCCUBUS:
@@ -1292,7 +1282,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         }
     }
 
-    
+    CastPetAuras(true);
 
     SetFullHealth();
 
@@ -2082,15 +2072,12 @@ void Pet::LearnPetPassives()
     }
 }
 
-void Pet::CastPetAuras(bool apply, uint32 spellId)
+void Guardian::CastPetAuras(bool apply, uint32 spellId)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
 
     Unit* owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    if (!IsPermanentPetFor(owner->ToPlayer()))
         return;
 
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(GetEntry()))
@@ -2140,6 +2127,9 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
+                    case 3: //add spell
+                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
+                        break;
                 }
             }
             else
@@ -2159,6 +2149,9 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                    case 3: //add spell
+                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
                         break;
                 }
             }
@@ -2213,6 +2206,9 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
+                    case 3: //add spell
+                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
+                        break;
                 }
             }
             else
@@ -2232,6 +2228,9 @@ void Pet::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                    case 3: //add spell
+                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
                         break;
                 }
             }

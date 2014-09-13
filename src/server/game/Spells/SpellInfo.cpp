@@ -1265,6 +1265,17 @@ bool SpellInfo::IsMountOrCompanions() const
     return false;
 }
 
+uint32 SpellInfo::GetBattlePetEntry() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].Effect == SPELL_EFFECT_SUMMON)
+            if (Effects[i].MiscValueB == 3221)
+                return Effects[i].MiscValue;
+    }
+    return 0;
+}
+
 bool SpellInfo::HasDynAuraEffect() const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)

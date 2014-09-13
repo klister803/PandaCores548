@@ -2589,6 +2589,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                     case SUMMON_TYPE_MINION:
                     case SUMMON_TYPE_GUARDIAN:
                     case SUMMON_TYPE_GUARDIAN2:
+                    case SUMMON_TYPE_OBJECT:
                         mask = UNIT_MASK_GUARDIAN;
                         break;
                     case SUMMON_TYPE_TOTEM:
@@ -2608,8 +2609,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                         if (properties->Flags & 512 ||
                             properties->Id == 2921 ||
                             properties->Id == 3459 ||
-                            properties->Id == 3097 ||
-                            properties->Id == 1141) // Mirror Image, Summon Gargoyle
+                            properties->Id == 3097) // Mirror Image, Summon Gargoyle
                             mask = UNIT_MASK_GUARDIAN;
                         break;
                     }
@@ -2663,6 +2663,9 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     }
 
     summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
+    if (summoner)
+        summon->SetUInt32Value(UNIT_FIELD_DEMON_CREATOR, summoner->GetGUID());
+
     summon->SetTargetGUID(targetGuid);
 
     summon->SetHomePosition(pos);
@@ -2811,7 +2814,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-    pet->InitStatsForLevel(getLevel());
+    //pet->InitStatsForLevel(getLevel());
 
     switch (petType)
     {
@@ -2845,7 +2848,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             pet->SynchronizeLevelWithOwner();
             pet->LearnPetPassives();
             pet->InitLevelupSpellsForLevel();
-            pet->CastPetAuras(true);
             pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
             PetSpellInitialize();
             SendTalentsInfoData(true);

@@ -454,6 +454,7 @@ public:
     bool HasAreaAuraEffect() const;
     bool HasDynAuraEffect() const;
     bool IsMountOrCompanions() const;
+    uint32 GetBattlePetEntry() const;
 
     bool IsExplicitDiscovery() const;
     bool IsLootCrafting() const;

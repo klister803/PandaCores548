@@ -3591,7 +3591,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
 
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(m_spellInfo->Id) != sBattlePetSpeciesBySpellId.end())
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
                     {
                         m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, uint64(m_spellInfo->Id));
                         summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, uint64(m_spellInfo->Id));
@@ -3651,8 +3651,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             summon->SetOwnerGUID(m_originalCaster->GetGUID());
                             summon->SetCreatorGUID(m_originalCaster->GetGUID());
                             summon->setFaction(m_originalCaster->getFaction());
-                            summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
-                            summon->SetUInt32Value(UNIT_FIELD_DEMON_CREATOR, m_originalCaster->GetGUID());
                         }
 
                         // Explosive Decoy and Explosive Decoy 2.0
@@ -4402,12 +4400,16 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     {
         if(petentry)
         {
-            uint32 spellId = pet->GetCreatureTemplate()->spells[0];
-            if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+            for (uint8 i = 0; i < pet->GetPetAutoSpellSize(); ++i)
             {
-                pet->ToggleAutocast(sInfo, true);
-                pet->SetCasterPet(true);
-                pet->SetAttackDist(sInfo->GetMaxRange(false));
+                if(uint32 spellId = pet->GetCreatureTemplate()->spells[i])
+                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+                {
+                    pet->ToggleAutocast(sInfo, true);
+                    if(sInfo->GetMaxRange(false) > 5.0f)
+                        pet->SetCasterPet(true);
+                    pet->SetAttackDist(sInfo->GetMaxRange(false));
+                }
             }
         }
     }
@@ -4497,6 +4499,18 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
 
     if (!unitTarget)
         return;
+
+    switch (m_spellInfo->Id)
+    {
+        case 51399:     // Death Grip
+        case 49560:     // Death Grip
+        {
+            // Glyph of Tranquil Grip
+            if(m_caster->HasAura(131554))
+                return;
+        }
+        break;
+    }
 
     // this effect use before aura Taunt apply for prevent taunt already attacking target
     // for spell as marked "non effective at already attacking target"

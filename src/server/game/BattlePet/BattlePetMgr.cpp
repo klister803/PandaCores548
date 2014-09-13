@@ -56,19 +56,23 @@ void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
         if (!itr->second->active || itr->second->disabled)
             continue;
 
-        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(itr->first);
-        if (it == sBattlePetSpeciesBySpellId.end())
-            continue;
-
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
         if (!spell)
             continue;
 
-        CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(it->second->CreatureEntry);
+        uint32 petEntry = spell->GetBattlePetEntry();
+        if(petEntry == 0)
+            continue;
+
+        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(petEntry);
+        if (it == sBattlePetSpeciesBySpellId.end())
+            continue;
+
+        CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry);
         if (!creature)
             continue;
 
-        battlePetList.push_back(PetBattleData(it->second, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50));
+        battlePetList.push_back(PetBattleData(it->second, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50, itr->first));
     }
 }
 
@@ -84,7 +88,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 
     for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
-        ObjectGuid guid = uint64(pet->m_speciesEntry->spellId);
+        ObjectGuid guid = uint64(pet->m_spellId);
 
         data->WriteBit(1);                  // hasBreed, inverse
         data->WriteGuidMask<1, 5, 3>(guid);
@@ -122,7 +126,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 
     for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
     {
-        ObjectGuid guid = uint64(pet->m_speciesEntry->spellId);
+        ObjectGuid guid = uint64(pet->m_spellId);
 
         // TODO:
         //if (!breedBit)
