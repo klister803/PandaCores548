@@ -7661,14 +7661,17 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             return;
         if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
         {
-            ((Guardian*)summon)->InitStatsForLevel(level);
-            uint32 spellId = summon->GetCreatureTemplate()->spells[0];
-            if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+            for (uint8 i = 0; i < summon->GetPetAutoSpellSize(); ++i)
             {
-                ((Guardian*)summon)->addSpell(spellId, ACT_ENABLED);
-                ((Guardian*)summon)->ToggleAutocast(sInfo, true);
-                summon->SetCasterPet(true);
-                summon->SetAttackDist(sInfo->GetMaxRange(false));
+                if(uint32 spellId = summon->GetCreatureTemplate()->spells[i])
+                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
+                {
+                    ((Guardian*)summon)->addSpell(spellId, ACT_ENABLED);
+                    ((Guardian*)summon)->ToggleAutocast(sInfo, true);
+                    if(sInfo->GetMaxRange(false) > 5.0f)
+                        summon->SetCasterPet(true);
+                    summon->SetAttackDist(sInfo->GetMaxRange(false));
+                }
             }
         }
 

@@ -2903,6 +2903,8 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
 
     if (apply)
     {
+        target->RemoveAurasByType(SPELL_AURA_CLONE_CASTER);
+
         // update active transform spell only when transform or shapeshift not set or not overwriting negative by positive case
         if (!target->GetModelForForm(target->GetShapeshiftForm()) || !GetSpellInfo()->IsPositive())
         {
