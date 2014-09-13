@@ -2708,6 +2708,13 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, uint6
 {
     if (Map* map = FindMap())
     {
+        if(!ToUnit())
+        {
+            std::list<Creature*> creatures;
+            GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
+            if(creatures.size() > 50)
+                return NULL;
+        }
         if (TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, targetGuid, spellId))
         {
             summon->SetTempSummonType(spwtype);
@@ -2722,6 +2729,13 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
 {
     if (Map* map = FindMap())
     {
+        if(!ToUnit())
+        {
+            std::list<Creature*> creatures;
+            GetAliveCreatureListWithEntryInGrid(creatures, entry, 110.0f);
+            if(creatures.size() > 50)
+                return NULL;
+        }
         if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, 0, 0, vehId, viewerGuid, viewersList))
         {
             summon->SetTempSummonType(spwtype);
