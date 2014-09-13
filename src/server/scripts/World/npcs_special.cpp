@@ -2812,7 +2812,14 @@ class npc_lightwell_mop : public CreatureScript
             {
                 if (TempSummon* summon = me->ToTempSummon())
                     if(Unit* owner = summon->GetSummoner())
+                    {
                         me->SetLevel(owner->getLevel());
+                        me->SetMaxHealth(CalculatePct(owner->GetMaxHealth(), 50));
+                        me->SetFullHealth();
+                        me->SetMaxPower(POWER_RAGE, 0);
+                        me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
+                    }
+
                 DoCast(me, 126138, true);
                 me->SetAuraStack(126150, me, 17);
             }

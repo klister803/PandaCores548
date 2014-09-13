@@ -2606,9 +2606,10 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                     default:
                     {
                         if (properties->Flags & 512 ||
-                             properties->Id == 2921 ||
-                             properties->Id == 3459 ||
-                             properties->Id == 3097) // Mirror Image, Summon Gargoyle
+                            properties->Id == 2921 ||
+                            properties->Id == 3459 ||
+                            properties->Id == 3097 ||
+                            properties->Id == 1141) // Mirror Image, Summon Gargoyle
                             mask = UNIT_MASK_GUARDIAN;
                         break;
                     }

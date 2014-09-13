@@ -2612,9 +2612,10 @@ class spell_pri_lightwell_trigger : public SpellScriptLoader
                 std::list<WorldObject*> unitList;
                 for (std::list<WorldObject*>::iterator itr = targets.begin() ; itr != targets.end(); ++itr)
                 {
-                    if(Unit* targer = (*itr)->ToUnit())
-                        if (targer->GetHealthPct() <= 50.0f && !targer->HasAura(LIGHTSPRING_RENEW_MOP))
-                            unitList.push_back((*itr));
+                    if (Unit* targer = (*itr)->ToUnit())
+                        if (Unit* caster = GetCaster())
+                            if (targer->GetHealthPct() <= 50.0f && !targer->HasAura(LIGHTSPRING_RENEW_MOP) && targer != caster)
+                                unitList.push_back((*itr));
                 }
                 targets.clear();
                 targets = unitList;
