@@ -4019,6 +4019,11 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 m
 
     if (apply)
     {
+        // Currently spells that have base points  0 and DieSides 0 = "0/0" exception are pushed to -1,
+        // however the idea of 0/0 is to ingore flag VEHICLE_SEAT_FLAG_CAN_ENTER_OR_EXIT and -1 checks for it,
+        // so this break such spells or most of them.
+        // Current formula about m_amount: effect base points + dieside - 1
+        // TO DO: Reasearch more about 0/0 and fix it.
         caster->_EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
     }
     else
@@ -4032,7 +4037,12 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 m
             if (caster->GetTypeId() == TYPEID_UNIT)
                 caster->ToCreature()->RemoveCorpse();
         }
-        caster->_ExitVehicle();
+
+        if (!(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT))
+            caster->_ExitVehicle();
+        else
+            target->GetVehicleKit()->RemovePassenger(caster);  // Only remove passenger from vehicle without launching exit movement or despawning the vehicle
+
         // some SPELL_AURA_CONTROL_VEHICLE auras have a dummy effect on the player - remove them
         caster->RemoveAurasDueToSpell(GetId());
     }
