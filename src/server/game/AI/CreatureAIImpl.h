@@ -340,6 +340,17 @@ class EventMap : private std::map<uint32, uint32>
 
         uint32 GetPhaseMask() const { return (_phase >> 24) & 0xFF; }
 
+        /**
+        * @name IsInPhase
+        * @brief Returns wether event map is in specified phase or not.
+        * @param phase Wanted phase.
+        * @return True, if phase of event map contains specified phase.
+        */
+        bool IsInPhase(uint8 phase)
+        {
+            return phase <= 8 && (!phase || _phase & (1 << (phase - 1)));
+        }
+
         bool Empty() const { return empty(); }
 
         // Sets event phase, must be in range 1 - 8
@@ -349,6 +360,28 @@ class EventMap : private std::map<uint32, uint32>
                 _phase = (1 << (phase + 24));
             else if (!phase)
                 _phase = 0;
+        }
+
+        /**
+        * @name AddPhase
+        * @brief Activates the given phase (bitwise).
+        * @param phase Phase which should be activated. Values: 1 - 8
+        */
+        void AddPhase(uint8 phase)
+        {
+            if (phase && phase <= 8)
+                _phase |= (1 << (phase - 1));
+        }
+
+        /**
+        * @name RemovePhase
+        * @brief Deactivates the given phase (bitwise).
+        * @param phase Phase which should be deactivated. Values: 1 - 8.
+        */
+        void RemovePhase(uint8 phase)
+        {
+            if (phase && phase <= 8)
+                _phase &= ~(1 << (phase - 1));
         }
 
         // Creates new event entry in map with given id, time, group if given (1 - 8) and phase if given (1 - 8)
