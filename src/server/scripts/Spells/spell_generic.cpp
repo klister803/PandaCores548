@@ -3757,6 +3757,129 @@ class spell_gen_drums_of_rage : public SpellScriptLoader
         }
 };
 
+// Guild Battle Standard
+class spell_gen_battle_guild_standart : public SpellScriptLoader
+{
+    public:
+        spell_gen_battle_guild_standart() : SpellScriptLoader("spell_gen_battle_guild_standart") { }
+
+        class spell_gen_battle_guild_standart_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_battle_guild_standart_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (Creature* pStandart = GetCaster()->ToCreature())
+                {
+                    if (uint32 guildId = pStandart->AI()->GetData(0))
+                        targets.remove_if(GuildCheck(pStandart->GetGUID(), guildId));
+                    else
+                        targets.clear();
+                }
+                else
+                    targets.clear();
+
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_battle_guild_standart_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_battle_guild_standart_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ALLY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_gen_battle_guild_standart_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_SRC_AREA_ALLY);
+            }
+
+        private:
+            class GuildCheck
+            {
+                public:
+                    GuildCheck(uint64 casterGUID, uint32 guildId) : _casterGUID(casterGUID),_guildId(guildId) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        if (!_guildId)
+                            return true;
+
+                        if (unit->GetTypeId() != TYPEID_PLAYER)
+                            return true;
+
+                        if (unit->ToPlayer()->GetGuildId() != _guildId)
+                            return true;
+
+                        if (Aura* const aur = unit->ToPlayer()->GetAura(90216))
+                            if (aur->GetCasterGUID() != _casterGUID)
+                                return true;
+
+                        if (Aura* const aur = unit->ToPlayer()->GetAura(90708))
+                            if (aur->GetCasterGUID() != _casterGUID)
+                                return true;
+
+                        return false;
+                    }
+
+                private:
+                    uint64 _casterGUID;
+                    uint32 _guildId;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_battle_guild_standart_SpellScript();
+        }
+
+        class spell_gen_battle_guild_standart_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_battle_guild_standart_AuraScript);
+
+
+            void HandleTriggerSpell(AuraEffect const* /*aurEff*/)
+            {
+                if (Unit* pStandart = GetCaster())
+                {                                 
+                    int32 bp0 = 0;
+                    int32 bp1 = 0;
+                         
+                    switch (pStandart->GetEntry())
+                    {                        
+                        case 48636: // 5%, horde
+                            bp0 = 5;
+                            break;
+                        case 48637: // 10%, horde
+                            bp0 = 10;
+                            break;
+                        case 48638: // 15%, horde
+                            bp0 = 15;
+                            break;
+                        case 48115: // 5%, alliance
+                            bp1 = 5;
+                            break;
+                        case 48633: // 10%, alliance
+                            bp1 = 10;
+                            break;
+                        case 48634: // 15%, alliance
+                            bp1 = 15;
+                            break;
+                    }
+                    if (bp0)
+                        pStandart->CastCustomSpell(pStandart, 90708, &bp0, &bp0, &bp0, true);
+                    
+                    if (bp1)
+                        pStandart->CastCustomSpell(pStandart, 90216, &bp1, &bp1, &bp1, true);
+                }
+            }
+
+            void Register()
+            {  
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_battle_guild_standart_AuraScript::HandleTriggerSpell, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_battle_guild_standart_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_endurance_of_niuzao();
@@ -3840,4 +3963,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_dampening();
     new spell_gen_orb_of_power();
     new spell_gen_drums_of_rage();
+    new spell_gen_battle_guild_standart();
 }
