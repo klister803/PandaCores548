@@ -29131,7 +29131,7 @@ void Player::SendMovementSetFeatherFall(bool apply)
     SendDirectMessage(&data);
 }
 
-void Player::SendMovementSetCollisionHeight(float height)
+void Player::SendMovementSetCollisionHeight(float height, uint32 mountDisplayID/* = 0*/)
 {
     ObjectGuid guid = GetGUID();
 
@@ -29140,18 +29140,18 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteGuidMask<7, 0, 6, 1>(guid);
     data.WriteBits(0, 2);
     data.WriteGuidMask<2, 5, 3>(guid);
-    data.WriteBit(1);                        // dword1C
+    data.WriteBit(!mountDisplayID);
     data.WriteGuidMask<4>(guid);
 
     data.FlushBits();
     
     data.WriteGuidBytes<5, 4, 1, 7, 0, 2>(guid);
-    //if (dword1C)
-    //    packet.ReadInt32("dword1C");
+    if (mountDisplayID)
+        data << uint32(mountDisplayID);
     data << float(height);
-    data << uint32(sWorld->GetGameTime());   // Packet counter
+    data << uint32(sWorld->GetGameTime());                  // Packet counter
     data.WriteGuidBytes<6>(guid);
-    data << float(1.0f);                     // sometimes 1.3f(swiming for ex). It's default char height
+    data << float(GetFloatValue(OBJECT_FIELD_SCALE_X));     // scale
     data.WriteGuidBytes<3>(guid);
 
     SendDirectMessage(&data);
@@ -29180,6 +29180,37 @@ void Player::ShowNeutralPlayerFactionSelectUI()
 {
     WorldPacket data(SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI);
     GetSession()->SendPacket(&data);
+}
+
+float Player::GetCollisionHeight(bool mounted)
+{
+    if (mounted)
+    {
+        CreatureDisplayInfoEntry const* mountDisplayInfo = sCreatureDisplayInfoStore.LookupEntry(GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID));
+        if (!mountDisplayInfo)
+            return GetCollisionHeight(false);
+
+        CreatureModelDataEntry const* mountModelData = sCreatureModelDataStore.LookupEntry(mountDisplayInfo->ModelId);
+        if (!mountModelData)
+            return GetCollisionHeight(false);
+
+        CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(GetNativeDisplayId());
+        ASSERT(displayInfo);
+        CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
+        ASSERT(modelData);
+
+        return mountModelData->MountHeight + modelData->CollisionHeight;
+    }
+    else
+    {
+        //! Dismounting case - use basic default model data
+        CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(GetNativeDisplayId());
+        ASSERT(displayInfo);
+        CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
+        ASSERT(modelData);
+
+        return modelData->CollisionHeight;
+    }
 }
 
 void Player::SetPersonnalXpRate(float PersonnalXpRate)
