@@ -307,7 +307,8 @@ class npc_hot_rod : public CreatureScript
                             if(itr->second.CreatureOrGOCount[j])
                             {
                                 //player->RemoveAllMinionsByEntry(QuestTemplateData[j][0]);
-                                player->CastSpell(player, QuestTemplateData[j][2], true);
+                                //TMP. In some cases call crash http://pastebin.com/vcnGS701
+                                //player->CastSpell(player, QuestTemplateData[j][2], true);
                             }
                         }
                     }
