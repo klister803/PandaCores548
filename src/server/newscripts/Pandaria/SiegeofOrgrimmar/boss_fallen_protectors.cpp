@@ -26,8 +26,9 @@ enum eSpells
     //Rook
     SPELL_VENGEFUL_STRIKE               = 144396, //Vengeful Strikes
     SPELL_CORRUPTED_BREW                = 143019, //Corrupted Brew
-    SPELL_CLASH                         = 143027, //Clash
+    SPELL_CLASH                         = 143027, //Clash   cast 143028
     SPELL_CORRUPTION_KICK               = 143007, //Corruption Kick
+    SPELL_MISERY_SORROW_GLOOM           = 143955, //Misery, Sorrow, and Gloom
 
     //He
     SPELL_GARROTE                       = 143198, //Garrote
@@ -90,7 +91,7 @@ struct boss_fallen_protectors : public BossAI
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS, false);
 
                 events.SetPhase(PHASE_BOND_GOLDEN_LOTUS);
-                events.ScheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);
+                events.RescheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
             }
             return;
         }
@@ -107,6 +108,13 @@ struct boss_fallen_protectors : public BossAI
 
     void DoAction(int32 const action)
     {
+        switch(action)
+        {
+            //Check if all boses have 1 pct. If == true -> setbossstate(DONE)
+            case EVENT_1:
+                events.RescheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
+                break;
+        }
     }
 
     void JustDied(Unit* /*killer*/)
@@ -131,9 +139,22 @@ class boss_rook_stonetoe : public CreatureScript
                 boss_fallen_protectors::Reset();
             }
 
+            enum local
+            {
+                EVENT_VENGEFUL_STRIKE   = 5,
+                EVENT_CORRUPTED_BREW    = 6,
+                EVENT_CLASH             = 7,
+                EVENT_CORRUPTION_KICK   = 8,
+            };
+
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
+
+                events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CLASH, urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CORRUPTION_KICK, urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
             }
 
             void DoAction(int32 const action)
@@ -148,9 +169,26 @@ class boss_rook_stonetoe : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    boss_fallen_protectors::DoAction(eventId);
+                    switch (eventId)
+                    {
+                        case EVENT_VENGEFUL_STRIKE:
+                            DoCastVictim(SPELL_VENGEFUL_STRIKE);
+                            events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_CORRUPTED_BREW:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                                DoCast(target, SPELL_CORRUPTED_BREW);
+                            break;
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
@@ -195,9 +233,18 @@ class boss_he_softfoot : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    boss_fallen_protectors::DoAction(eventId);
+                    switch (eventId)
+                    {
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
@@ -242,9 +289,18 @@ class boss_sun_tenderheart : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    boss_fallen_protectors::DoAction(eventId);
+                    switch (eventId)
+                    {
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
