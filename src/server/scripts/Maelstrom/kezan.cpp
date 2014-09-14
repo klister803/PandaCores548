@@ -273,18 +273,19 @@ class npc_hot_rod : public CreatureScript
                                 SetVisibilityDetect(me, (InvisibilityType)QuestTemplateData[j][1], true);
                             }else
                             {
-                                Minions.clear();
-                                player->GetAllMinionsByEntry(Minions, QuestTemplateData[j][0]);
-                                if(Minions.empty())
-                                    player->CastSpell(player, QuestTemplateData[j][2], true);
-                                else
-                                {
-                                    if(Creature* guard = *Minions.begin())
-                                    {
-                                        if(me->GetVehicleKit()->HasEmptySeat(QuestTemplateData[j][3]))
-                                            guard->EnterVehicle(me, QuestTemplateData[j][3]);
-                                    }
-                                }
+                                //TMP.
+                                //Minions.clear();
+                                //player->GetAllMinionsByEntry(Minions, QuestTemplateData[j][0]);
+                                //if(Minions.empty())
+                                //    player->CastSpell(player, QuestTemplateData[j][2], true);
+                                //else
+                                //{
+                                //    if(Creature* guard = *Minions.begin())
+                                //    {
+                                //        if(me->GetVehicleKit()->HasEmptySeat(QuestTemplateData[j][3]))
+                                //            guard->EnterVehicle(me, QuestTemplateData[j][3]);
+                                //    }
+                                //}
                             }
                         }
                     }
