@@ -57,7 +57,8 @@ public:
         uint64 rikkalGuid;
         uint64 hisekGuid;
         uint64 garroshGuid;
-        
+        uint64 npcGoldenLotosMoverGUID;
+
         void Initialize()
         {
             SetBossNumber(DATA_MAX);
@@ -68,6 +69,7 @@ public:
             //GameObject
            
             //Creature
+            npcGoldenLotosMoverGUID = 0;
             LorewalkerChoGUIDtmp= 0;
             immerseusGuid       = 0;
             npcpointGuid        = 0;
@@ -140,6 +142,9 @@ public:
                 break;
             case NPC_HE_SOFTFOOT:
                 heGuid = creature->GetGUID();
+                break;
+            case NPC_GOLD_LOTOS_MOVER:
+                npcGoldenLotosMoverGUID = creature->GetGUID();
                 break;
             //  
             case NPC_NORUSHEN:  
@@ -262,6 +267,8 @@ public:
                     return sunGuid;
                 case NPC_HE_SOFTFOOT:
                     return heGuid;
+                case NPC_GOLD_LOTOS_MOVER:
+                    return npcGoldenLotosMoverGUID;
                 //  
                 case NPC_NORUSHEN:  
                     return noryshenGuid;

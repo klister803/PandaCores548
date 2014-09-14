@@ -311,6 +311,20 @@ const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, c
     }
 }
 
+enum c_events
+{
+    EVENT_1     = 1,
+    EVENT_2,
+    EVENT_3,
+    EVENT_4,
+    EVENT_5,
+    EVENT_6,
+    EVENT_7,
+    EVENT_8,
+    EVENT_9,
+    EVENT_10,
+};
+
 class EventMap : private std::map<uint32, uint32>
 {
     public:

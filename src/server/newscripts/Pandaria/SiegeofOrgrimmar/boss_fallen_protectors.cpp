@@ -72,7 +72,89 @@ class boss_fallen_protectors : public CreatureScript
         }
 };
 
+
+//Golden Lotus
+class npc_golden_lotus_control : public CreatureScript
+{
+public:
+    npc_golden_lotus_control() : CreatureScript("npc_golden_lotus_control") { }
+
+    struct npc_wind_vehicleAI : public ScriptedAI
+    {        
+        npc_wind_vehicleAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();            
+        }
+
+        enum data
+        {
+            SUMMON_MOVER        = 143705,
+            SPELL_FACE_CHANNEL  = 116351,
+        };
+
+        InstanceScript* instance;
+        EventMap events;
+
+        //void JustSummoned(Creature* creature)
+        //{
+        //    if (creature->GetEntry() == NPC_GOLD_LOTOS_MOVER)
+        //    {
+        //        creature->SetDisplayId(48920);
+        //        creature->GetMotionMaster()->MoveIdle();
+        //        creature->LoadPath(creature->GetEntry());
+        //        creature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
+        //        creature->GetMotionMaster()->Initialize();
+        //        if (creature->isAlive())                            // dead creature will reset movement generator at respawn
+        //        {
+        //            creature->setDeathState(JUST_DIED);
+        //            creature->Respawn(true);
+        //        }
+        //    }
+        //};
+
+        void Reset()
+        {
+            //Use manual spawn.
+            //me->CastSpell(me, SUMMON_MOVER, true);
+            events.RescheduleEvent(EVENT_1, 1000);
+        }
+        
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        {
+            if (apply)
+            {
+                if (Creature* mover = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MOVER)))
+                {
+                    who->CastSpell(mover, SPELL_FACE_CHANNEL, true);
+                    if (!me->HasAura(SPELL_FACE_CHANNEL))
+                        me->CastSpell(mover, SPELL_FACE_CHANNEL, true);
+                }
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+
+            }
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wind_vehicleAI(creature);
+    }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_fallen_protectors();
+    new npc_golden_lotus_control();
 }
