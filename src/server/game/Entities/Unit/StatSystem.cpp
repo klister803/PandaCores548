@@ -1601,7 +1601,7 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
             APCoefficient = 12.02f;
             bonusDamage = 297.f - GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
         }
-        else if (GetEntry() == ENTRY_TREANT) // force of nature
+        else if (GetEntry() == ENTRY_TREANT || GetEntry() == 54983 || GetEntry() == 54984 || GetEntry() == 54985) // force of nature
         {
             int32 spellDmg = int32(m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_NATURE)) - m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_NATURE);
             if (spellDmg > 0)

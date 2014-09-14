@@ -49,11 +49,13 @@ void AggressorAI::UpdateAI(uint32 diff)
         m_updateAlliesTimer -= diff;
 
     Unit* owner = me->GetCharmerOrOwner();
-    Unit* target = NULL;
+    Unit* target = me->getAttackerForHelper();
+    Unit* targetOwner = NULL;
     if (owner)
-        target = owner->getAttackerForHelper();
-    if (!target)
-        target = me->getAttackerForHelper();
+        targetOwner = owner->getAttackerForHelper();
+
+    if(targetOwner != NULL && targetOwner != target)
+        AttackStart(targetOwner);
 
     // Autocast (casted only in combat or persistent spells in any state)
     if (!me->HasUnitState(UNIT_STATE_CASTING))

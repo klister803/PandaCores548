@@ -670,7 +670,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         CreatureDifficultyStat const* GetCreatureDiffStat() const { return m_creatureDiffData; }
         CreatureAddon const* GetCreatureAddon() const;
 
-        std::string GetAIName() const;
+        std::string GetAIName() const { return AIName; }
+        void SetAIName(std::string name) { AIName = name; }
         std::string GetScriptName() const;
         uint32 GetScriptId() const;
 
@@ -869,6 +870,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool m_AlreadySearchedAssistance;
         bool m_regenHealth;
         bool m_AI_locked;
+        std::string AIName;
 
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;

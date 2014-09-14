@@ -4133,11 +4133,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 113656:// Fists of Fury
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
-                case 115315:// Summon Black Ox Statue
-                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_CASTER;
-                    break;
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
                 case 110717: // Fear Ward (Symbiosis)

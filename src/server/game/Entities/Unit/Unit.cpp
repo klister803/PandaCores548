@@ -603,15 +603,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     if (damage > 1000000 && GetTypeId() == TYPEID_PLAYER && victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->GetCreatureTemplate()->rank)
         sLog->outWarn(LOG_FILTER_UNITS, "World Boss %u [%s] take more than 1M damage (%u) by player %u [%s] with spell %u", victim->GetEntry(), victim->GetName(), damage, GetGUIDLow(), GetName(), spellProto ? spellProto->Id : 0);
 
-    // Custom MoP Script
-    if (ToPlayer() && getClass() == CLASS_MONK && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && HasAura(115315))
-    {
-        if (damage > 0)
-        {
-            if (Aura* blackOxStatue = this->GetAura(115315))
-                blackOxStatue->SetScriptData(0, damage);
-        }
-    }
     // Leeching Poison - 112961 each attack heal the player for 10% of the damage
     if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
     {
@@ -8112,14 +8103,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
-                case 102351: // Cenarion Ward
-                {
-                    if (procEx & PROC_EX_INTERNAL_HOT) // temporarily
-                        return false;
-
-                    target = this;
-                    break;
-                }
                 // Sudden Eclipse
                 case 46832:
                 {

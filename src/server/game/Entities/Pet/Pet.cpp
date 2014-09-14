@@ -266,8 +266,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
             {
                 ToggleAutocast(sInfo, true);
-                SetCasterPet(true);
-                SetAttackDist(sInfo->GetMaxRange(false));
+                if(sInfo->GetMaxRange(false) > 5.0f)
+                {
+                    SetCasterPet(true);
+                    SetAttackDist(sInfo->GetMaxRange(false));
+                }
             }
             break;
         }
@@ -322,21 +325,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
         }
     }
-
-    // Send fake summon spell cast - this is needed for correct cooldown application for spells
-    // Example: 46584 - without this cooldown (which should be set always when pet is loaded) isn't set clientside
-    // TODO: pets should be summoned from real cast instead of just faking it?
-    /*if (summon_spell_id)
-    {
-        WorldPacket data(SMSG_SPELL_GO, (8+8+4+4+2));
-        data.append(owner->GetPackGUID());
-        data.append(owner->GetPackGUID());
-        data << uint8(0);
-        data << uint32(summon_spell_id);
-        data << uint32(256); // CAST_FLAG_UNKNOWN3
-        data << uint32(0);
-        owner->SendMessageToSet(&data, true);
-    }*/
 
     owner->SetMinion(this, true, slotID, stampeded);
     map->AddToMap(this->ToCreature());
@@ -443,7 +431,7 @@ void Pet::SavePetToDB(PetSlot mode)
     }
 
     //not delete, just remove from curent slot
-    if(m_owner->getClass() == CLASS_WARLOCK && mode == PET_SLOT_DELETED &&
+    if((m_owner->getClass() == CLASS_WARLOCK || m_owner->getClass() == CLASS_DEATH_KNIGHT) && mode == PET_SLOT_DELETED &&
         curentSlot >= PET_SLOT_WARLOCK_PET_FIRST && curentSlot <= PET_SLOT_WARLOCK_PET_LAST)
     {
         mode = curentSlot;
@@ -2072,11 +2060,11 @@ void Pet::LearnPetPassives()
     }
 }
 
-void Guardian::CastPetAuras(bool apply, uint32 spellId)
+void TempSummon::CastPetAuras(bool apply, uint32 spellId)
 {
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
 
-    Unit* owner = GetOwner();
+    Unit* owner = GetCharmerOrOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
@@ -2084,17 +2072,22 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
     {
         Unit* _target = this;
         Unit* _caster = this;
-        //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
 
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
         {
-            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
-
             if(itr->target == 1) //get target owner
                 _target = owner;
 
             if(itr->target == 2) //set caster owner
                 _caster = owner;
+
+            if(itr->target == 3) //get target from spell chain
+                _target = _target->GetTargetUnit();
+
+            if(_target == NULL)
+                _target = this;
+            if(_caster == NULL)
+                _caster = this;
 
             if(itr->aura > 0 && !_caster->HasAura(itr->aura))
                 continue;
@@ -2127,9 +2120,6 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
-                    case 3: //add spell
-                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
-                        break;
                 }
             }
             else
@@ -2149,9 +2139,6 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
-                        break;
-                    case 3: //add spell
-                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
                         break;
                 }
             }
@@ -2175,6 +2162,14 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
             if(itr->target == 2) //set caster owner
                 _caster = owner;
 
+            if(itr->target == 3) //get target from spell chain
+                _target = _target->GetTargetUnit();
+
+            if(_target == NULL)
+                _target = this;
+            if(_caster == NULL)
+                _caster = this;
+
             if(itr->aura > 0 && !_caster->HasAura(itr->aura))
                 continue;
             if(itr->aura < 0 && _caster->HasAura(abs(itr->aura)))
@@ -2206,9 +2201,6 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
-                    case 3: //add spell
-                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
-                        break;
                 }
             }
             else
@@ -2228,9 +2220,6 @@ void Guardian::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
-                        break;
-                    case 3: //add spell
-                        addSpell(itr->spellId, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
                         break;
                 }
             }

@@ -4313,6 +4313,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         switch(petentry)
         {
             case 17252: //Felguard
+            case 26125: //Risen Ally
                 slot = PET_SLOT_WARLOCK_PET_FIRST;
                 break;
             case 1863:  //Succubus
@@ -4343,7 +4344,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
                 slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 9);
                 break;
             case 510:   //Water Elemental
-            case 26125: //Risen Ally
             default:
                 slot = PET_SLOT_UNK_SLOT;
                 break;
@@ -4402,13 +4402,14 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         {
             for (uint8 i = 0; i < pet->GetPetAutoSpellSize(); ++i)
             {
-                if(uint32 spellId = pet->GetCreatureTemplate()->spells[i])
+                if(uint32 spellId = ((Creature*)pet)->m_spells[i])
                 if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
                 {
-                    pet->ToggleAutocast(sInfo, true);
                     if(sInfo->GetMaxRange(false) > 5.0f)
+                    {
                         pet->SetCasterPet(true);
-                    pet->SetAttackDist(sInfo->GetMaxRange(false));
+                        pet->SetAttackDist(sInfo->GetMaxRange(false));
+                    }
                 }
             }
         }
@@ -7663,14 +7664,14 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         {
             for (uint8 i = 0; i < summon->GetPetAutoSpellSize(); ++i)
             {
-                if(uint32 spellId = summon->GetCreatureTemplate()->spells[i])
+                if(uint32 spellId = summon->m_spells[i])
                 if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
                 {
-                    ((Guardian*)summon)->addSpell(spellId, ACT_ENABLED);
-                    ((Guardian*)summon)->ToggleAutocast(sInfo, true);
                     if(sInfo->GetMaxRange(false) > 5.0f)
+                    {
                         summon->SetCasterPet(true);
-                    summon->SetAttackDist(sInfo->GetMaxRange(false));
+                        summon->SetAttackDist(sInfo->GetMaxRange(false));
+                    }
                 }
             }
         }

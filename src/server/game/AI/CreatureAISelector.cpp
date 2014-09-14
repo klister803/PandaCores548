@@ -96,6 +96,7 @@ namespace FactorySelector
         ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
 
         sLog->outDebug(LOG_FILTER_TSCR, "Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str());
+        creature->SetAIName(ainame);
         return (ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature));
     }
 

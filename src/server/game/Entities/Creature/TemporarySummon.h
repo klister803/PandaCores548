@@ -62,6 +62,7 @@ class TempSummon : public Creature
         uint64 GetSummonerGUID() const { return m_summonerGUID; }
         TempSummonType const& GetSummonType() { return m_type; }
         uint32 GetTimer() { return m_timer; }
+        void CastPetAuras(bool current, uint32 spellId = 0);
 
         const SummonPropertiesEntry* const m_Properties;
     private:
@@ -99,7 +100,6 @@ class Guardian : public Minion
         void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
         void InitSummon();
         bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
-        void CastPetAuras(bool current, uint32 spellId = 0);
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
