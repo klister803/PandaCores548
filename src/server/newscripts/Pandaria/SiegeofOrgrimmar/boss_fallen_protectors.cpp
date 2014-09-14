@@ -83,8 +83,6 @@ struct boss_fallen_protectors : public BossAI
         if (me->GetHealth() <= 1 || int(me->GetHealth() - damage) <= 1)
         {
             damage = me->GetHealth() - damage;
-            if(!damage)
-                damage = 1;
 
             if (!events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
             {
