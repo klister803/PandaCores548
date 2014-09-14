@@ -192,6 +192,8 @@ struct ScriptedAI : public CreatureAI
 
     bool HealthBelowPct(uint32 pct) const { return me->HealthBelowPct(pct); }
     bool HealthAbovePct(uint32 pct) const { return me->HealthAbovePct(pct); }
+    float GetHealthPct(uint32 damage) const { return damage > me->GetHealth() ? 0.0f : 100.0f * float((me->GetHealth() - damage) / me->GetMaxHealth()); }
+    float GetHealthPctWithHeal(uint32 heal) const { return 100.0f * float((me->GetHealth() + heal) / me->GetMaxHealth()); }
 
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellInfo const* SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effect);
