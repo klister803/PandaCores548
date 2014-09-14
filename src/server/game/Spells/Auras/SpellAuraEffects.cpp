@@ -679,7 +679,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {
                 case 134735: // Battle Fatigue
                 {
-                    amount = 60;
+                    amount = -60;
                     break;
                 }
                 default:
@@ -696,7 +696,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {
                 case 134735: // Battle Fatigue
                 {
-                    amount = 60;
+                    amount = -60;
                     break;
                 }
                 case 114232: // Sanctified Wrath
