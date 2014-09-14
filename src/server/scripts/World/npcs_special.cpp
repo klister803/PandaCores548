@@ -4835,7 +4835,7 @@ enum PsyfiendSpells
 {
     SPELL_PSYCHIC_HORROR    = 113792,
     SPELL_ROOT_FOR_EVER     = 31366,
-    SPELL_SHADOW_FORM       = 142024,
+    SPELL_SHADOW_FORM       = 34429,
 };
 
 class npc_psyfiend : public CreatureScript
