@@ -2542,6 +2542,11 @@ uint8 Creature::getLevelForTarget(WorldObject const* target) const
     return uint8(level);
 }
 
+std::string Creature::GetAIName() const
+{
+    return sObjectMgr->GetCreatureTemplate(GetEntry())->AIName;
+}
+
 std::string Creature::GetScriptName() const
 {
     return sObjectMgr->GetScriptName(GetScriptId());

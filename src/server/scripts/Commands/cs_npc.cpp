@@ -560,7 +560,7 @@ public:
         }
 
         creature->AI()->SetData(data_1, data_2);
-        std::string AIorScript = creature->GetAIName() != "" ? "AI type: " + creature->GetAIName() : (creature->GetScriptName() != "" ? "Script Name: " + creature->GetScriptName() : "No AI or Script Name Set");
+        std::string AIorScript = creature->GetNPCAIName() != "" ? "AI type: " + creature->GetNPCAIName() : (creature->GetScriptName() != "" ? "Script Name: " + creature->GetScriptName() : "No AI or Script Name Set");
         handler->PSendSysMessage(LANG_NPC_SETDATA, creature->GetGUID(), creature->GetEntry(), creature->GetName(), data_1, data_2, AIorScript.c_str());
         return true;
     }
@@ -620,7 +620,7 @@ public:
         handler->PSendSysMessage(LANG_NPCINFO_PHASEMASK, target->GetPhaseMask());
         handler->PSendSysMessage(LANG_NPCINFO_ARMOR, target->GetArmor());
         handler->PSendSysMessage(LANG_NPCINFO_POSITION, float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()));
-        handler->PSendSysMessage(LANG_NPCINFO_AIINFO, target->GetAIName().c_str(), target->GetScriptName().c_str());
+        handler->PSendSysMessage(LANG_NPCINFO_AIINFO, target->GetNPCAIName().c_str(), target->GetScriptName().c_str());
 
         if (npcflags & UNIT_NPC_FLAG_VENDOR)
             handler->SendSysMessage(LANG_NPCINFO_VENDOR);

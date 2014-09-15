@@ -670,8 +670,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         CreatureDifficultyStat const* GetCreatureDiffStat() const { return m_creatureDiffData; }
         CreatureAddon const* GetCreatureAddon() const;
 
-        std::string GetAIName() const { return AIName; }
-        void SetAIName(std::string name) { AIName = name; }
+        std::string GetAIName() const;
+        std::string GetNPCAIName() const { return AIName; }
+        void SetNPCAIName(std::string name) { AIName = name; }
         std::string GetScriptName() const;
         uint32 GetScriptId() const;
 
