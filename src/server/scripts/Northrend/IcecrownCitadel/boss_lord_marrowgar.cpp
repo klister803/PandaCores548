@@ -427,14 +427,18 @@ class spell_marrowgar_coldflame : public SpellScriptLoader
             void SelectTarget(std::list<WorldObject*>& targets)
             {
                 targets.clear();
+                Unit* caster = GetCaster();
+                if(!caster || caster->GetAI())
+                    return;
+
                 // select any unit but not the tank (by owners threatlist)
-                Unit* target = GetCaster()->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 1, -GetCaster()->GetObjectSize(), true, -SPELL_IMPALED);
+                Unit* target = caster->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 1, -caster->GetObjectSize(), true, -SPELL_IMPALED);
                 if (!target)
-                    target = GetCaster()->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true); // or the tank if its solo
+                    target = caster->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true); // or the tank if its solo
                 if (!target)
                     return;
 
-                GetCaster()->GetAI()->SetGUID(target->GetGUID(), DATA_COLDFLAME_GUID);
+                caster->GetAI()->SetGUID(target->GetGUID(), DATA_COLDFLAME_GUID);
                 targets.push_back(target);
             }
 
