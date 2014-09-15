@@ -563,6 +563,9 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
 
                     if (rounding >= 0.444445f)
                         basePoints++;
+
+                    if ((_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) && basePoints > BasePoints) 
+                        basePoints = BasePoints;
                 }
 
                 if (ComboScalingMultiplier)
