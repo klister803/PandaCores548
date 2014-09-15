@@ -1167,6 +1167,8 @@ void Battleground::AddPlayer(Player* player)
         uint32 realTeam = player->GetTeam();
         if (realTeam != team)
             player->setFaction(team == ALLIANCE ? 1 : 2);
+
+        player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);
     }
 
     // add arena specific auras
@@ -1202,6 +1204,8 @@ void Battleground::AddPlayer(Player* player)
             else
                 player->CastSpell(player, SPELL_ALLIANCE_GREEN_FLAG, true);
         }
+
+        player->CastSpell(player, SPELL_BATTLE_FATIGUE, true);
 
         player->DestroyConjuredItems(true);
         player->UnsummonPetTemporaryIfAny();

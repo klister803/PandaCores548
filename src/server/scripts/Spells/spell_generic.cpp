@@ -34,6 +34,51 @@
 #include "Group.h"
 #include "LFGMgr.h"
 
+// Battle Fatigue - 134735
+class spell_gen_battle_fatigue : public SpellScriptLoader
+{
+    public:
+        spell_gen_battle_fatigue() : SpellScriptLoader("spell_gen_battle_fatigue") { }
+
+        class spell_gen_battle_fatigue_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_battle_fatigue_AuraScript);
+
+            uint32 _timer;
+
+            bool Load()
+            {
+                _timer = 0;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffect* aurEff)
+            {
+                _timer += diff;
+
+                if (_timer >= 19000)
+                {
+                    _timer = 0;
+                    if (Unit* caster = GetUnitOwner())
+                        if (Player* plr = caster->ToPlayer())
+                            if (plr->InArena() || plr->InRBG())
+                                if (Aura* aura = aurEff->GetBase())
+                                    aura->RefreshTimers();
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_gen_battle_fatigue_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_HEALING_PCT);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_battle_fatigue_AuraScript();
+        }
+};
+
 class spell_endurance_of_niuzao : public SpellScriptLoader
 {
     public:
@@ -3882,6 +3927,7 @@ class spell_gen_battle_guild_standart : public SpellScriptLoader
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_gen_battle_fatigue();
     new spell_endurance_of_niuzao();
     new spell_gen_absorb0_hitlimit1();
     new spell_gen_aura_of_anger();
