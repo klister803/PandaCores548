@@ -65,8 +65,8 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
 class EffectMovementGenerator : public MovementGenerator
 {
     public:
-        explicit EffectMovementGenerator(uint32 Id, float _x, float _y, float _z) : m_Id(Id),
-        i_x(_x), i_y(_y), i_z(_z)        {}
+        explicit EffectMovementGenerator(uint32 Id, float _x, float _y, float _z, DelayCastEvent *e = NULL) : m_Id(Id),
+        i_x(_x), i_y(_y), i_z(_z), m_event(e)        {}
 
         void Initialize(Unit &) {}
         void Finalize(Unit &unit);
@@ -76,6 +76,7 @@ class EffectMovementGenerator : public MovementGenerator
     private:
         uint32 m_Id;
         float i_x, i_y, i_z;
+        DelayCastEvent *m_event;
 };
 
 // Charge Movement Generator
