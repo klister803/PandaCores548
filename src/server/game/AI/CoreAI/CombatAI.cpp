@@ -33,10 +33,6 @@ int AggressorAI::Permissible(const Creature* creature)
     return PERMIT_BASE_NO;
 }
 
-void AggressorAI::EnterEvadeMode()
-{
-}
-
 void AggressorAI::UpdateAI(uint32 diff)
 {
     if (!UpdateVictim())

@@ -33,7 +33,6 @@ class AggressorAI : public CreatureAI
         void UpdateAI(uint32);
         static int Permissible(const Creature*);
         void UpdateAllies();
-        void EnterEvadeMode();
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
 };
