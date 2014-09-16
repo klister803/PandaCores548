@@ -30,6 +30,9 @@ public:
         uint32 TeamInInstance;
 
         //GameObjects
+        uint64 immerseusexdoorGuid;
+        uint64 norushenexdoorGuid;
+        std::vector<uint64> lightqGuids;
         
         //Creature
         uint64 LorewalkerChoGUIDtmp;
@@ -39,6 +42,8 @@ public:
         uint64 sunGuid;
         uint64 heGuid;
         uint64 noryshenGuid;
+        uint64 bhcGuid;
+        uint64 bhGuid;
         uint64 shaGuid;
         uint64 galakrasGuid;
         uint64 juggernautGuid;
@@ -67,6 +72,9 @@ public:
             TeamInInstance = 0;
 
             //GameObject
+            immerseusexdoorGuid  = 0;
+            norushenexdoorGuid   = 0;
+            lightqGuids.clear();
            
             //Creature
             npcGoldenLotosMoverGUID = 0;
@@ -77,6 +85,8 @@ public:
             sunGuid             = 0;
             heGuid              = 0;
             noryshenGuid        = 0;
+            bhcGuid             = 0;
+            bhGuid              = 0;
             shaGuid             = 0;
             galakrasGuid        = 0;
             juggernautGuid      = 0;
@@ -150,6 +160,12 @@ public:
             case NPC_NORUSHEN:  
                 noryshenGuid = creature->GetGUID();
                 break;
+            case NPC_B_H_CONTROLLER:
+                bhcGuid = creature->GetGUID();
+                break;
+            case NPC_BLIND_HATRED:
+                bhGuid = creature->GetGUID();
+                break;
             case NPC_SHA_OF_PRIDE: 
                 shaGuid = creature->GetGUID();
                 break;
@@ -216,6 +232,17 @@ public:
             case GO_IMMERSEUS_EX_DOOR:
                 AddDoor(go, true);
                 break;
+            case GO_LIGTH_QUARANTINE:
+            case GO_LIGTH_QUARANTINE_2:
+            case GO_LIGTH_QUARANTINE_3:
+            case GO_LIGTH_QUARANTINE_4:
+            case GO_LIGTH_QUARANTINE_5:
+            case GO_LIGTH_QUARANTINE_6:
+                lightqGuids.push_back(go->GetGUID());
+                break;
+            case GO_NORUSHEN_EX_DOOR:
+                norushenexdoorGuid = go->GetGUID();
+                break;
             }
         }
 
@@ -226,19 +253,39 @@ public:
 
             switch (id)
             {
-                case DATA_IMMEREUS:
-                    if (state == DONE)
+            case DATA_IMMEREUS:
+                if (state == DONE)
+                {
+                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                        bq->AI()->SetData(DATA_IMMEREUS, DONE);
+                    //Protectors intro
+                    if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                     {
-                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                            bq->AI()->SetData(DATA_IMMEREUS, DONE);
-                        //Protectors intro
-                        if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
-                        {
-                            LorewalkerChoGUIDtmp = cho->GetGUID();
-                            cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
-                        }
+                        LorewalkerChoGUIDtmp = cho->GetGUID();
+                        cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                     }
-                    break;
+                }
+                break; 
+            case DATA_NORUSHEN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        HandleGameObject(norushenexdoorGuid, true);
+                        break;
+                    }
+                }
+                break;
             }
             return true;
         }
@@ -272,6 +319,10 @@ public:
                 //  
                 case NPC_NORUSHEN:  
                     return noryshenGuid;
+                case NPC_B_H_CONTROLLER:
+                    return bhcGuid;
+                case NPC_BLIND_HATRED:
+                    return bhGuid;
                 case NPC_SHA_OF_PRIDE: 
                     return shaGuid;
                 case NPC_GALAKRAS: 

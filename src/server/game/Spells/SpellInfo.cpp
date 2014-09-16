@@ -1218,6 +1218,12 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 125925: //Swirlr tr ef (Cone Searcher!)
     case 143574: //Swelling corruption
     case 143579: //Sha Corruption
+    //Norushen
+    case 145212: //Unleashed Anger dmg
+    case 145214: //Unleashed Anger
+    case 145226: //Blind Hatred
+    case 145573: //Blind Hatred Dummy
+    case 145227: //Blind Hatred Dmg
         return Effects[effect];
     }
 

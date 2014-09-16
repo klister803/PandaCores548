@@ -4760,6 +4760,26 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143579: //Sha Corruption
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                //Norushen
+                case 145212: //Unleashed Anger dmg
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145214: //Unleashed Anger
+                    spellInfo->CasterAuraSpell = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    break;
+                case 145226: //Blind Hatred
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145573: //Blind Hatred Dummy
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].Amplitude = 1000;
+                    spellInfo->Effects[0].TriggerSpell = 145227;
+                    break;
+                case 145227: //Blind Hatred Dmg
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
                     
 
                 //World Bosses
