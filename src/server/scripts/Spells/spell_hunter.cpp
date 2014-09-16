@@ -2128,6 +2128,42 @@ class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
         }
 };
 
+// Item - Hunter_T16_2P_Bonus
+class spell_hun_t16_2p_bonus : public SpellScriptLoader
+{
+    public:
+        spell_hun_t16_2p_bonus() : SpellScriptLoader("spell_hun_t16_2p_bonus") { }
+
+        class spell_hun_t16_2p_bonus_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_t16_2p_bonus_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (caster->HasAura(144637))
+                    {
+                        if (caster->GetSpecializationId(caster->GetActiveSpec()) == SPEC_HUNTER_SURVIVAL)
+                            caster->ModifySpellCooldown(3045, - 8 * IN_MILLISECONDS);
+                        else
+                            caster->ModifySpellCooldown(3045, - 4 * IN_MILLISECONDS);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_hun_t16_2p_bonus_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_t16_2p_bonus_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2171,4 +2207,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_glyph_of_direction();
     new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
+    new spell_hun_t16_2p_bonus();
 }
