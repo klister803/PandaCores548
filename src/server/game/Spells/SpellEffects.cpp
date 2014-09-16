@@ -2003,7 +2003,7 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
     // Init dest coordinates
     float x, y, z, o;
-    destTarget->GetPosition(x, y, z);
+    destTarget->GetPosition(x, y, z, o);
 
     if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
     {
