@@ -107,6 +107,7 @@ enum HunterSpells
     HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
     HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
     SPELL_DRUMS_OF_RAGE                          = 146555,
+    HUNTER_SPELL_T16_2P_BONUS                    = 144637,
 };
 
 // Dash - 113073
@@ -2128,7 +2129,7 @@ class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
         }
 };
 
-// Item - Hunter_T16_2P_Bonus
+// Item - Hunter_T16_2P_Bonus - 144637
 class spell_hun_t16_2p_bonus : public SpellScriptLoader
 {
     public:
@@ -2142,12 +2143,12 @@ class spell_hun_t16_2p_bonus : public SpellScriptLoader
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                 {
-                    if (caster->HasAura(144637))
+                    if (caster->HasAura(HUNTER_SPELL_T16_2P_BONUS))
                     {
                         if (caster->GetSpecializationId(caster->GetActiveSpec()) == SPEC_HUNTER_SURVIVAL)
-                            caster->ModifySpellCooldown(3045, - 8 * IN_MILLISECONDS);
+                            caster->ModifySpellCooldown(HUNTER_SPELL_RAPID_FIRE, - 8 * IN_MILLISECONDS);
                         else
-                            caster->ModifySpellCooldown(3045, - 4 * IN_MILLISECONDS);
+                            caster->ModifySpellCooldown(HUNTER_SPELL_RAPID_FIRE, - 4 * IN_MILLISECONDS);
                     }
                 }
             }
