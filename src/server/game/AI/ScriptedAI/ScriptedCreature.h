@@ -88,6 +88,7 @@ struct ScriptedAI : public CreatureAI
     // *************
 
     void AttackStartNoMove(Unit* target);
+    void AttackStart(Unit* who);
 
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}

@@ -107,6 +107,7 @@ enum HunterSpells
     HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP         = 119403,
     HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
     SPELL_DRUMS_OF_RAGE                          = 146555,
+    HUNTER_SPELL_T16_2P_BONUS                    = 144637,
 };
 
 // Dash - 113073
@@ -561,6 +562,19 @@ class spell_hun_lynx_rush : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_lynx_rush_SpellScript);
 
+            SpellCastResult CheckCastMeet()
+            {
+                Unit* caster = GetCaster();
+                Unit* pet = caster->GetGuardianPet();
+                
+                if (pet->HasUnitState(UNIT_STATE_CONTROLLED) || pet->HasUnitState(UNIT_STATE_ROOT))
+                {
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                }
+                
+                return SPELL_CAST_OK;
+            }
+            
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -623,6 +637,7 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_hun_lynx_rush_SpellScript::CheckCastMeet);
                 OnHit += SpellHitFn(spell_hun_lynx_rush_SpellScript::HandleOnHit);
             }
         };
@@ -1160,7 +1175,12 @@ class spell_hun_kill_command : public SpellScriptLoader
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_TARGET_TOO_FAR);
                     return SPELL_FAILED_CUSTOM_ERROR;
                 }
-
+                
+                if (pet->HasUnitState(UNIT_STATE_CONTROLLED))
+                {
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                }
+                
                 return SPELL_CAST_OK;
             }
             
@@ -1714,15 +1734,6 @@ class spell_hun_disengage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_disengage_SpellScript);
 
-            SpellCastResult CheckCast()
-            {
-                Unit* caster = GetCaster();
-                if (caster->GetTypeId() == TYPEID_PLAYER && !caster->isInCombat())
-                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-
-                return SPELL_CAST_OK;
-            }
-
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -1751,7 +1762,6 @@ class spell_hun_disengage : public SpellScriptLoader
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_hun_disengage_SpellScript::CheckCast);
                 AfterCast += SpellCastFn(spell_hun_disengage_SpellScript::HandleAfterCast);
             }
         };
@@ -2128,6 +2138,80 @@ class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
         }
 };
 
+// Item - Hunter_T16_2P_Bonus - 144637
+class spell_hun_t16_2p_bonus : public SpellScriptLoader
+{
+    public:
+        spell_hun_t16_2p_bonus() : SpellScriptLoader("spell_hun_t16_2p_bonus") { }
+
+        class spell_hun_t16_2p_bonus_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_t16_2p_bonus_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (caster->HasAura(HUNTER_SPELL_T16_2P_BONUS))
+                    {
+                        if (caster->GetSpecializationId(caster->GetActiveSpec()) == SPEC_HUNTER_SURVIVAL)
+                            caster->ModifySpellCooldown(HUNTER_SPELL_RAPID_FIRE, - 8 * IN_MILLISECONDS);
+                        else
+                            caster->ModifySpellCooldown(HUNTER_SPELL_RAPID_FIRE, - 4 * IN_MILLISECONDS);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_hun_t16_2p_bonus_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_t16_2p_bonus_SpellScript();
+        }
+};
+
+// 16827, 17253, 49966 Based pets spells - checking distance target in ROOT state
+class spell_hun_pet_dist_check : public SpellScriptLoader
+{
+    public:
+        spell_hun_pet_dist_check() : SpellScriptLoader("spell_hun_pet_dist_check") { }
+
+        class spell_hun_pet_dist_check_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_pet_dist_check_SpellScript);
+
+            SpellCastResult CheckCastMeet()
+            {                              
+                Unit* caster = GetCaster();
+                Unit* target = caster->getVictim();
+                
+                if (!caster || !target)
+                    return SPELL_CAST_OK;
+                
+                if (!caster->IsWithinDist(target, 5.0f, true) && caster->HasUnitState(UNIT_STATE_ROOT))
+                {
+                    return SPELL_FAILED_DONT_REPORT;
+                }
+                
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_hun_pet_dist_check_SpellScript::CheckCastMeet);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_pet_dist_check_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2171,4 +2255,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_glyph_of_direction();
     new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
+    new spell_hun_t16_2p_bonus();
+    new spell_hun_pet_dist_check();
 }

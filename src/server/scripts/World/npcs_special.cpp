@@ -401,206 +401,6 @@ public:
     }
 };
 
-class npc_force_of_nature_treant_for_Guardian : public CreatureScript
-{
-public:
-    npc_force_of_nature_treant_for_Guardian() : CreatureScript("npc_force_of_nature_treant_for_Guardian") { }
-
-    struct npc_force_of_nature_treant_for_GuardianAI : ScriptedAI
-    {
-        npc_force_of_nature_treant_for_GuardianAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool firsttarget;
-
-        void InitializeAI()
-        {
-            me->CastSpell(me->GetTargetUnit(), 113830, true);
-            firsttarget = false;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!firsttarget)
-            {
-                AttackStart(me->GetTargetUnit());
-                firsttarget = true;
-            }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    ScriptedAI* GetAI(Creature* creature) const
-    {
-        return new npc_force_of_nature_treant_for_GuardianAI(creature);
-    }
-};
-
-class npc_force_of_nature_treant_for_Restoration : public CreatureScript
-{
-public:
-    npc_force_of_nature_treant_for_Restoration() : CreatureScript("npc_force_of_nature_treant_for_Restoration") { }
-
-    struct npc_force_of_nature_treant_for_RestorationAI : ScriptedAI
-    {
-        npc_force_of_nature_treant_for_RestorationAI(Creature* creature) : ScriptedAI(creature) { }
-
-        Unit* target;
-        uint32 _time;
-        bool firstcast;
-
-        void InitializeAI()
-        {
-            if (TempSummon* temp = me->ToTempSummon())
-                if (Unit* owner = temp->GetSummoner())
-                {
-                    std::list<Unit*> targets;
-                    std::list<Unit*> unitTargets;
-                    uint64 ownerGUID = owner->GetGUID();
-                    target = NULL;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(me, me, 40);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(me, unitTargets, u_check);
-                    me->VisitNearbyObject(40.0f, searcher);
-
-                    for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
-                    {
-                        if (!(*iter)->HasAura(774, ownerGUID))
-                            continue;
-
-                        targets.push_back(*iter);
-                    }
-
-                    targets.sort(Trinity::HealthPctOrderPred());
-
-                    for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
-                    {
-                        if (!(*iter)->IsWithinLOSInMap(me))
-                            continue;
-
-                        target = (*iter);
-                        break;
-                    }
-                }
-            _time = 0;
-            firstcast = true;
-        }
-        
-        
-        void UpdateAI(uint32 diff)
-        {
-            if (target && firstcast)
-            {
-                me->CastSpell(target, 142421, true);
-                firstcast = false;
-            }
-
-            _time += diff;
-
-            if (_time >= 2000)
-            {
-                if (DynamicObject* dynObj = me->GetDynObject(142423))
-                    me->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), 81269, true);
-                _time -= 2000;
-            }
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-            
-            me->CastSpell(me, 113828, false);
-        }
-    };
-
-    ScriptedAI* GetAI(Creature* creature) const
-    {
-        return new npc_force_of_nature_treant_for_RestorationAI(creature);
-    }
-};
-
-class npc_force_of_nature_treant_for_boomkin : public CreatureScript
-{
-public:
-    npc_force_of_nature_treant_for_boomkin() : CreatureScript("npc_force_of_nature_treant_for_boomkin") { }
-
-    struct npc_force_of_nature_treant_for_boomkinAI : ScriptedAI
-    {
-        npc_force_of_nature_treant_for_boomkinAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool firsttarget;
-
-        void InitializeAI()
-        {
-            me->CastSpell(me->GetTargetUnit(), 113770, true);
-            firsttarget = true;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-            
-            if (Unit* victim = me->SelectVictim())
-                me->CastSpell(victim, 113769, false);
-
-            if (firsttarget)
-            {
-                me->CastSpell(me->GetTargetUnit(), 113769, false);
-                AttackStart(me->GetTargetUnit());
-                firsttarget = false;
-            }
-
-            
-        }
-    };
-
-    ScriptedAI* GetAI(Creature* creature) const
-    {
-        return new npc_force_of_nature_treant_for_boomkinAI(creature);
-    }
-};
-
-class npc_force_of_nature_treant : public CreatureScript
-{
-public:
-    npc_force_of_nature_treant() : CreatureScript("npc_force_of_nature_treant") { }
-
-    struct npc_force_of_nature_treantAI : ScriptedAI
-    {
-        npc_force_of_nature_treantAI(Creature* creature) : ScriptedAI(creature) { }
-
-        bool firsttarget;
-
-        void InitializeAI()
-        {
-            me->CastSpell(me->GetTargetUnit(), 113770, true);
-            me->CastSpell(me->GetTargetUnit(), 150017, true);
-            firsttarget = false;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!firsttarget)
-            {
-                AttackStart(me->GetTargetUnit());
-                firsttarget = true;
-            }
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    ScriptedAI* GetAI(Creature* creature) const
-    {
-        return new npc_force_of_nature_treantAI(creature);
-    }
-};
-
 class npc_air_force_bots : public CreatureScript
 {
     public:
@@ -2599,6 +2399,7 @@ class npc_mirror_image : public CreatureScript
                 Unit* owner = me->GetOwner();
                 if (!owner)
                     return;
+                me->SetDisplayId(owner->GetDisplayId());
                 me->SetReactState(REACT_DEFENSIVE);
                 // Inherit Master's Threat List (not yet implemented)
                 owner->CastSpell((Unit*)NULL, 58838, true);
@@ -2608,6 +2409,9 @@ class npc_mirror_image : public CreatureScript
                 owner->CastSpell(me, 45204, true);
                 me->SetCasterPet(true);
                 me->SetAttackDist(40.0f);
+                me->SetSpeed(MOVE_RUN, owner->GetSpeedRate(MOVE_RUN));
+                me->SetSpeed(MOVE_SWIM, owner->GetSpeedRate(MOVE_SWIM));
+                me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
 
                 if (owner->getVictim())
                     me->AI()->AttackStart(owner->getVictim());
@@ -4060,72 +3864,6 @@ class npc_spirit_link_totem : public CreatureScript
 };
 
 /*######
-# npc_shadowy_apparition
-######*/
-
-class npc_shadowy_apparition : public CreatureScript
-{
-    public:
-        npc_shadowy_apparition() : CreatureScript("npc_shadowy_apparition") { }
-
-        struct npc_shadowy_apparitionAI : public ScriptedAI
-        {
-            uint64 targetGUID;
-
-            npc_shadowy_apparitionAI(Creature* creature) : ScriptedAI(creature)
-            {
-                targetGUID = 0;
-                Unit* owner = creature->GetOwner();
-
-                if (owner)
-                {
-                    if (creature->GetEntry() == 61966)
-                    {
-                        owner->CastSpell(creature, 87213, true); // Clone player skin
-                        creature->CastSpell(creature, 87427, true); // Shadow aura
-                        creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
-                        creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
-                        creature->SetReactState(REACT_PASSIVE);
-                    }
-                }
-            }
-
-            void SetGUID(uint64 guid, int32)
-            {
-                targetGUID = guid;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                Unit* owner = me->GetOwner();
-
-                if (!owner)
-                    return;
-
-                if (!me->HasAura(87213))
-                    owner->CastSpell(me, 87213, true); // Clone player skin
-                else if (!me->HasAura(87427))
-                    me->CastSpell(me, 87427, true); // Shadow aura
-
-                if (Unit* target = Unit::GetCreature(*me, targetGUID))
-                {
-                    if (target->GetDistance(me) < 2.0f)
-                    {
-                        me->CastSpell(target, 87532, true); // Death Damage
-                        me->CastSpell(me, 87529, true); // Death visual
-                        me->ForcedDespawn();
-                    }
-                }
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_shadowy_apparitionAI(creature);
-        }
-};
-
-/*######
 # npc_demoralizing_banner
 ######*/
 
@@ -5389,10 +5127,6 @@ class npc_shahram : public CreatureScript
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
-    new npc_force_of_nature_treant_for_Guardian();
-    new npc_force_of_nature_treant_for_Restoration();
-    new npc_force_of_nature_treant_for_boomkin();
-    new npc_force_of_nature_treant();
     new npc_air_force_bots();
     new npc_lunaclaw_spirit();
     new npc_chicken_cluck();
@@ -5429,7 +5163,6 @@ void AddSC_npcs_special()
     new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();
-    new npc_shadowy_apparition();
     new npc_demoralizing_banner();
     new npc_frozen_orb();
     new npc_guardian_of_ancient_kings();

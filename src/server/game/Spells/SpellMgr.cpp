@@ -303,7 +303,7 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
                 return 3 * IN_MILLISECONDS;
             // Hunter's Mark
             if (spellproto->SpellFamilyFlags[0] & 0x400)
-                return 120 * IN_MILLISECONDS;
+                return 20 * IN_MILLISECONDS;
             break;
         }
         case SPELLFAMILY_PALADIN:
@@ -2680,8 +2680,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1             2           3         4          5          6      7      8         9          10       11        12
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2695,17 +2695,18 @@ void SpellMgr::LoadSpellTriggered()
 
         int32 spell_id = fields[0].GetInt32();
         int32 spell_trigger = fields[1].GetInt32();
-        int32 option = fields[2].GetInt32();
-        int32 target = fields[3].GetInt32();
-        int32 caster = fields[4].GetInt32();
-        int32 targetaura = fields[5].GetInt32();
-        float bp0 = fields[6].GetFloat();
-        float bp1 = fields[7].GetFloat();
-        float bp2 = fields[8].GetFloat();
-        int32 effectmask = fields[9].GetInt32();
-        int32 aura = fields[10].GetInt32();
-        int32 chance = fields[11].GetInt32();
-        int32 group = fields[12].GetInt32();
+        int32 spell_cooldown = fields[2].GetInt32();
+        int32 option = fields[3].GetInt32();
+        int32 target = fields[4].GetInt32();
+        int32 caster = fields[5].GetInt32();
+        int32 targetaura = fields[6].GetInt32();
+        float bp0 = fields[7].GetFloat();
+        float bp1 = fields[8].GetFloat();
+        float bp2 = fields[9].GetFloat();
+        int32 effectmask = fields[10].GetInt32();
+        int32 aura = fields[11].GetInt32();
+        int32 chance = fields[12].GetInt32();
+        int32 group = fields[13].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2724,6 +2725,7 @@ void SpellMgr::LoadSpellTriggered()
         SpellTriggered temptrigger;
         temptrigger.spell_id = spell_id;
         temptrigger.spell_trigger = spell_trigger;
+        temptrigger.spell_cooldown = spell_cooldown;
         temptrigger.option = option;
         temptrigger.target = target;
         temptrigger.caster = caster;
@@ -3524,6 +3526,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 121471: // Shadow Blades
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_367;
+                    break;
                 case 148008: // Essence of Yu'lon
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
@@ -3934,7 +3939,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                     break;
                 case 44203: // Tranquility (triggered)
-                    spellInfo->MaxAffectedTargets = 5;
+                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
                 case 121118:// Dire Beast summons
                 case 122802:
@@ -4071,7 +4076,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 44461: // Living Bomb
-                    spellInfo->MaxAffectedTargets = 3;
+                    spellInfo->CustomMaxAffectedTargets = 3; //used if empty on dbc SpellTargetRestrictionsEntry
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 23691: // Berzerker Rage Effect
@@ -4191,11 +4196,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
                     break;
                 case 85222: // Light of Dawn
-                    spellInfo->MaxAffectedTargets = 6;
+                    spellInfo->CustomMaxAffectedTargets = 6; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
                 case 8122:  // Psychic Scream
                     spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
-                    spellInfo->MaxAffectedTargets = 5;
+                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
@@ -4225,7 +4230,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 121253:// Keg Smash
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                    spellInfo->MaxAffectedTargets = 3;
+                    spellInfo->CustomMaxAffectedTargets = 3;      //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
                 case 115308: // Elusive Brew
                 case 122300: // Psyfiend Visual
@@ -4760,7 +4765,33 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143579: //Sha Corruption
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
-                    
+                //Norushen
+                case 145212: //Unleashed Anger dmg
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145214: //Unleashed Anger
+                    spellInfo->CasterAuraSpell = 0;
+                    spellInfo->Effects[2].TargetA = 25;
+                    break;
+                case 145226: //Blind Hatred
+                    spellInfo->Effects[0].TargetA = 25;
+                    break;
+                case 145573: //Blind Hatred Dummy
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+                    spellInfo->Effects[0].Amplitude = 1000;
+                    spellInfo->Effects[0].TriggerSpell = 145227;
+                    break;
+                case 145227: //Blind Hatred Dmg
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
+
+                //Fallen Protectors
+                case 144396:    //Vengeful Strikes
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    break;
+
 
                 //World Bosses
                 //Sha of Anger
@@ -5011,7 +5042,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 1543: // Flare. Hack from wait to fix areatrigger
                     spellInfo->Effects[0].TriggerSpell = 94528;
                     break;
-                case 30823:
+                case 51490:  // Thunderstorm
+                case 30823:  // Shamanistic Rage
                 case 498:    // Divine Protection
                 case 137562: // Nimble Brew
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
@@ -5023,7 +5055,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
                 case 53651: // Beacon of Light Trigger
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;                    
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
                 case 53563: // Beacon of Light
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
@@ -5044,10 +5076,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
                     break;
                 case 63487: // Ice Trap. Hack from wait to fix areatrigger
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 135299;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->Effects[1].TriggerSpell = 13810;
                     spellInfo->Effects[1].TargetA = 18;
                     break;
@@ -5055,7 +5087,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
                     spellInfo->Effects[0].TargetA = 28;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); // 10yard
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s                    
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s
                     break;
                 case 23035: // Battle Standard (Horde)
                 case 23034: // Battle Standard (Alliance)
@@ -5096,6 +5128,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50493: // D.I.S.C.O.
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
                     break;
+                case 103964: // Touch of Chaos
+                    spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
+                    break;
                 default:
                     break;
             }
@@ -5121,9 +5156,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 142423: // Swiftmend
-                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_MASK;
-                    break;
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;

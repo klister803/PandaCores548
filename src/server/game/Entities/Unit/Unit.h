@@ -1422,6 +1422,7 @@ class Unit : public WorldObject
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
         bool isMinion() const   { return m_unitTypeMask & UNIT_MASK_MINION; }
+        bool isAnySummons() const   { return m_unitTypeMask & (UNIT_MASK_MINION | UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE); }
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
         uint8 getLevelForTarget(WorldObject const* /*target*/) const { return getLevel(); }
@@ -1570,7 +1571,7 @@ class Unit : public WorldObject
         void TriggerAurasProcOnEvent(ProcEventInfo& eventInfo, std::list<AuraApplication*>& procAuras);
 
         void HandleEmoteCommand(uint32 anim_id);
-        void AttackerStateUpdate (Unit* victim, WeaponAttackType attType = BASE_ATTACK, bool extra = false);
+        void AttackerStateUpdate (Unit* victim, WeaponAttackType attType = BASE_ATTACK, bool extra = false, uint32 replacementAttackTrigger = 0, uint32 replacementAttackAura = 0);
 
         void CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* damageInfo, WeaponAttackType attackType = BASE_ATTACK);
         void DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss);
@@ -1710,7 +1711,7 @@ class Unit : public WorldObject
         void SendSpellDamageImmune(Unit* target, uint32 spellId);
 
         void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
-        virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
+        virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false, bool stop = false);
         // returns true if unit's position really changed
         bool UpdatePosition(const Position &pos, bool teleport = false) { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
         void UpdateOrientation(float orientation);
@@ -2512,7 +2513,7 @@ class Unit : public WorldObject
         bool HandleIgnoreAurastateAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
 
         void UpdateSplineMovement(uint32 t_diff);
-        void UpdateSplinePosition();
+        void UpdateSplinePosition(bool stop = false);
 
         // player or player's pet
         float GetCombatRatingReduction(CombatRating cr) const;
@@ -2559,6 +2560,21 @@ class Unit : public WorldObject
         // ccd system
         bool _haveCCDEffect;
         uint32 _delayInterruptFlag;
+};
+
+class DelayCastEvent : public BasicEvent
+{
+    friend class EffectMovementGenerator;
+    friend class Spell;
+    protected:
+        DelayCastEvent(uint64 c, uint64 t, uint32 s) : CasterGUID(c), TargetGUID(t), Spell(s) {}
+        ~DelayCastEvent() {};
+        bool Execute(uint64, uint32) { /* ToDo: make for event timer*/ return true; };
+        void Execute(Unit *caster); // used at cast after jump for example.
+
+        uint64 CasterGUID;
+        uint64 TargetGUID;
+        uint32 Spell;
 };
 
 namespace Trinity

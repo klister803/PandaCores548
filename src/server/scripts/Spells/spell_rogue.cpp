@@ -66,6 +66,36 @@ enum RogueSpells
     ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE        = 45182,
 };
 
+// Shuriken Toss - 114014
+class spell_rog_shuriken_toss : public SpellScriptLoader
+{
+    public:
+        spell_rog_shuriken_toss() : SpellScriptLoader("spell_rog_shuriken_toss") { }
+
+        class spell_rog_shuriken_toss_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_shuriken_toss_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* target = GetHitUnit())
+                    if (Unit* caster = GetCaster())
+                        if (target->IsInRange(caster, 10.0f, 100.0f) && !caster->HasAura(121471))
+                            caster->CastSpell(caster, 137586, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_shuriken_toss_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_shuriken_toss_SpellScript();
+        }
+};
+
 // Cheat Death - 31230
 class spell_rog_cheat_death : public SpellScriptLoader
 {
@@ -1092,6 +1122,7 @@ class spell_rog_burst_of_speed : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_shuriken_toss();
     new spell_rog_cheat_death();
     new spell_rog_blade_flurry();
     new spell_rog_growl();

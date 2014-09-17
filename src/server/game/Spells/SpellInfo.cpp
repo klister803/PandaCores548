@@ -338,7 +338,7 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_CONE,    TARGET_CHECK_ENEMY,    TARGET_DIR_FRONT},       // 129 TARGET_UNIT_CONE_ENEMY_129
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 130
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 131
-    {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_TARGET, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_PARTY,    TARGET_DIR_NONE},        // 132
+    {TARGET_OBJECT_TYPE_DEST, TARGET_REFERENCE_TYPE_DEST,  TARGET_SELECT_CATEGORY_DEFAULT,  TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 132 TARGET_DEST_DEST
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 133
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 134
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 135
@@ -563,6 +563,9 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
 
                     if (rounding >= 0.444445f)
                         basePoints++;
+
+                    if ((_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) && basePoints > BasePoints) 
+                        basePoints = BasePoints;
                 }
 
                 if (ComboScalingMultiplier)
@@ -1118,10 +1121,19 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     StancesNot = _shapeshift ? _shapeshift->StancesNot : 0;
 
     // SpellTargetRestrictionsEntry
-    SpellTargetRestrictionsEntry const* _target = GetSpellTargetRestrictions();
-    Targets = _target ? _target->Targets : 0;
-    TargetCreatureType = _target ? _target->TargetCreatureType : 0;
-    MaxAffectedTargets = _target ? _target->MaxAffectedTargets : 0;
+    CustomMaxAffectedTargets = 0; // Now it just custom case if not target restrictions on dbc.
+    GeneralTargets = 0;
+    GeneralTargetCreatureType = 0;
+
+    // loadinf all difficulties.
+    for(int difficulty = NONE_DIFFICULTY; difficulty < MAX_DIFFICULTY; ++difficulty)
+        if(SpellTargetRestrictionsEntry const* _restr = GetSpellTargetRestrioctions(Id, difficulty))
+        {
+            RestrrictionsMap[difficulty] = _restr;
+            // on MoP no different betwine difficulties for targets.
+            if (!GeneralTargets) GeneralTargets = _restr->Targets;
+            if (!GeneralTargetCreatureType) GeneralTargetCreatureType = _restr->TargetCreatureType;
+        }
 
     // SpellTotemsEntry
     SpellTotemsEntry const* _totem = GetSpellTotems();
@@ -1215,6 +1227,12 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 125925: //Swirlr tr ef (Cone Searcher!)
     case 143574: //Swelling corruption
     case 143579: //Sha Corruption
+    //Norushen
+    case 145212: //Unleashed Anger dmg
+    case 145214: //Unleashed Anger
+    case 145226: //Blind Hatred
+    case 145573: //Blind Hatred Dummy
+    case 145227: //Blind Hatred Dmg
         return Effects[effect];
     }
 
@@ -1506,7 +1524,7 @@ bool SpellInfo::IsRequiringDeadTarget() const
 
 bool SpellInfo::IsAllowingDeadTarget() const
 {
-    return AttributesEx2 & SPELL_ATTR2_CAN_TARGET_DEAD || Targets & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_DEAD);
+    return AttributesEx2 & SPELL_ATTR2_CAN_TARGET_DEAD || GeneralTargets & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_DEAD);
 }
 
 bool SpellInfo::CanBeUsedInCombat() const
@@ -2096,7 +2114,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     // not allow passengers to be implicitly hit by spells, however this target type should be an exception,
     // if this is left it kills spells that award kill credit from vehicle to master and some or all* spells,
     // the use of these 2 covers passenger target check
-    if (!(Targets & TARGET_UNIT_MASTER) && !caster->IsVehicle())
+    if (!(GeneralTargets & TARGET_UNIT_MASTER) && !caster->IsVehicle())
     {
         if (TargetAuraState && !unitTarget->HasAuraState(AuraStateType(TargetAuraState), this, caster))
             return SPELL_FAILED_TARGET_AURASTATE;
@@ -2169,7 +2187,7 @@ bool SpellInfo::CheckTargetCreatureType(Unit const* target) const
         return true;
     }
     uint32 creatureType = target->GetCreatureTypeMask();
-    return !TargetCreatureType || !creatureType || (creatureType & TargetCreatureType);
+    return !GeneralTargetCreatureType || !creatureType || (creatureType & GeneralTargetCreatureType);
 }
 
 SpellSchoolMask SpellInfo::GetSchoolMask() const
@@ -2749,7 +2767,7 @@ uint32 SpellInfo::_GetExplicitTargetMask() const
 {
     bool srcSet = false;
     bool dstSet = false;
-    uint32 targetMask = Targets;
+    uint32 targetMask = GeneralTargets;
     // prepare target mask using effect target entries
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -3079,9 +3097,40 @@ bool SpellInfo::_IsPositiveTarget(uint32 targetA, uint32 targetB)
     return true;
 }
 
-SpellTargetRestrictionsEntry const* SpellInfo::GetSpellTargetRestrictions() const
+SpellTargetRestrictionsEntry const* SpellInfo::GetSpellTargetRestrictions(uint16 diff) const
 {
-    return SpellTargetRestrictionsId ? sSpellTargetRestrictionsStore.LookupEntry(SpellTargetRestrictionsId) : NULL;
+    SpellTargetRestrictionsMap::const_iterator itr = RestrrictionsMap.find(diff);
+    if (itr == RestrrictionsMap.end())
+        return NULL;
+
+    return itr->second;
+}
+
+uint32 SpellInfo::GetMaxAffectedTargets(uint16 diff) const
+{
+    SpellTargetRestrictionsEntry const* restr = GetSpellTargetRestrictions(diff);
+    if (!restr)
+        return CustomMaxAffectedTargets;
+
+    return restr->MaxAffectedTargets;
+}
+
+uint32 SpellInfo::GetTargets(uint16 diff) const
+{
+    SpellTargetRestrictionsEntry const* restr = GetSpellTargetRestrictions(diff);
+    if (!restr)
+        return 0;
+
+    return restr->Targets;
+}
+
+uint32 SpellInfo::GetTargetCreatureType(uint16 diff) const
+{
+    SpellTargetRestrictionsEntry const* restr = GetSpellTargetRestrictions(diff);
+    if (!restr)
+        return 0;
+
+    return restr->TargetCreatureType;
 }
 
 SpellEquippedItemsEntry const* SpellInfo::GetSpellEquippedItems() const

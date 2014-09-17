@@ -112,6 +112,28 @@ void ScriptedAI::AttackStartNoMove(Unit* who)
         DoStartNoMovement(who);
 }
 
+void ScriptedAI::AttackStart(Unit* who)
+{
+    if (!IsCombatMovementAllowed())
+    {
+        AttackStartNoMove(who);
+        return;
+    }
+
+    if (who && me->Attack(who, true))
+    {
+        if (me->ToCreature() && me->GetEntry() == 69099) //World Boss Nalak
+            me->GetMotionMaster()->MoveCharge(who->GetPositionX(), who->GetPositionY(), who->GetPositionZ() + 18.0f);
+        else if(me->GetCasterPet())
+        {
+            if(!me->IsWithinMeleeRange(who, me->GetAttackDist()))
+                me->GetMotionMaster()->MoveChase(who, me->GetAttackDist() - 0.5f);
+        }
+        else
+            me->GetMotionMaster()->MoveChase(who);
+    }
+}
+
 void ScriptedAI::UpdateAI(uint32 /*diff*/)
 {
     //Check if we have a current target

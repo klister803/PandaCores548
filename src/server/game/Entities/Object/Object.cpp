@@ -2751,14 +2751,16 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, bool stampeded)
 {
-    Pet* pet = new Pet(this, petType);
-
     bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
     if (getClass() != CLASS_HUNTER)
         currentPet = false;
+    else
+        petType = HUNTER_PET;
+
+    Pet* pet = new Pet(this, petType);
 
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET)
+    if (petType == SUMMON_PET || petType == HUNTER_PET)
     {
         // This check done in LoadPetFromDB, but we should not continue this function if pet not alowed
         if (!CanSummonPet(entry))
@@ -2779,9 +2781,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             return pet;
         }
     }
-
-    if (stampeded)
-        petType = HUNTER_PET;
 
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)
@@ -2809,27 +2808,14 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     pet->SetCreatorGUID(GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
-
-    pet->setPowerType(POWER_MANA);
-    pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-    //pet->InitStatsForLevel(getLevel());
 
     switch (petType)
     {
         case SUMMON_PET:
             // this enables pet details window (Shift+P)
             pet->GetCharmInfo()->SetPetNumber(pet_number, true);
-            pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
-            pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-            pet->SetFullHealth();
-            pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped in this case
-            if (getClass() == CLASS_WARLOCK)
-            {
-                pet->SetClass(CLASS_ROGUE);
-                pet->setPowerType(POWER_ENERGY); // Warlock's pets have energy
-            }
             break;
         default:
             break;

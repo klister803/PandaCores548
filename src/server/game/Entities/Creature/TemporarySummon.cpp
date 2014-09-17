@@ -363,25 +363,8 @@ bool Minion::IsWarlockPet() const
 {
     if(isPet())
     {
-        switch (GetEntry())
-        {
-            case ENTRY_INFERNAL:
-            case ENTRY_IMP:
-            case ENTRY_VOIDWALKER:
-            case ENTRY_SUCCUBUS:
-            case ENTRY_FELHUNTER:
-            case ENTRY_FELGUARD:
-            case ENTRY_WRATHGUARD:
-            case ENTRY_OBSERVER:
-            case ENTRY_SHIVARRA:
-            case ENTRY_VOIDLORD:
-            case ENTRY_FEL_IMP:
-            case ENTRY_TERRORGUARD:
-            case ENTRY_ABYSSAL:
-                return true;
-            default:
-                return false;
-        }
+        if(m_owner && m_owner->getClass() == CLASS_WARLOCK)
+            return true;
     }
     else
         return false;

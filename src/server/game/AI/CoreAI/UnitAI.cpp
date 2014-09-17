@@ -29,17 +29,7 @@
 void UnitAI::AttackStart(Unit* victim)
 {
     if (victim && me->Attack(victim, true))
-    {
-        if (me->ToCreature() && me->GetEntry() == 69099) //World Boss Nalak
-            me->GetMotionMaster()->MoveCharge(victim->GetPositionX(), victim->GetPositionY(), victim->GetPositionZ() + 18.0f);
-        else if(me->GetCasterPet())
-        {
-            if(!me->IsWithinMeleeRange(victim, me->GetAttackDist()))
-                me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 0.5f);
-        }
-        else
-            me->GetMotionMaster()->MoveChase(victim);
-    }
+        me->GetMotionMaster()->MoveChase(victim);
 }
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
@@ -93,6 +83,8 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, int32 aura)
 {
+    if(!this)
+        return NULL;
     return SelectTarget(targetType, position, DefaultTargetSelector(me, dist, playerOnly, aura));
 }
 

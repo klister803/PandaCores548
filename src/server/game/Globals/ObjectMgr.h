@@ -404,14 +404,17 @@ typedef std::map<uint32, QuestObject> QuestStarter;
 typedef std::multimap<uint32, uint32> QuestRelations;
 typedef std::pair<QuestRelations::const_iterator, QuestRelations::const_iterator> QuestRelationBounds;
 
-struct PetLevelInfo
+struct PetStats
 {
-    PetLevelInfo() : health(0), mana(0) { for (uint8 i=0; i < MAX_STATS; ++i) stats[i] = 0; }
-
-    uint16 stats[MAX_STATS];
-    uint16 health;
-    uint16 mana;
-    uint16 armor;
+    float hp;
+    float ap;
+    int32 ap_type;
+    float spd;
+    int32 school_mask;
+    int32 state;
+    int32 energy;
+    int32 energy_type;
+    float armor;
 };
 
 struct MailLevelReward
@@ -655,7 +658,7 @@ class ObjectMgr
 
         InstanceTemplate const* GetInstanceTemplate(uint32 mapId);
 
-        PetLevelInfo const* GetPetLevelInfo(uint32 creature_id, uint8 level) const;
+        PetStats const* GetPetStats(uint32 creature_id) const;
 
         void GetPlayerClassLevelInfo(uint32 class_, uint8 level, uint32& baseHP, uint32& baseMana) const;
 
@@ -915,7 +918,7 @@ class ObjectMgr
         PageText const* GetPageText(uint32 pageEntry);
 
         void LoadPlayerInfo();
-        void LoadPetLevelInfo();
+        void LoadPetStats();
         void LoadExplorationBaseXP();
         void LoadPetNames();
         void LoadPetNumber();
@@ -1399,9 +1402,8 @@ class ObjectMgr
 
         CreatureBaseStatsContainer _creatureBaseStatsStore;
 
-        typedef std::map<uint32, PetLevelInfo*> PetLevelInfoContainer;
-        // PetLevelInfoContainer[creature_id][level]
-        PetLevelInfoContainer _petInfoStore;                            // [creature_id][level]
+        typedef std::map<uint32, PetStats> PetStatsContainer;
+        PetStatsContainer _petStatsStore;                            // [creature_id][level]
 
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
 

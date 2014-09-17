@@ -799,6 +799,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 51505:  // Lava Burst
+            case 77451:  // Lava Burst (Mastery)
+            {
+                if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                        AddPct(m_damage, eff->GetAmount());
+                break;
+            }
             case 129176: // Shadow Word: Death (Glyph)
             {
                 if (unitTarget->GetHealthPct() < 20)
@@ -869,7 +877,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow() : 0, triggerCaster ? triggerCaster->GetGUIDLow() : 0);
 
             if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH && itr->option != 15 && itr->option != 20)
                 continue;
@@ -886,6 +894,8 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if(groupFind)
                     continue;
             }
+
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectDummy2: %u, 1<<effIndex %u, itr->effectmask %u, option %u, spell_trigger %i, target %u (%u ==> %u)", m_spellInfo->Id, 1<<effIndex, itr->effectmask, itr->option, itr->spell_trigger, itr->target, triggerTarget ? triggerTarget->GetGUIDLow(): 0, triggerCaster ? triggerCaster->GetGUIDLow(): 0);
 
             if(itr->target == 1) //get target caster
                 triggerTarget = triggerCaster;
@@ -1967,12 +1977,17 @@ void Spell::EffectJump(SpellEffIndex effIndex)
     if (!unitTarget)
         return;
 
+    DelayCastEvent *delayCast = NULL;
+    //Perfome trigger spell at jumping.
+    if (uint32 triggered_spell_id = m_spellInfo->GetEffect(effIndex, m_diffMode).TriggerSpell)
+        delayCast = new DelayCastEvent(0, unitTarget->GetGUID(), triggered_spell_id);
+
     float x, y, z;
     unitTarget->GetContactPoint(m_caster, x, y, z, CONTACT_DISTANCE);
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
+    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, 0, 0.0f, delayCast);
 }
 
 void Spell::EffectJumpDest(SpellEffIndex effIndex)
@@ -1986,9 +2001,17 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     if (!m_targets.HasDst())
         return;
 
+    DelayCastEvent *delayCast = NULL;
+    //Perfome trigger spell at jumping.
+    if (uint32 triggered_spell_id = m_spellInfo->GetEffect(effIndex, m_diffMode).TriggerSpell)
+    {
+        Unit* pTarget = m_targets.GetUnitTarget();
+        delayCast = new DelayCastEvent(0, pTarget ? pTarget->GetGUID() : 0, triggered_spell_id);
+    }
+
     // Init dest coordinates
     float x, y, z, o;
-    destTarget->GetPosition(x, y, z);
+    destTarget->GetPosition(x, y, z, o);
 
     if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_DEST_TARGET_BACK)
     {
@@ -2006,7 +2029,7 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
     // Death Grip and Wild Charge (no form)
-    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, m_spellInfo->Id, o);
+    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, m_spellInfo->Id, o, delayCast);
 }
 
 void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & speedZ)
@@ -4396,25 +4419,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot));
-    if (pet)
-    {
-        if(petentry)
-        {
-            for (uint8 i = 0; i < pet->GetPetAutoSpellSize(); ++i)
-            {
-                if(uint32 spellId = ((Creature*)pet)->m_spells[i])
-                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
-                {
-                    if(sInfo->GetMaxRange(false) > 5.0f)
-                    {
-                        pet->SetCasterPet(true);
-                        pet->SetAttackDist(sInfo->GetMaxRange(false));
-                    }
-                }
-            }
-        }
-    }
-    else
+    if (!pet)
         return;
 
     if (m_caster->GetTypeId() == TYPEID_UNIT)
@@ -7693,8 +7698,8 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 summon->SetDisplayId(1126);
         }
 
-        if (properties->Id != 3390)
-            summon->AI()->EnterEvadeMode();
+        // if (properties->Id != 3390)
+            // summon->AI()->EnterEvadeMode();
 
         ExecuteLogEffectGeneric(i, summon->GetGUID());
     }

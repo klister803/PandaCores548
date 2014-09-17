@@ -394,7 +394,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
-    MaxAffectedTargets = proto->MaxAffectedTargets;
+    MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
     RadiusMod = 1.0f;
     AuraStackAmount = 1;
 }
@@ -1151,7 +1151,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         power = POWER_HEALTH;
                         break;
                     case 54968: // Glyph of Holy Light
-                        maxSize = m_spellInfo->MaxAffectedTargets;
+                        maxSize = m_spellInfo->GetMaxAffectedTargets(m_diffMode);
                         power = POWER_HEALTH;
                         break;
                     case 57669: // Replenishment
@@ -1553,7 +1553,10 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
             checkIfValid = false;
             break;
         case TARGET_UNIT_PET:
-            target = m_caster->GetGuardianPet();
+            if(m_caster->isPet())
+                target = m_caster;
+            else
+                target = m_caster->GetGuardianPet();
             break;
         case TARGET_UNIT_SUMMONER:
             if (m_caster->isSummon())
@@ -6099,6 +6102,10 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    // Blink Strikes - Hunter pet
+    if (m_spellInfo->Id == 130393 && m_caster->HasUnitState(UNIT_STATE_ROOT))
+        return SPELL_FAILED_DONT_REPORT;
+    
     // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
@@ -6370,7 +6377,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            if (!m_caster->GetGuardianPet())
+            if (!m_caster->GetGuardianPet() && !m_caster->isPet())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;

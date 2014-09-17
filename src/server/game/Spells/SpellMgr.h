@@ -624,6 +624,7 @@ struct SpellTriggered
 {
     int32 spell_id;
     int32 spell_trigger;
+    int32 spell_cooldown;
     int32 target;
     int32 caster;
     int32 targetaura;

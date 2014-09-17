@@ -455,7 +455,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         UpdateSplinePosition();
 }
 
-void Unit::UpdateSplinePosition()
+void Unit::UpdateSplinePosition(bool stop/* = false*/)
 {
     m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
@@ -474,7 +474,7 @@ void Unit::UpdateSplinePosition()
     if (HasUnitState(UNIT_STATE_CANNOT_TURN))
         loc.orientation = GetOrientation();
 
-    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation, false, stop);
 }
 
 void Unit::DisableSpline()
@@ -2186,7 +2186,7 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
     return amount;
 }
 
-void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool extra)
+void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extra, uint32 replacementAttackTrigger, uint32 replacementAttackAura)
 {
     if (HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
         return;
@@ -2204,47 +2204,57 @@ void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool ext
     if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
 
-    // melee attack spell casted at main hand attack only - no normal melee dmg dealt
-    if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL] && !extra)
-        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+    if (replacementAttackTrigger)
+    {
+        CastSpell(victim, replacementAttackTrigger, true);
+    }
     else
     {
-        // attack can be redirected to another target
-        victim = GetMeleeHitRedirectTarget(victim);
-
-        // Custom MoP Script
-        // SPELL_AURA_STRIKE_SELF
-        if (HasAuraType(SPELL_AURA_STRIKE_SELF))
+        // melee attack spell casted at main hand attack only - no normal melee dmg dealt
+        if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL] && !extra)
+            m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+        else
         {
-            // Dizzying Haze - 115180
-            if (AuraApplication* aura = this->GetAuraApplication(116330))
+            // attack can be redirected to another target
+            victim = GetMeleeHitRedirectTarget(victim);
+
+            // Custom MoP Script
+            // SPELL_AURA_STRIKE_SELF
+            if (HasAuraType(SPELL_AURA_STRIKE_SELF))
             {
-                if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                // Dizzying Haze - 115180
+                if (AuraApplication* aura = this->GetAuraApplication(116330))
                 {
-                    victim->CastSpell(this, 118022, true);
-                    return;
+                    if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                    {
+                        victim->CastSpell(this, 118022, true);
+                        return;
+                    }
                 }
             }
+
+            CalcDamageInfo damageInfo;
+            CalculateMeleeDamage(victim, 0, &damageInfo, attType);
+            // Send log damage message to client
+            DealDamageMods(victim, damageInfo.damage, &damageInfo.absorb);
+            SendAttackStateUpdate(&damageInfo);
+
+            //TriggerAurasProcOnEvent(damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
+
+            DealMeleeDamage(&damageInfo, true);
+
+            if (GetTypeId() == TYPEID_PLAYER)
+                sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+            else
+                sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+
+            if (replacementAttackAura)
+                RemoveAura(replacementAttackAura);
         }
-
-        CalcDamageInfo damageInfo;
-        CalculateMeleeDamage(victim, 0, &damageInfo, attType);
-        // Send log damage message to client
-        DealDamageMods(victim, damageInfo.damage, &damageInfo.absorb);
-        SendAttackStateUpdate(&damageInfo);
-
-        //TriggerAurasProcOnEvent(damageInfo);
-        DamageInfo dmgInfoProc = DamageInfo(damageInfo);
-        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
-
-        DealMeleeDamage(&damageInfo, true);
-
-        if (GetTypeId() == TYPEID_PLAYER)
-            sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
-        else
-            sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
     }
 }
 
@@ -5950,7 +5960,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         std::list<int32> groupList;
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            cooldown_spell_id = abs(itr->spell_trigger);
+            if(itr->spell_cooldown)
+                cooldown_spell_id = abs(itr->spell_cooldown);
+            else
+                cooldown_spell_id = abs(itr->spell_trigger);
             if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
                 return false;
 
@@ -12956,11 +12969,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
-                        {
-                            if (victim->GetAura(8050))
-                                return true;
-                            break;
-                        }
+                            return true;
                     break;
                     case SPELLFAMILY_WARLOCK:
                     {
@@ -17867,7 +17876,7 @@ void Unit::StopMoving()
         return;
 
     // Update position using old spline
-    UpdateSplinePosition();
+    UpdateSplinePosition(true);
     Movement::MoveSplineInit(*this).Stop();
 }
 
@@ -21162,7 +21171,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     }
 }
 
-bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
+bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop/* = false*/)
 {
     // prevent crash when a bad coord is sent by the client
     if (!Trinity::IsValidMapCoord(x, y, z, orientation))
@@ -21174,12 +21183,13 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     bool turn = (GetOrientation() != orientation);
     bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
 
-    if (turn)
+    if (turn && !stop)
         RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
 
     if (relocated)
     {
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
+        if (!stop)
+            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
 
         // move and update visible state if need
         if (GetTypeId() == TYPEID_PLAYER)
@@ -22299,3 +22309,16 @@ bool Unit::RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto)
     }
     return false;
 }
+
+void DelayCastEvent::Execute(Unit *caster)
+{
+    Unit* target = caster;
+
+    if (TargetGUID)
+        target = ObjectAccessor::GetUnit(*caster, TargetGUID);
+
+    if (!target)
+        return;
+
+    caster->CastSpell(target, Spell, false);
+};

@@ -49,6 +49,22 @@ void PetAI::EnterEvadeMode()
 {
 }
 
+void PetAI::InitializeAI()
+{
+    if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+        if(pStats->state)
+            me->SetReactState(ReactStates(pStats->state));
+    if (TempSummon* summon = me->ToTempSummon())
+        summon->CastPetAuras(true);
+
+    CreatureAI::InitializeAI();
+
+    // Update speed as needed to prevent dropping too far behind and despawning
+    me->UpdateSpeed(MOVE_RUN, true);
+    me->UpdateSpeed(MOVE_WALK, true);
+    me->UpdateSpeed(MOVE_FLIGHT, true);
+}
+
 bool PetAI::_needToStop()
 {
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat
@@ -253,11 +269,6 @@ void PetAI::UpdateAI(uint32 diff)
         for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)
             delete itr->second;
     }
-
-    // Update speed as needed to prevent dropping too far behind and despawning
-    me->UpdateSpeed(MOVE_RUN, true);
-    me->UpdateSpeed(MOVE_WALK, true);
-    me->UpdateSpeed(MOVE_FLIGHT, true);
 }
 
 void PetAI::UpdateAllies()

@@ -74,38 +74,13 @@ enum CreatureFlagsExtra
 #endif
 
 // Creature Pet entries
-#define ENTRY_INFERNAL          89
-#define ENTRY_IMP               416
-#define ENTRY_VOIDWALKER        1860
-#define ENTRY_SUCCUBUS          1863
-#define ENTRY_FELHUNTER         417
-#define ENTRY_FELGUARD          17252
 #define ENTRY_WATER_ELEMENTAL   510
-#define ENTRY_TREANT            1964
-#define ENTRY_FIRE_ELEMENTAL    15438
-#define ENTRY_FIRE_ELEMENTAL2   15439
-#define ENTRY_FIRE_ELEMENTAL3   61029
-#define ENTRY_ARMY_OF_THE_DEAD  24207
+#define ENTRY_FELGUARD          17252
 #define ENTRY_GHOUL             26125
-#define ENTRY_BLOODWORM         28017
-#define ENTRY_GARGOYLE          27829
 #define ENTRY_RUNE_WEAPON       27893
-#define ENTRY_FEL_IMP           58959
-#define ENTRY_VOIDLORD          58960
-#define ENTRY_SHIVARRA          58963
-#define ENTRY_OBSERVER          58964
-#define ENTRY_WRATHGUARD        58965
-#define ENTRY_ABYSSAL           58997
-#define ENTRY_DOOMGUARD         11859
-#define ENTRY_TERRORGUARD       59000
-#define ENTRY_FERAL_SPIRIT      29264
-#define ENTRY_MIRROR_IMAGE      31216
-#define ENTRY_SHADOWFIEND       19668
-#define ENTRY_MINDBENDER        62982
-#define ENTRY_EARTH_ELEMENTAL   15430
 
 #define MAX_KILL_CREDIT 2
-#define CREATURE_REGEN_INTERVAL 2 * IN_MILLISECONDS
+#define CREATURE_REGEN_INTERVAL 5 * IN_MILLISECONDS
 
 #define MAX_CREATURE_QUEST_ITEMS 6
 

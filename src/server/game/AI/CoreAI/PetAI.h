@@ -31,6 +31,7 @@ class PetAI : public CreatureAI
 
         explicit PetAI(Creature* c);
 
+        void InitializeAI();
         void EnterEvadeMode();
         void JustDied(Unit* /*who*/) { _stopAttack(); }
 

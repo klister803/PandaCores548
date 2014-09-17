@@ -297,7 +297,7 @@ private:
 };
 
 typedef UNORDERED_MAP<uint16, SpellEffectInfo> SpellEffectInfoMap;
-
+typedef UNORDERED_MAP<uint16, SpellTargetRestrictionsEntry const*> SpellTargetRestrictionsMap;
 class SpellInfo
 {
 public:
@@ -324,8 +324,8 @@ public:
     uint32 AttributesCu;
     uint32 Stances;
     uint32 StancesNot;
-    uint32 Targets;
-    uint32 TargetCreatureType;
+    uint32 GeneralTargets;      //old Targets.
+    uint32 GeneralTargetCreatureType;  //old TargetCreatureType
     uint32 RequiresSpellFocus;
     uint32 FacingCasterFlags;
     uint32 CasterAuraState;
@@ -378,7 +378,7 @@ public:
     char* SpellName;
     char* Rank;
     uint32 MaxTargetLevel;
-    uint32 MaxAffectedTargets;
+    uint32 CustomMaxAffectedTargets;      //only if not exist on dbc use it.
     uint32 SpellFamilyName;
     flag128 SpellFamilyFlags;
     uint32 DmgClass;
@@ -415,6 +415,7 @@ public:
     int32  ScalesFromItemLevel;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     SpellEffectInfoMap EffectsMap;
+    SpellTargetRestrictionsMap RestrrictionsMap;
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
     SpellPowerEntry spellPower[MAX_POWERS_FOR_SPELL];
@@ -427,7 +428,7 @@ public:
     uint32 talentId;
 
     // struct access functions
-    SpellTargetRestrictionsEntry const* GetSpellTargetRestrictions() const;
+    SpellTargetRestrictionsEntry const* GetSpellTargetRestrictions(uint16 diff) const;
     SpellAuraOptionsEntry const* GetSpellAuraOptions() const;
     SpellAuraRestrictionsEntry const* GetSpellAuraRestrictions() const;
     SpellCastingRequirementsEntry const* GetSpellCastingRequirements() const;
@@ -518,6 +519,10 @@ public:
 
     AuraStateType GetAuraState() const;
     SpellSpecificType GetSpellSpecific() const;
+
+    uint32 GetMaxAffectedTargets(uint16 diff) const;
+    uint32 GetTargets(uint16 diff) const;
+    uint32 GetTargetCreatureType(uint16 diff) const;
 
     float GetMinRange(bool positive = false) const;
     float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;

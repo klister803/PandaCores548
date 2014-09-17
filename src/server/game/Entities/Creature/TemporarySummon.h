@@ -43,6 +43,13 @@ struct PetSpell
     PetSpellType type;
 };
 
+enum PetType
+{
+    SUMMON_PET              = 0,
+    HUNTER_PET              = 1,
+    MAX_PET_TYPE            = 4,
+};
+
 typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
 typedef std::vector<uint32> AutoSpellList;
 
@@ -64,6 +71,9 @@ class TempSummon : public Creature
         uint32 GetTimer() { return m_timer; }
         void CastPetAuras(bool current, uint32 spellId = 0);
 
+        PetType getPetType() const { return m_petType; }
+        void setPetType(PetType type) { m_petType = type; }
+
         const SummonPropertiesEntry* const m_Properties;
     private:
         TempSummonType m_type;
@@ -71,6 +81,7 @@ class TempSummon : public Creature
         uint32 m_lifetime;
         uint64 m_summonerGUID;
         bool onUnload;
+        PetType m_petType;
 };
 
 class Minion : public TempSummon

@@ -1856,7 +1856,31 @@ void Player::Update(uint32 p_time)
 
             if (isAttackReady(BASE_ATTACK))
             {
-                if (!IsWithinMeleeRange(victim) && !HasAura(114051))
+                uint32 triggerSpellId = 0;
+                uint32 auraId = 0;
+                bool isRangedSpell = false;
+                bool canCancel = true;
+                bool isWithinMeleeRange = IsWithinMeleeRange(victim);
+
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                if (!replacementMeleeAttacks.empty())
+                {
+                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
+                    {
+                        triggerSpellId = (*itr)->GetTriggerSpell();
+
+                        if (SpellInfo const* _spellInfo = (*itr)->GetSpellInfo())
+                        {
+                            canCancel = !(_spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL);
+                            auraId = _spellInfo->Id;
+                        }
+                    }
+
+                    if (SpellInfo const* triggerSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId))
+                        isRangedSpell = !(triggerSpellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS);
+                }
+
+                if (!isWithinMeleeRange && !isRangedSpell)
                 {
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 1)               // send single time (client auto repeat)
@@ -1877,6 +1901,9 @@ void Player::Update(uint32 p_time)
                 }
                 else
                 {
+                    if (isRangedSpell && canCancel && isWithinMeleeRange)
+                        triggerSpellId = 0;
+
                     m_swingErrorMsg = 0;                    // reset swing error state
 
                     // prevent base and off attack in same time, delay attack at 0.2 sec
@@ -1884,57 +1911,53 @@ void Player::Update(uint32 p_time)
                         if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
                             setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack if player doesn't have Ascendance for Enhanced Shamans or Shadow Blades for rogues
-                    if (!HasAura(114051) && !HasAura(121471))
-                    {
-                        AttackerStateUpdate(victim, BASE_ATTACK);
-                        resetAttackTimer(BASE_ATTACK);
-                    }
-                    // Custom MoP Script - Wind Lash
-                    else if (HasAura(114051))
-                    {
-                        CastSpell(victim, 114089, true);
-                        resetAttackTimer(BASE_ATTACK);
-                    }
-                    // Shadow Blade - Main Hand
-                    else if (HasAura(121471))
-                    {
-                        CastSpell(victim, 121473, true);
-                        resetAttackTimer(BASE_ATTACK);
-                    }
+                    AttackerStateUpdate(victim, BASE_ATTACK, false, triggerSpellId, auraId);
+                    resetAttackTimer(BASE_ATTACK);
+
                 }
             }
 
             if (haveOffhandWeapon() && isAttackReady(OFF_ATTACK))
             {
-                if (!IsWithinMeleeRange(victim) && !HasAura(114051))
+                uint32 triggerSpellId = 0;
+                uint32 auraId = 0;
+                bool isRangedSpell = false;
+                bool canCancel = true;
+                bool isWithinMeleeRange = IsWithinMeleeRange(victim);
+
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                if (!replacementMeleeAttacks.empty())
+                {
+                    for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
+                    {
+                        triggerSpellId = (*itr)->GetMiscValue();
+
+                        if (SpellInfo const* _spellInfo = (*itr)->GetSpellInfo())
+                        {
+                            canCancel = !(_spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL);
+                            auraId = _spellInfo->Id;
+                        }
+                    }
+
+                    if (SpellInfo const* triggerSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId))
+                        isRangedSpell = !(triggerSpellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS);
+                }
+
+                if (!isWithinMeleeRange && !isRangedSpell)
                     setAttackTimer(OFF_ATTACK, 100);
                 else if (!HasInArc(2*M_PI/3, victim))
                     setAttackTimer(OFF_ATTACK, 100);
                 else
                 {
+                    if (isRangedSpell && canCancel && isWithinMeleeRange)
+                        triggerSpellId = 0;
+
                     // prevent base and off attack in same time, delay attack at 0.2 sec
                     if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
                         setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack if player doesn't have Ascendance for Enhanced Shamans or Shadow Blades for rogues
-                    if (!HasAura(114051) && !HasAura(121471))
-                    {
-                        AttackerStateUpdate(victim, OFF_ATTACK);
-                        resetAttackTimer(OFF_ATTACK);
-                    }
-                    // Custom MoP Script - Wind Lash Off-Hand
-                    else if (HasAura(114051))
-                    {
-                        CastSpell(victim, 114093, true);
-                        resetAttackTimer(OFF_ATTACK);
-                    }
-                    // Shadow Blades - Off Hand
-                    else if (HasAura(121471))
-                    {
-                        CastSpell(victim, 121474, true);
-                        resetAttackTimer(OFF_ATTACK);
-                    }
+                    AttackerStateUpdate(victim, OFF_ATTACK, false, triggerSpellId, auraId);
+                    resetAttackTimer(OFF_ATTACK);
                 }
             }
         }
