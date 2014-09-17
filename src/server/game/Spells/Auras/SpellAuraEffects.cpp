@@ -6995,6 +6995,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         {
             switch (GetSpellInfo()->Id)
             {
+                case 142423:
+                {
+                    trigger_spell_id = 142424;
+                    break;
+                }
                 case 81262: // Efflorescence
                 {
                     if (DynamicObject* dynObj = caster->GetDynObject(81262))

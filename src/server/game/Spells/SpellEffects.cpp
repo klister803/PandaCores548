@@ -4396,25 +4396,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot));
-    if (pet)
-    {
-        if(petentry)
-        {
-            for (uint8 i = 0; i < pet->GetPetAutoSpellSize(); ++i)
-            {
-                if(uint32 spellId = ((Creature*)pet)->m_spells[i])
-                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
-                {
-                    if(sInfo->GetMaxRange(false) > 5.0f)
-                    {
-                        pet->SetCasterPet(true);
-                        pet->SetAttackDist(sInfo->GetMaxRange(false));
-                    }
-                }
-            }
-        }
-    }
-    else
+    if (!pet)
         return;
 
     if (m_caster->GetTypeId() == TYPEID_UNIT)
@@ -7693,8 +7675,8 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 summon->SetDisplayId(1126);
         }
 
-        if (properties->Id != 3390)
-            summon->AI()->EnterEvadeMode();
+        // if (properties->Id != 3390)
+            // summon->AI()->EnterEvadeMode();
 
         ExecuteLogEffectGeneric(i, summon->GetGUID());
     }

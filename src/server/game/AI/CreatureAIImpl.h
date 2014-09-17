@@ -630,7 +630,7 @@ inline bool CreatureAI::_EnterEvadeMode()
         return false;
 
     // dont remove vehicle auras, passengers arent supposed to drop off the vehicle
-    // NPC_HOLY_GUARDIAN or Mindbender
+    // NPC_HOLY_GUARDIAN or Mindbender or any summons
     switch(me->GetEntry())
     {
         case 46499:
@@ -639,7 +639,8 @@ inline bool CreatureAI::_EnterEvadeMode()
         case 35814:
             break;
         default:
-            me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
+            if(!me->isAnySummons())
+                me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
             break;
     }
 

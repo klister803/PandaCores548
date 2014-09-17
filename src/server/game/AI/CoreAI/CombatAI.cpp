@@ -33,11 +33,23 @@ int AggressorAI::Permissible(const Creature* creature)
     return PERMIT_BASE_NO;
 }
 
+void AggressorAI::InitializeAI()
+{
+    CreatureAI::InitializeAI();
+
+    if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+        if(pStats->state)
+        {
+            me->SetReactState(ReactStates(pStats->state));
+            if(Unit* victim = me->GetTargetUnit())
+                me->Attack(victim, !me->GetCasterPet());
+        }
+    if (TempSummon* summon = me->ToTempSummon())
+        summon->CastPetAuras(true);
+}
+
 void AggressorAI::UpdateAI(uint32 diff)
 {
-    if (!UpdateVictim())
-        return;
-
     if (m_updateAlliesTimer <= diff)
         // UpdateAllies self set update timer
         UpdateAllies();
@@ -45,6 +57,11 @@ void AggressorAI::UpdateAI(uint32 diff)
         m_updateAlliesTimer -= diff;
 
     Unit* owner = me->GetCharmerOrOwner();
+
+    if(!owner)
+        if (!UpdateVictim())
+            return;
+
     Unit* target = me->getAttackerForHelper();
     Unit* targetOwner = NULL;
     if (owner)

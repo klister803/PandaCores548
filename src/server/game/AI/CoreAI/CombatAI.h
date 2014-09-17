@@ -30,6 +30,7 @@ class AggressorAI : public CreatureAI
     public:
         explicit AggressorAI(Creature* c) : CreatureAI(c) {}
 
+        void InitializeAI();
         void UpdateAI(uint32);
         static int Permissible(const Creature*);
         void UpdateAllies();

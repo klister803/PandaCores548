@@ -23,13 +23,6 @@
 #include "Unit.h"
 #include "TemporarySummon.h"
 
-enum PetType
-{
-    SUMMON_PET              = 0,
-    HUNTER_PET              = 1,
-    MAX_PET_TYPE            = 4,
-};
-
 enum ActionFeedback
 {
     FEEDBACK_NONE            = 0,
@@ -81,8 +74,6 @@ class Pet : public Guardian
         void AddToWorld();
         void RemoveFromWorld();
 
-        PetType getPetType() const { return m_petType; }
-        void setPetType(PetType type) { m_petType = type; }
         bool isControlled() const { return getPetType() == SUMMON_PET || getPetType() == HUNTER_PET; }
         bool isTemporarySummoned() const { return m_duration > 0; }
 
@@ -173,7 +164,6 @@ class Pet : public Guardian
 
     protected:
         Player* m_owner;
-        PetType m_petType;
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
         uint64  m_auraRaidUpdateMask;
         bool    m_loading;

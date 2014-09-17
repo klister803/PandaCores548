@@ -1741,7 +1741,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadPetNumber();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet level stats...");
-    sObjectMgr->LoadPetLevelInfo();
+    sObjectMgr->LoadPetStats();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Player Corpses...");
     sObjectMgr->LoadCorpses();

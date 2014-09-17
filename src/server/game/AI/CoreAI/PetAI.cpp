@@ -49,6 +49,17 @@ void PetAI::EnterEvadeMode()
 {
 }
 
+void PetAI::InitializeAI()
+{
+    if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+        if(pStats->state)
+            me->SetReactState(ReactStates(pStats->state));
+    if (TempSummon* summon = me->ToTempSummon())
+        summon->CastPetAuras(true);
+
+    CreatureAI::InitializeAI();
+}
+
 bool PetAI::_needToStop()
 {
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat

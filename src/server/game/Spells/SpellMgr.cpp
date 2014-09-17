@@ -2680,8 +2680,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1             2           3         4          5          6      7      8         9          10       11        12
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2695,17 +2695,18 @@ void SpellMgr::LoadSpellTriggered()
 
         int32 spell_id = fields[0].GetInt32();
         int32 spell_trigger = fields[1].GetInt32();
-        int32 option = fields[2].GetInt32();
-        int32 target = fields[3].GetInt32();
-        int32 caster = fields[4].GetInt32();
-        int32 targetaura = fields[5].GetInt32();
-        float bp0 = fields[6].GetFloat();
-        float bp1 = fields[7].GetFloat();
-        float bp2 = fields[8].GetFloat();
-        int32 effectmask = fields[9].GetInt32();
-        int32 aura = fields[10].GetInt32();
-        int32 chance = fields[11].GetInt32();
-        int32 group = fields[12].GetInt32();
+        int32 spell_cooldown = fields[2].GetInt32();
+        int32 option = fields[3].GetInt32();
+        int32 target = fields[4].GetInt32();
+        int32 caster = fields[5].GetInt32();
+        int32 targetaura = fields[6].GetInt32();
+        float bp0 = fields[7].GetFloat();
+        float bp1 = fields[8].GetFloat();
+        float bp2 = fields[9].GetFloat();
+        int32 effectmask = fields[10].GetInt32();
+        int32 aura = fields[11].GetInt32();
+        int32 chance = fields[12].GetInt32();
+        int32 group = fields[13].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2724,6 +2725,7 @@ void SpellMgr::LoadSpellTriggered()
         SpellTriggered temptrigger;
         temptrigger.spell_id = spell_id;
         temptrigger.spell_trigger = spell_trigger;
+        temptrigger.spell_cooldown = spell_cooldown;
         temptrigger.option = option;
         temptrigger.target = target;
         temptrigger.caster = caster;
@@ -5141,9 +5143,6 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
-                case 142423: // Swiftmend
-                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_MASK;
-                    break;
                 case 73680: // Unleash Elements
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ENEMY;

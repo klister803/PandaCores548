@@ -5950,7 +5950,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         std::list<int32> groupList;
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            cooldown_spell_id = abs(itr->spell_trigger);
+            if(itr->spell_cooldown)
+                cooldown_spell_id = abs(itr->spell_cooldown);
+            else
+                cooldown_spell_id = abs(itr->spell_trigger);
             if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
                 return false;
 

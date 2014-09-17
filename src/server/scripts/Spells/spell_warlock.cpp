@@ -1371,7 +1371,7 @@ class spell_warl_soul_harverst : public SpellScriptLoader
             {
                 update += diff;
 
-                if (update >= 1000)
+                if (update >= 5000)
                 {
                     if (Player* _player = GetCaster()->ToPlayer())
                     {
