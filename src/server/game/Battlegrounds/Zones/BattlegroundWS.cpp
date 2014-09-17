@@ -514,7 +514,7 @@ WorldSafeLocsEntry const* BattlegroundWS::GetClosestGraveYard(Player* player)
 
 void BattlegroundWS::EventPlayerDroppedFlag(Player* source)
 {
-    uint8 team = source->GetTeamId();
+    uint8 team = source->GetBGTeamId();
 
     /// Mainly used when a player captures the flag, it prevents spawn the flag on ground
     if (!_flagKeepers[team ^ 1])
@@ -553,7 +553,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* source, GameObject* target
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    uint8 team = source->GetTeamId();
+    uint8 team = source->GetBGTeamId();
 
     if (source->IsWithinDistInMap(target_obj, 10)) ///< Check if target is in distance with flag
     {
@@ -642,7 +642,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
         return;
 
 
-    uint8 team = source->GetTeamId();
+    uint8 team = source->GetBGTeamId();
 
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
     _flagDebuffState = 0;
@@ -656,8 +656,8 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
         source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
 
     /// Reward flag capture with 2x honorable kills
-    RewardHonorToTeam(GetBonusHonorFromKill(2), source->GetTeam());
-    RewardReputationToTeam(890, m_ReputationCapture, source->GetTeam());
+    RewardHonorToTeam(GetBonusHonorFromKill(2), source->GetBGTeam());
+    RewardReputationToTeam(890, m_ReputationCapture, source->GetBGTeam());
 
     AddPoint(team == TEAM_ALLIANCE ? ALLIANCE : HORDE);
 
@@ -669,7 +669,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
     UpdateWorldState(BG_WS_STATE_UNKNOWN, 1); ///< From sniffs
 
     /// Set last team that captured flag
-    _lastFlagCaptureTeam = source->GetTeam();
+    _lastFlagCaptureTeam = source->GetBGTeam();
 
     /// Play sound + Send message to all
     PlaySoundToAll(team == TEAM_ALLIANCE ? BG_WS_SOUND_FLAG_CAPTURED_ALLIANCE : BG_WS_SOUND_FLAG_CAPTURED_HORDE);
@@ -690,7 +690,7 @@ void BattlegroundWS::RemovePlayer(Player* player, uint64 guid, uint32 /* team */
     if (!player)
         return;
 
-    uint8 team = player->GetTeamId();
+    uint8 team = player->GetBGTeamId();
 
     if (_flagKeepers[team ^ 1] == guid)
     {

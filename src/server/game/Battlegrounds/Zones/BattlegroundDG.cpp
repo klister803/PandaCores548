@@ -105,7 +105,7 @@ const WorldSafeLocsEntry *BattlegroundDG::GetClosestGraveYard(Player *player)
 
     player->GetPosition(x, y);
 
-    if (player->GetTeam() == ALLIANCE)
+    if (player->GetBGTeam() == ALLIANCE)
     {
         pGraveyard = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_ALLIANCE_BOT);
         entry = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_ALLIANCE_TOP);
@@ -460,7 +460,7 @@ void BattlegroundDG::Point::UpdateState(PointStates state)
 
 void BattlegroundDG::Point::PointClicked(Player *player)
 {
-    uint32 newState = (player->GetTeamId() == TEAM_ALLIANCE) ? POINT_STATE_CONTESTED_ALLIANCE : POINT_STATE_CONTESTED_HORDE;
+    uint32 newState = (player->GetBGTeamId() == TEAM_ALLIANCE) ? POINT_STATE_CONTESTED_ALLIANCE : POINT_STATE_CONTESTED_HORDE;
     if (newState == m_state || newState + 2 == m_state)
         return;
 
@@ -643,7 +643,7 @@ void BattlegroundDG::Cart::ToggleCaptured(Player *player)
     uint32 flagStateField;
     uint32 cartAuraId;
 
-    if (player->GetTeamId() == TEAM_ALLIANCE)
+    if (player->GetBGTeamId() == TEAM_ALLIANCE)
     {
         summonSpellId = BG_DG_SPELL_SPAWN_HORDE_CART;
         cartEntry = 71073;
@@ -718,11 +718,11 @@ void BattlegroundDG::Cart::CartDelivered()
 {
     Player* player = ControlledBy();
     GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_CARTS_CAPTURED, 1);
-    GetBg()->ModGold(player->GetTeamId(), m_stolenGold);
+    GetBg()->ModGold(player->GetBGTeamId(), m_stolenGold);
     m_stolenGold = 0;
     UnbindCartFromPlayer();
 
-    GetBg()->PlaySoundToAll(player->GetTeamId() == TEAM_ALLIANCE ? BG_DG_SOUND_NODE_CAPTURED_ALLIANCE : BG_DG_SOUND_NODE_CAPTURED_HORDE);
+    GetBg()->PlaySoundToAll(player->GetBGTeamId() == TEAM_ALLIANCE ? BG_DG_SOUND_NODE_CAPTURED_ALLIANCE : BG_DG_SOUND_NODE_CAPTURED_HORDE);
 }
 
 void BattlegroundDG::Cart::UnbindCartFromPlayer()
@@ -745,7 +745,7 @@ void BattlegroundDG::Cart::UnbindCartFromPlayer()
 
         m_controlledBy = 0;
 
-        uint32 statefield = (player->GetTeamId() == TEAM_ALLIANCE) ? 7904 : 7887;
+        uint32 statefield = (player->GetBGTeamId() == TEAM_ALLIANCE) ? 7904 : 7887;
         GetBg()->UpdateWorldState(statefield, 1);
 
         GetBg()->SendFlagsPositionsUpdate(FLAGS_UPDATE);

@@ -678,7 +678,8 @@ void WorldSession::JoinBracket(uint8 slot)
         IgnorMapInfo ignore;
         ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, Jointype, true, false, ignore, matchmakerRating);
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());        
-    }else
+    }
+    else
     {
          WorldPacket data;
          sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, 0, err);

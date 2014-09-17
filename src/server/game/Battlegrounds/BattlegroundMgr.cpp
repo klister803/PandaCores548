@@ -810,6 +810,26 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         }
     }
     
+    // for now not all bg`s works due to factions
+    if (oldbgTypeId == BATTLEGROUND_RATED_10_VS_10)
+    {
+        uint8 randbg = urand(1,3);
+        switch (randbg)
+        {
+            case 1:
+                bgTypeId = BATTLEGROUND_AB;
+                break;
+            case 2:
+                bgTypeId = BATTLEGROUND_DG;
+                break;
+            case 3:
+                bgTypeId = BATTLEGROUND_WS;
+                break;
+        }
+
+        bg_template = GetBattlegroundTemplate(bgTypeId);
+    }
+
     Battleground* bg = NULL;
     // create a copy of the BG template
     switch (bgTypeId)
