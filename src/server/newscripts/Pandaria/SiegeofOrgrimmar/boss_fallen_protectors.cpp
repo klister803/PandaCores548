@@ -18,6 +18,7 @@
 
 #include "NewScriptPCH.h"
 #include "siege_of_orgrimmar.h"
+#include "CreatureTextMgr.h"
 
 enum eSpells
 {
@@ -61,12 +62,12 @@ struct boss_fallen_protectors : public BossAI
 
     void Reset()
     {
-        
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void EnterCombat(Unit* who)
     {
-
+        events.SetPhase(PHASE_BATTLE);
     }
 
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
@@ -144,17 +145,20 @@ class boss_rook_stonetoe : public CreatureScript
                 EVENT_VENGEFUL_STRIKE   = 5,
                 EVENT_CORRUPTED_BREW    = 6,
                 EVENT_CLASH             = 7,
-                EVENT_CORRUPTION_KICK   = 8,
             };
 
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
 
-                events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CLASH, urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                events.RescheduleEvent(EVENT_CORRUPTION_KICK, urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+            }
+
+            /*REMOVE IT AFTER COMPLETE*/
+            void AttackStart(Unit* target)
+            {
             }
 
             void DoAction(int32 const action)
@@ -185,7 +189,16 @@ class boss_rook_stonetoe : public CreatureScript
                             break;
                         case EVENT_CORRUPTED_BREW:
                             if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_CORRUPTED_BREW);
+                                DoCast(target, SPELL_CORRUPTED_BREW, true);
+                            events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_CLASH:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                DoCast(target, SPELL_CLASH);
+                            //DoCastVictim(SPELL_CLASH);
+                            events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -216,9 +229,22 @@ class boss_he_softfoot : public CreatureScript
                 boss_fallen_protectors::Reset();
             }
 
+            enum local
+            {
+                EVENT_GARROTE                   = 5,
+                EVENT_GOUGE                     = 6,
+                EVENT_POISON_NOXIOUS            = 7,
+                EVENT_POISON_INSTANT            = 8,
+            };
+
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
+
+                events.RescheduleEvent(EVENT_GARROTE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                DoCast(me, SPELL_INSTANT_POISON, true);
             }
 
             void DoAction(int32 const action)
@@ -243,6 +269,22 @@ class boss_he_softfoot : public CreatureScript
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
                     {
+                        case EVENT_GARROTE:
+                            DoCastVictim(SPELL_GARROTE);
+                            events.RescheduleEvent(EVENT_GARROTE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_GOUGE:
+                            DoCastVictim(SPELL_GOUGE);
+                            events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_POISON_NOXIOUS:
+                            events.RescheduleEvent(EVENT_POISON_INSTANT, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            DoCast(me, SPELL_NOXIOUS_POISON, true);
+                            break;
+                        case EVENT_POISON_INSTANT:
+                            DoCast(me, SPELL_INSTANT_POISON, true);
+                            events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
                     }
                 }
                 DoMeleeAttackIfReady();
@@ -265,6 +307,7 @@ class boss_sun_tenderheart : public CreatureScript
         {
             boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature)
             {
+                SetCombatMovement(false);
             }
 
             void Reset()
@@ -272,9 +315,21 @@ class boss_sun_tenderheart : public CreatureScript
                 boss_fallen_protectors::Reset();
             }
 
+            enum local
+            {
+                EVENT_SHA_SEAR            = 5,
+                EVENT_SHADOW_WORD_BANE    = 6,
+                EVENT_CALAMITY            = 7,
+            };
+
+
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
+
+                events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
             }
 
             void DoAction(int32 const action)
@@ -299,9 +354,24 @@ class boss_sun_tenderheart : public CreatureScript
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
                     {
+                        case EVENT_SHA_SEAR:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                                DoCast(target, SPELL_SHA_SEAR, true);
+                            events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_SHADOW_WORD_BANE:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                                DoCast(target, SPELL_SHADOW_WORD_BANE, true);
+                            events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_CALAMITY:
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
+                            DoCastVictim(SPELL_CALAMITY);
+                            events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
                     }
                 }
-                DoMeleeAttackIfReady();
+                //DoMeleeAttackIfReady();
             }
         };
 
@@ -391,10 +461,83 @@ public:
     }
 };
 
+class spell_clash : public SpellScriptLoader
+{
+    public:
+        spell_clash() : SpellScriptLoader("spell_OO_clash") { }
+
+        class spell_clash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_clash_SpellScript);
+
+            enum proc
+            {
+                SPELL_PROCK     = 143028,
+            };
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                        caster->CastSpell(target, SPELL_PROCK, false);
+                }
+            }
+
+            void Register() override
+            {
+                OnHit += SpellHitFn(spell_clash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_clash_SpellScript();
+        }
+};
+
+//Corrupted Brew
+class spell_corrupted_brew : public SpellScriptLoader
+{
+    public:
+        spell_corrupted_brew() : SpellScriptLoader("spell_OO_corrupted_brew") { }
+
+        class spell_corrupted_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_corrupted_brew_SpellScript);
+
+            enum proc
+            {
+                SPELL_PROCK     = 143021,
+            };
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                        caster->CastSpell(target, SPELL_PROCK, true);
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_corrupted_brew_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_corrupted_brew_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
     new boss_he_softfoot();
     new boss_sun_tenderheart();
     new npc_golden_lotus_control();
+    new spell_clash();
+    new spell_corrupted_brew();
 }
