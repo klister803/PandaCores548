@@ -28,12 +28,6 @@
 
 void UnitAI::AttackStart(Unit* victim)
 {
-    if (!IsCombatMovementAllowed())
-    {
-        AttackStartNoMove(victim);
-        return;
-    }
-
     if (victim && me->Attack(victim, true))
     {
         if (me->ToCreature() && me->GetEntry() == 69099) //World Boss Nalak
