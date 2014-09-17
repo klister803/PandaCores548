@@ -1493,12 +1493,13 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     if (attType > BASE_ATTACK || GetEntry() == 69792 || GetEntry() == 69680 || GetEntry() == 69791)
         return;
 
-    float APCoefficient = 14.f;
+    float APCoefficient = 11.f;
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
 
-    float att_speed = BASE_ATTACK_TIME / 1000.0f;
+    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f;
 
-    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed;
+    //float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed;
+    float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (GetTotalAttackPowerValue(attType) * att_speed / APCoefficient);
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
     float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);

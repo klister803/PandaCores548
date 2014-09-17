@@ -1553,7 +1553,10 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
             checkIfValid = false;
             break;
         case TARGET_UNIT_PET:
-            target = m_caster->GetGuardianPet();
+            if(m_caster->isPet())
+                target = m_caster;
+            else
+                target = m_caster->GetGuardianPet();
             break;
         case TARGET_UNIT_SUMMONER:
             if (m_caster->isSummon())
@@ -6370,7 +6373,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            if (!m_caster->GetGuardianPet())
+            if (!m_caster->GetGuardianPet() && !m_caster->isPet())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;
