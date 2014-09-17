@@ -2186,7 +2186,7 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
     return amount;
 }
 
-void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool extra)
+void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extra, uint32 replacementAttackTrigger, uint32 replacementAttackAura)
 {
     if (HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
         return;
@@ -2204,47 +2204,57 @@ void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool ext
     if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
 
-    // melee attack spell casted at main hand attack only - no normal melee dmg dealt
-    if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL] && !extra)
-        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+    if (replacementAttackTrigger)
+    {
+        CastSpell(victim, replacementAttackTrigger, true);
+    }
     else
     {
-        // attack can be redirected to another target
-        victim = GetMeleeHitRedirectTarget(victim);
-
-        // Custom MoP Script
-        // SPELL_AURA_STRIKE_SELF
-        if (HasAuraType(SPELL_AURA_STRIKE_SELF))
+        // melee attack spell casted at main hand attack only - no normal melee dmg dealt
+        if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL] && !extra)
+            m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+        else
         {
-            // Dizzying Haze - 115180
-            if (AuraApplication* aura = this->GetAuraApplication(116330))
+            // attack can be redirected to another target
+            victim = GetMeleeHitRedirectTarget(victim);
+
+            // Custom MoP Script
+            // SPELL_AURA_STRIKE_SELF
+            if (HasAuraType(SPELL_AURA_STRIKE_SELF))
             {
-                if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                // Dizzying Haze - 115180
+                if (AuraApplication* aura = this->GetAuraApplication(116330))
                 {
-                    victim->CastSpell(this, 118022, true);
-                    return;
+                    if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                    {
+                        victim->CastSpell(this, 118022, true);
+                        return;
+                    }
                 }
             }
+
+            CalcDamageInfo damageInfo;
+            CalculateMeleeDamage(victim, 0, &damageInfo, attType);
+            // Send log damage message to client
+            DealDamageMods(victim, damageInfo.damage, &damageInfo.absorb);
+            SendAttackStateUpdate(&damageInfo);
+
+            //TriggerAurasProcOnEvent(damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
+
+            DealMeleeDamage(&damageInfo, true);
+
+            if (GetTypeId() == TYPEID_PLAYER)
+                sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+            else
+                sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+
+            if (replacementAttackAura)
+                RemoveAura(replacementAttackAura);
         }
-
-        CalcDamageInfo damageInfo;
-        CalculateMeleeDamage(victim, 0, &damageInfo, attType);
-        // Send log damage message to client
-        DealDamageMods(victim, damageInfo.damage, &damageInfo.absorb);
-        SendAttackStateUpdate(&damageInfo);
-
-        //TriggerAurasProcOnEvent(damageInfo);
-        DamageInfo dmgInfoProc = DamageInfo(damageInfo);
-        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
-
-        DealMeleeDamage(&damageInfo, true);
-
-        if (GetTypeId() == TYPEID_PLAYER)
-            sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
-        else
-            sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
     }
 }
 

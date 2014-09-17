@@ -3526,6 +3526,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 121471: // Shadow Blades
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_367;
+                    break;
                 case 148008: // Essence of Yu'lon
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
