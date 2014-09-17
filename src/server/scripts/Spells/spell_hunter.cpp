@@ -562,6 +562,19 @@ class spell_hun_lynx_rush : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_lynx_rush_SpellScript);
 
+            SpellCastResult CheckCastMeet()
+            {
+                Unit* caster = GetCaster();
+                Unit* pet = caster->GetGuardianPet();
+                
+                if (pet->HasUnitState(UNIT_STATE_CONTROLLED) || pet->HasUnitState(UNIT_STATE_ROOT))
+                {
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                }
+                
+                return SPELL_CAST_OK;
+            }
+            
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -624,6 +637,7 @@ class spell_hun_lynx_rush : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_hun_lynx_rush_SpellScript::CheckCastMeet);
                 OnHit += SpellHitFn(spell_hun_lynx_rush_SpellScript::HandleOnHit);
             }
         };
@@ -1161,7 +1175,12 @@ class spell_hun_kill_command : public SpellScriptLoader
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_TARGET_TOO_FAR);
                     return SPELL_FAILED_CUSTOM_ERROR;
                 }
-
+                
+                if (pet->HasUnitState(UNIT_STATE_CONTROLLED))
+                {
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                }
+                
                 return SPELL_CAST_OK;
             }
             
@@ -2155,6 +2174,44 @@ class spell_hun_t16_2p_bonus : public SpellScriptLoader
         }
 };
 
+// 16827, 17253, 49966 Based pets spells - checking distance target in ROOT state
+class spell_hun_pet_dist_check : public SpellScriptLoader
+{
+    public:
+        spell_hun_pet_dist_check() : SpellScriptLoader("spell_hun_pet_dist_check") { }
+
+        class spell_hun_pet_dist_check_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_pet_dist_check_SpellScript);
+
+            SpellCastResult CheckCastMeet()
+            {                              
+                Unit* caster = GetCaster();
+                Unit* target = caster->getVictim();
+                
+                if (!caster || !target)
+                    return SPELL_CAST_OK;
+                
+                if (!caster->IsWithinDist(target, 5.0f, true) && caster->HasUnitState(UNIT_STATE_ROOT))
+                {
+                    return SPELL_FAILED_DONT_REPORT;
+                }
+                
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_hun_pet_dist_check_SpellScript::CheckCastMeet);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_pet_dist_check_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2199,4 +2256,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
+    new spell_hun_pet_dist_check();
 }

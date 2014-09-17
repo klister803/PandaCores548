@@ -6102,6 +6102,10 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
+    // Blink Strikes - Hunter pet
+    if (m_spellInfo->Id == 130393 && m_caster->HasUnitState(UNIT_STATE_ROOT))
+        return SPELL_FAILED_DONT_REPORT;
+    
     // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
