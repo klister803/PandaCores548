@@ -12969,11 +12969,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
-                        {
-                            if (victim->GetAura(8050))
-                                return true;
-                            break;
-                        }
+                            return true;
                     break;
                     case SPELLFAMILY_WARLOCK:
                     {

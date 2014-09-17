@@ -799,6 +799,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 51505:  // Lava Burst
+            case 77451:  // Lava Burst (Mastery)
+            {
+                if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                        AddPct(m_damage, eff->GetAmount());
+                break;
+            }
             case 129176: // Shadow Word: Death (Glyph)
             {
                 if (unitTarget->GetHealthPct() < 20)
