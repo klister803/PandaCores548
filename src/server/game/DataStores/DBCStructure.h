@@ -2301,7 +2301,7 @@ struct SpellTargetRestrictionsEntry
 {
     uint32 Id; // 0 m_ID
     uint32 SpellId; // 1 m_spellId
-    //uint32 m_difficultyID; // 2 5.0.1.15589
+    uint32 m_difficultyID; // 2 5.0.1.15589
     float MaxTargetRadius; // 3 m_maxTargetRadius
     //float m_width; // 5 5.0.1.15589
     uint32 MaxAffectedTargets; // 5 m_maxTargets
@@ -2725,6 +2725,15 @@ struct SpellEffectDiff
 
 typedef UNORDERED_MAP<uint32, SpellEffectDiff> SpellEffectDiffMap;
 typedef UNORDERED_MAP<uint32, SpellEffect> SpellEffectMap;
+
+typedef std::set<SpellTargetRestrictionsEntry const*> SpellRestrictionMap;
+
+struct SpellRestrictionDiff
+{
+    SpellRestrictionMap restrictions;
+};
+
+typedef UNORDERED_MAP<uint32, SpellRestrictionDiff> SpellRestrictionDiffMap;
 
 struct TaxiPathBySourceAndDestination
 {
