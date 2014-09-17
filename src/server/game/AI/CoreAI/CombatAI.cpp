@@ -523,9 +523,6 @@ void AnyPetAI::UpdateAI(const uint32 diff)
             delete itr->second;
     }
 
-    if (!UpdateVictim())
-        return;
-
     if(!me->GetCasterPet())
         DoMeleeAttackIfReady();
 }
