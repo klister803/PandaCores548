@@ -5051,7 +5051,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_INTERRUPT;
                     break;
                 case 53651: // Beacon of Light Trigger
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;                    
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
                 case 53563: // Beacon of Light
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
@@ -5072,10 +5072,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
                     break;
                 case 63487: // Ice Trap. Hack from wait to fix areatrigger
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 135299;
                     spellInfo->ProcChance = 100;
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;                    
+                    spellInfo->Effects[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->Effects[1].TriggerSpell = 13810;
                     spellInfo->Effects[1].TargetA = 18;
                     break;
@@ -5083,7 +5083,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
                     spellInfo->Effects[0].TargetA = 28;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13); // 10yard
-                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s                    
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(9); // 30s
                     break;
                 case 23035: // Battle Standard (Horde)
                 case 23034: // Battle Standard (Alliance)
@@ -5123,6 +5123,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 50493: // D.I.S.C.O.
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_SRC_AREA_ENTRY;
+                    break;
+                case 103964: // Touch of Chaos
+                    spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
                     break;
                 default:
                     break;
