@@ -415,6 +415,7 @@ struct PetStats
     int32 energy;
     int32 energy_type;
     float armor;
+    int32 type;
 };
 
 struct MailLevelReward

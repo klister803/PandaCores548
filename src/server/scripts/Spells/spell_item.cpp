@@ -2304,6 +2304,45 @@ class spell_item_ai_li_skymirror : public SpellScriptLoader
         }
 };
 
+
+class spell_item_eye_of_the_black_prince : public SpellScriptLoader
+{
+    public:
+        spell_item_eye_of_the_black_prince() : SpellScriptLoader("spell_item_eye_of_the_black_prince") {}
+
+        class spell_item_eye_of_the_black_prince_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_eye_of_the_black_prince_SpellScript);
+
+            SpellCastResult CheckRequirement()
+            {
+                if (Item* itemTarget = GetExplTargetItem())
+                {
+                    if(ItemTemplate const* itemProto = itemTarget->GetTemplate())
+                    {
+                        for (int i = 0; i < MAX_GEM_SOCKETS; ++i)
+                        {
+                            if (itemProto->Socket[i].Color && itemProto->Socket[i].Color == SOCKET_COLOR_SHA)
+                                return SPELL_CAST_OK;
+                        }
+                    }
+                }
+
+                return SPELL_FAILED_BAD_TARGETS;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_item_eye_of_the_black_prince_SpellScript::CheckRequirement);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_eye_of_the_black_prince_SpellScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2360,4 +2399,5 @@ void AddSC_item_spell_scripts()
     new spell_item_hardened_shell();
     new spell_item_elixir_of_wandering_spirits();
     new spell_item_ai_li_skymirror();
+    new spell_item_eye_of_the_black_prince();
 }

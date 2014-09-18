@@ -1822,45 +1822,6 @@ class spell_hun_tame_beast : public SpellScriptLoader
         }
 };
 
-class spell_hun_spirit_bond : public SpellScriptLoader
-{
-    public:
-        spell_hun_spirit_bond() : SpellScriptLoader("spell_hun_spirit_bond") { }
-
-        class spell_hun_spirit_bond_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_spirit_bond_AuraScript);
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* unit = GetUnitOwner())
-                    if (unit->ToPlayer() && unit->ToPlayer()->GetPet())
-                    {
-                        Pet* pet = unit->ToPlayer()->GetPet();
-                        unit->ToPlayer()->GetPet()->CastSpell(pet, 118694);
-                    }
-            }
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* unit = GetUnitOwner())
-                     if (unit->ToPlayer() && unit->ToPlayer()->GetPet())
-                         unit->ToPlayer()->GetPet()->RemoveAurasDueToSpell(118694);
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_hun_spirit_bond_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STAT, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_spirit_bond_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STAT, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_spirit_bond_AuraScript();
-        }
-};
-
 // Glave Toss - 117050
 class spell_hun_Toss : public SpellScriptLoader
 {
@@ -2248,7 +2209,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_misdirection_proc();
     new spell_hun_disengage();
     new spell_hun_tame_beast();
-    new spell_hun_spirit_bond();
     new spell_hun_Toss();
     new spell_hun_fetch();
     new spell_hun_fireworks();

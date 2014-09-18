@@ -1379,7 +1379,12 @@ void Guardian::UpdateMaxPower(Powers power)
     value += GetModifierValue(unitMod, TOTAL_VALUE);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-
+    uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
+    if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
+    {
+        if(!pStats->energy)
+            value = pStats->energy;
+    }
 
     SetMaxPower(power, uint32(value));
 }

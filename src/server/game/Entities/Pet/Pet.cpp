@@ -1347,6 +1347,8 @@ void Pet::_SaveAuras(SQLTransaction& trans)
                 damage[i] = 0;
             }
         }
+        if(pStats->type)
+            SetCasterPet(true);
 
         // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
         uint64 casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? 0 : itr->second->GetCasterGUID();
@@ -1471,11 +1473,8 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     if (newspell.active == ACT_ENABLED)
         ToggleAutocast(spellInfo, true);
 
-    if(!GetCasterPet() && spellInfo->GetMaxRange(false) > 5.0f && spellInfo->GetMaxRange(false) > GetAttackDist())
-    {
-        SetCasterPet(true);
+    if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && spellInfo->IsAutocastable())
         SetAttackDist(spellInfo->GetMaxRange(false));
-    }
 
     return true;
 }
@@ -1534,11 +1533,8 @@ bool Guardian::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, Pe
     if (newspell.active == ACT_ENABLED)
         ToggleAutocast(spellInfo, true);
 
-    if(!GetCasterPet() && spellInfo->GetMaxRange(false) > 5.0f && spellInfo->GetMaxRange(false) > GetAttackDist())
-    {
-        SetCasterPet(true);
+    if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && spellInfo->IsAutocastable())
         SetAttackDist(spellInfo->GetMaxRange(false));
-    }
 
     return true;
 }
@@ -1916,8 +1912,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     }
 
     // Spirit Bond
-    if (owner->HasAura(109212) && !owner->HasAura(118694))
-        AddAura(118694, this);
+    if (owner->HasAura(109212))
+        CastSpell(this, 118694, true);
 }
 
 bool Pet::IsPetAura(Aura const* aura)

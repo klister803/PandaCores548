@@ -7672,10 +7672,11 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 if(uint32 spellId = summon->m_spells[i])
                 if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
                 {
-                    if(sInfo->GetMaxRange(false) > 5.0f)
+                    if(sInfo->GetMaxRange(false) >= 30.0f && sInfo->GetMaxRange(false) > summon->GetAttackDist() && sInfo->IsAutocastable())
                     {
                         summon->SetCasterPet(true);
-                        summon->SetAttackDist(sInfo->GetMaxRange(false));
+                        if(!sInfo->IsPositive())
+                            summon->SetAttackDist(sInfo->GetMaxRange(false));
                     }
                 }
             }

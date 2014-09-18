@@ -6956,10 +6956,8 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 118694: // Spirit Bond
                 {
-                    if (!target->isPet())
-                        break;
-
-                    target->CastSpell(target, 149254, true);
+                    if (!caster->IsFullHealth() || (caster->GetOwner() && !caster->GetOwner()->IsFullHealth()))
+                        trigger_spell_id = 149254;
                     break;
                 }
                 case 113957: // Cooking
