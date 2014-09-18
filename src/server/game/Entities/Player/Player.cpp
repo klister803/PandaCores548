@@ -4618,7 +4618,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
     {
         WorldPacket data;
-        GetBattlePetMgr().BuildBattlePetJournal(&data);
+        GetBattlePetMgr()->BuildBattlePetJournal(&data);
         GetSession()->SendPacket(&data);
     }
 
@@ -19403,6 +19403,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
 
+    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+
     SetLfgBonusFaction(fields[66].GetUInt32());
 
     if(PreparedQueryResult PersonnalRateResult = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE))
@@ -20403,6 +20405,34 @@ void Player::_LoadCUFProfiles(PreparedQueryResult result)
     while (result->NextRow());
 }
 
+void Player::_LoadBattlePets(PreparedQueryResult result)
+{
+    if (!result)
+        return;
+
+    do
+    {
+        // SELECT guid, creatureEntry, speciesID, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE owner = ?
+        Field* fields = result->Fetch();
+
+        uint64 guid        = fields[0].GetUInt64();
+        uint32 creatureEntry = fields[1].GetUInt32();
+        uint32 speciesID = fields[2].GetUInt32();
+        uint32 level = fields[3].GetUInt32();
+        uint32 displayID = fields[4].GetUInt32();
+        uint32 power = fields[5].GetUInt32();
+        uint32 speed = fields[6].GetUInt32();
+        uint32 health = fields[7].GetUInt32();
+        uint32 maxHealth = fields[8].GetUInt32();
+        uint32 quality = fields[9].GetUInt32();
+        uint32 xp = fields[10].GetUInt32();
+        uint32 flags = fields[11].GetUInt32();
+
+        GetBattlePetMgr()->AddBattlePetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags);
+    }
+    while (result->NextRow());
+}
+
 void Player::_LoadGroup(PreparedQueryResult result)
 {
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
@@ -21247,6 +21277,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCurrency(trans);
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
+    _SaveBattlePets(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -22057,6 +22088,36 @@ void Player::_SaveCUFProfiles(SQLTransaction& trans)
 
             trans->Append(stmt);
         }
+    }
+}
+
+void Player::_SaveBattlePets(SQLTransaction& trans)
+{
+    BattlePetJournal journal = GetBattlePetMgr()->GetBattlePetJournal();
+
+    // nothing to save
+    if (journal.empty())
+        return;
+
+    // save journal
+    for (BattlePetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
+        stmt->setInt32(0, pet->first);
+        stmt->setInt32(1, GetGUIDLow());
+        stmt->setInt32(2, pet->second->creatureEntry);
+        stmt->setInt32(3, pet->second->speciesID);
+        stmt->setInt32(4, pet->second->level);
+        stmt->setInt32(5, pet->second->displayID);
+        stmt->setInt32(6, pet->second->power);
+        stmt->setInt32(7, pet->second->speed);
+        stmt->setInt32(8, pet->second->health);
+        stmt->setInt32(9, pet->second->maxHealth);
+        stmt->setInt32(10, pet->second->quality);
+        stmt->setInt32(11, pet->second->xp);
+        stmt->setInt32(12, pet->second->flags);
+
+        trans->Append(stmt);
     }
 }
 
@@ -25360,7 +25421,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty();
 
-    GetBattlePetMgr().BuildBattlePetJournal(&data);
+    GetBattlePetMgr()->BuildBattlePetJournal(&data);
     GetSession()->SendPacket(&data);
 
     // send timers if already start challenge for example

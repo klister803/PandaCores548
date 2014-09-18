@@ -29,40 +29,50 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
-struct PetBattleData
+struct BattlePetJournalData
 {
-    PetBattleData(BattlePetSpeciesEntry const* speciesEntry, uint32 level, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 experience, uint32 spellId) :
-        m_displayID(display), m_power(power), m_speed(speed), m_maxHealth(maxHealth),
-        m_health(health), m_quality(quality), m_experience(experience), m_speciesEntry(speciesEntry), m_level(level), m_spellId(spellId) {}
+    BattlePetJournalData(uint32 _speciesID, uint32 _creatureEntry, uint32 _level, uint32 _display, uint32 _power, uint32 _speed, uint32 _health, uint32 _maxHealth, uint32 _quality, uint32 _xp, uint32 _flags) :
+        displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
+        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry) {}
 
-    uint32 m_displayID;
-    uint32 m_power;
-    uint32 m_speed;
-    uint32 m_health;
-    uint32 m_maxHealth;
-    uint32 m_quality;
-    uint32 m_experience;
-    uint32 m_level;
-    uint32 m_spellId;
+    uint32 speciesID;
+    uint32 creatureEntry;
+    uint32 displayID;
+    uint32 power;
+    uint32 speed;
+    uint32 health;
+    uint32 maxHealth;
+    uint32 quality;
+    uint32 xp;
+    uint32 level;
+    uint32 flags;
 
-    BattlePetSpeciesEntry const* m_speciesEntry;
+    //BattlePetSpeciesEntry const* m_speciesEntry;
 };
 
-typedef std::list<PetBattleData> PetBattleDataList;
+typedef std::map<uint64, BattlePetJournalData*> BattlePetJournal;
 
 class BattlePetMgr
 {
 public:
     explicit BattlePetMgr(Player* owner);
 
+    void FillBattlePetJournal();
     void BuildBattlePetJournal(WorldPacket *data);
-    void GetBattlePetList(PetBattleDataList &petBattleList) const;
-    void SendClosePetBattle(Player * plr);
-    void SendUpdatePets(Player * plr, uint8 petCount);
+
+    void AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint32 level, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 xp, uint32 flags);
+
+    void SendClosePetBattle();
+    void SendUpdatePets(uint8 petCount);
+
+    void GiveXP();
+
     Player* GetPlayer() const { return m_player; }
+    const BattlePetJournal &GetBattlePetJournal() { return m_battlePetJournal; }
 
 private:
     Player* m_player;
+    BattlePetJournal m_battlePetJournal;
 };
 
 enum BattlePetFlags

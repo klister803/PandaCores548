@@ -871,10 +871,11 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES            = 37,
-    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 38,
-    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 39,
-    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 40,
-    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 41,
+    PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS             = 38,
+    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 39,
+    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 40,
+    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 41,
+    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 42,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -3106,8 +3107,8 @@ class Player : public Unit, public GridObject<Player>
         /***              BATTLE PET SYSTEM                    ***/
         /*********************************************************/
 
-        BattlePetMgr& GetBattlePetMgr() { return m_battlePetMgr; }
-        BattlePetMgr const& GetBattlePetMgr() const { return m_battlePetMgr; }
+        BattlePetMgr* GetBattlePetMgr() { return &m_battlePetMgr; }
+        const BattlePetMgr* GetBattlePetMgr() const { return &m_battlePetMgr; }
 
         Bracket* getBracket(BracketType slot) const;
         void SendPvpRatedStats();
@@ -3222,6 +3223,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadCurrency(PreparedQueryResult result);
         void _LoadArchaelogy(PreparedQueryResult result);
         void _LoadCUFProfiles(PreparedQueryResult result);
+        void _LoadBattlePets(PreparedQueryResult result);
         void _LoadHonor();
 
         /*********************************************************/
@@ -3249,6 +3251,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveArchaelogy(SQLTransaction& trans);
         void _SaveBrackets(SQLTransaction& trans);
         void _SaveCUFProfiles(SQLTransaction& trans);
+        void _SaveBattlePets(SQLTransaction& trans);
         void _SaveHonor();
 
         /*********************************************************/

@@ -239,7 +239,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
-    _hiCreatureGuid(1), _hiPetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
+    _hiCreatureGuid(1), _hiPetGuid(1), _hiBattlePetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
     _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1)
 {}
 
@@ -6641,6 +6641,20 @@ void ObjectMgr::LoadPetNumber()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max pet number: %d in %u ms", _hiPetNumber-1, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadBattlePetGuid()
+{
+    uint32 oldMSTime = getMSTime();
+
+    QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM character_battle_pet_journal");
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        _hiBattlePetGuid = fields[0].GetUInt64()+1;
+    }
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded the max battle pet guid: %d in %u ms", _hiBattlePetGuid-1, GetMSTimeDiffToNow(oldMSTime));
+}
+
 std::string ObjectMgr::GeneratePetName(uint32 entry)
 {
     StringVector & list0 = _petHalfName0[entry];
@@ -6662,6 +6676,11 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
 uint32 ObjectMgr::GeneratePetNumber()
 {
     return ++_hiPetNumber;
+}
+
+uint64 ObjectMgr::GenerateBattlePetGuid()
+{
+    return ++_hiBattlePetGuid;
 }
 
 uint64 ObjectMgr::GenerateVoidStorageItemId()
@@ -9391,4 +9410,40 @@ void ObjectMgr::LoadBannedAddons()
     while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u banned addons.", count);
+}
+// Battle Pet System
+void ObjectMgr::LoadBattlePetXPForLevel()
+{
+    // Loading xp per level data
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Battle Pet XP Data...");
+    
+    _battlePetXPperLevel.resize(25);
+    
+    // clear container
+    for (uint8 level = 0; level < 25; ++level)
+        _battlePetXPperLevel[level] = 0;
+
+    QueryResult result  = WorldDatabase.Query("SELECT lvl, xp_for_next_level FROM battle_pet_xp_for_level");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 xp for battle pet level definitions. DB table `battle_pet_xp_for_level` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 cur_level = fields[0].GetUInt8();
+        uint32 cur_xp    = fields[1].GetUInt32();
+
+        _battlePetXPperLevel[cur_level] = cur_xp;
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battle pet xp for level definitions.", count);
 }

@@ -923,6 +923,7 @@ class ObjectMgr
         void LoadExplorationBaseXP();
         void LoadPetNames();
         void LoadPetNumber();
+        void LoadBattlePetGuid();
         void LoadCorpses();
         void LoadFishingBaseSkillLevel();
 
@@ -951,6 +952,9 @@ class ObjectMgr
         void LoadDigSitePositions();
 
         void LoadBannedAddons();
+
+        // Battle Pet System
+        void LoadBattlePetXPForLevel();
 
         BannedAddon const* GetBannedAddon(uint32 Id)
         {
@@ -985,6 +989,8 @@ class ObjectMgr
         uint32 GenerateMailID();
         uint32 GeneratePetNumber();
         uint64 GenerateVoidStorageItemId();
+
+        uint64 GenerateBattlePetGuid();
 
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         ExclusiveQuestGroups mExclusiveQuestGroups;
@@ -1331,6 +1337,8 @@ class ObjectMgr
         uint32 _hiCorpseGuid;
         uint32 _hiMoTransGuid;
 
+        uint64 _hiBattlePetGuid;
+
         QuestMap _questTemplates;
 
         typedef UNORDERED_MAP<uint32, GossipText> GossipTextContainer;
@@ -1390,6 +1398,10 @@ class ObjectMgr
 
         PhaseDefinitionStore _PhaseDefinitionStore;
         SpellPhaseStore _SpellPhaseStore;
+
+        // Battle Pet System
+        typedef std::vector<uint32> BattlePetXPForLevel;
+        BattlePetXPForLevel _battlePetXPperLevel;
 
         uint32 _skipUpdateCount;
 

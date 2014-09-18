@@ -43,9 +43,10 @@
 
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 {
+    m_battlePetJournal.clear();
 }
 
-void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
+void BattlePetMgr::FillBattlePetJournal()
 {
     PlayerSpellMap const& spellMap = m_player->GetSpellMap();
     for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
@@ -69,31 +70,38 @@ void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
             continue;
 
         CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry);
+
         if (!creature)
             continue;
 
-        battlePetList.push_back(PetBattleData(it->second, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50, itr->first));
+        uint64 guid = sObjectMgr->GenerateBattlePetGuid();
+        AddBattlePetInJournal(guid, it->second->ID, petEntry, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50, 0);
     }
+}
+
+void BattlePetMgr::AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint32 level, uint32 display, uint32 power, uint32 speed, uint32 health, uint32 maxHealth, uint32 quality, uint32 xp, uint32 flags)
+{
+    m_battlePetJournal[guid] = new BattlePetJournalData(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags);
 }
 
 void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 {
-    PetBattleDataList petList;
-    GetBattlePetList(petList);
-
     ObjectGuid placeholderPet;
 
-    data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
-    data->WriteBits(petList.size(), 19);
+    if (m_battlePetJournal.empty())
+        FillBattlePetJournal();
 
-    for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
+    data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
+    data->WriteBits(m_battlePetJournal.size(), 19);
+
+    for (BattlePetJournal::const_iterator pet = m_battlePetJournal.begin(); pet != m_battlePetJournal.end(); ++pet)
     {
-        ObjectGuid guid = uint64(pet->m_spellId);
+        ObjectGuid guid = pet->first;
 
         data->WriteBit(1);                  // hasBreed, inverse
         data->WriteGuidMask<1, 5, 3>(guid);
         data->WriteBit(0);                  // has guid
-        data->WriteBit(!pet->m_quality);    // hasQuality, inverse
+        data->WriteBit(!pet->second->quality);    // hasQuality, inverse
         data->WriteGuidMask<6, 7>(guid);
         data->WriteBit(1);                  // has flags, inverse
         data->WriteGuidMask<0, 4>(guid);
@@ -124,27 +132,27 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
             *data << uint8(i);
     }
 
-    for (PetBattleDataList::const_iterator pet = petList.begin(); pet != petList.end(); ++pet)
+    for (BattlePetJournal::const_iterator pet = m_battlePetJournal.begin(); pet != m_battlePetJournal.end(); ++pet)
     {
-        ObjectGuid guid = uint64(pet->m_spellId);
+        ObjectGuid guid = pet->first;
 
         // TODO:
         //if (!breedBit)
-            //*data << uint16(breedID);
-        *data << uint32(pet->m_speciesEntry->ID);
-        *data << uint32(pet->m_speed);                          // speed
+            //*data << uint16(breedID);                       // breedID
+        *data << uint32(pet->second->speciesID);              // speciesID
+        *data << uint32(pet->second->speed);                  // speed
         data->WriteGuidBytes<1, 6, 4>(guid);
-        *data << uint32(pet->m_displayID);
-        *data << uint32(pet->m_maxHealth);                      // max health
-        *data << uint32(pet->m_power);                          // power
+        *data << uint32(pet->second->displayID);
+        *data << uint32(pet->second->maxHealth);              // max health
+        *data << uint32(pet->second->power);                  // power
         data->WriteGuidBytes<2>(guid);
-        *data << uint32(pet->m_speciesEntry->CreatureEntry);    // Creature ID
-        *data << uint16(pet->m_level);                          // level
-        //*data->WriteString("");                               // custom name
-        *data << uint32(pet->m_health);                         // health
-        *data << uint16(pet->m_experience);                     // xp
-        if (pet->m_quality)
-            *data << uint8(pet->m_quality);
+        *data << uint32(pet->second->creatureEntry);          // Creature ID
+        *data << uint16(pet->second->level);                  // level
+        //*data->WriteString("");                             // custom name
+        *data << uint32(pet->second->health);                 // health
+        *data << uint16(pet->second->xp);                     // xp
+        if (pet->second->quality)
+            *data << uint8(pet->second->quality);             // quality
         data->WriteGuidBytes<3, 7, 0, 5>(guid);
     }
 
@@ -730,7 +738,7 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     // finish
     if (bit6 && endGame == 4)
     {
-        _player->GetBattlePetMgr().SendClosePetBattle(_player);
+        _player->GetBattlePetMgr()->SendClosePetBattle();
         return;
     }
 
@@ -1069,22 +1077,16 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
     }
 }
 
-void BattlePetMgr::SendClosePetBattle(Player * plr)
+void BattlePetMgr::SendClosePetBattle()
 {
-    if (!plr)
-        return;
-
     WorldPacket data(SMSG_BATTLE_PET_BATTLE_FINISHED);
-    plr->GetSession()->SendPacket(&data);
+    m_player->GetSession()->SendPacket(&data);
 }
 
 // placeholder
 // packet updates pet stats after finish battle and other actions (renaming?)
-void BattlePetMgr::SendUpdatePets(Player * plr, uint8 petCount)
+void BattlePetMgr::SendUpdatePets(uint8 petCount)
 {
-    if (!plr)
-        return;
-
     ObjectGuid petGuid = ObjectGuid();
 
     WorldPacket data(SMSG_BATTLE_PET_UPDATES);
@@ -1144,5 +1146,9 @@ void BattlePetMgr::SendUpdatePets(Player * plr, uint8 petCount)
         data << uint32(0); // power
     }
 
-    plr->GetSession()->SendPacket(&data);
+    m_player->GetSession()->SendPacket(&data);
+}
+
+void BattlePetMgr::GiveXP()
+{
 }
