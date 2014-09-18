@@ -108,6 +108,7 @@ enum HunterSpells
     HUNTER_SPELL_HUN_THRILL_OF_THE_HUNT          = 34720,
     SPELL_DRUMS_OF_RAGE                          = 146555,
     HUNTER_SPELL_T16_2P_BONUS                    = 144637,
+    HUNTER_SPELL_STEADY_FOCUS                    = 53220,
 };
 
 // Dash - 113073
@@ -1284,16 +1285,25 @@ class spell_hun_steady_shot : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(HUNTER_SPELL_STEADY_SHOT_ENERGIZE);
+                int32 basepoints0 = spellInfo->Effects[EFFECT_0].BasePoints;
+                
                 if (Player* _player = GetCaster()->ToPlayer())
+                {   
+                    // Steady Focus
+                    if (AuraEffect * steadyfocus = _player->GetAuraEffect(HUNTER_SPELL_STEADY_FOCUS, 1))
+                        basepoints0 += steadyfocus->GetAmount();
+
                     if (Unit* target = GetHitUnit())
-                        _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
+                        _player->CastCustomSpell(_player, spellInfo->Id, &basepoints0, NULL, NULL, true);
+                }
             }
 
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit *caster = GetCaster())
-                caster->ToPlayer()->KilledMonsterCredit(44175, 0);
-        }
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit *caster = GetCaster())
+                    caster->ToPlayer()->KilledMonsterCredit(44175, 0);
+            }
 
             void Register()
             {
