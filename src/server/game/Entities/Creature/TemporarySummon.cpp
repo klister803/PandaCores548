@@ -367,8 +367,8 @@ bool Minion::IsWarlockPet() const
         if(m_owner && m_owner->getClass() == CLASS_WARLOCK)
             return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject)

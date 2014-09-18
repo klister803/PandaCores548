@@ -144,6 +144,9 @@ class UnitAI
         // Called when unit is charmed
         virtual void OnCharmed(bool apply) = 0;
 
+        // Called at Unit::SelectVictim at ThreatContainer::selectNextVictim
+        virtual bool AllowSelectNextVictim(Unit* target) { return true; }
+
         // Pass parameters between AI
         virtual void DoAction(int32 const /*param*/) {}
         virtual uint32 GetData(uint32 /*id = 0*/) { return 0; }
