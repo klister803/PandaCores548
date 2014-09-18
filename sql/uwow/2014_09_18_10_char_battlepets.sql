@@ -2,7 +2,7 @@
 
 CREATE TABLE `character_battle_pet_journal` (
   `guid` int(10) unsigned NOT NULL,
-  `owner` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerAccID` int(10) unsigned NOT NULL DEFAULT '0',
   `creatureEntry` mediumint(8) DEFAULT '0',
   `speciesID` mediumint(8) DEFAULT '0',
   `level` mediumint(8) DEFAULT '0',
@@ -14,7 +14,7 @@ CREATE TABLE `character_battle_pet_journal` (
   `quality` mediumint(8) DEFAULT '0',
   `xp` mediumint(8) DEFAULT '0',
   `flags` mediumint(8) DEFAULT '0',
-  PRIMARY KEY (`guid`,`owner`)
+  PRIMARY KEY (`guid`,`ownerAccID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `character_battle_pet`;

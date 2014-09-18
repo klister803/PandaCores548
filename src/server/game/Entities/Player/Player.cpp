@@ -20412,7 +20412,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
 
     do
     {
-        // SELECT guid, creatureEntry, speciesID, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE owner = ?
+        // SELECT guid, creatureEntry, speciesID, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE ownerAccID = ?
         Field* fields = result->Fetch();
 
         uint64 guid        = fields[0].GetUInt64();
@@ -22103,8 +22103,8 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     for (BattlePetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
-        stmt->setInt32(0, pet->first);
-        stmt->setInt32(1, GetGUIDLow());
+        stmt->setInt64(0, pet->first);
+        stmt->setInt32(1, GetSession()->GetAccountId());
         stmt->setInt32(2, pet->second->creatureEntry);
         stmt->setInt32(3, pet->second->speciesID);
         stmt->setInt32(4, pet->second->level);
