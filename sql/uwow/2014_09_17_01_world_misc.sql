@@ -9,6 +9,7 @@ CREATE TABLE `pet_stats` (
   `energy` int(10) NOT NULL DEFAULT '0',
   `energy_type` int(10) NOT NULL DEFAULT '0',
   `armor` float NOT NULL DEFAULT '1',
+  `type` int(10) NOT NULL DEFAULT '0',
   `comment` text NOT NULL,
   PRIMARY KEY (`entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
