@@ -891,6 +891,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
             }
         }
+        if(pStats->type)
+            SetCasterPet(true);
     }
     else
     {
@@ -1347,8 +1349,6 @@ void Pet::_SaveAuras(SQLTransaction& trans)
                 damage[i] = 0;
             }
         }
-        if(pStats->type)
-            SetCasterPet(true);
 
         // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
         uint64 casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? 0 : itr->second->GetCasterGUID();
