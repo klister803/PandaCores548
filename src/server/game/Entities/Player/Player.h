@@ -2447,7 +2447,7 @@ class Player : public Unit, public GridObject<Player>
         void SendResetInstanceFailed(uint32 reason, uint32 MapId);
         void SendResetFailedNotify(uint32 mapid);
 
-        virtual bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false);
+        bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false, bool stop = false);
         bool UpdatePosition(const Position &pos, bool teleport = false) { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
         void UpdateUnderwaterState(Map* m, float x, float y, float z);
 

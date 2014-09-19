@@ -7839,7 +7839,7 @@ int8 Player::GetFreeActionButton()
     return -1;
 }
 
-bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
+bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop /*=false*/)
 {
     if (!Unit::UpdatePosition(x, y, z, orientation, teleport))
         return false;
