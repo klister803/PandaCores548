@@ -39,7 +39,6 @@ char const* GetPetName(uint32 petfamily, uint32 dbclang);
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty);
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId);
 SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem);
-SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellid, uint8 difficulty);
 
 int32 GetAreaFlagByAreaID(uint32 area_id);                  // -1 if not found
 AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id);
