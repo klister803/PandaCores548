@@ -2376,6 +2376,7 @@ class Unit : public WorldObject
 
         Unit* m_SpecialTarget;
 
+        float  m_baseRHastRatingPct;
         float  m_baseMHastRatingPct;
         //Combat rating
         int16 m_baseRatingValue[MAX_COMBAT_RATING];

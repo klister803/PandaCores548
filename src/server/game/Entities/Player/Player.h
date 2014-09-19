@@ -3141,7 +3141,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_soulShardsRegenTimerCount;
         uint32 m_RunesRegenTimerCount;
         uint32 m_focusRegenTimerCount;
-        float  m_baseRHastRatingPct;
         bool   m_doLastUpdate;
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];

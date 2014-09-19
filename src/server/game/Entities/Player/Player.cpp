@@ -750,7 +750,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_burningEmbersRegenTimerCount = 0;
     m_RunesRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
-    m_baseRHastRatingPct = 0;
     m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
     m_modForHolyPowerSpell = 0;

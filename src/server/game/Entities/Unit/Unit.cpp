@@ -298,6 +298,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
         m_damage_counters[i].push_front(0);
 
+    m_baseRHastRatingPct = 0;
     m_baseMHastRatingPct = 0;
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
