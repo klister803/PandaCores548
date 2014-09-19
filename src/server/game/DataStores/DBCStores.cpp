@@ -222,7 +222,10 @@ DBCStorage <SpellCooldownsEntry> sSpellCooldownsStore(SpellCooldownsEntryfmt);
 DBCStorage <SpellAuraOptionsEntry> sSpellAuraOptionsStore(SpellAuraOptionsEntryfmt);
 DBCStorage <SpellProcsPerMinuteEntry> sSpellProcsPerMinuteStore(SpellProcsPerMinuteEntryfmt);
 DBCStorage <SpellProcsPerMinuteModEntry> sSpellProcsPerMinuteModStore(SpellProcsPerMinuteModEntryfmt);
+
 DBCStorage <SpellAuraRestrictionsEntry> sSpellAuraRestrictionsStore(SpellAuraRestrictionsEntryfmt);
+SpellRestrictionDiffMap sSpellRestrictionDiffMap;
+
 DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore(SpellCastingRequirementsEntryfmt);
 
 SpellEffectMap sSpellEffectMap;
@@ -670,6 +673,17 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellScalingStore,           dbcPath,"SpellScaling.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellTotemsStore,            dbcPath,"SpellTotems.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellTargetRestrictionsStore,dbcPath,"SpellTargetRestrictions.dbc");//14545
+
+    for(uint32 i = 1; i < sSpellTargetRestrictionsStore.GetNumRows(); ++i)
+    {
+        if(SpellTargetRestrictionsEntry const *restriction = sSpellTargetRestrictionsStore.LookupEntry(i))
+        {
+            if(restriction->m_difficultyID)
+                sSpellRestrictionDiffMap[restriction->SpellId].restrictions.insert(restriction);
+        }
+    }
+
+
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellPowerStore,             dbcPath,"SpellPower.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellLevelsStore,            dbcPath,"SpellLevels.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellInterruptsStore,        dbcPath,"SpellInterrupts.dbc");//14545
@@ -985,6 +999,25 @@ SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)
         return NULL;
 
     return itr->second.totems[totem];
+}
+
+SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellId, uint8 difficulty)
+{
+    if(!difficulty)
+        return NULL;
+
+    SpellRestrictionDiffMap::const_iterator itr = sSpellRestrictionDiffMap.find(spellId);
+    if(itr != sSpellRestrictionDiffMap.end())
+    {
+        SpellRestrictionMap const* restr = &itr->second.restrictions;
+        for (SpellRestrictionMap::const_iterator sr = restr->begin(); sr != restr->end(); ++sr)
+        {
+            if ((*sr)->m_difficultyID == difficulty)
+                return *sr;
+        }
+    }
+
+    return NULL;
 }
 
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId)
