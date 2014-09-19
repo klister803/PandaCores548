@@ -856,7 +856,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     sLog->outDebug(LOG_FILTER_UNITS, "DealDamageStart");
 
     uint32 health = victim->GetHealth();
-    sLog->outInfo(LOG_FILTER_UNITS, "deal dmg:%d to health:%d ", damage, health);
+    sLog->outInfo(LOG_FILTER_UNITS, "deal dmg:%d to health:%d to %s", damage, health, GetString().c_str());
 
     // duel ends when player has 1 or less hp
     bool duel_hasEnded = false;

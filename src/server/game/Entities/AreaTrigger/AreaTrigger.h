@@ -105,7 +105,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void UpdateAffectedList(uint32 p_time, bool despawn);
         void Remove();
         uint32 GetSpellId() const { return GetUInt32Value(AREATRIGGER_SPELLID); }
-        uint64 GetCasterGuid() const { return GetUInt64Value(AREATRIGGER_CASTER); }
+        uint64 GetCasterGUID() const { return GetUInt64Value(AREATRIGGER_CASTER); }
         Unit* GetCaster() const;
         int32 GetDuration() const { return _duration; }
         void SetDuration(int32 newDuration) { _duration = newDuration; }
@@ -127,5 +127,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
+        
+        bool _on_unload;
 };
 #endif

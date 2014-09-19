@@ -23,7 +23,7 @@
 #include "GridNotifiers.h"
 #include "Chat.h"
 
-AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0)
+AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -103,7 +103,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         {
             AreaTrigger* at = oldTriggers.front();
             oldTriggers.remove(at);
-            if (at->GetCasterGuid() == caster->GetGUID())
+            if (at->GetCasterGUID() == caster->GetGUID())
                 at->Remove();
         }
     }
@@ -140,7 +140,6 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
 
         std::list<Unit*> unitList;
         GetAttackableUnitListInRange(unitList, GetRadius());
-
         for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
         {
             if (!IsUnitAffected((*itr)->GetGUID()))
@@ -190,35 +189,30 @@ void AreaTrigger::UpdateActionCharges(uint32 p_time)
 
 void AreaTrigger::Update(uint32 p_time)
 {
-    if (GetDuration() > int32(p_time))
+    if (GetDuration() != -1)
     {
-        UpdateActionCharges(p_time);
-
-        _duration -= p_time;
-
-        if (_activationDelay >= p_time)
-            _activationDelay -= p_time;
-        else
-            _activationDelay = 0;
-
-        if (!_activationDelay)
-            UpdateAffectedList(p_time, false);
-    }
-    else
-    {
-        UpdateAffectedList(p_time, true);
-        for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
+        if (GetDuration() > int32(p_time))
         {
-            ActionInfo& info = itr->second;
-            if (info.action->moment != AT_ACTION_MOMENT_DESPAWN)
-                continue;
+            _duration -= p_time;
 
-            DoAction(NULL, info);
+            if (_activationDelay >= p_time)
+                _activationDelay -= p_time;
+            else
+                _activationDelay = 0;
+        }else
+        {
+            Remove(); // expired
+            return;
         }
-        Remove(); // expired
     }
 
-    WorldObject::Update(p_time);
+    UpdateActionCharges(p_time);
+
+    if (!_activationDelay)
+        UpdateAffectedList(p_time, false);
+
+    //??
+    //WorldObject::Update(p_time);
 }
 
 bool AreaTrigger::IsUnitAffected(uint64 guid) const
@@ -228,8 +222,8 @@ bool AreaTrigger::IsUnitAffected(uint64 guid) const
 
 void AreaTrigger::AffectUnit(Unit* unit, bool enter)
 {
-    if (unit->GetTypeId() == TYPEID_PLAYER)
-        ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::AffectUnit %s %u", unit->GetName(), enter);
+    //if (unit->GetTypeId() == TYPEID_PLAYER)
+    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::AffectUnit %s %u", unit->GetName(), enter);
 
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
@@ -254,9 +248,6 @@ void AreaTrigger::AffectUnit(Unit* unit, bool enter)
 
 void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
 {
-    if (unit->GetTypeId() == TYPEID_PLAYER)
-        ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::UpdateOnUnit %s %u", unit->GetName(), p_time);
-
     if (atInfo.updateDelay)
     {
         if (_updateDelay > p_time)
@@ -267,6 +258,10 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
         else
             _updateDelay = atInfo.updateDelay;
     }
+
+    //Unit* caster = GetCaster();
+    //if (unit->GetTypeId() == TYPEID_PLAYER)
+    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::UpdateOnUnit %s caster %s %u", unit->GetName(), caster->GetName(), p_time);
 
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
@@ -293,7 +288,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         if (!caster || !caster->IsHostileTo(unit))
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_OWNER)
-        if (unit->GetGUID() != GetCasterGuid())
+    if (unit->GetGUID() != GetCasterGUID())
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_PLAYER)
         if (!unit->ToPlayer())
@@ -302,9 +297,11 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         if (unit->isPet())
             return;
 
+    //if (unit->GetTypeId() == TYPEID_PLAYER)
+    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::DoAction %s  type %u before conditions", unit->GetName(), action.action->actionType);
+
     if (!CheckActionConditions(*action.action, unit))
         return;
-
     switch (action.action->actionType)
     {
         case AT_ACTION_TYPE_CAST_SPELL:
@@ -335,6 +332,20 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
 
 void AreaTrigger::Remove()
 {
+    if (_on_unload)
+        return;
+    _on_unload = true;
+
+    UpdateAffectedList(0, true);
+    for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
+    {
+        ActionInfo& info = itr->second;
+        if (info.action->moment != AT_ACTION_MOMENT_DESPAWN)
+            continue;
+
+        DoAction(NULL, info);
+    }
+
     if (IsInWorld())
     {
         SendObjectDeSpawnAnim(GetGUID());
@@ -350,7 +361,7 @@ float AreaTrigger::GetRadius() const
 
 Unit* AreaTrigger::GetCaster() const
 {
-    return ObjectAccessor::GetUnit(*this, GetCasterGuid());
+    return ObjectAccessor::GetUnit(*this, GetCasterGUID());
 }
 
 bool AreaTrigger::CheckActionConditions(AreaTriggerAction const& action, Unit* unit)

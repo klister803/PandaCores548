@@ -60,6 +60,7 @@ namespace Trinity
         void Visit(PlayerMapType &);
         void Visit(CreatureMapType &);
         void Visit(DynamicObjectMapType &);
+        void Visit(AreaTriggerMapType &);
     };
 
     struct PlayerRelocationNotifier : public VisibleNotifier
@@ -1060,7 +1061,7 @@ namespace Trinity
             AreaTriggerWithEntryInObjectRangeCheck(WorldObject const* obj, uint32 entry, uint64 casterGuid, float range) : i_obj(obj), i_entry(entry), i_casterGuid(casterGuid), i_range(range) {}
             bool operator()(AreaTrigger* at)
             {
-                if (i_obj->IsWithinDistInMap(at, i_range) && i_entry == at->GetEntry() && (!i_casterGuid || i_casterGuid == at->GetCasterGuid()))
+                if (i_obj->IsWithinDistInMap(at, i_range) && i_entry == at->GetEntry() && (!i_casterGuid || i_casterGuid == at->GetCasterGUID()))
                     return true;
 
                 return false;

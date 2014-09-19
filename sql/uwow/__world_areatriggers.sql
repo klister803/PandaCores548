@@ -101,3 +101,10 @@ INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spe
 -- (26, 228, 0, 1, 0, 115069, '');
 
 DELETE FROM `spell_script_names` WHERE `ScriptName` = 'spell_mage_rune_of_power';
+
+DELETE FROM `areatrigger_actions` WHERE entry = 1013;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('1013', '0', '0', '0', '2', '143239', '0', '0', 'OO: Noxious Poison on enter cast'), 
+('1013', '1', '1', '1', '0', '143239', '0', '0', 'OO: Noxious Poison on exit remove');
+INSERT INTO `areatrigger_data` (`entry`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) VALUES 
+('1013', '2', '0', '2000', '0', 'OO: Noxious Poison');
