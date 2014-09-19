@@ -447,8 +447,6 @@ void Pet::SavePetToDB(PetSlot mode)
     if (mode >= PET_SLOT_HUNTER_FIRST && mode <= PET_SLOT_OTHER_PET)
     {
         uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
-        std::string name = m_name;
-        CharacterDatabase.EscapeString(name);
 
         // save pet
         uint8 index = 0;
@@ -462,7 +460,7 @@ void Pet::SavePetToDB(PetSlot mode)
         stmt->setUInt32(index++, getLevel());
         stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_PETEXPERIENCE));
         stmt->setUInt8(index++, GetReactState());
-        stmt->setString(index++, name.c_str());
+        stmt->setString(index++, GetName());
         stmt->setUInt8(index++, HasByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1);
         stmt->setUInt32(index++, curhealth);
         stmt->setUInt32(index++, curmana);
