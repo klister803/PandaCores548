@@ -143,8 +143,6 @@ class Pet : public Guardian
         bool removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
         void CleanupActionBar();
 
-        bool            m_Stampeded;
-
         void InitPetCreateSpells();
 
         uint64 GetAuraUpdateMaskForRaid() const { return m_auraRaidUpdateMask; }

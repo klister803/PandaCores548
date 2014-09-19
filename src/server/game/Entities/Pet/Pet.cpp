@@ -56,7 +56,6 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
 
     m_name = "Pet";
     m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
-    m_Stampeded = false;
     m_Update    = false;
 }
 
@@ -119,6 +118,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         return false;
     }
 
+    m_Stampeded = stampeded;
     uint32 ownerid = owner->GetGUIDLow();
 
     // find number
@@ -365,7 +365,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     owner->ProcDamageAndSpell(this, PROC_FLAG_SUM_PET, PROC_FLAG_NONE, PROC_EX_NONE, &dmgInfoProc, BASE_ATTACK, spellInfo);
 
     m_loading = false;
-    m_Stampeded = stampeded;
     return true;
 }
 
@@ -1910,7 +1909,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     }
 
     // Spirit Bond
-    if (owner->HasAura(109212))
+    if (owner->HasAura(109212) && !m_Stampeded)
         CastSpell(this, 118694, true);
 }
 
