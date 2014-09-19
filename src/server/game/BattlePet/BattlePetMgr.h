@@ -99,8 +99,14 @@ public:
 
         return NULL;
     }
+
     template<typename T>
     void SetBattlePetData(uint64 guid, BattlePetData bpd, T value);
+    void SetBattlePetData(uint64 guid, BattlePetData bpd, std::string value);
+    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint8 value);
+    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint16 value);
+    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint32 value);
+
     bool HasBattlePet(uint64 guid)
     {
         BattlePetJournal::const_iterator pet = m_battlePetJournal.find(guid);

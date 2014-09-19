@@ -151,7 +151,8 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
         data->WriteGuidBytes<2>(guid);
         *data << uint32(pet->second->creatureEntry);          // Creature ID
         *data << uint16(pet->second->level);                  // level
-        *data->WriteString(len == 0 ? "" : pet->second->customName);   // custom name
+        if (len > 0)
+            data->WriteString(pet->second->customName);      // custom name
         *data << uint32(pet->second->health);                 // health
         *data << uint16(pet->second->xp);                     // xp
         if (pet->second->quality)
@@ -171,7 +172,13 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 0, 1, 5, 3, 4, 7, 2>(guid);
     recvData.ReadGuidBytes<2, 5, 3, 7, 1, 0, 6, 4>(guid);
 
-    uint32 spellId = (uint64(guid) & 0xFFFFFFFF);
+    // find pet
+    BattlePetJournalData* pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+
+    if (!pet)
+        return;
+
+    uint32 spellId = pet->summonSpellID;
 
     if (!_player->HasActiveSpell(spellId))
         return;
