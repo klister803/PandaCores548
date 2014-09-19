@@ -2210,8 +2210,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     mSpellPetAuraMap.clear();                                  // need for reload case
 
-    //                                                  0         1       2       3      4    5    6    7
-    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `bp0`, `bp1`, `bp2`, `aura` FROM `spell_pet_auras`");
+    //                                                    0          1         2         3            4         5      6     7        8         9
+    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura` FROM `spell_pet_auras`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell pet auras. DB table `spell_pet_auras` is empty.");
@@ -2227,10 +2227,12 @@ void SpellMgr::LoadSpellPetAuras()
         int32 spellId = fields[1].GetInt32();
         int32 option = fields[2].GetInt32();
         int32 target = fields[3].GetInt32();
-        float bp0 = fields[4].GetFloat();
-        float bp1 = fields[5].GetFloat();
-        float bp2 = fields[6].GetFloat();
-        int32 aura = fields[7].GetInt32();
+        int32 targetaura = fields[4].GetInt32();
+        float bp0 = fields[5].GetFloat();
+        float bp1 = fields[6].GetFloat();
+        float bp2 = fields[7].GetFloat();
+        int32 aura = fields[8].GetInt32();
+        int32 casteraura = fields[9].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
         if (!spellInfo)
@@ -2244,10 +2246,12 @@ void SpellMgr::LoadSpellPetAuras()
         tempPetAura.spellId = spellId;
         tempPetAura.option = option;
         tempPetAura.target = target;
+        tempPetAura.targetaura = targetaura;
         tempPetAura.bp0 = bp0;
         tempPetAura.bp1 = bp1;
         tempPetAura.bp2 = bp2;
         tempPetAura.aura = aura;
+        tempPetAura.casteraura = casteraura;
         mSpellPetAuraMap[petEntry].push_back(tempPetAura);
 
         ++count;

@@ -1397,19 +1397,35 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 {
                     Unit* _target = target;
                     if(itr->target == 1 && target->ToPlayer()) //get target pet
+                    {
                         if (Pet* pet = target->ToPlayer()->GetPet())
                             _target = (Unit*)pet;
+                        else
+                            continue;
+                    }
                     if(itr->target == 2) //get target owner
+                    {
                         if (Unit* owner = target->GetOwner())
                             _target = owner;
+                        else
+                            continue;
+                    }
 
                     Unit* _caster = caster;
                     if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
+                    {
                         if (Pet* pet = caster->ToPlayer()->GetPet())
                             _caster = (Unit*)pet;
+                        else
+                            continue;
+                    }
                     if(itr->caster == 2 && caster) //get caster owner
+                    {
                         if (Unit* owner = caster->GetOwner())
                             _caster = owner;
+                        else
+                            continue;
+                    }
 
                     if (itr->effect < 0)
                     {
@@ -1477,19 +1493,35 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     {
                         Unit* _target = target;
                         if(itr->target == 1 && target->ToPlayer()) //get target pet
+                        {
                             if (Pet* pet = target->ToPlayer()->GetPet())
                                 _target = (Unit*)pet;
+                            else
+                                continue;
+                        }
                         if(itr->target == 2) //get target owner
+                        {
                             if (Unit* owner = target->GetOwner())
                                 _target = owner;
+                            else
+                                continue;
+                        }
 
                         Unit* _caster = target;
                         if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
+                        {
                             if (Pet* pet = caster->ToPlayer()->GetPet())
                                 _caster = (Unit*)pet;
+                            else
+                                continue;
+                        }
                         if(itr->caster == 2 && caster) //get caster owner
+                        {
                             if (Unit* owner = caster->GetOwner())
                                 _caster = owner;
+                            else
+                                continue;
+                        }
 
                         if (itr->effect < 0)
                         {
@@ -1548,11 +1580,19 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     {
                         Unit* _target = target;
                         if(itr->target == 1 && target->ToPlayer()) //get target pet
+                        {
                             if (Pet* pet = target->ToPlayer()->GetPet())
                                 _target = (Unit*)pet;
+                            else
+                                continue;
+                        }
                         if(itr->target == 2) //get target owner
+                        {
                             if (Unit* owner = target->GetOwner())
                                 _target = owner;
+                            else
+                                continue;
+                        }
 
                         if (itr->effect < 0)
                         {

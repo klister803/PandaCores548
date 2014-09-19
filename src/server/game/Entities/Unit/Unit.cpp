@@ -297,6 +297,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_damage_counter_timer = 1 * IN_MILLISECONDS;
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
         m_damage_counters[i].push_front(0);
+
+    m_baseMHastRatingPct = 0;
+    for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
+        m_baseRatingValue[i] = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -18190,21 +18194,10 @@ void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply
         ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, -val, apply);
     }
 
-    if (ToPet() && att == BASE_ATTACK)
-        ToPet()->UpdatePetMeleeHastMod();
-
     if (val && isPet())
         UpdateDamagePhysical(att);
 
     m_attackTimer[att] = uint32(GetAttackTime(att) * m_modAttackSpeedPct[att] * remainingTimePct);
-}
-
-void Unit::ApplyCastTimePercentMod(float val, bool apply)
-{
-    /*if (val > 0)
-        ApplyPercentModFloatValue(UNIT_MOD_CAST_SPEED, val, !apply);
-    else
-        ApplyPercentModFloatValue(UNIT_MOD_CAST_SPEED, -val, apply);*/
 }
 
 uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectType damagetype, uint32 CastingTime) const

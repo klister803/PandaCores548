@@ -2381,13 +2381,8 @@ class Player : public Unit, public GridObject<Player>
         void ApplyHealthRegenBonus(int32 amount, bool apply);
         void UpdateMasteryAuras();
         void UpdateManaRegen();
-        void UpdateEnergyRegen();
-        void UpdateFocusRegen();
         void UpdateRuneRegen(RuneType rune);
         void UpdateAllRunesRegen();
-        void UpdateMeleeHastMod();
-        void UpdateRangeHastMod();
-        void UpdateHastMod();
         void UpdatePvPPower();
 
         void SetLootSpecID(uint32 spec) { SetUInt32Value(PLAYER_FIELD_LOOT_SPEC_ID, spec); }
@@ -3146,7 +3141,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_soulShardsRegenTimerCount;
         uint32 m_RunesRegenTimerCount;
         uint32 m_focusRegenTimerCount;
-        float  m_baseMHastRatingPct;
         float  m_baseRHastRatingPct;
         bool   m_doLastUpdate;
         uint32 m_demonicFuryPowerRegenTimerCount;
@@ -3323,7 +3317,6 @@ class Player : public Unit, public GridObject<Player>
         ActionButtonList m_actionButtons;
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
-        int16 m_baseRatingValue[MAX_COMBAT_RATING];
         uint32 m_baseSpellPower;
         uint32 m_baseManaRegen;
         uint32 m_baseHealthRegen;

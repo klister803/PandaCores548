@@ -750,7 +750,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_burningEmbersRegenTimerCount = 0;
     m_RunesRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
-    m_baseMHastRatingPct = 0;
     m_baseRHastRatingPct = 0;
     m_doLastUpdate = false;
     m_weaponChangeTimer = 0;
@@ -901,9 +900,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
         m_auraBaseMod[i][FLAT_MOD] = 0.0f;
         m_auraBaseMod[i][PCT_MOD] = 1.0f;
     }
-
-    for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
-        m_baseRatingValue[i] = 0;
 
     m_baseSpellPower = 0;
     m_baseManaRegen = 0;
@@ -7073,11 +7069,6 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
         case CR_HASTE_RANGED:
         {
             ApplyAttackTimePercentMod(RANGED_ATTACK, value * GetRatingMultiplier(cr), apply);
-            break;
-        }
-        case CR_HASTE_SPELL:
-        {
-            ApplyCastTimePercentMod(value * GetRatingMultiplier(cr), apply);
             break;
         }
         default:

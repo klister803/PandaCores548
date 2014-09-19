@@ -532,8 +532,6 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
     }
     else if (getDeathState() == ALIVE)
     {
-        CastPetAuras(true);
-
         if (getPetType() == HUNTER_PET)
         {
             if (Unit* owner = GetOwner())
@@ -541,7 +539,9 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
                     player->StopCastingCharm();
         }
     }
-    else if (getDeathState() == JUST_DIED)
+    if (s == ALIVE)
+        CastPetAuras(true);
+    else if (s == JUST_DIED)
         CastPetAuras(false);
 }
 
@@ -918,41 +918,17 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     SetBonusDamage(0);
     UpdateAllStats();
 
-    switch (GetEntry())
-    {
-        case 62005: // Dire Beast - Dungeons
-        case 62210: // Dire Beast - Valley of the Four Winds
-        case 62855: // Dire Beast - Kalimdor
-        case 62856: // Dire Beast - Eastern Kingdoms
-        case 62857: // Dire Beast - Outland
-        case 62858: // Dire Beast - Northrend
-        case 62860: // Dire Beast - Krasarang Wilds
-        case 62865: // Dire Beast - Jade Forest
-        case 64617: // Dire Beast - Vale of Eternal Blossoms
-        case 64618: // Dire Beast - Kun-Lai Summit
-        case 64619: // Dire Beast - Townlong Steppes
-        case 64620: // Dire Beast - Dread Wastes
-        {
-            int32 bonus_dmg = (int32(m_owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f));
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel + bonus_dmg));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel + bonus_dmg));
-            break;
-        }
-        default:
-        {
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + cinfo->mindmg));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + cinfo->maxdmg));
+    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + cinfo->mindmg));
+    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + cinfo->maxdmg));
 
-            if (petType == HUNTER_PET)
-            {
-                SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel)*PET_XP_FACTOR));
-                if (m_owner->ToPlayer())
-                    ApplyAttackTimePercentMod(BASE_ATTACK, m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_RANGED), true);
-            }
-            else
-                SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-        }
+    if (petType == HUNTER_PET)
+    {
+        SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel)*PET_XP_FACTOR));
+        if (m_owner->ToPlayer())
+            ApplyAttackTimePercentMod(BASE_ATTACK, m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_RANGED), true);
     }
+    else
+        SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
 
     SetFullHealth();
     return true;
@@ -1744,6 +1720,9 @@ void Pet::LearnPetPassives()
 
 void TempSummon::CastPetAuras(bool apply, uint32 spellId)
 {
+    if(m_Stampeded)
+        return;
+
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
 
     Unit* owner = GetCharmerOrOwner();
@@ -1752,11 +1731,12 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
 
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(GetEntry()))
     {
-        Unit* _target = this;
-        Unit* _caster = this;
-
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
         {
+            Unit* _target = this;
+            Unit* _caster = this;
+            Unit* _targetaura = this;
+
             if(itr->target == 1) //get target owner
                 _target = owner;
 
@@ -1766,14 +1746,21 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             if(itr->target == 3) //get target from spell chain
                 _target = _target->GetTargetUnit();
 
+            if(itr->targetaura == 1) //get target for aura owner
+                _targetaura = owner;
+
             if(_target == NULL)
                 _target = this;
             if(_caster == NULL)
                 _caster = this;
 
-            if(itr->aura > 0 && !_caster->HasAura(itr->aura))
+            if(itr->aura > 0 && !_targetaura->HasAura(itr->aura))
                 continue;
-            if(itr->aura < 0 && _caster->HasAura(abs(itr->aura)))
+            if(itr->aura < 0 && _targetaura->HasAura(abs(itr->aura)))
+                continue;
+            if(itr->casteraura > 0 && !_caster->HasAura(itr->casteraura))
+                continue;
+            if(itr->casteraura < 0 && _caster->HasAura(abs(itr->casteraura)))
                 continue;
             if(spellId != 0 && spellId != abs(itr->aura))
                 continue;
@@ -1830,13 +1817,13 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     //for all pets
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(-1))
     {
-        Unit* _target = this;
-        Unit* _caster = this;
-        //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
-
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
         {
-            //sLog->outDebug(LOG_FILTER_PETS, "Pet::CastPetAuras GetPetAura");
+            Unit* _target = this;
+            Unit* _caster = this;
+            Unit* _targetaura = this;
+
+            sLog->outDebug(LOG_FILTER_PETS, "CastPetAuras spellId %i", itr->spellId);
 
             if(itr->target == 1) //get target owner
                 _target = owner;
@@ -1847,14 +1834,21 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             if(itr->target == 3) //get target from spell chain
                 _target = _target->GetTargetUnit();
 
+            if(itr->targetaura == 1) //get target for aura owner
+                _targetaura = owner;
+
             if(_target == NULL)
                 _target = this;
             if(_caster == NULL)
                 _caster = this;
 
-            if(itr->aura > 0 && !_caster->HasAura(itr->aura))
+            if(itr->aura > 0 && !_targetaura->HasAura(itr->aura))
                 continue;
-            if(itr->aura < 0 && _caster->HasAura(abs(itr->aura)))
+            if(itr->aura < 0 && _targetaura->HasAura(abs(itr->aura)))
+                continue;
+            if(itr->casteraura > 0 && !_caster->HasAura(itr->casteraura))
+                continue;
+            if(itr->casteraura < 0 && _caster->HasAura(abs(itr->casteraura)))
                 continue;
             if(spellId != 0 && spellId != abs(itr->aura))
                 continue;
@@ -1907,10 +1901,6 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             }
         }
     }
-
-    // Spirit Bond
-    if (owner->HasAura(109212) && !m_Stampeded)
-        CastSpell(this, 118694, true);
 }
 
 bool Pet::IsPetAura(Aura const* aura)

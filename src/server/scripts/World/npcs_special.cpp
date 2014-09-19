@@ -4043,6 +4043,11 @@ class npc_guardian_of_ancient_kings : public CreatureScript
                 {
                     if (me->GetOwner())
                     {
+                        float mindmg = me->GetOwner()->GetFloatValue(UNIT_FIELD_MINDAMAGE);
+                        float maxdmg = me->GetOwner()->GetFloatValue(UNIT_FIELD_MAXDAMAGE);
+                        me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
+                        me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
+
                         if (me->GetOwner()->getVictim())
                             AttackStart(me->GetOwner()->getVictim());
 

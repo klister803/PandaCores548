@@ -5413,10 +5413,7 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
     if (target->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsReducingCastTime())
         value /= 2.0f;
 
-    target->ApplyCastTimePercentMod(value, apply);
-
-    if (target->GetTypeId() == TYPEID_PLAYER)
-        target->ToPlayer()->UpdateHastMod();
+    target->UpdateHastMod();
 }
 
 void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5431,11 +5428,8 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     target->ApplyAttackTimePercentMod(OFF_ATTACK, (float)GetAmount(), apply);
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
 
-    if (target->GetTypeId() == TYPEID_PLAYER)
-    {
-        target->ToPlayer()->UpdateMeleeHastMod();
-        target->ToPlayer()->UpdateRangeHastMod();
-    }
+    target->UpdateMeleeHastMod();
+    target->UpdateRangeHastMod();
 }
 
 void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5445,13 +5439,10 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
 
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyCastTimePercentMod(float(m_amount), apply);
     target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, float(GetAmount()), apply);
-
-    if (target->GetTypeId() == TYPEID_PLAYER)
-        target->ToPlayer()->UpdateHastMod();
+    target->UpdateHastMod();
 }
 
 void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5478,8 +5469,7 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
 
-    if (target->GetTypeId() == TYPEID_PLAYER)
-        target->ToPlayer()->UpdateMeleeHastMod();
+    target->UpdateMeleeHastMod();
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5491,9 +5481,7 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
     Unit* target = aurApp->GetTarget();
 
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
-
-    if (target->GetTypeId() == TYPEID_PLAYER)
-        target->ToPlayer()->UpdateRangeHastMod();
+    target->UpdateRangeHastMod();
 }
 
 /********************************/

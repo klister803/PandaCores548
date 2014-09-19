@@ -3039,19 +3039,35 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         {
             Unit* _target = unit;
             if(i->target == 1 && m_caster->ToPlayer()) //get target pet
+            {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
                     _target = (Unit*)pet;
+                else
+                    continue;
+            }
             if(i->target == 2) //get target owner
+            {
                 if (Unit* owner = m_caster->GetOwner())
                     _target = owner;
+                else
+                    continue;
+            }
 
             Unit* _caster = unit;
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
+            {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
                     _caster = (Unit*)pet;
+                else
+                    continue;
+            }
             if(i->caster == 2) //get caster owner
+            {
                 if (Unit* owner = m_caster->GetOwner())
                     _caster = owner;
+                else
+                    continue;
+            }
 
             if (i->effect < 0)
             {
@@ -3647,19 +3663,35 @@ void Spell::cast(bool skipCheck)
 
             Unit* _target = m_targets.GetUnitTarget();
             if(i->target == 1 && m_caster->ToPlayer()) //get target pet
+            {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
                     _target = (Unit*)pet;
+                else
+                    continue;
+            }
             if(i->target == 2) //get target owner
+            {
                 if (Unit* owner = m_caster->GetOwner())
                     _target = owner;
+                else
+                    continue;
+            }
 
             Unit* _caster = m_caster;
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
+            {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
                     _caster = (Unit*)pet;
+                else
+                    continue;
+            }
             if(i->caster == 2) //get caster owner
+            {
                 if (Unit* owner = m_caster->GetOwner())
                     _caster = owner;
+                else
+                    continue;
+            }
 
             if (i->effect < 0)
             {
