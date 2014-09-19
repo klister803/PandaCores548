@@ -33,7 +33,7 @@ int AggressorAI::Permissible(const Creature* creature)
     return PERMIT_BASE_NO;
 }
 
-void AggressorAI::UpdateAI(const uint32 /*diff*/)
+void AggressorAI::UpdateAI(uint32 /*diff*/)
 {
     if (!UpdateVictim())
         return;
