@@ -1740,6 +1740,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading the max pet number...");
     sObjectMgr->LoadPetNumber();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading the max batlpet number...");
+    sObjectMgr->LoadBattlePetGuid();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet level stats...");
     sObjectMgr->LoadPetStats();
 
