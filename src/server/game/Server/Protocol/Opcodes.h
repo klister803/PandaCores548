@@ -614,7 +614,7 @@ enum Opcodes
     CMSG_BATTLE_PET_1ACF                              = 0x1ACF, // 5.4.1 17538
     CMSG_BATTLE_PET_READY_FOR_BATTLE                  = 0x15CC, // 5.4.1 17538
     CMSG_BATTLE_PET_USE_ACTION                        = 0x08E4, // 5.4.1 17538
-    CMSG_BATTLE_PET_SET_FLAGS                         = 0x1464, // 5.4.1 17538 maybe only favorite flag???
+    CMSG_BATTLE_PET_SET_DATA                          = 0x1464, // 5.4.1 17538 maybe only favorite flag???
     CMSG_BATTLE_PET_RENAME                            = 0x056C, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
