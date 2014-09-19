@@ -2463,7 +2463,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             // Spirit Mend
             case 90361:
             {
-                uint32 ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                uint32 ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2;
                 uint32 spd = m_caster->SpellDamageBonusDone(m_caster, m_spellInfo, damage, SPELL_DIRECT_DAMAGE, effIndex);
                 addhealth += int32((ap * 0.35f) * 0.5f) + spd;
                 break;

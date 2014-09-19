@@ -1186,7 +1186,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 // Spirit Mend
                 case 90361:
                 {
-                    uint32 ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    uint32 ap = caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2.7;
                     uint32 spd = caster->SpellDamageBonusDone(caster, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
                     amount += int32((ap * 0.35f) * 0.335) + spd;
                     break;
