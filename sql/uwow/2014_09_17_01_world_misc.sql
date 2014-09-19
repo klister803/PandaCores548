@@ -15,4 +15,4 @@ CREATE TABLE `pet_stats` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `spell_trigger`
-ADD `chance` spell_cooldown(8) DEFAULT '0' NOT NULL AFTER spell_trigger;
+ADD `spell_cooldown` int(8) DEFAULT '0' NOT NULL AFTER spell_trigger;
