@@ -75,7 +75,7 @@ void BattlePetMgr::FillBattlePetJournal()
             continue;
 
         uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-        AddBattlePetInJournal(guid, it->second->ID, petEntry, 12, creature->Modelid1, 10, 5, 100, 100, 4, 50, 0);
+        AddBattlePetInJournal(guid, it->second->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0);
     }
 }
 
@@ -1147,6 +1147,42 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
     }
 
     m_player->GetSession()->SendPacket(&data);
+}
+
+void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
+{
+    ObjectGuid guid;
+    recvData.ReadGuidMask<1, 6>(guid);
+    uint32 len = recvData.ReadBits(7);
+    recvData.ReadGuidMask<3, 5>(guid);
+    bool unk_b = recvData.ReadBit();
+    recvData.ReadGuidMask<7, 4, 0, 2>(guid);
+    uint32 len1[5];
+    if (unk_b)
+    {
+        for (uint8 i = 0; i < 5; ++i)
+            len1[i] = recvData.ReadBits(7);
+    }
+    recvData.ReadGuidBytes<7, 4, 3, 5, 1>(guid);
+    std::string custName = recvData.ReadString(len);
+    recvData.ReadGuidBytes<0, 2, 6>(guid);
+    std::string unk1[5];
+    if (unk_b)
+    {
+        for (uint8 i = 0; i < 5; ++i)
+            unk1[i] = recvData.ReadString(len1[i]);
+    }
+}
+
+void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
+{
+    ObjectGuid guid;
+    uint32 unk;
+    recvData >> unk;
+    recvData.ReadGuidMask<2, 6, 1, 7, 0>(guid);
+    uint32 unk1 = recvData.ReadBits(2);
+    recvData.ReadGuidMask<3, 4, 5>(guid);
+    recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 }
 
 void BattlePetMgr::GiveXP()

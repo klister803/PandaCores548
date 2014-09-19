@@ -999,6 +999,8 @@ class WorldSession
         void HandleBattlePetOpcode1ACF(WorldPacket& recvData);
         void HandleBattlePetReadyForBattle(WorldPacket& recvData);
         void HandleBattlePetUseAction(WorldPacket& recvData);
+        void HandleBattlePetSetFlags(WorldPacket& recvData);
+        void HandleBattlePetRename(WorldPacket& recvData);
 
         // Blizzard Store
         void HandlePurchaseGetProductList(WorldPacket& recvData);
