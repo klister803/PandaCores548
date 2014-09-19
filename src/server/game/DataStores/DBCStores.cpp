@@ -1001,7 +1001,7 @@ SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)
     return itr->second.totems[totem];
 }
 
-SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellId, uint8 difficulty)
+SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellId, uint16 difficulty)
 {
     if(!difficulty)
         return NULL;

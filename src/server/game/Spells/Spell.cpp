@@ -394,7 +394,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
-    MaxAffectedTargets = proto->MaxAffectedTargets;
+    MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
     RadiusMod = 1.0f;
     AuraStackAmount = 1;
 }
@@ -1151,7 +1151,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         power = POWER_HEALTH;
                         break;
                     case 54968: // Glyph of Holy Light
-                        maxSize = m_spellInfo->MaxAffectedTargets;
+                        maxSize = m_spellInfo->GetMaxAffectedTargets(m_diffMode);
                         power = POWER_HEALTH;
                         break;
                     case 57669: // Replenishment
