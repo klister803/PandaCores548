@@ -21277,7 +21277,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCurrency(trans);
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
-    _SaveBattlePets(trans);
+    //_SaveBattlePets(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
