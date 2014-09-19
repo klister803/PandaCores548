@@ -302,6 +302,15 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
 
     if (!CheckActionConditions(*action.action, unit))
         return;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(action.action->spellId);
+    if (!spellInfo)
+        return;
+
+    // should cast on self.
+    if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+        caster = unit;
+
     switch (action.action->actionType)
     {
         case AT_ACTION_TYPE_CAST_SPELL:
@@ -311,7 +320,10 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
                     caster->CastSpell(GetPositionX(), GetPositionY(), GetPositionZ(), action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
                 else
+                {
+                    
                     caster->CastSpell(unit, action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
+                }
             }
             break;
         }
