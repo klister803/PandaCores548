@@ -411,6 +411,11 @@ class Object
         bool PrintIndexError(uint32 index, bool set) const;
         Object(const Object&);                              // prevent generation copy constructor
         Object& operator=(Object const&);                   // prevent generation assigment operator
+
+    public:
+        static char const* GetTypeName(uint32 high);
+        char const* GetTypeName() const { return m_valuesCount ? GetTypeName(GetGUIDHigh()) : "None"; }
+        std::string GetString() const;
 };
 
 struct Position

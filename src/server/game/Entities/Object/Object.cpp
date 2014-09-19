@@ -70,6 +70,47 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
     return NUM_CLIENT_OBJECT_TYPES;                         // unknown
 }
 
+char const* Object::GetTypeName(uint32 high)
+{
+    switch(high)
+    {
+        case HIGHGUID_ITEM:         return "Item";
+        case HIGHGUID_PLAYER:       return "Player";
+        case HIGHGUID_GAMEOBJECT:   return "Gameobject";
+        case HIGHGUID_TRANSPORT:    return "Transport";
+        case HIGHGUID_UNIT:         return "Creature";
+        case HIGHGUID_PET:          return "Pet";
+        case HIGHGUID_VEHICLE:      return "Vehicle";
+        case HIGHGUID_DYNAMICOBJECT:return "DynObject";
+        case HIGHGUID_CORPSE:       return "Corpse";
+        case HIGHGUID_MO_TRANSPORT: return "MoTransport";
+        default:
+            return "<unknown>";
+    }
+}
+
+std::string Object::GetString() const
+{
+    if(!m_uint32Values)
+        return "NONE";
+
+    std::ostringstream str;
+    str << GetTypeName();
+    
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        std::string name;
+        if (sObjectMgr->GetPlayerNameByGUID(GetGUID(), name))
+            str << " " << name;
+    }
+
+    str << " (";
+    if (GetTypeId() == TYPEID_UNIT)
+        str << "Entry: " << GetEntry() << " ";
+    str << "Guid: " << GetGUIDLow() << ")";
+    return str.str();
+}
+
 Object::Object() : m_PackGUID(sizeof(uint64)+1), 
     m_objectTypeId(TYPEID_OBJECT), m_objectType(TYPEMASK_OBJECT), m_uint32Values(NULL),
     _changedFields(NULL), m_valuesCount(0), _fieldNotifyFlags(UF_FLAG_NONE), m_inWorld(false),
