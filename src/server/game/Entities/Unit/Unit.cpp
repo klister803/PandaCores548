@@ -22308,16 +22308,3 @@ bool Unit::RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto)
     }
     return false;
 }
-
-void DelayCastEvent::Execute(Unit *caster)
-{
-    Unit* target = caster;
-
-    if (TargetGUID)
-        target = ObjectAccessor::GetUnit(*caster, TargetGUID);
-
-    if (!target)
-        return;
-
-    caster->CastSpell(target, Spell, false);
-};

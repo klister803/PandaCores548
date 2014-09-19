@@ -2562,21 +2562,6 @@ class Unit : public WorldObject
         uint32 _delayInterruptFlag;
 };
 
-class DelayCastEvent : public BasicEvent
-{
-    friend class EffectMovementGenerator;
-    friend class Spell;
-    protected:
-        DelayCastEvent(uint64 c, uint64 t, uint32 s) : CasterGUID(c), TargetGUID(t), Spell(s) {}
-        ~DelayCastEvent() {};
-        bool Execute(uint64, uint32) { /* ToDo: make for event timer*/ return true; };
-        void Execute(Unit *caster); // used at cast after jump for example.
-
-        uint64 CasterGUID;
-        uint64 TargetGUID;
-        uint32 Spell;
-};
-
 namespace Trinity
 {
     struct ChatData

@@ -123,22 +123,13 @@ bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
 
 void EffectMovementGenerator::Finalize(Unit &unit)
 {
-    if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
+    if (unit.GetTypeId() != TYPEID_UNIT)
         return;
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
     if (unit.GetTypeId() == TYPEID_PLAYER)
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
-
-    // Effect event. Used for delay cast after jump for example
-    if (m_event)
-    {
-        m_event->Execute(&unit);
-        delete m_event;
-        m_event = NULL;
-
-    }
 }
 
 //----- Charge Movement Generator
@@ -186,7 +177,7 @@ void ChargeMovementGenerator::Initialize(Unit &unit)
 
 void ChargeMovementGenerator::Finalize(Unit &unit)
 {
-    if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
+    if (unit.GetTypeId() != TYPEID_UNIT)
         return;
 
     if (((Creature&)unit).AI())
