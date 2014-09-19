@@ -20402,23 +20402,26 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
 
     do
     {
-        // SELECT guid, creatureEntry, speciesID, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE ownerAccID = ?
+        // SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE ownerAccID = ?
         Field* fields = result->Fetch();
 
         uint64 guid        = fields[0].GetUInt64();
-        uint32 creatureEntry = fields[1].GetUInt32();
-        uint32 speciesID = fields[2].GetUInt32();
-        uint32 level = fields[3].GetUInt32();
-        uint32 displayID = fields[4].GetUInt32();
-        uint32 power = fields[5].GetUInt32();
-        uint32 speed = fields[6].GetUInt32();
-        uint32 health = fields[7].GetUInt32();
-        uint32 maxHealth = fields[8].GetUInt32();
-        uint32 quality = fields[9].GetUInt32();
-        uint32 xp = fields[10].GetUInt32();
-        uint32 flags = fields[11].GetUInt32();
+        std::string customName = fields[1].GetString();
+        uint32 creatureEntry = fields[2].GetUInt32();
+        uint32 speciesID = fields[3].GetUInt32();
+        uint32 spell = fields[4].GetUInt32();
+        uint8 level = fields[5].GetUInt8();
+        uint32 displayID = fields[6].GetUInt32();
+        uint16 power = fields[7].GetUInt16();
+        uint16 speed = fields[8].GetUInt16();
+        uint32 health = fields[9].GetUInt32();
+        uint32 maxHealth = fields[10].GetUInt32();
+        uint8 quality = fields[11].GetUInt8();
+        uint16 xp = fields[12].GetUInt16();
+        uint16 flags = fields[13].GetUInt16();
+        // int16 breedID
 
-        GetBattlePetMgr()->AddBattlePetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags);
+        GetBattlePetMgr()->AddBattlePetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName);
     }
     while (result->NextRow());
 }
@@ -21267,7 +21270,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCurrency(trans);
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
-    //_SaveBattlePets(trans);
+    _SaveBattlePets(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -22093,19 +22096,22 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     for (BattlePetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
-        stmt->setInt64(0, pet->first);
-        stmt->setInt32(1, GetSession()->GetAccountId());
-        stmt->setInt32(2, pet->second->creatureEntry);
-        stmt->setInt32(3, pet->second->speciesID);
-        stmt->setInt32(4, pet->second->level);
-        stmt->setInt32(5, pet->second->displayID);
-        stmt->setInt32(6, pet->second->power);
-        stmt->setInt32(7, pet->second->speed);
-        stmt->setInt32(8, pet->second->health);
-        stmt->setInt32(9, pet->second->maxHealth);
-        stmt->setInt32(10, pet->second->quality);
-        stmt->setInt32(11, pet->second->xp);
-        stmt->setInt32(12, pet->second->flags);
+        stmt->setUInt64(0, pet->first);
+        stmt->setUInt32(1, GetSession()->GetAccountId());
+        stmt->setUInt32(2, pet->second->creatureEntry);
+        stmt->setString(3, pet->second->customName);
+        stmt->setInt32(4, pet->second->speciesID);
+        stmt->setInt32(5, pet->second->summonSpellID);
+        stmt->setUInt8(6, pet->second->level);
+        stmt->setInt32(7, pet->second->displayID);
+        stmt->setUInt16(8, pet->second->power);
+        stmt->setUInt16(9, pet->second->speed);
+        stmt->setInt32(10, pet->second->health);
+        stmt->setInt32(11, pet->second->maxHealth);
+        stmt->setUInt8(12, pet->second->quality);
+        stmt->setUInt16(13, pet->second->xp);
+        stmt->setUInt16(14, pet->second->flags);
+        //stmt->setInt16(15, pet->second->breedID);
 
         trans->Append(stmt);
     }

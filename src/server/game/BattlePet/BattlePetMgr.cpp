@@ -79,7 +79,7 @@ void BattlePetMgr::FillBattlePetJournal()
     }
 }
 
-void BattlePetMgr::AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID)
+void BattlePetMgr::AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
 {
     m_battlePetJournal[guid] = new BattlePetJournalData(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName);
 }
@@ -137,6 +137,8 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
     for (BattlePetJournal::const_iterator pet = m_battlePetJournal.begin(); pet != m_battlePetJournal.end(); ++pet)
     {
         ObjectGuid guid = pet->first;
+        bool hasBreed = pet->second->breedID == 0xFFFFFFFF;
+        uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
 
         if (!hasBreed)
             *data << uint16(pet->second->breedID);            // breedID
