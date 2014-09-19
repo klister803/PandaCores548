@@ -1131,6 +1131,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
         {
             RestrrictionsMap[difficulty] = _restr;
             // on MoP no different betwine difficulties for targets.
+            if (!CustomMaxAffectedTargets) CustomMaxAffectedTargets = _restr->MaxAffectedTargets;       //Support old dungeon spells.
             if (!GeneralTargets) GeneralTargets = _restr->Targets;
             if (!GeneralTargetCreatureType) GeneralTargetCreatureType = _restr->TargetCreatureType;
         }
