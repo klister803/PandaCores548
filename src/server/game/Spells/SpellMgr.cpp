@@ -5065,9 +5065,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 3411: // Intervene
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_RAID;
                     break;
-                case 1543: // Flare. Hack from wait to fix areatrigger
-                    spellInfo->Effects[0].TriggerSpell = 94528;
-                    break;
                 case 51490:  // Thunderstorm
                 case 30823:  // Shamanistic Rage
                 case 498:    // Divine Protection

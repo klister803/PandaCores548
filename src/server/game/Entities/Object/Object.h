@@ -59,6 +59,7 @@ enum TypeMask
     TYPEMASK_GAMEOBJECT     = 0x0020,
     TYPEMASK_DYNAMICOBJECT  = 0x0040,
     TYPEMASK_CORPSE         = 0x0080,
+    TYPEMASK_AREATRIGGER    = 0x0100,
     TYPEMASK_SEER           = TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT
 };
 
@@ -71,10 +72,11 @@ enum TypeID
     TYPEID_PLAYER        = 4,
     TYPEID_GAMEOBJECT    = 5,
     TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7
+    TYPEID_CORPSE        = 7,
+    TYPEID_AREATRIGGER   = 8
 };
 
-#define NUM_CLIENT_OBJECT_TYPES             8
+#define NUM_CLIENT_OBJECT_TYPES             9
 
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
@@ -112,6 +114,7 @@ class Creature;
 class Player;
 class UpdateMask;
 class InstanceScript;
+class Item;
 class GameObject;
 class TempSummon;
 class Vehicle;
@@ -359,8 +362,14 @@ class Object
         Corpse* ToCorpse() { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse*>(this); else return NULL; }
         Corpse const* ToCorpse() const { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse const*>(this); else return NULL; }
 
+        Item* ToItem() { if (GetTypeId() == TYPEID_ITEM) return reinterpret_cast<Item*>(this); else return NULL; }
+        Item const* ToItem() const { if (GetTypeId() == TYPEID_ITEM) return reinterpret_cast<Item const*>(this); else return NULL; }
+
         DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
         DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
+
+        AreaTrigger* ToAreaTrigger() { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger*>(this); else return NULL; }
+        AreaTrigger const* ToAreaTrigger() const { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger const*>(this); else return NULL; }
 
     protected:
         Object();
@@ -938,6 +947,8 @@ class WorldObject : public Object, public WorldLocation
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL);
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
+        void GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const;
+        void GetAreaTriggersWithEntryInRange(std::list<AreaTrigger*>& list, uint32 entry, uint64 casterGuid, float fMaxSearchRange) const;
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
         Player*     FindNearestPlayer(float range, bool alive = true);
@@ -1050,6 +1061,22 @@ namespace Trinity
             }
         private:
             const WorldObject* m_refObj;
+            const bool m_ascending;
+    };
+
+    // Binary predicate to sort WorldObjects based on the distance to a reference WorldObject
+    class GuidValueSorterPred
+    {
+        public:
+            GuidValueSorterPred(bool ascending = true) : m_ascending(ascending) {}
+            bool operator()(const WorldObject* pLeft, const WorldObject* pRight) const
+            {
+                if (!pLeft->IsInWorld() || !pRight->IsInWorld())
+                    return false;
+
+                return m_ascending ? pLeft->GetGUIDLow() < pRight->GetGUIDLow() : pLeft->GetGUIDLow() > pRight->GetGUIDLow();
+            }
+        private:
             const bool m_ascending;
     };
 }

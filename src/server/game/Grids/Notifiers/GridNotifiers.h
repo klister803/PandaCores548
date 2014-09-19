@@ -25,6 +25,7 @@
 
 #include "Corpse.h"
 #include "Object.h"
+#include "AreaTrigger.h"
 #include "DynamicObject.h"
 #include "GameObject.h"
 #include "Player.h"
@@ -118,6 +119,7 @@ namespace Trinity
         void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
         void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
+        void Visit(AreaTriggerMapType &m) { updateObjects<AreaTrigger>(m); }
     };
 
     struct MessageDistDeliverer
@@ -216,6 +218,7 @@ namespace Trinity
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -236,6 +239,7 @@ namespace Trinity
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -256,6 +260,7 @@ namespace Trinity
         void Visit(CorpseMapType &m);
         void Visit(GameObjectMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -310,6 +315,15 @@ namespace Trinity
             if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
                 return;
             for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                if (itr->getSource()->InSamePhase(i_phaseMask))
+                    i_do(itr->getSource());
+        }
+
+        void Visit(AreaTriggerMapType &m)
+        {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGER))
+                return;
+            for (AreaTriggerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 if (itr->getSource()->InSamePhase(i_phaseMask))
                     i_do(itr->getSource());
         }
@@ -434,6 +448,22 @@ namespace Trinity
 
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    // All accepted by Check areatriggers if any
+    template<class Check>
+    struct AreaTriggerListSearcher
+    {
+        uint32 i_phaseMask;
+        std::list<AreaTrigger*> &i_objects;
+        Check& i_check;
+
+        AreaTriggerListSearcher(WorldObject const* searcher, std::list<AreaTrigger*> &objects, Check & check)
+            : i_phaseMask(searcher->GetPhaseMask()), i_objects(objects), i_check(check) {}
+
+        void Visit(AreaTriggerMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -1006,6 +1036,40 @@ namespace Trinity
         private:
             WorldObject const* i_obj;
             float i_range;
+    };
+
+    class AnyAreaTriggerInObjectRangeCheck
+    {
+        public:
+            AnyAreaTriggerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
+            bool operator()(AreaTrigger* at)
+            {
+                if (i_obj->IsWithinDistInMap(at, i_range))
+                    return true;
+
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            float i_range;
+    };
+
+    class AreaTriggerWithEntryInObjectRangeCheck
+    {
+        public:
+            AreaTriggerWithEntryInObjectRangeCheck(WorldObject const* obj, uint32 entry, uint64 casterGuid, float range) : i_obj(obj), i_entry(entry), i_casterGuid(casterGuid), i_range(range) {}
+            bool operator()(AreaTrigger* at)
+            {
+                if (i_obj->IsWithinDistInMap(at, i_range) && i_entry == at->GetEntry() && (!i_casterGuid || i_casterGuid == at->GetCasterGuid()))
+                    return true;
+
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            float i_range;
+            uint32 i_entry;
+            uint64 i_casterGuid;
     };
 
     // Success at unit in range, range update for next check (this can be use with UnitLastSearcher to find nearest unit)

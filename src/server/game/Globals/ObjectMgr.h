@@ -19,6 +19,7 @@
 #ifndef _OBJECTMGR_H
 #define _OBJECTMGR_H
 
+#include "AreaTrigger.h"
 #include "Log.h"
 #include "Object.h"
 #include "Bag.h"
@@ -350,7 +351,7 @@ struct SpellClickInfo
 typedef std::multimap<uint32, SpellClickInfo> SpellClickInfoContainer;
 typedef std::pair<SpellClickInfoContainer::const_iterator, SpellClickInfoContainer::const_iterator> SpellClickInfoMapBounds;
 
-struct AreaTrigger
+struct AreaTriggerStruct
 {
     uint32 target_mapId;
     float  target_X;
@@ -598,6 +599,8 @@ struct HotfixInfo
 typedef std::vector<HotfixInfo> HotfixData;
 typedef std::map<uint32, bool> UpdateSkipData;
 
+typedef std::map<uint32, AreaTriggerInfo > AreaTriggerInfoMap;
+
 class PlayerDumpReader;
 
 class ObjectMgr
@@ -614,7 +617,7 @@ class ObjectMgr
 
         typedef UNORDERED_MAP<uint32, Quest*> QuestMap;
 
-        typedef UNORDERED_MAP<uint32, AreaTrigger> AreaTriggerContainer;
+        typedef UNORDERED_MAP<uint32, AreaTriggerStruct> AreaTriggerContainer;
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptContainer;
 
@@ -722,7 +725,7 @@ class ObjectMgr
         void LoadGraveyardZones();
         GraveYardData const* FindGraveYardData(uint32 id, uint32 zone);
 
-        AreaTrigger const* GetAreaTrigger(uint32 trigger) const
+        AreaTriggerStruct const* GetAreaTrigger(uint32 trigger) const
         {
             AreaTriggerContainer::const_iterator itr = _areaTriggerStore.find(trigger);
             if (itr != _areaTriggerStore.end())
@@ -738,8 +741,8 @@ class ObjectMgr
             return NULL;
         }
 
-        AreaTrigger const* GetGoBackTrigger(uint32 Map) const;
-        AreaTrigger const* GetMapEntranceTrigger(uint32 Map) const;
+        AreaTriggerStruct const* GetGoBackTrigger(uint32 Map) const;
+        AreaTriggerStruct const* GetMapEntranceTrigger(uint32 Map) const;
 
         uint32 GetAreaTriggerScriptId(uint32 trigger_id);
         SpellScriptsBounds GetSpellScriptsBounds(uint32 spell_id);
@@ -950,6 +953,9 @@ class ObjectMgr
 
         void LoadResearchSiteToZoneData();
         void LoadDigSitePositions();
+
+        void LoadAreaTriggerActionsAndData();
+        AreaTriggerInfo const* GetAreaTriggerInfo(uint32 entry);
 
         void LoadBannedAddons();
 
@@ -1335,6 +1341,7 @@ class ObjectMgr
         uint32 _hiGoGuid;
         uint32 _hiDoGuid;
         uint32 _hiCorpseGuid;
+        uint32 _hiAreaTriggerGuid;
         uint32 _hiMoTransGuid;
 
         uint64 _hiBattlePetGuid;
@@ -1472,6 +1479,8 @@ class ObjectMgr
             GO_TO_CREATURE,         // GO is dependant on creature
         };
         HotfixData _hotfixData;
+
+        AreaTriggerInfoMap _areaTriggerData;
 };
 
 uint32 GetItemArmor(uint32 itemlevel, uint32 itemClass, uint32 itemSubclass, uint32 quality, uint32 inventoryType);

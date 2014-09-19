@@ -71,6 +71,7 @@ public:
             { "achievement_reward",           SEC_ADMINISTRATOR, true,  &HandleReloadAchievementRewardCommand,          "", NULL },
             { "all",                          SEC_ADMINISTRATOR, true,  NULL,                          "", reloadAllCommandTable },
             { "area_skip_update",             SEC_ADMINISTRATOR, true,  &HandleReloadAreaSkipUpdateCommand,             "", NULL },
+            { "areatrigger_data",             SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerDataCommand,            "", NULL },
             { "areatrigger_involvedrelation", SEC_ADMINISTRATOR, true,  &HandleReloadQuestAreaTriggersCommand,          "", NULL },
             { "areatrigger_tavern",           SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTavernCommand,          "", NULL },
             { "areatrigger_teleport",         SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTeleportCommand,        "", NULL },
@@ -1361,10 +1362,16 @@ public:
 
     static bool HandleReloadAreaSkipUpdateCommand(ChatHandler* handler, const char* /*args*/)
     {
-    	sObjectMgr->LoadSkipUpdateZone();
-    	handler->SendGlobalGMSysMessage("Area skip update reloaded");
-    	return true;
+        sObjectMgr->LoadSkipUpdateZone();
+        handler->SendGlobalGMSysMessage("Area skip update reloaded");
+        return true;
+    }
 
+    static bool HandleReloadAreaTriggerDataCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sObjectMgr->LoadAreaTriggerActionsAndData();
+        handler->SendGlobalGMSysMessage("DB tables `areatrigger_data` and `areatrigger_actions` reloaded.");
+        return true;
     }
 };
 

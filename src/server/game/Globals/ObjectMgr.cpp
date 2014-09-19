@@ -240,7 +240,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiBattlePetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
-    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1)
+    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _hiAreaTriggerGuid(1), _skipUpdateCount(1)
 {}
 
 ObjectMgr::~ObjectMgr()
@@ -5864,7 +5864,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
         uint32 Trigger_ID = fields[0].GetUInt32();
 
-        AreaTrigger at;
+        AreaTriggerStruct at;
 
         at.target_mapId             = fields[1].GetUInt16();
         at.target_X                 = fields[2].GetFloat();
@@ -6003,7 +6003,7 @@ void ObjectMgr::LoadAccessRequirements()
 /*
  * Searches for the areatrigger which teleports players out of the given map with instance_template.parent field support
  */
-AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
+AreaTriggerStruct const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 {
     bool useParentDbValue = false;
     uint32 parentId = 0;
@@ -6036,7 +6036,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 /**
  * Searches for the areatrigger which teleports players to the given map
  */
-AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
+AreaTriggerStruct const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 {
     for (AreaTriggerContainer::const_iterator itr = _areaTriggerStore.begin(); itr != _areaTriggerStore.end(); ++itr)
     {
@@ -6175,6 +6175,11 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         {
             ASSERT(_hiCorpseGuid < 0xFFFFFFFE && "Corpse guid overflow!");
             return _hiCorpseGuid++;
+        }
+        case HIGHGUID_AREATRIGGER:
+        {
+            ASSERT(_hiAreaTriggerGuid < 0xFFFFFFFE && "AreaTrigger guid overflow!");
+            return _hiAreaTriggerGuid++;
         }
         case HIGHGUID_DYNAMICOBJECT:
         {
@@ -9446,4 +9451,108 @@ void ObjectMgr::LoadBattlePetXPForLevel()
     while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battle pet xp for level definitions.", count);
+}
+
+void ObjectMgr::LoadAreaTriggerActionsAndData()
+{
+    _areaTriggerData.clear();
+
+    //                                               0      1       2                3            4
+    QueryResult result = WorldDatabase.Query("SELECT entry, radius, activationDelay, updateDelay, maxCount FROM areatrigger_data");
+    if (result)
+    {
+        uint32 counter = 0;
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint8 i = 0;
+            uint32 id = fields[i++].GetUInt32();
+            AreaTriggerInfo& info = _areaTriggerData[id];
+            info.radius = fields[i++].GetFloat();
+            info.activationDelay = fields[i++].GetUInt32();
+            info.updateDelay = fields[i++].GetUInt32();
+            info.maxCount = fields[i++].GetUInt8();
+            ++counter;
+        }
+        while (result->NextRow());
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u areatrigger data.", counter);
+    }
+    else
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 areatrigger data. DB table `areatrigger_data` is empty.");
+
+    //                                                0      1   2       3           4            5        6           7
+    QueryResult result2 = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime FROM areatrigger_actions");
+    if (result2)
+    {
+        uint32 counter = 0;
+        do
+        {
+            Field* fields = result2->Fetch();
+
+            uint8 i = 0;
+            AreaTriggerAction action;
+            uint32 entry = fields[i++].GetUInt32();
+            action.id = fields[i++].GetUInt8();
+            action.moment = (AreaTriggerActionMoment)fields[i++].GetUInt8();
+            action.actionType = (AreaTriggerActionType)fields[i++].GetUInt8();
+            action.targetFlags = (AreaTriggerTargetFlags)fields[i++].GetUInt8();
+            action.spellId = fields[i++].GetUInt32();
+            action.maxCharges = fields[i++].GetInt8();
+            action.chargeRecoveryTime = fields[i++].GetUInt32();
+
+            if (action.moment >= AT_ACTION_MOMENT_MAX)
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid action moment '%u' for areatrigger entry %u",
+                    action.moment, entry);
+                continue;
+            }
+            if (action.actionType >= AT_ACTION_TYPE_MAX)
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid action type '%u' for areatrigger entry %u",
+                    action.actionType, entry);
+                continue;
+            }
+            /*if (action.targetType >= AT_TARGET_TYPE_MAX)
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid target type '%u' for areatrigger entry %u",
+                    action.targetType, id);
+                continue;
+            }*/
+            /*if (!action.maxCharges)
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid maxCharges = 0 for areatrigger entry %u",
+                    entry);
+                continue;
+            }*/
+            if (action.moment == AT_ACTION_MOMENT_DESPAWN && (action.targetFlags & AT_TARGET_MASK_REQUIRE_TARGET))
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has action at moment AT_ACTION_MOMENT_DESPAWN (%u) with target flags %u, but this mask cannon be used on despawn event.",
+                    action.moment, action.targetFlags);
+                continue;
+            }
+            if (!sSpellMgr->GetSpellInfo(action.spellId))
+            {
+                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has non-existant spell id '%u' for areatrigger entry %u",
+                    action.spellId, entry);
+                continue;
+            }
+
+            AreaTriggerInfo& info = _areaTriggerData[entry];
+            info.actions.push_back(action);
+            ++counter;
+        }
+        while (result2->NextRow());
+
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u areatrigger actions.", counter);
+    }
+    else
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 areatrigger actions. DB table `areatrigger_actions` is empty.");
+}
+
+AreaTriggerInfo const* ObjectMgr::GetAreaTriggerInfo(uint32 entry)
+{
+    AreaTriggerInfoMap::const_iterator itr = _areaTriggerData.find(entry);
+    return itr != _areaTriggerData.end() ? &itr->second : NULL;
 }

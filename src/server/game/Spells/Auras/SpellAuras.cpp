@@ -414,8 +414,6 @@ uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibl
             {
                 if (spellProto->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
                     effMask |= 1 << i;
-                else if (spellProto->Effects[i].Effect == SPELL_EFFECT_CREATE_AREATRIGGER)
-                    effMask |= 1 << i;
             }
             break;
         default:
@@ -507,7 +505,7 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
             aura = new DynObjAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID, stackAmount);
             aura->_InitEffects(effMask, caster, baseAmount);
             aura->GetDynobjOwner()->SetAura(aura);
-            
+
             aura->LoadScripts();
             ASSERT(aura->GetDynobjOwner());
             ASSERT(aura->GetDynobjOwner()->IsInWorld());
@@ -528,7 +526,7 @@ m_spellInfo(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID(
 m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(stackAmount ? stackAmount: 1),
-m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_aura_amount(0),
+m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_aura_amount(0),
 m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
 {
     SpellPowerEntry power;
@@ -1174,6 +1172,10 @@ bool Aura::CanBeSaved() const
 
     // Can't save vehicle auras, it requires both caster & target to be in world
     if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
+        return false;
+
+    // don't save auras casted by entering areatriggers
+    if (m_fromAreatrigger)
         return false;
 
     switch (GetId())
@@ -3127,190 +3129,11 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
         }
-        else if (GetSpellInfo()->Effects[effIndex].Effect != SPELL_EFFECT_CREATE_AREATRIGGER)
+        else
         {
             Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
             Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-        }
-        else
-        {
-            // Custom MoP Script
-            switch (GetSpellInfo()->Id)
-            {
-                case 121286: // Chi Sphere (Afterlife)
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
-                            {
-                                dynObjOwnerCaster->CastSpell(*itr, 121283, true); // Restore 1 Chi
-                                GetDynobjOwner()->SetDuration(0);
-                                return;
-                            }
-                        }
-                    }
-
-                    break;
-                }
-                case 117032: // Healing Sphere (Afterlife)
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
-                            {
-                                dynObjOwnerCaster->CastSpell(*itr, 125355, true); // Heal for 15% of life
-                                GetDynobjOwner()->SetDuration(0);
-                                return;
-                            }
-                        }
-                    }
-
-                    break;
-                }
-                case 121536: // Angelic Feather
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            dynObjOwnerCaster->CastSpell(*itr, 121557, true); // Angelic Feather increase speed
-                            GetDynobjOwner()->SetDuration(0);
-                            return;
-                        }
-                    }
-
-                    break;
-                }
-                case 115460: // Healing Sphere
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            if ((*itr)->IsFullHealth())
-                                continue;
-
-                            dynObjOwnerCaster->CastSpell(*itr, 115464, true); // Healing Sphere heal
-                            GetDynobjOwner()->SetDuration(0);
-                            return;
-                        }
-                    }
-
-                    break;
-                }
-                case 119031: // Gift of the Serpent (Mastery)
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            dynObjOwnerCaster->CastSpell(*itr, 124041, true); // Gift of the Serpent heal
-                            GetDynobjOwner()->SetDuration(0);
-                            return;
-                        }
-                    }
-
-                    break;
-                }
-                case 122035: // Path of Blossom
-                {
-                    std::list<Unit*> targetList;
-                    radius = 1.0f;
-
-                    Trinity::NearestAttackableUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                    {
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            dynObjOwnerCaster->CastSpell(*itr, 122036, true); // Path of Blossom damage
-                            GetDynobjOwner()->SetDuration(0);
-                            return;
-                        }
-                    }
-
-                    break;
-                }
-                case 116011: // Rune of Power
-                {
-                    UnitList targetList;
-                    radius = 2.25f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    for (UnitList::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                    {
-                        if ((*itr)->GetGUID() == dynObjOwnerCaster->GetGUID())
-                        {
-                            if (!dynObjOwnerCaster->HasAura(116014))
-                                dynObjOwnerCaster->CastSpell(*itr, 116014, true); // Rune of Power
-                            return;
-                        }
-                    }
-                    break;
-                }
-                case 115817: // Cancel Barrier
-                {
-                    std::list<Unit*> targetList;
-                    radius = 6.0f;
-
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
-                    Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
-                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
-
-                    if (!targetList.empty())
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                            (*itr)->CastSpell(*itr, 115856, true);
-
-                    break;
-                }
-                default:
-                    break;
-            }
         }
 
         CallScriptCheckTargetsListHandlers(targetList);

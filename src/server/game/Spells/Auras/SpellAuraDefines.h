@@ -502,5 +502,6 @@ enum AuraObjectType
 {
     UNIT_AURA_TYPE,
     DYNOBJ_AURA_TYPE,
+    AREA_TRIGGER_AURA_TYPE,
 };
 #endif

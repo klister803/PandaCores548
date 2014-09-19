@@ -441,6 +441,9 @@ uint32 Condition::GetSearcherTypeMaskForCondition()
                 case TYPEID_CORPSE:
                     mask |= GRID_MAP_TYPE_MASK_CORPSE;
                     break;
+                case TYPEID_AREATRIGGER:
+                    mask |= GRID_MAP_TYPE_MASK_AREATRIGGER;
+                    break;
                 default:
                     break;
             }
@@ -453,6 +456,8 @@ uint32 Condition::GetSearcherTypeMaskForCondition()
                 mask |= GRID_MAP_TYPE_MASK_GAMEOBJECT;
             if (ConditionValue1 & TYPEMASK_CORPSE)
                 mask |= GRID_MAP_TYPE_MASK_CORPSE;
+            if (ConditionValue1 & TYPEMASK_AREATRIGGER)
+                mask |= GRID_MAP_TYPE_MASK_AREATRIGGER;
             break;
         case CONDITION_RELATION_TO:
             mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
@@ -506,6 +511,7 @@ uint32 Condition::GetMaxAvailableConditionTargets()
         case CONDITION_SOURCE_TYPE_SMART_EVENT:
         case CONDITION_SOURCE_TYPE_NPC_VENDOR:
         case CONDITION_SOURCE_TYPE_SPELL_PROC:
+        case CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION:
             return 2;
         default:
             return 1;
@@ -658,7 +664,8 @@ bool ConditionMgr::CanHaveSourceGroupSet(ConditionSourceType sourceType) const
             sourceType == CONDITION_SOURCE_TYPE_SPELL_CLICK_EVENT ||
             sourceType == CONDITION_SOURCE_TYPE_SMART_EVENT ||
             sourceType == CONDITION_SOURCE_TYPE_NPC_VENDOR ||
-            sourceType == CONDITION_SOURCE_TYPE_PHASE_DEFINITION);
+            sourceType == CONDITION_SOURCE_TYPE_PHASE_DEFINITION ||
+            sourceType == CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION);
 }
 
 bool ConditionMgr::CanHaveSourceIdSet(ConditionSourceType sourceType) const
@@ -761,6 +768,23 @@ ConditionList ConditionMgr::GetConditionsForPhaseDefinition(uint32 zone, uint32 
         {
             cond = (*i).second;
             sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForPhaseDefinition: found conditions for zone %u entry %u size %u", zone, entry, cond.size());
+        }
+    }
+
+    return cond;
+}
+
+ConditionList ConditionMgr::GetConditionsForAreaTriggerAction(uint32 areaTriggerId, uint32 actionId)
+{
+    ConditionList cond;
+    AreaTriggerConditionContainer::const_iterator itr = AreaTriggerConditionStore.find(areaTriggerId);
+    if (itr != AreaTriggerConditionStore.end())
+    {
+        ConditionTypeContainer::const_iterator i = itr->second.find(actionId);
+        if (i != itr->second.end())
+        {
+            cond = i->second;
+            sLog->outDebug(LOG_FILTER_CONDITIONSYS, "GetConditionsForAreaTriggerAction: found conditions for areatrigger id %u entry %u spell %u", areaTriggerId, actionId);
         }
     }
 
@@ -988,6 +1012,13 @@ void ConditionMgr::LoadConditions(bool isReload)
                 case CONDITION_SOURCE_TYPE_PHASE_DEFINITION:
                 {
                     PhaseDefinitionsConditionStore[cond->SourceGroup][cond->SourceEntry].push_back(cond);
+                    valid = true;
+                    ++count;
+                    continue;
+                }
+                case CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION:
+                {
+                    AreaTriggerConditionStore[cond->SourceGroup][cond->SourceEntry].push_back(cond);
                     valid = true;
                     ++count;
                     continue;
@@ -1510,6 +1541,28 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             break;
+        case CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION:
+        {
+            AreaTriggerInfo const* info = sObjectMgr->GetAreaTriggerInfo(cond->SourceGroup);
+            if (!info || info->actions.empty())
+            {
+                sLog->outError(LOG_FILTER_SQL, "Source group %u for `CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION` is not valid because there is no areatrigger actions associated.", cond->SourceGroup);
+                return false;
+            }
+            bool found = false;
+            for (AreaTriggerActionList::const_iterator itr = info->actions.begin(); itr != info->actions.end(); ++itr)
+                if (itr->id == cond->SourceEntry)
+                {
+                    found = true;
+                    break;
+                }
+            if (!found)
+            {
+                sLog->outError(LOG_FILTER_SQL, "Source group %u for `CONDITION_SOURCE_TYPE_AREATRIGGER_ACTION` has entry %u - action id that does not exist.", cond->SourceGroup, cond->SourceEntry);
+                return false;
+            }
+            break;
+        }
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU:
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU_OPTION:
         case CONDITION_SOURCE_TYPE_SMART_EVENT:
@@ -2097,6 +2150,19 @@ void ConditionMgr::Clean()
     }
 
     PhaseDefinitionsConditionStore.clear();
+
+    for (AreaTriggerConditionContainer::iterator itr = AreaTriggerConditionStore.begin(); itr != AreaTriggerConditionStore.end(); ++itr)
+    {
+        for (ConditionTypeContainer::iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+        {
+            for (ConditionList::const_iterator i = it->second.begin(); i != it->second.end(); ++i)
+                delete *i;
+            it->second.clear();
+        }
+        itr->second.clear();
+    }
+
+    AreaTriggerConditionStore.clear();
 
     // this is a BIG hack, feel free to fix it if you can figure out the ConditionMgr ;)
     for (std::list<Condition*>::const_iterator itr = AllocatedMemoryStore.begin(); itr != AllocatedMemoryStore.end(); ++itr)
