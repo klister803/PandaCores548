@@ -3939,7 +3939,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                     break;
                 case 44203: // Tranquility (triggered)
-                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->MaxAffectedTargets = 5;
                     break;
                 case 121118:// Dire Beast summons
                 case 122802:
@@ -4076,7 +4076,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 44461: // Living Bomb
-                    spellInfo->CustomMaxAffectedTargets = 3; //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->MaxAffectedTargets = 3;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 23691: // Berzerker Rage Effect
@@ -4196,11 +4196,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
                     break;
                 case 85222: // Light of Dawn
-                    spellInfo->CustomMaxAffectedTargets = 6; //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->MaxAffectedTargets = 6;
                     break;
                 case 8122:  // Psychic Scream
                     spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
-                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->MaxAffectedTargets = 5;
                     break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
@@ -4230,7 +4230,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 121253:// Keg Smash
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                    spellInfo->CustomMaxAffectedTargets = 3;      //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->MaxAffectedTargets = 3;
                     break;
                 case 115308: // Elusive Brew
                 case 122300: // Psyfiend Visual
@@ -4785,13 +4785,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetB = 15;
                     break;
-
-                //Fallen Protectors
-                case 144396:    //Vengeful Strikes
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].ApplyAuraName = 0;
-                    break;
-
+                    
 
                 //World Bosses
                 //Sha of Anger
