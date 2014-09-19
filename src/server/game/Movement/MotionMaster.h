@@ -28,6 +28,7 @@
 class MovementGenerator;
 class Unit;
 class Spell;
+class DelayCastEvent;
 
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1
@@ -167,7 +168,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         bool SpellMoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, Spell* spell = NULL);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
         void MoveJumpTo(float angle, float speedXY, float speedZ);
-        void MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = 0, float o = 0.0f);
+        void MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = 0, float o = 0.0f, DelayCastEvent *e = NULL);
         void MoveFall(uint32 id = 0);
 
         void MoveSeekAssistance(float x, float y, float z);
