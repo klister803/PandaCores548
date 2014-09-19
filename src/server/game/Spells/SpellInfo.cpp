@@ -2796,6 +2796,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 29214: // Wrath of the Plaguebringer
                 case 34700: // Allergic Reaction
                 case 54836: // Wrath of the Plaguebringer
+                case 143276:// OO: Noxious Poison
                     return false;
                 case 30877: // Tag Murloc
                 case 61716: // Rabbit Costume
@@ -2904,6 +2905,10 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
         case SPELL_EFFECT_HEAL_PCT:
         case SPELL_EFFECT_ENERGIZE_PCT:
             return true;
+
+        // ToDo: research on 143224 by cyberbrest. If where are some damage positive spell take me know.
+        case SPELL_EFFECT_SCHOOL_DAMAGE:
+            return false;
 
             // non-positive aura use
         case SPELL_EFFECT_APPLY_AURA:

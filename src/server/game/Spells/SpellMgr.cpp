@@ -76,6 +76,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Gnaw
             else if (spellproto->Id == 47481)
                 return DIMINISHING_CONTROLLED_STUN;
+            else if (spellproto->Id == 143301)
+                return DIMINISHING_NONE;
             break;
         }
         // Event spells
@@ -4785,7 +4787,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetB = 15;
                     break;
-                    
+
+                //Fallen Protectors
+                case 144396:    //Vengeful Strikes
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    break;
+                case 143235:    //Noxious Poison. It's prock. Need create Area Triger system.
+                    spellInfo->Effects[0].BasePoints = 143239;
+                    break;
 
                 //World Bosses
                 //Sha of Anger

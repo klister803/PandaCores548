@@ -227,6 +227,7 @@ class boss_he_softfoot : public CreatureScript
             void Reset()
             {
                 boss_fallen_protectors::Reset();
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
             }
 
             enum local
@@ -244,7 +245,7 @@ class boss_he_softfoot : public CreatureScript
                 events.RescheduleEvent(EVENT_GARROTE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                DoCast(me, SPELL_INSTANT_POISON, true);
+                DoCast(who, SPELL_INSTANT_POISON, false);
             }
 
             void DoAction(int32 const action)
@@ -255,6 +256,12 @@ class boss_he_softfoot : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 boss_fallen_protectors::JustDied(NULL);
+            }
+
+            bool AllowSelectNextVictim(Unit* target)
+            {
+                // Go next raid member.
+                return !target->HasUnitState(UNIT_STATE_STUNNED);
             }
 
             void UpdateAI(uint32 diff)
@@ -275,14 +282,14 @@ class boss_he_softfoot : public CreatureScript
                             break;
                         case EVENT_GOUGE:
                             DoCastVictim(SPELL_GOUGE);
-                            events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            events.RescheduleEvent(EVENT_GOUGE, urand(15*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_POISON_NOXIOUS:
                             events.RescheduleEvent(EVENT_POISON_INSTANT, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
-                            DoCast(me, SPELL_NOXIOUS_POISON, true);
+                            DoCastVictim(SPELL_NOXIOUS_POISON);
                             break;
                         case EVENT_POISON_INSTANT:
-                            DoCast(me, SPELL_INSTANT_POISON, true);
+                            DoCastVictim( SPELL_INSTANT_POISON);
                             events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                     }
@@ -330,6 +337,11 @@ class boss_sun_tenderheart : public CreatureScript
                 events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
+            }
+
+            /*REMOVE IT AFTER COMPLETE*/
+            void AttackStart(Unit* target)
+            {
             }
 
             void DoAction(int32 const action)
@@ -532,6 +544,47 @@ class spell_corrupted_brew : public SpellScriptLoader
         }
 };
 
+class spell_gouge : public SpellScriptLoader
+{
+    public:
+        spell_gouge() : SpellScriptLoader("spell_OO_gouge") { }
+
+        class spell_gouge_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gouge_SpellScript);
+
+            void HandleEffect(SpellEffIndex effIndex)
+            {
+                Unit* target = GetHitUnit();
+                if (!target)
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                if (target->HasInArc(static_cast<float>(M_PI), caster))
+                {
+                    caster->getThreatManager().modifyThreatPercent(target, -100);
+                    target->DeleteFromThreatList(caster);
+                }else
+                {
+                    PreventHitAura();
+                }
+            }
+            
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_gouge_SpellScript::HandleEffect, EFFECT_1, SPELL_EFFECT_APPLY_AURA);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gouge_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -540,4 +593,5 @@ void AddSC_boss_fallen_protectors()
     new npc_golden_lotus_control();
     new spell_clash();
     new spell_corrupted_brew();
+    new spell_gouge();
 }
