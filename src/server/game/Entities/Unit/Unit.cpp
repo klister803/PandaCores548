@@ -455,7 +455,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         UpdateSplinePosition();
 }
 
-void Unit::UpdateSplinePosition()
+void Unit::UpdateSplinePosition(bool stop/* = false*/)
 {
     m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
@@ -474,7 +474,7 @@ void Unit::UpdateSplinePosition()
     if (HasUnitState(UNIT_STATE_CANNOT_TURN))
         loc.orientation = GetOrientation();
 
-    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation, false, stop);
 }
 
 void Unit::DisableSpline()
@@ -17876,7 +17876,7 @@ void Unit::StopMoving()
         return;
 
     // Update position using old spline
-    UpdateSplinePosition();
+    UpdateSplinePosition(true);
     Movement::MoveSplineInit(*this).Stop();
 }
 
@@ -21171,7 +21171,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     }
 }
 
-bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
+bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop/* = false*/)
 {
     // prevent crash when a bad coord is sent by the client
     if (!Trinity::IsValidMapCoord(x, y, z, orientation))
@@ -21183,12 +21183,13 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     bool turn = (GetOrientation() != orientation);
     bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
 
-    if (turn)
+    if (turn && !stop)
         RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
 
     if (relocated)
     {
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
+        if (!stop)
+            RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
 
         // move and update visible state if need
         if (GetTypeId() == TYPEID_PLAYER)
