@@ -207,15 +207,17 @@ class spell_hun_stampede : public SpellScriptLoader
                             float x, y, z;
                             _player->GetRandomPoint(*loc, 5.0f, x, y, z);
 
-                              if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, true))
-                                    {
-                                        pet->SetReactState(REACT_AGGRESSIVE);
-                                        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                                        pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
-                                        ++count;
-                                        if (count >= STAMPED_COUNT)
-                                            break;
-                                    }
+                            if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, true))
+                            {
+                                pet->SetReactState(REACT_AGGRESSIVE);
+                                pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                ++count;
+                                if (count >= STAMPED_COUNT)
+                                    break;
+                                    
+                                if (pet->GetMap()->IsBattlegroundOrArena())
+                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                            }
                         }
                     }
                 }
