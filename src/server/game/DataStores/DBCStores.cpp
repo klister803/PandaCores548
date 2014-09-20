@@ -675,14 +675,8 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellTargetRestrictionsStore,dbcPath,"SpellTargetRestrictions.dbc");//14545
 
     for(uint32 i = 1; i < sSpellTargetRestrictionsStore.GetNumRows(); ++i)
-    {
         if(SpellTargetRestrictionsEntry const *restriction = sSpellTargetRestrictionsStore.LookupEntry(i))
-        {
-            if(restriction->m_difficultyID)
-                sSpellRestrictionDiffMap[restriction->SpellId].restrictions.insert(restriction);
-        }
-    }
-
+            sSpellRestrictionDiffMap[restriction->SpellId].restrictions.insert(restriction);
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellPowerStore,             dbcPath,"SpellPower.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellLevelsStore,            dbcPath,"SpellLevels.dbc");//14545
@@ -1003,9 +997,6 @@ SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)
 
 SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellId, uint16 difficulty)
 {
-    if(!difficulty)
-        return NULL;
-
     SpellRestrictionDiffMap::const_iterator itr = sSpellRestrictionDiffMap.find(spellId);
     if(itr != sSpellRestrictionDiffMap.end())
     {
