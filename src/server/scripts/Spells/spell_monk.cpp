@@ -2367,56 +2367,6 @@ public:
     }
 };
 
-// Rushing Jade Wind - 148187
-class spell_monk_rushing_jade_windc : public SpellScriptLoader
-{
-    public:
-        spell_monk_rushing_jade_windc() : SpellScriptLoader("spell_monk_rushing_jade_windc") { }
-
-        class spell_monk_rushing_jade_windc_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_rushing_jade_windc_SpellScript);
-
-            void HandleOnHit(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* originalcaster = GetCaster())
-                {
-                    float mindamage = 0;
-                    float maxdamage = 0;
-                    Player* caster = NULL;
-                    int32 AP = originalcaster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    if (Player* plr = originalcaster->ToPlayer())
-                    {
-                        caster = plr;
-                    }
-                    else if (Unit* owner = originalcaster->GetOwner())
-                    {
-                        if (Player* plr = owner->ToPlayer())
-                            caster = plr;
-                    }
-
-                    if (caster)
-                        caster->CalculateMinMaxDamage(BASE_ATTACK, false, true, mindamage, maxdamage);
-
-                    int32 mindmg = int32(1.59 * (0.880503 * (1 * 0.898882 * (mindamage + 1 * (mindamage / 2)) + (AP / 14) - 1)));
-                    int32 maxdmg = int32(1.59 * (0.880503 * (1 * 0.898882 * (maxdamage + 1 * (maxdamage / 2)) + (AP / 14) + 1)));
-                    int32 damage = irand(mindmg, maxdmg);
-                    SetHitDamage(damage/4);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_monk_rushing_jade_windc_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_rushing_jade_windc_SpellScript();
-        }
-};
-
 class spell_monk_remove_zen_flight : public SpellScriptLoader
 {
     public:
@@ -2503,7 +2453,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_provoke();
     new spell_monk_roll();
     new spell_monk_tigereye_brew_stacks();
-    new spell_monk_rushing_jade_windc();
     new spell_mastery_bottled_fury();
     new spell_monk_remove_zen_flight();
 }

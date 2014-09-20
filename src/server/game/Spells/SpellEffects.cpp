@@ -769,6 +769,9 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 107270: // Spinning Crane Kick
                         damage = CalculateMonkSpellDamage(_caster, 1.573f, 0.125f, 2);
                         break;
+                    case 148187: // Rushing Jade Wind
+                        damage = CalculateMonkSpellDamage(_caster, 1.259f, 0.1f, 1);
+                        break;
                     case 107428: // Rising Sun Kick
                         damage = CalculateMonkSpellDamage(_caster, 11.52f, 0.915f, 13);
                         m_caster->CastSpell(unitTarget, 130320, true);
