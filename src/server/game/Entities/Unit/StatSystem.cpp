@@ -978,6 +978,7 @@ void Unit::UpdateRangeHastMod()
     float amount = 0.0f;
     if(player)
         amount = player->GetRatingBonusValue(CR_HASTE_RANGED);
+    m_baseRHastRatingPct = amount / 100.0f + 1.0f;
 
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
