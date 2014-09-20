@@ -1503,10 +1503,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     m_caster->CastSpell(m_caster, 51755, true);
                     m_caster->CastSpell(m_caster, 80326, true);
 
-                    if (m_caster->isInCombat())
-                        if (Aura* camouflage = m_caster->GetAura(51755))
-                            camouflage->SetDuration(6000);
-
                     if (Unit* pet = m_caster->GetGuardianPet())
                         pet->CastSpell(pet, 51753, true);
 
@@ -2254,6 +2250,12 @@ void Spell::EffectApplyAura(SpellEffIndex effIndex)
         case 91836:
             m_caster->RemoveAurasDueToSpell(91832);
             break;
+        case 51755: // Camouflage
+        {
+            if (m_caster->isInCombat())
+                m_spellAura->SetDuration(6000);
+            break;
+        }
         case 42292: 
         {
             if(m_caster->ToPlayer() && m_caster->ToPlayer()->GetTeam())
