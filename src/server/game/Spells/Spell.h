@@ -508,6 +508,7 @@ class Spell
         SpellCustomErrors m_customError;
         uint8 m_diffMode;
         bool find_target;
+        bool canHitTargetInLOS;
         uint32 m_count_dispeling; // Final count dispell auras
 
         UsedSpellMods m_appliedMods;
