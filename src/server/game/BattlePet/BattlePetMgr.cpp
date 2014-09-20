@@ -1227,7 +1227,6 @@ void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
     recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 
     // find pet
-    // find pet
     BattlePetJournalData * pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
 
     if (!pet)

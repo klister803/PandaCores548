@@ -22098,8 +22098,8 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
         stmt->setUInt64(0, pet->first);
         stmt->setUInt32(1, GetSession()->GetAccountId());
-        stmt->setUInt32(2, pet->second->creatureEntry);
-        stmt->setString(3, pet->second->customName);
+        stmt->setString(2, pet->second->customName);
+        stmt->setUInt32(3, pet->second->creatureEntry);
         stmt->setInt32(4, pet->second->speciesID);
         stmt->setInt32(5, pet->second->summonSpellID);
         stmt->setUInt8(6, pet->second->level);
