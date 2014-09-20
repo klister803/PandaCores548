@@ -333,6 +333,10 @@ public:
                             owner->AddAura(115043, me);
                             owner->AddAura(128595, me);
                             me->AddAura(138130, me);
+                            me->AddAura(103985, me);
+                            me->setPowerType(POWER_MANA);
+                            me->SetMaxPower(POWER_MANA, 21262);
+                            me->SetPower(POWER_MANA, 21262);
                             CheckWayOfTheMonkAura();
                         }
                         addaura = false;
