@@ -49,6 +49,9 @@ struct BattlePetJournalData
     int16 breedID;
     uint32 summonSpellID;
     std::string customName;
+
+    void SetCustomName(std::string name) { customName = name; }
+    void SetFlags(uint16 _flags) { flags = _flags; }
 };
 
 typedef std::map<uint64, BattlePetJournalData*> BattlePetJournal;
@@ -100,12 +103,8 @@ public:
         return NULL;
     }
 
-    template<typename T>
-    void SetBattlePetData(uint64 guid, BattlePetData bpd, T value);
-    void SetBattlePetData(uint64 guid, BattlePetData bpd, std::string value);
-    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint8 value);
-    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint16 value);
-    void SetBattlePetData(uint64 guid, BattlePetData bpd, uint32 value);
+    //template<typename T> 
+    //void SetBattlePetData(uint64 guid, BattlePetData bpd, T value);
 
     bool HasBattlePet(uint64 guid)
     {

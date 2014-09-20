@@ -1162,36 +1162,58 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
     m_player->GetSession()->SendPacket(&data);
 }
 
+/*template<typename T>
+void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, T value)
+{
+    BattlePetJournalData* pet = GetBattlePetData(guid);
+
+    if (!pet)
+        return;
+
+    switch (bpd)
+    {
+        case FLAGS: pet->flags = value; break;
+        case CUSTOM_NAME: pet->customName = value; break;
+    }
+}
+
+template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, std::string value);
+template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint8 value);
+template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint16 value);
+template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint32 value);*/
+
 void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<1, 6>(guid);
     uint32 len = recvData.ReadBits(7);
     recvData.ReadGuidMask<3, 5>(guid);
-    bool unk_b = recvData.ReadBit();
+    bool hasDeclined = recvData.ReadBit();
     recvData.ReadGuidMask<7, 4, 0, 2>(guid);
     uint32 len1[5];
-    if (unk_b)
+    if (hasDeclined)
     {
         for (uint8 i = 0; i < 5; ++i)
             len1[i] = recvData.ReadBits(7);
     }
     recvData.ReadGuidBytes<7, 4, 3, 5, 1>(guid);
-    std::string custName = recvData.ReadString(len);
+    std::string customName = recvData.ReadString(len);
     recvData.ReadGuidBytes<0, 2, 6>(guid);
-    std::string unk1[5];
-    if (unk_b)
+    std::string declinedNames[5];
+    if (hasDeclined)
     {
         for (uint8 i = 0; i < 5; ++i)
-            unk1[i] = recvData.ReadString(len1[i]);
+            declinedNames[i] = recvData.ReadString(len1[i]);
     }
 
     // find pet
-    if (!_player->GetBattlePetMgr()->HasBattlePet(guid))
+    BattlePetJournalData * pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+
+    if (!pet)
         return;
 
     // set custom name
-    _player->GetBattlePetMgr()->SetBattlePetData(guid, CUSTOM_NAME, custName);
+    pet->SetCustomName(customName);
 }
 
 void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
@@ -1205,30 +1227,18 @@ void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
     recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 
     // find pet
-    if (!_player->GetBattlePetMgr()->HasBattlePet(guid))
+    // find pet
+    BattlePetJournalData * pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+
+    if (!pet)
         return;
 
     // set data (only for testing)
     // type=1 - flags
     if (type == 1)
-        _player->GetBattlePetMgr()->SetBattlePetData(guid, FLAGS, val);
+        pet->SetFlags(val);
 }
 
 void BattlePetMgr::GiveXP()
 {
-}
-
-template<typename T>
-void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, T value)
-{
-    BattlePetJournalData* pet = GetBattlePetData(guid);
-
-    if (!pet)
-        return;
-
-    switch (bpd)
-    {
-        case FLAGS: pet->flags = value; break;
-        case CUSTOM_NAME: pet->customName = value; break;
-    }
 }
