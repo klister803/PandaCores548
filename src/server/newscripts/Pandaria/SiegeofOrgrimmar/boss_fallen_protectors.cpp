@@ -228,6 +228,7 @@ class boss_he_softfoot : public CreatureScript
             {
                 boss_fallen_protectors::Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+                me->RemoveAllAreaObjects();
             }
 
             enum local
@@ -242,7 +243,7 @@ class boss_he_softfoot : public CreatureScript
             {
                 boss_fallen_protectors::EnterCombat(who);
 
-                events.RescheduleEvent(EVENT_GARROTE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 DoCast(who, SPELL_INSTANT_POISON, false);
@@ -277,8 +278,10 @@ class boss_he_softfoot : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_GARROTE:
-                            DoCastVictim(SPELL_GARROTE);
-                            events.RescheduleEvent(EVENT_GARROTE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            if (Unit* target = me->getVictim())
+                                if (!target->HasAura(SPELL_GARROTE))
+                                    DoCast(target, SPELL_GARROTE, false);
+                            events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
                             break;
                         case EVENT_GOUGE:
                             DoCastVictim(SPELL_GOUGE);
@@ -291,6 +294,7 @@ class boss_he_softfoot : public CreatureScript
                         case EVENT_POISON_INSTANT:
                             DoCastVictim( SPELL_INSTANT_POISON);
                             events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            me->RemoveAllAreaObjects();
                             break;
                     }
                 }*/
