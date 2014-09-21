@@ -799,6 +799,11 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
+            case 117418: // Fists of Fury (damage)
+            {
+                m_damage /= m_UniqueTargetInfo.size();
+                break;
+            }
             case 51505:  // Lava Burst
             case 77451:  // Lava Burst (Mastery)
             {
