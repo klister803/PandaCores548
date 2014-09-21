@@ -9457,8 +9457,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
 
-    //                                               0      1       2                3            4
-    QueryResult result = WorldDatabase.Query("SELECT entry, radius, activationDelay, updateDelay, maxCount FROM areatrigger_data");
+    //                                               0         1       2            3            4          5
+    QueryResult result = WorldDatabase.Query("SELECT entry, visualId, scale, activationDelay, updateDelay, maxCount FROM areatrigger_data");
     if (result)
     {
         uint32 counter = 0;
@@ -9469,7 +9469,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             uint8 i = 0;
             uint32 id = fields[i++].GetUInt32();
             AreaTriggerInfo& info = _areaTriggerData[id];
-            info.radius = fields[i++].GetFloat();
+            info.visualId = fields[i++].GetUInt32();
+            info.scale = fields[i++].GetFloat();
             info.activationDelay = fields[i++].GetUInt32();
             info.updateDelay = fields[i++].GetUInt32();
             info.maxCount = fields[i++].GetUInt8();

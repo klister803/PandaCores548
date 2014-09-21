@@ -352,15 +352,8 @@ void AreaTrigger::Remove()
         return;
     _on_unload = true;
 
+    // triger AT_ACTION_MOMENT_LEAVE
     UpdateAffectedList(0, true);
-    for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
-    {
-        ActionInfo& info = itr->second;
-        if (info.action->moment != AT_ACTION_MOMENT_DESPAWN)
-            continue;
-
-        DoAction(NULL, info);
-    }
 
     if (IsInWorld())
     {
@@ -377,7 +370,12 @@ float AreaTrigger::GetRadius() const
 
 float AreaTrigger::GetScale() const
 {
-    return atInfo.radius;
+    return atInfo.scale;
+}
+
+float AreaTrigger::GetVisualId() const
+{
+    return atInfo.visualId;
 }
 
 Unit* AreaTrigger::GetCaster() const

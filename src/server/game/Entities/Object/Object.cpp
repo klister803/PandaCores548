@@ -529,7 +529,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << t->GetRadius();
             *data << t->GetRadius();
         }
-        *data << uint32(78);
+        *data << uint32(t->GetVisualId());
     }
     if (flags & UPDATEFLAG_LIVING)
     {
