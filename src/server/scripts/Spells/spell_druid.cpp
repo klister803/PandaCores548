@@ -973,68 +973,6 @@ class spell_dru_natures_vigil : public SpellScriptLoader
         }
 };
 
-// Ursol's Vortex - 102793
-class spell_dru_ursols_vortex : public SpellScriptLoader
-{
-    public:
-        spell_dru_ursols_vortex() : SpellScriptLoader("spell_dru_ursols_vortex") { }
-
-        class spell_dru_ursols_vortex_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_ursols_vortex_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (!target->HasAura(SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER))
-                            _player->CastSpell(target, SPELL_DRUID_URSOLS_VORTEX_SNARE, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dru_ursols_vortex_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_ursols_vortex_SpellScript();
-        }
-
-        class spell_dru_ursols_vortex_snare_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_ursols_vortex_snare_AuraScript);
-
-            std::list<Unit*> targetList;
-
-            void OnUpdate(uint32 diff, AuraEffect* aurEff)
-            {
-                aurEff->GetTargetList(targetList);
-
-                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                {
-                    if (Unit* caster = GetCaster())
-                        if (DynamicObject* dynObj = caster->GetDynObject(SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER))
-                            if ((*itr)->GetDistance(dynObj) > 10.0f && !(*itr)->HasAura(SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST))
-                                (*itr)->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST, true);
-                }
-
-                targetList.clear();
-            }
-
-            void Register()
-            {
-                OnEffectUpdate += AuraEffectUpdateFn(spell_dru_ursols_vortex_snare_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_DECREASE_SPEED);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_ursols_vortex_snare_AuraScript();
-        }
-};
-
 // Solar beam - 78675
 class spell_dru_solar_beam : public SpellScriptLoader
 {
@@ -3249,7 +3187,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_symbiosis();
     new spell_dru_moonfire_sunfire();
     new spell_dru_natures_vigil();
-    new spell_dru_ursols_vortex();
     new spell_dru_solar_beam();
     new spell_dru_dash();
     new spell_dru_rip_duration();

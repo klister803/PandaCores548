@@ -108,3 +108,22 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 ('1013', '1', '1', '1', '0', '143239', '0', '0', 'OO: Noxious Poison on exit remove');
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) VALUES 
 ('1013', '2', '0', '2000', '0', 'OO: Noxious Poison');
+
+-- 102793 Druid: Ursol's Vortex
+DELETE FROM `spell_script_names` WHERE `spell_id` = 102793;
+DELETE FROM `areatrigger_actions` WHERE entry = 314;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('314', '0', '0', '0', '2', '127797', '0', '0', 'Druid: Ursol\'s Vortex on enter cast'), 
+('314', '1', '1', '0', 0x2 | 0x20 | 0x40, '118283', '1', '0', 'Druid: Ursol\'s Vortex on exit first target jump back');
+
+DELETE FROM `areatrigger_data` WHERE `entry` = 314;
+INSERT INTO `areatrigger_data` (`entry`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) VALUES 
+('314', '1', '0', '0', '0', 'Ursol''s Vortex');
+
+-- 51052 DK: Anti-Magic Zone
+DELETE FROM `areatrigger_actions` WHERE entry = 1193;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('1193', '0', '0', '0', '1', '145629', '0', '0', 'DK: Anti-Magic Zone on enter cast'), 
+('1193', '1', '1', '1', '0', '145629', '0', '0', 'DK: Anti-Magic Zone on exit remove');
+REPLACE INTO `areatrigger_data` (`entry`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) 
+VALUES ('1193', '1', '0', '0', '0', 'DK: Anti-Magic Zone');
