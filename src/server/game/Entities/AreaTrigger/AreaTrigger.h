@@ -41,16 +41,17 @@ enum AreaTriggerActionType
 
 enum AreaTriggerTargetFlags
 {
-    AT_TARGET_FLAG_FRIENDLY     = 0x01,             // casted on targets that are friendly to areatrigger owner
-    AT_TARGET_FLAG_HOSTILE      = 0x02,             // casted on targets that are hostile to areatrigger owner
-    AT_TARGET_FLAG_OWNER        = 0x04,             // casted only on areatrigger owner
-    AT_TARGET_FLAG_PLAYER       = 0x08,             // casted only on players
-    AT_TARGET_FLAG_NOT_PET      = 0x10,             // casted on everyone except pets
-    AT_TARGET_FLAG_CAST_AT_SRC  = 0x20,             // casted on areatrigger position as dest
+    AT_TARGET_FLAG_FRIENDLY          = 0x01,             // casted on targets that are friendly to areatrigger owner
+    AT_TARGET_FLAG_HOSTILE           = 0x02,             // casted on targets that are hostile to areatrigger owner
+    AT_TARGET_FLAG_OWNER             = 0x04,             // casted only on areatrigger owner
+    AT_TARGET_FLAG_PLAYER            = 0x08,             // casted only on players
+    AT_TARGET_FLAG_NOT_PET           = 0x10,             // casted on everyone except pets
+    AT_TARGET_FLAG_CAST_AT_SRC       = 0x20,             // casted on areatrigger position as dest
+    AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x40,             // casted on areatrigger position as dest
 
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |
-        AT_TARGET_FLAG_NOT_PET,
+        AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET,
 };
 
 struct AreaTriggerAction
@@ -121,6 +122,10 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
         void BindToCaster();
         void UnbindFromCaster();
+
+    private:
+        bool _HasActionsWithCharges();
+
     protected:
         Unit* _caster;
         int32 _duration;

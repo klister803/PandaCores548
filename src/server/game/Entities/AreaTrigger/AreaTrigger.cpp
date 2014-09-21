@@ -136,8 +136,8 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
                 continue;
             }
 
-            UpdateOnUnit(unit, p_time);
             ++itr;
+            UpdateOnUnit(unit, p_time);
         }
 
         std::list<Unit*> unitList;
@@ -224,9 +224,6 @@ bool AreaTrigger::IsUnitAffected(uint64 guid) const
 
 void AreaTrigger::AffectUnit(Unit* unit, bool enter)
 {
-    //if (unit->GetTypeId() == TYPEID_PLAYER)
-    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::AffectUnit %s %u", unit->GetName(), enter);
-
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
@@ -261,10 +258,6 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
             _updateDelay = atInfo.updateDelay;
     }
 
-    //Unit* caster = GetCaster();
-    //if (unit->GetTypeId() == TYPEID_PLAYER)
-    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::UpdateOnUnit %s caster %s %u", unit->GetName(), caster->GetName(), p_time);
-
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
@@ -273,6 +266,20 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
 
         DoAction(unit, info);
     }
+}
+
+bool AreaTrigger::_HasActionsWithCharges()
+{
+    for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
+    {
+        ActionInfo& info = itr->second;
+        if (info.action->moment == AT_ACTION_MOMENT_ENTER)
+        {
+            if (info.charges || !info.action->maxCharges)
+                return false;
+        }
+    }
+    return true;
 }
 
 void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
@@ -299,9 +306,6 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         if (unit->isPet())
             return;
 
-    //if (unit->GetTypeId() == TYPEID_PLAYER)
-    //    ChatHandler(unit->ToPlayer()).PSendSysMessage("AreaTrigger::DoAction %s  type %u before conditions", unit->GetName(), action.action->actionType);
-
     if (!CheckActionConditions(*action.action, unit))
         return;
 
@@ -309,8 +313,11 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (!spellInfo)
         return;
 
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction caster %s unit %s type %u spellID %u", caster->GetString().c_str(), unit->GetString().c_str(), action.action->actionType, action.action->spellId);
+
     // should cast on self.
-    if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+    if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER
+        || action.action->targetFlags & AT_TARGET_FLAG_CASTER_IS_TARGET)
         caster = unit;
 
     switch (action.action->actionType)
@@ -339,8 +346,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (action.charges > 0)
     {
         --action.charges;
-        if (!action.charges)
-            Remove();
+        //unload at next update.
+        if (!action.charges && _HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
+            SetDuration(0);
     }
 }
 
