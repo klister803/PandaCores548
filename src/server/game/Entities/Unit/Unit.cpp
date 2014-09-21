@@ -349,6 +349,7 @@ Unit::~Unit()
     ASSERT(m_removedAuras.empty());
     ASSERT(m_gameObj.empty());
     ASSERT(m_dynObj.empty());
+    ASSERT(m_AreaObj.empty());
 }
 
 void Unit::Update(uint32 p_time)
@@ -5256,6 +5257,80 @@ void Unit::RemoveAllDynObjects()
 {
     while (!m_dynObj.empty())
         m_dynObj.front()->Remove();
+}
+
+/*AreaTrigger*/
+void Unit::_RegisterAreaObject(AreaTrigger* areaObj)
+{
+    m_AreaObj.push_back(areaObj);
+}
+
+void Unit::_UnregisterAreaObject(AreaTrigger* areaObj)
+{
+    m_AreaObj.remove(areaObj);
+}
+
+AreaTrigger* Unit::GetAreaObject(uint32 spellId)
+{
+    if (m_AreaObj.empty())
+        return NULL;
+    for (AreaObjectList::const_iterator i = m_AreaObj.begin(); i != m_AreaObj.end();++i)
+    {
+        AreaTrigger* areaObj = *i;
+        if (areaObj->GetSpellId() == spellId)
+            return areaObj;
+    }
+    return NULL;
+}
+
+int32 Unit::CountAreaObject(uint32 spellId)
+{
+    int32 count = 0;
+
+    if (m_AreaObj.empty())
+        return 0;
+    for (AreaObjectList::const_iterator i = m_AreaObj.begin(); i != m_AreaObj.end();++i)
+    {
+        AreaTrigger* areaObj = *i;
+        if (areaObj->GetSpellId() == spellId)
+            count++;
+    }
+    return count;
+}
+
+void Unit::GetAreaObjectList(std::list<AreaTrigger*> &list, uint32 spellId)
+{
+    if (m_AreaObj.empty())
+        return;
+    for (AreaObjectList::const_iterator i = m_AreaObj.begin(); i != m_AreaObj.end();++i)
+    {
+        AreaTrigger* areaObj = *i;
+        if (areaObj->GetSpellId() == spellId)
+            list.push_back(areaObj);
+    }
+}
+
+void Unit::RemoveAreaObject(uint32 spellId)
+{
+    if (m_AreaObj.empty())
+        return;
+    for (AreaObjectList::iterator i = m_AreaObj.begin(); i != m_AreaObj.end();)
+    {
+        AreaTrigger* areaObj = *i;
+        if (areaObj->GetSpellId() == spellId)
+        {
+            areaObj->Remove();
+            i = m_AreaObj.begin();
+        }
+        else
+            ++i;
+    }
+}
+
+void Unit::RemoveAllAreaObjects()
+{
+    while (!m_AreaObj.empty())
+        m_AreaObj.front()->Remove();
 }
 
 GameObject* Unit::GetGameObject(uint32 spellId) const
@@ -16933,6 +17008,7 @@ void Unit::RemoveFromWorld()
 
         RemoveAllGameObjects();
         RemoveAllDynObjects();
+        RemoveAllAreaObjects();
 
         ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
         UnsummonAllTotems();

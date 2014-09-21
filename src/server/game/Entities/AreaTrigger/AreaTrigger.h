@@ -119,7 +119,10 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         bool CheckActionConditions(AreaTriggerAction const& action, Unit* unit);
         void UpdateActionCharges(uint32 p_time);
 
+        void BindToCaster();
+        void UnbindFromCaster();
     protected:
+        Unit* _caster;
         int32 _duration;
         uint32 _activationDelay;
         uint32 _updateDelay;

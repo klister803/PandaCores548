@@ -2142,6 +2142,15 @@ class Unit : public WorldObject
         void RemoveDynObject(uint32 spellId);
         void RemoveAllDynObjects();
 
+        // AreaTriger management
+        void _RegisterAreaObject(AreaTrigger* dynObj);
+        void _UnregisterAreaObject(AreaTrigger* dynObj);
+        AreaTrigger* GetAreaObject(uint32 spellId);
+        int32 CountAreaObject(uint32 spellId);
+        void GetAreaObjectList(std::list<AreaTrigger*> &list, uint32 spellId);
+        void RemoveAreaObject(uint32 spellId);
+        void RemoveAllAreaObjects();
+
         GameObject* GetGameObject(uint32 spellId) const;
         void AddGameObject(GameObject* gameObj);
         void RemoveGameObject(GameObject* gameObj, bool del);
@@ -2444,6 +2453,9 @@ class Unit : public WorldObject
 
         typedef std::list<DynamicObject*> DynObjectList;
         DynObjectList m_dynObj;
+
+        typedef std::list<AreaTrigger*> AreaObjectList;
+        AreaObjectList m_AreaObj;
 
         typedef std::list<GameObject*> GameObjectList;
         GameObjectList m_gameObj;

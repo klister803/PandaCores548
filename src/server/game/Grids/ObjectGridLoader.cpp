@@ -214,6 +214,7 @@ void ObjectGridStoper::Visit(CreatureMapType &m)
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         iter->getSource()->RemoveAllDynObjects();
+        iter->getSource()->RemoveAllAreaObjects();
         if (iter->getSource()->isInCombat())
         {
             iter->getSource()->CombatStop();

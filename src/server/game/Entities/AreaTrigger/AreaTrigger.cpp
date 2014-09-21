@@ -23,7 +23,7 @@
 #include "GridNotifiers.h"
 #include "Chat.h"
 
-AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false)
+AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -44,6 +44,7 @@ void AreaTrigger::AddToWorld()
     {
         sObjectAccessor->AddObject(this);
         WorldObject::AddToWorld();
+        BindToCaster();
     }
 }
 
@@ -52,6 +53,7 @@ void AreaTrigger::RemoveFromWorld()
     ///- Remove the AreaTrigger from the accessor and from all lists of objects in world
     if (IsInWorld())
     {
+        UnbindFromCaster();
         WorldObject::RemoveFromWorld();
         sObjectAccessor->RemoveObject(this);
     }
@@ -384,4 +386,20 @@ bool AreaTrigger::CheckActionConditions(AreaTriggerAction const& action, Unit* u
 
     ConditionSourceInfo srcInfo = ConditionSourceInfo(caster, unit);
     return sConditionMgr->IsObjectMeetToConditions(srcInfo, sConditionMgr->GetConditionsForAreaTriggerAction(GetEntry(), action.id));
+}
+
+void AreaTrigger::BindToCaster()
+{
+    ASSERT(!_caster);
+    _caster = ObjectAccessor::GetUnit(*this, GetCasterGUID());
+    ASSERT(_caster);
+    ASSERT(_caster->GetMap() == GetMap());
+    _caster->_RegisterAreaObject(this);
+}
+
+void AreaTrigger::UnbindFromCaster()
+{
+    ASSERT(_caster);
+    _caster->_UnregisterAreaObject(this);
+    _caster = NULL;
 }
