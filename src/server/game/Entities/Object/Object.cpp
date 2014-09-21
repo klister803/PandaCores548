@@ -522,15 +522,16 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
     if (flags & UPDATEFLAG_AREA_TRIGGER)
     {
+        AreaTrigger const* t = ToAreaTrigger();
+        ASSERT(t);
         if (true)   //byte23C
-        {
-            AreaTrigger const* t = ToAreaTrigger();
-            ASSERT(t);            
+        {          
             *data << t->GetRadius();
             *data << t->GetRadius();
         }
         *data << uint32(t->GetVisualId());
     }
+
     if (flags & UPDATEFLAG_LIVING)
     {
         Unit const* self = ToUnit();

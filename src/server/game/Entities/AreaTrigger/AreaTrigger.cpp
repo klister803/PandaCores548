@@ -60,13 +60,13 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* spell, Position const& pos)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, Spell* spell, Position const& pos, SpellEffIndex effIndex)
 {
     SetMap(caster->GetMap());
     Relocate(pos);
     if (!IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", spell->Id, GetPositionX(), GetPositionY());
+        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", spell->GetSpellInfo()->Id, GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -83,16 +83,15 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
 
     SetEntry(triggerEntry);
-    uint32 duration = spell->GetDuration();
+    uint32 duration = spell->GetSpellInfo()->GetDuration();
     SetDuration(duration);
     SetObjectScale(1);
-    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-        if (float r = spell->Effects[j].CalcRadius())
-            _radius = r;
+
+    _radius = spell->GetSpellInfo()->Effects[effIndex].CalcRadius(caster) * spell->m_spellValue->RadiusMod;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
-    SetUInt32Value(AREATRIGGER_SPELLID, spell->Id);
-    SetUInt32Value(AREATRIGGER_SPELLVISUALID, spell->SpellVisual[0] ? spell->SpellVisual[0] : spell->SpellVisual[1]);
+    SetUInt32Value(AREATRIGGER_SPELLID, spell->GetSpellInfo()->Id);
+    SetUInt32Value(AREATRIGGER_SPELLVISUALID, spell->GetSpellInfo()->SpellVisual[0] ? spell->GetSpellInfo()->SpellVisual[0] : spell->GetSpellInfo()->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, GetScale());
 

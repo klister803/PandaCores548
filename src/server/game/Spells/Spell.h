@@ -253,6 +253,7 @@ class Spell
 {
     friend void Unit::SetCurrentCastedSpell(Spell* pSpell);
     friend class SpellScript;
+    friend class AreaTrigger;
     public:
 
         void EffectNULL(SpellEffIndex effIndex);

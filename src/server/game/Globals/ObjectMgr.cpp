@@ -9527,12 +9527,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
                     entry);
                 continue;
             }*/
-            if (action.moment == AT_ACTION_MOMENT_DESPAWN && (action.targetFlags & AT_TARGET_MASK_REQUIRE_TARGET))
-            {
-                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has action at moment AT_ACTION_MOMENT_DESPAWN (%u) with target flags %u, but this mask cannon be used on despawn event.",
-                    action.moment, action.targetFlags);
-                continue;
-            }
+
             if (!sSpellMgr->GetSpellInfo(action.spellId))
             {
                 sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has non-existant spell id '%u' for areatrigger entry %u",
