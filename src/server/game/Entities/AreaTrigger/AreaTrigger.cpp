@@ -23,7 +23,8 @@
 #include "GridNotifiers.h"
 #include "Chat.h"
 
-AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL)
+AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
+    _radius(1.0f)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -85,12 +86,15 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     uint32 duration = spell->GetDuration();
     SetDuration(duration);
     SetObjectScale(1);
+    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        if (float r = spell->Effects[j].CalcRadius())
+            _radius = r;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
     SetUInt32Value(AREATRIGGER_SPELLID, spell->Id);
     SetUInt32Value(AREATRIGGER_SPELLVISUALID, spell->SpellVisual[0] ? spell->SpellVisual[0] : spell->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
-    SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, GetRadius());
+    SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, GetScale());
 
     if (!GetMap()->AddToMap(this))
         return false;
@@ -227,19 +231,9 @@ void AreaTrigger::AffectUnit(Unit* unit, bool enter)
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        switch (info.action->moment)
-        {
-            case AT_ACTION_MOMENT_ENTER:
-                if (!enter)
-                    continue;
-                break;
-            case AT_ACTION_MOMENT_LEAVE:
-                if (enter)
-                    continue;
-                break;
-            default:
-                continue;
-        }
+        if (info.action->moment == AT_ACTION_MOMENT_ENTER && !enter ||
+            info.action->moment ==  AT_ACTION_MOMENT_LEAVE && enter)
+            continue;
 
         DoAction(unit, info);
     }
@@ -377,6 +371,11 @@ void AreaTrigger::Remove()
 }
 
 float AreaTrigger::GetRadius() const
+{
+    return _radius;
+}
+
+float AreaTrigger::GetScale() const
 {
     return atInfo.radius;
 }

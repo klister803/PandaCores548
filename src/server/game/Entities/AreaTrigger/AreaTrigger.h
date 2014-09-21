@@ -112,7 +112,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetRadius() const;
-
+        float GetScale() const;
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, bool enter);
         void UpdateOnUnit(Unit* unit, uint32 p_time);
@@ -132,7 +132,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         uint32 _activationDelay;
         uint32 _updateDelay;
         std::list<uint64> affectedPlayers;
-
+        float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
         
