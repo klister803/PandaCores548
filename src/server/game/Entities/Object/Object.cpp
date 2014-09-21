@@ -359,7 +359,7 @@ void Object::DestroyForPlayer(Player* target, bool onDeath) const
 void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 {
     data->WriteBit(0);                              // byte2AC
-    data->WriteBit(0);                              // byte29C
+    data->WriteBit(flags & UPDATEFLAG_AREA_TRIGGER);// byte29C
     data->WriteBit(0);                              // byte1
     data->WriteBit(flags & UPDATEFLAG_TRANSPORT);
     data->WriteBit(0);                              // byte2A4
@@ -400,6 +400,30 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(flags & UPDATEFLAG_GO_TRANSPORT_POSITION);
     data->WriteBit(0);                              // is scene object
     data->WriteBit(flags & UPDATEFLAG_ROTATION);    // has gameobject rotation
+
+    if (flags & UPDATEFLAG_AREA_TRIGGER)
+    {
+        data->WriteBit(0);  //byte284
+        //if (byte284)
+        //{
+        //    dword25C = p.ReadBits(21);
+        //    dword26C = p.ReadBits(21);
+        //}
+        data->WriteBit(0);              //byte20C
+        data->WriteBit(0);              //byte210
+        data->WriteBit(1);              //byte23C
+        data->WriteBit(0);              //byte298
+        data->WriteBit(0);              //byte20F
+        data->WriteBit(0);              //byte20E
+        data->WriteBit(0);              //byte218
+        data->WriteBit(0);              //byte220
+        //if (byte298)
+        //    dword288 = p.ReadBits(20);
+        data->WriteBit(0);              //byte228
+        data->WriteBit(0);              //byte20D
+        data->WriteBit(0);              //byte230
+        data->WriteBit(0);              //byte258
+    }
 
     if (flags & UPDATEFLAG_LIVING)
     {
@@ -496,6 +520,17 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     for (uint32 i = 0; i < transportFrames.size(); ++i)
         *data << uint32(transportFrames[i]);
 
+    if (flags & UPDATEFLAG_AREA_TRIGGER)
+    {
+        if (true)   //byte23C
+        {
+            AreaTrigger const* t = ToAreaTrigger();
+            ASSERT(t);            
+            *data << t->GetRadius();
+            *data << t->GetRadius();
+        }
+        *data << uint32(78);
+    }
     if (flags & UPDATEFLAG_LIVING)
     {
         Unit const* self = ToUnit();
