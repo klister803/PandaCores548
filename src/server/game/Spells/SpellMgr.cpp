@@ -3942,9 +3942,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61999: // Raise Ally
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ALLY;
                     break;
-                case 31935: // Avenger's Shield
-                    spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
-                    break;
                 case 44203: // Tranquility (triggered)
                     spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
@@ -5034,9 +5031,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_MASTER;
                     break;
                 case 774: // Rejuvenation
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
+                    spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[0].ApplyAuraName = 0;
-                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                     break;
                 case 73920: // Healing Rain
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;

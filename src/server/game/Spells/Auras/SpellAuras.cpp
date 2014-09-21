@@ -1686,20 +1686,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         break;
                 }
                 break;
-            case SPELLFAMILY_DRUID:
-                if (!caster)
-                    break;
-                // Rejuvenation
-                if (GetSpellInfo()->SpellFamilyFlags[0] & 0x10 && GetEffect(EFFECT_0))
-                {
-                    // Druid T8 Restoration 4P Bonus
-                    if (caster->HasAura(64760))
-                    {
-                        int32 heal = GetEffect(EFFECT_0)->GetAmount();
-                        caster->CastCustomSpell(target, 64801, &heal, NULL, NULL, true, NULL, GetEffect(EFFECT_0));
-                    }
-                }
-                break;
             case SPELLFAMILY_MAGE:
                 if (!caster)
                     break;

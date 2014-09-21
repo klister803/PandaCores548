@@ -2234,7 +2234,7 @@ class spell_dru_stampeding_roar : public SpellScriptLoader
         }
 };
 
-// Lacerate - 33745
+// Lacerate - 33745, 77758
 class spell_dru_lacerate : public SpellScriptLoader
 {
     public:
@@ -2249,7 +2249,7 @@ class spell_dru_lacerate : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
                         if (roll_chance_i(25))
-                            _player->RemoveSpellCooldown(33917, true);
+                            _player->RemoveSpellCooldown(33878, true);
             }
 
             void Register()
@@ -3046,6 +3046,143 @@ class spell_dru_a12_4p_feral_bonus : public SpellScriptLoader
         }
 };
 
+// 779 - Swipe
+class spell_dru_swipe : public SpellScriptLoader
+{
+    public:
+        spell_dru_swipe() : SpellScriptLoader("spell_dru_swipe") { }
+
+        class spell_dru_swipe_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_swipe_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                {
+                    float percent = float(GetSpellInfo()->Effects[1].BasePoints + 100)/100.0f;
+                    if(unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                        SetHitDamage(int32(GetHitDamage() * percent));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dru_swipe_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_swipe_SpellScript();
+        }
+};
+
+// 62078 - Swipe
+class spell_dru_swipe_two : public SpellScriptLoader
+{
+    public:
+        spell_dru_swipe_two() : SpellScriptLoader("spell_dru_swipe_two") { }
+
+        class spell_dru_swipe_two_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_swipe_two_SpellScript);
+
+            void Damage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                {
+                    float percent = float(GetSpellInfo()->Effects[1].BasePoints + 100)/100.0f;
+                    if(unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                        SetHitDamage(int32(GetHitDamage() * percent));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dru_swipe_two_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_WEAPON_PERCENT_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_swipe_two_SpellScript();
+        }
+};
+
+// Tooth and Claw - 6807
+class spell_dru_tooth_and_claw : public SpellScriptLoader
+{
+    public:
+        spell_dru_tooth_and_claw() : SpellScriptLoader("spell_dru_tooth_and_claw") { }
+
+        class spell_dru_tooth_and_claw_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_tooth_and_claw_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = int32(std::max(float((caster->GetTotalAttackPowerValue(BASE_ATTACK) - 2 * caster->GetTotalStatValue(STAT_AGILITY)) * 2.2), float(((caster->GetTotalStatValue(STAT_STAMINA) * 250) / 100) * 0.4f)));
+                        caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
+                        caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_tooth_and_claw_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_tooth_and_claw_SpellScript();
+        }
+};
+
+// Tooth and Claw - 135597
+class spell_dru_spell_dru_tooth_and_claw_absorb : public SpellScriptLoader
+{
+    public:
+        spell_dru_spell_dru_tooth_and_claw_absorb() : SpellScriptLoader("spell_dru_spell_dru_tooth_and_claw_absorb") { }
+
+        class spell_dru_spell_dru_tooth_and_claw_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_spell_dru_tooth_and_claw_absorb_AuraScript);
+
+            void Absorb(AuraEffect* /*AuraEffect**/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if(Unit* target = dmgInfo.GetAttacker())
+                {
+                    if (Aura* aura = target->GetAura(135601))
+                    {
+                        GetAura()->Remove();
+                        aura->Remove(AURA_REMOVE_BY_DEFAULT);
+                    }
+                    else
+                        absorbAmount = 0;
+                }
+                else
+                    absorbAmount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_dru_spell_dru_tooth_and_claw_absorb_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_spell_dru_tooth_and_claw_absorb_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3104,4 +3241,8 @@ void AddSC_druid_spell_scripts()
     new spell_druid_eclipse_buff();
     new spell_druid_berserk_tiger_fury_buff();
     new spell_dru_a12_4p_feral_bonus();
+    new spell_dru_swipe();
+    new spell_dru_swipe_two();
+    new spell_dru_tooth_and_claw();
+    new spell_dru_spell_dru_tooth_and_claw_absorb();
 }

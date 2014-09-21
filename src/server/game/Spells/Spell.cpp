@@ -2634,7 +2634,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
 
         // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, m_attackType,  target->crit);
+        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, mask, m_attackType, target->crit);
         caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
 
         // Send log damage message to client
@@ -6614,12 +6614,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                 switch (m_spellInfo->Id)
                 {
                     case 5217:   // Tiger's Fury
-                    case 106951: // Berserk
                     {
-                        if (m_caster->HasAura(5217) || m_caster->HasAura(106951))
-                        {
-                            return SPELL_FAILED_TRY_AGAIN;
-                        }
+                        if (m_caster->HasAura(106951))
+                            return SPELL_FAILED_CASTER_AURASTATE;
                         break;
                     }
                     case 5171:  // Slice and Dice

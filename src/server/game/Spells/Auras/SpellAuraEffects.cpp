@@ -7566,7 +7566,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT, effIndex, GetBase()->GetStackAmount());
 
         // Calculate armor mitigation
-        if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), GetEffIndex()))
+        if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), (1 << effIndex)))
         {
             uint32 damageReductedArmor = caster->CalcArmorReducedDamage(target, damage, GetSpellInfo());
             cleanDamage.mitigated_damage += damage - damageReductedArmor;
@@ -7771,7 +7771,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
         damage = GetCritAmount();
 
     // Calculate armor mitigation
-    if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), m_effIndex))
+    if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), (1 << effIndex)))
     {
         uint32 damageReductedArmor = caster->CalcArmorReducedDamage(target, damage, GetSpellInfo());
         cleanDamage.mitigated_damage += damage - damageReductedArmor;
@@ -8134,7 +8134,7 @@ void AuraEffect::HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster, Spel
         target->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, GetSpellInfo());
 }
 
-void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster, SpellEffIndex /*effIndex*/) const
+void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster, SpellEffIndex effIndex) const
 {
     Powers powerType = Powers(GetMiscValue());
 
@@ -8160,7 +8160,7 @@ void AuraEffect::HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster, Spe
     // maybe has to be sent different to client, but not by SMSG_PERIODICAURALOG
     SpellNonMeleeDamage damageInfo(caster, target, spellProto->Id, spellProto->SchoolMask);
     // no SpellDamageBonus for burn mana
-    caster->CalculateSpellDamageTaken(&damageInfo, int32(gain * dmgMultiplier), spellProto);
+    caster->CalculateSpellDamageTaken(&damageInfo, int32(gain * dmgMultiplier), spellProto, (1 << effIndex));
 
     caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
 
@@ -8218,7 +8218,7 @@ void AuraEffect::HandleProcTriggerDamageAuraProc(AuraApplication* aurApp, ProcEv
     SpellNonMeleeDamage damageInfo(target, triggerTarget, GetId(), GetSpellInfo()->SchoolMask);
     uint32 damage = target->SpellDamageBonusDone(triggerTarget, GetSpellInfo(), GetAmount(), SPELL_DIRECT_DAMAGE, effIndex);
     damage = triggerTarget->SpellDamageBonusTaken(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE, effIndex);
-    target->CalculateSpellDamageTaken(&damageInfo, damage, GetSpellInfo());
+    target->CalculateSpellDamageTaken(&damageInfo, damage, GetSpellInfo(), (1 << effIndex));
     target->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
     target->SendSpellNonMeleeDamageLog(&damageInfo);
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandleProcTriggerDamageAuraProc: Triggering %u spell damage from aura %u proc", damage, GetId());

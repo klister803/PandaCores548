@@ -2299,7 +2299,7 @@ public:
         if (!spellid || !sSpellMgr->GetSpellInfo(spellid))
             return false;
 
-        handler->GetSession()->GetPlayer()->SpellNonMeleeDamageLog(target, spellid, damage);
+        handler->GetSession()->GetPlayer()->SendSpellNonMeleeDamageLog(target, spellid, damage, schoolmask, 0, 0, false, 0, false);
         return true;
     }
 

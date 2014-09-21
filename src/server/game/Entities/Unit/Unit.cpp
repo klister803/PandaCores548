@@ -1261,22 +1261,7 @@ void Unit::CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castI
     CastSpell(targets, spellInfo, NULL, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
 }
 
-// Obsolete func need remove, here only for comotability vs another patches
-uint32 Unit::SpellNonMeleeDamageLog(Unit* victim, uint32 spellID, uint32 damage)
-{
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-    SpellNonMeleeDamage damageInfo(this, victim, spellInfo->Id, spellInfo->SchoolMask);
-    damage = SpellDamageBonusDone(victim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-    damage = victim->SpellDamageBonusTaken(this, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-
-    CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
-    DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
-    SendSpellNonMeleeDamageLog(&damageInfo);
-    DealSpellDamage(&damageInfo, true);
-    return damageInfo.damage;
-}
-
-void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 damage, SpellInfo const* spellInfo, WeaponAttackType attackType, bool crit)
+void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 damage, SpellInfo const* spellInfo, uint32 effectMask, WeaponAttackType attackType, bool crit)
 {
     if (damage < 0)
         return;
@@ -1293,7 +1278,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
 
-    if (IsDamageReducedByArmor(damageSchoolMask, spellInfo))
+    if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
 
     bool blocked = false;
@@ -1767,7 +1752,7 @@ void Unit::HandleEmoteCommand(uint32 anim_id)
     SendMessageToSet(&data, true);
 }
 
-bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* spellInfo, uint8 effIndex)
+bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* spellInfo, uint32 effectMask)
 {
     // only physical spells damage gets reduced by armor
     if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0)
@@ -1779,12 +1764,14 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
             return false;
 
         // bleeding effects are not reduced by armor
-        if (effIndex != MAX_SPELL_EFFECTS)
+        for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (spellInfo->Effects[effIndex].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
-                spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SCHOOL_DAMAGE)
-                if (spellInfo->GetEffectMechanicMask(effIndex) & (1<<MECHANIC_BLEED))
+            if ((effectMask & (1 << i)) && (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                spellInfo->Effects[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE))
+            {
+                if (spellInfo->GetEffectMechanicMask(i) & (1<<MECHANIC_BLEED))
                     return false;
+            }
         }
     }
     return true;
@@ -6618,6 +6605,35 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_COMBOPOINT_BP: //29
+                {
+                    if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 basepoints0 = triggerAmount * ToPlayer()->GetComboPoints();
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -8121,6 +8137,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 102351: // Cenarion Ward
+                {
+                    if (procEx & PROC_EX_INTERNAL_HOT) // temporarily
+                        return false;
+
+                    target = this;
+                    break;
+                }
                 // Sudden Eclipse
                 case 46832:
                 {
@@ -12852,18 +12876,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     switch (spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
-            // We need more spells to find a general way (if there is any)
-            switch (spellProto->Id)
-            {
-                case 379:   // Earth Shield
-                case 33778: // Lifebloom Final Bloom
-                case 64844: // Divine Hymn
-                case 71607: // Item - Bauble of True Blood 10m
-                case 71646: // Item - Bauble of True Blood 25m
-                    break;
-                default:
-                    return false;
-            }
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
             if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
@@ -17444,7 +17456,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         SpellNonMeleeDamage damageInfo(this, target, spellInfo->Id, spellInfo->SchoolMask);
                         uint32 newDamage = SpellDamageBonusDone(target, spellInfo, triggeredByAura->GetAmount(), SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
                         newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
-                        CalculateSpellDamageTaken(&damageInfo, newDamage, spellInfo);
+                        CalculateSpellDamageTaken(&damageInfo, newDamage, spellInfo, (1 << effIndex));
                         DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
                         SendSpellNonMeleeDamageLog(&damageInfo);
                         DealSpellDamage(&damageInfo, true);

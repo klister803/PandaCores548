@@ -131,6 +131,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_REMOVE_CD_RUNE                = 26,           // Add duration for select spell or cast his
     SPELL_TRIGGER_BP_SPELLID                    = 27,           // set basepoint to spellId from proc
     SPELL_TRIGGER_BP_SPD_AP                     = 28,           // set basepoint to spellId from SPD or AP
+    SPELL_TRIGGER_COMBOPOINT_BP                 = 29,           // set basepoint to bp * combopoints
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
