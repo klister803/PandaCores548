@@ -4133,9 +4133,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114083:// Ascendance
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
-                case 113656:// Fists of Fury
-                    spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
-                    break;
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
                 case 110717: // Fear Ward (Symbiosis)
