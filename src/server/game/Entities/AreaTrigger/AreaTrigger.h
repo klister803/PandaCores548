@@ -69,9 +69,9 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 
 struct AreaTriggerInfo
 {
-    AreaTriggerInfo() : scale(1.0f), activationDelay(0), updateDelay(0), maxCount(0), visualId(1){}
+    AreaTriggerInfo() : radius(1.0f), activationDelay(0), updateDelay(0), maxCount(0), visualId(1){}
 
-    float scale;
+    float radius;
     uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
     uint32 activationDelay;
     uint32 updateDelay;
@@ -113,7 +113,6 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetRadius() const;
-        float GetScale() const;
         float GetVisualId() const;
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, bool enter);
