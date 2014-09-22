@@ -3969,12 +3969,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
                     break;
-                case 53257: // Cobra Strikes
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = 0;
-                    spellInfo->Effects[EFFECT_0].Effect = 0;
-                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
-                    break;
                 case 1459:  // Arcane Illumination
                 case 109773:// Dark Intent
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
@@ -5135,6 +5129,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 103964: // Touch of Chaos
                     spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
+                    break;
+                case 53257:
+                    spellInfo->Attributes |= SPELL_ATTR0_CANT_CANCEL;
+                    break;
+                case 53260:
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 default:
                     break;

@@ -2663,6 +2663,15 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
         caster->DealSpellDamage(&damageInfo, true);
         m_final_damage = damageInfo.damage;
+        
+        // Hunter's pet special attacks
+        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
+            if (Unit * owner = caster->GetOwner())
+            {
+                // Cobra Strikes
+                if (Aura* pAura = owner->GetAura(53257))
+                    pAura->ModStackAmount(-1);
+            }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else

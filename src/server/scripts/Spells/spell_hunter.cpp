@@ -712,9 +712,9 @@ class spell_hun_cobra_strikes : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (GetSpell()->IsCritForTarget(target))
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_HUNTER_BEASTMASTER)
+                    {    
+                        if (Unit* target = GetHitUnit())
                         {
                             if (roll_chance_i(15))
                             {
