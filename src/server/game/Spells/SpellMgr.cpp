@@ -5130,11 +5130,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 103964: // Touch of Chaos
                     spellInfo->SchoolMask &= ~SPELL_SCHOOL_MASK_NORMAL;
                     break;
-                case 53257:
+                case 53257: // Cobra Strikes
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_CANCEL;
                     break;
-                case 53260:
+                case 53260: // Cobra Strikes trigger
                     spellInfo->Effects[0].TriggerSpell = 0;
+                    break;
+                case 51755: // Camouflage taken damage
+                    spellInfo->Effects[3].BasePoints = -10;
                     break;
                 default:
                     break;
