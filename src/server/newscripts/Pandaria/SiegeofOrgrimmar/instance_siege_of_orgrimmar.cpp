@@ -63,6 +63,7 @@ public:
         uint64 hisekGuid;
         uint64 garroshGuid;
         uint64 npcGoldenLotosMoverGUID;
+        uint64 npcGoldenLotosMainGUID;
 
         void Initialize()
         {
@@ -78,6 +79,7 @@ public:
            
             //Creature
             npcGoldenLotosMoverGUID = 0;
+            npcGoldenLotosMainGUID  = 0;
             LorewalkerChoGUIDtmp= 0;
             immerseusGuid       = 0;
             npcpointGuid        = 0;
@@ -155,6 +157,9 @@ public:
                 break;
             case NPC_GOLD_LOTOS_MOVER:
                 npcGoldenLotosMoverGUID = creature->GetGUID();
+                break;
+            case NPC_GOLD_LOTOS_MAIN:
+                npcGoldenLotosMainGUID = creature->GetGUID();
                 break;
             //  
             case NPC_NORUSHEN:  
@@ -316,6 +321,8 @@ public:
                     return heGuid;
                 case NPC_GOLD_LOTOS_MOVER:
                     return npcGoldenLotosMoverGUID;
+                case NPC_GOLD_LOTOS_MAIN:
+                    return npcGoldenLotosMainGUID;
                 //  
                 case NPC_NORUSHEN:  
                     return noryshenGuid;

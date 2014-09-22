@@ -41,6 +41,8 @@ enum eSpells
     SPELL_SHA_SEAR                      = 143423, //Sha Sear
     SPELL_SHADOW_WORD_BANE              = 143434, //Shadow Word: Bane
     SPELL_CALAMITY                      = 143491, //Calamity
+    SPELL_DARK_MEDITATION               = 143546,
+    SPELL_DARK_MEDITATION_JUMP          = 143730, //Prock after jump 143546
 };
 
 enum Phases
@@ -50,12 +52,16 @@ enum Phases
     PHASE_BOND_GOLDEN_LOTUS         = 3
 };
 
+enum PhaseEvents
+{
+    EVENT_LOTUS                     = 1,    
+    EVENT_DESPERATE_MEASURES        = 2,//Desperate Measures
+};
 
 struct boss_fallen_protectors : public BossAI
 {
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
     {
-        _healthPhase = 0;
     }
 
     int8 _healthPhase;
@@ -63,6 +69,7 @@ struct boss_fallen_protectors : public BossAI
     void Reset()
     {
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        _healthPhase = 0;
     }
 
     void EnterCombat(Unit* who)
@@ -92,7 +99,7 @@ struct boss_fallen_protectors : public BossAI
                 DoCast(me, SPELL_BOUND_OF_GOLDEN_LOTUS, false);
 
                 events.SetPhase(PHASE_BOND_GOLDEN_LOTUS);
-                events.RescheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
+                events.RescheduleEvent(EVENT_LOTUS, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
             }
             return;
         }
@@ -104,6 +111,7 @@ struct boss_fallen_protectors : public BossAI
             me->SetInCombatWithZone();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             events.SetPhase(PHASE_DESPERATE_MEASURES);
+            events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
         }
     }
 
@@ -265,6 +273,11 @@ class boss_he_softfoot : public CreatureScript
                 return !target->HasUnitState(UNIT_STATE_STUNNED);
             }
 
+            /*REMOVE IT AFTER COMPLETE*/
+            void AttackStart(Unit* target)
+            {
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
@@ -343,11 +356,6 @@ class boss_sun_tenderheart : public CreatureScript
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
             }
 
-            /*REMOVE IT AFTER COMPLETE*/
-            void AttackStart(Unit* target)
-            {
-            }
-
             void DoAction(int32 const action)
             {
                 boss_fallen_protectors::DoAction(action);
@@ -384,6 +392,11 @@ class boss_sun_tenderheart : public CreatureScript
                             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
                             DoCastVictim(SPELL_CALAMITY);
                             events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_DESPERATE_MEASURES:
+                            if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                                DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
+                            //ToDo: release protectors
                             break;
                     }
                 }
@@ -590,6 +603,72 @@ class spell_gouge : public SpellScriptLoader
         }
 };
 
+class spell_dark_meditation : public SpellScriptLoader
+{
+    public:
+        spell_dark_meditation() : SpellScriptLoader("spell_OO_dark_meditation") { }
+
+        enum proc
+        {
+            SPELL_PROCK     = 143559,
+        };
+
+        class spell_dark_meditation_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dark_meditation_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if(Unit* caster = GetCaster())
+                    caster->CastSpell(caster, SPELL_PROCK, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dark_meditation_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dark_meditation_AuraScript();
+        }
+};
+
+//Dark Meditation damage calculation. if player has 143559 decrase damage -35%
+class spell_dark_meditation_damage : public SpellScriptLoader
+{
+public:
+    spell_dark_meditation_damage() : SpellScriptLoader("spell_OO_dark_meditation_damage") { }
+
+    class spell_dark_meditation_damage_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_dark_meditation_damage_SpellScript);
+
+        enum proc
+        {
+            SPELL_AURA_DAMAGE_DECRASER     = 143649,
+        };
+
+        void HandleDamageCalc(SpellEffIndex /*effIndex*/)
+        {
+            if (Unit* target = GetHitUnit())
+                if (target->HasAura(SPELL_AURA_DAMAGE_DECRASER))
+                    SetHitDamage(GetHitDamage() * 0.65f);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_dark_meditation_damage_SpellScript::HandleDamageCalc, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_dark_meditation_damage_SpellScript();
+    }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -599,4 +678,6 @@ void AddSC_boss_fallen_protectors()
     new spell_clash();
     new spell_corrupted_brew();
     new spell_gouge();
+    new spell_dark_meditation();
+    new spell_dark_meditation_damage();
 }
