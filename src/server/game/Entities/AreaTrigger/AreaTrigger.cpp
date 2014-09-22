@@ -60,7 +60,7 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, Spell* spell, Position const& pos, SpellEffIndex effIndex)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, Spell* spell, Position const& pos)
 {
     SetMap(caster->GetMap());
     Relocate(pos);
@@ -87,7 +87,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetDuration(duration);
     SetObjectScale(1);
 
-    _radius = spell->GetSpellInfo()->Effects[effIndex].CalcRadius(caster) * spell->m_spellValue->RadiusMod;
+    // on some spells radius set on dummy aura, not on create effect.
+    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+        if (float r = spell->GetSpellInfo()->Effects[j].CalcRadius(caster))
+            _radius = r * spell->m_spellValue->RadiusMod;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
     SetUInt32Value(AREATRIGGER_SPELLID, spell->GetSpellInfo()->Id);
