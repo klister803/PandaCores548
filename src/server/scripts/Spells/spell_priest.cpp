@@ -971,7 +971,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                         {
                             int32 currentPower = _player->GetPower(POWER_SHADOW_ORB) + 1; // Don't forget PowerCost
 
-                            _player->SetPower(POWER_SHADOW_ORB, 0);
+                            _player->ModifyPower(POWER_SHADOW_ORB, -currentPower);
                             // Shadow Orb visual
                             if (_player->HasAura(77487))
                                 _player->RemoveAura(77487);

@@ -1005,7 +1005,7 @@ class spell_warl_drain_soul : public SpellScriptLoader
                 {
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                     if (removeMode == AURA_REMOVE_BY_DEATH)
-                        GetCaster()->SetPower(POWER_SOUL_SHARDS, GetCaster()->GetPower(POWER_SOUL_SHARDS) + 300);
+                        GetCaster()->ModifyPower(POWER_SOUL_SHARDS, 300);
                 }
             }
 
@@ -1173,7 +1173,7 @@ class spell_warl_shadowburn : public SpellScriptLoader
                 {
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                     if (removeMode == AURA_REMOVE_BY_DEATH)
-                        GetCaster()->SetPower(POWER_BURNING_EMBERS, GetCaster()->GetPower(POWER_BURNING_EMBERS) + 20); // Give 2 Burning Embers
+                        GetCaster()->ModifyPower(POWER_BURNING_EMBERS, 20); // Give 2 Burning Embers
                     else if (removeMode == AURA_REMOVE_BY_EXPIRE)
                         GetCaster()->CastSpell(GetCaster(), WARLOCK_SHADOWBURN_ENERGIZE, true);
                 }
@@ -1210,9 +1210,9 @@ class spell_warl_burning_embers : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (GetSpell()->IsCritForTarget(target))
-                            _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
+                            _player->ModifyPower(POWER_BURNING_EMBERS, 2);
                         else
-                            _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 1);
+                            _player->ModifyPower(POWER_BURNING_EMBERS, 1);
                     }
                 }
             }
@@ -1277,9 +1277,9 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
                         {
                             if (GetSpell()->IsCritForTarget(target))
-                                _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
+                                _player->ModifyPower(POWER_BURNING_EMBERS, 2);
                             else
-                                _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 1);
+                                _player->ModifyPower(POWER_BURNING_EMBERS, 1);
                         }
                         // Increases the duration of Corruption by 6s
                         else

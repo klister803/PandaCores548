@@ -110,7 +110,7 @@ class spell_warr_shield_barrier : public SpellScriptLoader
 
                     amount += std::max(int32(2 * (AP - 2 * (Strength - 10))), int32(Stamina * 2.5f)) * (std::min(60, rage) / 20);
 
-                    GetCaster()->SetPower(POWER_RAGE, GetCaster()->GetPower(POWER_RAGE) - std::min(60, rage) * 10);
+                    GetCaster()->ModifyPower(POWER_RAGE, -(std::min(60, rage) * 10));
                 }
             }
 

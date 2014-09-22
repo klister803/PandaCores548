@@ -1247,6 +1247,19 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                         if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, player->GetGUID()))
                             rip->RefreshDuration();
 
+                uint32 curValue = caster->GetPower(POWER_ENERGY) - 25;
+                if(curValue > 25)
+                {
+                    SetHitDamage(int32(GetHitDamage() * 2));
+                    caster->ModifyPower(POWER_ENERGY, -25);
+                }
+                else if(curValue > 0)
+                {
+                    float perc = (curValue * 0.04f) + 1.0f;
+                    SetHitDamage(int32(GetHitDamage() * perc));
+                    caster->ModifyPower(POWER_ENERGY, -curValue);
+                }
+
                 // Soul of the Forest
                 if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
                 {

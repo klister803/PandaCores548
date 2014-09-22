@@ -4995,7 +4995,9 @@ void Spell::SendSpellGo()
     uint32 extraTargetsCount = 0;
     std::vector<ObjectGuid> extraTargetGuids(extraTargetsCount);
 
-    uint32 powerCount = 0;
+    SpellPowerEntry power;
+    uint32 powerCount = GetSpellInfo()->GetSpellPowerByCasterPower(m_caster, power) ? 1 : 0;
+    Powers powerType = Powers(power.powerType);
 
     bool hasPowerUnit = false/*castFlags & CAST_FLAG_POWER_LEFT_SELF*/;
     bool hasPredictedHeal = castFlags & CAST_FLAG_HEAL_PREDICTION;
@@ -5182,10 +5184,11 @@ void Spell::SendSpellGo()
     }
     else
     {
-        for (uint32 i = 0; i < powerCount; ++i)
+        //for (uint32 i = 0; i < powerCount; ++i)
+        if(powerCount)
         {
-            data << uint32(m_caster->GetPower((Powers)GetSpellInfo()->PowerType));
-            data << uint8((Powers)GetSpellInfo()->PowerType); //Power
+            data << uint32(m_caster->GetPower(powerType));
+            data << uint8(powerType); //Power
         }
     }
 

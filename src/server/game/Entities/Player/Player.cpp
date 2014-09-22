@@ -3137,67 +3137,21 @@ void Player::Regenerate(Powers power)
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
 
-    switch (power)
+    if (m_regenTimerCount >= 2000)
     {
-        case POWER_FOCUS:
-        case POWER_ENERGY:
+        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+        switch (power)
         {
-            if (GetPower(power) != maxValue || m_doLastUpdate)
+            case POWER_FOCUS:
+            case POWER_ENERGY:
             {
-                if (m_regenTimerCount >= 2000)
-                {
-                    UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-
-                    if (IsInWorld())
-                    {
-                        ObjectGuid guid = GetGUID();
-
-                        //! 5.4.1
-                        WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
-        
-                        data.WriteGuidMask<1>(guid);
-                        int powerCounter = 1;
-                        data.WriteBits(powerCounter, 21);
-                        data.WriteGuidMask<3, 6, 0, 4, 2, 5, 7>(guid);
-                        data.FlushBits();       
-                        data.WriteGuidBytes<1, 2, 0>(guid);
-                        data << uint8(power);
-                        data << int32(curValue);
-                        data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
-
-                        SendMessageToSet(&data, false);
-                    }
-                    m_doLastUpdate = false;
-                }
-                else
-                {
-                    if (!m_doLastUpdate)
-                    {
-                        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-                        if (curValue == maxValue)
-                        {
-                            m_doLastUpdate = true;
-                        }
-                    }
-                }
+                if (curValue == maxValue)
+                    m_doLastUpdate = true;
             }
-            break;
-        }
-        case POWER_HOLY_POWER:
-        case POWER_CHI:
-        {
-            SetPower(power, curValue);
-            break;
-        }
-        default:
-        {
-            if (m_regenTimerCount >= 2000 || m_soulShardsRegenTimerCount >= 20000)
-                SetPower(power, curValue);
-            else
-                UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-            break;
         }
     }
+    else
+        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
 }
 
 void Player::RegenerateHealth()

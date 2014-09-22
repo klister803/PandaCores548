@@ -7613,7 +7613,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
         {
             // Energize one soul shard every 2 ticks
             if (m_tickNumber == 2 || m_tickNumber == 4 || m_tickNumber == 6)
-                caster->SetPower(POWER_SOUL_SHARDS, caster->GetPower(POWER_SOUL_SHARDS) + 100);
+                caster->ModifyPower(POWER_SOUL_SHARDS, 100);
 
             // if target is below 20% of life ...
             if (target->GetHealthPct() <= 20)

@@ -14809,6 +14809,10 @@ int32 Unit::GetHealthGain(int32 dVal)
 // returns negative amount on power reduction
 int32 Unit::ModifyPower(Powers power, int32 dVal)
 {
+    uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+    if (powerIndex == MAX_POWERS)
+        return 0;
+
     int32 gain = 0;
 
     if (dVal == 0 && power != POWER_ENERGY) // The client will always regen energy if we don't send him the actual value
@@ -14837,7 +14841,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
     if (val <= GetMinPower(power))
     {
-        SetPower(power, GetMinPower(power));
+        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
         if (power == POWER_ECLIPSE)
             TriggerEclipse(curPower);
         return -curPower;
@@ -14847,12 +14851,12 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
     if (val < maxPower)
     {
-        SetPower(power, val);
+        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
         gain = val - curPower;
     }
     else if (curPower != maxPower)
     {
-        SetPower(power, maxPower);
+        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
         gain = maxPower - curPower;
     }
 
@@ -17243,12 +17247,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && (procSpell->Id == 348 || procSpell->Id == 108686) && procExtra & PROC_EX_CRITICAL_HIT)
-        SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+        ModifyPower(POWER_BURNING_EMBERS, 1);
 
     // Hack Rain of Fire - Has a chance to generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
-            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+            ModifyPower(POWER_BURNING_EMBERS, 1);
 
     Unit* actor = isVictim ? target : this;
     Unit* actionTarget = !isVictim ? target : this;
