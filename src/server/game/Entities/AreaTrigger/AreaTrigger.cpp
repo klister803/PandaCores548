@@ -87,13 +87,18 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetDuration(duration);
     SetObjectScale(1);
 
-    _radius = atInfo.radius;
-
     // on some spells radius set on dummy aura, not on create effect.
     // overwrite by radius from spell if exist.
+    bool find = false;
     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         if (float r = spell->GetSpellInfo()->Effects[j].CalcRadius(caster))
+        {
             _radius = r * spell->m_spellValue->RadiusMod;
+            find = true;
+        }
+
+    if (!find)
+        _radius = atInfo.radius;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
     SetUInt32Value(AREATRIGGER_SPELLID, spell->GetSpellInfo()->Id);
@@ -366,6 +371,12 @@ void AreaTrigger::Remove()
         RemoveFromWorld();
         AddObjectToRemoveList();
     }
+}
+
+float AreaTrigger::GetVisualScale(bool max /*=false*/) const
+{
+    if (max) return atInfo.radius2;
+    return atInfo.radius;
 }
 
 float AreaTrigger::GetRadius() const

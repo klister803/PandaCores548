@@ -526,8 +526,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         ASSERT(t);
         if (true)   //byte23C
         {          
-            *data << t->GetRadius();
-            *data << t->GetRadius();
+            *data << t->GetVisualScale(true);
+            *data << t->GetVisualScale();
         }
         *data << uint32(t->GetVisualId());
     }
