@@ -109,6 +109,7 @@ enum HunterSpells
     SPELL_DRUMS_OF_RAGE                          = 146555,
     HUNTER_SPELL_T16_2P_BONUS                    = 144637,
     HUNTER_SPELL_STEADY_FOCUS                    = 53220,
+    HUNTER_SPELL_ICE_TRAP_TRIGGER                = 13810,
 };
 
 // Dash - 113073
@@ -2154,6 +2155,42 @@ class spell_hun_pet_dist_check : public SpellScriptLoader
         }
 };
 
+class spell_hun_ice_trap : public SpellScriptLoader
+{
+    public:
+        spell_hun_ice_trap() : SpellScriptLoader("spell_hun_ice_trap") {}
+
+        class spell_hun_ice_trap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_ice_trap_SpellScript);
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_ICE_TRAP_TRIGGER))
+                    return false;
+                return true;
+            }
+
+            void onEffect(SpellEffIndex /*effIndex*/)
+            {
+                //Owner of trap should cast
+                if (Unit* originalCaster = GetOriginalCaster())
+                    if (Unit* target = GetHitUnit())
+                            originalCaster->CastSpell(target, HUNTER_SPELL_ICE_TRAP_TRIGGER, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_hun_ice_trap_SpellScript::onEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_ice_trap_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2197,4 +2234,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
     new spell_hun_pet_dist_check();
+    new spell_hun_ice_trap();
 }
