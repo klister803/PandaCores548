@@ -1247,7 +1247,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                         if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, player->GetGUID()))
                             rip->RefreshDuration();
 
-                uint32 curValue = caster->GetPower(POWER_ENERGY) - 25;
+                int32 curValue = caster->GetPower(POWER_ENERGY) - 25;
                 if(curValue > 25)
                 {
                     SetHitDamage(int32(GetHitDamage() * 2));

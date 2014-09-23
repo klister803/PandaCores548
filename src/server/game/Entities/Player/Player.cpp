@@ -2770,6 +2770,7 @@ void Player::RemoveFromWorld()
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         m_zoneUpdateId = 0; //fix returning to wg
+        m_extraLookList.clear();
     }
 
     ///- Do not add/remove the player from the object storage

@@ -181,6 +181,18 @@ class instance_icecrown_citadel : public InstanceMapScript
             {
                 if (!TeamInInstance)
                     TeamInInstance = player->GetTeam();
+
+                //Should be visible
+                if (GameObject* precipice = instance->GetGameObject(ArthasPrecipiceGUID))
+                {
+                    precipice->SendUpdateToPlayer(player);
+                    player->AddToExtraLook(precipice);
+                }
+                if (GameObject* platform = instance->GetGameObject(ArthasPlatformGUID))
+                {
+                    platform->SendUpdateToPlayer(player);
+                    player->AddToExtraLook(platform);
+                }
             }
 
             void OnPlayerLeave(Player* player)
@@ -754,6 +766,11 @@ class instance_icecrown_citadel : public InstanceMapScript
                         return ArthasPlatformGUID;
                     case DATA_TERENAS_MENETHIL:
                         return TerenasMenethilGUID;
+                    case GO_ARTHAS_PLATFORM:
+                        return ArthasPlatformGUID;
+                    case GO_ARTHAS_PRECIPICE:
+                        return ArthasPrecipiceGUID;
+                        break;
                     default:
                         break;
                 }

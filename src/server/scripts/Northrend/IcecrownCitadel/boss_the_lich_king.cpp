@@ -1727,6 +1727,24 @@ class npc_strangulate_vehicle : public CreatureScript
                             {
                                 if (Unit* summoner = summ->GetSummoner())
                                 {
+                                    Player *plr = summoner->ToPlayer();
+                                    //Should be visible
+                                    if (GameObject* platform = _instance->instance->GetGameObject(_instance->GetData64(GO_ARTHAS_PLATFORM)))
+                                    {
+                                        if (plr)
+                                        {
+                                            platform->SendUpdateToPlayer(plr);
+                                            plr->AddToExtraLook(platform);
+                                        }
+                                    }
+                                    if (GameObject* precipice = _instance->instance->GetGameObject(_instance->GetData64(GO_ARTHAS_PRECIPICE)))
+                                    {
+                                        if (plr)
+                                        {
+                                            precipice->SendUpdateToPlayer(plr);
+                                            plr->AddToExtraLook(precipice);
+                                        }
+                                    }
                                     summoner->CastSpell((Unit*)NULL, SPELL_HARVEST_SOUL_VISUAL, true);
                                     summoner->ExitVehicle(summoner);
                                     if (!IsHeroic())
