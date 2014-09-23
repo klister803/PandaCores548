@@ -6055,8 +6055,10 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     destTarget = &m_destTargets[i]._position;
 
     uint16 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
-
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u", m_spellInfo->Id, eff);
+   
+    #ifdef WIN32
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u", m_spellInfo->Id, eff);
+    #endif
 
     damage = CalculateDamage(i, unitTarget);
 

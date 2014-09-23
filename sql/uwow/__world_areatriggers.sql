@@ -18,12 +18,13 @@ CREATE TABLE `areatrigger_data` (
   `radius` float unsigned NOT NULL DEFAULT '1',
   `activationDelay` mediumint(7) unsigned NOT NULL DEFAULT '0',
   `updateDelay` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `maxCount` tinyint(3) NOT NULL DEFAULT '-1',
+  `maxCount` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `comment` text NOT NULL,
   PRIMARY KEY (`entry`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `areatrigger_data` ADD `visualId` INT(8) UNSIGNED NOT NULL DEFAULT '1' AFTER `entry`;
+ALTER TABLE `areatrigger_data` ADD `radius2` float UNSIGNED NOT NULL DEFAULT '0' AFTER `radius`;
 
 -- Healing Sphere
 REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
@@ -153,3 +154,25 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 ('621', '1', '1', '1', '0', '135299', '0', '0', 'Hunter: Ice Trap on exit remove');
 
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('63487', 'spell_hun_ice_trap');
+
+-- 120517 Priest: Halo Light
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
+('120692', 'spell_pri_halo'), 
+('120696', 'spell_pri_halo');
+
+DELETE FROM `spell_script_names` WHERE `spell_id` = 120517;
+REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) 
+VALUES ('658', '342', '5', '60', '1000', '0', '0', 'Priest: Halo');
+DELETE FROM `areatrigger_actions` WHERE entry = 658;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('658', '0', '0', '0', '1', '120692', '0', '0', 'Priest: Halo Light on friend enter cast'),
+('658', '1', '0', '0', '2', '120692', '0', '0', 'Priest: Halo Light on enemy enter cast');
+
+-- 120644  Priest: Halo Dark
+DELETE FROM `spell_script_names` WHERE `spell_id` = 120644;
+REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) 
+VALUES ('657', '342', '5', '60', '1000', '0', '0', 'Priest: Halo');
+DELETE FROM `areatrigger_actions` WHERE entry = 657;
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('657', '0', '0', '0', '1', '120696', '0', '0', 'Priest: Halo Dark on friend enter cast'),
+('657', '1', '0', '0', '2', '120696', '0', '0', 'Priest: Halo Dark on enemy enter cast');

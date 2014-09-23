@@ -5082,18 +5082,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 53563: // Beacon of Light
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
                     break;
-                case 120517: // Halo Light. Hack from wait to fix areatrigger
-                case 120644: // Halo Night. Hack from wait to fix areatrigger
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
-                    spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                    spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-                    spellInfo->Effects[0].BasePoints = 1;
-                    spellInfo->Effects[1].Effect = SPELL_EFFECT_SCRIPT_EFFECT;
-                    spellInfo->Effects[1].TargetA = TARGET_SRC_CASTER;
-                    spellInfo->Effects[1].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
-                    spellInfo->Effects[1].BasePoints = 1;
-                    spellInfo->Speed = 14.f;
-                    break;
                 case 108446: // Soul Link
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_CANT_TRIGGER_PROC;
                     break;

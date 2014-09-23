@@ -109,6 +109,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     if (!GetMap()->AddToMap(this))
         return false;
 
+    #ifdef WIN32
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), spell->GetSpellInfo()->Id, _radius);
+    #endif
+
     // hack me
     if (atInfo.maxCount)
     {
@@ -292,7 +296,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (!action.charges && action.action->maxCharges)
         return;
 
-    Unit* caster = GetCaster();
+    Unit* caster = _caster;
 
     if (action.action->targetFlags & AT_TARGET_FLAG_FRIENDLY)
         if (!caster || !caster->IsFriendlyTo(unit))
@@ -317,7 +321,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (!spellInfo)
         return;
 
+    #ifdef WIN32
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction caster %s unit %s type %u spellID %u", caster->GetString().c_str(), unit->GetString().c_str(), action.action->actionType, action.action->spellId);
+    #endif
 
     // should cast on self.
     if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER
