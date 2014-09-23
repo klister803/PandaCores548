@@ -270,7 +270,7 @@ class boss_immerseus : public CreatureScript
 
         struct boss_immerseusAI : public BossAI
         {
-            boss_immerseusAI(Creature* creature) : BossAI(creature, DATA_IMMEREUS)
+            boss_immerseusAI(Creature* creature) : BossAI(creature, DATA_IMMERSEUS)
             {
                 instance = creature->GetInstanceScript();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -317,7 +317,7 @@ class boss_immerseus : public CreatureScript
                     return;
                 intro = true;
                 if (Creature* cho = instance->instance->GetCreature(instance->GetData64(NPC_LOREWALKER_CHO)))
-                    cho->AI()->SetData(DATA_IMMEREUS, IN_PROGRESS);
+                    cho->AI()->SetData(DATA_IMMERSEUS, IN_PROGRESS);
             }
 
             void JustSummoned(Creature* sum)

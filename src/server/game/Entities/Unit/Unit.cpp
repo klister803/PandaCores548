@@ -12370,7 +12370,32 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AuraEffectList const& mDamageDoneVersusAurastate = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS_AURASTATE);
         for (AuraEffectList::const_iterator i = mDamageDoneVersusAurastate.begin(); i != mDamageDoneVersusAurastate.end(); ++i)
             if (victim->HasAuraState(AuraStateType((*i)->GetMiscValue())))
-                AddPct(DoneTotalMod, (*i)->GetAmount());
+                if (HasAura(144421) && GetPower(POWER_ALTERNATE_POWER))
+                {
+                    int32 pos = GetPower(POWER_ALTERNATE_POWER);
+                    int32 mod = 0;
+                    switch (pos)
+                    {
+                    case 25:
+                        mod = -10;
+                        break;
+                    case 50:
+                        mod = -25;
+                        break;
+                    case 75:
+                        mod = -50;
+                        break;
+                    case 100:
+                        mod = -75;
+                        break;
+                    default:
+                        mod = 0;
+                        break;
+                    }
+                    AddPct(DoneTotalMod, mod);
+                }
+                else
+                    AddPct(DoneTotalMod, (*i)->GetAmount());
 
         // Add SPELL_AURA_MOD_DAMAGE_DONE_FOR_MECHANIC percent bonus
         AddPct(DoneTotalMod, GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DAMAGE_DONE_FOR_MECHANIC, spellProto->Mechanic));
@@ -13817,7 +13842,32 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     AuraEffectList const& mDamageDoneVersusAurastate = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_VERSUS_AURASTATE);
     for (AuraEffectList::const_iterator i = mDamageDoneVersusAurastate.begin(); i != mDamageDoneVersusAurastate.end(); ++i)
         if (victim->HasAuraState(AuraStateType((*i)->GetMiscValue())))
-            AddPct(DoneTotalMod, (*i)->GetAmount());
+            if (HasAura(144421) && GetPower(POWER_ALTERNATE_POWER))
+            {
+                int32 pos = GetPower(POWER_ALTERNATE_POWER);
+                int32 mod = 0;
+                switch (pos)
+                {
+                case 25:
+                    mod = -10;
+                    break;
+                case 50:
+                    mod = -25;
+                    break;
+                case 75:
+                    mod = -50;
+                    break;
+                case 100:
+                    mod = -75;
+                    break;
+                default:
+                    mod = 0;
+                    break;
+                }
+                AddPct(DoneTotalMod, mod);
+            }
+            else
+                AddPct(DoneTotalMod, (*i)->GetAmount());
 
     // Add SPELL_AURA_MOD_DAMAGE_DONE_FOR_MECHANIC percent bonus
     if (spellProto)

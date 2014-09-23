@@ -271,7 +271,7 @@ class boss_he_softfoot : public CreatureScript
 
                 events.Update(diff);
 
-                while (uint32 eventId = events.ExecuteEvent())
+               /* while (uint32 eventId = events.ExecuteEvent())
                 {
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
@@ -293,7 +293,7 @@ class boss_he_softfoot : public CreatureScript
                             events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                     }
-                }
+                }*/
                 DoMeleeAttackIfReady();
             }
         };
@@ -361,7 +361,7 @@ class boss_sun_tenderheart : public CreatureScript
 
                 events.Update(diff);
 
-                while (uint32 eventId = events.ExecuteEvent())
+              /*  while (uint32 eventId = events.ExecuteEvent())
                 {
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
@@ -384,6 +384,7 @@ class boss_sun_tenderheart : public CreatureScript
                     }
                 }
                 //DoMeleeAttackIfReady();
+                }*/
             }
         };
 

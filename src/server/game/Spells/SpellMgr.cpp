@@ -4763,6 +4763,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143579: //Sha Corruption
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                //Fallen Protectors
+                case 144396:    //Vengeful Strikes
+                    spellInfo->Effects[0].Effect = 0;
+                    spellInfo->Effects[0].ApplyAuraName = 0;
+                    break;
+                case 143235:    //Noxious Poison. It's prock. Need create Area Triger system.
+                    spellInfo->Effects[0].BasePoints = 143239;
+                    break;
                 //Norushen
                 case 145212: //Unleashed Anger dmg
                     spellInfo->Effects[0].TargetA = 25;
@@ -4776,22 +4784,26 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 145573: //Blind Hatred Dummy
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-                    spellInfo->Effects[0].Amplitude = 1000;
+                    spellInfo->Effects[0].Amplitude = 500;
                     spellInfo->Effects[0].TriggerSpell = 145227;
                     break;
                 case 145227: //Blind Hatred Dmg
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetB = 15;
                     break;
-
-                //Fallen Protectors
-                case 144396:    //Vengeful Strikes
-                    spellInfo->Effects[0].Effect = 0;
-                    spellInfo->Effects[0].ApplyAuraName = 0;
+                case 145735: //Icy Fear Dmg
+                    spellInfo->TargetAuraSpell = 0;
                     break;
-                case 143235:    //Noxious Poison. It's prock. Need create Area Triger system.
-                    spellInfo->Effects[0].BasePoints = 143239;
+                case 144421: //Corruption
+                    spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
                     break;
+                case 144482: //Tear Reality
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_104;
+                    break;
+                case 145073: //Residual Corruption
+                    spellInfo->TargetAuraSpell = 0;
+                    break;
+                
 
                 //World Bosses
                 //Sha of Anger

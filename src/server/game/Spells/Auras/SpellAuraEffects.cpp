@@ -8450,6 +8450,9 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         default:
             maxPower = 100;
             break;
+        case 258:
+            maxPower = 101;
+            break;
         case 63:
             maxPower = 105;
             break;
@@ -8486,6 +8489,9 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         //case 206:
         case 207:
             startPower = 5;
+            break;
+        case 258:
+            startPower = 75;
             break;
         case 103:
             startPower = 10;

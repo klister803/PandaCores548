@@ -21,35 +21,79 @@
 
 enum eSpells
 {
+    //Amalgam_of_Corruption
     SPELL_CORRUPTION           = 144421, 
+    SPELL_PURIFIED             = 144452,
     SPELL_ICY_FEAR             = 145733,
     SPELL_UNLEASHED_ANGER      = 145214,
     SPELL_UNLEASHED_ANGER_DMG  = 145212,
     SPELL_UNCHECKED_CORRUPTION = 145679,
     SPELL_SELF_DOUBT           = 146124,
     SPELL_QUARANTINE_SAFETY    = 145779,
+
+    //Phase spells
+    SPELL_LOOK_WITHIN          = 146837,
+
     //Blind Hatred
     SPELL_BLIND_HATRED_V       = 145226,
     SPELL_BLIND_HATRED_D       = 145227,
+
+    SPELL_CLEANSE              = 147657,
+
+    //Titanic Corruption
+    SPELL_BURST_OF_CORRUPTION  = 144654,
+    SPELL_CORRUPTION_TC        = 144639,
+    SPELL_HURL_CORRUPTION      = 144649,
+    SPELL_PIERCING_CORRUPTION  = 144657,
+    SPELL_TITANIC_SMASH        = 144628,
+
+    //Greater Corruption
+    SPELL_BOTTOMLESS_PIT       = 146703,
+    SPELL_DISHEARTENING_LAUGH  = 146707,
+    SPELL_LINGERING_CORRUPTION = 144514,
+
+    //Manifestation of Corruption
+    SPELL_TEAR_REALITY         = 144482,
+    SPELL_RESIDUAL_CORRUPTION  = 145074,
+
+    //Essence of Corruption
+    SPELL_EXPEL_CORRUPTION_AT  = 144548, //Create areatrigger
+    SPELL_EXPELLED_CORRUPTION  = 144480,
+
+
+    //Test for players
+    SPELL_TEST_OF_SERENITY     = 144849, //dd
+    SPELL_TEST_OF_RELIANCE     = 144850, //heal
+    SPELL_TEST_OF_CONFIDENCE   = 144851, //tank
 };
 
 enum sEvents
 {
+    //Amalgam_of_Corruption
     EVENT_CHECK_VICTIM         = 1,
     EVENT_QUARANTINE_SAFETY    = 2, 
     EVENT_UNLEASHED_ANGER      = 3,
     EVENT_BLIND_HATRED         = 4,
+
+    //Blind Hatred
     EVENT_GET_NEW_POS          = 5,
+
+    //Manifestation of Corruption
+    EVENT_TEAR_REALITY         = 6,
+
+    EVENT_RE_ATTACK            = 7,
 };
 
 enum sData
 {
+    //Blind Hatred
     DATA_GET_NEW_POS           = 1,
     DATA_START_MOVING          = 2,
 };
 
 enum sAction
 {
+    //Blind Hatred
     ACTION_START_EVENT         = 1,
 };
 
@@ -122,6 +166,7 @@ class boss_amalgam_of_corruption : public CreatureScript
             void Reset()
             {
                 _Reset();
+                me->RemoveAurasDueToSpell(SPELL_ICY_FEAR);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
                 ApplyOrRemoveBar(false);
@@ -149,8 +194,8 @@ class boss_amalgam_of_corruption : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                me->AddAura(SPELL_ICY_FEAR, me);
                 ApplyOrRemoveBar(true);
-                //TestTimers
                 events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
                 events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);
                 events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
@@ -235,7 +280,7 @@ public:
         
         void EnterEvadeMode(){}
 
-        void EnterCombat(){}
+        void EnterCombat(Unit* who){}
 
         void DoAction(int32 const action)
         {
@@ -303,7 +348,7 @@ public:
 
         void EnterEvadeMode(){}
 
-        void EnterCombat(){}
+        void EnterCombat(Unit* who){}
 
         void SetData(uint32 type, uint32 data)
         {
@@ -338,6 +383,223 @@ public:
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_blind_hatredAI(pCreature);
+    }
+};
+
+//71976 for dd
+class npc_essence_of_corruption : public CreatureScript
+{
+public:
+    npc_essence_of_corruption() : CreatureScript("npc_essence_of_corruption") { }
+
+    struct npc_essence_of_corruptionAI : public ScriptedAI
+    {
+        npc_essence_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (me->ToTempSummon())
+            {
+                if (Unit* aoc = me->ToTempSummon()->GetSummoner())
+                {
+                    if (aoc->isAlive() && aoc->isInCombat())
+                    {
+                        if (aoc->GetHealth() >= damage)
+                            aoc->SetHealth(aoc->GetHealth() - damage);
+                    }
+                }
+            }
+        }
+        
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+          /*  while (uint32 eventId = events.ExecuteEvent())
+            {                
+            }*/
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_essence_of_corruptionAI(pCreature);
+    }
+};\
+
+//72264 for dd
+class npc_manifestation_of_corruption : public CreatureScript
+{
+public:
+    npc_manifestation_of_corruption() : CreatureScript("npc_manifestation_of_corruption") { }
+
+    struct npc_manifestation_of_corruptionAI : public ScriptedAI
+    {
+        npc_manifestation_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_TEAR_REALITY, 8500);
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (me->ToTempSummon())
+            {
+                if (Unit* aoc = me->ToTempSummon()->GetSummoner())
+                {
+                    if (aoc->isAlive() && aoc->isInCombat())
+                    {
+                        if (aoc->GetHealth() >= damage)
+                            aoc->SetHealth(aoc->GetHealth() - damage);
+                    }
+                }
+            }
+        }
+        
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+            
+            while (uint32 eventId = events.ExecuteEvent())
+            {   
+                switch (eventId)
+                {
+                case EVENT_TEAR_REALITY:
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
+                    DoCastAOE(SPELL_TEAR_REALITY);
+                    events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
+                    events.ScheduleEvent(EVENT_TEAR_REALITY, 8500);
+                    break;
+                case EVENT_RE_ATTACK:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 75.0f);
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_manifestation_of_corruptionAI(pCreature);
+    }
+};
+
+//72051 for tank
+class npc_titanic_corruption : public CreatureScript
+{
+public:
+    npc_titanic_corruption() : CreatureScript("npc_titanic_corruption") { }
+
+    struct npc_titanic_corruptionAI : public ScriptedAI
+    {
+        npc_titanic_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+          /*  while (uint32 eventId = events.ExecuteEvent())
+            {                
+            }*/
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_titanic_corruptionAI(pCreature);
+    }
+};
+
+//72001 for healers
+class npc_greater_corruption : public CreatureScript
+{
+public:
+    npc_greater_corruption() : CreatureScript("npc_greater_corruption") { }
+
+    struct npc_greater_corruptionAI : public ScriptedAI
+    {
+        npc_greater_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void EnterEvadeMode(){}
+
+        void EnterCombat(Unit* who){}
+
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+          /*  while (uint32 eventId = events.ExecuteEvent())
+            {                
+            }*/
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_greater_corruptionAI(pCreature);
     }
 };
 
@@ -425,12 +687,52 @@ class spell_blind_hatred : public SpellScriptLoader
         }
 };
 
+//145735
+class spell_icy_fear_dmg : public SpellScriptLoader
+{
+    public:
+        spell_icy_fear_dmg() : SpellScriptLoader("spell_icy_fear_dmg") { }
+
+        class spell_icy_fear_dmg_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_icy_fear_dmg_SpellScript);
+
+            void DealDamage()
+            {
+                if (GetCaster() && GetHitUnit())
+                {
+                    uint32 pre_mod = GetHitDamage()/100;
+                    uint32 pct_mod = 100 - (uint32)floor(GetCaster()->GetHealthPct());
+                    if ((pre_mod*pct_mod) > 0)
+                        SetHitDamage(GetHitDamage()+(pre_mod*pct_mod));
+                    else
+                        SetHitDamage(GetHitDamage());
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_icy_fear_dmg_SpellScript::DealDamage);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_icy_fear_dmg_SpellScript();
+        }
+};
+
 void AddSC_boss_norushen()
 {
     new boss_norushen();
     new boss_amalgam_of_corruption();
     new npc_blind_hatred_controller();
     new npc_blind_hatred();
+    new npc_essence_of_corruption();
+    new npc_manifestation_of_corruption();
+    new npc_titanic_corruption();
+    new npc_greater_corruption();
     new spell_unleashed_anger();
     new spell_blind_hatred();
+    new spell_icy_fear_dmg();
 }

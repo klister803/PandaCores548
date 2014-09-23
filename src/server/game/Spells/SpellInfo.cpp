@@ -1234,6 +1234,10 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 145226: //Blind Hatred
     case 145573: //Blind Hatred Dummy
     case 145227: //Blind Hatred Dmg
+    case 145735: //Icy Fear Dmg
+    case 144421: //Corruption
+    case 144482: //Tear Reality
+    case 145073: //Residual Corruption
         return Effects[effect];
     }
 

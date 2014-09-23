@@ -13,7 +13,7 @@ Position const LorewalkerChoSpawn[2]  = {
 
 DoorData const doorData[] =
 {
-    {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMEREUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
+    {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {0,                                      0,                          DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -116,12 +116,12 @@ public:
             if (LorewalkerChoGUIDtmp)
                 return;
 
-            if (GetBossState(DATA_IMMEREUS) != DONE)
+            if (GetBossState(DATA_IMMERSEUS) != DONE)
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
                 {
                     LorewalkerChoGUIDtmp = cho->GetGUID();
-                    cho->AI()->SetData(DATA_IMMEREUS, NOT_STARTED);
+                    cho->AI()->SetData(DATA_IMMERSEUS, NOT_STARTED);
                 }
             }else if (GetBossState(DATA_F_PROTECTORS) != DONE)
             {
@@ -253,11 +253,11 @@ public:
 
             switch (id)
             {
-            case DATA_IMMEREUS:
+            case DATA_IMMERSEUS:
                 if (state == DONE)
                 {
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                        bq->AI()->SetData(DATA_IMMEREUS, DONE);
+                        bq->AI()->SetData(DATA_IMMERSEUS, DONE);
                     //Protectors intro
                     if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                     {
@@ -414,13 +414,13 @@ public:
 
             switch (bossId)
             {
-                case DATA_IMMEREUS:
+                case DATA_IMMERSEUS:
                     return true;
                 case DATA_NORUSHEN:
                     return GetBossState(DATA_F_PROTECTORS) == DONE;
                     //no break
                 case DATA_F_PROTECTORS:
-                    return GetBossState(DATA_IMMEREUS) == DONE;
+                    return GetBossState(DATA_IMMERSEUS) == DONE;
                     break;
             }
 

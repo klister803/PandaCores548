@@ -85,7 +85,7 @@ public:
         {
             switch(id)
             {
-                case DATA_IMMEREUS:
+                case DATA_IMMERSEUS:
                 {
                     uint32 t = 0;
                     if (value == DONE)
