@@ -4114,10 +4114,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114695:// Pursuit of Justice
                     spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
-                case 34299: // Leader of the pack - healing
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_HEAL_PCT;
-                    spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
-                    break;
                 case 90259: // Glyph of Frost Pillar (Root Aura)
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     spellInfo->Effects[EFFECT_0].MiscValueB = 0;

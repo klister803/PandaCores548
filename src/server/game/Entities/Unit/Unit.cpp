@@ -8145,6 +8145,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     target = this;
                     break;
                 }
+                case 17007: // Leader of the Pack
+                {
+                    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(dummySpell->Id))
+                        return false;
+
+                    cooldown_spell_id = dummySpell->Id;
+
+                    if (SpellInfo const* healSpellInfo = sSpellMgr->GetSpellInfo(34299))
+                    {
+                        int32 healbp = CalculatePct(GetMaxHealth(), healSpellInfo->Effects[EFFECT_0].BasePoints);
+                        CastCustomSpell(this, 34299, &healbp, NULL, NULL, true, castItem, triggeredByAura);
+                    }
+                    
+                    basepoints0 = CountPctFromMaxMana(triggerAmount);
+                    triggered_spell_id = 68285;
+                    break;
+                }
                 // Sudden Eclipse
                 case 46832:
                 {
@@ -8212,19 +8229,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     }
                     // if not found Rip
                     return false;
-                }
-                // Leader of the Pack
-                case 24932:
-                {
-                   if (triggerAmount <= 0)
-                        return false;
-                    basepoints0 = int32(CountPctFromMaxHealth(triggerAmount));
-                    target = this;
-                    triggered_spell_id = 34299;
-                    // Regenerate 4% mana
-                    int32 mana = CalculatePct(GetCreateMana(), triggerAmount);
-                    CastCustomSpell(this, 68285, &mana, NULL, NULL, true, castItem, triggeredByAura);
-                    break;
                 }
                 // Healing Touch (Dreamwalker Raiment set)
                 case 28719:
@@ -13208,7 +13212,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         return healamount;
 
     // No bonus for Leader of the Pack or Soul Leech or Soul Link heal
-    if (spellProto->Id == 34299 || spellProto->Id == 108366)
+    if (spellProto->Id == 108366)
         return healamount;
 
     // No bonus for Living Seed or Ancestral Guidance
@@ -17257,17 +17261,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     CastSpell(this, 119962, true);
                 }
             }
-        }
-    }
-
-    // Leader of the Pack
-    if (target && GetTypeId() == TYPEID_PLAYER && (procExtra & PROC_EX_CRITICAL_HIT) && HasAura(17007) && (attType == BASE_ATTACK || (procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)))
-    {
-        if (!ToPlayer()->HasSpellCooldown(34299))
-        {
-            CastSpell(this, 34299, true); // Heal
-            EnergizeBySpell(this, 68285, CountPctFromMaxMana(8), POWER_MANA);
-            ToPlayer()->AddSpellCooldown(34299, 0, getPreciseTime() + 6.0); // 6s ICD
         }
     }
 
