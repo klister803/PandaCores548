@@ -3179,7 +3179,7 @@ void Player::RegenerateHealth()
             if (getLevel() < 15)
                 addvalue = (0.20f*((float)GetMaxHealth())/getLevel()*HealthIncreaseRate);
             else 
-                addvalue = 0.015f*((float)GetMaxHealth())*HealthIncreaseRate;
+                addvalue = 0.01f*((float)GetMaxHealth())*HealthIncreaseRate;
 
             AuraEffectList const& mModHealthRegenPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
             for (AuraEffectList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
