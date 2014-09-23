@@ -83,6 +83,7 @@ set(scripts_STAT_SRCS
   EasternKingdoms/ScarletEnclave/chapter1.cpp
   EasternKingdoms/ScarletEnclave/the_scarlet_enclave.cpp
   EasternKingdoms/eastern_plaguelands.cpp
+  EasternKingdoms/MoltenCore/boss_coren_direbrew.cpp
   EasternKingdoms/MoltenCore/boss_gehennas.cpp
   EasternKingdoms/MoltenCore/boss_lucifron.cpp
   EasternKingdoms/MoltenCore/boss_golemagg.cpp
