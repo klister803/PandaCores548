@@ -134,6 +134,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_OBJECT_AREA_TARGET_SELECT,
     SPELL_SCRIPT_HOOK_OBJECT_TARGET_SELECT,
     SPELL_SCRIPT_HOOK_CHECK_CAST,
+    SPELL_SCRIPT_HOOK_TAKE_POWER,
     SPELL_SCRIPT_HOOK_BEFORE_CAST,
     SPELL_SCRIPT_HOOK_ON_CAST,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
@@ -142,7 +143,7 @@ enum SpellScriptHookType
 #define HOOK_SPELL_HIT_START SPELL_SCRIPT_HOOK_EFFECT_HIT
 #define HOOK_SPELL_HIT_END SPELL_SCRIPT_HOOK_AFTER_HIT + 1
 #define HOOK_SPELL_START SPELL_SCRIPT_HOOK_EFFECT
-#define HOOK_SPELL_END SPELL_SCRIPT_HOOK_CHECK_CAST + 1
+#define HOOK_SPELL_END SPELL_SCRIPT_HOOK_TAKE_POWER + 1
 #define HOOK_SPELL_COUNT HOOK_SPELL_END - HOOK_SPELL_START
 
 class SpellScript : public _SpellScript
@@ -152,6 +153,7 @@ class SpellScript : public _SpellScript
     public:
         #define SPELLSCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
             typedef SpellCastResult(CLASSNAME::*SpellCheckCastFnType)(); \
+            typedef void(CLASSNAME::*TakePowerFnType)(Powers , int32 &); \
             typedef void(CLASSNAME::*SpellEffectFnType)(SpellEffIndex); \
             typedef void(CLASSNAME::*SpellHitFnType)(); \
             typedef void(CLASSNAME::*SpellCastFnType)(); \
@@ -176,6 +178,15 @@ class SpellScript : public _SpellScript
                 SpellCastResult Call(SpellScript* spellScript);
             private:
                 SpellCheckCastFnType _checkCastHandlerScript;
+        };
+
+        class TakePowerHandler
+        {
+            public:
+                TakePowerHandler(TakePowerFnType TakePowerHandlerScript);
+                void Call(SpellScript* spellScript, Powers power, int32 &amount);
+            private:
+                TakePowerFnType _TakePowerHandlerScript;
         };
 
         class EffectHandler : public  _SpellScript::EffectNameCheck, public _SpellScript::EffectHook
@@ -230,6 +241,7 @@ class SpellScript : public _SpellScript
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) {} }; \
         class CheckCastHandlerFunction : public SpellScript::CheckCastHandler { public: CheckCastHandlerFunction(SpellCheckCastFnType _checkCastHandlerScript) : SpellScript::CheckCastHandler((SpellScript::SpellCheckCastFnType)_checkCastHandlerScript) {} }; \
+        class TakePowerHandlerFunction : public SpellScript::TakePowerHandler { public: TakePowerHandlerFunction(TakePowerFnType _TakePowerHandlerScript) : SpellScript::TakePowerHandler((SpellScript::TakePowerFnType)_TakePowerHandlerScript) {} }; \
         class EffectHandlerFunction : public SpellScript::EffectHandler { public: EffectHandlerFunction(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : SpellScript::EffectHandler((SpellScript::SpellEffectFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class HitHandlerFunction : public SpellScript::HitHandler { public: HitHandlerFunction(SpellHitFnType _pHitHandlerScript) : SpellScript::HitHandler((SpellScript::SpellHitFnType)_pHitHandlerScript) {} }; \
         class ObjectAreaTargetSelectHandlerFunction : public SpellScript::ObjectAreaTargetSelectHandler { public: ObjectAreaTargetSelectHandlerFunction(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType) : SpellScript::ObjectAreaTargetSelectHandler((SpellScript::SpellObjectAreaTargetSelectFnType)_pObjectAreaTargetSelectHandlerScript, _effIndex, _targetType) {} }; \
@@ -269,6 +281,11 @@ class SpellScript : public _SpellScript
         // where function is SpellCastResult function()
         HookList<CheckCastHandler> OnCheckCast;
         #define SpellCheckCastFn(F) CheckCastHandlerFunction(&F)
+
+        // example: OnTakePower += TakePowertFn();
+        // where function is TakePower function()
+        HookList<TakePowerHandler> OnTakePower;
+        #define TakePowertFn(F) TakePowerHandlerFunction(&F)
 
         // example: OnEffect**** += SpellEffectFn(class::function, EffectIndexSpecifier, EffectNameSpecifier);
         // where function is void function(SpellEffIndex effIndex)

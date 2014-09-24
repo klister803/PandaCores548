@@ -230,6 +230,15 @@ SpellCastResult SpellScript::CheckCastHandler::Call(SpellScript* spellScript)
     return (spellScript->*_checkCastHandlerScript)();
 }
 
+SpellScript::TakePowerHandler::TakePowerHandler(TakePowerFnType TakePowerHandlerScript)
+{
+    _TakePowerHandlerScript = TakePowerHandlerScript;
+}
+
+void SpellScript::TakePowerHandler::Call(SpellScript* spellScript, Powers power, int32 &amount)
+{
+    return (spellScript->*_TakePowerHandlerScript)(power, amount);
+}
 SpellScript::EffectHandler::EffectHandler(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
     : _SpellScript::EffectNameCheck(_effName), _SpellScript::EffectHook(_effIndex)
 {

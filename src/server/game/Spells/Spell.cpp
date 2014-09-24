@@ -5833,6 +5833,8 @@ void Spell::TakePower()
         return;
     }
 
+    CallScriptTakePowerHandlers(powerType, m_powerCost);
+
     if (!m_powerCost)
         return;
 
@@ -8842,6 +8844,19 @@ SpellCastResult Spell::CallScriptCheckCastHandlers()
         (*scritr)->_FinishScriptCall();
     }
     return retVal;
+}
+
+void Spell::CallScriptTakePowerHandlers(Powers p, int32 &amount)
+{
+    for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_TAKE_POWER);
+        std::list<SpellScript::TakePowerHandler>::iterator hookItrEnd = (*scritr)->OnTakePower.end(), hookItr = (*scritr)->OnTakePower.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, p, amount);
+
+        (*scritr)->_FinishScriptCall();
+    }
 }
 
 void Spell::PrepareScriptHitHandlers()
