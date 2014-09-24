@@ -95,6 +95,27 @@ class spell_warr_shield_barrier : public SpellScriptLoader
     public:
         spell_warr_shield_barrier() : SpellScriptLoader("spell_warr_shield_barrier") { }
 
+        class spell_warr_shield_barrier_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_shield_barrier_SpellScript);
+
+            // Power should be taken after CalculateAmount call or need create method for correct send ammount.
+            void TakePower(Powers p, int32 &amount)
+            {
+                amount = 0;
+            }
+
+            void Register()
+            {
+                OnTakePower += TakePowertFn(spell_warr_shield_barrier_SpellScript::TakePower);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_shield_barrier_SpellScript();
+        }
+
         class spell_warr_shield_barrier_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_warr_shield_barrier_AuraScript);
