@@ -812,18 +812,32 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     if (cleanDamage && damagetype == DIRECT_DAMAGE && this != victim && getPowerType() == POWER_RAGE)
     {
         uint32 rage = uint32(GetAttackTime(cleanDamage->attackType) / 1000 * 8.125f);
+        float ragewarrior = float(3.5f * ((GetAttackTime(cleanDamage->attackType)) / 1000.0f) * 0.5f);
+        
         switch (cleanDamage->attackType)
         {
             case OFF_ATTACK:
                 rage /= 2;
             case BASE_ATTACK:
             {
-                if (ToPlayer() && ToPlayer()->getClass() == CLASS_WARRIOR)
-                    rage = 6;
-                if (ToPlayer() && ToPlayer()->getClass() == CLASS_DRUID)
-                    rage = 4;
-                RewardRage(rage, true);
-                break;
+                if (Player* player = ToPlayer())
+                {
+                    switch (player->getClass())
+                    {
+                        case CLASS_WARRIOR:
+                        {
+                            RewardRage(ragewarrior, true);
+                            break;
+                        }
+                        case CLASS_DRUID:
+                        {
+                            rage = 4;
+                            RewardRage(rage, true);
+                            break;
+                        }
+                    }
+                    break;
+                }
             }
             default:
                 break;
@@ -21469,7 +21483,7 @@ void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 }
 
 // baseRage means damage taken when attacker = false
-void Unit::RewardRage(uint32 baseRage, bool attacker)
+void Unit::RewardRage(float baseRage, bool attacker)
 {
     float addRage;
 
@@ -21478,15 +21492,6 @@ void Unit::RewardRage(uint32 baseRage, bool attacker)
         addRage = baseRage;
         // talent who gave more rage on attack
         AddPct(addRage, GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT));
-    }
-    else
-    {
-        // Calculate rage from health and damage taken
-        //! ToDo: Check formula
-        addRage = floor(0.5f + (25.7f * baseRage / GetMaxHealth()));
-        // Berserker Rage effect
-        if (HasAura(18499))
-            addRage *= 2.0f;
     }
 
     addRage *= sWorld->getRate(RATE_POWER_RAGE_INCOME);

@@ -2342,7 +2342,7 @@ class Unit : public WorldObject
         void SetTimeForSpline(uint32 time) { m_timeForSpline = time; }
         uint32 GetTimeForSpline() { return m_timeForSpline; }
 
-        void RewardRage(uint32 baseRage, bool attacker);
+        void RewardRage(float baseRage, bool attacker);
 
         virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
