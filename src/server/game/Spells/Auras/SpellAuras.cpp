@@ -913,7 +913,7 @@ void Aura::Update(uint32 diff, Unit* caster)
                             reqPower += caster->CountPctFromMaxPower(power.powerPerSecondPercentage, powertype);
 
                         if (reqPower < caster->GetPower(powertype))
-                            caster->ModifyPower(powertype, -1 * reqPower);
+                            caster->ModifyPower(powertype, -1 * reqPower, true);
                         else
                         {
                             Remove();

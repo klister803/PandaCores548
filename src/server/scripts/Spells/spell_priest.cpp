@@ -971,7 +971,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                         {
                             int32 currentPower = _player->GetPower(POWER_SHADOW_ORB) + 1; // Don't forget PowerCost
 
-                            _player->ModifyPower(POWER_SHADOW_ORB, -currentPower);
+                            _player->ModifyPower(POWER_SHADOW_ORB, -currentPower, true);
                             // Shadow Orb visual
                             if (_player->HasAura(77487))
                                 _player->RemoveAura(77487);
@@ -1795,7 +1795,7 @@ class spell_pri_psychic_horror : public SpellScriptLoader
                         if (_player && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
                         {
                             int32 currentPower = caster->GetPower(POWER_SHADOW_ORB);
-                            caster->ModifyPower(POWER_SHADOW_ORB, -currentPower);
+                            caster->ModifyPower(POWER_SHADOW_ORB, -currentPower, true);
 
                             // +1s per Shadow Orb consumed
                             if (Aura* psychicHorror = target->GetAura(64044))

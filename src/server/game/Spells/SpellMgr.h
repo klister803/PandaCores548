@@ -132,6 +132,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_BP_SPELLID                    = 27,           // set basepoint to spellId from proc
     SPELL_TRIGGER_BP_SPD_AP                     = 28,           // set basepoint to spellId from SPD or AP
     SPELL_TRIGGER_COMBOPOINT_BP                 = 29,           // set basepoint to bp * combopoints
+    SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP          = 30,           // set basepoint to (damage / max hp) * 100
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -621,6 +622,8 @@ struct SpellPrcoCheck
     int32 powertype;
     int32 dmgclass;
     int32 effectmask;
+    int32 specId;
+    int32 spellAttr0;
 };
 
 struct SpellTriggered

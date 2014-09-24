@@ -1021,7 +1021,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 _player->CastSpell(targets.GetUnitTarget(), 116995, true);
                 _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
                 int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-                _player->ModifyPower(POWER_MANA, -powerCost);
+                _player->ModifyPower(POWER_MANA, -powerCost, true);
                 return;
             }
             break;
@@ -1058,7 +1058,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 recvPacket.rfinish();
                 _player->CastSpell(targets.GetUnitTarget(), 132120, true);
                 int32 powerCost = spellInfo->CalcPowerCost(_player, spellInfo->GetSchoolMask());
-                _player->ModifyPower(POWER_CHI, -powerCost);
+                _player->ModifyPower(POWER_CHI, -powerCost, true);
                 return;
             }
             break;

@@ -2631,8 +2631,6 @@ class Player : public Unit, public GridObject<Player>
         void SendNotifyLootItemRemoved(uint8 lootSlot, uint64 guid);
         void SendNotifyLootMoneyRemoved(uint64 gold, uint64 guid);
 
-        void ResetRegenTimerCount(Powers power);
-
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
         /*********************************************************/
@@ -3135,8 +3133,7 @@ class Player : public Unit, public GridObject<Player>
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
         uint32 m_regenTimerCount;
-        uint32 m_holyPowerRegenTimerCount;
-        uint32 m_chiPowerRegenTimerCount;
+        uint32 m_chiholyPowerRegenTimerCount;
         uint32 m_burningEmbersRegenTimerCount;
         uint32 m_soulShardsRegenTimerCount;
         uint32 m_RunesRegenTimerCount;

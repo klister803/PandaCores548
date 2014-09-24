@@ -608,10 +608,10 @@ class spell_dk_conversion : public SpellScriptLoader
                     int32 runicPower = GetCaster()->GetPower(POWER_RUNIC_POWER);
 
                     if (runicPower > 50)
-                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -50);
+                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -50, true);
                     else if (runicPower > 0)
                     {
-                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -runicPower);
+                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -runicPower, true);
                         GetCaster()->RemoveAura(DK_SPELL_CONVERSION);
                     }
                     else if (runicPower == 0)
@@ -1979,7 +1979,7 @@ class spell_dk_presence : public SpellScriptLoader
             {
                 if (GetCaster())
                     if (Player* _player = GetCaster()->ToPlayer())
-                        _player->ModifyPower(POWER_RUNIC_POWER, -(_player->GetPower(POWER_RUNIC_POWER)));
+                        _player->ModifyPower(POWER_RUNIC_POWER, -(_player->GetPower(POWER_RUNIC_POWER)), true);
             }
             void Register()
             {

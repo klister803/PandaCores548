@@ -6885,7 +6885,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     uint32 triggerSpell = caster->IsFullHealth() ? 145110: 145109;
                     int32 heal = CalculatePct(caster->GetMaxHealth(), m_amount);
 
-                    caster->CastCustomSpell(target, triggerSpell, &heal, 0, 0, true, 0, this);
+                    caster->CastCustomSpell(target, triggerSpell, &heal, 0, 0, true);
                     break;
                 }
                 case 146285: // Cruelty
@@ -7192,7 +7192,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     case 27746:
                         if (caster && target->GetPower(POWER_MANA) >= 10)
                         {
-                            target->ModifyPower(POWER_MANA, -10);
+                            target->ModifyPower(POWER_MANA, -10, true);
                             target->SendEnergizeSpellLog(caster, 27746, 10, POWER_MANA);
                         }
                         else
@@ -8031,7 +8031,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster, Spe
     sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "PeriodicTick: %u (TypeId: %u) power leech of %u (TypeId: %u) for %u dmg inflicted by %u",
         GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), target->GetGUIDLow(), target->GetTypeId(), drainAmount, GetId());
 
-    int32 drainedAmount = -target->ModifyPower(powerType, -drainAmount);
+    int32 drainedAmount = -target->ModifyPower(powerType, -drainAmount, true);
 
     float gainMultiplier = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).CalcValueMultiplier(caster);
 

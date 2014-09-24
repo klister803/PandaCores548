@@ -1247,18 +1247,22 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                         if (Aura* rip = target->GetAura(SPELL_DRUID_RIP, player->GetGUID()))
                             rip->RefreshDuration();
 
-                int32 curValue = caster->GetPower(POWER_ENERGY) - 25;
+                int32 AP = player->GetTotalAttackPowerValue(BASE_ATTACK) * comboPoints;
+                float perc = 1.0f;
+                int32 damageN = irand((316 + 762 * comboPoints + 0.196 * AP), (685 + 762 * comboPoints + 0.196 * AP));
+
+                uint32 curValue = caster->GetPower(POWER_ENERGY) - 25;
                 if(curValue > 25)
                 {
-                    SetHitDamage(int32(GetHitDamage() * 2));
-                    caster->ModifyPower(POWER_ENERGY, -25);
+                    perc += 1.0f;
+                    caster->ModifyPower(POWER_ENERGY, -25, true);
                 }
                 else if(curValue > 0)
                 {
-                    float perc = (curValue * 0.04f) + 1.0f;
-                    SetHitDamage(int32(GetHitDamage() * perc));
-                    caster->ModifyPower(POWER_ENERGY, -curValue);
+                    perc += curValue * 0.04f;
+                    caster->ModifyPower(POWER_ENERGY, -curValue, true);
                 }
+                SetHitDamage(int32(damageN * perc));
 
                 // Soul of the Forest
                 if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
@@ -2452,6 +2456,11 @@ class spell_dru_eclipse : public SpellScriptLoader
                                 }
                             }
                         }
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && GetSpellInfo()->Id == SPELL_DRUID_WRATH)
+                        {
+                            if (_player->HasAura(108373))
+                                SetHitDamage(int32(GetHitDamage() * 1.2f));
+                        }
                     }
                 }
             }
@@ -3196,6 +3205,37 @@ class spell_dru_spell_dru_tooth_and_claw_absorb : public SpellScriptLoader
         }
 };
 
+// Healing Touch - 5185 from Dream of Cenarius
+class spell_dru_healing_ouch : public SpellScriptLoader
+{
+    public:
+        spell_dru_healing_ouch() : SpellScriptLoader("spell_dru_healing_ouch") { }
+
+        class spell_dru_healing_ouch_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_healing_ouch_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(108373) && !caster->HasAura(77495))
+                        SetHitHeal(int32(GetHitHeal() * 1.2));
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_healing_ouch_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_healing_ouch_SpellScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3258,4 +3298,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_swipe_two();
     new spell_dru_tooth_and_claw();
     new spell_dru_spell_dru_tooth_and_claw_absorb();
+    new spell_dru_healing_ouch();
 }

@@ -1480,7 +1480,7 @@ class Unit : public WorldObject
         void SetMaxPower(Powers power, int32 val);
 
         // returns the change in power
-        int32 ModifyPower(Powers power, int32 val);
+        int32 ModifyPower(Powers power, int32 val, bool set = false);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
         void TriggerEclipse(int32 power);
 

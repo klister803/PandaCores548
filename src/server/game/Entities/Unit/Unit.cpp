@@ -6634,6 +6634,32 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP: //30
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    basepoints0 = int32(float(dmgInfoProc->GetDamage() * 100.0f) / target->GetMaxHealth());
+                    if(bp0)
+                        basepoints0 *= bp0;
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -14554,17 +14580,6 @@ void Unit::ClearInCombat()
         ToPlayer()->UpdatePotionCooldown();
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
-
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        switch (getClass())
-        {
-            case CLASS_MONK:    ToPlayer()->ResetRegenTimerCount(POWER_CHI);        break;
-            case CLASS_PALADIN: ToPlayer()->ResetRegenTimerCount(POWER_HOLY_POWER); break;
-            default:
-                break;
-        }
-    }
 }
 
 bool Unit::isTargetableForAttack(bool checkFakeDeath) const
@@ -14857,7 +14872,7 @@ int32 Unit::GetHealthGain(int32 dVal)
 }
 
 // returns negative amount on power reduction
-int32 Unit::ModifyPower(Powers power, int32 dVal)
+int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 {
     uint32 powerIndex = GetPowerIndexByClass(power, getClass());
     if (powerIndex == MAX_POWERS)
@@ -14891,7 +14906,10 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
     if (val <= GetMinPower(power))
     {
-        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
+         if(set)
+             SetPower(power, GetMinPower(power));
+         else
+             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
         if (power == POWER_ECLIPSE)
             TriggerEclipse(curPower);
         return -curPower;
@@ -14901,12 +14919,18 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
     if (val < maxPower)
     {
-        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
+         if(set)
+             SetPower(power, GetMinPower(power));
+         else
+             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
         gain = val - curPower;
     }
     else if (curPower != maxPower)
     {
-        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
+         if(set)
+             SetPower(power, GetMinPower(power));
+         else
+             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
         gain = maxPower - curPower;
     }
 
@@ -16569,8 +16593,6 @@ void Unit::SetPower(Powers power, int32 val)
     
     if (Player* player = ToPlayer())
     {
-        player->ResetRegenTimerCount(power);
-
         if (player->HasAura(26023)) // Pursuit of Justice - 26023 Custom MoP Script
         {
             Aura* aura = player->GetAura(26023);
@@ -18515,6 +18537,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 spellProcId = procSpell ? procSpell->Id : 0;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
+     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
@@ -18541,6 +18564,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
                             procCheck = true;
                         else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                            procCheck = true;
+                        if(itr->specId != 0 && itr->specId != specCheckid)
+                            procCheck = true;
+                        if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                            procCheck = true;
+                        else if(itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
                             procCheck = true;
                         if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
                             procCheck = false;
@@ -18587,6 +18616,22 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     break;
                 }
+                if(itr->specId != 0 && itr->specId != specCheckid)
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                else if(itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
+                {
+                    procCheck = true;
+                    continue;
+                }
+
                 procCheck = false;
                 break;
             }
@@ -18612,6 +18657,23 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = false;
                     break;
                 }
+
+                if(itr->specId != 0 && itr->specId == specCheckid)
+                {
+                    procCheck = false;
+                    break;
+                }
+                if(procSpell && itr->spellAttr0 > 0 && (procSpell->Attributes & itr->spellAttr0))
+                {
+                    procCheck = false;
+                    break;
+                }
+                else if(procSpell && itr->spellAttr0 < 0 && !(procSpell->Attributes & abs(itr->spellAttr0)))
+                {
+                    procCheck = false;
+                    break;
+                }
+
                 if(itr->powertype != -1 && itr->dmgclass != -1)
                 {
                     if(itr->powertype == procPowerType && itr->dmgclass == procDmgClass)

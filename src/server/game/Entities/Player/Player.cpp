@@ -743,8 +743,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_regenTimer = 0;
     m_regenTimerCount = 0;
-    m_holyPowerRegenTimerCount = 0;
-    m_chiPowerRegenTimerCount = 0;
+    m_chiholyPowerRegenTimerCount = 0;
     m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
@@ -2801,12 +2800,6 @@ void Player::RegenerateAll()
 {
     m_regenTimerCount += m_regenTimer;
 
-    if (getClass() == CLASS_PALADIN)
-        m_holyPowerRegenTimerCount += m_regenTimer;
-
-    if (getClass() == CLASS_MONK)
-        m_chiPowerRegenTimerCount += m_regenTimer;
-
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
@@ -2900,29 +2893,22 @@ void Player::RegenerateAll()
         m_regenTimerCount -= 2000;
     }
 
-    if (m_holyPowerRegenTimerCount >= 10000 && getClass() == CLASS_PALADIN)
+    if (!isInCombat())
     {
-        if (!isInCombat())
+        if(m_chiholyPowerRegenTimerCount <= m_regenTimer)
         {
-            Regenerate(POWER_HOLY_POWER);
-        }
-        else
-        {
-            m_holyPowerRegenTimerCount -= 10000;
-        }
-    }
+            m_chiholyPowerRegenTimerCount = 10000;
+            if (getClass() == CLASS_PALADIN)
+                Regenerate(POWER_HOLY_POWER);
 
-    if (m_chiPowerRegenTimerCount >= 10000 && getClass() == CLASS_MONK)
-    {
-        if (!isInCombat())
-        {
-            Regenerate(POWER_CHI);
+            if (getClass() == CLASS_MONK)
+                Regenerate(POWER_CHI);
         }
         else
-        {
-            m_chiPowerRegenTimerCount -= 10000;
-        }
+            m_chiholyPowerRegenTimerCount -= m_regenTimer;
     }
+    else
+        m_chiholyPowerRegenTimerCount = 10000;
 
     if (m_demonicFuryPowerRegenTimerCount >= 100 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
     {
@@ -3138,21 +3124,47 @@ void Player::Regenerate(Powers power)
             m_powerFraction[powerIndex] = addvalue - integerValue;
     }
 
-    if (m_regenTimerCount >= 2000)
+    switch (power)
     {
-        SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
-        switch (power)
+        case POWER_FOCUS:
+        case POWER_ENERGY:
         {
-            case POWER_FOCUS:
-            case POWER_ENERGY:
+            if (GetPower(power) != maxValue || m_doLastUpdate)
             {
-                if (curValue == maxValue)
-                    m_doLastUpdate = true;
+                if (m_regenTimerCount >= 2000)
+                {
+                    SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+                    m_doLastUpdate = false;
+                }
+                else
+                {
+                    if (!m_doLastUpdate)
+                    {
+                        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+                        if (curValue == maxValue)
+                            m_doLastUpdate = true;
+                    }
+                }
             }
         }
+        break;
+        case POWER_HOLY_POWER:
+        case POWER_CHI:
+        {
+            SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+            break;
+        }
+        default:
+        {
+            if (m_regenTimerCount >= 2000 || m_soulShardsRegenTimerCount >= 20000)
+                SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+            else
+                UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+            break;
+        }
     }
-    else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate: power %u curValue %u, powerIndex %u", power, curValue, powerIndex);
 }
 
 void Player::RegenerateHealth()
@@ -29741,25 +29753,6 @@ void Player::SendCategoryCooldownMods()
     }
 
     SendDirectMessage(&data);
-}
-
-void Player::ResetRegenTimerCount(Powers power)
-{
-    switch (power)
-    {
-        case POWER_CHI:
-        {
-            m_chiPowerRegenTimerCount = 0;
-            break;
-        }
-        case POWER_HOLY_POWER:
-        {
-            m_holyPowerRegenTimerCount = 0;
-            break;
-        }
-        default:
-            break;
-    }
 }
 
 void Player::SendModifyCooldown(uint32 spellId, int32 value)
