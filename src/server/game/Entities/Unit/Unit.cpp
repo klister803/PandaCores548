@@ -14933,18 +14933,18 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 
     if (val < maxPower)
     {
-         if(set)
-             SetPower(power, GetMinPower(power));
-         else
-             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
+        if(set)
+            SetPower(power, val);
+        else
+            SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
         gain = val - curPower;
     }
     else if (curPower != maxPower)
     {
-         if(set)
-             SetPower(power, GetMinPower(power));
-         else
-             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
+        if(set)
+            SetPower(power, maxPower);
+        else
+            SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, maxPower);
         gain = maxPower - curPower;
     }
 
