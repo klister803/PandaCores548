@@ -62,6 +62,23 @@ enum BattlePetFlags
     BATTLE_PET_FLAG_FAVORITE            = 0x01,
     BATTLE_PET_FLAG_REVOKED             = 0x04,
     BATTLE_PET_FLAG_LOCKED_FOR_CONVERT  = 0x08,
+    BATTLE_PET_FLAG_CUSTOM_ABILITY_1    = 0x10,
+    BATTLE_PET_FLAG_CUSTOM_ABILITY_2    = 0x20,
+    BATTLE_PET_FLAG_CUSTOM_ABILITY_3    = 0x40,
+};
+
+enum BattlePetSpeciesSource
+{
+    SOURCE_RANDOM_LOOT = 0,
+    SOURCE_QUEST       = 1,
+    SOURCE_VENDOR      = 2,
+    SOURCE_PROFESSION  = 3,
+    SOURCE_PET_BATTLE  = 4,
+    SOURCE_ACHIEVEMENT = 5,
+    SOURCE_GAME_EVENT  = 6,
+    SOURCE_PROMO       = 7,
+    SOURCE_TCG         = 8,
+    SOURCE_NOT_AVALIABLE   = 0xFFFFFFFF,
 };
 
 class BattlePetMgr
@@ -97,7 +114,17 @@ public:
 
         return false;
     }
+
     const PetJournal &GetPetJournal() { return m_PetJournal; }
+
+    BattlePetSpeciesEntry const* GetBattlePetSpeciesEntry(uint32 creatureEntry)
+    {
+        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(creatureEntry);
+        if (it != sBattlePetSpeciesBySpellId.end())
+            return it->second;
+
+        return NULL;
+    }
 
 private:
     Player* m_player;

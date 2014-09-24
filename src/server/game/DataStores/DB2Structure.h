@@ -213,7 +213,7 @@ struct BattlePetSpeciesEntry
     //uint32 fileDataEntry;     // 2
     uint32 spellId;             // 3
     //uint32 petType;           // 4
-    //uint32 source;            // 5
+    uint32 source;              // 5
     uint32 flags;               // 6
     //string                    // 7
     //string                    // 8

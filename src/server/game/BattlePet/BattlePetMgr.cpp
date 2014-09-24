@@ -65,8 +65,9 @@ void BattlePetMgr::FillPetJournal()
         if(petEntry == 0)
             continue;
 
-        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(petEntry);
-        if (it == sBattlePetSpeciesBySpellId.end())
+        BattlePetSpeciesEntry const* spEntry = GetBattlePetSpeciesEntry(petEntry);
+
+        if (!spEntry)
             continue;
 
         CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry);
@@ -75,7 +76,7 @@ void BattlePetMgr::FillPetJournal()
             continue;
 
         uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-        AddPetInJournal(guid, it->second->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0, spell->Id);
+        AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0, spell->Id);
     }
 }
 
