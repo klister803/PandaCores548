@@ -8241,6 +8241,12 @@ int32 Spell::CalculateMonkSpellDamage(Unit* caster, float coeff, float APmultipl
         MHmax += OHmax;
     }
 
+    if (caster->HasAuraType(SPELL_AURA_MOD_DISARM))
+    {
+        MHmin = 0;
+        MHmax = 0;
+    }
+
     MHmin *= coeff;
     MHmin += AP - base;
 
