@@ -43,10 +43,10 @@
 
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 {
-    m_battlePetJournal.clear();
+    m_PetJournal.clear();
 }
 
-void BattlePetMgr::FillBattlePetJournal()
+void BattlePetMgr::FillPetJournal()
 {
     PlayerSpellMap const& spellMap = m_player->GetSpellMap();
     for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
@@ -75,26 +75,26 @@ void BattlePetMgr::FillBattlePetJournal()
             continue;
 
         uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-        AddBattlePetInJournal(guid, it->second->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0, spell->Id);
+        AddPetInJournal(guid, it->second->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0, spell->Id);
     }
 }
 
-void BattlePetMgr::AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
+void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
 {
-    m_battlePetJournal[guid] = new BattlePetJournalData(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName);
+    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName);
 }
 
-void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
+void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 {
     ObjectGuid placeholderPet;
 
-    if (m_battlePetJournal.empty())
-        FillBattlePetJournal();
+    if (m_PetJournal.empty())
+        FillPetJournal();
 
     data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
-    data->WriteBits(m_battlePetJournal.size(), 19);
+    data->WriteBits(m_PetJournal.size(), 19);
 
-    for (BattlePetJournal::const_iterator pet = m_battlePetJournal.begin(); pet != m_battlePetJournal.end(); ++pet)
+    for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         ObjectGuid guid = pet->first;
         bool hasBreed = pet->second->breedID == 0xFFFFFFFF;
@@ -116,8 +116,8 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
 
     for (uint32 i = 0; i < 3; ++i)
     {
-        data->WriteBit(!i);                                          // unk bit, related to Int8
-        data->WriteBit(1);                                           // unk bit, related to Int32
+        data->WriteBit(!i);                                          // unk bit, related to Int8 (slot ID?)
+        data->WriteBit(1);                                           // unk bit, related to Int32 (hasCustomAbility?)
         data->WriteBit(1);                                           // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(placeholderPet); // pet guid in slot
         data->WriteBit(1);                                           // locked slot
@@ -134,7 +134,7 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
             *data << uint8(i);
     }
 
-    for (BattlePetJournal::const_iterator pet = m_battlePetJournal.begin(); pet != m_battlePetJournal.end(); ++pet)
+    for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         ObjectGuid guid = pet->first;
         bool hasBreed = pet->second->breedID == 0xFFFFFFFF;
@@ -173,7 +173,7 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     recvData.ReadGuidBytes<2, 5, 3, 7, 1, 0, 6, 4>(guid);
 
     // find pet
-    BattlePetJournalData* pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+    PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
     if (!pet)
         return;
@@ -1103,6 +1103,7 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
     ObjectGuid petGuid = ObjectGuid();
 
     WorldPacket data(SMSG_BATTLE_PET_UPDATES);
+    data.WriteBit(1);
     data.WriteBits(petCount, 19);
     for (uint8 i = 0; i < petCount; i++)
     {
@@ -1162,26 +1163,6 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
     m_player->GetSession()->SendPacket(&data);
 }
 
-/*template<typename T>
-void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, T value)
-{
-    BattlePetJournalData* pet = GetBattlePetData(guid);
-
-    if (!pet)
-        return;
-
-    switch (bpd)
-    {
-        case FLAGS: pet->flags = value; break;
-        case CUSTOM_NAME: pet->customName = value; break;
-    }
-}
-
-template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, std::string value);
-template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint8 value);
-template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint16 value);
-template void BattlePetMgr::SetBattlePetData(uint64 guid, BattlePetData bpd, uint32 value);*/
-
 void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
 {
     ObjectGuid guid;
@@ -1207,7 +1188,7 @@ void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
     }
 
     // find pet
-    BattlePetJournalData * pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+    PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
     if (!pet)
         return;
@@ -1227,7 +1208,7 @@ void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
     recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 
     // find pet
-    BattlePetJournalData * pet = _player->GetBattlePetMgr()->GetBattlePetData(guid);
+    PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
     if (!pet)
         return;

@@ -29,9 +29,9 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
-struct BattlePetJournalData
+struct PetInfo
 {
-    BattlePetJournalData(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName) :
+    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
         health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(-1) {}
 
@@ -50,11 +50,12 @@ struct BattlePetJournalData
     uint32 summonSpellID;
     std::string customName;
 
+    // helpers
     void SetCustomName(std::string name) { customName = name; }
     void SetFlags(uint16 _flags) { flags = _flags; }
 };
 
-typedef std::map<uint64, BattlePetJournalData*> BattlePetJournal;
+typedef std::map<uint64, PetInfo*> PetJournal;
 
 enum BattlePetFlags
 {
@@ -63,30 +64,15 @@ enum BattlePetFlags
     BATTLE_PET_FLAG_LOCKED_FOR_CONVERT  = 0x08,
 };
 
-enum BattlePetData
-{
-    BREED_ID    = 0,
-    FLAGS       = 1,
-    CUSTOM_NAME = 2,
-    LEVEL       = 3,
-    QUALITY     = 4,
-    DISPLAY_ID  = 5,
-    SPEED       = 6,
-    POWER       = 7,
-    HEALTH      = 8,
-    MAX_HEALTH  = 9,
-    EXP         = 10,
-};
-
 class BattlePetMgr
 {
 public:
     explicit BattlePetMgr(Player* owner);
 
-    void FillBattlePetJournal();
-    void BuildBattlePetJournal(WorldPacket *data);
+    void FillPetJournal();
+    void BuildPetJournal(WorldPacket *data);
 
-    void AddBattlePetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = -1);
+    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = -1);
 
     void SendClosePetBattle();
     void SendUpdatePets(uint8 petCount);
@@ -94,31 +80,28 @@ public:
     void GiveXP();
 
     Player* GetPlayer() const { return m_player; }
-    BattlePetJournalData* GetBattlePetData(uint64 guid)
+    PetInfo* GetPetInfoByPetGUID(uint64 guid)
     {
-        BattlePetJournal::const_iterator pet = m_battlePetJournal.find(guid);
-        if (pet != m_battlePetJournal.end())
+        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        if (pet != m_PetJournal.end())
             return pet->second;
 
         return NULL;
     }
 
-    //template<typename T> 
-    //void SetBattlePetData(uint64 guid, BattlePetData bpd, T value);
-
-    bool HasBattlePet(uint64 guid)
+    bool HasPet(uint64 guid)
     {
-        BattlePetJournal::const_iterator pet = m_battlePetJournal.find(guid);
-        if (pet != m_battlePetJournal.end())
+        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        if (pet != m_PetJournal.end())
             return true;
 
         return false;
     }
-    const BattlePetJournal &GetBattlePetJournal() { return m_battlePetJournal; }
+    const PetJournal &GetPetJournal() { return m_PetJournal; }
 
 private:
     Player* m_player;
-    BattlePetJournal m_battlePetJournal;
+    PetJournal m_PetJournal;
 };
 
 #endif

@@ -4580,7 +4580,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
     {
         WorldPacket data;
-        GetBattlePetMgr()->BuildBattlePetJournal(&data);
+        GetBattlePetMgr()->BuildPetJournal(&data);
         GetSession()->SendPacket(&data);
     }
 
@@ -20388,7 +20388,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         uint16 flags = fields[13].GetUInt16();
         // int16 breedID
 
-        GetBattlePetMgr()->AddBattlePetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName);
+        GetBattlePetMgr()->AddPetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName);
     }
     while (result->NextRow());
 }
@@ -22053,14 +22053,14 @@ void Player::_SaveCUFProfiles(SQLTransaction& trans)
 
 void Player::_SaveBattlePets(SQLTransaction& trans)
 {
-    BattlePetJournal journal = GetBattlePetMgr()->GetBattlePetJournal();
+    PetJournal journal = GetBattlePetMgr()->GetPetJournal();
 
     // nothing to save
     if (journal.empty())
         return;
 
     // save journal
-    for (BattlePetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
+    for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
         stmt->setUInt64(0, pet->first);
@@ -25384,7 +25384,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty();
 
-    GetBattlePetMgr()->BuildBattlePetJournal(&data);
+    GetBattlePetMgr()->BuildPetJournal(&data);
     GetSession()->SendPacket(&data);
 
     // send timers if already start challenge for example
