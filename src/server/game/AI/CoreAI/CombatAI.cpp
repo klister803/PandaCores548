@@ -375,7 +375,7 @@ void AnyPetAI::InitializeAI()
     me->UpdateSpeed(MOVE_FLIGHT, true);
 }
 
-void AnyPetAI::UpdateAI(const uint32 diff)
+void AnyPetAI::UpdateAI(uint32 diff)
 {
     if (!me->isAlive())
         return;
