@@ -1151,11 +1151,11 @@ void Object::SetInt32Value(uint16 index, int32 value)
     }
 }
 
-void Object::SetUInt32Value(uint16 index, uint32 value)
+void Object::SetUInt32Value(uint16 index, uint32 value, bool needUpdate)
 {
     ASSERT(index < m_valuesCount || PrintIndexError(index, true));
 
-    if (m_uint32Values[index] != value)
+    if (m_uint32Values[index] != value || needUpdate)
     {
         m_uint32Values[index] = value;
         _changedFields[index] = true;

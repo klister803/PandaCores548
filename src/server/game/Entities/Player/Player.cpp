@@ -3133,7 +3133,7 @@ void Player::Regenerate(Powers power)
             {
                 if (m_regenTimerCount >= 2000)
                 {
-                    SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+                    SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue, m_doLastUpdate);
                     m_doLastUpdate = false;
                 }
                 else

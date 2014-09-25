@@ -214,7 +214,7 @@ class Object
         }
 
         void SetInt32Value(uint16 index, int32 value);
-        void SetUInt32Value(uint16 index, uint32 value);
+        void SetUInt32Value(uint16 index, uint32 value, bool needUpdate = false);
         void UpdateUInt32Value(uint16 index, uint32 value);
         void SetUInt64Value(uint16 index, uint64 value);
         void SetFloatValue(uint16 index, float value);
