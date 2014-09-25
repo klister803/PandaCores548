@@ -4779,9 +4779,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[0].ApplyAuraName = 0;
                     break;
-                case 143235:    //Noxious Poison. It's prock. Need create Area Triger system.
-                    spellInfo->Effects[0].BasePoints = 143239;
-                    break;
                 //Norushen
                 case 145212: //Unleashed Anger dmg
                     spellInfo->Effects[0].TargetA = 25;

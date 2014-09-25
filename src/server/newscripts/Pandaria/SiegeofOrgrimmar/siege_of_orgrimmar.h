@@ -50,7 +50,7 @@ enum eCreatures
     NPC_SUN_TENDERHEART             = 71480,
     NPC_HE_SOFTFOOT                 = 71479,
     NPC_GOLD_LOTOS                  = 71686, 
-    NPC_GOLD_LOTOS_MAIN       = 71683,
+    NPC_GOLD_LOTOS_MAIN             = 71683,
     NPC_GOLD_LOTOS_MOVER            = 71695,
     NPC_EMBODIED_DESPIRE            = 71474,
     NPC_EMBODIED_MISERY             = 71476,

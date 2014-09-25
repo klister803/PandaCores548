@@ -285,7 +285,7 @@ class boss_he_softfoot : public CreatureScript
 
                 events.Update(diff);
 
-               /* while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = events.ExecuteEvent())
                 {
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
@@ -310,7 +310,7 @@ class boss_he_softfoot : public CreatureScript
                             me->RemoveAllAreaObjects();
                             break;
                     }
-                }*/
+                }
                 DoMeleeAttackIfReady();
             }
         };
@@ -373,7 +373,7 @@ class boss_sun_tenderheart : public CreatureScript
 
                 events.Update(diff);
 
-              /*  while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = events.ExecuteEvent())
                 {
                     boss_fallen_protectors::DoAction(eventId);
                     switch (eventId)
@@ -401,7 +401,7 @@ class boss_sun_tenderheart : public CreatureScript
                     }
                 }
                 //DoMeleeAttackIfReady();
-                }*/
+                }
             }
         };
 
