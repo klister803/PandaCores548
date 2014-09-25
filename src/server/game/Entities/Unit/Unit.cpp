@@ -2924,6 +2924,11 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit* victim, SpellInfo const* spell)
         tmp += deflect_chance;
         if (rand < tmp)
             return SPELL_MISS_DEFLECT;
+
+        int32 deflectFromFront = victim->GetTotalAuraModifier(SPELL_AURA_MOD_DEFLECT_SPELLS_FROM_FRONT) * 100;
+        tmp += deflectFromFront;
+        if (rand < tmp)
+            return SPELL_MISS_DEFLECT;
     }
 
     return SPELL_MISS_NONE;
