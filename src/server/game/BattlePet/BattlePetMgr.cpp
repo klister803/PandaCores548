@@ -76,7 +76,7 @@ void BattlePetMgr::FillPetJournal()
             continue;
 
         uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-        AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 50, 0, spell->Id);
+        AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spell->Id);
     }
 }
 

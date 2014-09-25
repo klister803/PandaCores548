@@ -658,6 +658,7 @@ struct SpellVisual
     int32 visual;
     int16 unk1;
     int16 unk2;
+    float speed;
     bool position;
 };
 

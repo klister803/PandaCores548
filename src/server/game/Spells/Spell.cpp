@@ -4788,6 +4788,7 @@ void Spell::SendSpellCreateVisual()
     uint32 visual = 0;
     uint16 unk1 = 0;
     uint16 unk2 = 0;
+    float speed = m_spellInfo->Speed;
     float positionX = 0.0f;
     float positionY = 0.0f;
     float positionZ = 0.0f;
@@ -4800,6 +4801,7 @@ void Spell::SendSpellCreateVisual()
             visual = i->visual;
             unk1 = i->unk1;
             unk2 = i->unk2;
+            speed = i->speed;
             position = i->position;
             exist = true;
             if(roll_chance_f(chance))
@@ -4836,7 +4838,7 @@ void Spell::SendSpellCreateVisual()
     data.WriteGuidMask<7>(targetGuid);
     data.WriteGuidMask<6>(casterGuid);
     data.WriteGuidMask<5>(targetGuid);
-    data.WriteBit(position);               //my be exist position?
+    data.WriteBit(position);            // hasPosition
     data.WriteGuidMask<5>(casterGuid);
     data.WriteGuidMask<2, 6, 1>(targetGuid);
     data.WriteGuidMask<7, 1>(casterGuid);
@@ -4845,20 +4847,20 @@ void Spell::SendSpellCreateVisual()
     data.WriteGuidBytes<5>(targetGuid);
     data.WriteGuidBytes<2>(casterGuid);
     data.WriteGuidBytes<4>(targetGuid);
-    data << uint16(unk1);           // word10
+    data << uint16(unk1);               // word10
     data.WriteGuidBytes<1>(casterGuid);
     data.WriteGuidBytes<0>(targetGuid);
-    data << uint32(visual);           //Spell Visual dword14
-    data << float(positionZ);            // z
-    data << float(m_spellInfo->Speed);            // speed
+    data << uint32(visual);             //Spell Visual dword14
+    data << float(positionZ);           // z
+    data << float(speed);               // speed
     data.WriteGuidBytes<3, 2>(targetGuid);
-    data << uint16(unk2);           // word34
+    data << uint16(unk2);               // word34
     data.WriteGuidBytes<0>(casterGuid);
     data.WriteGuidBytes<1, 7>(targetGuid);
-    data << float(positionX);            // x
+    data << float(positionX);           // x
     data.WriteGuidBytes<6>(targetGuid);
     data.WriteGuidBytes<7, 4>(casterGuid);
-    data << float(positionY);            // y
+    data << float(positionY);           // y
     data.WriteGuidBytes<5>(casterGuid);
     m_caster->SendMessageToSet(&data, true);
 }
