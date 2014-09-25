@@ -10275,6 +10275,21 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 122280: // Healing Elixirs (Talent)
+        {
+            trigger_spell_id = 0;
+
+            if (HasAura(134563))
+                if (GetHealth() - damage < CountPctFromMaxHealth(35))
+                    trigger_spell_id = 122281;
+            break;
+        }
+        case 134563: // Healing Elixirs
+        {
+            if (IsFullHealth())
+                return false;
+            break;
+        }
         case 146199: // Spirit of Chi-Ji
         {
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -17500,6 +17515,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 {
                     case SPELL_AURA_PROC_TRIGGER_SPELL:
                     case SPELL_AURA_PROC_TRIGGER_SPELL_2:
+                    case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: casting spell %u (triggered by %s aura of spell %u)", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                         // Don`t drop charge or add cooldown for not started trigger
