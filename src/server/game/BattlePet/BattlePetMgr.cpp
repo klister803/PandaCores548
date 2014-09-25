@@ -153,7 +153,7 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         *data << uint32(pet->second->creatureEntry);          // Creature ID
         *data << uint16(pet->second->level);                  // level
         if (len > 0)
-            data->WriteString(pet->second->customName);      // custom name
+            data->WriteString(pet->second->customName);       // custom name
         *data << uint32(pet->second->health);                 // health
         *data << uint16(pet->second->xp);                     // xp
         if (pet->second->quality)

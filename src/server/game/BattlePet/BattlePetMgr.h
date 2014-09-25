@@ -55,6 +55,16 @@ struct PetInfo
     void SetFlags(uint16 _flags) { flags = _flags; }
 };
 
+struct PetBattleSlot
+{
+    //PetBattleSlot():{}
+
+    uint8 slotID;
+    uint64 petGUID;
+    bool locked;
+    bool empty;
+};
+
 typedef std::map<uint64, PetInfo*> PetJournal;
 
 enum BattlePetFlags
@@ -85,6 +95,11 @@ class BattlePetMgr
 {
 public:
     explicit BattlePetMgr(Player* owner);
+    ~BattlePetMgr()
+    {
+        for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
+            delete itr->second;
+    }
 
     void FillPetJournal();
     void BuildPetJournal(WorldPacket *data);
@@ -126,9 +141,12 @@ public:
         return NULL;
     }
 
+    PetBattleSlot &GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
+
 private:
     Player* m_player;
     PetJournal m_PetJournal;
+    PetBattleSlot m_battleSlots[3];
 };
 
 #endif
