@@ -128,6 +128,7 @@ class InstanceScript : public ZoneScript
         virtual void OnPlayerEnter(Player* /*player*/) {}
         virtual void OnPlayerLeave(Player* /*player*/) {}
 
+        virtual void CreatureDies(Creature* /*creature*/, Unit* /*killer*/) {}
         void OnCreatureCreate(Creature* /*creature*/) {}
         void OnCreatureRemove(Creature* /*creature*/) {}
         void OnGameObjectCreate(GameObject* go)
