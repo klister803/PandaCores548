@@ -3539,6 +3539,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 116023: // Sparring
+                    spellInfo->AuraInterruptFlags = 0;
+                    break;
                 case 121471: // Shadow Blades
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_367;
                     break;

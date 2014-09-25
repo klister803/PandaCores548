@@ -9427,6 +9427,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 116023: // Sparring
+                {
+                    if (dmgInfoProc->GetAttacker() != this)
+                    {
+                        if (!HasAura(116033) && !HasAura(116087) && isInFront(victim))
+                        {
+                            triggered_spell_id = 116033;
+                            AddAura(116087, this);
+                        }
+                    }
+                    else
+                    {
+                        if (HasAura(116033))
+                            triggered_spell_id = 116033;
+                    }
+                    break;
+                }
                 case 124489: // Restless Pursuit
                 {
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
@@ -9446,29 +9463,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     triggered_spell_id = 116033;
                     target = this;
-
-                    break;
-                }
-                // Sparring
-                case 116023:
-                {
-                    if (!victim)
-                        return false;
-
-                    if (GetTypeId() != TYPEID_PLAYER)
-                        return false;
-
-                    if (!isInFront(victim) || !victim->isInFront(this))
-                        return false;
-
-                    if (ToPlayer()->HasSpellCooldown(116023))
-                        return false;
-
-                    triggered_spell_id = 116033;
-                    target = this;
-
-                    ToPlayer()->AddSpellCooldown(116023, 0, getPreciseTime() + 30.0);
-                    victim->CastSpell(victim, 116087, true); // Marker
 
                     break;
                 }
