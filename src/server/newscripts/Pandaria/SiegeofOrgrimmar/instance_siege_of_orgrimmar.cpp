@@ -64,6 +64,7 @@ public:
         uint64 garroshGuid;
         uint64 npcGoldenLotosMoverGUID;
         uint64 npcGoldenLotosMainGUID;
+        uint64 npcGoldenLotosGUID[3];
 
         void Initialize()
         {
@@ -107,6 +108,8 @@ public:
             rikkalGuid          = 0;
             hisekGuid           = 0;
             garroshGuid         = 0;
+
+            memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
         }
 
         void OnPlayerEnter(Player* player)
@@ -160,6 +163,15 @@ public:
                 break;
             case NPC_GOLD_LOTOS_MAIN:
                 npcGoldenLotosMainGUID = creature->GetGUID();
+                break;
+            case NPC_GOLD_LOTOS_HE:
+                npcGoldenLotosGUID[0] = creature->GetGUID();
+                break;
+            case NPC_GOLD_LOTOS_SUN:
+                npcGoldenLotosGUID[1] = creature->GetGUID();
+                break;
+            case NPC_GOLD_LOTOS_ROOK:
+                npcGoldenLotosGUID[2] = creature->GetGUID();
                 break;
             //  
             case NPC_NORUSHEN:  
@@ -312,6 +324,7 @@ public:
                     return immerseusGuid;
                 case NPC_PUDDLE_POINT:
                     return npcpointGuid;
+
                 //Fallen Protectors
                 case NPC_ROOK_STONETOE: 
                     return rookGuid;
@@ -323,6 +336,13 @@ public:
                     return npcGoldenLotosMoverGUID;
                 case NPC_GOLD_LOTOS_MAIN:
                     return npcGoldenLotosMainGUID;
+                case NPC_GOLD_LOTOS_HE:
+                    return npcGoldenLotosGUID[0];
+                case NPC_GOLD_LOTOS_SUN:
+                    return npcGoldenLotosGUID[1];
+                case NPC_GOLD_LOTOS_ROOK:
+                    return npcGoldenLotosGUID[2];
+
                 //  
                 case NPC_NORUSHEN:  
                     return noryshenGuid;
@@ -346,6 +366,7 @@ public:
                     return thokGuid;
                 case NPC_BLACKFUSE: 
                     return blackfuseGuid;
+
                 //Paragons of the Klaxxi
                 case NPC_KILRUK:  
                     return kilrukGuid;
@@ -372,6 +393,46 @@ public:
                     return LorewalkerChoGUIDtmp;
             }
             return 0;
+        }
+
+        void CreatureDies(Creature* creature, Unit* /*killer*/)
+        {
+            switch(creature->GetEntry())
+            {
+                case NPC_EMBODIED_ANGUISH_OF_HE:
+                    if (Creature* he = instance->GetCreature(heGuid))
+                        he->AI()->DoAction(creature->GetEntry());
+                    if (Creature* lotosHe = instance->GetCreature(npcGoldenLotosGUID[0]))
+                    {
+                        creature->Respawn(true);
+                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        creature->EnterVehicle(lotosHe, -1);
+                    }
+                    break;
+                case NPC_EMBODIED_DESPERATION_OF_SUN:
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                    if (Creature* sun = instance->GetCreature(sunGuid))
+                        sun->AI()->DoAction(creature->GetEntry());
+                    if (Creature* lotosSun = instance->GetCreature(npcGoldenLotosGUID[1]))
+                    {
+                        creature->Respawn(true);
+                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        creature->EnterVehicle(lotosSun, -1);
+                    }
+                    break;
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    if (Creature* rook = instance->GetCreature(rookGuid))
+                        rook->AI()->DoAction(creature->GetEntry());
+                    if (Creature* lotosRook = instance->GetCreature(npcGoldenLotosGUID[2]))
+                    {
+                        creature->Respawn(true);
+                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        creature->EnterVehicle(lotosRook, -1);
+                    }
+                    break;
+            }
         }
 
         bool IsWipe()

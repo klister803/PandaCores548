@@ -23,6 +23,7 @@
 enum eSpells
 {
     SPELL_BOUND_OF_GOLDEN_LOTUS         = 143497, //Bond of the Golden Lotus
+    SPELL_EJECT_ALL_PASSANGERS          = 68576,
 
     //Rook
     SPELL_VENGEFUL_STRIKE               = 144396, //Vengeful Strikes
@@ -62,20 +63,27 @@ struct boss_fallen_protectors : public BossAI
 {
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
     {
+        measureVeh = 0;
+        measureSummonedCount = 0;
     }
 
     int8 _healthPhase;
+    uint32 measureVeh;      //inut on subclas.
+    uint32 measureSummonedCount;
 
     void Reset()
     {
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         _healthPhase = 0;
+        me->RemoveAllAreaObjects();
     }
 
     void EnterCombat(Unit* who)
     {
-        events.SetPhase(PHASE_BATTLE);
+        InitBattle();
     }
+
+    virtual void InitBattle() { events.SetPhase(PHASE_BATTLE); }
 
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
     {
@@ -112,6 +120,47 @@ struct boss_fallen_protectors : public BossAI
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             events.SetPhase(PHASE_DESPERATE_MEASURES);
             events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
+            me->InterruptNonMeleeSpells(false);
+        }
+    }
+
+    void summonDesperation()
+    {
+        Creature* lotos = instance->instance->GetCreature(instance->GetData64(measureVeh));
+        if (!lotos)
+        {
+            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation con't get %u for %u", measureVeh, me->GetEntry());
+            return;
+        }
+
+        Vehicle * vehicle = lotos->GetVehicleKit();
+        if (!vehicle)
+        {
+            sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation unit %u of %u is not vehicle", measureVeh, me->GetEntry());
+            return;
+        }
+
+        //lotos->CastSpell(lotos, SPELL_EJECT_ALL_PASSANGERS, true);
+
+        SeatMap tempSeatMap = vehicle->Seats;
+        for (SeatMap::iterator itr = tempSeatMap.begin(); itr != tempSeatMap.end(); ++itr)
+        {
+            if (!itr->second.Passenger)
+                continue;
+
+            Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger);
+            if (!passenger)
+                continue;
+
+            TempSummon* summon = passenger->ToTempSummon();
+            if (!summon)
+            {
+                sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::summonDesperation unit %u has not tempSummon passanger entry %u", measureVeh, passenger->GetEntry());
+                continue;
+            }
+
+            summon->ExitVehicle();
+            ++measureSummonedCount;
         }
     }
 
@@ -123,6 +172,29 @@ struct boss_fallen_protectors : public BossAI
             case EVENT_1:
                 events.RescheduleEvent(EVENT_1, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
                 break;
+            case EVENT_DESPERATE_MEASURES:
+                summonDesperation();
+                break;
+            // caled at measures die from instance::CreatureDies
+            case NPC_EMBODIED_ANGUISH_OF_HE:
+            case NPC_EMBODIED_DESPERATION_OF_SUN:
+            case NPC_EMBODIED_DESPIRE_OF_SUN:
+            case NPC_EMBODIED_MISERY_OF_ROOK:
+            case NPC_EMBODIED_GLOOM_OF_ROOK:
+            case NPC_EMBODIED_SORROW_OF_ROOK:
+            {
+                --measureSummonedCount;
+                // END EVENT_DESPERATE_MEASURES. Countinue attacking.
+                if (!measureSummonedCount)
+                {
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    InitBattle();
+                    me->RemoveAllAreaObjects();
+                    me->RemoveAurasDueToSpell(SPELL_DARK_MEDITATION);   //sun
+                    me->SetInCombatWithZone();
+                }
+                break;
+            }
         }
     }
 
@@ -141,6 +213,7 @@ class boss_rook_stonetoe : public CreatureScript
         {
             boss_rook_stonetoeAI(Creature* creature) : boss_fallen_protectors(creature)
             {
+                measureVeh = NPC_GOLD_LOTOS_ROOK;
             }
 
             void Reset()
@@ -155,13 +228,18 @@ class boss_rook_stonetoe : public CreatureScript
                 EVENT_CLASH             = 7,
             };
 
-            void EnterCombat(Unit* who)
+            void InitBattle()
             {
-                boss_fallen_protectors::EnterCombat(who);
+                boss_fallen_protectors::InitBattle();
 
                 events.RescheduleEvent(EVENT_VENGEFUL_STRIKE, urand(10*IN_MILLISECONDS, 20*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CORRUPTED_BREW, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                boss_fallen_protectors::EnterCombat(who);
             }
 
             /*REMOVE IT AFTER COMPLETE*/
@@ -230,13 +308,13 @@ class boss_he_softfoot : public CreatureScript
         {
             boss_he_softfootAI(Creature* creature) : boss_fallen_protectors(creature)
             {
+                measureVeh = NPC_GOLD_LOTOS_HE;
             }
 
             void Reset()
             {
                 boss_fallen_protectors::Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-                me->RemoveAllAreaObjects();
             }
 
             enum local
@@ -247,13 +325,18 @@ class boss_he_softfoot : public CreatureScript
                 EVENT_POISON_INSTANT            = 8,
             };
 
-            void EnterCombat(Unit* who)
+            void InitBattle()
             {
-                boss_fallen_protectors::EnterCombat(who);
+                boss_fallen_protectors::InitBattle();
 
                 events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_GOUGE, urand(IN_MILLISECONDS, 5*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                boss_fallen_protectors::EnterCombat(who);
                 DoCast(who, SPELL_INSTANT_POISON, false);
             }
 
@@ -332,6 +415,7 @@ class boss_sun_tenderheart : public CreatureScript
             boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature)
             {
                 SetCombatMovement(false);
+                measureVeh = NPC_GOLD_LOTOS_SUN;
             }
 
             void Reset()
@@ -346,14 +430,18 @@ class boss_sun_tenderheart : public CreatureScript
                 EVENT_CALAMITY            = 7,
             };
 
-
-            void EnterCombat(Unit* who)
+            void InitBattle()
             {
-                boss_fallen_protectors::EnterCombat(who);
+                boss_fallen_protectors::InitBattle();
 
                 events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                boss_fallen_protectors::EnterCombat(who);
             }
 
             void DoAction(int32 const action)
@@ -401,7 +489,6 @@ class boss_sun_tenderheart : public CreatureScript
                     }
                 }
                 //DoMeleeAttackIfReady();
-                }
             }
         };
 
@@ -418,7 +505,7 @@ public:
     npc_golden_lotus_control() : CreatureScript("npc_golden_lotus_control") { }
 
     struct npc_wind_vehicleAI : public ScriptedAI
-    {        
+    {
         npc_wind_vehicleAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();            
@@ -489,6 +576,55 @@ public:
     {
         return new npc_wind_vehicleAI(creature);
     }
+};
+
+class ExitVexTalk : public BasicEvent
+{
+    public:
+        explicit ExitVexTalk(Creature *c, float _x, float _y, float _z) : x(_x), y(_y), z(_z), creature(c) { }
+
+        bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
+        {
+            creature->GetMotionMaster()->MoveJump(x, y, z, 20.0f, 20.0f);
+            creature->SetReactState(REACT_AGGRESSIVE);
+            creature->SetInCombatWithZone();
+            return true;
+        }
+
+    private:
+        float x, y, z;
+        Creature *creature;
+};
+
+class vehicle_golden_lotus_conteiner : public VehicleScript
+{
+    public:
+        vehicle_golden_lotus_conteiner() : VehicleScript("vehicle_golden_lotus_conteiner") {}
+
+        void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 /*seatId*/)
+        {
+
+        }
+
+        void OnRemovePassenger(Vehicle* veh, Unit* passenger)
+        {
+            Unit* own = veh->GetBase();
+            if (!own)
+                return;
+            InstanceScript* instance = own->GetInstanceScript();
+            if (!instance)
+                return;
+
+            Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN));
+            if (!lotos)
+                return;
+
+            float x, y, z = 0.0f;
+
+            own->GetRandomPoint(*lotos, 20.0f, x, y, z);
+            passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            passenger->m_Events.AddEvent(new ExitVexTalk(passenger->ToCreature(), x, y, z), passenger->m_Events.CalculateTime(1000));
+        }
 };
 
 class spell_clash : public SpellScriptLoader
@@ -635,49 +771,15 @@ class spell_dark_meditation : public SpellScriptLoader
         }
 };
 
-//Dark Meditation damage calculation. if player has 143559 decrase damage -35%
-class spell_dark_meditation_damage : public SpellScriptLoader
-{
-public:
-    spell_dark_meditation_damage() : SpellScriptLoader("spell_OO_dark_meditation_damage") { }
-
-    class spell_dark_meditation_damage_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_dark_meditation_damage_SpellScript);
-
-        enum proc
-        {
-            SPELL_AURA_DAMAGE_DECRASER     = 143649,
-        };
-
-        void HandleDamageCalc(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* target = GetHitUnit())
-                if (target->HasAura(SPELL_AURA_DAMAGE_DECRASER))
-                    SetHitDamage(GetHitDamage() * 0.65f);
-        }
-
-        void Register()
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_dark_meditation_damage_SpellScript::HandleDamageCalc, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_dark_meditation_damage_SpellScript();
-    }
-};
-
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
     new boss_he_softfoot();
     new boss_sun_tenderheart();
     new npc_golden_lotus_control();
+    new vehicle_golden_lotus_conteiner();
     new spell_clash();
     new spell_corrupted_brew();
     new spell_gouge();
     new spell_dark_meditation();
-    new spell_dark_meditation_damage();
 }

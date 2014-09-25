@@ -116,14 +116,13 @@ REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `activationDelay
 -- 143546 OO Dark Meditation
 DELETE FROM `areatrigger_actions` WHERE entry = 1032;
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
-('1032', '0', '0', '0', '2', '143649', '0', '0', 'OO: Dark Meditation on enter cast'), 
-('1032', '1', '1', '1', '0', '143649', '0', '0', 'OO: Dark Meditation on exit remove'),
+('1032', '0', '0', '0', '2', '143564', '0', '0', 'OO: Dark Meditation on enter cast'), 
+('1032', '1', '1', '1', '0', '143564', '0', '0', 'OO: Dark Meditation on exit remove'),
 ('1032', '2', '0', '0', '4', '143843', '0', '0', 'OO: Dark Meditation on enter cast'), 
 ('1032', '3', '1', '1', '0', '143843', '0', '0', 'OO: Dark Meditation on exit remove');
 REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) VALUES 
 ('1032', '3', '10', '0', '2000', '0', 'OO: Dark Meditation');
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143546', 'spell_OO_dark_meditation');
-REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143559', 'spell_OO_dark_meditation_damage');
 
 -- 102793 Druid: Ursol's Vortex
 DELETE FROM `spell_script_names` WHERE `spell_id` = 102793;
