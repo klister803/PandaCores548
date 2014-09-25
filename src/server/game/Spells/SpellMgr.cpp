@@ -3987,9 +3987,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     break;
-                case 116033:// Sparring (stacks)
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
-                    break;
                 case 115073:// Spinning Fire Blossom
                     spellInfo->Effects[EFFECT_0].TargetA = 0;
                     spellInfo->Effects[EFFECT_0].Effect = 0;

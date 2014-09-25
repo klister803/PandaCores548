@@ -9454,23 +9454,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
                     break;
                 }
-                // Sparring (stacks)
-                case 116033:
-                {
-                    if (!victim)
-                        return false;
-
-                    if (!victim->HasAura(116087))
-                        return false;
-
-                    if (GetTypeId() != TYPEID_PLAYER)
-                        return false;
-
-                    triggered_spell_id = 116033;
-                    target = this;
-
-                    break;
-                }
                 // Afterlife
                 case 116092:
                 {
