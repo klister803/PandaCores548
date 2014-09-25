@@ -27,53 +27,53 @@ ALTER TABLE `areatrigger_data` ADD `visualId` INT(8) UNSIGNED NOT NULL DEFAULT '
 ALTER TABLE `areatrigger_data` ADD `radius2` float UNSIGNED NOT NULL DEFAULT '0' AFTER `radius`;
 
 -- Healing Sphere
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(228, 1, 0, 0, 3, '115460 - Healing Sphere');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(228, 3, 242, 0, 0, 3, '115460 - Healing Sphere');
 DELETE FROM areatrigger_actions WHERE entry = 228;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (228, 0, 0, 0, 9, 115464, 1, 0, '115460 - Healing Sphere - cast 115464 when friendly player enters'),
 (228, 1, 1, 0, 0, 135920, 1, 0, '115460 - Healing Sphere - cast 135920 on despawn after use charge');
 
 -- Chi Sphere (Afterlife)
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(336, 1, 0, 0, 0, '121286 - Chi Sphere');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(336, 3, 391, 0, 0, 0, '121286 - Chi Sphere');
 DELETE FROM areatrigger_actions WHERE entry = 336;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (336, 0, 0, 0, 4, 121283, 1, 0, '121286 - Chi Sphere - cast 121283 when owner player enters');
 
 -- Healing Sphere (Afterlife)
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(383, 1, 0, 0, 0, '117032 - Healing Sphere (Afterlife)');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(383, 3, 368, 0, 0, 0, '117032 - Healing Sphere (Afterlife)');
 DELETE FROM areatrigger_actions WHERE entry = 383;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (383, 0, 0, 0, 4, 125355, 1, 0, '117032 - Healing Sphere (Afterlife) - cast 125355 when owner player enters');
 
 -- Angelic Feather
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(337, 1, 0, 0, 3, '121536 - Angelic Feather');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(337, 3, 24, 0, 0, 3, '121536 - Angelic Feather');
 DELETE FROM areatrigger_actions WHERE entry = 337;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (337, 0, 0, 0, 9, 121557, 1, 10000, '121536 - Angelic Feather - cast 121557 when friendly player enters');
 
 -- Gift of the Serpent (Mastery)
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(321, 1, 0, 0, 0, '119031 - Gift of the Serpent');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(321, 3, 371, 0, 0, 0, '119031 - Gift of the Serpent');
 DELETE FROM areatrigger_actions WHERE entry = 321;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (321, 0, 0, 0, 9, 124041, 1, 0, '119031 - Gift of the Serpent - cast 124041 when friendly player enters'),
 (321, 1, 1, 0, 0, 135920, 1, 0, '119031 - Gift of the Serpent - cast 135920 on despawn after use charge');
 
--- Path of Blossoms
+-- Path of Blossoms. ToDo: VisualID
 -- to do: Fire Blossoms cannot be created within 3 yards of an existing blossom.
 REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(341, 1, 0, 0, 0, '122035 - Path of Blossoms');
+(341, 3, 0, 0, 0, '122035 - Path of Blossoms');
 DELETE FROM areatrigger_actions WHERE entry = 341;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (341, 0, 0, 0, 2, 122036, 1, 0, '122035 - Path of Blossoms - cast 122036 when hostile unit enters');
 
 -- Rune of Power
-REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
-(304, 2.25, 0, 200, 2, '116011 - Rune of Power');
+REPLACE INTO areatrigger_data (entry, radius, visualId, activationDelay, updateDelay, maxCount, comment) VALUES
+(304, 8, 230, 0, 200, 2, '116011 - Rune of Power');
 DELETE FROM areatrigger_actions WHERE entry = 304;
 INSERT INTO areatrigger_actions (entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, comment) VALUES
 (304, 0, 2, 0, 4, 116014, 0, 0, '116011 - Rune of Power - cast 116014 on owner player on update'),
@@ -82,7 +82,7 @@ DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 26 AND `SourceGroup` 
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `NegativeCondition`, `Comment`) VALUE
 (26, 304, 0, 1, 1, 116014, 1, '116011 - Do not recast 116014 if target already has it.');
 
--- Nullification Barrier
+-- Nullification Barrier. ToDo: VisualID
 REPLACE INTO areatrigger_data (entry, radius, activationDelay, updateDelay, maxCount, comment) VALUES
 (229, 6, 0, 5000, 0, '115817 - Nullification Barrier');
 DELETE FROM areatrigger_actions WHERE entry = 229;
@@ -134,7 +134,7 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 
 DELETE FROM `areatrigger_data` WHERE `entry` = 314;
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) VALUES 
-('314', '1', '0', '0', '0', 'Ursol''s Vortex');
+('314', '8', '0', '0', '0', 'Ursol''s Vortex');
 
 -- 51052 DK: Anti-Magic Zone
 DELETE FROM `areatrigger_actions` WHERE entry = 1193;
@@ -143,7 +143,7 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 ('1193', '1', '1', '1', '0', '145629', '0', '0', 'DK: Anti-Magic Zone on exit remove');
 
 REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) 
-VALUES ('1193', '78', '1', '0', '0', '0', 'DK: Anti-Magic Zone');
+VALUES ('1193', '78', '6.5', '0', '0', '0', 'DK: Anti-Magic Zone');
 
 -- 63487 - 13810 Hunter: Ice Trap
 REPLACE INTO `areatrigger_data` (`entry`, `visualId`, `radius`, `activationDelay`, `updateDelay`, `maxCount`, `comment`) 
