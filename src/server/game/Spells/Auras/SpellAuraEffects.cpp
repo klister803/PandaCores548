@@ -753,6 +753,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 32216: // Impending Victory
+                {
+                    if (caster && caster->ToPlayer()->HasSpellCooldown(103840))
+                        caster->ToPlayer()->RemoveSpellCooldown(103840, true);
+                }
                 case 137639: // Storm, Earth and Fire
                 {
                     if (GetBase()->GetStackAmount() == 2)
