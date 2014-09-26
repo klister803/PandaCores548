@@ -2629,7 +2629,13 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
-        case 59754: // Rune Tap - Party
+        case 137562: // Nimble Brew
+        {
+            if (!m_caster->HasAura(146952))
+                damage = 0;
+            break;
+        }
+        case 59754:  // Rune Tap - Party
             if (unitTarget == m_caster)
                 return;
             break;
