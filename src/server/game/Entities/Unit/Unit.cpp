@@ -13272,7 +13272,11 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     }
 
     if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
-        DoneTotalMod = CalcPvPPower(victim, DoneTotalMod, true);
+    {
+        if (Map* m_map = GetMap())
+            if (!m_map->IsDungeon())
+                DoneTotalMod = CalcPvPPower(victim, DoneTotalMod, true);
+    }
 
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
