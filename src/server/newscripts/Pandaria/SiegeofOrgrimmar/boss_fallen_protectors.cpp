@@ -64,6 +64,12 @@ enum PhaseEvents
     EVENT_DESPERATE_MEASURES        = 2,//Desperate Measures
 };
 
+enum data
+{
+    DATA_SHADOW_WORD_DAMAGE        = 1,
+    DATA_SHADOW_WORD_REMOVED       = 2,
+};
+
 struct boss_fallen_protectors : public BossAI
 {
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
@@ -423,9 +429,11 @@ class boss_sun_tenderheart : public CreatureScript
                 measureVeh = NPC_GOLD_LOTOS_SUN;
             }
 
+            uint32 shadow_word_count;
             void Reset()
             {
                 boss_fallen_protectors::Reset();
+                shadow_word_count = 0;
             }
 
             enum local
@@ -459,6 +467,19 @@ class boss_sun_tenderheart : public CreatureScript
                 boss_fallen_protectors::JustDied(NULL);
             }
 
+            void SetData(uint32 type, uint32 value)
+            {
+                switch(type)
+                {
+                    case DATA_SHADOW_WORD_DAMAGE:
+                        events.ScheduleEvent(EVENT_SHADOW_WORD_BANE, 1, 0, PHASE_BATTLE);
+                        break;
+                    case DATA_SHADOW_WORD_REMOVED:
+                        --shadow_word_count;
+                        break;
+                }
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
@@ -477,8 +498,11 @@ class boss_sun_tenderheart : public CreatureScript
                             events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_SHADOW_WORD_BANE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                                DoCast(target, SPELL_SHADOW_WORD_BANE, true);
+                            if (shadow_word_count < 4){
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOW_WORD_BANE))
+                                    DoCast(target, SPELL_SHADOW_WORD_BANE, true);
+                                ++shadow_word_count;
+                            }
                             events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_CALAMITY:
@@ -676,6 +700,7 @@ public:
         //return back
         void EnterEvadeMode()
         {
+            me->InterruptNonMeleeSpells(false);
             instance->CreatureDies(me, NULL);
         }
 
@@ -875,6 +900,43 @@ class spell_dark_meditation : public SpellScriptLoader
         }
 };
 
+//Shadow Word: Bane
+class spell_fallen_protectors_shadow_word_bane : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_shadow_word_bane() :  SpellScriptLoader("spell_fallen_protectors_shadow_word_bane") { }
+
+        class spell_fallen_protectors_shadow_word_bane_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_fallen_protectors_shadow_word_bane_AuraScript);
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if(caster->GetAI())
+                        caster->GetAI()->SetData(DATA_SHADOW_WORD_REMOVED, true);
+            }
+
+            void OnPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if(caster->GetAI())
+                        caster->GetAI()->SetData(DATA_SHADOW_WORD_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_shadow_word_bane_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_fallen_protectors_shadow_word_bane_AuraScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -887,4 +949,5 @@ void AddSC_boss_fallen_protectors()
     new spell_corrupted_brew();
     new spell_gouge();
     new spell_dark_meditation();
+    new spell_fallen_protectors_shadow_word_bane();
 }
