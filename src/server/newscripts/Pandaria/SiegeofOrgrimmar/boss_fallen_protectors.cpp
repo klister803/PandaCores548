@@ -68,6 +68,7 @@ enum data
 {
     DATA_SHADOW_WORD_DAMAGE        = 1,
     DATA_SHADOW_WORD_REMOVED       = 2,
+    DATA_CALAMITY_HIT              = 3,
 };
 
 struct boss_fallen_protectors : public BossAI
@@ -434,6 +435,8 @@ class boss_sun_tenderheart : public CreatureScript
             {
                 boss_fallen_protectors::Reset();
                 shadow_word_count = 0;
+
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             }
 
             enum local
@@ -447,7 +450,7 @@ class boss_sun_tenderheart : public CreatureScript
             {
                 boss_fallen_protectors::InitBattle();
 
-                events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                events.RescheduleEvent(EVENT_SHA_SEAR, IN_MILLISECONDS, 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(15*IN_MILLISECONDS, 25*IN_MILLISECONDS), 0, PHASE_BATTLE);
                 events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
             }
@@ -477,6 +480,12 @@ class boss_sun_tenderheart : public CreatureScript
                     case DATA_SHADOW_WORD_REMOVED:
                         --shadow_word_count;
                         break;
+                    // calamity hit caled every hit on target and it's right.
+                    case DATA_CALAMITY_HIT:
+                        //remove shadow word bane
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);     //this call DATA_SHADOW_WORD_REMOVED
+                        events.RescheduleEvent(EVENT_SHADOW_WORD_BANE, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE); //reschedal remove curent events.
+                        break;
                 }
             }
 
@@ -498,7 +507,7 @@ class boss_sun_tenderheart : public CreatureScript
                             events.RescheduleEvent(EVENT_SHA_SEAR, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_SHADOW_WORD_BANE:
-                            if (shadow_word_count < 4){
+                            if (shadow_word_count < 3){
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOW_WORD_BANE))
                                     DoCast(target, SPELL_SHADOW_WORD_BANE, true);
                                 ++shadow_word_count;
@@ -513,7 +522,6 @@ class boss_sun_tenderheart : public CreatureScript
                         case EVENT_DESPERATE_MEASURES:
                             if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
                                 DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
-                            //ToDo: release protectors
                             break;
                     }
                 }
@@ -937,6 +945,44 @@ class spell_fallen_protectors_shadow_word_bane : public SpellScriptLoader
         }
 };
 
+class spell_fallen_protectors_calamity : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_calamity() : SpellScriptLoader("spell_fallen_protectors_calamity") { }
+
+        class spell_fallen_protectors_calamity_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_fallen_protectors_calamity_SpellScript);
+
+            enum proc
+            {
+                SPELL_PROCK     = 143493,
+            };
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                        target->CastSpell(target, SPELL_PROCK, false);
+
+                    if(caster->GetAI())
+                        caster->GetAI()->SetData(DATA_CALAMITY_HIT, true);
+                }
+            }
+
+            void Register() override
+            {
+                OnHit += SpellHitFn(spell_fallen_protectors_calamity_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_fallen_protectors_calamity_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -950,4 +996,5 @@ void AddSC_boss_fallen_protectors()
     new spell_gouge();
     new spell_dark_meditation();
     new spell_fallen_protectors_shadow_word_bane();
+    new spell_fallen_protectors_calamity();
 }

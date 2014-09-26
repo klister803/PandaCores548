@@ -110,4 +110,16 @@ enum eGameObjects
     GO_SHA_OF_PRIDE_ENT_DOOR        = 221446,
 };
 
+static uint8 vehSlotForMeasures(uint32 entry)
+{
+    switch(entry)
+    {
+        case NPC_EMBODIED_DESPERATION_OF_SUN:
+        case NPC_EMBODIED_MISERY_OF_ROOK:
+            return 1;
+        case NPC_EMBODIED_GLOOM_OF_ROOK:
+            return 2;
+    }
+    return 0;
+}
 #endif SIEGEOFORGRIMMAR

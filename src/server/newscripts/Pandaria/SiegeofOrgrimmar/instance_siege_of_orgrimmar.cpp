@@ -417,7 +417,7 @@ public:
                     {
                         creature->Respawn(true);
                         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        creature->EnterVehicle(lotosSun, -1);
+                        creature->EnterVehicle(lotosSun, vehSlotForMeasures(creature->GetEntry()));
                     }
                     break;
                 case NPC_EMBODIED_MISERY_OF_ROOK:
@@ -429,7 +429,7 @@ public:
                     {
                         creature->Respawn(true);
                         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        creature->EnterVehicle(lotosRook, -1);
+                        creature->EnterVehicle(lotosRook, vehSlotForMeasures(creature->GetEntry()));
                     }
                     break;
             }
