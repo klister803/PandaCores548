@@ -2629,6 +2629,12 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
+        case 115450: // Detox
+        {
+            if (!m_caster->HasAura(146954))
+                damage = 0;
+            break;
+        }
         case 137562: // Nimble Brew
         {
             if (!m_caster->HasAura(146952))
