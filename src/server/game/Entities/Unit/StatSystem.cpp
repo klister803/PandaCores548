@@ -343,6 +343,8 @@ void Player::UpdateMaxHealth()
 
 void Player::UpdateMaxPower(Powers power)
 {
+    int32 cur_maxpower = GetMaxPower(power);
+
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
@@ -350,7 +352,8 @@ void Player::UpdateMaxPower(Powers power)
     value += GetModifierValue(unitMod, TOTAL_VALUE);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-    SetMaxPower(power, uint32(value));
+    if(cur_maxpower != uint32(value))
+        SetMaxPower(power, uint32(value));
 }
 
 void Player::UpdateAttackPowerAndDamage(bool ranged)

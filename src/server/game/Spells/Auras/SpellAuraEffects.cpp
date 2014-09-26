@@ -6928,7 +6928,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 118694: // Spirit Bond
                 {
-                    if (!caster->IsFullHealth() || (caster->GetOwner() && !caster->GetOwner()->IsFullHealth()))
+                    if (caster->GetOwner() && (!caster->IsFullHealth() || !caster->GetOwner()->IsFullHealth()))
                         trigger_spell_id = 149254;
                     break;
                 }

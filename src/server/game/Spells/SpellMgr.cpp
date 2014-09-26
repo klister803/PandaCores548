@@ -2630,8 +2630,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0 FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2655,6 +2655,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 dmgclass = fields[9].GetInt32();
         int32 specId = fields[10].GetInt32();
         int32 spellAttr0 = fields[11].GetInt32();
+        int32 targetTypeMask = fields[12].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2674,6 +2675,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.effectmask = effectmask;
         templink.specId = specId;
         templink.spellAttr0 = spellAttr0;
+        templink.targetTypeMask = targetTypeMask;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);

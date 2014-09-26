@@ -5869,17 +5869,9 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             if (!HasSpell(78674) || HasAura(112071))
                 return false;
 
-            bool hasMarker = false;
             int32 direction = 1;
-            // lunar Eclipse Marker
-            if (HasAura(67484))
-            {
-                hasMarker = true;
+            if((powerAmount < 0 && !HasAura(48518)) || (powerAmount > 0 && HasAura(48517)))
                 direction = -1;
-            }
-            // solar Eclipse Marker
-            else if (HasAura(67483))
-                hasMarker = true;
 
             int32 powerMod = 0;
             // Starfire
@@ -5892,8 +5884,22 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             else if (procSpell->Id == 78674)
                 powerMod = direction * procSpell->Effects[1].CalcValue(this);
 
+            // solar Eclipse Marker
+            if (HasAura(67484))
+            {
+                if(powerMod > 0)
+                    direction = 0;
+            }
+            // lunar Eclipse Marker
+            else if (HasAura(67483))
+            {
+                if(powerMod < 0)
+                    direction = 0;
+            }
+
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HandleAuraProcOnPowerAmount: powerMod %i direction %i, powerAmount %i", powerMod, direction, powerAmount);
             // proc failed if wrong spell or spell direction does not match marker direction
-            if (!powerMod || hasMarker && direction * powerMod < 0)
+            if (!powerMod || !direction)
                 return false;
 
             if (powerMod > 0 && triggeredByAura->GetEffIndex() != EFFECT_0)
@@ -5904,36 +5910,17 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             // while not in Eclipse State
             if (!HasAura(48517) && !HasAura(48518))
             {
-                // only Starfire and Wrath
-                if (procSpell->Id == 2912 || procSpell->Id == 5176)
-                {
-                    // search Euphoria
-                    if (HasAura(81062))
-                        powerMod *= 2;
+                // search Euphoria
+                if (HasAura(81062))
+                    powerMod *= 2;
 
-                    // Item - Druid T12 Balance 4P Bonus
-                    if (HasAura(99049))
-                        powerMod += direction * (procSpell->Id == 2912 ? 5 : 3);
-                }
+                // Item - Druid T12 Balance 4P Bonus
+                if (HasAura(99049) && procSpell->Id != 78674)
+                    powerMod += direction * (procSpell->Id == 2912 ? 5 : 3);
             }
 
-            ModifyPower(powerType, powerMod);
-            int32 newPower = GetPower(powerType);
-
-            if (newPower == powerAmount)
-                return false;
-
-            // Marker casted only when not by Starsurge
-            if (newPower != triggerAmount && !hasMarker && procSpell->Id != 78674)
-            {
-                // solar marker or lunar marker
-                uint32 markerSpellAdd = powerMod > 0 ? 67483 : 67484;
-                uint32 markerSpellRemove = powerMod < 0 ? 67483 : 67484;
-
-                RemoveAurasDueToSpell(markerSpellRemove);
-                if (!HasAura(markerSpellAdd))
-                    CastSpell(this, markerSpellAdd, true);
-            }
+            CastCustomSpell(this, 89265, &powerMod, NULL, NULL, true);
+            //ModifyPower(powerType, powerMod);
             break;
         }
         default:
@@ -14882,6 +14869,200 @@ int32 Unit::GetHealthGain(int32 dVal)
     return gain;
 }
 
+void Unit::VisualForPower(Powers power, int32 curentVal)
+{
+    Player* player = ToPlayer();
+    if(!player)
+        return;
+
+    uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
+
+    switch(power)
+    {
+        case POWER_SOUL_SHARDS:
+        {
+            if(specId != SPEC_WARLOCK_AFFLICTION)
+            {
+                RemoveAura(104756);
+                RemoveAura(104759);
+                RemoveAura(123171);
+                if (HasAura(56241))
+                {
+                    RemoveAura(123728);
+                    RemoveAura(123730);
+                    RemoveAura(123731);
+                }
+                break;
+            }
+
+            uint32 spellid[] = {104756, 104759, 123171};
+            if(HasAura(56241))
+            {
+                spellid[0] = 123728;
+                spellid[1] = 123730;
+                spellid[2] = 123731;
+            }
+
+            switch(curentVal)
+            {
+                case 100:
+                {
+                    RemoveAura(spellid[1]);
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[0], true);
+                    break;
+                }
+                case 200:
+                {
+                    RemoveAura(spellid[0]);
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[1], true);
+                    break;
+                }
+                case 300:
+                {
+                    RemoveAura(spellid[2]);
+                    CastSpell(this, spellid[1], true);
+                    CastSpell(this, spellid[0], true);
+                    break;
+                }
+                case 400:
+                {
+                    RemoveAura(spellid[0]);
+                    CastSpell(this, spellid[2], true);
+                    CastSpell(this, spellid[1], true);
+                    break;
+                }
+                default:
+                {
+                    RemoveAura(spellid[0]);
+                    break;
+                }
+            }
+            break;
+        }
+        case POWER_CHI:
+        {
+            if (curentVal < 0)
+            {
+                if (Aura* tigereyeBrew = this->GetAura(123980))
+                    tigereyeBrew->SetScriptData(0, -curentVal);
+                else if (Aura* manaTea = this->GetAura(123766))
+                    manaTea->SetScriptData(0, -curentVal);
+            }
+            break;
+        }
+        case POWER_DEMONIC_FURY:
+        {
+            if(specId != SPEC_WARLOCK_DEMONOLOGY)
+            {
+                RemoveAura(122738);
+                RemoveAura(131755);
+                break;
+            }
+
+            // Demonic Fury visuals
+            if (curentVal == 1000)
+                CastSpell(this, 131755, true);
+            else if (curentVal >= 500)
+            {
+                if (!HasAura(122738))
+                    CastSpell(this, 122738, true);
+
+                RemoveAura(131755);
+            }
+            else
+            {
+                RemoveAura(122738);
+                RemoveAura(131755);
+            }
+            break;
+        }
+        case POWER_BURNING_EMBERS:
+        {
+            if(specId != SPEC_WARLOCK_DESTRUCTION)
+            {
+                RemoveAura(116920);
+                if (HasAura(56241))
+                {
+                    RemoveAura(123728);
+                    RemoveAura(123730);
+                    RemoveAura(123731);
+                }
+                break;
+            }
+
+            if(curentVal < 10)
+                RemoveAura(108683);
+
+            if (curentVal >= 20 && !HasAura(116920))
+                CastSpell(this, 116920, true);
+            else if (curentVal < 20)
+                RemoveAura(116920);
+
+            if(HasAura(56241))
+            {
+                uint32 spellid[] = {123728, 123730, 123731};
+
+                switch(curentVal)
+                {
+                    case 10:
+                    {
+                        RemoveAura(spellid[1]);
+                        RemoveAura(spellid[2]);
+                        CastSpell(this, spellid[0], true);
+                        break;
+                    }
+                    case 20:
+                    {
+                        RemoveAura(spellid[0]);
+                        RemoveAura(spellid[2]);
+                        CastSpell(this, spellid[1], true);
+                        break;
+                    }
+                    case 30:
+                    {
+                        RemoveAura(spellid[2]);
+                        CastSpell(this, spellid[1], true);
+                        CastSpell(this, spellid[0], true);
+                        break;
+                    }
+                    case 40:
+                    {
+                        RemoveAura(spellid[0]);
+                        CastSpell(this, spellid[2], true);
+                        CastSpell(this, spellid[1], true);
+                        break;
+                    }
+                    default:
+                    {
+                        RemoveAura(spellid[0]);
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+        case POWER_SHADOW_ORB:
+        {
+            if(specId != SPEC_PRIEST_SHADOW)
+            {
+                RemoveAura(77487);
+                break;
+            }
+
+            if (curentVal > 0)
+            {
+                if (!HasAura(77487))
+                    CastSpell(this, 77487, true);
+            }
+            else
+                RemoveAura(77487);
+            break;
+        }
+    }
+}
+
 // returns negative amount on power reduction
 int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 {
@@ -14894,33 +15075,16 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
     if (dVal == 0 && power != POWER_ENERGY) // The client will always regen energy if we don't send him the actual value
         return 0;
 
-    if (power == POWER_CHI)
-    {
-        if (dVal < 0)
-        {
-            if (Aura* tigereyeBrew = this->GetAura(123980))
-                tigereyeBrew->SetScriptData(0, -dVal);
-            else if (Aura* manaTea = this->GetAura(123766))
-                manaTea->SetScriptData(0, -dVal);
-        }
-    }
-
     int32 curPower = GetPower(power);
 
     int32 val = dVal + curPower;
 
-    if(power == POWER_BURNING_EMBERS)
-    {
-        if(val < 10 && HasAura(108683))
-            RemoveAura(108683);
-    }
-
     if (val <= GetMinPower(power))
     {
-         if(set)
-             SetPower(power, GetMinPower(power));
-         else
-             SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
+        if(set)
+            SetPower(power, GetMinPower(power));
+        else
+            SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, GetMinPower(power));
         if (power == POWER_ECLIPSE)
             TriggerEclipse(curPower);
         return -curPower;
@@ -14928,12 +15092,21 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 
     int32 maxPower = GetMaxPower(power);
 
+    //Visualization for power
+    VisualForPower(power, val);
+
+    if(power == POWER_BURNING_EMBERS)
+    {
+        if(val >= maxPower)
+            set = true;
+    }
+
     if (val < maxPower)
     {
         if(set)
             SetPower(power, val);
         else
-            SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
+            SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
         gain = val - curPower;
     }
     else if (curPower != maxPower)
@@ -14941,7 +15114,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
         if(set)
             SetPower(power, maxPower);
         else
-            SetUInt32Value(UNIT_FIELD_POWER1 + powerIndex, maxPower);
+            SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, maxPower);
         gain = maxPower - curPower;
     }
 
@@ -16460,7 +16633,7 @@ int32 Unit::GetPower(Powers power) const
     if (powerIndex == MAX_POWERS)
         return 0;
 
-    return GetUInt32Value(UNIT_FIELD_POWER1 + powerIndex);
+    return GetInt32Value(UNIT_FIELD_POWER1 + powerIndex);
 }
 
 int32 Unit::GetMaxPower(Powers power) const
@@ -16472,7 +16645,110 @@ int32 Unit::GetMaxPower(Powers power) const
     return GetInt32Value(UNIT_FIELD_MAXPOWER1 + powerIndex);
 }
 
-void Unit::SetPower(Powers power, int32 val)
+int32 Unit::GetPowerForReset(Powers power, bool maxpower) const
+{
+    switch (power)
+    {
+        case POWER_BURNING_EMBERS:
+            return  10;
+        case POWER_SOUL_SHARDS:
+            return  400;
+        case POWER_DEMONIC_FURY:
+            return  200;
+        case POWER_MANA:
+        case POWER_ENERGY:
+        case POWER_FOCUS:
+        {
+            if(maxpower)
+                return GetMaxPower(power);
+            else
+                return 0;
+        }
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+void Unit::InitialPowers(bool maxpower)
+{
+    int32 classId = getClass();
+    ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
+
+    if(!classEntry)
+        return;
+
+    int32 count = 0;
+    for (uint32 i = 0; i <= sChrPowerTypesStore.GetNumRows(); ++i)
+    {
+        ChrPowerTypesEntry const* powerEntry = sChrPowerTypesStore.LookupEntry(i);
+        if (!powerEntry)
+            continue;
+
+        if (powerEntry->classId != classId)
+            continue;
+
+        if (powerEntry->power == POWER_ALTERNATE_POWER)
+            continue;
+
+        if (powerEntry->power != POWER_MANA && (classId == CLASS_WARLOCK || maxpower)) //warlock not send power > 0
+            continue;
+
+        count++;
+    }
+
+    if(!count)
+        return;
+
+    WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
+    ObjectGuid guid = GetGUID();
+    data.WriteGuidMask<1>(guid);
+    data.WriteBits(count, 21);
+    data.WriteGuidMask<3, 6, 0, 4, 2, 5, 7>(guid);
+    data.FlushBits();
+    data.WriteGuidBytes<1, 2, 0>(guid);
+
+    int32 powerIndex = 0;
+    for (uint32 i = 0; i <= sChrPowerTypesStore.GetNumRows(); ++i)
+    {
+        ChrPowerTypesEntry const* powerEntry = sChrPowerTypesStore.LookupEntry(i);
+        if (!powerEntry)
+            continue;
+
+        if (powerEntry->classId != classId)
+            continue;
+
+        Powers power = Powers(powerEntry->power);
+        int32 curval = GetPowerForReset(power, maxpower);
+
+        if (power != POWER_ALTERNATE_POWER)
+        {
+            int32 createval = GetCreatePowers(power);
+            if(maxpower)
+            {
+                SetInt32Value(UNIT_FIELD_MAXPOWER1 + powerIndex, createval);
+                SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curval);
+            }
+            else
+                SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curval);
+        }
+
+        powerIndex++;
+
+        if (power != POWER_MANA && (classId == CLASS_WARLOCK || maxpower)) //warlock not send power > 0
+            continue;
+
+        data << uint8(power);
+        data << int32(curval);
+
+    }
+
+    data.WriteGuidBytes<7, 4, 5, 6, 3>(guid);
+    SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
+}
+
+void Unit::SetPower(Powers power, int32 val, bool send)
 {
     uint32 powerIndex = GetPowerIndexByClass(power, getClass());
     if (powerIndex == MAX_POWERS)
@@ -16482,107 +16758,12 @@ void Unit::SetPower(Powers power, int32 val)
     if (maxPower < val)
         val = maxPower;
 
-    if(power == POWER_SOUL_SHARDS)
-    {
-        uint32 spellid[] = {104756, 104759, 123171};
-        if(HasAura(56241))
-        {
-            spellid[0] = 123728;
-            spellid[1] = 123730;
-            spellid[2] = 123731;
-        }
-
-        switch(val)
-        {
-            case 100:
-            {
-                RemoveAura(spellid[1]);
-                RemoveAura(spellid[2]);
-                CastSpell(this, spellid[0], true);
-                break;
-            }
-            case 200:
-            {
-                RemoveAura(spellid[0]);
-                RemoveAura(spellid[2]);
-                CastSpell(this, spellid[1], true);
-                break;
-            }
-            case 300:
-            {
-                RemoveAura(spellid[2]);
-                CastSpell(this, spellid[1], true);
-                CastSpell(this, spellid[0], true);
-                break;
-            }
-            case 400:
-            {
-                RemoveAura(spellid[0]);
-                CastSpell(this, spellid[2], true);
-                CastSpell(this, spellid[1], true);
-                break;
-            }
-            default:
-            {
-                RemoveAura(spellid[0]);
-                break;
-            }
-        }
-    }
-
-    if(power == POWER_BURNING_EMBERS)
-    {
-        if (val >= 20 && !HasAura(116920))
-            CastSpell(this, 116920, true);
-        else if (val < 20 && HasAura(116920))
-            RemoveAura(116920);
-
-        if(HasAura(56241))
-        {
-            uint32 spellid[] = {123728, 123730, 123731};
-
-            switch(val)
-            {
-                case 10:
-                {
-                    RemoveAura(spellid[1]);
-                    RemoveAura(spellid[2]);
-                    CastSpell(this, spellid[0], true);
-                    break;
-                }
-                case 20:
-                {
-                    RemoveAura(spellid[0]);
-                    RemoveAura(spellid[2]);
-                    CastSpell(this, spellid[1], true);
-                    break;
-                }
-                case 30:
-                {
-                    RemoveAura(spellid[2]);
-                    CastSpell(this, spellid[1], true);
-                    CastSpell(this, spellid[0], true);
-                    break;
-                }
-                case 40:
-                {
-                    RemoveAura(spellid[0]);
-                    CastSpell(this, spellid[2], true);
-                    CastSpell(this, spellid[1], true);
-                    break;
-                }
-                default:
-                {
-                    RemoveAura(spellid[0]);
-                    break;
-                }
-            }
-        }
-    }
+    //Visualization for power
+    VisualForPower(power, val);
 
     SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, val);
 
-    if (IsInWorld())
+    if (IsInWorld() && send)
     {
         //! 5.4.1
         WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
@@ -16662,8 +16843,8 @@ void Unit::SetMaxPower(Powers power, int32 val)
         }
     }
 
-    if (val < cur_power)
-        SetPower(power, val);
+    // if (val < cur_power)
+        // SetPower(power, val);
 }
 
 int32 Unit::GetCreatePowers(Powers power) const
@@ -16685,21 +16866,21 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_RUNES:
             return 0;
         case POWER_SHADOW_ORB:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PRIEST && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW) ? 3 : 0);
+            return 3;
         case POWER_BURNING_EMBERS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 40 : 0);
+            return 40;
         case POWER_DEMONIC_FURY:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
+            return 1000;
         case POWER_SOUL_SHARDS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION) ? 400 : 0);
+            return 400;
         case POWER_ECLIPSE:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_DROOD_BALANCE) ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
+            return 100; // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PALADIN ? 3 : 0);
+            return 3;
         case POWER_HEALTH:
             return 0;
         case POWER_CHI:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK ? 4 : 0);
+            return 4;
         default:
             break;
     }
@@ -18571,28 +18752,50 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             {
                 if (-(itr->checkspell) == spellProcId)
                 {
-                    if(itr->hastalent != 0)
+                    if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0)
                     {
                         if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                        {
                             procCheck = true;
+                            break;
+                        }
                         else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                        {
                             procCheck = true;
-                        if(itr->specId != 0 && itr->specId != specCheckid)
+                            break;
+                        }
+                        else if(itr->specId != 0 && itr->specId != specCheckid)
+                        {
                             procCheck = true;
-                        if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                            break;
+                        }
+                        else if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                        {
                             procCheck = true;
+                            break;
+                        }
                         else if(itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
+                        {
                             procCheck = true;
+                            break;
+                        }
+                        else if(itr->targetTypeMask != 0 && !(itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
+                        {
+                            procCheck = true;
+                            break;
+                        }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
+                        {
                             procCheck = false;
-                        if(!procCheck)
                             continue;
+                        }
                     }
-                            else if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                        procCheck = true;
+                    else if(itr->chance != 0 && roll_chance_i(itr->chance))
+                        procCheck = false;
                     else
                         procCheck = true;
-                            break;
+
+                    break;
                 }
             }
             //if this spell not exist not proc
@@ -18643,6 +18846,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->targetTypeMask != 0 && !(itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
+                {
+                    procCheck = true;
+                    continue;
+                }
 
                 procCheck = false;
                 break;
@@ -18684,6 +18892,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 {
                     procCheck = false;
                     break;
+                }
+                if(itr->targetTypeMask != 0 && (itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
+                {
+                    procCheck = false;
+                    continue;
                 }
 
                 if(itr->powertype != -1 && itr->dmgclass != -1)

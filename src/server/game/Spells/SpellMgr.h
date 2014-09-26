@@ -624,6 +624,7 @@ struct SpellPrcoCheck
     int32 effectmask;
     int32 specId;
     int32 spellAttr0;
+    int32 targetTypeMask;
 };
 
 struct SpellTriggered

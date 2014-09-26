@@ -57,6 +57,7 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
         _player->SetSpecializationId(_player->GetActiveSpec(), specializationId);
         _player->SendTalentsInfoData(false);
         _player->InitSpellForLevel();
+        _player->InitialPowers();
     }
 }
 

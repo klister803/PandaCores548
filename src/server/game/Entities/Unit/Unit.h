@@ -1476,8 +1476,11 @@ class Unit : public WorldObject
         int32 GetPower(Powers power) const;
         int32 GetMinPower(Powers power) const { return power == POWER_ECLIPSE ? -100 : 0; }
         int32 GetMaxPower(Powers power) const;
-        void SetPower(Powers power, int32 val);
+        void SetPower(Powers power, int32 val, bool send = true);
+        void InitialPowers(bool maxpower = false);
         void SetMaxPower(Powers power, int32 val);
+        int32 GetPowerForReset(Powers power, bool maxpower = false) const;
+        void VisualForPower(Powers power, int32 curentVal);
 
         // returns the change in power
         int32 ModifyPower(Powers power, int32 val, bool set = false);
