@@ -22,28 +22,33 @@
 
 enum eSpells
 {
-    SPELL_BOUND_OF_GOLDEN_LOTUS         = 143497, //Bond of the Golden Lotus
-    SPELL_EJECT_ALL_PASSANGERS          = 68576,
+    SPELL_BOUND_OF_GOLDEN_LOTUS             = 143497, //Bond of the Golden Lotus
+    SPELL_EJECT_ALL_PASSANGERS              = 68576,
 
     //Rook
-    SPELL_VENGEFUL_STRIKE               = 144396, //Vengeful Strikes
-    SPELL_CORRUPTED_BREW                = 143019, //Corrupted Brew
-    SPELL_CLASH                         = 143027, //Clash   cast 143028
-    SPELL_CORRUPTION_KICK               = 143007, //Corruption Kick
-    SPELL_MISERY_SORROW_GLOOM           = 143955, //Misery, Sorrow, and Gloom
+    SPELL_VENGEFUL_STRIKE                   = 144396, //Vengeful Strikes
+    SPELL_CORRUPTED_BREW                    = 143019, //Corrupted Brew
+    SPELL_CLASH                             = 143027, //Clash   cast 143028
+    SPELL_CORRUPTION_KICK                   = 143007, //Corruption Kick
+    SPELL_MISERY_SORROW_GLOOM               = 143955, //Misery, Sorrow, and Gloom
 
     //He
-    SPELL_GARROTE                       = 143198, //Garrote
-    SPELL_GOUGE                         = 143301, //Gouge
-    SPELL_NOXIOUS_POISON                = 143225, //Noxious Poison
-    SPELL_INSTANT_POISON                = 143210, //Instant Poison
+    SPELL_GARROTE                           = 143198, //Garrote
+    SPELL_GOUGE                             = 143301, //Gouge
+    SPELL_NOXIOUS_POISON                    = 143225, //Noxious Poison
+    SPELL_INSTANT_POISON                    = 143210, //Instant Poison
 
     //Sun
-    SPELL_SHA_SEAR                      = 143423, //Sha Sear
-    SPELL_SHADOW_WORD_BANE              = 143434, //Shadow Word: Bane
-    SPELL_CALAMITY                      = 143491, //Calamity
-    SPELL_DARK_MEDITATION               = 143546,
-    SPELL_DARK_MEDITATION_JUMP          = 143730, //Prock after jump 143546
+    SPELL_SHA_SEAR                          = 143423, //Sha Sear
+    SPELL_SHADOW_WORD_BANE                  = 143434, //Shadow Word: Bane
+    SPELL_CALAMITY                          = 143491, //Calamity
+    SPELL_DARK_MEDITATION                   = 143546,
+    SPELL_DARK_MEDITATION_JUMP              = 143730, //Prock after jump 143546
+    SPELL_DARK_MEDITATION_SHARE_HEALTH_P    = 143745, //
+    SPELL_DARK_MEDITATION_SHARE_HEALTH      = 143723,
+    //143724
+    SPELL_MANIFEST_DESPERATION              = 144504, //Manifest Desperation of 71482
+    SPELL_MANIFEST_DESPAIR                  = 143746, //Manifest Despair of 71474
 };
 
 enum Phases
@@ -504,9 +509,9 @@ class npc_golden_lotus_control : public CreatureScript
 public:
     npc_golden_lotus_control() : CreatureScript("npc_golden_lotus_control") { }
 
-    struct npc_wind_vehicleAI : public ScriptedAI
+    struct npc_golden_lotus_controlAI : public ScriptedAI
     {
-        npc_wind_vehicleAI(Creature* creature) : ScriptedAI(creature)
+        npc_golden_lotus_controlAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();            
         }
@@ -574,25 +579,44 @@ public:
     
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_wind_vehicleAI(creature);
+        return new npc_golden_lotus_controlAI(creature);
     }
 };
 
-class ExitVexTalk : public BasicEvent
+Position const LotusJumpPosition[2]   =
+{
+    {1214.094f, 1006.571f, 418.0658f, 0.0f}, //NPC_EMBODIED_DESPIRE_OF_SUN
+    {1212.148f, 1057.528f, 417.1646f, 0.0f}, //NPC_EMBODIED_DESPERATION_OF_SUN
+};
+
+class ExitVexMeasure : public BasicEvent
 {
     public:
-        explicit ExitVexTalk(Creature *c, float _x, float _y, float _z) : x(_x), y(_y), z(_z), creature(c) { }
+        explicit ExitVexMeasure(Creature *c) : creature(c) { }
 
         bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
         {
-            creature->GetMotionMaster()->MoveJump(x, y, z, 20.0f, 20.0f);
+            uint8 _idx = 0;
+            switch(creature->GetEntry())
+            {
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                    _idx = 0;
+                    break;
+                case NPC_EMBODIED_DESPERATION_OF_SUN:
+                    _idx = 1;
+                    break;
+                default:
+                    sLog->outError(LOG_FILTER_GENERAL, " >> Script: OO:ExitVexMeasure no position for fall down for entry %u", creature->GetEntry());
+                    return true;
+            }
+            creature->GetMotionMaster()->MoveJump(LotusJumpPosition[_idx].m_positionX, LotusJumpPosition[_idx].m_positionY, LotusJumpPosition[_idx].m_positionZ, 20.0f, 20.0f);
+            creature->AI()->DoAction(EVENT_1);
             creature->SetReactState(REACT_AGGRESSIVE);
             creature->SetInCombatWithZone();
             return true;
         }
 
     private:
-        float x, y, z;
         Creature *creature;
 };
 
@@ -619,12 +643,92 @@ class vehicle_golden_lotus_conteiner : public VehicleScript
             if (!lotos)
                 return;
 
-            float x, y, z = 0.0f;
-
-            own->GetRandomPoint(*lotos, 20.0f, x, y, z);
             passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            passenger->m_Events.AddEvent(new ExitVexTalk(passenger->ToCreature(), x, y, z), passenger->m_Events.CalculateTime(1000));
+            passenger->m_Events.AddEvent(new ExitVexMeasure(passenger->ToCreature()), passenger->m_Events.CalculateTime(1000));
         }
+};
+
+class npc_measure_of_sun : public CreatureScript
+{
+public:
+    npc_measure_of_sun() : CreatureScript("npc_measure_of_sun") { }
+
+    struct npc_measure_of_sunAI : public ScriptedAI
+    {
+        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature), summons(creature)
+        {
+            instance = creature->GetInstanceScript();
+            SetCombatMovement(false);
+        }
+
+        InstanceScript* instance;
+        uint32 _spell;
+        SummonList summons;
+        EventMap events;
+
+        void Reset()
+        {
+            _spell = 0;
+            summons.DespawnAll();
+            events.Reset();
+        }
+
+        //return back
+        void EnterEvadeMode()
+        {
+            instance->CreatureDies(me, NULL);
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            summons.Summon(summon);
+            DoCast(summon, SPELL_DARK_MEDITATION_SHARE_HEALTH, true);
+            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                summon->AI()->AttackStart(target);
+        }
+
+        void SummonedCreatureDespawn(Creature* summon)
+        {
+            summons.Despawn(summon);
+        }
+
+        void DoAction(int32 const action)
+        {
+            //Start measure event. onExit from veh.
+            if (action == EVENT_1)
+            {
+                events.ScheduleEvent(EVENT_1, 4000);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+        }
+
+        void OnCharmed(bool /*apply*/)
+        {
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
+                DoCast(me, _spell, true);
+                if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                    me->SetFacingToObject(lotos);
+            }
+
+            if (!_spell || !UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            DoCast(me, _spell, false);
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_measure_of_sunAI(creature);
+    }
 };
 
 class spell_clash : public SpellScriptLoader
@@ -778,6 +882,7 @@ void AddSC_boss_fallen_protectors()
     new boss_sun_tenderheart();
     new npc_golden_lotus_control();
     new vehicle_golden_lotus_conteiner();
+    new npc_measure_of_sun();
     new spell_clash();
     new spell_corrupted_brew();
     new spell_gouge();
