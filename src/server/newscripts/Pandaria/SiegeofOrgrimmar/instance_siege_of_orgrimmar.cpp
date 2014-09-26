@@ -397,42 +397,10 @@ public:
 
         void CreatureDies(Creature* creature, Unit* /*killer*/)
         {
-            switch(creature->GetEntry())
-            {
-                case NPC_EMBODIED_ANGUISH_OF_HE:
-                    if (Creature* he = instance->GetCreature(heGuid))
-                        he->AI()->DoAction(creature->GetEntry());
-                    if (Creature* lotosHe = instance->GetCreature(npcGoldenLotosGUID[0]))
-                    {
-                        creature->Respawn(true);
-                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        creature->EnterVehicle(lotosHe, -1);
-                    }
-                    break;
-                case NPC_EMBODIED_DESPERATION_OF_SUN:
-                case NPC_EMBODIED_DESPIRE_OF_SUN:
-                    if (Creature* sun = instance->GetCreature(sunGuid))
-                        sun->AI()->DoAction(creature->GetEntry());
-                    if (Creature* lotosSun = instance->GetCreature(npcGoldenLotosGUID[1]))
-                    {
-                        creature->Respawn(true);
-                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        creature->EnterVehicle(lotosSun, vehSlotForMeasures(creature->GetEntry()));
-                    }
-                    break;
-                case NPC_EMBODIED_MISERY_OF_ROOK:
-                case NPC_EMBODIED_GLOOM_OF_ROOK:
-                case NPC_EMBODIED_SORROW_OF_ROOK:
-                    if (Creature* rook = instance->GetCreature(rookGuid))
-                        rook->AI()->DoAction(creature->GetEntry());
-                    if (Creature* lotosRook = instance->GetCreature(npcGoldenLotosGUID[2]))
-                    {
-                        creature->Respawn(true);
-                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                        creature->EnterVehicle(lotosRook, vehSlotForMeasures(creature->GetEntry()));
-                    }
-                    break;
-            }
+            //switch(creature->GetEntry())
+            //{
+
+            //}
         }
 
         bool IsWipe()

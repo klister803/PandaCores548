@@ -37,6 +37,7 @@ enum eSpells
     SPELL_GOUGE                             = 143301, //Gouge
     SPELL_NOXIOUS_POISON                    = 143225, //Noxious Poison
     SPELL_INSTANT_POISON                    = 143210, //Instant Poison
+    SPELL_MARK_OF_ANGUISH_MEDITATION        = 143808, //Mark of Anguish
 
     //Sun
     SPELL_SHA_SEAR                          = 143423, //Sha Sear
@@ -46,9 +47,22 @@ enum eSpells
     SPELL_DARK_MEDITATION_JUMP              = 143730, //Prock after jump 143546
     SPELL_DARK_MEDITATION_SHARE_HEALTH_P    = 143745, //
     SPELL_DARK_MEDITATION_SHARE_HEALTH      = 143723,
-    //143724
+
+    SPELL_CLEAR_ALL_DEBUFS                  = 34098,  //ClearAllDebuffs
+    SPELL_SHA_CORRUPTION                    = 143708, // begore 34098 and 17683
+    SPELL_FULL_HEALTH                       = 17683,
+
+    //meashures of sun
     SPELL_MANIFEST_DESPERATION              = 144504, //Manifest Desperation of 71482
     SPELL_MANIFEST_DESPAIR                  = 143746, //Manifest Despair of 71474
+
+    //meashures of he
+    SPELL_MARK_OF_ANGUISH_JUMP              = 143808, //Mark of Anguish
+    SPELL_MARK_OF_ANGUISH_ATTACK            = 143822, //Mark of Anguish by 143840
+    SPELL_SHADOW_WEAKNES                    = 144079,
+    SPELL_DEBILITATION                      = 147383, //Debilitation
+    SPELL_SHADOW_WEAKNESS2                  = 144176, //charges targetGUID: Full: 0x70000000695B52A Type: Player Low: 110474538 
+    SPELL_SHADOW_WEAKNES_MASS               = 144081,
 };
 
 enum Phases
@@ -129,7 +143,7 @@ struct boss_fallen_protectors : public BossAI
         {
             ++_healthPhase;
             me->SetInCombatWithZone();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             events.SetPhase(PHASE_DESPERATE_MEASURES);
             events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
             me->InterruptNonMeleeSpells(false);
@@ -199,10 +213,11 @@ struct boss_fallen_protectors : public BossAI
                 // END EVENT_DESPERATE_MEASURES. Countinue attacking.
                 if (!measureSummonedCount)
                 {
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     InitBattle();
                     me->RemoveAllAreaObjects();
                     me->RemoveAurasDueToSpell(SPELL_DARK_MEDITATION);   //sun
+                    me->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_MEDITATION);   //he
                     me->SetInCombatWithZone();
                 }
                 break;
@@ -403,6 +418,9 @@ class boss_he_softfoot : public CreatureScript
                             DoCastVictim( SPELL_INSTANT_POISON);
                             events.RescheduleEvent(EVENT_POISON_NOXIOUS, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             me->RemoveAllAreaObjects();
+                            break;
+                        case EVENT_DESPERATE_MEASURES:
+                            DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
                             break;
                     }
                 }
@@ -680,68 +698,122 @@ class vehicle_golden_lotus_conteiner : public VehicleScript
         }
 };
 
+struct npc_measure : public ScriptedAI
+{
+    npc_measure(Creature* creature) : ScriptedAI(creature), summons(creature)
+    {
+        instance = creature->GetInstanceScript();
+        ownVehicle = 0;
+        ownSummoner = 0;
+    }
+
+    InstanceScript* instance;
+    SummonList summons;
+    EventMap events;
+    uint32 ownVehicle;
+    uint32 ownSummoner;
+
+    void Reset()
+    {
+        summons.DespawnAll();
+        events.Reset();
+    }
+
+    //return back
+    void EnterEvadeMode()
+    {
+        me->InterruptNonMeleeSpells(false);
+        goBack();
+    }
+
+    void goBack()
+    {
+        if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
+            owner->AI()->DoAction(me->GetEntry());
+
+        if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(ownVehicle)))
+        {
+            me->CastSpell(me, SPELL_CLEAR_ALL_DEBUFS, true);
+            me->CastSpell(me, SPELL_FULL_HEALTH, true);
+
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
+            me->CastSpell(me, SPELL_SHA_CORRUPTION, true);
+        }
+    }
+
+    void DamageTaken(Unit* attacker, uint32 &damage)
+    {
+        if (damage >= me->GetHealth())
+        {
+            goBack();
+            damage = 0;
+        }
+    }
+
+    void JustSummoned(Creature* summon)
+    {
+        summons.Summon(summon);
+    }
+
+    void SummonedCreatureDespawn(Creature* summon)
+    {
+        summons.Despawn(summon);
+    }
+
+    void DoAction(int32 const action)
+    {
+        //Start measure event. onExit from veh.
+        if (action == EVENT_1)
+        {
+            events.ScheduleEvent(EVENT_1, 4000);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
+    }
+
+    void OnCharmed(bool /*apply*/)
+    {
+    }
+
+    void UpdateAI(uint32 diff)
+    {
+        events.Update(diff);
+    }
+};
+
 class npc_measure_of_sun : public CreatureScript
 {
 public:
     npc_measure_of_sun() : CreatureScript("npc_measure_of_sun") { }
 
-    struct npc_measure_of_sunAI : public ScriptedAI
+    struct npc_measure_of_sunAI : public npc_measure
     {
-        npc_measure_of_sunAI(Creature* creature) : ScriptedAI(creature), summons(creature)
+        npc_measure_of_sunAI(Creature* creature) : npc_measure(creature)
         {
-            instance = creature->GetInstanceScript();
             SetCombatMovement(false);
+            ownVehicle = NPC_GOLD_LOTOS_SUN;
+            ownSummoner = NPC_SUN_TENDERHEART;
         }
 
-        InstanceScript* instance;
         uint32 _spell;
-        SummonList summons;
-        EventMap events;
 
         void Reset()
         {
             _spell = 0;
-            summons.DespawnAll();
-            events.Reset();
-        }
-
-        //return back
-        void EnterEvadeMode()
-        {
-            me->InterruptNonMeleeSpells(false);
-            instance->CreatureDies(me, NULL);
+            npc_measure::Reset();
         }
 
         void JustSummoned(Creature* summon)
         {
-            summons.Summon(summon);
+            npc_measure::JustSummoned(summon);
             DoCast(summon, SPELL_DARK_MEDITATION_SHARE_HEALTH, true);
             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 summon->AI()->AttackStart(target);
         }
 
-        void SummonedCreatureDespawn(Creature* summon)
-        {
-            summons.Despawn(summon);
-        }
-
-        void DoAction(int32 const action)
-        {
-            //Start measure event. onExit from veh.
-            if (action == EVENT_1)
-            {
-                events.ScheduleEvent(EVENT_1, 4000);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
-        }
-
-        void OnCharmed(bool /*apply*/)
-        {
-        }
-
         void UpdateAI(uint32 diff)
         {
-            events.Update(diff);
+            npc_measure::UpdateAI(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
             {
@@ -761,6 +833,46 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_measure_of_sunAI(creature);
+    }
+};
+
+class npc_measure_of_he : public CreatureScript
+{
+public:
+    npc_measure_of_he() : CreatureScript("npc_measure_of_he") { }
+
+    struct npc_measure_of_heAI : public npc_measure
+    {
+        npc_measure_of_heAI(Creature* creature) : npc_measure(creature)
+        {
+            ownVehicle = NPC_GOLD_LOTOS_HE;
+            ownSummoner = NPC_HE_SOFTFOOT;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_measure_of_heAI(creature);
+    }
+};
+
+class npc_measure_of_rook : public CreatureScript
+{
+public:
+    npc_measure_of_rook() : CreatureScript("npc_measure_of_rook") { }
+
+    struct npc_measure_of_rookAI : public npc_measure
+    {
+        npc_measure_of_rookAI(Creature* creature) : npc_measure(creature)
+        {
+            ownVehicle = NPC_GOLD_LOTOS_ROOK;
+            ownSummoner = NPC_ROOK_STONETOE;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_measure_of_rookAI(creature);
     }
 };
 
@@ -991,6 +1103,8 @@ void AddSC_boss_fallen_protectors()
     new npc_golden_lotus_control();
     new vehicle_golden_lotus_conteiner();
     new npc_measure_of_sun();
+    new npc_measure_of_he();
+    new npc_measure_of_rook();
     new spell_clash();
     new spell_corrupted_brew();
     new spell_gouge();

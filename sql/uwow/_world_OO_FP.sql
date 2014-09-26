@@ -16,3 +16,12 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143434', 's
 -- Calamity
 DELETE FROM `spell_script_names` WHERE `spell_id` = 143491;
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143491', 'spell_fallen_protectors_calamity');
+
+--
+UPDATE `creature_template_addon` SET `auras` = '143708' WHERE `entry` in (71478, 71482, 71474, 71477, 71476, 71481);
+
+--
+UPDATE `creature_template` SET `ScriptName` = 'npc_measure_of_he' WHERE `entry` in (71478);
+
+--
+UPDATE `creature_template` SET `ScriptName` = 'npc_measure_of_rook' WHERE `entry` in (71476, 71477, 71481);
