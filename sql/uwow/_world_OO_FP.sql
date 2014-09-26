@@ -25,3 +25,7 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_measure_of_he' WHERE `entry` 
 
 --
 UPDATE `creature_template` SET `ScriptName` = 'npc_measure_of_rook' WHERE `entry` in (71476, 71477, 71481);
+
+--
+DELETE FROM `spell_script_names` WHERE `spell_id` = 143822;
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143822', 'spell_fallen_protectors_mark_of_anguish_select_first_target');

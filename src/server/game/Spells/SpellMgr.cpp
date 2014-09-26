@@ -4775,12 +4775,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors
-                case 144396:    //Vengeful Strikes
+                case 144396:    //Vengeful Strikes. WTF. SPELL_AURA_MOD_POSSESS_PET
                     spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[0].ApplyAuraName = 0;
                     break;
                 case 143730:    //Dark Meditation
                     spellInfo->Effects[0].TriggerSpell = 143546;
+                    break;
+                case 143840:    //Mark of Anguish. WTF. SPELL_AURA_MOD_POSSESS_PET
+                    spellInfo->Effects[3].Effect = 0;
+                    spellInfo->Effects[3].ApplyAuraName = 0;
                     break;
                 //Norushen
                 case 145212: //Unleashed Anger dmg
