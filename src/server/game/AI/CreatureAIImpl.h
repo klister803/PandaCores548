@@ -338,7 +338,7 @@ class EventMap : private std::map<uint32, uint32>
 
         void Update(uint32 time) { _time += time; }
 
-        uint32 GetPhaseMask() const { return (_phase >> 24) & 0xFF; }
+        uint32 GetPhaseMask() const { return _phase; }
 
         /**
         * @name IsInPhase
@@ -356,10 +356,10 @@ class EventMap : private std::map<uint32, uint32>
         // Sets event phase, must be in range 1 - 8
         void SetPhase(uint32 phase)
         {
-            if (phase && phase < 8)
-                _phase = (1 << (phase + 24));
-            else if (!phase)
+            if (!phase)
                 _phase = 0;
+            else if (phase <= 8)
+                _phase = (1 << (phase - 1));
         }
 
         /**
@@ -384,15 +384,23 @@ class EventMap : private std::map<uint32, uint32>
                 _phase &= ~(1 << (phase - 1));
         }
 
-        // Creates new event entry in map with given id, time, group if given (1 - 8) and phase if given (1 - 8)
-        // 0 for group/phase means it belongs to no group or runs in all phases
-        void ScheduleEvent(uint32 eventId, uint32 time, uint32 groupId = 0, uint32 phase = 0)
+        /**
+        * @name ScheduleEvent
+        * @brief Creates new event entry in map.
+        * @param eventId The id of the new event.
+        * @param time The time in milliseconds until the event occurs.
+        * @param group The group which the event is associated to. Has to be between 1 and 8. 0 means it has no group.
+        * @param phase The phase in which the event can occur. Has to be between 1 and 8. 0 means it can occur in all phases.
+        */
+        void ScheduleEvent(uint32 eventId, uint32 time, uint32 group = 0, uint32 phase = 0)
         {
+            if (group && group <= 8)
+                eventId |= (1 << (group + 15));
+
+            if (phase && phase <= 8)
+                eventId |= (1 << (phase + 23));
+
             time += _time;
-            if (groupId && groupId < 9)
-                eventId |= (1 << (groupId + 16));
-            if (phase && phase < 8)
-                eventId |= (1 << (phase + 24));
             const_iterator itr = find(time);
             while (itr != end())
             {
@@ -403,14 +411,25 @@ class EventMap : private std::map<uint32, uint32>
             insert(std::make_pair(time, eventId));
         }
 
-        // Removes event with specified id and creates new entry for it
+        /**
+        * @name RescheduleEvent
+        * @brief Cancels the given event and reschedules it.
+        * @param eventId The id of the event.
+        * @param time The time in milliseconds until the event occurs.
+        * @param group The group which the event is associated to. Has to be between 1 and 8. 0 means it has no group.
+        * @param phase The phase in which the event can occur. Has to be between 1 and 8. 0 means it can occur in all phases.
+        */
         void RescheduleEvent(uint32 eventId, uint32 time, uint32 groupId = 0, uint32 phase = 0)
         {
             CancelEvent(eventId);
             ScheduleEvent(eventId, time, groupId, phase);
         }
 
-        // Reschedules closest event
+        /**
+        * @name RepeatEvent
+        * @brief Repeats the mostly recently executed event.
+        * @param time Time until the event occurs.
+        */
         void RepeatEvent(uint32 time)
         {
             if (empty())
@@ -435,14 +454,18 @@ class EventMap : private std::map<uint32, uint32>
             erase(begin());
         }
 
-        // Gets next event id to execute and removes it from map
+        /**
+        * @name ExecuteEvent
+        * @brief Returns the next event to execute and removes it from map.
+        * @return Id of the event to execute.
+        */
         uint32 ExecuteEvent()
         {
             while (!empty())
             {
                 if (begin()->first > _time)
                     return 0;
-                else if (_phase && (begin()->second & 0xFF000000) && !(begin()->second & _phase))
+                else if (_phase && (begin()->second & 0xFF000000) && !((begin()->second >> 24) & _phase))
                     erase(begin());
                 else
                 {
@@ -461,7 +484,7 @@ class EventMap : private std::map<uint32, uint32>
             {
                 if (begin()->first > _time)
                     return 0;
-                else if (_phase && (begin()->second & 0xFF000000) && !(begin()->second & _phase))
+                else if (_phase && (begin()->second & 0xFF000000) && !((begin()->second >> 24) & _phase))
                     erase(begin());
                 else
                     return (begin()->second & 0x0000FFFF);
