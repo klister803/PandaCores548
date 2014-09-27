@@ -4804,6 +4804,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145073: //Residual Corruption
                     spellInfo->TargetAuraSpell = 0;
                     break;
+                case 144628: //Titanic Smash
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                    spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                    break;
                 
 
                 //World Bosses

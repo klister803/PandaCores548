@@ -30,6 +30,7 @@ enum eSpells
     SPELL_UNCHECKED_CORRUPTION = 145679,
     SPELL_SELF_DOUBT           = 146124,
     SPELL_QUARANTINE_SAFETY    = 145779,
+    SPELL_FRAYED               = 146179,
 
     //Phase spells
     SPELL_LOOK_WITHIN          = 146837,
@@ -81,7 +82,14 @@ enum sEvents
     //Manifestation of Corruption
     EVENT_TEAR_REALITY         = 6,
 
-    EVENT_RE_ATTACK            = 7,
+    //Titanic Corruption
+    EVENT_BURST_OF_CORRUPTION  = 7,
+    EVENT_CORRUPTION_TC        = 8,
+    EVENT_HURL_CORRUPTION      = 9,
+    EVENT_PIERCING_CORRUPTION  = 10,
+    EVENT_TITANIC_SMASH        = 11,
+
+    EVENT_RE_ATTACK            = 12,
 };
 
 enum sData
@@ -162,6 +170,7 @@ class boss_amalgam_of_corruption : public CreatureScript
             }
 
             InstanceScript* instance;
+            bool one, two, three, four;
 
             void Reset()
             {
@@ -170,6 +179,10 @@ class boss_amalgam_of_corruption : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
                 ApplyOrRemoveBar(false);
+                one = false;
+                two = false;
+                three = false;
+                four = false;
             }
 
             void ApplyOrRemoveBar(bool state)
@@ -204,6 +217,38 @@ class boss_amalgam_of_corruption : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
+                if (HealthBelowPct(50) && !me->HasAura(SPELL_FRAYED))
+                {
+                    me->AddAura(SPELL_FRAYED, me);
+                    SummonManifestationofCorruption();
+                }
+
+                if (HealthBelowPct(40) && !four)
+                {
+                    four = true;
+                    SummonManifestationofCorruption();
+                }
+                else if (HealthBelowPct(30) && !three)
+                {
+                    three = true;
+                    SummonManifestationofCorruption();
+                }
+                else if (HealthBelowPct(20) && !two)
+                {
+                    two = true;
+                    SummonManifestationofCorruption();
+                }
+                else if (HealthBelowPct(10) && !one)
+                {
+                    one = true;
+                    SummonManifestationofCorruption();
+                }
+            }
+
+            void SummonManifestationofCorruption()
+            {
+                if (Creature* moc = me->SummonCreature(NPC_MANIFESTATION_OF_CORRUPTION, me->GetPositionX()+ 5.0f, me->GetPositionY(), me->GetPositionZ()))
+                    DoZoneInCombat(moc, 100.0f);
             }
 
             void DoAction(int32 const action)
@@ -407,8 +452,6 @@ public:
             events.Reset();
         }
 
-        void EnterEvadeMode(){}
-
         void EnterCombat(Unit* who){}
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -462,8 +505,6 @@ public:
         {
             events.Reset();
         }
-
-        void EnterEvadeMode(){}
 
         void EnterCombat(Unit* who)
         {
@@ -540,18 +581,53 @@ public:
             events.Reset();
         }
 
-        void EnterEvadeMode(){}
-
-        void EnterCombat(Unit* who){}
-
-
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_PIERCING_CORRUPTION, 14000);
+            events.ScheduleEvent(EVENT_TITANIC_SMASH, 16000);
+            events.ScheduleEvent(EVENT_HURL_CORRUPTION, 20000);
+            events.ScheduleEvent(EVENT_BURST_OF_CORRUPTION, 35000);
+        }
+        
         void UpdateAI(uint32 diff)
         {
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             events.Update(diff);
 
-          /*  while (uint32 eventId = events.ExecuteEvent())
-            {                
-            }*/
+            while (uint32 eventId = events.ExecuteEvent())
+            { 
+                switch (eventId)
+                {
+                case EVENT_PIERCING_CORRUPTION:
+                    if (me->getVictim())
+                        DoCast(me->getVictim(), SPELL_PIERCING_CORRUPTION);
+                    events.ScheduleEvent(EVENT_PIERCING_CORRUPTION, 14000);
+                    break;
+                case EVENT_TITANIC_SMASH:
+                    me->AttackStop();
+                    me->SetReactState(REACT_PASSIVE);
+                    DoCastAOE(SPELL_TITANIC_SMASH);
+                    events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
+                    events.ScheduleEvent(EVENT_TITANIC_SMASH, 16000);
+                    break;
+                case EVENT_HURL_CORRUPTION:
+                    if (me->getVictim())
+                        DoCast(me->getVictim(), SPELL_HURL_CORRUPTION);
+                    events.ScheduleEvent(EVENT_HURL_CORRUPTION, 20000);
+                    break;
+                case EVENT_BURST_OF_CORRUPTION:
+                    DoCastAOE(SPELL_BURST_OF_CORRUPTION);
+                    events.ScheduleEvent(EVENT_BURST_OF_CORRUPTION, 35000);
+                    break;
+                case EVENT_RE_ATTACK:
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 75.0f);
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -582,13 +658,14 @@ public:
             events.Reset();
         }
 
-        void EnterEvadeMode(){}
-
         void EnterCombat(Unit* who){}
 
 
         void UpdateAI(uint32 diff)
         {
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             events.Update(diff);
 
           /*  while (uint32 eventId = events.ExecuteEvent())

@@ -1238,6 +1238,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144421: //Corruption
     case 144482: //Tear Reality
     case 145073: //Residual Corruption
+    case 144628: //Titanic Smash
         return Effects[effect];
     }
 
