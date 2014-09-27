@@ -331,8 +331,14 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
         }
         case SPELLFAMILY_MONK:
         {
-            if (spellproto->Id == 115078)
-                return 4 * IN_MILLISECONDS;
+            switch (spellproto->Id)
+            {
+                case 115078: // Paralysis
+                case 116706: // Disable (Root)
+                    return 4 * IN_MILLISECONDS;
+                default:
+                    break;
+            }
             break;
         }
         default:
@@ -3541,6 +3547,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 116706: // Disable (Root)
+                    spellInfo->StackAmount = 0;
+                    spellInfo->ProcFlags = 0;
+                    break;
                 case 116023: // Sparring
                     spellInfo->AuraInterruptFlags = 0;
                     break;

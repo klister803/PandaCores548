@@ -7059,6 +7059,10 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
             break;
         // Custom MoP Script
         case SPELLFAMILY_MONK:
+        {
+            if (!caster)
+                break;
+
             switch (GetId())
             {
                 case 138130: // Storm, Earth and Fire (clone)
@@ -7068,27 +7072,19 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                             ai->RecalcStats();
                     break;
                 }
-                case 116095: // Disable : duration refresh every 1 second if target remains within 10 yards of the Monk
+                case 116095: // Disable : duration refresh every 14 second if target remains within 10 yards of the Monk
                 {
-                    if (caster && caster->getClass() == CLASS_MONK && target)
-                    {
+                    if (GetTickNumber() == GetTotalTicks())
                         if (target->IsInRange(caster, 0, 10))
-                        {
-                            if (AuraApplication* aura = target->GetAuraApplication(116095))
-                            {
-                                Aura* Disable = aura->GetBase();
-                                int32 maxDuration = Disable->GetMaxDuration();
-                                Disable->SetDuration(maxDuration);
-                            }
-                        }
-                    }
-
+                            if (Aura* Disable = GetBase())
+                                Disable->RefreshTimers();
                     break;
                 }
                 default:
                     break;
             }
             break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {

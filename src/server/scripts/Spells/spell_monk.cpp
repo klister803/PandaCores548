@@ -1970,52 +1970,6 @@ class spell_monk_soothing_mist : public SpellScriptLoader
         }
 };
 
-// Disable - 116095
-class spell_monk_disable : public SpellScriptLoader
-{
-    public:
-        spell_monk_disable() : SpellScriptLoader("spell_monk_disable") { }
-
-        class spell_monk_disable_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_disable_SpellScript);
-
-            bool snaredOnHit;
-
-            SpellCastResult CheckCast()
-            {
-                snaredOnHit = false;
-
-                if (GetCaster())
-                    if (Unit* target = GetCaster()->getVictim())
-                        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
-                            snaredOnHit = true;
-
-                return SPELL_CAST_OK;
-            }
-
-            void HandleOnHit()
-            {
-                if (Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                        if (Unit* target = GetHitUnit())
-                            if (snaredOnHit)
-                                _player->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_monk_disable_SpellScript::CheckCast);
-                OnHit += SpellHitFn(spell_monk_disable_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_disable_SpellScript();
-        }
-};
-
 // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
 class spell_monk_zen_pilgrimage : public SpellScriptLoader
 {
@@ -2401,7 +2355,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_elusive_brew();
     new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
-    new spell_monk_disable();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
     new spell_monk_fortifying_brew();
