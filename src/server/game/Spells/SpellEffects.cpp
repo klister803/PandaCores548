@@ -3815,6 +3815,8 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         {
             if (m_spellInfo->Effects[eff].IsEffect(SPELL_EFFECT_DISPEL))
                 break;
+            else
+                continue;
         }
         else LastDispelEff = true; break;
     }
