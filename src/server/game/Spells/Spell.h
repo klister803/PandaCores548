@@ -438,6 +438,7 @@ class Spell
         void TakeRunePower(bool didHit);
         void TakeReagents();
         void TakeCastItem();
+        void LinkedSpell(SpellLinkedType type = SPELL_LINK_CAST);
 
         SpellCastResult CheckCast(bool strict);
         SpellCastResult CheckPetCast(Unit* target);

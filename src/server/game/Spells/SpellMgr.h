@@ -94,10 +94,11 @@ enum SpellFamilyFlag
 
 enum SpellLinkedType
 {
-    SPELL_LINK_CAST     = 0,            // +: cast; -: remove
-    SPELL_LINK_HIT      = 1 * 200000,
-    SPELL_LINK_AURA     = 2 * 200000,   // +: aura; -: immune
-    SPELL_LINK_REMOVE   = 0,
+    SPELL_LINK_CAST         = 0,            // +: cast; -: remove
+    SPELL_LINK_ON_HIT       = 1 * 200000,
+    SPELL_LINK_AURA         = 2 * 200000,   // +: aura; -: immune
+    SPELL_LINK_BEFORE_HIT   = 3 * 200000,
+    SPELL_LINK_REMOVE       = 0,
 };
 
 enum SpellTriggeredType
