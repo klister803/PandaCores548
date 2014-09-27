@@ -5156,6 +5156,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 51755: // Camouflage taken damage
                     spellInfo->Effects[3].BasePoints = -10;
                     break;
+                case 91107: // Unholy Might. Hot Fix 5.4.7
+                    spellInfo->Effects[0].BasePoints = 35;
+                    break;
                 default:
                     break;
             }
