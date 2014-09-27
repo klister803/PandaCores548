@@ -24,6 +24,7 @@ enum eSpells
 {
     SPELL_BOUND_OF_GOLDEN_LOTUS             = 143497, //Bond of the Golden Lotus
     SPELL_EJECT_ALL_PASSANGERS              = 68576,
+    SPELL_DESPAWN_AT                        = 138175,
 
     //Rook
     SPELL_VENGEFUL_STRIKE                   = 144396, //Vengeful Strikes
@@ -37,7 +38,7 @@ enum eSpells
     SPELL_GOUGE                             = 143301, //Gouge
     SPELL_NOXIOUS_POISON                    = 143225, //Noxious Poison
     SPELL_INSTANT_POISON                    = 143210, //Instant Poison
-    SPELL_MARK_OF_ANGUISH_MEDITATION        = 143808, //Mark of Anguish
+    SPELL_MARK_OF_ANGUISH_MEDITATION        = 143812, //Mark of Anguish
 
     //Sun
     SPELL_SHA_SEAR                          = 143423, //Sha Sear
@@ -61,9 +62,10 @@ enum eSpells
     SPELL_MARK_OF_ANGUISH_JUMP              = 143808, //Mark of Anguish
     SPELL_MARK_OF_ANGUISH_SELECT_TARGET     = 143822, //Mark of Anguish by 143840
     SPELL_MARK_OF_ANGUISH_STAN              = 143840,
-    SPELL_SHADOW_WEAKNES                    = 144079, //prock spell on hit or something else
+    SPELL_MARK_OF_ANGUISH_DAMAGE            = 144365,
+    SPELL_SHADOW_WEAKNES_PROC               = 144079, //prock spell on hit or something else
     SPELL_DEBILITATION                      = 147383, //Debilitation
-    SPELL_SHADOW_WEAKNESS2                  = 144176, //charges targetGUID: Full: 0x70000000695B52A Type: Player Low: 110474538 
+    SPELL_SHADOW_WEAKNESS                   = 144176, //charges targetGUID: Full: 0x70000000695B52A Type: Player Low: 110474538 
     SPELL_SHADOW_WEAKNES_MASS               = 144081,
 };
 
@@ -101,9 +103,11 @@ struct boss_fallen_protectors : public BossAI
 
     void Reset()
     {
+        events.Reset();
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         _healthPhase = 0;
-        me->RemoveAllAreaObjects();
+        me->CastSpell(me, SPELL_DESPAWN_AT, true);
+        //me->RemoveAllAreaObjects();
     }
 
     void EnterCombat(Unit* who)
@@ -111,7 +115,9 @@ struct boss_fallen_protectors : public BossAI
         InitBattle();
     }
 
-    virtual void InitBattle() { events.SetPhase(PHASE_BATTLE); }
+    virtual void InitBattle() { 
+        events.SetPhase(PHASE_BATTLE);
+    }
 
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
     {
@@ -369,6 +375,14 @@ class boss_he_softfoot : public CreatureScript
                 DoCast(who, SPELL_INSTANT_POISON, false);
             }
 
+            void AttackStart(Unit* target)
+            {
+                if (events.IsInPhase(PHASE_DESPERATE_MEASURES) || events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
+                    return;
+
+                BossAI::AttackStart(target);
+            }
+
             void DoAction(int32 const action)
             {
                 boss_fallen_protectors::DoAction(action);
@@ -417,12 +431,16 @@ class boss_he_softfoot : public CreatureScript
                             me->RemoveAllAreaObjects();
                             break;
                         case EVENT_DESPERATE_MEASURES:
-                            if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
-                                DoCast(lotos, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
+                            me->CombatStop();
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
+                            DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
+                            break;
+                        case EVENT_LOTUS:
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, me->GetGUID());
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
                             break;
                     }
                 }
-
                 if (events.IsInPhase(PHASE_BATTLE))
                     DoMeleeAttackIfReady();
             }
@@ -870,7 +888,11 @@ public:
         {
             _target = guid;
             if (Unit* target = ObjectAccessor::FindUnit(guid))
+            {
+                if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
+                    sCreatureTextMgr->SendChat(owner, TEXT_GENERIC_0, 0);
                 AttackStart(target);
+            }
         }
 
         void DoAction(int32 const action)
@@ -892,7 +914,10 @@ public:
             npc_measure::UpdateAI(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
+            {
+                DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
                 DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
+            }
 
             DoMeleeAttackIfReady();
         }
@@ -986,7 +1011,6 @@ class spell_corrupted_brew : public SpellScriptLoader
             {
                 OnEffectHitTarget += SpellEffectFn(spell_corrupted_brew_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
-
         };
 
         SpellScript* GetSpellScript() const override
@@ -1195,6 +1219,88 @@ class spell_fallen_protectors_mark_of_anguish_select_first_target : public Spell
         }
 
 };
+
+//Shadow Weakness
+class spell_fallen_protectors_shadow_weakness_prock : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_shadow_weakness_prock() : SpellScriptLoader("spell_fallen_protectors_shadow_weakness_prock") { }
+
+        class spell_fallen_protectors_shadow_weakness_prock_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_fallen_protectors_shadow_weakness_prock_AuraScript);
+
+            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!aurEff)
+                    return;
+
+                Unit* _caster = GetCaster();
+                if (!_caster)
+                    return;
+
+                Unit* _target = eventInfo.GetProcTarget();
+                if (!_target)
+                    return;
+
+                _caster->CastSpell(_target, SPELL_SHADOW_WEAKNESS, false);
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_fallen_protectors_shadow_weakness_prock_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_fallen_protectors_shadow_weakness_prock_AuraScript();
+        }
+};
+
+//Mark of Anguish
+class spell_fallen_protectors_mark_of_anguish : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_mark_of_anguish() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish") { }
+
+        class spell_fallen_protectors_mark_of_anguish_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_fallen_protectors_mark_of_anguish_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Unit* target = GetTarget();
+                if (!target)
+                    return;
+
+                if(Unit* caster = GetCaster())
+                {
+                    target->CastSpell(target, SPELL_MARK_OF_ANGUISH_DAMAGE, true, NULL, NULL, caster->GetGUID());
+
+                    //By normal way should prock from our proc system... but where is caster and target is channel target... so this is custom prock reason.
+                    if (SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(SPELL_MARK_OF_ANGUISH_DAMAGE))
+                    {
+                        DamageInfo dmgInfoProc = DamageInfo(caster, target, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+                        caster->ProcDamageAndSpell(target, PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG, 0, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, aurEff->GetSpellInfo());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_fallen_protectors_mark_of_anguish_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_fallen_protectors_mark_of_anguish_AuraScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -1212,4 +1318,6 @@ void AddSC_boss_fallen_protectors()
     new spell_fallen_protectors_shadow_word_bane();
     new spell_fallen_protectors_calamity();
     new spell_fallen_protectors_mark_of_anguish_select_first_target();
+    new spell_fallen_protectors_shadow_weakness_prock();
+    new spell_fallen_protectors_mark_of_anguish();
 }
