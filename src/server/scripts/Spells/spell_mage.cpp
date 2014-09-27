@@ -532,7 +532,7 @@ class spell_mage_slow : public SpellScriptLoader
                 if(Unit* caster = GetCaster())
                     if(Player* player = caster->ToPlayer())
                         if (player->GetSelectedPlayer())
-                            amount /= 2;
+                            amount /= 5;
             }
 
             void Register()

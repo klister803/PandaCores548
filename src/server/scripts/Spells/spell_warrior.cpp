@@ -929,7 +929,7 @@ class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
                 if(Unit* caster = GetCaster())
                     if(Player* player = caster->ToPlayer())
                         if (player->GetSelectedPlayer())
-                            amount /= 2;
+                            amount /= 5;
             }
 
             void Register()

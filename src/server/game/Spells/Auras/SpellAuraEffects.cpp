@@ -1244,10 +1244,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             switch (m_spellInfo->Id)
             {
-                case 90315: // 
+                case 90315:  // Tailspin
+                case 5760:   // Mind-numbing Poison
+                case 58604:  // Lava Breath
+                case 50274:  // Spore Cloud                
+                case 25810:  // Mind-numbing Poison
+                case 126406: // Trample
                 {
                     if (target->GetTypeId() == TYPEID_PLAYER)
-                        amount = -25;
+                        amount = -10;
                 }
                 default:
                     break;
