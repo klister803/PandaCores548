@@ -1101,7 +1101,7 @@ enum SpellEffects
     SPELL_EFFECT_CREATE_AREATRIGGER                 = 179,
     SPELL_EFFECT_180                                = 180, // "Update Area Triggers" 106584 133355
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
-    SPELL_EFFECT_182                                = 182, // despawwn areatrigger
+    SPELL_EFFECT_DESPAWN_AREATRIGGER                = 182, // despawwn areatrigger
     SPELL_EFFECT_183                                = 183, // Unused (5.4.1)
     SPELL_EFFECT_REPUTATION_REWARD                  = 184, // add 400 (normal) 800 (10/25 player mode) Avengers of Hyjal (TDF ?) see 73843
     SPELL_EFFECT_185                                = 185, // Scene related

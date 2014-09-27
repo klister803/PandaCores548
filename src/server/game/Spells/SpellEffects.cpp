@@ -253,7 +253,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectCreateAreaTrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
-    &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
+    &Spell::EffectDespawnAreatrigger,                       //182 SPELL_EFFECT_DESPAWN_AREATRIGGER
     &Spell::EffectNULL,                                     //183 SPELL_EFFECT_183
     &Spell::EffectNULL,                                     //184 SPELL_EFFECT_REPUTATION_REWARD
     &Spell::EffectNULL,                                     //185 SPELL_EFFECT_185
@@ -8033,6 +8033,14 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
     plr->SaveToDB();
     plr->SendTalentsInfoData(false);
+}
+
+void Spell::EffectDespawnAreatrigger(SpellEffIndex effIndex)
+{
+    if (!m_caster)
+        return;
+
+    m_caster->RemoveAllAreaObjects();
 }
 
 void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
