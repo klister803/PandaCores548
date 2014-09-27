@@ -5166,8 +5166,26 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 51755: // Camouflage taken damage
                     spellInfo->Effects[3].BasePoints = -10;
                     break;
-                case 91107: // Unholy Might. Hot Fix 5.4.7
+                case 91107: // Unholy Might. Hot Fix 5.4.x
                     spellInfo->Effects[0].BasePoints = 35;
+                    break;
+                case 982: // Revive Pet. Hot Fix 5.4.x
+                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(5); // 2s
+                    break;
+                case 16246: // Clearcasting. Hot Fix 5.4.x
+                    spellInfo->Effects[1].BasePoints = 20;
+                    break;
+                case 50887: // Icy Talons. Hot Fix 5.4.x
+                    spellInfo->Effects[0].BasePoints = 45;
+                    break;
+                case 15473: // Shadowform. Hot Fix 5.4.x
+                    spellInfo->Effects[6].BasePoints = 100;
+                    break;
+                case 24858: // Moonkin Form. Hot Fix 5.4.x
+                    spellInfo->Effects[2].BasePoints = 100;
+                    break;
+                 case 127663: // Astral Communion. Hot Fix 5.4.x
+                    spellInfo->PreventionType = 0;
                     break;
                 default:
                     break;
