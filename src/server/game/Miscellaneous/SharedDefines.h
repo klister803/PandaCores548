@@ -620,7 +620,7 @@ enum SpellAttr6
     SPELL_ATTR6_UNK26                            = 0x04000000, // 26 related to player castable positive buff
     SPELL_ATTR6_UNK27                            = 0x08000000, // 27
     SPELL_ATTR6_UNK28                            = 0x10000000, // 28 Death Grip
-    SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS          = 0x20000000, // 29 ignores done percent damage mods?
+    SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS          = 0x20000000, // 29 ignores done percent damage mods and not crit
     SPELL_ATTR6_UNK30                            = 0x40000000, // 30
     SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS    = 0x80000000  // 31 Spells with this attribute skip applying modifiers to category cooldowns (only 2894)
 };

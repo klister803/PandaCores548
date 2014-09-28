@@ -2343,6 +2343,45 @@ class spell_item_eye_of_the_black_prince : public SpellScriptLoader
         }
 };
 
+class spell_item_book_of_the_ages : public SpellScriptLoader
+{
+    public:
+        spell_item_book_of_the_ages() : SpellScriptLoader("spell_item_book_of_the_ages") { }
+
+        class spell_item_book_of_the_ages_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_book_of_the_ages_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if(!caster)
+                    return;
+
+                int32 agila = caster->GetStat(STAT_AGILITY);
+                int32 intelect = caster->GetStat(STAT_INTELLECT);
+                int32 streight = caster->GetStat(STAT_STRENGTH);
+
+                if(agila > intelect && agila > streight)
+                    caster->CastSpell(caster, 147355, true);
+                else if(intelect > agila && intelect > streight)
+                    caster->CastSpell(caster, 147357, true);
+                else if(streight > intelect && streight > agila)
+                    caster->CastSpell(caster, 147359, true);
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_item_book_of_the_ages_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_book_of_the_ages_SpellScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2400,4 +2439,5 @@ void AddSC_item_spell_scripts()
     new spell_item_elixir_of_wandering_spirits();
     new spell_item_ai_li_skymirror();
     new spell_item_eye_of_the_black_prince();
+    new spell_item_book_of_the_ages();
 }

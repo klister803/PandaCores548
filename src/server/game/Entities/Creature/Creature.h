@@ -81,6 +81,7 @@ enum CreatureFlagsExtra
 
 #define MAX_KILL_CREDIT 2
 #define CREATURE_REGEN_INTERVAL 5 * IN_MILLISECONDS
+#define PET_FOCUS_REGEN_INTERVAL 2 * IN_MILLISECONDS
 
 #define MAX_CREATURE_QUEST_ITEMS 6
 
@@ -838,6 +839,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void RegenerateMana();
         void RegenerateHealth();
         void Regenerate(Powers power);
+        uint32 m_regenTimerCount;
+        uint32 m_petregenTimer;
         MovementGeneratorType m_defaultMovementType;
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;

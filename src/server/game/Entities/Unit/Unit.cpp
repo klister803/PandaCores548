@@ -12999,7 +12999,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         return false;
 
     // not critting spell
-    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
+    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return false;
 
     float crit_chance = 0.0f;
@@ -14243,6 +14243,15 @@ float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spe
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_PROC_PER_MINUTE, PPM);
 
     return floor((WeaponSpeed * PPM) / 600.0f);   // result is chance in percents (probability = Speed_in_sec * (PPM / 60))
+}
+
+bool Unit::GetRPPMProcChance(double &cooldown, float RPPM)
+{
+    double baseCD = 60.0f / RPPM;
+    float chance = ((baseCD - cooldown) / baseCD) * 100.0f;
+    cooldown += baseCD;
+
+    return roll_chance_f(chance);
 }
 
 void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
@@ -18808,7 +18817,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 spellProcId = procSpell ? procSpell->Id : 0;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
-     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
+    int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
@@ -19131,7 +19140,6 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
         if(SpellProcsPerMinuteEntry const* procPPM = sSpellProcsPerMinuteStore.LookupEntry(spellProto->procPerMinId))
         {
             spellPPM = procPPM->ppmRate;
-
             if (!isVictim)
             {
                 if(Player* player = ToPlayer())
@@ -19144,10 +19152,13 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 if(procPPMmod->specId == specId)
                                     spellPPM *= procPPMmod->ppmRateMod + 1;
                         }
-                    spellPPM *= player->GetBaseMHastRatingPct();
+                    spellPPM *= GetMaxBaseHastRatingPct();
+                    double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
+                    bool procked = GetRPPMProcChance(cooldown, spellPPM);
+                    if(procked)
+                        player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
+                    return procked;
                 }
-                uint32 WeaponSpeed = GetAttackTime(attType);
-                chance = GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);
             }
             else
             {
@@ -19161,19 +19172,24 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                                 if(procPPMmod->specId == specId)
                                     spellPPM *= procPPMmod->ppmRateMod + 1;
                         }
-                    spellPPM *= player->GetBaseMHastRatingPct();
+                    spellPPM *= victim->GetMaxBaseHastRatingPct();
+                    double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
+                    bool procked = GetRPPMProcChance(cooldown, spellPPM);
+                    if(procked)
+                        player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
+                    return procked;
                 }
-                uint32 WeaponSpeed = victim->GetAttackTime(attType);
-                chance = victim->GetPPMProcChance(WeaponSpeed, spellPPM, spellProto);
             }
         }
+        return roll_chance_f(chance);
     }
-    // Apply chance modifer aura
-    if (Player* modOwner = GetSpellModOwner())
+    else
     {
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CHANCE_OF_SUCCESS, chance);
+        // Apply chance modifer aura
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CHANCE_OF_SUCCESS, chance);
+        return roll_chance_f(chance);
     }
-    return roll_chance_f(chance);
 }
 
 bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)

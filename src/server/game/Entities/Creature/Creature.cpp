@@ -163,6 +163,7 @@ m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_m
 m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_onVehicleAccessory(false)
 {
     m_regenTimer = CREATURE_REGEN_INTERVAL;
+    m_petregenTimer = 0;
     m_valuesCount = UNIT_END;
     isCasterPet = false;
 
@@ -175,6 +176,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
     m_CombatDistance = 0;//MELEE_RANGE;
+    m_regenTimerCount = 0;
 
     m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
     m_LOSCheck_player = false;
@@ -609,6 +611,14 @@ void Creature::Update(uint32 diff)
                     m_regenTimer -= diff;
             }
 
+            if(HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
+            {
+                m_regenTimerCount += diff;
+                m_petregenTimer += diff;
+                if((m_petregenTimer >= 400) && (!IsVehicle() || GetVehicleKit()->GetVehicleInfo()->m_powerType != POWER_PYRITE))
+                    Regenerate(getPowerType());
+            }
+
             if (m_regenTimer != 0)
                break;
 
@@ -616,30 +626,10 @@ void Creature::Update(uint32 diff)
                              !getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself() ||                // or the victim/owner/charmer is not a player
                              !getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()->isGameMaster()); // or the victim/owner/charmer is not a GameMaster
 
-            /*if (m_regenTimer <= diff)
-            {*/
             if (!IsInEvadeMode() && (!bInCombat || IsPolymorphed())) // regenerate health if not in combat or if polymorphed
                 RegenerateHealth();
 
-            if(HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
-            {
-                if (getPowerType() == POWER_ENERGY)
-                {
-                    if (!IsVehicle() || GetVehicleKit()->GetVehicleInfo()->m_powerType != POWER_PYRITE)
-                        Regenerate(POWER_ENERGY);
-                }
-                else if (getPowerType() == POWER_MANA)
-                    if (!IsVehicle() || GetVehicleKit()->GetVehicleInfo()->m_powerType != POWER_TYPE_VAULT_CRACKING_PROGRESS)
-                        RegenerateMana();
-            }
-
-            /*if (!bIsPolymorphed) // only increase the timer if not polymorphed
-                    m_regenTimer += CREATURE_REGEN_INTERVAL - diff;
-            }
-            else
-                if (!bIsPolymorphed) // if polymorphed, skip the timer
-                    m_regenTimer -= diff;*/
-            m_regenTimer = CREATURE_REGEN_INTERVAL;
+            m_regenTimer = isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL;
             break;
         }
         default:
@@ -647,37 +637,6 @@ void Creature::Update(uint32 diff)
     }
 
     sScriptMgr->OnCreatureUpdate(this, diff);
-}
-
-void Creature::RegenerateMana()
-{
-    uint32 curValue = GetPower(POWER_MANA);
-    uint32 maxValue = GetMaxPower(POWER_MANA);
-
-    if (curValue >= maxValue)
-        return;
-
-    uint32 addvalue = 0;
-
-    // Combat and any controlled creature
-    if (isInCombat() || GetCharmerOrOwnerGUID())
-    {
-        float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
-        float Spirit = GetStat(STAT_SPIRIT);
-        addvalue = uint32((Spirit / 5.0f + 17.0f) * ManaIncreaseRate);
-    }
-    else
-        addvalue = maxValue / 3;
-
-    // Apply modifiers (if any).
-    AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
-        if ((*i)->GetMiscValue() == POWER_MANA)
-            AddPct(addvalue, (*i)->GetAmount());
-
-    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) * CREATURE_REGEN_INTERVAL / (5 * IN_MILLISECONDS);
-
-    ModifyPower(POWER_MANA, addvalue);
 }
 
 void Creature::RegenerateHealth()

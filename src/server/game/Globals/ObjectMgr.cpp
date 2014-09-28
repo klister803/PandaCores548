@@ -2781,8 +2781,8 @@ void ObjectMgr::LoadPetStats()
     uint32 oldMSTime = getMSTime();
     _petStatsStore.clear();
 
-    //                                                 0     1   2     3      4        5       6          7        8         9     10
-    QueryResult result = WorldDatabase.Query("SELECT entry, hp, ap, ap_type, spd, school_mask, state, energy, energy_type, armor, type FROM pet_stats");
+    //                                                 0      1     2       3        4          5           6        7            8           9       10      11
+    QueryResult result = WorldDatabase.Query("SELECT entry, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, `state`, `energy`, `energy_type`, `armor`, `type`, `damage` FROM pet_stats");
 
     if (!result)
     {
@@ -2813,6 +2813,7 @@ void ObjectMgr::LoadPetStats()
         stats.energy_type  = fields[8].GetUInt32();
         stats.armor  = fields[9].GetFloat();
         stats.type  = fields[10].GetUInt32();
+        stats.damage  = fields[11].GetFloat();
         _petStatsStore[entry] = stats;
 
         ++count;

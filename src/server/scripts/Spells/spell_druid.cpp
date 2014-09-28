@@ -1944,15 +1944,29 @@ class spell_dru_astral_communion : public SpellScriptLoader
             PrepareAuraScript(spell_dru_astral_communion_AuraScript);
 
             int32 direction;
+            bool Load()
+            {
+                direction = 1;
+                return true;
+            }
+
             void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
-                // check eclipse markers for direction
-                if (Player* player = GetTarget()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
-                    if (player->HasAura(67484))
+                    int32 powerAmount = caster->GetPower(POWER_ECLIPSE);
+                    if((powerAmount < 0 && !caster->HasAura(48518)) || (powerAmount > 0 && caster->HasAura(48517)))
                         direction = -1;
-                    else if (!player->HasAura(67483))
-                        direction = urand(0, 1) ? 1 : -1;
+                    else if(powerAmount == 0 && caster->HasAura(67484))
+                        direction = -1;
+
+                    if (Aura* aura = caster->GetAura(145138))
+                    {
+                        int32 _amount = 100 * direction;
+                        caster->CastCustomSpell(caster, 89265, &_amount, NULL, NULL, true);
+                        aura->Remove(AURA_REMOVE_BY_DEFAULT);
+                        GetAura()->Remove();
+                    }
                 }
             }
 
@@ -2022,15 +2036,6 @@ class spell_dru_celestial_alignment : public SpellScriptLoader
                     return;
 
                 player->RemoveAura(SPELL_DRUID_NATURES_GRACE);
-
-                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                // check Soul of the Forest
-                if (removeMode != AURA_REMOVE_BY_CANCEL && player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
-                {
-                    int32 bp = urand(0, 1) ? -20 : 20;
-                    // Eclipse (energize)
-                    player->CastCustomSpell(player, 80745, &bp, NULL, NULL, true);
-                }
             }
 
             void Register()
@@ -2172,9 +2177,8 @@ class spell_dru_stampeding_roar : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        target->RemoveMovementImpairingAuras();
+                if (Unit* target = GetHitUnit())
+                    target->RemoveMovementImpairingAuras();
             }
 
             void Register()
@@ -2884,15 +2888,6 @@ class spell_druid_eclipse_buff : public SpellScriptLoader
                     return;
 
                 player->RemoveAurasDueToSpell(SPELL_DRUID_LUNAR_ECLIPSE_OVERRIDE);
-
-                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                // check Soul of the Forest
-                if (removeMode != AURA_REMOVE_BY_CANCEL && player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
-                {
-                    int32 bp = GetId() == 48517 ? -20 : 20;
-                    // Eclipse (energize)
-                    player->CastCustomSpell(player, 80745, &bp, NULL, NULL, true);
-                }
             }
 
             void Register()

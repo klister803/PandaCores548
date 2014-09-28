@@ -2957,11 +2957,8 @@ void Player::Regenerate(Powers power)
     float addvalue = 0.0f;
 
     // Powers now benefit from haste.
-    float rangedHaste = GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
-    float regenmod = 1.0f / GetFloatValue(UNIT_MOD_HASTE_REGEN);
-    bool  needUpdate = false;
 
     switch (power)
     {
@@ -2990,14 +2987,12 @@ void Player::Regenerate(Powers power)
         case POWER_FOCUS: // Regenerate Focus
         {
             addvalue += 1.0f * m_baseRHastRatingPct * sWorld->getRate(RATE_POWER_FOCUS);
-            needUpdate = true;
             break;
         }
         case POWER_ENERGY: // Regenerate Energy
         {
             float defaultreg = 0.01f * m_regenTimer;
             addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
-            needUpdate = true;
             break;
         }
         case POWER_RUNIC_POWER: // Regenerate Runic Power
@@ -3070,7 +3065,7 @@ void Player::Regenerate(Powers power)
     }
     else if (addvalue > 0.0f)
     {
-        if (curValue == maxValue && !needUpdate)
+        if (saveCur == maxValue)
             return;
     }
     else
@@ -24447,6 +24442,14 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
     sc.end = end_time;
     sc.itemid = itemid;
     m_spellCooldowns[spellid] = sc;
+}
+
+void Player::AddPPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
+{
+    SpellCooldown sc;
+    sc.end = end_time;
+    sc.itemid = itemid;
+    m_pppmspellCooldowns[spellid] = sc;
 }
 
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)

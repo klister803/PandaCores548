@@ -55,7 +55,6 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
     }
 
     m_name = "Pet";
-    m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
     m_Update    = false;
 }
 
@@ -611,24 +610,6 @@ void Pet::Update(uint32 diff)
                     return;
                 }
             }
-
-            //regenerate focus for hunter pets or energy for deathknight's ghoul
-            switch (getPowerType())
-            {
-                case POWER_FOCUS:
-                {
-                    m_regenTimer += diff;
-                    if (m_regenTimer >= 2000)
-                    {
-                        Regenerate(POWER_FOCUS);
-                        m_regenTimer -= 2000;
-                    }
-                    break;
-                }
-                default:
-                    m_regenTimer = 0;
-                    break;
-            }
             break;
         }
         default:
@@ -640,31 +621,46 @@ void Pet::Update(uint32 diff)
 
 void Creature::Regenerate(Powers power)
 {
-    uint32 curValue = GetPower(power);
     uint32 maxValue = GetMaxPower(power);
 
-    if (curValue >= maxValue)
+    uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+    if (powerIndex == MAX_POWERS)
+        return;
+
+    int32 saveCur = GetPower(power);
+    uint32 curValue = saveCur;
+
+    if (!maxValue || curValue == maxValue)
         return;
 
     float addvalue = 0.0f;
-    float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->GetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE) : 0.0f;
-    Unit* owner = GetOwner();
 
     switch (power)
     {
+        case POWER_MANA:
+        {
+            // Combat and any controlled creature
+            if (isInCombat() || GetCharmerOrOwnerGUID())
+            {
+                float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
+                float Spirit = GetStat(STAT_SPIRIT);
+                addvalue = uint32((Spirit / 5.0f + 17.0f) * ManaIncreaseRate);
+            }
+            else
+                addvalue = maxValue / 3;
+            break;
+        }
         case POWER_FOCUS:
         {
-            float hastbonus = 1.0f;
-            if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                hastbonus = owner->ToPlayer()->GetBaseRHastRatingPct();
-            // For hunter pets - Pets regen focus 125% more faster than owners
-            addvalue += 10.0f * hastbonus * sWorld->getRate(RATE_POWER_FOCUS);
+            float defaultreg = 0.005f * m_petregenTimer;
+            addvalue += defaultreg * m_baseRHastRatingPct * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         }
         case POWER_ENERGY:
         {
-            // For deathknight's ghoul and Warlock's pets
-            addvalue = 20;
+            float defaultreg = 0.01f * m_petregenTimer;
+            addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate: defaultreg %f m_baseMHastRatingPct %f, addvalue %f", defaultreg, m_baseMHastRatingPct, addvalue);
             break;
         }
         default:
@@ -677,14 +673,49 @@ void Creature::Regenerate(Powers power)
         if (Powers((*i)->GetMiscValue()) == power)
             AddPct(addvalue, (*i)->GetAmount());
 
-    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (isHunterPet()? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
+    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_petregenTimer) / (5 * IN_MILLISECONDS);
 
-    int32 intAddValue = int32(addvalue);
+    if (addvalue <= 0.0f)
+    {
+        if (curValue == 0)
+            return;
+    }
+    else if (addvalue > 0.0f)
+    {
+        if (saveCur == maxValue)
+            return;
+    }
+    else
+        return;
 
     if (this->IsAIEnabled)
-        this->AI()->RegeneratePower(power, intAddValue);
+        this->AI()->RegeneratePower(power, addvalue);
 
-    ModifyPower(power, intAddValue);
+    uint32 integerValue = uint32(fabs(addvalue));
+
+    if (addvalue < 0.0f)
+    {
+        if (curValue > integerValue)
+            curValue -= integerValue;
+        else
+            curValue = 0;
+    }
+    else
+    {
+        curValue += integerValue;
+        if (curValue > maxValue)
+            curValue = maxValue;
+    }
+
+    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL))
+    {
+        SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+        m_regenTimerCount -= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL);
+    }
+    else
+        UpdateInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
+
+    m_petregenTimer = 0;
 }
 
 void Pet::Remove(PetSlot mode, bool returnreagent)
@@ -825,6 +856,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     SetLevel(petlevel);
     Unit* owner = GetOwner();
+    bool damageSet = false;
 
     //Determine pet type
     PetType petType = getPetType();
@@ -888,6 +920,12 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
             }
         }
+        if(pStats->damage && owner)
+        {
+            damageSet = true;
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
+        }
         if(pStats->type)
             SetCasterPet(true);
     }
@@ -918,8 +956,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     SetBonusDamage(0);
     UpdateAllStats();
 
-    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + cinfo->mindmg));
-    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + cinfo->maxdmg));
+    if(!damageSet)
+    {
+        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + cinfo->mindmg));
+        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + cinfo->maxdmg));
+    }
 
     if (petType == HUNTER_PET)
     {
@@ -1814,7 +1855,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
         }
     }
 
-    //for all pets
+    //for all hunters pets
+    if(isHunterPet())
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(-1))
     {
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)

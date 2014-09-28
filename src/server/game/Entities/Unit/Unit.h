@@ -1614,7 +1614,8 @@ class Unit : public WorldObject
 
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         float GetWeaponProcChance() const;
-        float GetPPMProcChance(uint32 WeaponSpeed, float PPM,  const SpellInfo* spellProto) const;
+        float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
+        bool GetRPPMProcChance(double &cooldown, float RPPM);
 
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
@@ -2001,6 +2002,20 @@ class Unit : public WorldObject
         void UpdateHastMod();
         void UpdateFocusRegen();
         void UpdateEnergyRegen();
+        float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
+        float GetBaseRHastRatingPct() const { return m_baseRHastRatingPct; }
+        float GetMaxBaseHastRatingPct() const
+        {
+            float baseHastRating = m_baseMHastRatingPct;
+
+            if(m_baseRHastRatingPct > baseHastRating)
+                baseHastRating = m_baseRHastRatingPct;
+
+            if(m_baseHastRatingPct > baseHastRating)
+                baseHastRating = m_baseHastRatingPct;
+
+            return baseHastRating;
+        }
 
         void SetCurrentCastedSpell(Spell* pSpell);
         virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
@@ -2391,6 +2406,7 @@ class Unit : public WorldObject
 
         float  m_baseRHastRatingPct;
         float  m_baseMHastRatingPct;
+        float  m_baseHastRatingPct;
         //Combat rating
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
 

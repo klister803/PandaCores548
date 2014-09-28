@@ -148,7 +148,7 @@ class CreatureAI : public UnitAI
         virtual void OwnerAttacked(Unit* /*target*/) {}
 
         // Called when a creature regen one of his power
-        virtual void RegeneratePower(Powers power, int32& value) {}
+        virtual void RegeneratePower(Powers power, float& value) {}
 
         virtual void RecalcStats() {}
 

@@ -198,6 +198,7 @@ struct SpellChargeData
     uint32 timer;
 };
 
+typedef std::map<uint32, SpellCooldown> PPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef std::map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
@@ -2169,8 +2170,15 @@ class Player : public Unit, public GridObject<Player>
             double t = getPreciseTime();
             return uint32(itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
+        double GetPPPMSpellCooldownDelay(uint32 spell_id) const
+        {
+            PPPMSpellCooldowns::const_iterator itr = m_pppmspellCooldowns.find(spell_id);
+            double t = getPreciseTime();
+            return uint32(itr != m_pppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
+        }
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
+        void AddPPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
@@ -2559,8 +2567,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
-
-        float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
 
         uint32 GetBlockPercent() { return GetUInt32Value(PLAYER_SHIELD_BLOCK); }
         bool CanParry() const { return m_canParry; }
@@ -3088,8 +3094,6 @@ class Player : public Unit, public GridObject<Player>
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
 
-        float GetBaseRHastRatingPct() const { return m_baseRHastRatingPct; }
-
         void _LoadStore();
 
         void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
@@ -3498,6 +3502,7 @@ class Player : public Unit, public GridObject<Player>
         ReputationMgr  m_reputationMgr;
         BattlePetMgr   m_battlePetMgr;
 
+        PPPMSpellCooldowns m_pppmspellCooldowns;
         SpellCooldowns m_spellCooldowns;
         SpellChargeDataMap m_spellChargeData;
         UCSpellChargeDataMap m_uncategorySpellChargeData;

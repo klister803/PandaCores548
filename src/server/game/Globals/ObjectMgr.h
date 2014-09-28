@@ -416,6 +416,7 @@ struct PetStats
     int32 energy;
     int32 energy_type;
     float armor;
+    float damage;
     int32 type;
 };
 

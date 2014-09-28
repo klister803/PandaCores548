@@ -951,6 +951,8 @@ void Unit::UpdateHastMod()
     if(player)
         amount = player->GetRatingBonusValue(CR_HASTE_SPELL);
 
+    m_baseHastRatingPct = amount / 100.0f + 1.0f;
+
     amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
     amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
     amount += GetTotalAuraModifier(SPELL_AURA_MELEE_SLOW);
