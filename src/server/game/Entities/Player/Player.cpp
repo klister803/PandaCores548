@@ -29931,7 +29931,7 @@ bool Player::IsForbiddenMapForLevel(uint32 mapid, uint32 zone)
         // Outland
         case 530:
             // Blood Elf start location and Drenei
-            if (!zone || zone == 3430 || zone == 3433 || zone == 3524 || zone == 3525 || zone == 3487 || zone == 3557 || zone == 3479 || zone == 6456 || zone 6455)
+            if (!zone || zone == 3430 || zone == 3433 || zone == 3524 || zone == 3525 || zone == 3487 || zone == 3557 || zone == 3479 || zone == 6456 || zone == 6455)
                 return false;
 
             // Isle of Quel'Danas
