@@ -65,6 +65,7 @@ public:
         uint64 npcGoldenLotosMoverGUID;
         uint64 npcGoldenLotosMainGUID;
         uint64 npcGoldenLotosGUID[3];
+        uint64 npcEmbodiesGUID[6];
 
         void Initialize()
         {
@@ -110,6 +111,7 @@ public:
             garroshGuid         = 0;
 
             memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
+            memset(npcEmbodiesGUID, 0, 6 * sizeof(uint64));
         }
 
         void OnPlayerEnter(Player* player)
@@ -173,6 +175,25 @@ public:
             case NPC_GOLD_LOTOS_ROOK:
                 npcGoldenLotosGUID[2] = creature->GetGUID();
                 break;
+            case NPC_EMBODIED_ANGUISH_OF_HE:
+                npcEmbodiesGUID[0] = creature->GetGUID();
+                break;
+            case NPC_EMBODIED_DESPERATION_OF_SUN:
+                npcEmbodiesGUID[1] = creature->GetGUID();
+                break;
+            case NPC_EMBODIED_DESPIRE_OF_SUN:
+                npcEmbodiesGUID[2] = creature->GetGUID();
+                break;
+            case NPC_EMBODIED_MISERY_OF_ROOK:
+                npcEmbodiesGUID[3] = creature->GetGUID();
+                break;
+            case NPC_EMBODIED_GLOOM_OF_ROOK:
+                npcEmbodiesGUID[4] = creature->GetGUID();
+                break;
+            case NPC_EMBODIED_SORROW_OF_ROOK:
+                npcEmbodiesGUID[5] = creature->GetGUID();
+                break;
+                
             //  
             case NPC_NORUSHEN:  
                 noryshenGuid = creature->GetGUID();
@@ -342,6 +363,18 @@ public:
                     return npcGoldenLotosGUID[1];
                 case NPC_GOLD_LOTOS_ROOK:
                     return npcGoldenLotosGUID[2];
+                case NPC_EMBODIED_ANGUISH_OF_HE:
+                    return npcEmbodiesGUID[0];
+                case NPC_EMBODIED_DESPERATION_OF_SUN:
+                    return npcEmbodiesGUID[1];
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                    return npcEmbodiesGUID[2];
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                    return npcEmbodiesGUID[3];
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                    return npcEmbodiesGUID[4];
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    return npcEmbodiesGUID[5];
 
                 //  
                 case NPC_NORUSHEN:  

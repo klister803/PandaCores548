@@ -63,6 +63,7 @@ enum eSpells
     SPELL_MARK_OF_ANGUISH_SELECT_TARGET     = 143822, //Mark of Anguish by 143840
     SPELL_MARK_OF_ANGUISH_STAN              = 143840,
     SPELL_MARK_OF_ANGUISH_DAMAGE            = 144365,
+    SPELL_MARK_OF_ANGUISH_GIVE_A_FRIEND     = 143842,
     SPELL_SHADOW_WEAKNES_PROC               = 144079, //prock spell on hit or something else
     SPELL_DEBILITATION                      = 147383, //Debilitation
     SPELL_SHADOW_WEAKNESS                   = 144176, //charges targetGUID: Full: 0x70000000695B52A Type: Player Low: 110474538 
@@ -362,6 +363,9 @@ class boss_he_softfoot : public CreatureScript
 
             void InitBattle()
             {
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
+
+                me->SetReactState(REACT_AGGRESSIVE);
                 boss_fallen_protectors::InitBattle();
 
                 events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
@@ -399,9 +403,15 @@ class boss_he_softfoot : public CreatureScript
                 return !target->HasUnitState(UNIT_STATE_STUNNED);
             }
 
+            //bool CanAIAttack(Unit const* target) const
+            //{
+            //    return const_cast<EventMap*>(&events)->IsInPhase(PHASE_BATTLE);
+            //}
+
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                    me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -431,7 +441,9 @@ class boss_he_softfoot : public CreatureScript
                             me->RemoveAllAreaObjects();
                             break;
                         case EVENT_DESPERATE_MEASURES:
-                            me->CombatStop();
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            me->GetMotionMaster()->MovementExpired();
                             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
                             DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
                             break;
@@ -891,7 +903,24 @@ public:
             {
                 if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
                     sCreatureTextMgr->SendChat(owner, TEXT_GENERIC_0, 0);
+
+                me->CastSpell(target, SPELL_MARK_OF_ANGUISH_JUMP, true);
+                target->CastSpell(target, SPELL_DEBILITATION, true);
+                me->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
                 AttackStart(target);
+            }
+        }
+
+        void AttackStart(Unit* target)
+        {
+            if (target->GetGUID() ==_target)
+                npc_measure::AttackStart(target);
+            else if (_target)
+            {
+                //If player leave from game or isDead find new target.
+                Unit* target = ObjectAccessor::FindUnit(_target);
+                if (!target || !target->isAlive())
+                    events.ScheduleEvent(EVENT_1, 100);
             }
         }
 
@@ -915,6 +944,7 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
+                me->InterruptNonMeleeSpells(false);
                 DoCast(me, SPELL_SHADOW_WEAKNES_PROC, true);
                 DoCast(me, SPELL_MARK_OF_ANGUISH_SELECT_TARGET, true);
             }
@@ -1200,8 +1230,6 @@ class spell_fallen_protectors_mark_of_anguish_select_first_target : public Spell
                 if (!target)
                     return;
 
-                caster->CastSpell(target, SPELL_MARK_OF_ANGUISH_STAN, false);
-
                 if(caster->GetAI())
                     caster->GetAI()->SetGUID(target->GetGUID(), true);
             }
@@ -1301,6 +1329,51 @@ class spell_fallen_protectors_mark_of_anguish : public SpellScriptLoader
         }
 };
 
+//SPELL_MARK_OF_ANGUISH_GIVE_A_FRIEND     = 143842,
+class spell_fallen_protectors_mark_of_anguish_transfer : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_mark_of_anguish_transfer() : SpellScriptLoader("spell_fallen_protectors_mark_of_anguish_transfer") { }
+
+        class spell_fallen_protectors_mark_of_anguish_transfer_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                InstanceScript* instance = caster->GetInstanceScript();
+                if (!instance)
+                    return;
+
+                Unit* target = GetHitUnit();
+                if (!target)
+                    return;
+
+                Creature* mesOfHe = instance->instance->GetCreature(instance->GetData64(NPC_EMBODIED_ANGUISH_OF_HE));
+                if (!mesOfHe)
+                    return;
+
+                mesOfHe->CastSpell(mesOfHe, SPELL_SHADOW_WEAKNES_MASS, true);
+                caster->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_STAN);
+                mesOfHe->GetAI()->SetGUID(target->GetGUID(), true);
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_fallen_protectors_mark_of_anguish_transfer_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_fallen_protectors_mark_of_anguish_transfer_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -1320,4 +1393,5 @@ void AddSC_boss_fallen_protectors()
     new spell_fallen_protectors_mark_of_anguish_select_first_target();
     new spell_fallen_protectors_shadow_weakness_prock();
     new spell_fallen_protectors_mark_of_anguish();
+    new spell_fallen_protectors_mark_of_anguish_transfer();
 }
