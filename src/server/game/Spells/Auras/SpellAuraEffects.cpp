@@ -1243,12 +1243,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         case SPELL_AURA_HASTE_SPELLS:
         {
             switch (m_spellInfo->Id)
-            {
-                case 90315:  // Tailspin
-                case 5760:   // Mind-numbing Poison
-                case 58604:  // Lava Breath
-                case 50274:  // Spore Cloud                
+            {                
+                case 5760:   // Mind-numbing Poison                
                 case 25810:  // Mind-numbing Poison
+                case 58604:  // Lava Breath
+                case 90315:  // Tailspin
                 case 126406: // Trample
                 {
                     if (target->GetTypeId() == TYPEID_PLAYER)
