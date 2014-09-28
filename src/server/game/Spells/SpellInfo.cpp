@@ -2799,10 +2799,6 @@ uint32 SpellInfo::_GetExplicitTargetMask() const
 
 bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
 {
-    // not found a single positive spell with this attribute
-    if (Attributes & SPELL_ATTR0_DEBUFF)
-        return false;
-
     switch (SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -2817,6 +2813,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 61716: // Rabbit Costume
                 case 61734: // Noblegarden Bunny
                 case 62344: // Fists of Stone
+                case 143842:// Mark of Anguish 
                     return true;
                 default:
                     break;
@@ -2885,6 +2882,10 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
         default:
             break;
     }
+
+    // not found a single positive spell with this attribute
+    if (Attributes & SPELL_ATTR0_DEBUFF)
+        return false;
 
     switch (Mechanic)
     {
