@@ -58,6 +58,14 @@ enum WarriorSpells
     WARRIOR_SPELL_GLYPH_OF_GAG_ORDER            = 58357,
     WARRIOR_SPELL_SILENCED_GAG_ORDER            = 18498,
     WARRIOR_SPELL_T16_DPS_2P_BONUS              = 144436,
+    WARRIOR_SPELL_REFLECTION_SHIELD_EQUIPED     = 146120,
+    WARRIOR_SPELL_REFLECTION_SHIELD_HORDE       = 146122,
+    WARRIOR_SPELL_REFLECTION_SHIELD_ALLIANCE    = 147923,
+    WARRIOR_SPELL_SHIELDWALL_SHIELD_EQUIPED     = 146128,
+    WARRIOR_SPELL_SHIELDWALL_SHIELD_HORDE       = 146127,
+    WARRIOR_SPELL_SHIELDWALL_SHIELD_ALLIANCE    = 147925,
+    WARRIOR_SPELL_SPELL_REFLECTION              = 23920,
+    WARRIOR_SPELL_SHIELDWALL                    = 871,
 };
 
 // Stampeding Shout - 122294
@@ -1170,6 +1178,58 @@ class spell_warr_raging_blow_remove : public SpellScriptLoader
         }
 };
 
+// Spell Reflection - 23920, Shield Wall - 871. Visual shield
+class spell_warr_shield_visual : public SpellScriptLoader
+{
+    public:
+        spell_warr_shield_visual() : SpellScriptLoader("spell_warr_shield_visual") { }
+
+        class spell_warr_shield_visual_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_shield_visual_SpellScript);
+            
+            void HandleOnCast()
+            {                
+                Player* caster = GetCaster()->ToPlayer();
+                
+                if (GetSpellInfo()->Id == WARRIOR_SPELL_SPELL_REFLECTION)
+                {
+                        if (!caster->GetShield())
+                        {
+                            if (caster->GetTeam() == HORDE)
+                                    caster->CastSpell(caster, WARRIOR_SPELL_REFLECTION_SHIELD_HORDE, true);
+                                else
+                                    caster->CastSpell(caster, WARRIOR_SPELL_REFLECTION_SHIELD_ALLIANCE, true);
+                        }
+                        else
+                            caster->CastSpell(caster, WARRIOR_SPELL_REFLECTION_SHIELD_EQUIPED, true);
+                }
+                if (GetSpellInfo()->Id == WARRIOR_SPELL_SHIELDWALL)
+                {
+                        if (!caster->GetShield())
+                        {
+                            if (caster->GetTeam() == HORDE)
+                                    caster->CastSpell(caster, WARRIOR_SPELL_SHIELDWALL_SHIELD_HORDE, true);
+                                else
+                                    caster->CastSpell(caster, WARRIOR_SPELL_SHIELDWALL_SHIELD_ALLIANCE, true);
+                        }
+                        else
+                            caster->CastSpell(caster, WARRIOR_SPELL_SHIELDWALL_SHIELD_EQUIPED, true);
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_warr_shield_visual_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_shield_visual_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1202,4 +1262,5 @@ void AddSC_warrior_spell_scripts()
     new spell_glyph_of_gag_order();
     new spell_warr_t16_dps_2p();
     new spell_warr_raging_blow_remove();
+    new spell_warr_shield_visual();
 }
