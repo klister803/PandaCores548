@@ -134,8 +134,6 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
 void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
 {
-    if (_on_unload)
-        return;
     if (atInfo.actions.empty())
         return;
 
@@ -196,9 +194,6 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
 
 void AreaTrigger::UpdateActionCharges(uint32 p_time)
 {
-    if (_on_unload)
-        return;
-
     for (ActionInfoMap::iterator itr = _actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
@@ -377,13 +372,12 @@ void AreaTrigger::Remove()
 {
     if (_on_unload)
         return;
+    _on_unload = true;
 
     if (IsInWorld())
     {
         // triger AT_ACTION_MOMENT_LEAVE
         UpdateAffectedList(0, true);
-
-    _on_unload = true;
 
         // Possibly this?
         if (!IsInWorld())
