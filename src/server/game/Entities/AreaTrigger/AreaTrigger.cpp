@@ -106,6 +106,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
 
+    //custom visual case.
+    if (GetCustomVisualId())
+        SetUInt32Value(AREATRIGGER_SPELLVISUALID, GetCustomVisualId());
+
     setActive(true);
 
     if (!GetMap()->AddToMap(this))
@@ -403,7 +407,7 @@ float AreaTrigger::GetRadius() const
     return _radius;
 }
 
-float AreaTrigger::GetVisualId() const
+float AreaTrigger::GetCustomVisualId() const
 {
     return atInfo.visualId;
 }

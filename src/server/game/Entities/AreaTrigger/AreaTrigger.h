@@ -116,7 +116,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetVisualScale(bool max = false) const;
         float GetRadius() const;
-        float GetVisualId() const;
+        float GetCustomVisualId() const;
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, bool enter);
         void UpdateOnUnit(Unit* unit, uint32 p_time);

@@ -529,7 +529,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << t->GetVisualScale(true);
             *data << t->GetVisualScale();
         }
-        *data << uint32(t->GetVisualId());
+        *data << uint32(1);
     }
 
     if (flags & UPDATEFLAG_LIVING)
