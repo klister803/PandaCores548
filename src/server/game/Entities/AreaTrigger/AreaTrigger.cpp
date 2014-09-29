@@ -106,6 +106,8 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
 
+    setActive(true);
+
     if (!GetMap()->AddToMap(this))
         return false;
 
@@ -113,11 +115,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), spell->GetSpellInfo()->Id, _radius);
     #endif
 
-    // hack me
     if (atInfo.maxCount)
     {
         std::list<AreaTrigger*> oldTriggers;
-        GetAreaTriggersWithEntryInRange(oldTriggers, triggerEntry, caster->GetGUID(), 150.0f);
+        caster->GetAreaObjectList(oldTriggers, spell->GetSpellInfo()->Id);
         oldTriggers.sort(Trinity::GuidValueSorterPred());
         while (oldTriggers.size() > atInfo.maxCount)
         {
@@ -140,23 +141,25 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
 
     if (!despawn)
     {
-        for (std::list<uint64>::iterator itr = affectedPlayers.begin(); itr != affectedPlayers.end();)
+        for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
         {
+            next = itr;
+            ++next;
+
             Unit* unit = ObjectAccessor::GetUnit(*this, *itr);
             if (!unit)
             {
-                affectedPlayers.erase(itr++);
+                affectedPlayers.erase(itr);
                 continue;
             }
 
             if (!unit->IsWithinDistInMap(this, GetRadius()))
             {
-                affectedPlayers.erase(itr++);
+                affectedPlayers.erase(itr);
                 AffectUnit(unit, false);
                 continue;
             }
 
-            ++itr;
             UpdateOnUnit(unit, p_time);
         }
 
@@ -173,17 +176,20 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
     }
     else
     {
-        for (std::list<uint64>::iterator itr = affectedPlayers.begin(); itr != affectedPlayers.end();)
+        for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
         {
+            next = itr;
+            ++next;
+
             Unit* unit = ObjectAccessor::GetUnit(*this, *itr);
             if (!unit)
             {
-                affectedPlayers.erase(itr++);
+                affectedPlayers.erase(itr);
                 continue;
             }
 
             AffectUnit(unit, false);
-            affectedPlayers.erase(itr++);
+            affectedPlayers.erase(itr);
         }
     }
 }
@@ -372,13 +378,17 @@ void AreaTrigger::Remove()
     if (_on_unload)
         return;
 
-    // triger AT_ACTION_MOMENT_LEAVE
-    UpdateAffectedList(0, true);
+    if (IsInWorld())
+    {
+        // triger AT_ACTION_MOMENT_LEAVE
+        UpdateAffectedList(0, true);
 
     _on_unload = true;
 
-    if (IsInWorld())
-    {
+        // Possibly this?
+        if (!IsInWorld())
+            return;
+
         SendObjectDeSpawnAnim(GetGUID());
         RemoveFromWorld();
         AddObjectToRemoveList();
