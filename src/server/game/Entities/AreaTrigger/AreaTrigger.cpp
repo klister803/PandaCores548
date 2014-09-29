@@ -237,10 +237,10 @@ void AreaTrigger::Update(uint32 p_time)
         }
     }
 
-    //UpdateActionCharges(p_time);
+    UpdateActionCharges(p_time);
 
-    //if (!_activationDelay)
-        //UpdateAffectedList(p_time, false);
+    if (!_activationDelay)
+        UpdateAffectedList(p_time, false);
 
     //??
     //WorldObject::Update(p_time);
