@@ -7871,6 +7871,14 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     RemoveAura(dummySpell->Id);
                     return false;
                 }
+                case 76838: // Mastery: Strikes of Opportunity
+                {
+                    if (effIndex != 0 || !roll_chance_i(triggeredByAura->GetAmount()))
+                        return false;
+
+                    triggered_spell_id = 76858;
+                    break;
+                }
             }
 
             // Retaliation
@@ -8592,14 +8600,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     triggered_spell_id = 86392;
-                    break;
-                }
-                case 76838:                                 // Strikes of Opportunity
-                {
-                    if (effIndex != EFFECT_0 || !roll_chance_i(triggerAmount))
-                        return false;
-
-                    triggered_spell_id = 76858;
                     break;
                 }
             }
