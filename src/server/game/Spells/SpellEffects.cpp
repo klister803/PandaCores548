@@ -3677,7 +3677,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         {
                             case 3347: // Orphelins
                             {
-                                if (uint32 slot = properties->Slot)
+                                if (int32 slot = properties->Slot)
                                 {
                                     if (m_caster->m_SummonSlot[slot] && m_caster->m_SummonSlot[slot] != summon->GetGUID())
                                     {

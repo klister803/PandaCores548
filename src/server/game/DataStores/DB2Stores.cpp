@@ -36,6 +36,7 @@ DB2Storage <ItemUpgradeEntry> sItemUpgradeStore(ItemUpgradeEntryfmt);
 DB2Storage <RuleSetItemUpgradeEntry> sRuleSetItemUpgradeEntryStore(RuleSetItemUpgradeEntryfmt);
 DB2Storage <GameObjectsEntry> sGameObjectsStore(GameObjectsEntryfmt);
 DB2Storage <MapChallengeModeEntry> sMapChallengeModeStore(MapChallengeModeEntryfmt);
+DB2Storage <SpellVisualEntry> sSpellVisualStore(SpellVisualEntryfmt);
 
 typedef std::list<std::string> StoreProblemList1;
 static std::map<uint32, std::list<uint32> > sPackageItemList;
@@ -121,6 +122,7 @@ void LoadDB2Stores(const std::string& dataPath)
     LoadDB2(bad_db2_files, sQuestPackageItemStore,  db2Path, "QuestPackageItem.db2");
     LoadDB2(bad_db2_files, sGameObjectsStore,       db2Path, "GameObjects.db2");
     LoadDB2(bad_db2_files, sMapChallengeModeStore,  db2Path, "MapChallengeMode.db2");
+    LoadDB2(bad_db2_files, sSpellVisualStore,       db2Path, "SpellVisual.db2");
     
     for (uint32 i = 0; i < sMapChallengeModeStore.GetNumRows(); ++i)
     {

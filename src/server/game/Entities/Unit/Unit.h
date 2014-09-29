@@ -1270,6 +1270,7 @@ enum ReactiveType
 };
 
 #define MAX_REACTIVE 3
+#define AUTO_SUMMON_SLOT   -1
 #define SUMMON_SLOT_PET     0
 #define SUMMON_SLOT_TOTEM   1
 #define MAX_TOTEM_SLOT      5

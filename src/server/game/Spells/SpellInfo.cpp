@@ -558,7 +558,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
 
                 if (Reqlvl != 1 || isEnchant)
                 {
-                    basePoints = int32(preciseBasePoints);
+                    basePoints += int32(preciseBasePoints);
                     float rounding = preciseBasePoints - basePoints;
 
                     if (rounding >= 0.444445f)

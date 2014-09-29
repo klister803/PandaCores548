@@ -5938,6 +5938,11 @@ bool Unit::HandleSpellCritChanceAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc
 
 bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 /*procEx*/, double cooldown)
 {
+    int32 triggered_spell_id = triggeredByAura->GetId();
+
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(triggered_spell_id))
+        return false;
+
     // Get triggered aura spell info
     SpellInfo const* spellProto = triggeredByAura->GetSpellInfo();
     int32 triggerAmount = triggeredByAura->GetAmount();
@@ -6015,6 +6020,9 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
         default:
             break;
     }
+
+    if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->AddSpellCooldown(triggered_spell_id, 0, getPreciseTime() + cooldown);
 
     return true;
 }
@@ -8266,6 +8274,30 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                // Nature's Vigil
+                case 124974:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    if(procSpell->IsPositive())
+                    {
+                        triggered_spell_id = 124991;
+                        basepoints0 = int32(damage * triggerAmount / 100);
+                        target = getAttackerForHelper();
+                    }
+                    else
+                    {
+                        target = this;
+                        triggered_spell_id = 124988;
+                        basepoints0 = int32(damage * triggerAmount / 100);
+                        target = SelectNearbyAlly(this, 25.0f);
+                        if(!target)
+                            target = this;
+                    }
+                    CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
+                    return true;
+                }
                 case 102351: // Cenarion Ward
                 {
                     if (procEx & PROC_EX_INTERNAL_HOT) // temporarily

@@ -3706,6 +3706,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 65148:  // Sacred Shield
                 case 113092: // Frost Bomb
                 case 18153:  // Kodo Kombobulator
+                case 145110:  // Ysera's Gift
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
                     break;
                 case 79136: // Venomous Wound
@@ -3848,6 +3849,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72625: // Ooze Eruption
                 case 121129: // Daybreak
                 case 119072: // Holy Wrath
+                case 102792: // Wild Mushroom: Bloom
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;

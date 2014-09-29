@@ -31,5 +31,6 @@ const char GameObjectsEntryfmt[]="niiffffffffiiiiis";
 const char MapChallengeModeEntryfmt[]="niiiiiiiii";
 const std::string CustomItemExtendedCostEntryfmt="paappppppppppppappppppppppaapaa";
 const std::string CustomItemExtendedCostEntryIndex = "ID";
+const char SpellVisualEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxixxxx";
 
 #endif

@@ -191,7 +191,7 @@ void TempSummon::InitStats(uint32 duration)
 
     if (owner)
     {
-        uint32 slot = m_Properties->Slot;
+        int32 slot = m_Properties->Slot;
 
         if (slot > MAX_SUMMON_SLOT)
             slot = 0;
@@ -210,13 +210,73 @@ void TempSummon::InitStats(uint32 duration)
 
         if (slot)
         {
-            if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+            if(slot > 0)
             {
-                Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
-                if (oldSummon && oldSummon->isSummon())
-                    oldSummon->ToTempSummon()->UnSummon();
+                if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                {
+                    Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
+                    if (oldSummon && oldSummon->isSummon())
+                        oldSummon->ToTempSummon()->UnSummon();
+                }
+                owner->m_SummonSlot[slot] = GetGUID();
             }
-            owner->m_SummonSlot[slot] = GetGUID();
+            else if(slot < 0)
+            {
+                uint32 count = 1;
+                if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid))
+                {
+                    for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
+                    {
+                        if (spellInfo->Effects[j].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[j].BasePoints > count)
+                        {
+                            count = spellInfo->Effects[j].BasePoints;
+                            break;
+                        }
+                    }
+                }
+                if(count > 1)
+                {
+                    //Auto get free slot or slot for replace summon
+                    int32 saveSlot = SUMMON_SLOT_TOTEM;
+                    for (int i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + count; ++i)
+                    {
+                        if(!owner->m_SummonSlot[i])
+                        {
+                            saveSlot = i;
+                            break;
+                        }
+                        else if (owner->m_SummonSlot[i] < owner->m_SummonSlot[i + 1] && (i + 1 < SUMMON_SLOT_TOTEM + count))
+                        {
+                            if(owner->m_SummonSlot[i] <= owner->m_SummonSlot[saveSlot])
+                                saveSlot = i;
+                        }
+                        else if (owner->m_SummonSlot[i] > owner->m_SummonSlot[i + 1] && (i + 1 < SUMMON_SLOT_TOTEM + count))
+                        {
+                            if(owner->m_SummonSlot[i + 1] <= owner->m_SummonSlot[saveSlot])
+                                saveSlot = i + 1;
+                        }
+                    }
+                    slot = saveSlot;
+                    if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                    {
+                        Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
+                        if (oldSummon && oldSummon->isSummon())
+                            oldSummon->ToTempSummon()->UnSummon();
+                    }
+                    owner->m_SummonSlot[slot] = GetGUID();
+                }
+                else
+                {
+                    slot = SUMMON_SLOT_TOTEM;
+                    if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                    {
+                        Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
+                        if (oldSummon && oldSummon->isSummon())
+                            oldSummon->ToTempSummon()->UnSummon();
+                    }
+                    owner->m_SummonSlot[slot] = GetGUID();
+                }
+            }
 
             if(slot >= SUMMON_SLOT_TOTEM && slot < MAX_TOTEM_SLOT)
             {

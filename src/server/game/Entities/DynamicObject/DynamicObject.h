@@ -59,6 +59,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         uint64 GetCasterGUID() const { return GetUInt64Value(DYNAMICOBJECT_CASTER); }
         float GetRadius() const { return GetFloatValue(DYNAMICOBJECT_RADIUS); }
         DynamicObjectType GetType() const { return DynamicObjectType(GetByteValue(DYNAMICOBJECT_BYTES, 3) >> 4); }
+        uint32 GetVisualId() const { return GetUInt32Value(DYNAMICOBJECT_BYTES) & 0xFFFFFFF; }
 
         void Say(int32 textId, uint32 language, uint64 targetGuid) { MonsterSay(textId, language, targetGuid); }
         void Yell(int32 textId, uint32 language, uint64 targetGuid) { MonsterYell(textId, language, targetGuid); }

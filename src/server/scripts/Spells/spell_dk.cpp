@@ -1757,16 +1757,16 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
-                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
-                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                            //if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                //_player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
                         else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
                         {
                             SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
-                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
-                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                            //if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                //_player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
                         else if (_player->HasAura(146650))
                             SetHitDamage(int32(damge * 1.223f));

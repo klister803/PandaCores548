@@ -4605,7 +4605,8 @@ void Spell::SendSpellCreateVisual()
             visual = i->visual;
             unk1 = i->unk1;
             unk2 = i->unk2;
-            speed = i->speed;
+            if(i->speed)
+                speed = i->speed;
             position = i->position;
             exist = true;
             if(roll_chance_f(chance))

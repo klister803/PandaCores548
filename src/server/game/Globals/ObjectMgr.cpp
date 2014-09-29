@@ -1070,7 +1070,7 @@ void ObjectMgr::LoadCreatureModelInfo()
 {
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = WorldDatabase.Query("SELECT modelid, bounding_radius, combat_reach, gender, modelid_other_gender FROM creature_model_info");
+    QueryResult result = WorldDatabase.Query("SELECT modelid, bounding_radius, combat_reach, gender, modelid_other_gender, hostileId FROM creature_model_info");
 
     if (!result)
     {
@@ -1099,6 +1099,7 @@ void ObjectMgr::LoadCreatureModelInfo()
         modelInfo.combat_reach         = fields[2].GetFloat();
         modelInfo.gender               = fields[3].GetUInt8();
         modelInfo.modelid_other_gender = fields[4].GetUInt32();
+        modelInfo.hostileId            = fields[5].GetUInt32();
 
         // Checks
 
@@ -1112,6 +1113,12 @@ void ObjectMgr::LoadCreatureModelInfo()
         {
             sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has not existed alt.gender model (%u) for existed display id (%u).", modelInfo.modelid_other_gender, modelId);
             modelInfo.modelid_other_gender = 0;
+        }
+
+        if (modelInfo.hostileId && !sCreatureDisplayInfoStore.LookupEntry(modelInfo.hostileId))
+        {
+            sLog->outError(LOG_FILTER_SQL, "Table `creature_model_info` has not existed alt.hostileId model (%u) for existed display id (%u).", modelInfo.hostileId, modelId);
+            modelInfo.hostileId = 0;
         }
 
         if (modelInfo.combat_reach < 0.1f)

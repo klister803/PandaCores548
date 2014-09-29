@@ -795,6 +795,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 {
                     if (GetTypeId() == TYPEID_UNIT)
                     {
+                        CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(m_uint32Values[index]);
                         CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
 
                         // this also applies for transform auras
@@ -807,7 +808,9 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                                         break;
                                     }
 
-                        if (cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
+                        if(modelInfo && modelInfo->hostileId && ToUnit()->IsHostileTo(target))
+                            *data << modelInfo->hostileId;
+                        else if (cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                         {
                             if (target->isGameMaster())
                             {
@@ -957,6 +960,28 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 }
                 else
                     *data << m_uint32Values[index];                // other cases
+            }
+        }
+    }
+    else if (isType(TYPEMASK_DYNAMICOBJECT))                    // dynamiobject case
+    {
+        for (uint16 index = 0; index < valCount; ++index)
+        {
+            if (updateMask->GetBit(index))
+            {
+                if (index == DYNAMICOBJECT_BYTES)
+                {
+                    uint32 visualId = ((DynamicObject*)this)->GetVisualId();
+                    DynamicObjectType dynType = ((DynamicObject*)this)->GetType();
+                    Unit* caster = ((DynamicObject*)this)-> GetCaster();
+                    SpellVisualEntry const* visualEntry = sSpellVisualStore.LookupEntry(visualId);
+                    if(caster && visualEntry && visualEntry->hostileId && caster->IsHostileTo(target))
+                        *data << ((dynType << 28) | visualEntry->hostileId);
+                    else
+                        *data << m_uint32Values[index];
+                }
+                else
+                    *data << m_uint32Values[index];
             }
         }
     }

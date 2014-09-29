@@ -4494,6 +4494,7 @@ class npc_wild_mushroom : public CreatureScript
                 CastTimer = 6000;
                 stealthed = false;
                 me->SetReactState(REACT_PASSIVE);
+                me->SetMaxHealth(5);
             }
 
             void UpdateAI(uint32 diff)

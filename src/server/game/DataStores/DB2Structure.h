@@ -314,6 +314,40 @@ struct MapChallengeModeEntry
     uint32 unk4;                // 9
 };
 
+struct SpellVisualEntry
+{
+    uint32 ID;                  // 0
+    //uint32 unk;               // 1
+    //uint32 unk;               // 2
+    //uint32 unk?;              // 3
+    //uint32 unk;               // 4
+    //uint32 unk;               // 5
+    //uint32 unk;               // 6
+    //uint32 unk;               // 7
+    //uint32 unk;               // 8
+    //uint32 unk;               // 9
+    //uint32 unk;               // 10
+    //uint32 unk;               // 11
+    //uint32 unk;               // 12
+    //uint32 unk;               // 13
+    //uint32 unk;               // 14
+    //uint32 unk;               // 15
+    //uint32 unk;               // 16
+    //uint32 unk;               // 17
+    //uint32 unk;               // 18
+    //float unk;                // 19
+    //float unk;                // 20
+    //float unk;                // 21
+    //float unk;                // 22
+    //float unk;                // 23
+    //float unk;                // 24
+    uint32 hostileId;           // 25
+    //uint32 unk;               // 26
+    //uint32 unk;               // 27
+    //uint32 unk;               // 28
+    //uint32 unk;               // 29
+};
+
 // GCC has alternative #pragma pack(N) syntax and old gcc version does not support pack(push, N), also any gcc version does not support it at some platform
 #if defined(__GNUC__)
 #pragma pack()
