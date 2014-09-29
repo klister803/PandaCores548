@@ -56,6 +56,7 @@ enum eSpells
     //meashures of sun
     SPELL_MANIFEST_DESPERATION              = 144504, //Manifest Desperation of 71482
     SPELL_MANIFEST_DESPAIR                  = 143746, //Manifest Despair of 71474
+    SPELL_SHA_CORRUPTION_OF_SUN             = 142891,
 
     //meashures of he
     SPELL_SHA_CORRUPTION_SUMMONED           = 142885,
@@ -68,6 +69,16 @@ enum eSpells
     SPELL_DEBILITATION                      = 147383, //Debilitation
     SPELL_SHADOW_WEAKNESS                   = 144176, //charges targetGUID: Full: 0x70000000695B52A Type: Player Low: 110474538 
     SPELL_SHADOW_WEAKNES_MASS               = 144081,
+
+    //measures of rook
+    SPELL_SHA_CORRUPTION_MIS_OF_ROOK        = 142892,
+    SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK      = 142889,
+    SPELL_SHA_CORRUPTION_SOR_OF_ROOK        = 142893,
+    SPELL_MISERY_SORROW_GLOOM_SUMON         = 143948,
+    SPELL_DEFILED_GROUND                    = 143961, //Defiled Ground apply 143959
+    SPELL_DEFILE_GROUND_PROC                = 143959,
+    SPELL_INFERNO_STRIKE                    = 143962, //Inferno Strike
+    SPELL_CORRUPTION_SHOCK                  = 143958, //Corruption Shock
 };
 
 enum Phases
@@ -118,6 +129,7 @@ struct boss_fallen_protectors : public BossAI
 
     virtual void InitBattle() { 
         events.SetPhase(PHASE_BATTLE);
+        me->SetReactState(REACT_AGGRESSIVE);
     }
 
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
@@ -135,6 +147,8 @@ struct boss_fallen_protectors : public BossAI
         if (me->GetHealth() <= 1 || int(me->GetHealth() - damage) <= 1)
         {
             damage = me->GetHealth() - damage;
+            if (me->GetHealth() >= damage)
+                damage = 0;
 
             if (!events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
             {
@@ -153,6 +167,9 @@ struct boss_fallen_protectors : public BossAI
             ++_healthPhase;
             me->SetInCombatWithZone();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetReactState(REACT_PASSIVE);
+            me->AttackStop();
+            me->GetMotionMaster()->MovementExpired();
             events.SetPhase(PHASE_DESPERATE_MEASURES);
             events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
             me->InterruptNonMeleeSpells(false);
@@ -227,15 +244,12 @@ struct boss_fallen_protectors : public BossAI
                     me->RemoveAllAreaObjects();
                     me->RemoveAurasDueToSpell(SPELL_DARK_MEDITATION);   //sun
                     me->RemoveAurasDueToSpell(SPELL_MARK_OF_ANGUISH_MEDITATION);   //he
+                    me->RemoveAurasDueToSpell(SPELL_MISERY_SORROW_GLOOM);   //rook                    
                     me->SetInCombatWithZone();
                 }
                 break;
             }
         }
-    }
-
-    void JustDied(Unit* /*killer*/)
-    {
     }
 };
 
@@ -276,11 +290,7 @@ class boss_rook_stonetoe : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
-            }
-
-            /*REMOVE IT AFTER COMPLETE*/
-            void AttackStart(Unit* target)
-            {
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, me->GetGUID());
             }
 
             void DoAction(int32 const action)
@@ -319,6 +329,14 @@ class boss_rook_stonetoe : public CreatureScript
                                 DoCast(target, SPELL_CLASH);
                             //DoCastVictim(SPELL_CLASH);
                             events.RescheduleEvent(EVENT_CLASH, urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS), 0, PHASE_BATTLE);
+                            break;
+                        case EVENT_DESPERATE_MEASURES:
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
+                            DoCast(me, SPELL_MISERY_SORROW_GLOOM, false);
+                            break;
+                        case EVENT_LOTUS:
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
                             break;
                         default:
                             break;
@@ -365,7 +383,6 @@ class boss_he_softfoot : public CreatureScript
             {
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WEAKNESS);
 
-                me->SetReactState(REACT_AGGRESSIVE);
                 boss_fallen_protectors::InitBattle();
 
                 events.RescheduleEvent(EVENT_GARROTE, 5*IN_MILLISECONDS, 0, PHASE_BATTLE);
@@ -381,7 +398,7 @@ class boss_he_softfoot : public CreatureScript
 
             void AttackStart(Unit* target)
             {
-                if (events.IsInPhase(PHASE_DESPERATE_MEASURES) || events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
+                if (!events.IsInPhase(PHASE_BATTLE))
                     return;
 
                 BossAI::AttackStart(target);
@@ -441,9 +458,6 @@ class boss_he_softfoot : public CreatureScript
                             me->RemoveAllAreaObjects();
                             break;
                         case EVENT_DESPERATE_MEASURES:
-                            me->SetReactState(REACT_PASSIVE);
-                            me->AttackStop();
-                            me->GetMotionMaster()->MovementExpired();
                             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
                             DoCast(me, SPELL_MARK_OF_ANGUISH_MEDITATION, false);
                             break;
@@ -506,11 +520,7 @@ class boss_sun_tenderheart : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 boss_fallen_protectors::EnterCombat(who);
-            }
-
-            /*REMOVE IT AFTER COMPLETE*/
-            void AttackStart(Unit* target)
-            {
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, me->GetGUID());
             }
 
             void DoAction(int32 const action)
@@ -569,12 +579,17 @@ class boss_sun_tenderheart : public CreatureScript
                             break;
                         case EVENT_CALAMITY:
                             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_2, 0);
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_3, 0);
                             DoCastVictim(SPELL_CALAMITY);
                             events.RescheduleEvent(EVENT_CALAMITY, urand(60*IN_MILLISECONDS, 70*IN_MILLISECONDS), 0, PHASE_BATTLE);
                             break;
                         case EVENT_DESPERATE_MEASURES:
                             if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
                                 DoCast(lotos, SPELL_DARK_MEDITATION_JUMP, true);
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_4, me->GetGUID());
+                            break;
+                        case EVENT_LOTUS:
+                            sCreatureTextMgr->SendChat(me, TEXT_GENERIC_5, me->GetGUID());
                             break;
                     }
                 }
@@ -668,11 +683,14 @@ public:
     }
 };
 
-Position const LotusJumpPosition[3]   =
+Position const LotusJumpPosition[6]   =
 {
     {1214.094f, 1006.571f, 418.0658f, 0.0f}, //NPC_EMBODIED_DESPIRE_OF_SUN
     {1212.148f, 1057.528f, 417.1646f, 0.0f}, //NPC_EMBODIED_DESPERATION_OF_SUN
     {1204.724f, 1055.807f, 417.6278f, 0.0f}, //NPC_EMBODIED_ANGUISH_OF_HE
+    {1202.516f, 1011.427f, 418.1869f, 0.0f}, //NPC_EMBODIED_MISERY_OF_ROOK
+    {1208.924f, 1014.313f, 452.1267f, 0.0f}, //NPC_EMBODIED_GLOOM_OF_ROOK
+    {1228.698f, 1038.337f, 418.0633f, 0.0f}, //NPC_EMBODIED_SORROW_OF_ROOK
 };
 
 class ExitVexMeasure : public BasicEvent
@@ -685,9 +703,12 @@ class ExitVexMeasure : public BasicEvent
             uint8 _idx = 0;
             switch(creature->GetEntry())
             {
-                case NPC_EMBODIED_DESPIRE_OF_SUN:     _idx = 0; break;
-                case NPC_EMBODIED_DESPERATION_OF_SUN: _idx = 1; break;
-                case NPC_EMBODIED_ANGUISH_OF_HE:      _idx = 2; break;
+                case NPC_EMBODIED_DESPIRE_OF_SUN:       _idx = 0; break;
+                case NPC_EMBODIED_DESPERATION_OF_SUN:   _idx = 1; break;
+                case NPC_EMBODIED_ANGUISH_OF_HE:        _idx = 2; break;
+                case NPC_EMBODIED_MISERY_OF_ROOK:       _idx = 3; break;
+                case NPC_EMBODIED_GLOOM_OF_ROOK:        _idx = 4; break;
+                case NPC_EMBODIED_SORROW_OF_ROOK:       _idx = 5; break;
                 default:
                     sLog->outError(LOG_FILTER_GENERAL, " >> Script: OO:ExitVexMeasure no position for fall down for entry %u", creature->GetEntry());
                     return true;
@@ -769,8 +790,13 @@ struct npc_measure : public ScriptedAI
         {
             me->CastSpell(me, SPELL_CLEAR_ALL_DEBUFS, true);
             me->CastSpell(me, SPELL_FULL_HEALTH, true);
-            me->RemoveAura(SPELL_SHA_CORRUPTION_SUMMONED);  //he
-
+            me->RemoveAura(SPELL_SHA_CORRUPTION_SUMMONED);          //he
+            me->RemoveAura(SPELL_SHA_CORRUPTION_MIS_OF_ROOK);       //rook
+            me->RemoveAura(SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK);     //rook
+            me->RemoveAura(SPELL_SHA_CORRUPTION_SOR_OF_ROOK);       //rook
+            me->RemoveAura(SPELL_SHA_CORRUPTION_OF_SUN);            //sun
+            
+            
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
             me->CastSpell(me, SPELL_SHA_CORRUPTION, true);
@@ -807,7 +833,6 @@ struct npc_measure : public ScriptedAI
             events.ScheduleEvent(EVENT_1, 4000);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetInCombatWithZone();
-            
         }
     }
 
@@ -847,6 +872,7 @@ public:
         {
             npc_measure::DoAction(action);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
         }
         void JustSummoned(Creature* summon)
         {
@@ -927,7 +953,18 @@ public:
         void DoAction(int32 const action)
         {
             npc_measure::DoAction(action);
-            me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
+            switch(me->GetEntry())
+            {
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
+                    break;
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK, true);
+                    break;
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
+                    break;
+            }            
         }
 
         bool AllowSelectNextVictim(Unit* target)
@@ -970,6 +1007,37 @@ public:
         {
             ownVehicle = NPC_GOLD_LOTOS_ROOK;
             ownSummoner = NPC_ROOK_STONETOE;
+            switch(creature->GetEntry())
+            {
+                case NPC_EMBODIED_MISERY_OF_ROOK: _spell = SPELL_DEFILED_GROUND; break;
+                case NPC_EMBODIED_GLOOM_OF_ROOK: _spell = SPELL_CORRUPTION_SHOCK; break;
+                case NPC_EMBODIED_SORROW_OF_ROOK: _spell = SPELL_INFERNO_STRIKE; break;
+                default:
+                    break;
+            }
+        }
+        uint32 _spell;
+
+        void DoAction(int32 const action)
+        {
+            npc_measure::DoAction(action);
+            me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            npc_measure::UpdateAI(diff);
+
+            if (!_spell || !UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                DoCastVictim(_spell);
+                events.ScheduleEvent(EVENT_1, urand(3000, 6000));
+            }         
+
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -1209,7 +1277,6 @@ class spell_fallen_protectors_mark_of_anguish_select_first_target : public Spell
 
             void SelectTarget(std::list<WorldObject*>& unitList)
             {
-                sLog->outU(">>>>>>>>>>>>>>>>>>>>>>>> select %i", unitList.size());
                 if (unitList.empty())
                     return;
 
@@ -1374,6 +1441,42 @@ class spell_fallen_protectors_mark_of_anguish_transfer : public SpellScriptLoade
         }
 };
 
+//SPELL_INFERNO_STRIKE                    = 143962, //Inferno Strike
+class spell_fallen_protectors_inferno_strike : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_inferno_strike() :  SpellScriptLoader("spell_fallen_protectors_inferno_strike") { }
+
+        class spell_fallen_protectors_inferno_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_fallen_protectors_inferno_strike_SpellScript);
+
+            void SelectTarget(std::list<WorldObject*>& unitList)
+            {
+                SpellValue const* val = GetSpellValue();
+                if (!val || unitList.empty())
+                    return;
+
+                uint32 count = val->EffectBasePoints[EFFECT_0];
+                unitList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
+                if (unitList.size() < count)
+                    return;
+
+                unitList.resize(count);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_fallen_protectors_inferno_strike_SpellScript::SelectTarget, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_fallen_protectors_inferno_strike_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -1394,4 +1497,5 @@ void AddSC_boss_fallen_protectors()
     new spell_fallen_protectors_shadow_weakness_prock();
     new spell_fallen_protectors_mark_of_anguish();
     new spell_fallen_protectors_mark_of_anguish_transfer();
+    new spell_fallen_protectors_inferno_strike();
 }
