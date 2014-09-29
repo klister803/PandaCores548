@@ -215,6 +215,9 @@ void AreaTrigger::UpdateActionCharges(uint32 p_time)
 
 void AreaTrigger::Update(uint32 p_time)
 {
+    //TMP. For debug info.
+    uint32 spell = GetSpellId();
+
     if (GetDuration() != -1)
     {
         if (GetDuration() > int32(p_time))
