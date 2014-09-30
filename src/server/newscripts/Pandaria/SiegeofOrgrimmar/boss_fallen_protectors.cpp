@@ -1477,6 +1477,53 @@ class spell_fallen_protectors_inferno_strike : public SpellScriptLoader
         }
 };
 
+class spell_fallen_protectors_defile_ground : public SpellScriptLoader
+{
+    public:
+        spell_fallen_protectors_defile_ground() : SpellScriptLoader("spell_fallen_protectors_defile_ground") { }
+
+        class spell_fallen_protectors_defile_ground_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_fallen_protectors_defile_ground_SpellScript);
+ 
+            enum data
+            {
+                AT_ENTRY    = 4906,
+            };
+            void HandleTriggerEffect(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(EFFECT_1);
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Unit* target = GetExplTargetUnit();
+                if (!target)
+                    return;
+
+                AreaTrigger * areaTrigger = new AreaTrigger;
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), AT_ENTRY, caster, GetSpellInfo(), *target, GetSpell()))
+                {
+
+                    delete areaTrigger;
+                    return;
+                }
+                areaTrigger->SetSpellId(GetSpellInfo()->Effects[EFFECT_1].TriggerSpell);
+            }
+            
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_fallen_protectors_defile_ground_SpellScript::HandleTriggerEffect, EFFECT_1, SPELL_EFFECT_TRIGGER_SPELL);
+            }
+        };
+        
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_fallen_protectors_defile_ground_SpellScript();
+        }
+};
+
 void AddSC_boss_fallen_protectors()
 {
     new boss_rook_stonetoe();
@@ -1498,4 +1545,5 @@ void AddSC_boss_fallen_protectors()
     new spell_fallen_protectors_mark_of_anguish();
     new spell_fallen_protectors_mark_of_anguish_transfer();
     new spell_fallen_protectors_inferno_strike();
+    new spell_fallen_protectors_defile_ground();
 }
