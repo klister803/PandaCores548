@@ -14,7 +14,8 @@ Position const LorewalkerChoSpawn[2]  = {
 DoorData const doorData[] =
 {
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
-    {0,                                      0,                          DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+    {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
+    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
@@ -268,6 +269,7 @@ public:
             switch (go->GetEntry())
             {
             case GO_IMMERSEUS_EX_DOOR:
+            case GO_SHA_FIELD:
                 AddDoor(go, true);
                 break;
             case GO_LIGTH_QUARANTINE:
@@ -303,7 +305,17 @@ public:
                         cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                     }
                 }
-                break; 
+                break;
+            case DATA_F_PROTECTORS:
+            {
+                if (state == DONE)
+                {
+                    sLog->outU(">>>>>>>>>>>>>>>>>>>> DONE");
+                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                        bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
+                }
+                break;
+            }
             case DATA_NORUSHEN:
                 {
                     switch (state)
@@ -475,8 +487,10 @@ public:
         
         bool CheckRequiredBosses(uint32 bossId, Player const* player = NULL) const
         {
-            //ToDo: for live server remove return.
+            // Only on win build no check for complete boses.
+            #ifdef WIN32
             return true;
+            #endif
 
             if (player && AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
                 return true;
@@ -485,12 +499,12 @@ public:
             {
                 case DATA_IMMERSEUS:
                     return true;
-                case DATA_NORUSHEN:
-                    return GetBossState(DATA_F_PROTECTORS) == DONE;
                     //no break
                 case DATA_F_PROTECTORS:
                     return GetBossState(DATA_IMMERSEUS) == DONE;
-                    break;
+                    //no break
+                case DATA_NORUSHEN:
+                    return GetBossState(DATA_F_PROTECTORS) == DONE;
             }
 
             return true;

@@ -7,7 +7,7 @@ INSERT INTO `spell_scripts` (`id`, `effIndex`, `delay`, `command`, `datalong`, `
 ('143210', '2', '0', '14', '143225', '1', '0', '0', '0', '0', '0');
 
 -- gouge
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143301', 'spell_OO_gouge');
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('143301', 'spell_OO_gouge');
 
 -- garrote
 DELETE FROM `spell_area` WHERE `spell` = 143198;

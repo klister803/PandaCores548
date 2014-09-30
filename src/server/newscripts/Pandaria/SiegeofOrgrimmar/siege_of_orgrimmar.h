@@ -97,6 +97,9 @@ enum eGameObjects
     //Immerseus
     GO_IMMERSEUS_EX_DOOR            = 221663,
 
+    //Fallen Protectors
+    GO_SHA_FIELD                    = 221611,
+
     //Norushen
     GO_LIGTH_QUARANTINE             = 223142,
     GO_LIGTH_QUARANTINE_2           = 223143,

@@ -72,6 +72,8 @@ public:
             EVENT_FC_8,
             EVENT_FC_9,
             EVENT_FC_10,
+            EVENT_FC_OUTRO_1,
+            EVENT_FC_OUTRO_2,
         };
 
         void Reset()
@@ -104,6 +106,14 @@ public:
                     break;
                 }
                 case DATA_F_PROTECTORS:
+                {
+                    if (value == DONE)
+                    {
+                        uint32 t = 0;                                        //12:13:04.000
+                        events.RescheduleEvent(EVENT_FC_OUTRO_1, t += 4000);   //12:13:08.000
+                        events.RescheduleEvent(EVENT_FC_OUTRO_2, t += 5000);    //12:13:13.000
+                    }
+                }
                     break;
             }
             state = id;
@@ -216,6 +226,10 @@ public:
                     case EVENT_FC_10:
                         sCreatureTextMgr->SendChat(me, TEXT_GENERIC_13, 0, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_ZONE);
                         me->DespawnOrUnsummon(60000);
+                        break;
+                    case EVENT_FC_OUTRO_1:
+                    case EVENT_FC_OUTRO_2:
+                        sCreatureTextMgr->SendChat(me, TEXT_GENERIC_14+(eventId - TEXT_GENERIC_14), 0, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_ZONE);
                         break;
                     default:
                         break;

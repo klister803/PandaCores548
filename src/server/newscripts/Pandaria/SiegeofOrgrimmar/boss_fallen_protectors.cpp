@@ -101,6 +101,8 @@ enum data
     DATA_CALAMITY_HIT              = 3,
 };
 
+uint32 const protectors[3] = { NPC_ROOK_STONETOE, NPC_SUN_TENDERHEART, NPC_HE_SOFTFOOT };
+
 struct boss_fallen_protectors : public BossAI
 {
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
@@ -120,11 +122,27 @@ struct boss_fallen_protectors : public BossAI
         _healthPhase = 0;
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
         //me->RemoveAllAreaObjects();
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
     void EnterCombat(Unit* who)
     {
         InitBattle();
+
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+        DoZoneInCombat(me, 150.0f);
+        
+        for (int32 i = 0; i < 3; ++i)
+        {
+            if (me->GetEntry() == protectors[i])
+                continue;
+
+            if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
+            {
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, prot);
+                DoZoneInCombat(prot, 150.0f);
+            }
+        }
     }
 
     virtual void InitBattle() { 
@@ -132,6 +150,7 @@ struct boss_fallen_protectors : public BossAI
         me->SetReactState(REACT_AGGRESSIVE);
     }
 
+    // remove from PHASE_BOND_GOLDEN_LOTUS
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
     {
         float newpct = GetHealthPctWithHeal(addhealth);
@@ -142,13 +161,24 @@ struct boss_fallen_protectors : public BossAI
         events.SetPhase(PHASE_BATTLE);
     }
 
+    bool CheckLotus()
+    {
+        for (int32 i = 0; i < 3; ++i)
+        {
+            if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
+            {
+                if (prot->GetHealth() != 1)
+                    return false;
+            }
+        }
+        return true;
+    }
+
     void DamageTaken(Unit* attacker, uint32 &damage)
     {
-        if (me->GetHealth() <= 1 || int(me->GetHealth() - damage) <= 1)
+        if (me->GetHealth() <= damage)
         {
-            damage = me->GetHealth() - damage;
-            if (me->GetHealth() >= damage)
-                damage = 0;
+            damage = me->GetHealth() - 1;
 
             if (!events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS))
             {
@@ -157,6 +187,19 @@ struct boss_fallen_protectors : public BossAI
 
                 events.SetPhase(PHASE_BOND_GOLDEN_LOTUS);
                 events.RescheduleEvent(EVENT_LOTUS, 1*IN_MILLISECONDS, 0, PHASE_BOND_GOLDEN_LOTUS);   //BreakIfAny
+            }else if (CheckLotus())
+            {
+                //END EVENT
+                damage = me->GetHealth();
+
+                for (int32 i = 0; i < 3; ++i)
+                {
+                    if (me->GetEntry() == protectors[i])
+                        continue;
+
+                    if (Creature* prot = ObjectAccessor::GetCreature(*me, instance->GetData64(protectors[i])))
+                        attacker->Kill(prot, true);
+                }
             }
             return;
         }
@@ -174,6 +217,14 @@ struct boss_fallen_protectors : public BossAI
             events.RescheduleEvent(EVENT_DESPERATE_MEASURES, 1*IN_MILLISECONDS, 0, PHASE_DESPERATE_MEASURES);   //BreakIfAny
             me->InterruptNonMeleeSpells(false);
         }
+    }
+
+    void JustDied(Unit* /*killer*/)
+    {
+        events.Reset();
+        summons.DespawnAll();
+
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
     void summonDesperation()
@@ -211,6 +262,7 @@ struct boss_fallen_protectors : public BossAI
                 continue;
             }
 
+            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, summon);
             summon->ExitVehicle();
             ++measureSummonedCount;
         }
@@ -305,7 +357,8 @@ class boss_rook_stonetoe : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -342,7 +395,9 @@ class boss_rook_stonetoe : public CreatureScript
                             break;
                     }
                 }
-                DoMeleeAttackIfReady();
+
+                if (events.IsInPhase(PHASE_BATTLE))
+                    DoMeleeAttackIfReady();
             }
         };
 
@@ -412,6 +467,7 @@ class boss_he_softfoot : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 boss_fallen_protectors::JustDied(NULL);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
             }
 
             bool AllowSelectNextVictim(Unit* target)
@@ -428,7 +484,7 @@ class boss_he_softfoot : public CreatureScript
             void UpdateAI(uint32 diff)
             {
                 if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
-                    me->HasUnitState(UNIT_STATE_CASTING))
+                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -531,6 +587,8 @@ class boss_sun_tenderheart : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 boss_fallen_protectors::JustDied(NULL);
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             }
 
             void SetData(uint32 type, uint32 value)
@@ -554,7 +612,8 @@ class boss_sun_tenderheart : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (events.IsInPhase(PHASE_BATTLE) && !UpdateVictim() ||
+                    !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
@@ -781,6 +840,10 @@ struct npc_measure : public ScriptedAI
 
     void goBack()
     {
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        summons.DespawnAll();
+        me->CastSpell(me, SPELL_DESPAWN_AT, true);
+
         if (Creature* owner = instance->instance->GetCreature(instance->GetData64(ownSummoner)))
             owner->AI()->DoAction(me->GetEntry());
         else
@@ -953,18 +1016,7 @@ public:
         void DoAction(int32 const action)
         {
             npc_measure::DoAction(action);
-            switch(me->GetEntry())
-            {
-                case NPC_EMBODIED_MISERY_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
-                    break;
-                case NPC_EMBODIED_GLOOM_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK, true);
-                    break;
-                case NPC_EMBODIED_SORROW_OF_ROOK:
-                    me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
-                    break;
-            }            
+            me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
         }
 
         bool AllowSelectNextVictim(Unit* target)
@@ -1021,7 +1073,18 @@ public:
         void DoAction(int32 const action)
         {
             npc_measure::DoAction(action);
-            me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
+            switch(me->GetEntry())
+            {
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_MIS_OF_ROOK, true);
+                    break;
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK, true);
+                    break;
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
+                    break;
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -1034,7 +1097,7 @@ public:
             while (uint32 eventId = events.ExecuteEvent())
             {
                 DoCastVictim(_spell);
-                events.ScheduleEvent(EVENT_1, urand(3000, 6000));
+                events.ScheduleEvent(EVENT_1, urand(10000, 15000));
             }         
 
             DoMeleeAttackIfReady();
