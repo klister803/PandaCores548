@@ -3921,10 +3921,6 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     // Earthgrab totem - Immunity
     if (apply && target->HasAura(116946))
         return;
-    
-    // Glyph of Intimidating Shout
-    if (apply && !caster->HasAura(63327))
-        return;
 
     target->SetControlled(apply, UNIT_STATE_ROOT);
 }
