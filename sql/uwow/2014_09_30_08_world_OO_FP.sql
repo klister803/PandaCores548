@@ -27,3 +27,6 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 -- падшие оутро 0xF1311E720000043D Type: Unit Entry: 73330 Low: 1085
 (73330, 14, 0, 'Покойтесь с миром.', 14, 0, 100, 1, 0, 38136, 'Сунь Доброе Сердце'),
 (73330, 15, 0, 'Пусть ваши души сольются с землей, за которую вы отдали жизни.', 14, 0, 100, 1, 0, 38137, 'Сунь Доброе Сердце');
+
+-- Sha Field
+UPDATE `creature` WHERE SET `spawntimesecs` = 604800 WHERE id in (72661, 72663, 72662);

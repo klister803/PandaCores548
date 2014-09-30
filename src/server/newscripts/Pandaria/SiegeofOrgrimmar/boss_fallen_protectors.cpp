@@ -191,6 +191,7 @@ struct boss_fallen_protectors : public BossAI
             {
                 //END EVENT
                 damage = me->GetHealth();
+                instance->SetBossState(DATA_F_PROTECTORS, DONE);
 
                 for (int32 i = 0; i < 3; ++i)
                 {

@@ -12,21 +12,23 @@
 enum eData
 {
     // Encounter States/Boss GUIDs
-    DATA_IMMERSEUS                  = 1,
-    DATA_F_PROTECTORS               = 2,
-    DATA_NORUSHEN                   = 3,
-    DATA_SHA_OF_PRIDE               = 4,
-    DATA_GALAKRAS                   = 5,
-    DATA_IRON_JUGGERNAUT            = 6,
-    DATA_KORKRON_D_SHAMAN           = 7,
-    DATA_GENERAL_NAZGRIM            = 8,
-    DATA_MALKOROK                   = 9,
-    DATA_SPOLLS_OF_PANDARIA         = 10,
-    DATA_THOK                       = 11,
-    DATA_BLACKFUSE                  = 12,
-    DATA_KLAXXI                     = 13,
-    DATA_GARROSH                    = 14,
+    DATA_IMMERSEUS                  = 0,
+    DATA_F_PROTECTORS               = 1,
+    DATA_NORUSHEN                   = 2,
+    DATA_SHA_OF_PRIDE               = 3,
+    DATA_GALAKRAS                   = 4,
+    DATA_IRON_JUGGERNAUT            = 5,
+    DATA_KORKRON_D_SHAMAN           = 6,
+    DATA_GENERAL_NAZGRIM            = 7,
+    DATA_MALKOROK                   = 8,
+    DATA_SPOLLS_OF_PANDARIA         = 9,
+    DATA_THOK                       = 10,
+    DATA_BLACKFUSE                  = 11,
+    DATA_KLAXXI                     = 12,
+    DATA_GARROSH                    = 13,
     DATA_MAX,
+
+    DATA_FIELD_OF_SHA,
 
     // Additional data
     DATA_IMMERSEUS_INTRO,
@@ -45,6 +47,7 @@ enum eCreatures
     NPC_BLIND_HATRED                = 72565,
 
     NPC_IMMERSEUS                   = 71543,
+
     //Fallen Protectors
     NPC_ROOK_STONETOE               = 71475,
     NPC_SUN_TENDERHEART             = 71480,
@@ -61,6 +64,11 @@ enum eCreatures
     NPC_EMBODIED_MISERY_OF_ROOK     = 71476,
     NPC_EMBODIED_GLOOM_OF_ROOK      = 71477,
     NPC_EMBODIED_SORROW_OF_ROOK     = 71481,
+
+    //Field of Sha
+    NPC_ZEAL                        = 72661, //Zeal
+    NPC_ARROGANCE                   = 72663, //Arrogance
+    NPC_VANITY                      = 72662, //Vanity
 
     //  
     NPC_NORUSHEN                    = 71967,
@@ -99,6 +107,9 @@ enum eGameObjects
 
     //Fallen Protectors
     GO_SHA_FIELD                    = 221611,
+
+    //Field of Sha
+    GO_SHA_ENERGY_WALL              = 221602,
 
     //Norushen
     GO_LIGTH_QUARANTINE             = 223142,

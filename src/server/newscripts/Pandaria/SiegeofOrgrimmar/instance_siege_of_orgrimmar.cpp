@@ -29,8 +29,10 @@ public:
 
         //Misc
         uint32 TeamInInstance;
+        uint32 EventfieldOfSha;
 
         //GameObjects
+        uint64 energyWallGUID;
         uint64 immerseusexdoorGuid;
         uint64 norushenexdoorGuid;
         std::vector<uint64> lightqGuids;
@@ -76,6 +78,7 @@ public:
             TeamInInstance = 0;
 
             //GameObject
+            energyWallGUID       = 0;
             immerseusexdoorGuid  = 0;
             norushenexdoorGuid   = 0;
             lightqGuids.clear();
@@ -113,6 +116,8 @@ public:
 
             memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
             memset(npcEmbodiesGUID, 0, 6 * sizeof(uint64));
+
+            EventfieldOfSha     = 0;
         }
 
         void OnPlayerEnter(Player* player)
@@ -283,6 +288,11 @@ public:
             case GO_NORUSHEN_EX_DOOR:
                 norushenexdoorGuid = go->GetGUID();
                 break;
+            case GO_SHA_ENERGY_WALL:
+                energyWallGUID = go->GetGUID();
+                if (EventfieldOfSha >= 3)
+                    HandleGameObject(energyWallGUID, true, go);
+                break;
             }
         }
 
@@ -310,7 +320,6 @@ public:
             {
                 if (state == DONE)
                 {
-                    sLog->outU(">>>>>>>>>>>>>>>>>>>> DONE");
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
                 }
@@ -342,6 +351,15 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
+            if (type == DATA_FIELD_OF_SHA)
+            {
+                ++EventfieldOfSha;
+                if (EventfieldOfSha >= 3)
+                {
+                    HandleGameObject(energyWallGUID, true);
+                    SaveToDB();
+                }
+            }
         }
 
         uint32 GetData(uint32 type)
@@ -442,10 +460,14 @@ public:
 
         void CreatureDies(Creature* creature, Unit* /*killer*/)
         {
-            //switch(creature->GetEntry())
-            //{
-
-            //}
+            switch(creature->GetEntry())
+            {
+                case NPC_ZEAL:
+                case NPC_ARROGANCE:
+                case NPC_VANITY:
+                    SetData(DATA_FIELD_OF_SHA, true);
+                    break;
+            }
         }
 
         bool IsWipe()
@@ -472,16 +494,41 @@ public:
         std::string GetSaveData()
         {
             std::ostringstream saveStream;
-            saveStream << GetBossSaveData() << " ";
+            saveStream << "S O " << GetBossSaveData() << " " << EventfieldOfSha;
             return saveStream.str();
         }
 
         void Load(const char* data)
         {
-            std::istringstream loadStream(LoadBossState(data));
-            uint32 buff;
-            for (uint32 i = 0; i < 15; ++i)
-                loadStream >> buff;
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'S' && dataHead2 == 'O')
+            {
+                for (uint32 i = 0; i < DATA_MAX; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                loadStream >> EventfieldOfSha;
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
         
