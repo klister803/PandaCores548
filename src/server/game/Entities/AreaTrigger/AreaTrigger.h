@@ -104,11 +104,12 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, Spell* spell, Position const& pos);
+        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell = NULL);
         void Update(uint32 p_time);
         void UpdateAffectedList(uint32 p_time, bool despawn);
         void Remove();
         uint32 GetSpellId() const { return GetUInt32Value(AREATRIGGER_SPELLID); }
+        void SetSpellId(uint32 spell) { return SetUInt32Value(AREATRIGGER_SPELLID, spell); }
         uint64 GetCasterGUID() const { return GetUInt64Value(AREATRIGGER_CASTER); }
         Unit* GetCaster() const;
         int32 GetDuration() const { return _duration; }

@@ -60,13 +60,23 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, Spell* spell, Position const& pos)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/)
 {
+    // Caster not in world, might be spell triggered from aura removal
+    if (!caster->IsInWorld())
+        return false;
+
+    if (!caster->isAlive())
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) caster %s is dead ", info->Id, caster->GetString().c_str());
+        return false;
+    }
+
     SetMap(caster->GetMap());
     Relocate(pos);
     if (!IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", spell->GetSpellInfo()->Id, GetPositionX(), GetPositionY());
+        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", info->Id, GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -83,7 +93,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
 
     SetEntry(triggerEntry);
-    uint32 duration = spell->GetSpellInfo()->GetDuration();
+    uint32 duration = info->GetDuration();
     SetDuration(duration);
     SetObjectScale(1);
 
@@ -91,9 +101,9 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     // overwrite by radius from spell if exist.
     bool find = false;
     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
-        if (float r = spell->GetSpellInfo()->Effects[j].CalcRadius(caster))
+        if (float r = info->Effects[j].CalcRadius(caster))
         {
-            _radius = r * spell->m_spellValue->RadiusMod;
+            _radius = r * (spell ? spell->m_spellValue->RadiusMod : 1.0f);
             find = true;
         }
 
@@ -101,8 +111,8 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         _radius = atInfo.radius;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
-    SetUInt32Value(AREATRIGGER_SPELLID, spell->GetSpellInfo()->Id);
-    SetUInt32Value(AREATRIGGER_SPELLVISUALID, spell->GetSpellInfo()->SpellVisual[0] ? spell->GetSpellInfo()->SpellVisual[0] : spell->GetSpellInfo()->SpellVisual[1]);
+    SetUInt32Value(AREATRIGGER_SPELLID, info->Id);
+    SetUInt32Value(AREATRIGGER_SPELLVISUALID, info->SpellVisual[0] ? info->SpellVisual[0] : info->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
 
@@ -116,13 +126,13 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), spell->GetSpellInfo()->Id, _radius);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), info->Id, _radius);
     #endif
 
     if (atInfo.maxCount)
     {
         std::list<AreaTrigger*> oldTriggers;
-        caster->GetAreaObjectList(oldTriggers, spell->GetSpellInfo()->Id);
+        caster->GetAreaObjectList(oldTriggers, info->Id);
         oldTriggers.sort(Trinity::GuidValueSorterPred());
         while (oldTriggers.size() > atInfo.maxCount)
         {
