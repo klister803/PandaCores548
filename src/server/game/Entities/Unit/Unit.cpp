@@ -12097,35 +12097,6 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
-    // 117907 - Mastery: Gift of the Serpent
-    else if (unit && unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(117907) && unit->getLevel() >= 80 && addhealth > 0 && spellProto && spellProto->Id != 124041)
-    {
-        if (AuraEffect const* aurEff = unit->GetAuraEffect(117907, EFFECT_0))
-        {
-            float Mastery = aurEff->GetAmount();
-            float scaling = spellProto->GetGiftOfTheSerpentScaling(this);
-
-            if (roll_chance_f(Mastery * scaling))
-            {
-                std::list<Unit*> targetList;
-
-                Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
-                Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
-                unit->VisitNearbyObject(6.0f, searcher);
-
-                if (!targetList.empty())
-                {
-                    targetList.sort(Trinity::HealthPctOrderPred());
-
-                    for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                    {
-                        unit->CastSpell(*itr, 119031, true);
-                        break;
-                    }
-                }
-            }
-        }
-    }
 
     if (Player* player = unit->ToPlayer())
     {
