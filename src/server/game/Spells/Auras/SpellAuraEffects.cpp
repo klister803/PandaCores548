@@ -3922,6 +3922,13 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     if (apply && target->HasAura(116946))
         return;
 
+    // Glyph of Intimidating Shout
+    if (m_spellInfo->Id == 5246)
+    {
+        if (apply && !caster->HasAura(63327))
+            return;
+    }
+
     target->SetControlled(apply, UNIT_STATE_ROOT);
 }
 
