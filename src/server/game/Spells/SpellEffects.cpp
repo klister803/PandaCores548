@@ -2632,20 +2632,24 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     if (!m_originalCaster)
         return;
 
+    if (m_spellInfo->AttributesEx11 & SPELL_ATTR11_UNK4)
+    {
+        bool resetHeal = true;
+        Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+        for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+            if ((*i)->GetMiscValue() == 11)
+                if ((*i)->GetAmount() == m_spellInfo->Id)
+                {
+                    (*i)->SetAmount(NULL);
+                    resetHeal = false;
+                }
+
+        if (resetHeal)
+            damage = 0;
+    }
+
     switch (m_spellInfo->Id)
     {
-        case 115450: // Detox
-        {
-            if (!m_caster->HasAura(146954))
-                damage = 0;
-            break;
-        }
-        case 137562: // Nimble Brew
-        {
-            if (!m_caster->HasAura(146952))
-                damage = 0;
-            break;
-        }
         case 59754:  // Rune Tap - Party
             if (unitTarget == m_caster)
                 return;
@@ -3807,7 +3811,19 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         dispelMask = ((1<<DISPEL_MAGIC) | (1<<DISPEL_CURSE) | (1<<DISPEL_POISON));
 
     DispelChargesList dispel_list;
+    DispelChargesList predicted_dispel_list;
     unitTarget->GetDispellableAuraList(m_caster, dispelMask, dispel_list);
+
+    if (!hasPredictedDispel)
+    {
+        uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL);
+        unitTarget->GetDispellableAuraList(m_caster, allEffectDispelMask, predicted_dispel_list);
+
+        if (!predicted_dispel_list.empty())
+            hasPredictedDispel++;
+
+        hasPredictedDispel++;
+    }
     
     for (uint32 eff = effIndex+1; eff < MAX_SPELL_EFFECTS; ++eff)
     {
@@ -3821,16 +3837,18 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         else LastDispelEff = true; break;
     }
 
+    if (LastDispelEff && hasPredictedDispel == 1)
+        if (Player* player = m_caster->ToPlayer())
+            if (m_spellInfo->RecoveryTime <= 8000)
+                player->RemoveSpellCooldown(m_spellInfo->Id, true);
+
     if (dispel_list.empty())
-    {
-        if (LastDispelEff && m_removeCooldown)
-            if (Player* player = m_caster->ToPlayer())
-                if (m_spellInfo->RecoveryTime <= 8000)
-                    player->RemoveSpellCooldown(m_spellInfo->Id, true);
         return;
-    }
-    
-    m_removeCooldown = false;
+
+    Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+    for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if ((*i)->GetMiscValue() == 11 && (*i)->GetSpellInfo()->SpellIconID == m_spellInfo->SpellIconID)
+            (*i)->SetAmount(m_spellInfo->Id);
 
     // Ok if exist some buffs for dispel try dispel it
     DispelChargesList success_list;
@@ -6911,6 +6929,7 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
         return;
 
     uint32 mechanic = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
+    uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL_MECHANIC);
 
     std::queue < std::pair < uint32, uint64 > > dispel_list;
 
@@ -6921,13 +6940,32 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
         if (!aura->GetApplicationOfTarget(unitTarget->GetGUID()))
             continue;
         if (roll_chance_i(aura->CalcDispelChance(unitTarget, !unitTarget->IsFriendlyTo(m_caster))))
-            if ((aura->GetSpellInfo()->GetAllEffectsMechanicMask() & (1 << mechanic)))
-                dispel_list.push(std::make_pair(aura->GetId(), aura->GetCasterGUID()));
+        {
+            if (SpellInfo const* auraSpellInfo = aura->GetSpellInfo())
+                if (uint32 mechanicMask = auraSpellInfo->GetAllEffectsMechanicMask())
+                {
+                    if ((mechanicMask & allEffectDispelMask) && hasPredictedDispel != 2)
+                        hasPredictedDispel = 1;
+
+                    if (mechanicMask & (1 << mechanic))
+                        dispel_list.push(std::make_pair(aura->GetId(), aura->GetCasterGUID()));
+                }
+        }
     }
 
     for (; dispel_list.size(); dispel_list.pop())
     {
         unitTarget->RemoveAura(dispel_list.front().first, dispel_list.front().second, 0, AURA_REMOVE_BY_ENEMY_SPELL);
+    }
+
+    if (hasPredictedDispel == 1)
+    {
+        Unit::AuraEffectList const& mTotalAuraList = m_caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+        for (Unit::AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+            if ((*i)->GetMiscValue() == 11 && (*i)->GetSpellInfo()->SpellIconID == m_spellInfo->SpellIconID)
+                (*i)->SetAmount(m_spellInfo->Id);
+
+        hasPredictedDispel++; // 2 is lock
     }
 }
 

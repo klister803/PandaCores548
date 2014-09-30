@@ -2264,6 +2264,16 @@ uint32 SpellInfo::GetDispelMask(DispelType type)
         return uint32(1 << type);
 }
 
+uint32 SpellInfo::GetSimilarEffectsMiscValueMask(SpellEffects effectName) const
+{
+    uint32 mask = 0;
+    for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].IsEffect(effectName))
+            if (Effects[i].CalcValue())
+                mask |= 1 << Effects[i].MiscValue;
+    return mask;
+}
+
 uint32 SpellInfo::GetExplicitTargetMask() const
 {
     return ExplicitTargetMask;

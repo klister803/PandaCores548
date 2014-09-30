@@ -600,7 +600,7 @@ class Spell
         bool m_referencedFromCurrentSpell;                  // mark as references to prevent deleted and access by dead pointers
         bool m_executedCurrently;                           // mark as executed to prevent deleted and access by dead pointers
         bool m_needComboPoints;
-        bool m_removeCooldown;
+        uint8 hasPredictedDispel;
         uint32 m_applyMultiplierMask;
         float m_damageMultipliers[32];
 

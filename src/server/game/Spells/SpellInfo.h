@@ -515,6 +515,7 @@ public:
     bool HasAnyEffectMechanic() const;
     uint32 GetDispelMask() const;
     static uint32 GetDispelMask(DispelType type);
+    uint32 GetSimilarEffectsMiscValueMask(SpellEffects effectName) const;
     uint32 GetExplicitTargetMask() const;
 
     AuraStateType GetAuraState() const;
