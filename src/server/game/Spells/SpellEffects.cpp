@@ -3816,7 +3816,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     if (!hasPredictedDispel)
     {
-        uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL);
+        uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL, m_caster);
         unitTarget->GetDispellableAuraList(m_caster, allEffectDispelMask, predicted_dispel_list);
 
         if (!predicted_dispel_list.empty())
@@ -6929,7 +6929,7 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
         return;
 
     uint32 mechanic = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
-    uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL_MECHANIC);
+    uint32 allEffectDispelMask = m_spellInfo->GetSimilarEffectsMiscValueMask(SPELL_EFFECT_DISPEL_MECHANIC, m_caster);
 
     std::queue < std::pair < uint32, uint64 > > dispel_list;
 

@@ -1593,7 +1593,7 @@ bool SpellInfo::IsAffectedBySpellMods() const
 
 bool SpellInfo::IsAffectedBySpellMod(SpellModifier* mod) const
 {
-    if (!IsAffectedBySpellMods())
+    if (!IsAffectedBySpellMods() && !(AttributesEx11 & SPELL_ATTR11_UNK4))
         return false;
 
     SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId);
@@ -2264,12 +2264,12 @@ uint32 SpellInfo::GetDispelMask(DispelType type)
         return uint32(1 << type);
 }
 
-uint32 SpellInfo::GetSimilarEffectsMiscValueMask(SpellEffects effectName) const
+uint32 SpellInfo::GetSimilarEffectsMiscValueMask(SpellEffects effectName, Unit* caster) const
 {
     uint32 mask = 0;
     for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (Effects[i].IsEffect(effectName))
-            if (Effects[i].CalcValue())
+            if (Effects[i].CalcValue(caster))
                 mask |= 1 << Effects[i].MiscValue;
     return mask;
 }
