@@ -222,7 +222,7 @@ void TempSummon::InitStats(uint32 duration)
             }
             else if(slot < 0)
             {
-                uint32 count = 1;
+                int32 count = 1;
                 if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid))
                 {
                     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
@@ -238,7 +238,7 @@ void TempSummon::InitStats(uint32 duration)
                 {
                     //Auto get free slot or slot for replace summon
                     int32 saveSlot = SUMMON_SLOT_TOTEM;
-                    for (int i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + count; ++i)
+                    for (int32 i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + count; ++i)
                     {
                         if(!owner->m_SummonSlot[i])
                         {

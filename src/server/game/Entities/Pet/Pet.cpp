@@ -621,14 +621,14 @@ void Pet::Update(uint32 diff)
 
 void Creature::Regenerate(Powers power)
 {
-    uint32 maxValue = GetMaxPower(power);
+    int32 maxValue = GetMaxPower(power);
 
     uint32 powerIndex = GetPowerIndexByClass(power, getClass());
     if (powerIndex == MAX_POWERS)
         return;
 
     int32 saveCur = GetPower(power);
-    uint32 curValue = saveCur;
+    int32 curValue = saveCur;
 
     if (!maxValue || curValue == maxValue)
         return;
@@ -691,7 +691,7 @@ void Creature::Regenerate(Powers power)
     if (this->IsAIEnabled)
         this->AI()->RegeneratePower(power, addvalue);
 
-    uint32 integerValue = uint32(fabs(addvalue));
+    int32 integerValue = uint32(fabs(addvalue));
 
     if (addvalue < 0.0f)
     {
@@ -707,7 +707,7 @@ void Creature::Regenerate(Powers power)
             curValue = maxValue;
     }
 
-    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL))
+    if ((saveCur != maxValue && curValue == maxValue) || m_regenTimerCount >= uint32(isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL))
     {
         SetInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);
         m_regenTimerCount -= (isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL);
