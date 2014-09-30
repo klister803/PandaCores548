@@ -48,10 +48,10 @@ enum AreaTriggerTargetFlags
     AT_TARGET_FLAG_NOT_PET           = 0x10,             // casted on everyone except pets
     AT_TARGET_FLAG_CAST_AT_SRC       = 0x20,             // casted on areatrigger position as dest
     AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x40,             // casted on areatrigger position as dest
-
+    AT_TARGET_FLAT_IN_FRONT          = 0x80,             // WARNING! If target come from back he not get cast. ToDo it..
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |
-        AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET,
+        AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET | AT_TARGET_FLAT_IN_FRONT,
 };
 
 struct AreaTriggerAction
@@ -130,6 +130,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
     private:
         bool _HasActionsWithCharges();
+        void FillCustiomData();
 
     protected:
         Unit* _caster;

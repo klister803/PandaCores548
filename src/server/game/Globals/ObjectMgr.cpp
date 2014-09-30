@@ -9507,7 +9507,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             action.id = fields[i++].GetUInt8();
             action.moment = (AreaTriggerActionMoment)fields[i++].GetUInt8();
             action.actionType = (AreaTriggerActionType)fields[i++].GetUInt8();
-            action.targetFlags = (AreaTriggerTargetFlags)fields[i++].GetUInt8();
+            action.targetFlags = (AreaTriggerTargetFlags)fields[i++].GetUInt16();
             action.spellId = fields[i++].GetUInt32();
             action.maxCharges = fields[i++].GetInt8();
             action.chargeRecoveryTime = fields[i++].GetUInt32();

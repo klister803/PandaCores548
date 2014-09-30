@@ -116,9 +116,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
 
-    //custom visual case.
-    if (GetCustomVisualId())
-        SetUInt32Value(AREATRIGGER_SPELLVISUALID, GetCustomVisualId());
+    FillCustiomData();
 
     setActive(true);
 
@@ -144,6 +142,26 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     }
 
     return true;
+}
+
+void AreaTrigger::FillCustiomData()
+{
+    //custom visual case.
+    if (GetCustomVisualId())
+        SetUInt32Value(AREATRIGGER_SPELLVISUALID, GetCustomVisualId());
+
+    switch(GetSpellId())
+    {
+        case 143961:    //OO: Defiled Ground
+            //ToDo: should cast only 1/4 of circle
+            SetSpellId(143960);
+            SetDuration(-1);
+            _radius = 8.0f;
+            //infrontof
+            break;
+        default:
+            break;
+    }
 }
 
 void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
@@ -335,6 +353,10 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_PET)
         if (unit->isPet())
+            return;
+
+    if (action.action->targetFlags & AT_TARGET_FLAT_IN_FRONT)
+        if (!HasInArc(static_cast<float>(M_PI), unit))
             return;
 
     if (!CheckActionConditions(*action.action, unit))

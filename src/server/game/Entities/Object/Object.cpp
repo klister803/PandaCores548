@@ -403,6 +403,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
     if (flags & UPDATEFLAG_AREA_TRIGGER)
     {
+        AreaTrigger const* t = ToAreaTrigger();
+        ASSERT(t);
+
         data->WriteBit(0);  //byte284
         //if (byte284)
         //{
@@ -411,7 +414,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         //}
         data->WriteBit(0);              //byte20C
         data->WriteBit(0);              //byte210
-        data->WriteBit(1);              //byte23C
+        data->WriteBit(t->GetVisualScale());//byte23C
         data->WriteBit(0);              //byte298
         data->WriteBit(0);              //byte20F
         data->WriteBit(0);              //byte20E
@@ -524,7 +527,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
-        if (true)   //byte23C
+        if (t->GetVisualScale())   //byte23C
         {          
             *data << t->GetVisualScale(true);
             *data << t->GetVisualScale();
