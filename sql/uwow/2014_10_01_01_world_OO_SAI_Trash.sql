@@ -1,3 +1,6 @@
+delete from spell_script_names where ScriptName = 'spell_self_absorbed';
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES (145861, 'spell_self_absorbed');
+
 update creature_template set ainame = 'SmartAI' where entry in (72662,72661);
 
 delete from smart_scripts where entryorguid in (72662,72661);
