@@ -22,6 +22,8 @@
 #include "Common.h"
 #include "BigNumber.h"
 #include "RealmSocket.h"
+#include "SHA1.h"
+#include <openssl/md5.h>
 
 // Handle login commands
 class AuthSocket: public RealmSocket::Session
@@ -71,6 +73,39 @@ private:
     std::string _os;
     uint16 _build;
     AccountTypes _accountSecurityLevel;
+};
+
+class AuthSocket;
+typedef struct PATCH_INFO
+{
+    uint8 md5[MD5_DIGEST_LENGTH];
+} PATCH_INFO;
+// Caches MD5 hash of client patches present on the server
+class Patcher
+{
+public:
+    typedef std::map<std::string, PATCH_INFO*> Patches;
+    ~Patcher();
+    Patcher();
+    Patches::const_iterator begin() const { return _patches.begin(); }
+    Patches::const_iterator end() const { return _patches.end(); }
+    void LoadPatchMD5(char*);
+    bool GetHash(char * pat, uint8 mymd5[16]);
+
+private:
+    void LoadPatchesInfo();
+    Patches _patches;
+};
+
+// Launch a thread to transfer a patch to the client
+class PatcherRunnable: public ACE_Based::Runnable
+{
+public:
+    PatcherRunnable(class AuthSocket*);
+    void run();
+
+private:
+    AuthSocket* mySocket;
 };
 
 #endif

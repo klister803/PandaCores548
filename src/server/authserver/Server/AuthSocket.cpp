@@ -51,7 +51,7 @@ enum eAuthCmd
 
 enum eStatus
 {
-    STATUS_CONNECTED                             = 0,
+    STATUS_CONNECTED = 0,
     STATUS_AUTHED
 };
 
@@ -147,39 +147,6 @@ typedef struct AuthHandler
 #else
 #pragma pack(pop)
 #endif
-
-// Launch a thread to transfer a patch to the client
-class PatcherRunnable: public ACE_Based::Runnable
-{
-public:
-    PatcherRunnable(class AuthSocket*);
-    void run();
-
-private:
-    AuthSocket* mySocket;
-};
-
-typedef struct PATCH_INFO
-{
-    uint8 md5[MD5_DIGEST_LENGTH];
-} PATCH_INFO;
-
-// Caches MD5 hash of client patches present on the server
-class Patcher
-{
-public:
-    typedef std::map<std::string, PATCH_INFO*> Patches;
-    ~Patcher();
-    Patcher();
-    Patches::const_iterator begin() const { return _patches.begin(); }
-    Patches::const_iterator end() const { return _patches.end(); }
-    void LoadPatchMD5(char*);
-    bool GetHash(char * pat, uint8 mymd5[16]);
-
-private:
-    void LoadPatchesInfo();
-    Patches _patches;
-};
 
 const AuthHandler table[] =
 {
@@ -517,6 +484,9 @@ bool AuthSocket::_HandleLogonProof()
 
     if (!socket().recv((char *)&lp, sizeof(sAuthLogonProof_C)))
         return false;
+
+    // TEST PATCHING
+
 
     // Continue the SRP6 calculation based on data received from the client
     BigNumber A;
