@@ -3850,6 +3850,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 121129: // Daybreak
                 case 119072: // Holy Wrath
                 case 102792: // Wild Mushroom: Bloom
+                case 145944: // Sha Smash
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;

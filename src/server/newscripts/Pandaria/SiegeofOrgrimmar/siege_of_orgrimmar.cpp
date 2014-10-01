@@ -239,7 +239,40 @@ public:
     };
 };
 
+class spell_self_absorbed: public SpellScriptLoader
+{
+    public:
+        spell_self_absorbed() : SpellScriptLoader("spell_self_absorbed") { }
+
+        class spell_self_absorbed_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_self_absorbed_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                uint32 count = 2;
+                if (Unit* caster = GetCaster())
+                    if(caster->GetMap() && (caster->GetMap()->GetSpawnMode() == MAN25_HEROIC_DIFFICULTY || caster->GetMap()->GetSpawnMode() == MAN25_DIFFICULTY))
+                        count = 5;
+
+                if (targets.size() > count)
+                    targets.resize(count);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_self_absorbed_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_self_absorbed_SpellScript();
+        }
+};
+
 void AddSC_siege_of_orgrimmar()
 {
     new npc_lorewalker_cho();
+    new spell_self_absorbed();
 }
