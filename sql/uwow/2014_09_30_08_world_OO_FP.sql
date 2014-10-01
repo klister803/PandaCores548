@@ -29,4 +29,4 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (73330, 15, 0, 'Пусть ваши души сольются с землей, за которую вы отдали жизни.', 14, 0, 100, 1, 0, 38137, 'Сунь Доброе Сердце');
 
 -- Sha Field
-UPDATE `creature` WHERE SET `spawntimesecs` = 604800 WHERE id in (72661, 72663, 72662);
+UPDATE `creature` SET `spawntimesecs` = 604800 WHERE id in (72661, 72663, 72662);
