@@ -89,7 +89,10 @@ enum sEvents
     EVENT_PIERCING_CORRUPTION  = 10,
     EVENT_TITANIC_SMASH        = 11,
 
-    EVENT_RE_ATTACK            = 12,
+    //Essence of Corruption
+    EVENT_EXPELLED_CORRUPTION  = 12,
+    
+    EVENT_RE_ATTACK            = 13,
 };
 
 enum sData
@@ -103,6 +106,15 @@ enum sAction
 {
     //Blind Hatred
     ACTION_START_EVENT         = 1,
+};
+
+Position const plspos[5] =  //purifying light spawn pos
+{
+    {805.18f, 956.49f, 356.3400f},
+    {760.49f, 946.19f, 356.3398f},
+    {746.27f, 985.05f, 356.3398f},
+    {771.05f, 1006.36f, 356.8000f},
+    {805.67f, 991.16f, 356.3400f},
 };
 
 float const radius = 38.0f;
@@ -204,6 +216,26 @@ class boss_amalgam_of_corruption : public CreatureScript
                 }
             }
 
+            void CheckPlayers()
+            {
+                Map* pMap = me->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                    {
+                        if (Player* pl = i->getSource())
+                        {
+                            if (pl->isAlive() && pl->GetPower(POWER_ALTERNATE_POWER))
+                            {
+                                if (pl->GetPower(POWER_ALTERNATE_POWER) >= 75)
+                                    SummonManifestationofCorruption();
+                            }
+                        }
+                    }
+                }
+            }
+
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
@@ -226,6 +258,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                 if (HealthBelowPct(40) && !four)
                 {
                     four = true;
+                    CheckPlayers();
                     SummonManifestationofCorruption();
                 }
                 else if (HealthBelowPct(30) && !three)
@@ -287,7 +320,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                         break;
                     case EVENT_BLIND_HATRED:
                         float ang = (float)urand(0, 6);
-                        if (Creature* bhc = me->SummonCreature(NPC_B_H_CONTROLLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), ang, TEMPSUMMON_TIMED_DESPAWN, 32000))
+                        if (Creature* bhc = me->SummonCreature(NPC_B_H_CONTROLLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+ 2.0f, ang, TEMPSUMMON_TIMED_DESPAWN, 32000))
                             bhc->AI()->DoAction(ACTION_START_EVENT);
                         events.ScheduleEvent(EVENT_BLIND_HATRED, 40000);
                         break;
@@ -431,6 +464,38 @@ public:
     }
 };
 
+//72065
+class npc_purifying_light : public CreatureScript
+{
+public:
+    npc_purifying_light() : CreatureScript("npc_purifying_light") { }
+
+    struct npc_purifying_lightAI : public CreatureAI
+    {
+        npc_purifying_lightAI(Creature* pCreature) : CreatureAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void Reset(){}
+
+        void OnSpellClick(Unit* clicker)
+        {
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void UpdateAI(uint32 diff){}     
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_purifying_lightAI(pCreature);
+    }
+};
+
 //71976 for dd
 class npc_essence_of_corruption : public CreatureScript
 {
@@ -442,6 +507,7 @@ public:
         npc_essence_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
 
         InstanceScript* pInstance;
@@ -452,7 +518,9 @@ public:
             events.Reset();
         }
 
-        void EnterCombat(Unit* who){}
+        void EnterCombat(Unit* who)
+        {
+        }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
@@ -471,11 +539,8 @@ public:
         
         void UpdateAI(uint32 diff)
         {
-            events.Update(diff);
-
-          /*  while (uint32 eventId = events.ExecuteEvent())
-            {                
-            }*/
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
         }
     };
 
@@ -483,7 +548,7 @@ public:
     {
         return new npc_essence_of_corruptionAI(pCreature);
     }
-};\
+};
 
 //72264 for dd
 class npc_manifestation_of_corruption : public CreatureScript
@@ -805,6 +870,7 @@ void AddSC_boss_norushen()
     new boss_amalgam_of_corruption();
     new npc_blind_hatred_controller();
     new npc_blind_hatred();
+    new npc_purifying_light();
     new npc_essence_of_corruption();
     new npc_manifestation_of_corruption();
     new npc_titanic_corruption();

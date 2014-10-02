@@ -77,6 +77,7 @@ enum eCreatures
     NPC_MANIFESTATION_OF_CORRUPTION = 72264,
     NPC_TITANIC_CORRUPTION          = 72051,
     NPC_GREATER_CORRUPTION          = 72001,
+    NPC_PURIFYING_LIGHT             = 72065,
     //
     NPC_SHA_OF_PRIDE                = 71734,
     NPC_GALAKRAS                    = 72249,
