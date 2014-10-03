@@ -4065,9 +4065,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].BasePoints = -50;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
-                case 33763: // Lifebloom
-                    spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
-                    break;
                 case 137573: // Burst of Speed (IMMUNITY)
                 case 96219:  // Diamond Soul
                 case 1160:   // Demoralizing Shout

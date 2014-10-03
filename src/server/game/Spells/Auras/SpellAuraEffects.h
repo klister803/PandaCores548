@@ -51,6 +51,7 @@ class AuraEffect
         int32 GetBaseSendAmount() const { return m_send_baseAmount; }
         int32 GetOldBaseAmount() const { return m_oldbaseAmount; }
         int32 GetAmplitude() const { return m_amplitude; }
+        void SetAmplitude(int32 amplitude) { m_amplitude = amplitude; }
 
         int32 GetMiscValueB() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValueB; }
         int32 GetMiscValue() const { return m_spellInfo->GetEffect(m_effIndex, m_diffMode).MiscValue; }

@@ -3588,7 +3588,7 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
     if (aura->IsRemoved())
         return;
 
-    aura->SetIsSingleTarget(caster && (aura->GetSpellInfo()->IsSingleTarget() || aura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE)));
+    aura->SetIsSingleTarget(caster && (aura->GetSpellInfo()->IsSingleTarget(caster) || aura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE)));
     if (aura->IsSingleTarget())
     {
         ASSERT((IsInWorld() && !IsDuringRemoveFromWorld()) || (aura->GetCasterGUID() == GetGUID()) ||
@@ -4227,14 +4227,14 @@ void Unit::RemoveNotOwnSingleTargetAuras(uint32 newPhase)
     {
         AuraApplication const* aurApp = iter->second;
         Aura const* aura = aurApp->GetBase();
+        Unit* caster = aura->GetCaster();
 
-        if (aura->GetCasterGUID() != GetGUID() && aura->GetSpellInfo()->IsSingleTarget())
+        if (aura->GetCasterGUID() != GetGUID() && aura->GetSpellInfo()->IsSingleTarget(caster))
         {
             if (!newPhase)
                 RemoveAura(iter);
             else
             {
-                Unit* caster = aura->GetCaster();
                 if (!caster || !caster->InSamePhase(newPhase))
                     RemoveAura(iter);
                 else
@@ -4954,12 +4954,7 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
     {
         if ((*i)->GetAmount() < modifier)
-        {
-            if (auratype == SPELL_AURA_MOD_DECREASE_SPEED) // Frostbolt speed reduction is always at 50%
-                modifier = (*i)->GetBaseAmount();
-            else
-                modifier = (*i)->GetAmount();
-        }
+            modifier = (*i)->GetAmount();
     }
 
     return modifier;
@@ -5959,6 +5954,41 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             if (!procSpell)
                 return false;
 
+            int32 powerMod = 0;
+
+            /*if(HasAura(54812) && !(HasAura(48517) || HasAura(48518)))
+            {
+                switch(procSpell->Id)
+                {
+                    case 2912:
+                    case 78674:
+                        break;
+                    case 5176:
+                    case 99:
+                    case 339:
+                    case 5211:
+                    case 61391:
+                    case 102359:
+                    case 106707:
+                    case 102793:
+                        powerMod = 10;
+                        break;
+                    default:
+                        return false;
+                }
+            }
+            else
+            {
+                switch(procSpell->Id)
+                {
+                    case 2912:
+                    case 5176:
+                    case 78674:
+                        break;
+                    default:
+                        return false;
+                }
+            }*/
             // forbid proc when not in balance spec or while in Celestial Alignment
             if (!HasSpell(78674) || HasAura(112071))
                 return false;
@@ -5967,7 +5997,7 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             if((powerAmount < 0 && !HasAura(48518)) || (powerAmount > 0 && HasAura(48517)))
                 direction = -1;
 
-            int32 powerMod = 0;
+            //powerMod *= direction;
             // Starfire
             if (procSpell->Id == 2912)
                 powerMod = procSpell->Effects[1].CalcValue(this);
@@ -11703,6 +11733,17 @@ Unit* Unit::GetOwner() const
     return NULL;
 }
 
+Unit* Unit::GetAnyOwner() const
+{
+    if(GetCharmerGUID())
+        return GetCharmer();
+    if(ToTempSummon())
+        return ToTempSummon()->GetSummoner();
+    if(GetOwner())
+        return GetOwner();
+    return NULL;
+}
+
 Unit* Unit::GetCharmer() const
 {
     if (uint64 charmerid = GetCharmerGUID())
@@ -12997,8 +13038,9 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
 
 bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType, float &critChance) const
 {
+    Unit* owner = GetAnyOwner();
     //! Mobs can't crit with spells. Players, Pets, Totems can
-    if (ToCreature() && !(GetOwner() && GetOwner()->GetTypeId() == TYPEID_PLAYER))
+    if (ToCreature() && !(owner && owner->GetTypeId() == TYPEID_PLAYER))
         return false;
 
     // not critting spell
@@ -13007,16 +13049,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
     float crit_chance = 0.0f;
     // Pets have 100% of owner's crit_chance
-    if (isPet() && GetOwner())
-    {
-        if (GetOwner()->getClass() == CLASS_WARLOCK || GetOwner()->getClass() == CLASS_MAGE)
-            crit_chance += GetOwner()->ToPlayer()->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
-        else
-        {
-            crit_chance += GetOwner()->GetUnitCriticalChance(attackType, victim);
-            crit_chance += GetOwner()->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
-        }
-    }
+    if (isAnySummons() && owner)
+        owner->isSpellCrit(victim, spellProto, schoolMask, attackType, crit_chance);
 
     switch (spellProto->DmgClass)
     {
@@ -13028,7 +13062,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
                 crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
-            else
+            else if(!isAnySummons() || !owner)
             {
                 crit_chance = (float)m_baseSpellCritChance;
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
@@ -14248,10 +14282,13 @@ float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spe
     return floor((WeaponSpeed * PPM) / 600.0f);   // result is chance in percents (probability = Speed_in_sec * (PPM / 60))
 }
 
-bool Unit::GetRPPMProcChance(double &cooldown, float RPPM)
+bool Unit::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto)
 {
     double baseCD = 60.0f / RPPM;
-    float chance = ((baseCD - cooldown) / baseCD) * 100.0f;
+    if(spellProto->procTimeRec)
+        baseCD = spellProto->procTimeRec / 1000;
+
+    float chance = std::max(1.0f, float(((baseCD - cooldown) / baseCD) * 100.0f));
     cooldown += baseCD;
 
     return roll_chance_f(chance);
@@ -19157,7 +19194,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                         }
                     spellPPM *= GetMaxBaseHastRatingPct();
                     double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
-                    bool procked = GetRPPMProcChance(cooldown, spellPPM);
+                    bool procked = GetRPPMProcChance(cooldown, spellPPM, spellProto);
                     if(procked)
                         player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
                     return procked;
@@ -19177,7 +19214,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                         }
                     spellPPM *= victim->GetMaxBaseHastRatingPct();
                     double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
-                    bool procked = GetRPPMProcChance(cooldown, spellPPM);
+                    bool procked = GetRPPMProcChance(cooldown, spellPPM, spellProto);
                     if(procked)
                         player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
                     return procked;

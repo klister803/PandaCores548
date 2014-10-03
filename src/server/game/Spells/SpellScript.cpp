@@ -814,6 +814,16 @@ bool AuraScript::CheckAreaTargetHandler::Call(AuraScript* auraScript, Unit* _tar
     return (auraScript->*pHandlerScript)(_target);
 }
 
+AuraScript::CalcMaxDurationHandler::CalcMaxDurationHandler(AuraCalcMaxDurationFnType _pHandlerScript)
+{
+    pHandlerScript = _pHandlerScript;
+}
+
+void AuraScript::CalcMaxDurationHandler::Call(AuraScript* auraScript, int32& maxDuration)
+{
+    (auraScript->*pHandlerScript)(maxDuration);
+}
+
 AuraScript::AuraDispelHandler::AuraDispelHandler(AuraDispelFnType _pHandlerScript)
 {
     pHandlerScript = _pHandlerScript;

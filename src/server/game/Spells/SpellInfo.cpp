@@ -1660,11 +1660,25 @@ bool SpellInfo::IsNeedDelayForSpell() const
     return false;
 }
 
-bool SpellInfo::IsSingleTarget() const
+bool SpellInfo::IsSingleTarget(Unit const* caster) const
 {
     // all other single target spells have if it has AttributesEx5
     if (AttributesEx5 & SPELL_ATTR5_SINGLE_TARGET_SPELL)
         return true;
+
+    switch (Id)
+    {
+        case 33763: // Lifebloom
+        case 94447: // Lifebloom
+        {
+            if(caster && caster->HasAura(81098))
+                return false;
+            else
+                return true;
+        }
+        default:
+            break;
+    }
 
     switch (GetSpellSpecific())
     {

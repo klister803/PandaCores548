@@ -553,6 +553,8 @@ class Spell
 
         void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
         DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+
+        uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();

@@ -378,8 +378,16 @@ public:
                 }
         }
 
+        void HandleDummy(SpellEffIndex /*effIndex*/)
+        {
+            if(Unit* caster = GetCaster())
+                if (caster->HasSpell(139598))
+                    caster->CastSpell(caster, 139597, true);
+        }
+
         void Register()
         {
+            OnEffectHitTarget += SpellEffectFn(spell_monk_clone_cast_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             OnCast += SpellCastFn(spell_monk_clone_cast_SpellScript::HandleOnCast);
         }
     };
@@ -2316,6 +2324,53 @@ class spell_monk_remove_zen_flight : public SpellScriptLoader
         }
 };
 
+// Spinning Crane Kick - 107270, 148187
+class spell_monk_spinning_crane_kick : public SpellScriptLoader
+{
+    public:
+        spell_monk_spinning_crane_kick() : SpellScriptLoader("spell_monk_spinning_crane_kick") { }
+
+        class spell_monk_spinning_crane_kick_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_spinning_crane_kick_SpellScript)
+
+            void HandleAfterCast()
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    Player* plr = caster->ToPlayer();
+                    if(plr && GetSpell()->GetTargetCount() >= 3)
+                    {
+                        if (caster->HasSpell(139598))
+                        {
+                            if(!plr->HasSpellCooldown(139597))
+                            {
+                                caster->CastSpell(caster, 139597, true);
+                                plr->AddSpellCooldown(139597, 0, getPreciseTime() + 3.0);
+                            }
+                        }
+
+                        if(!plr->HasSpellCooldown(129881))
+                        {
+                            caster->CastSpell(caster, 129881, true);
+                            plr->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_spinning_crane_kick_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_spinning_crane_kick_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -2363,4 +2418,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_tigereye_brew_stacks();
     new spell_mastery_bottled_fury();
     new spell_monk_remove_zen_flight();
+    new spell_monk_spinning_crane_kick();
 }

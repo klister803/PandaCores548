@@ -3521,7 +3521,7 @@ void World::ProcessMailboxQueue()
     Field * f;
     Field * fetch;
 
-    QueryResult result = CharacterDatabase.Query("SELECT id FROM mailbox_queue");
+    QueryResult result = CharacterDatabase.Query("SELECT id FROM mailbox_queue LIMIT 10000");
 
     if(result)
     {

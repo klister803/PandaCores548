@@ -6995,8 +6995,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 81262: // Efflorescence
                 {
-                    if (DynamicObject* dynObj = caster->GetDynObject(81262))
-                        caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), 81269, true);
+                    trigger_spell_id = 81269;
                     break;
                 }
             }
@@ -7151,7 +7150,10 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
     {
         //if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
         if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
-            caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this);
+        {
+            Unit* owner = caster->GetAnyOwner();
+            caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
+        }
         else if(target)
             caster->CastSpell(target, trigger_spell_id, true, NULL, this);
     }
@@ -7489,10 +7491,12 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         {
             //if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
             if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
-                triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this);
+            {
+                Unit* owner = triggerCaster->GetAnyOwner();
+                triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
+            }
             else
                 triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
         }
     }
     else

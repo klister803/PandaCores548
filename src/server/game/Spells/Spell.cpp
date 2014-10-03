@@ -1292,13 +1292,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         power = POWER_HEALTH;
                         break;
                     }
-                    case 81269:  // Efflorescence
-                    {
-                        shouldCheck = true;
-                        maxSize = 3;
-                        power = POWER_HEALTH;
-                        break;
-                    }
                     default:
                         break;
                 }
@@ -1372,10 +1365,10 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             unitTargets.remove(m_targets.GetUnitTarget());
 
         // Custom MoP Script
-        // 107270 / 117640 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
+        // 117640 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
         {
-            if ((m_spellInfo->Id == 107270 || m_spellInfo->Id == 117640) && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
+            if (m_spellInfo->Id == 117640 && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
                 m_caster->ToPlayer()->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
@@ -5898,32 +5891,48 @@ void Spell::LinkedSpell(SpellLinkedType type)
                 {
                     if (Unit* owner = _caster->GetOwner())
                     {
-                        if(i->hastalent != 0 && !owner->HasAura(i->hastalent))
+                        if(i->hastalent > 0 && !owner->HasAura(i->hastalent))
                             continue;
-                        if(i->hastalent2 != 0 && !owner->HasAura(i->hastalent2))
+                        else if(i->hastalent < 0 && owner->HasAura(abs(i->hastalent)))
+                            continue;
+                        if(i->hastalent2 > 0 && !owner->HasAura(i->hastalent2))
+                            continue;
+                        else if(i->hastalent2 < 0 && owner->HasAura(abs(i->hastalent2)))
                             continue;
                     }
                     else continue;
                 }
                 else if(i->type2 == 2)
                 {
-                    if(i->hastalent != 0 && !_caster->HasSpell(i->hastalent))
+                    if(i->hastalent > 0 && !_caster->HasSpell(i->hastalent))
                         continue;
-                    if(i->hastalent2 != 0 && !_caster->HasSpell(i->hastalent2))
+                    else if(i->hastalent < 0 && _caster->HasSpell(abs(i->hastalent)))
+                        continue;
+                    if(i->hastalent2 > 0 && !_caster->HasSpell(i->hastalent2))
+                        continue;
+                    else if(i->hastalent2 < 0 && _caster->HasSpell(abs(i->hastalent2)))
                         continue;
                 }
                 else if(i->type2 && _target)
                 {
-                    if (i->hastalent != 0 && !_target->HasAura(i->hastalent))
+                    if (i->hastalent > 0 && !_target->HasAura(i->hastalent))
                         continue;
-                    if (i->hastalent2 != 0 && !_target->HasAura(i->hastalent2))
+                    else if(i->hastalent < 0 && _target->HasAura(abs(i->hastalent)))
+                        continue;
+                    if (i->hastalent2 > 0 && !_target->HasAura(i->hastalent2))
+                        continue;
+                    else if(i->hastalent2 < 0 && _target->HasAura(abs(i->hastalent2)))
                         continue;
                 }
                 else
                 {
-                    if(i->hastalent != 0 && !_caster->HasAura(i->hastalent))
+                    if(i->hastalent > 0 && !_caster->HasAura(i->hastalent))
                         continue;
-                    if(i->hastalent2 != 0 && !_caster->HasAura(i->hastalent2))
+                    else if(i->hastalent < 0 && _caster->HasAura(abs(i->hastalent)))
+                        continue;
+                    if(i->hastalent2 > 0 && !_caster->HasAura(i->hastalent2))
+                        continue;
+                    else if(i->hastalent2 < 0 && _caster->HasAura(abs(i->hastalent2)))
                         continue;
                 }
                 if(i->chance != 0 && !roll_chance_i(i->chance))

@@ -809,7 +809,7 @@ enum UnitTypeMask
     UNIT_MASK_ACCESSORY             = 0x00000200,
     UNIT_MASK_UNK                   = 0x00000400,
     UNIT_MASK_UNK2                  = 0x00000800,
-    UNIT_MASK_UNK3                  = 0x000001000,
+    UNIT_MASK_UNK3                  = 0x00001000,
 };
 
 namespace Movement{
@@ -1424,7 +1424,7 @@ class Unit : public WorldObject
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
         bool isMinion() const   { return m_unitTypeMask & UNIT_MASK_MINION; }
-        bool isAnySummons() const   { return m_unitTypeMask & (UNIT_MASK_MINION | UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE); }
+        bool isAnySummons() const   { return m_unitTypeMask & (UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE); }
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
         uint8 getLevelForTarget(WorldObject const* /*target*/) const { return getLevel(); }
@@ -1616,7 +1616,7 @@ class Unit : public WorldObject
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
-        bool GetRPPMProcChance(double &cooldown, float RPPM);
+        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto);
 
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
@@ -1794,6 +1794,7 @@ class Unit : public WorldObject
         Player* GetSpellModOwner() const;
 
         Unit* GetOwner() const;
+        Unit* GetAnyOwner() const;
         Guardian *GetGuardianPet() const;
         Minion *GetFirstMinion() const;
         Unit* GetCharmer() const;

@@ -488,16 +488,41 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
     if (owner->isType(TYPEMASK_UNIT))
         if (!owner->IsInWorld() || ((Unit*)owner)->IsDuringRemoveFromWorld())
             // owner not in world so don't allow to own not self casted single target auras
-            if (casterGUID != owner->GetGUID() && spellproto->IsSingleTarget())
+            if (casterGUID != owner->GetGUID() && spellproto->IsSingleTarget(caster))
                 return NULL;
 
     Aura* aura = NULL;
+    if(spellproto->IsSingleTarget(caster))
+    {
+        Unit::AuraList& scAuras = caster->GetSingleCastAuras();
+        for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
+        {
+            if ((*itr)->GetId() == spellproto->Id)
+            {
+                //test code
+                /*sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura* Aura::Create aura %u, GetCasterGUID %u", (*itr)->GetId(), caster->GetGUID());
+                Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
+                for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
+                {
+                    AuraApplication * aurApp = app->second;
+                    ++app;
+                    Unit* target = aurApp->GetTarget();
+                    aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
+                    (*itr)->_UnapplyForTarget(target, caster, aurApp);
+                    (*itr)->ChangeOwner(owner);
+                }
+                return (*itr);*/
+                stackAmount = (*itr)->GetStackAmount();
+            }
+            ++itr;
+        }
+    }
+
     switch (owner->GetTypeId())
     {
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
             aura = new UnitAura(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID, stackAmount);
-            aura->LoadScripts();
             aura->_InitEffects(effMask, caster, baseAmount);
             aura->GetUnitOwner()->_AddAura((UnitAura*)aura, caster);
             break;
@@ -506,7 +531,6 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
             aura->_InitEffects(effMask, caster, baseAmount);
             aura->GetDynobjOwner()->SetAura(aura);
 
-            aura->LoadScripts();
             ASSERT(aura->GetDynobjOwner());
             ASSERT(aura->GetDynobjOwner()->IsInWorld());
             ASSERT(aura->GetDynobjOwner()->GetMap() == aura->GetCaster()->GetMap());
@@ -535,6 +559,8 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
 
     if (power.powerPerSecond || power.powerPerSecondPercentage)
         m_timeCla = 1 * IN_MILLISECONDS;
+
+    LoadScripts();
 
     m_maxDuration = CalcMaxDuration(caster);
     m_duration = m_maxDuration;
@@ -924,7 +950,7 @@ void Aura::Update(uint32 diff, Unit* caster)
     }
 }
 
-int32 Aura::CalcMaxDuration(Unit* caster) const
+int32 Aura::CalcMaxDuration(Unit* caster)
 {
     Player* modOwner = NULL;
     int32 maxDuration;
@@ -940,9 +966,12 @@ int32 Aura::CalcMaxDuration(Unit* caster) const
     if (IsPassive() && !m_spellInfo->DurationEntry)
         maxDuration = -1;
 
+    CallScriptCalcMaxDurationHandlers(maxDuration);
+
     // IsPermanent() checks max duration (which we are supposed to calculate here)
     if (maxDuration != -1 && modOwner)
         modOwner->ApplySpellMod(GetId(), SPELLMOD_DURATION, maxDuration);
+
     return maxDuration;
 }
 
@@ -966,7 +995,7 @@ void Aura::RefreshDuration(bool /*recalculate*/)
     Unit* caster = GetCaster();
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
-            GetEffect(i)->CalculatePeriodic(caster, false, false);
+            GetEffect(i)->CalculatePeriodic(caster, (GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_START_PERIODIC_AT_APPLY), false);
 
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -1159,7 +1188,7 @@ bool Aura::CanBeSaved() const
         return false;
 
     if (GetCasterGUID() != GetOwner()->GetGUID())
-        if (GetSpellInfo()->IsSingleTarget())
+        if (GetSpellInfo()->IsSingleTarget(GetCaster()))
             return false;
 
     // Can't be saved - aura handler relies on calculated amount and changes it
@@ -1443,23 +1472,35 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     {
                         if(itr->type2 == 2 && _caster)
                         {
-                            if(itr->hastalent != 0 && !_caster->HasSpell(itr->hastalent))
+                            if(itr->hastalent > 0 && !_caster->HasSpell(itr->hastalent))
                                 continue;
-                            if(itr->hastalent2 != 0 && !_caster->HasSpell(itr->hastalent2))
+                            else if(itr->hastalent < 0 && _caster->HasSpell(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 > 0 && !_caster->HasSpell(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _caster->HasSpell(abs(itr->hastalent2)))
                                 continue;
                         }
                         else if(itr->type2)
                         {
-                            if(itr->hastalent != 0 && !_caster->HasAura(itr->hastalent))
+                            if(itr->hastalent > 0 && !_caster->HasAura(itr->hastalent))
                                 continue;
-                            if(itr->hastalent2 != 0 && !_caster->HasAura(itr->hastalent2))
+                            else if(itr->hastalent < 0 && _caster->HasAura(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 < 0 && !_caster->HasAura(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _caster->HasAura(abs(itr->hastalent2)))
                                 continue;
                         }
                         else
                         {
-                            if(itr->hastalent != 0 && !_target->HasAura(itr->hastalent))
+                            if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
                                 continue;
-                            if(itr->hastalent2 != 0 && !_target->HasAura(itr->hastalent2))
+                            else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
                                 continue;
                         }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance))
@@ -1539,9 +1580,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         {
                             if(itr->type2 == 2 && caster)
                             {
-                                if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
+                                if(itr->hastalent > 0 && !caster->HasSpell(itr->hastalent))
                                     continue;
-                                if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
+                                else if(itr->hastalent < 0 && caster->HasSpell(abs(itr->hastalent)))
+                                    continue;
+                                if(itr->hastalent2 > 0 && !caster->HasSpell(itr->hastalent2))
+                                    continue;
+                                else if(itr->hastalent2 < 0 && caster->HasSpell(abs(itr->hastalent2)))
                                     continue;
                             }
                             else if(itr->type2 && caster)
@@ -1553,9 +1598,13 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             }
                             else
                             {
-                                if(itr->hastalent != 0 && !_target->HasAura(itr->hastalent))
+                                if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
                                     continue;
-                                if(itr->hastalent2 != 0 && !_target->HasAura(itr->hastalent2))
+                                else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
+                                    continue;
+                                if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
+                                    continue;
+                                else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
                                     continue;
                             }
                             if(itr->chance != 0 && !roll_chance_i(itr->chance))
@@ -1625,21 +1674,33 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     {
                         if(itr->hastalent != 0 && !caster->HasSpell(itr->hastalent))
                             continue;
+                        else if(itr->hastalent < 0 && caster->HasSpell(abs(itr->hastalent)))
+                            continue;
                         if(itr->hastalent2 != 0 && !caster->HasSpell(itr->hastalent2))
+                            continue;
+                        else if(itr->hastalent2 < 0 && caster->HasSpell(abs(itr->hastalent2)))
                             continue;
                     }
                     else if(itr->type2 && caster)
                     {
                         if(itr->hastalent != 0 && !caster->HasAura(itr->hastalent))
                             continue;
+                        else if(itr->hastalent < 0 && caster->HasAura(abs(itr->hastalent)))
+                            continue;
                         if(itr->hastalent2 != 0 && !caster->HasAura(itr->hastalent2))
+                            continue;
+                        else if(itr->hastalent2 < 0 && caster->HasAura(abs(itr->hastalent2)))
                             continue;
                     }
                     else
                     {
                         if(itr->hastalent != 0 && !target->HasAura(itr->hastalent))
                             continue;
+                        else if(itr->hastalent < 0 && target->HasAura(abs(itr->hastalent)))
+                            continue;
                         if(itr->hastalent2 != 0 && !target->HasAura(itr->hastalent2))
+                            continue;
+                        else if(itr->hastalent2 < 0 && target->HasAura(abs(itr->hastalent2)))
                             continue;
                     }
                     if(itr->chance != 0 && !roll_chance_i(itr->chance))
@@ -2306,7 +2367,7 @@ bool Aura::CanBeAppliedOn(Unit* target)
         if (GetOwner() != target)
             return false;
         // not selfcasted single target auras mustn't be applied
-        if (GetCasterGUID() != GetOwner()->GetGUID() && GetSpellInfo()->IsSingleTarget())
+        if (GetCasterGUID() != GetOwner()->GetGUID() && GetSpellInfo()->IsSingleTarget(GetCaster()))
             return false;
         return true;
     }
@@ -2782,6 +2843,18 @@ void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & 
             if ((*effItr).IsEffectAffected(m_spellInfo, aurEff->GetEffIndex()))
                 (*effItr).Call(*scritr, aurEff, amount, canBeRecalculated);
         }
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
+void Aura::CallScriptCalcMaxDurationHandlers(int32 & maxDuration)
+{
+    for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(AURA_SCRIPT_HOOK_CALC_MAX_DURATION);
+        std::list<AuraScript::CalcMaxDurationHandler>::iterator hookItrEnd = (*scritr)->DoCalcMaxDuration.end(), hookItr = (*scritr)->DoCalcMaxDuration.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr, maxDuration);
         (*scritr)->_FinishScriptCall();
     }
 }

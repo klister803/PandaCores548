@@ -49,7 +49,7 @@ public:
         player->ADD_GOSSIP_ITEM(0, printinfo, GOSSIP_SENDER_MAIN, CHANGE_GENDER);
 
         sprintf(printinfo, sObjectMgr->GetTrinityString(20010, loc_idx), priceRecobery);
-        //player->ADD_GOSSIP_ITEM(0, printinfo, GOSSIP_SENDER_MAIN, RECOVERY_CHAR);
+        player->ADD_GOSSIP_ITEM(0, printinfo, GOSSIP_SENDER_MAIN, RECOVERY_CHAR);
         player->ADD_GOSSIP_ITEM(0, sObjectMgr->GetTrinityString(20014, loc_idx), GOSSIP_SENDER_MAIN, EFIRALS_TRANS);
 
         player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,creature->GetGUID());
@@ -172,7 +172,7 @@ public:
                     }
                     case RECOVERY_CHAR:
                     {
-                        QueryResult result = CharacterDatabase.PQuery("SELECT deleteInfos_Name, guid, level, class, deleteDate FROM `%s_dub`.`characters` WHERE deleteInfos_Account = '%u'",CharacterDatabase.GetDatabaseName(), accountId);
+                        QueryResult result = CharacterDatabase.PQuery("SELECT deleteInfos_Name, guid, level, class, deleteDate FROM `characters` WHERE deleteInfos_Account = '%u'", accountId);
                         if (!result)
                         {
                             player->CLOSE_GOSSIP_MENU();
@@ -256,7 +256,7 @@ public:
                 uint8 playerClass = 0;
                 uint8 level = 1;
 
-                QueryResult result = CharacterDatabase.PQuery("SELECT deleteInfos_Account, guid, deleteInfos_Name, gender, race, class, level FROM `%s_dub`.`characters` WHERE guid = '%u'", CharacterDatabase.GetDatabaseName(), action);
+                QueryResult result = CharacterDatabase.PQuery("SELECT deleteInfos_Account, guid, deleteInfos_Name, gender, race, class, level FROM `characters` WHERE guid = '%u'", action);
                 if (result)
                 {
                     Field* fields = result->Fetch();
@@ -278,61 +278,7 @@ public:
                     break;
                 }
 
-                CharacterDatabase.PExecute("UPDATE `%s_dub`.`characters` SET at_login = at_login | '1' WHERE AND guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                trans->PAppend("UPDATE `%s_dub`.`characters` SET name = deleteInfos_Name, account = deleteInfos_Account, deleteDate = NULL, deleteInfos_Name = NULL, deleteInfos_Account = NULL WHERE deleteDate IS NOT NULL AND guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `characters` (SELECT * FROM `%s_dub`.`characters` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_donate` (SELECT * FROM `%s_dub`.`character_donate` WHERE owner_guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_account_data` (SELECT * FROM `%s_dub`.`character_account_data` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_achievement` (SELECT * FROM `%s_dub`.`character_achievement` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_achievement_progress` (SELECT * FROM `%s_dub`.`character_achievement_progress` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_action` (SELECT * FROM `%s_dub`.`character_action` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_aura` (SELECT * FROM `%s_dub`.`character_aura` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_declinedname` (SELECT * FROM `%s_dub`.`character_declinedname` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_equipmentsets` (SELECT * FROM `%s_dub`.`character_equipmentsets` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_gifts` (SELECT * FROM `%s_dub`.`character_gifts` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_glyphs` (SELECT * FROM `%s_dub`.`character_glyphs` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_homebind` (SELECT * FROM `%s_dub`.`character_homebind` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_inventory` (SELECT * FROM `%s_dub`.`character_inventory` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_pet` (SELECT * FROM `%s_dub`.`character_pet` WHERE owner = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_pet_declinedname` (SELECT * FROM `%s_dub`.`character_pet_declinedname` WHERE owner = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_queststatus` (SELECT * FROM `%s_dub`.`character_queststatus` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_queststatus_rewarded` (SELECT * FROM `%s_dub`.`character_queststatus_rewarded` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_reputation` (SELECT * FROM `%s_dub`.`character_reputation` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_skills` (SELECT * FROM `%s_dub`.`character_skills` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_spell` (SELECT * FROM `%s_dub`.`character_spell` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_spell_cooldown` (SELECT * FROM `%s_dub`.`character_spell_cooldown` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `character_talent` (SELECT * FROM `%s_dub`.`character_talent` WHERE guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `item_instance` (SELECT * FROM `%s_dub`.`item_instance` WHERE owner_guid = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `mail` (SELECT * FROM `%s_dub`.`mail` WHERE receiver = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("INSERT INTO `mail_items` (SELECT * FROM `%s_dub`.`mail_items` WHERE receiver = '%u')",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`characters` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_donate` WHERE owner_guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_account_data` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_achievement` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_achievement_progress` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_action` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_aura` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_declinedname` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_equipmentsets` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_gifts` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_glyphs` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_homebind` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_inventory` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_pet` WHERE owner = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_pet_declinedname` WHERE owner = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_queststatus` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_queststatus_rewarded` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_reputation` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_skills` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_spell`  WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_spell_cooldown` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`character_talent` WHERE guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`item_instance` WHERE owner_guid = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`mail` WHERE receiver = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                trans->PAppend("DELETE FROM `%s_dub`.`mail_items` WHERE receiver = '%u'",CharacterDatabase.GetDatabaseName(), action);
-                CharacterDatabase.CommitTransaction(trans);
+                CharacterDatabase.PExecute("UPDATE `characters` SET at_login = at_login | '1', name = deleteInfos_Name, account = deleteInfos_Account, deleteDate = NULL, deleteInfos_Name = NULL, deleteInfos_Account = NULL WHERE deleteDate IS NOT NULL AND guid = '%u'", action);
 
                 player->DestroyItemCount(EFIRALS, priceRecobery, true);
                 sWorld->AddCharacterNameData(action, name, gender, race, playerClass, level);

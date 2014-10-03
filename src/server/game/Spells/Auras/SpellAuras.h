@@ -107,6 +107,7 @@ class Aura
         uint64 GetCasterGUID() const { return m_casterGuid; }
         Unit* GetCaster() const;
         WorldObject* GetOwner() const { return m_owner; }
+        WorldObject* ChangeOwner(WorldObject* owner) { return m_owner = owner; }
         Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
         void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
@@ -132,8 +133,8 @@ class Aura
         time_t GetApplyTime() const { return m_applyTime; }
         int32 GetMaxDuration() const { return m_maxDuration; }
         void SetMaxDuration(int32 duration) { m_maxDuration = duration; }
-        int32 CalcMaxDuration() const { return CalcMaxDuration(GetCaster()); }
-        int32 CalcMaxDuration(Unit* caster) const;
+        int32 CalcMaxDuration() { return CalcMaxDuration(GetCaster()); }
+        int32 CalcMaxDuration(Unit* caster);
         int32 GetDuration() const { return m_duration; }
         void SetDuration(int32 duration, bool withMods = false);
         void RefreshDuration(bool recalculate = true);
@@ -221,6 +222,7 @@ class Aura
         void CallScriptEffectUpdateHandlers(uint32 diff, AuraEffect* aurEff);
         void CallScriptEffectUpdatePeriodicHandlers(AuraEffect* aurEff);
         void CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & amount, bool & canBeRecalculated);
+        void CallScriptCalcMaxDurationHandlers(int32 & maxDuration);
         void CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount, Unit* target);
         void CallScriptEffectCalcPeriodicHandlers(AuraEffect const* aurEff, bool & isPeriodic, int32 & amplitude);
         void CallScriptEffectCalcSpellModHandlers(AuraEffect const* aurEff, SpellModifier* & spellMod);
@@ -249,7 +251,7 @@ class Aura
         uint64 const m_casterGuid;
         uint64 const m_castItemGuid;                        // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t const m_applyTime;
-        WorldObject* const m_owner;                        //
+        WorldObject* m_owner;
         DynamicObject* m_spellDynObj;
 
         int32 m_maxDuration;                                // Max aura duration

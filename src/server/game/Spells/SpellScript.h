@@ -443,6 +443,7 @@ enum AuraScriptHookType
     AURA_SCRIPT_HOOK_EFFECT_AFTER_ABSORB,
     AURA_SCRIPT_HOOK_EFFECT_MANASHIELD,
     AURA_SCRIPT_HOOK_EFFECT_AFTER_MANASHIELD,
+    AURA_SCRIPT_HOOK_CALC_MAX_DURATION,
     AURA_SCRIPT_HOOK_CHECK_AREA_TARGET,
     AURA_SCRIPT_HOOK_DISPEL,
     AURA_SCRIPT_HOOK_AFTER_DISPEL,
@@ -484,6 +485,7 @@ class AuraScript : public _SpellScript
         typedef bool(CLASSNAME::*AuraCheckProcFnType)(ProcEventInfo&); \
         typedef void(CLASSNAME::*AuraProcFnType)(ProcEventInfo&); \
         typedef void(CLASSNAME::*AuraEffectProcFnType)(AuraEffect const*, ProcEventInfo&); \
+        typedef void(CLASSNAME::*AuraCalcMaxDurationFnType)(int32 &); \
 
         AURASCRIPT_FUNCTION_TYPE_DEFINES(AuraScript)
 
@@ -550,6 +552,14 @@ class AuraScript : public _SpellScript
                 void Call(AuraScript* auraScript, AuraEffect const* aurEff, int32 & amount, bool & canBeRecalculated);
             private:
                 AuraEffectCalcAmountFnType pEffectHandlerScript;
+        };
+        class CalcMaxDurationHandler
+        {
+            public:
+                CalcMaxDurationHandler(AuraCalcMaxDurationFnType pHandlerScript);
+                void Call(AuraScript* auraScript, int32 & maxDuration);
+            private:
+                AuraCalcMaxDurationFnType pHandlerScript;
         };
         class EffectChangeTickDamageHandler : public EffectBase
         {
@@ -633,6 +643,7 @@ class AuraScript : public _SpellScript
         class EffectUpdateHandlerFunction : public AuraScript::EffectUpdateHandler { public: EffectUpdateHandlerFunction(AuraEffectUpdateFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectUpdateHandler((AuraScript::AuraEffectUpdateFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class EffectUpdatePeriodicHandlerFunction : public AuraScript::EffectUpdatePeriodicHandler { public: EffectUpdatePeriodicHandlerFunction(AuraEffectUpdatePeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectUpdatePeriodicHandler((AuraScript::AuraEffectUpdatePeriodicFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class EffectCalcAmountHandlerFunction : public AuraScript::EffectCalcAmountHandler { public: EffectCalcAmountHandlerFunction(AuraEffectCalcAmountFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectCalcAmountHandler((AuraScript::AuraEffectCalcAmountFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
+        class CalcMaxDurationHandlerFunction : public AuraScript::CalcMaxDurationHandler { public: CalcMaxDurationHandlerFunction(AuraCalcMaxDurationFnType _pHandlerScript) : AuraScript::CalcMaxDurationHandler((AuraScript::AuraCalcMaxDurationFnType)_pHandlerScript) {} }; \
         class EffectChangeTickDamageHandlerFunction : public AuraScript::EffectChangeTickDamageHandler { public: EffectChangeTickDamageHandlerFunction(AuraEffectChangeTickDamageFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectChangeTickDamageHandler((AuraScript::AuraEffectChangeTickDamageFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class EffectCalcPeriodicHandlerFunction : public AuraScript::EffectCalcPeriodicHandler { public: EffectCalcPeriodicHandlerFunction(AuraEffectCalcPeriodicFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectCalcPeriodicHandler((AuraScript::AuraEffectCalcPeriodicFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class EffectCalcSpellModHandlerFunction : public AuraScript::EffectCalcSpellModHandler { public: EffectCalcSpellModHandlerFunction(AuraEffectCalcSpellModFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : AuraScript::EffectCalcSpellModHandler((AuraScript::AuraEffectCalcSpellModFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
@@ -740,6 +751,9 @@ class AuraScript : public _SpellScript
         // where function is: void function (AuraEffect* aurEff, int32& amount, bool& canBeRecalculated);
         HookList<EffectCalcAmountHandler> DoEffectCalcAmount;
         #define AuraEffectCalcAmountFn(F, I, N) EffectCalcAmountHandlerFunction(&F, I, N)
+
+        HookList<CalcMaxDurationHandler> DoCalcMaxDuration;
+        #define AuraCalcMaxDurationFn(F) CalcMaxDurationHandlerFunction(&F)
 
         // executed when aura effect calculates amount
         // example: DoEffectChangeTickDamage += AuraEffectChangeTickDamageFn(class::function, EffectIndexSpecifier, EffectAuraNameSpecifier);
