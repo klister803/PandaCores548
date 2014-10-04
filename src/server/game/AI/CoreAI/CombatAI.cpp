@@ -329,18 +329,19 @@ void VehicleAI::CheckConditions(const uint32 diff)
     {
         if (!conditions.empty())
         {
-            for (SeatMap::iterator itr = m_vehicle->Seats.begin(); itr != m_vehicle->Seats.end(); ++itr)
-                if (Unit* passenger = ObjectAccessor::GetUnit(*me, itr->second.Passenger))
-                {
-                    if (Player* player = passenger->ToPlayer())
+            if (Vehicle* vehicleKit = me->GetVehicleKit())
+                for (SeatMap::iterator itr = vehicleKit->Seats.begin(); itr != vehicleKit->Seats.end(); ++itr)
+                    if (Unit* passenger = ObjectAccessor::GetUnit(*me, itr->second.Passenger))
                     {
-                        if (!sConditionMgr->IsObjectMeetToConditions(player, me, conditions))
+                        if (Player* player = passenger->ToPlayer())
                         {
-                            player->ExitVehicle();
-                            return;//check other pessanger in next tick
+                            if (!sConditionMgr->IsObjectMeetToConditions(player, me, conditions))
+                            {
+                                player->ExitVehicle();
+                                return;//check other pessanger in next tick
+                            }
                         }
                     }
-                }
         }
         m_ConditionsTimer = VEHICLE_CONDITION_CHECK_TIME;
     } else m_ConditionsTimer -= diff;
