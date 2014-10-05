@@ -2308,6 +2308,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 }
                 case 125195: // Tigereye Brew
                 {
+                    if (!caster)
+                        return;
                     if (apply)
                     {
                         if (GetStackAmount() >= 10)
