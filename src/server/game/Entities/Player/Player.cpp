@@ -4236,6 +4236,25 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             if (titr == GetTalentMap(GetActiveSpec())->end())
                 return false;
         }
+
+        //Profession mastery. Fix bracking professtions.
+        switch (spellId)
+        {
+            case 28672: //Alchemy: Transmutation Master
+                removeSpell(28675);
+                removeSpell(28677);
+                break;
+            case 28675: //Alchemy: Potion Master
+                removeSpell(28672);
+                removeSpell(28677);
+                break;
+            case 28677: //Alchemy: Elixir Master
+                removeSpell(28675);
+                removeSpell(28677);
+                break;
+            default:
+                break;
+        }
     }
 
     // Validate profession
@@ -19336,6 +19355,36 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         m_vis->m_visRanged      = fieldsvis[11].GetUInt32();
 
         HandleAltVisSwitch();
+    }
+
+   // Check professions
+    //if(sWorld->getBoolConfig(CONFIG_CHECK_PROF_AT_LOGIN) && GetSession()->GetSecurity() < SEC_GAMEMASTER)
+    {
+        uint32 prof_count = 0;
+        std::vector<uint32> prof_skills;
+        prof_skills.push_back(164);     // Blacksmithing
+        prof_skills.push_back(165);     // Leatherworking
+        prof_skills.push_back(171);     // Alchemy
+        prof_skills.push_back(182);     // Herbalism
+        prof_skills.push_back(186);     // Mining
+        prof_skills.push_back(197);     // Tailoring
+        prof_skills.push_back(202);     // Engineering
+        prof_skills.push_back(333);     // Enchanting
+        prof_skills.push_back(393);     // Skinning
+        prof_skills.push_back(755);     // Jewelcrafting
+        prof_skills.push_back(773);     // Inscription
+        prof_skills.push_back(794);     // Archaeology
+
+        for(std::vector<uint32>::iterator itr = prof_skills.begin(); itr != prof_skills.end(); ++itr)
+        {
+            uint32 skill_id = *itr;
+            if(HasSkill(skill_id))
+            {
+                ++prof_count;
+                if(prof_count > 2)
+                    SetSkill(skill_id,0 , 0, 0);
+            }    
+        }
     }
 
     //dual spec check
