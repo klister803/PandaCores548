@@ -130,12 +130,9 @@ bool Player::UpdateStats(Stats stat)
 
 void Player::ApplySpellPowerBonus(int32 amount, bool apply)
 {
-    apply = _ModifyUInt32(apply, m_baseSpellPower, amount);
+    _ModifyUInt32(apply, m_baseSpellPower, amount);
 
-    // For speed just update for client
-    ApplyModUInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, amount, apply);
-    for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-        ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + i, amount, apply);
+    UpdateSpellDamageAndHealingBonus();
 }
 
 void Player::UpdateSpellDamageAndHealingBonus()
@@ -143,17 +140,37 @@ void Player::UpdateSpellDamageAndHealingBonus()
     // Magic damage modifiers implemented in Unit::SpellDamageBonusDone
     // This information for client side use only
     // Get healing bonus for all schools
-    int32 spellHeal = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
-    int32 spellDamage = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
 
-    SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, spellHeal);
-    // Get damage bonus for all schools
-    for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-        SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)));
+    int32 amount = 0;
+    amount += m_baseSpellPower;
 
-    SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
-    if (getClass() == CLASS_MONK && GetSpecializationId(GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
-        UpdateAttackPowerAndDamage();
+    AuraEffectList const& mOverrideSpellPowerAuras = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
+    if (!mOverrideSpellPowerAuras.empty())
+    {
+        for (AuraEffectList::const_iterator itr = mOverrideSpellPowerAuras.begin(); itr != mOverrideSpellPowerAuras.end(); ++itr)
+            amount = int32(GetTotalAttackPowerValue(BASE_ATTACK) * (*itr)->GetAmount() / 100.0f);
+
+        SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
+        if (getClass() == CLASS_MONK && GetSpecializationId(GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+            UpdateAttackPowerAndDamage();
+
+        SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, amount);
+
+        for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
+            SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, amount);
+    }
+    else
+    {
+        if (GetPowerIndexByClass(POWER_MANA, getClass()) != MAX_POWERS)
+            amount += std::max(0, int32(GetStat(STAT_INTELLECT)) - 10);
+
+        int32 spellHeal = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL, amount);
+
+        SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, spellHeal);
+        // Get damage bonus for all schools
+        for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
+            SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i), amount));
+    }
 }
 
 bool Player::UpdateAllStats()
@@ -428,7 +445,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     else
     {
         float ApBySpellPct = float(GetTotalAuraModifier(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT));
-        int32 spellPower = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL, false);
+        int32 spellPower = GetSpellPowerDamage();
 
         SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, ApBySpellPct);
         SetModifierValue(unitMod, BASE_VALUE, ApBySpellPct / 100.0f * spellPower);

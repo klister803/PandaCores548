@@ -887,7 +887,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 case 146198: // Essence of Yu'lon
                 {
                     SpellInfo const* _info = sSpellMgr->GetSpellInfo(148008);
-                    amount = caster->SpellBaseDamageBonusDone(_info->GetSchoolMask()) * _info->Effects[EFFECT_0].BonusMultiplier / GetTotalTicks(); 
+                    amount = caster->GetSpellPowerDamage(_info->GetSchoolMask()) * _info->Effects[EFFECT_0].BonusMultiplier / GetTotalTicks(); 
                     break;
                 }
                 default:
@@ -1152,7 +1152,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 {
                     SpellInfo const* _spellInfo = sSpellMgr->GetSpellInfo(115151);
                     float mod = _spellInfo->Effects[2].BonusMultiplier * 100.0f;
-                    int32 DoneAdvertisedBenefit = caster->SpellBaseHealingBonusDone(m_spellInfo->GetSchoolMask());
+                    int32 DoneAdvertisedBenefit = caster->GetSpellPowerHealing();
                     amount += CalculatePct(DoneAdvertisedBenefit, mod);
                     break;
                 }
@@ -7390,7 +7390,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             {
                 if (Unit * shaman = caster->GetOwner())
                 {
-                    int32 SPD    = shaman->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 SPD    = shaman->GetSpellPowerDamage();
                     int32 amount = SPD * 0.875f * (GetTickNumber() != 1 ? 1: 4);
                     caster->CastCustomSpell(shaman, triggerSpellId, &amount, NULL, NULL, true);
                 }

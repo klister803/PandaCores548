@@ -665,7 +665,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             return;
 
                         float cof = Living_Bomb_Dot->Effects[EFFECT_2].BasePoints;
-                        int32 SPD = m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * Living_Bomb_Dot->Effects[EFFECT_0].BonusMultiplier;
+                        int32 SPD = m_caster->GetSpellPowerDamage(m_spellInfo->GetSchoolMask()) * Living_Bomb_Dot->Effects[EFFECT_0].BonusMultiplier;
                         int32 eff1val = Living_Bomb_Dot->Effects[EFFECT_0].CalcValue(m_caster);
                         uint8 totalticks = Living_Bomb_Dot->GetMaxDuration() / Living_Bomb_Dot->Effects[EFFECT_0].Amplitude;
                         eff1val += SPD;
@@ -710,7 +710,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             if (Aura* aura = m_caster->GetAura(86700))
                             {
                                 uint8 stacks = aura->GetStackAmount();
-                                damage = stacks * (damage + 0.1f * m_caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()));
+                                damage = stacks * (damage + 0.1f * m_caster->GetSpellPowerDamage(m_spellInfo->GetSchoolMask()));
                                 damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, SPELL_DIRECT_DAMAGE, effIndex);
                                 uint32 count = 0;
                                 for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)

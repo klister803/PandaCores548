@@ -203,10 +203,10 @@ class spell_pal_sacred_shield : public SpellScriptLoader
                             {
                                 case SPEC_PALADIN_HOLY:
                                 case SPEC_PALADIN_RETRIBUTION:
-                                    amount = int32(343 + caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
+                                    amount = int32(343 + caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
                                     break;
                                 case SPEC_PALADIN_PROTECTION:
-                                    amount = int32(240 + caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 0.819f);
+                                    amount = int32(240 + caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 0.819f);
                                     break;
                             }
                             _player->CastCustomSpell(target, PALADIN_SPELL_SACRED_SHIELD, &amount, NULL, NULL, true, NULL, aurEff);
@@ -1082,7 +1082,7 @@ class spell_pal_stay_of_execution : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    saveAmount = int32((caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    saveAmount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
                     amount = saveAmount;
                 }
             }
@@ -1152,7 +1152,7 @@ class spell_pal_execution_sentence_damage : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    saveAmount = int32((caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
+                    saveAmount = int32((caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * GetSpellInfo()->Effects[EFFECT_1].BasePoints / 1000 + 26.72716306 * amount) / 20);
                     amount = saveAmount;
                 }
             }

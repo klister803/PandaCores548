@@ -1422,7 +1422,7 @@ class spell_pri_halo : public SpellScriptLoader
                             return;
                         }
                         int32 damage = GetHitDamage();
-                        damage += int32(_player->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()) * 1.95f);
+                        damage += int32(_player->GetSpellPowerDamage(GetSpellInfo()->GetSchoolMask()) * 1.95f);
 
                         float Distance = _player->GetDistance(target);
                         float pct = Distance / 25.0f;

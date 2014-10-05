@@ -150,7 +150,7 @@ class spell_mage_incanters_ward : public SpellScriptLoader
             void CalculateAmount(AuraEffect const* , int32 & amount, bool & )
             {
                 if (Unit* caster = GetCaster())
-                    amount += caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ARCANE);
+                    amount += caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_ARCANE);
 
                 absorbtionAmount = float(amount);
             }

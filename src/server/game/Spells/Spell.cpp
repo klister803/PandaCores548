@@ -4503,7 +4503,7 @@ void Spell::SendSpellStart()
         data << uint32(m_caster->GetPower(powertype));
         data << uint32(powertype);
         data << uint32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
-        data << uint32(m_caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL));
+        data << uint32(m_caster->GetSpellPowerDamage());
         data.WriteGuidBytes<6, 4, 5, 0, 1, 3>(m_caster->GetObjectGuid());
     }
 
@@ -5071,7 +5071,7 @@ void Spell::SendSpellGo()
         data << uint32(m_caster->GetPower(powertype));
         data << uint32(powertype);
         data.WriteGuidBytes<4>(powerGuid);
-        data << uint32(m_caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL));
+        data << uint32(m_caster->GetSpellPowerDamage());
     }
 
     if (hasCastImmunities)
