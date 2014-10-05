@@ -5852,7 +5852,7 @@ void Spell::LinkedSpell(SpellLinkedType type)
                     continue;
             }
 
-            Unit* _caster = m_targets.GetUnitTarget();
+            Unit* _caster = type == SPELL_LINK_CAST ? m_caster : m_targets.GetUnitTarget();
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
             {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
