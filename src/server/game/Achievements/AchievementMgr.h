@@ -219,6 +219,8 @@ typedef std::map<uint32, AchievementRewardLocale> AchievementRewardLocales;
 
 struct CompletedAchievementData
 {
+    CompletedAchievementData() : date(0), first_guid(0) {}
+
     time_t date;
     std::set<uint64> guids;
     uint64 first_guid;

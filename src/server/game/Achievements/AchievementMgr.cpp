@@ -920,6 +920,13 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.completedByThisCharacter = true;
+
+            // not fined achievement progress.
+            if (m_completedAchievements.find(achievementid) ==  m_completedAchievements.end())
+            {
+                ca.date = time(NULL);
+                ca.changed = true;
+            }
             _achievementPoints += achievement->points;
 
             // title achievement rewards are retroactive
