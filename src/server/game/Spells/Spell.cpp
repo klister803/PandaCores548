@@ -2766,7 +2766,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
     PrepareScriptHitHandlers();
     CallScriptBeforeHitHandlers();
 
-    LinkedSpell(SPELL_LINK_BEFORE_HIT);
+    LinkedSpell(unit, unit, SPELL_LINK_BEFORE_HIT);
 
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
@@ -3042,7 +3042,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
 
     // trigger linked auras remove/apply
     // TODO: remove/cleanup this, as this table is not documented and people are doing stupid things with it
-    LinkedSpell(SPELL_LINK_ON_HIT);
+    LinkedSpell(unit, unit, SPELL_LINK_ON_HIT);
 }
 
 void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
@@ -3565,7 +3565,7 @@ void Spell::cast(bool skipCheck)
             TakeReagents();
     }
 
-    LinkedSpell();
+    LinkedSpell(m_caster, m_targets.GetUnitTarget());
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     { 
@@ -5826,7 +5826,7 @@ void Spell::TakeRunePower(bool didHit)
         }
 }
 
-void Spell::LinkedSpell(SpellLinkedType type)
+void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
 {
     if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + type))
     {
@@ -5836,7 +5836,6 @@ void Spell::LinkedSpell(SpellLinkedType type)
                 if (!(m_spellMissMask & i->hitmask))
                     continue;
 
-            Unit* _target = m_targets.GetUnitTarget();
             if(i->target == 1 && m_caster->ToPlayer()) //get target pet
             {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
@@ -5852,7 +5851,6 @@ void Spell::LinkedSpell(SpellLinkedType type)
                     continue;
             }
 
-            Unit* _caster = type == SPELL_LINK_CAST ? m_caster : m_targets.GetUnitTarget();
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
             {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
