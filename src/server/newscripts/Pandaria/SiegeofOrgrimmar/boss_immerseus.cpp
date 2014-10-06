@@ -351,14 +351,13 @@ class boss_immerseus : public CreatureScript
 
             void SpawnWave()
             {
-                if (lasthppct <= 100 && lasthppct > 75)
+                if (lasthppct > 75)
                 {
                     for (uint8 n = 0; n < 25; n++)
                     {
                         if (Creature* p = me->SummonCreature(wave1[n], me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 7.0f))
                             p->AI()->SetData(DATA_SEND_INDEX, n);
                     }
-
                 }
                 else if (lasthppct < 75 && lasthppct > 50)
                 {
@@ -433,6 +432,8 @@ class boss_immerseus : public CreatureScript
             {
                 if (damage >= me->GetHealth() && !phase_two)
                 {
+                    SpawnWave();
+
                     damage = 0;
                     phase_two = true;
                     checkvictim = 0;
@@ -454,7 +455,6 @@ class boss_immerseus : public CreatureScript
                         }
                         shapoollist.clear();
                     }
-                    SpawnWave();
                 }
             }
 
@@ -473,6 +473,7 @@ class boss_immerseus : public CreatureScript
                         me->Kill(me, true);
                         return;
                     }
+
                     uint8 doneval = donesp + donecp;
                     if (doneval)
                     {
@@ -521,7 +522,7 @@ class boss_immerseus : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim()) 
+                if (!phase_two && !UpdateVictim()) 
                     return;
 
                 if (checkvictim && !phase_two)
