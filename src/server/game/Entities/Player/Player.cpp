@@ -19373,7 +19373,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         prof_skills.push_back(393);     // Skinning
         prof_skills.push_back(755);     // Jewelcrafting
         prof_skills.push_back(773);     // Inscription
-        prof_skills.push_back(794);     // Archaeology
 
         for(std::vector<uint32>::iterator itr = prof_skills.begin(); itr != prof_skills.end(); ++itr)
         {
