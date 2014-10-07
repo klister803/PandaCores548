@@ -29,6 +29,7 @@ enum eData
     DATA_MAX,
 
     DATA_FIELD_OF_SHA,
+    DATA_FP_EVADE,
 
     // Additional data
     DATA_IMMERSEUS_INTRO,

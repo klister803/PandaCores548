@@ -96,6 +96,8 @@ enum PhaseEvents
 
 enum data
 {
+    BATTLE_AREA                    = 6798,
+
     DATA_SHADOW_WORD_DAMAGE        = 1,
     DATA_SHADOW_WORD_REMOVED       = 2,
     DATA_CALAMITY_HIT              = 3,
@@ -117,7 +119,7 @@ struct boss_fallen_protectors : public BossAI
 
     void Reset()
     {
-        events.Reset();
+        _Reset();
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         _healthPhase = 0;
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
@@ -191,7 +193,7 @@ struct boss_fallen_protectors : public BossAI
             {
                 //END EVENT
                 damage = me->GetHealth();
-                instance->SetBossState(DATA_F_PROTECTORS, DONE);
+                _JustDied();
 
                 for (int32 i = 0; i < 3; ++i)
                 {
@@ -362,6 +364,7 @@ class boss_rook_stonetoe : public CreatureScript
                     !events.IsInPhase(PHASE_BOND_GOLDEN_LOTUS) && me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -489,6 +492,7 @@ class boss_he_softfoot : public CreatureScript
                     return;
 
                 events.Update(diff);
+                EnterEvadeIfOutOfCombatArea(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -618,6 +622,7 @@ class boss_sun_tenderheart : public CreatureScript
                     return;
 
                 events.Update(diff);
+                EnterEvadeIfOutOfCombatArea(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -837,10 +842,14 @@ struct npc_measure : public ScriptedAI
         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ANGUISH_STAN); //he
         me->InterruptNonMeleeSpells(false);
         goBack();
+        instance->SetData(DATA_FP_EVADE, true);
     }
 
     void goBack()
     {
+        if (me->GetVehicle())
+            return;
+
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         summons.DespawnAll();
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
@@ -859,7 +868,6 @@ struct npc_measure : public ScriptedAI
             me->RemoveAura(SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK);     //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_SOR_OF_ROOK);       //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_OF_SUN);            //sun
-            
             
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
@@ -907,6 +915,7 @@ struct npc_measure : public ScriptedAI
     void UpdateAI(uint32 diff)
     {
         events.Update(diff);
+        EnterEvadeIfOutOfCombatArea(diff);
     }
 };
 
@@ -952,10 +961,36 @@ public:
 
             while (uint32 eventId = events.ExecuteEvent())
             {
-                _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
-                DoCast(me, _spell, true);
-                if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
-                    me->SetFacingToObject(lotos);
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        _spell = me->GetEntry() == NPC_EMBODIED_DESPERATION_OF_SUN ? SPELL_MANIFEST_DESPERATION : SPELL_MANIFEST_DESPAIR;
+                        DoCast(me, _spell, true);
+                        if (Creature* lotos = instance->instance->GetCreature(instance->GetData64(NPC_GOLD_LOTOS_MAIN)))
+                            me->SetFacingToObject(lotos);
+                        events.ScheduleEvent(EVENT_2, 4000);
+                        break;
+                    case EVENT_2:
+                    {
+                        const Map::PlayerList &PlayerList = me->GetMap()->GetPlayers();
+                        if (PlayerList.isEmpty())
+                        {
+                            EnterEvadeMode();
+                            return;
+                        }
+                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                            if (Player* player = i->getSource())
+                            {
+                                if (player->GetAreaId() != BATTLE_AREA)
+                                {
+                                    EnterEvadeMode();
+                                    return;
+                                }
+                            }
+                        events.ScheduleEvent(EVENT_2, 4000);
+                        break;
+                    }
+                }
             }
 
             if (!_spell || !UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))

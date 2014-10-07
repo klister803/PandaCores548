@@ -41,9 +41,7 @@ public:
         uint64 LorewalkerChoGUIDtmp;
         uint64 immerseusGuid;
         uint64 npcpointGuid;
-        uint64 rookGuid;
-        uint64 sunGuid;
-        uint64 heGuid;
+        uint64 fpGUID[3];
         uint64 noryshenGuid;
         uint64 bhcGuid;
         uint64 bhGuid;
@@ -70,6 +68,8 @@ public:
         uint64 npcGoldenLotosGUID[3];
         uint64 npcEmbodiesGUID[6];
 
+        EventMap Events;
+
         void Initialize()
         {
             SetBossNumber(DATA_MAX);
@@ -89,9 +89,6 @@ public:
             LorewalkerChoGUIDtmp= 0;
             immerseusGuid       = 0;
             npcpointGuid        = 0;
-            rookGuid            = 0;
-            sunGuid             = 0;
-            heGuid              = 0;
             noryshenGuid        = 0;
             bhcGuid             = 0;
             bhGuid              = 0;
@@ -113,7 +110,7 @@ public:
             rikkalGuid          = 0;
             hisekGuid           = 0;
             garroshGuid         = 0;
-
+            memset(fpGUID, 0, 3 * sizeof(uint64));
             memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
             memset(npcEmbodiesGUID, 0, 6 * sizeof(uint64));
 
@@ -158,13 +155,13 @@ public:
                 break;
             //Fallen Protectors
             case NPC_ROOK_STONETOE: 
-                rookGuid = creature->GetGUID();
+                fpGUID[0] = creature->GetGUID();
                 break;
             case NPC_SUN_TENDERHEART:
-                sunGuid = creature->GetGUID();
+                fpGUID[1] = creature->GetGUID();
                 break;
             case NPC_HE_SOFTFOOT:
-                heGuid = creature->GetGUID();
+                fpGUID[2] = creature->GetGUID();
                 break;
             case NPC_GOLD_LOTOS_MOVER:
                 npcGoldenLotosMoverGUID = creature->GetGUID();
@@ -359,6 +356,16 @@ public:
                     HandleGameObject(energyWallGUID, true);
                     SaveToDB();
                 }
+            }else if (type == DATA_FP_EVADE)
+            {
+                //for(uint32 i = 0; i < 6; ++i)
+                //    if (Creature* me = instance->GetCreature(npcEmbodiesGUID[i]))
+                //        me->AI()->EnterEvadeMode();
+                for (uint32 i = 0; i < 3; ++i)
+                {
+                    if (Creature* me = instance->GetCreature(fpGUID[i]))
+                        me->AI()->EnterEvadeMode();
+                }
             }
         }
 
@@ -378,11 +385,11 @@ public:
 
                 //Fallen Protectors
                 case NPC_ROOK_STONETOE: 
-                    return rookGuid;
+                    return fpGUID[0];
                 case NPC_SUN_TENDERHEART:
-                    return sunGuid;
+                    return fpGUID[1];
                 case NPC_HE_SOFTFOOT:
-                    return heGuid;
+                    return fpGUID[2];
                 case NPC_GOLD_LOTOS_MOVER:
                     return npcGoldenLotosMoverGUID;
                 case NPC_GOLD_LOTOS_MAIN:
@@ -556,6 +563,18 @@ public:
 
             return true;
         }
+
+            void Update(uint32 diff)
+            {
+                Events.Update(diff);
+
+                while (uint32 eventId = Events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    }
+                }
+            }
     };
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
