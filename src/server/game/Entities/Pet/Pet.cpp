@@ -43,6 +43,7 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
         type = HUNTER_PET;
         setPetType(type);
     }
+    m_unitTypeMask &= ~UNIT_MASK_MINION;
 
     m_unitTypeMask |= UNIT_MASK_PET;
     if (type == HUNTER_PET)
@@ -1856,7 +1857,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     }
 
     //for all hunters pets
-    if(isHunterPet())
+    if(!isMinion())
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(-1))
     {
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)

@@ -651,102 +651,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
     }
-    // Stance of the Wise Serpent - 115070
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
-        && spellProto->Id != 124098 && spellProto->Id != 107270 && spellProto->Id != 132467
-        && spellProto->Id != 130651 && spellProto->Id != 117993) // Don't triggered by Zen Sphere, Spinning Crane Kick, Chi Wave, Chi Burst and Chi Torpedo
-    {
-        int32 bp = damage / 2;
-        std::list<Unit*> targetList;
-        std::list<Creature*> tempList;
-        std::list<Creature*> statueList;
-        Creature* statue;
-
-        ToPlayer()->GetPartyMembers(targetList);
-
-        if (targetList.size() > 1)
-        {
-            targetList.remove(this); // Remove Player
-            targetList.sort(Trinity::HealthPctOrderPred());
-            targetList.resize(1);
-        }
-
-        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
-        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
-
-        // Remove other players jade statue
-        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-        {
-            Unit* owner = (*i)->GetOwner();
-            if (owner && owner == ToPlayer() && (*i)->isSummon())
-                continue;
-
-            statueList.remove((*i));
-        }
-
-        // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
-        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-        {
-            CastCustomSpell(*itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
-
-            if (statueList.size() == 1)
-            {
-                for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
-                    statue = (*itrBis);
-
-                if (statue && (statue->isPet() || statue->isGuardian()))
-                    if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                        statue->CastCustomSpell(*itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
-            }
-        }
-    }
-    // Serpent's Zeal - 127722
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(127722) && !spellProto)
-    {
-        int32 bp = 0;
-        std::list<Creature*> tempList;
-        std::list<Creature*> statueList;
-        Creature* statue;
-
-        if (Aura* serpentsZeal = GetAura(127722))
-        {
-            if (serpentsZeal->GetStackAmount() < 2)
-                bp += damage / 4;
-            else
-                bp += damage / 2;
-
-            if (serpentsZeal->GetStackAmount() > 1)
-                serpentsZeal->SetStackAmount(serpentsZeal->GetStackAmount() - 1);
-            else
-                RemoveAura(127722);
-        }
-
-        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
-        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
-
-        // Remove other players jade statue
-        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-        {
-            Unit* owner = (*i)->GetOwner();
-            if (owner && owner == ToPlayer() && (*i)->isSummon())
-                continue;
-
-            statueList.remove((*i));
-        }
-
-        // you gain Serpent's Zeal causing you to heal nearby injured targets equal to 25% of your auto-attack damage. Stacks up to 2 times.
-        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
-
-        if (statueList.size() == 1)
-        {
-            for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
-                statue = (*itrBis);
-
-            if (statue && (statue->isPet() || statue->isGuardian()))
-                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
-                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
-        }
-    }
 
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
@@ -6095,6 +5999,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
+            if (itr->procFlags && !(itr->procFlags & procFlag))
+                continue;
+
             if(itr->chance != 0)
             {
                 if(itr->chance > 100) // chance get from amount
@@ -10719,7 +10626,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         case 76857:     // Mastery : Critical Block
         case 58410:     // Master Poisoner
         case 113043:    // Omen of Clarity (new)
-        case 122464:    // Dematerialize
             return false;
         // Combat Potency
         case 35551:
@@ -10749,17 +10655,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
 
             if (procSpell->Id != 5374 && procSpell->Id != 27576)
-                return false;
-
-            break;
-        }
-        // Teachings of The Monastery (Blackout Kick)
-        case 116645:
-        {
-            if (!procSpell)
-                return false;
-
-            if (procSpell->Id != 100784)
                 return false;
 
             break;
@@ -15003,8 +14898,10 @@ int32 Unit::GetHealthGain(int32 dVal)
     return gain;
 }
 
-void Unit::VisualForPower(Powers power, int32 curentVal)
+void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
 {
+
+
     Player* player = ToPlayer();
     if(!player)
         return;
@@ -15077,12 +14974,12 @@ void Unit::VisualForPower(Powers power, int32 curentVal)
         }
         case POWER_CHI:
         {
-            if (curentVal < 0)
+            if (modVal < 0)
             {
-                if (Aura* tigereyeBrew = this->GetAura(123980))
-                    tigereyeBrew->SetScriptData(0, -curentVal);
-                else if (Aura* manaTea = this->GetAura(123766))
-                    manaTea->SetScriptData(0, -curentVal);
+                if (Aura* tigereyeBrew = GetAura(123980))
+                    tigereyeBrew->SetScriptData(0, -modVal);
+                else if (Aura* manaTea = GetAura(123766))
+                    manaTea->SetScriptData(0, -modVal);
             }
             break;
         }
@@ -15213,6 +15110,9 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 
     int32 val = dVal + curPower;
 
+    //Visualization for power
+    VisualForPower(power, val, dVal);
+
     if (val <= GetMinPower(power))
     {
         if(set)
@@ -15225,9 +15125,6 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
     }
 
     int32 maxPower = GetMaxPower(power);
-
-    //Visualization for power
-    VisualForPower(power, val);
 
     if(power == POWER_BURNING_EMBERS)
     {
@@ -17613,16 +17510,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
-    // Dematerialize
-    if (target && target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
-    {
-        if (!target->ToPlayer()->HasSpellCooldown(122465))
-        {
-            target->CastSpell(target, 122465, true);
-            target->ToPlayer()->AddSpellCooldown(122465, 0, getPreciseTime() + 10.0);
-        }
-    }
-
     // Revealing Strike - 84617
     if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
         if (roll_chance_i(20))
@@ -18849,7 +18736,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 spellProcId = procSpell ? procSpell->Id : 0;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
+    uint32 AllEffectsMechanicMask = procSpell ? procSpell->GetAllEffectsMechanicMask() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i", 
+    //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid);
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
@@ -18902,6 +18793,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         {
                             procCheck = true;
                             break;
+                        }
+                        if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                        {
+                            procCheck = true;
+                            continue;
                         }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
                         {
@@ -18970,6 +18866,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
 
                 procCheck = false;
                 break;
@@ -19013,6 +18914,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     break;
                 }
                 if(itr->targetTypeMask != 0 && (itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
+                {
+                    procCheck = false;
+                    continue;
+                }
+                if(itr->mechanicMask != 0 && (AllEffectsMechanicMask & itr->mechanicMask))
                 {
                     procCheck = false;
                     continue;

@@ -3101,7 +3101,7 @@ void Player::Regenerate(Powers power)
     }
 
     //Visualization for power
-    VisualForPower(power, curValue);
+    VisualForPower(power, curValue, integerValue);
 
     switch (power)
     {

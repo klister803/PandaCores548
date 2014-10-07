@@ -976,10 +976,31 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 {
                     uint32 visualId = ((DynamicObject*)this)->GetVisualId();
                     DynamicObjectType dynType = ((DynamicObject*)this)->GetType();
-                    Unit* caster = ((DynamicObject*)this)-> GetCaster();
+                    Unit* caster = ((DynamicObject*)this)->GetCaster();
                     SpellVisualEntry const* visualEntry = sSpellVisualStore.LookupEntry(visualId);
                     if(caster && visualEntry && visualEntry->hostileId && caster->IsHostileTo(target))
                         *data << ((dynType << 28) | visualEntry->hostileId);
+                    else
+                        *data << m_uint32Values[index];
+                }
+                else
+                    *data << m_uint32Values[index];
+            }
+        }
+    }
+    else if (isType(TYPEMASK_AREATRIGGER))                    // AreaTrigger case
+    {
+        for (uint16 index = 0; index < valCount; ++index)
+        {
+            if (updateMask->GetBit(index))
+            {
+                if (index == AREATRIGGER_SPELLVISUALID)
+                {
+                    uint32 visualId = m_uint32Values[index];
+                    Unit* caster = ((AreaTrigger*)this)->GetCaster();
+                    SpellVisualEntry const* visualEntry = sSpellVisualStore.LookupEntry(visualId);
+                    if(caster && visualEntry && visualEntry->hostileId && caster->IsHostileTo(target))
+                        *data << (visualEntry->hostileId);
                     else
                         *data << m_uint32Values[index];
                 }
@@ -2712,6 +2733,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                         break;
                     case SUMMON_TYPE_TOTEM:
                     case SUMMON_TYPE_BANNER:
+                    case SUMMON_TYPE_STATUE:
                         mask = UNIT_MASK_TOTEM;
                         break;
                     case SUMMON_TYPE_VEHICLE:

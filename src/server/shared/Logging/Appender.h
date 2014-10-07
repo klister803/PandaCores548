@@ -68,9 +68,10 @@ enum LogFilterType
     LOG_FILTER_SERVER_LOADING      = 40,
     LOG_FILTER_OPCODES             = 41,
     LOG_FILTER_UWOW_CORE           = 42,
+    LOG_FILTER_POWER               = 43,
 };
 
-const uint8 MaxLogFilter = uint8(LOG_FILTER_OPCODES) + 1;
+const uint8 MaxLogFilter = uint8(LOG_FILTER_POWER) + 1;
 
 // Values assigned have their equivalent in enum ACE_Log_Priority
 enum LogLevel

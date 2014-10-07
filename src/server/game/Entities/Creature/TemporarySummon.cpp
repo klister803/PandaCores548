@@ -192,6 +192,8 @@ void TempSummon::InitStats(uint32 duration)
     if (owner)
     {
         int32 slot = m_Properties->Slot;
+        if(m_Properties->Type == 17) //hack for spirit copy
+            slot = 17;
 
         if (slot > MAX_SUMMON_SLOT)
             slot = 0;

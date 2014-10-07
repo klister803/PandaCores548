@@ -2636,8 +2636,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2662,6 +2662,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 specId = fields[10].GetInt32();
         int32 spellAttr0 = fields[11].GetInt32();
         int32 targetTypeMask = fields[12].GetInt32();
+        int32 mechanicMask = fields[13].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2682,6 +2683,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.specId = specId;
         templink.spellAttr0 = spellAttr0;
         templink.targetTypeMask = targetTypeMask;
+        templink.mechanicMask = mechanicMask;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);
@@ -2701,8 +2703,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
 
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2728,6 +2730,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 aura = fields[11].GetInt32();
         int32 chance = fields[12].GetInt32();
         int32 group = fields[13].GetInt32();
+        int32 procFlags = fields[14].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2758,6 +2761,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.aura = aura;
         temptrigger.chance = chance;
         temptrigger.group = group;
+        temptrigger.procFlags = procFlags;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -2801,6 +2805,7 @@ void SpellMgr::LoadSpellTriggered()
         SpellTriggered temptrigger;
         temptrigger.spell_id = spell_id;
         temptrigger.spell_trigger = spell_trigger;
+        temptrigger.spell_cooldown = 0;
         temptrigger.option = option;
         temptrigger.target = target;
         temptrigger.caster = caster;
@@ -2812,6 +2817,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.aura = aura;
         temptrigger.chance = chance;
         temptrigger.group = group;
+        temptrigger.procFlags = 0;
         mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -3582,9 +3588,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 26364:  // Lightning Shield
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
-                case 119611: // Renewing Mist
-                    spellInfo->ProcCharges = 3;
-                    break;
                 case 137619: // Marked for Death
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
@@ -4084,10 +4087,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 84747: // Deep Insight
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
                     spellInfo->Effects[EFFECT_0].MiscValue = SPELL_SCHOOL_MASK_ALL;
-                    break;
-                case 117895:// Eminence (statue)
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    spellInfo->Effects[EFFECT_0].TargetB = NULL;
                     break;
                 case 44457: // Living Bomb
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;

@@ -4304,6 +4304,8 @@ void Spell::SendSpellStart()
     if (m_spellInfo->RuneCostID && GetSpellInfo()->HasPower(POWER_RUNES))
         castFlags |= CAST_FLAG_UNKNOWN_19;
 
+    if(m_spellInfo->Id == 125084)
+        castFlags = 262913;
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
     ObjectGuid guid1A0 = ObjectGuid();

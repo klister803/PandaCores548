@@ -3590,6 +3590,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     break;
                 case SUMMON_TYPE_TOTEM:
                 case SUMMON_TYPE_BANNER:
+                case SUMMON_TYPE_STATUE:
                 {
                     summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
                     if (!summon || !summon->isTotem())

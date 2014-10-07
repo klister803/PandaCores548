@@ -582,7 +582,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
 
     float DoneActualBenefit = 0.0f;
-    bool CalcStack = true;
+    bool CalcStack = bool(m_spellInfo->StackAmount);
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
@@ -1148,14 +1148,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
-                case 119611: // Renewing Mist
-                {
-                    SpellInfo const* _spellInfo = sSpellMgr->GetSpellInfo(115151);
-                    float mod = _spellInfo->Effects[2].BonusMultiplier * 100.0f;
-                    int32 DoneAdvertisedBenefit = caster->GetSpellPowerHealing();
-                    amount += CalculatePct(DoneAdvertisedBenefit, mod);
-                    break;
-                }
                 case 73651: // Recuperate
                 {
                     int32 bp = m_spellInfo->Effects[0].BasePoints;

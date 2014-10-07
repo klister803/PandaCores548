@@ -26,37 +26,44 @@ class Spell;
 
 enum AreaTriggerActionMoment
 {
-    AT_ACTION_MOMENT_ENTER      = 0,                // when unit enters areatrigger
-    AT_ACTION_MOMENT_LEAVE      = 1,                // when unit exits areatrigger
-    AT_ACTION_MOMENT_UPDATE     = 2,                // on areatrigger update
-    AT_ACTION_MOMENT_MAX        = 3,
+    AT_ACTION_MOMENT_ENTER      = 0x01,                // when unit enters areatrigger
+    AT_ACTION_MOMENT_LEAVE      = 0x02,                // when unit exits areatrigger
+    AT_ACTION_MOMENT_UPDATE     = 0x04,                // on areatrigger update
+    AT_ACTION_MOMENT_DESPAWN    = 0x08,                // when areatrigger despawn
+    AT_ACTION_MOMENT_SPAWN      = 0x10,                // when areatrigger spawn
+    AT_ACTION_MOMENT_REMOVE     = 0x20,                // when areatrigger remove
 };
 
 enum AreaTriggerActionType
 {
     AT_ACTION_TYPE_CAST_SPELL   = 0,
     AT_ACTION_TYPE_REMOVE_AURA  = 1,
-    AT_ACTION_TYPE_MAX          = 2,
+    AT_ACTION_TYPE_ADD_STACK    = 2,
+    AT_ACTION_TYPE_REMOVE_STACK = 3,
+    AT_ACTION_TYPE_MAX          = 4,
 };
 
 enum AreaTriggerTargetFlags
 {
-    AT_TARGET_FLAG_FRIENDLY          = 0x01,             // casted on targets that are friendly to areatrigger owner
-    AT_TARGET_FLAG_HOSTILE           = 0x02,             // casted on targets that are hostile to areatrigger owner
-    AT_TARGET_FLAG_OWNER             = 0x04,             // casted only on areatrigger owner
-    AT_TARGET_FLAG_PLAYER            = 0x08,             // casted only on players
-    AT_TARGET_FLAG_NOT_PET           = 0x10,             // casted on everyone except pets
-    AT_TARGET_FLAG_CAST_AT_SRC       = 0x20,             // casted on areatrigger position as dest
-    AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x40,             // casted on areatrigger position as dest
-    AT_TARGET_FLAT_IN_FRONT          = 0x80,             // WARNING! If target come from back he not get cast. ToDo it..
+    AT_TARGET_FLAG_FRIENDLY          = 0x001,             // casted on targets that are friendly to areatrigger owner
+    AT_TARGET_FLAG_HOSTILE           = 0x002,             // casted on targets that are hostile to areatrigger owner
+    AT_TARGET_FLAG_OWNER             = 0x004,             // casted only on areatrigger owner
+    AT_TARGET_FLAG_PLAYER            = 0x008,             // casted only on players
+    AT_TARGET_FLAG_NOT_PET           = 0x010,             // casted on everyone except pets
+    AT_TARGET_FLAG_CAST_AT_SRC       = 0x020,             // casted on areatrigger position as dest
+    AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x040,             // casted on areatrigger position as dest
+    AT_TARGET_FLAG_NOT_FULL_HP       = 0x080,             // casted on targets if not full hp
+    AT_TARGET_FLAG_ALWAYS_TRIGGER    = 0x100,             // casted always at any action on owner
+    AT_TARGET_FLAT_IN_FRONT          = 0x200,             // WARNING! If target come from back he not get cast. ToDo it..
+
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |
-        AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET | AT_TARGET_FLAT_IN_FRONT,
+        AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET | AT_TARGET_FLAG_NOT_FULL_HP | AT_TARGET_FLAG_ALWAYS_TRIGGER | AT_TARGET_FLAT_IN_FRONT,
 };
 
 struct AreaTriggerAction
 {
-    uint8 id;
+    uint32 id;
     AreaTriggerActionMoment moment;
     AreaTriggerActionType actionType;
     AreaTriggerTargetFlags targetFlags;
@@ -106,8 +113,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
         bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell = NULL);
         void Update(uint32 p_time);
-        void UpdateAffectedList(uint32 p_time, bool despawn);
-        void Remove();
+        void UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment actionM);
+        void Remove(bool duration = true);
         uint32 GetSpellId() const { return GetUInt32Value(AREATRIGGER_SPELLID); }
         void SetSpellId(uint32 spell) { return SetUInt32Value(AREATRIGGER_SPELLID, spell); }
         uint64 GetCasterGUID() const { return GetUInt64Value(AREATRIGGER_CASTER); }
@@ -119,7 +126,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float GetRadius() const;
         float GetCustomVisualId() const;
         bool IsUnitAffected(uint64 guid) const;
-        void AffectUnit(Unit* unit, bool enter);
+        void AffectUnit(Unit* unit, AreaTriggerActionMoment actionM);
+        void AffectOwner(AreaTriggerActionMoment actionM);
         void UpdateOnUnit(Unit* unit, uint32 p_time);
         void DoAction(Unit* unit, ActionInfo& action);
         bool CheckActionConditions(AreaTriggerAction const& action, Unit* unit);
@@ -143,5 +151,6 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         ActionInfoMap _actionInfo;
         
         bool _on_unload;
+        bool _on_despawn;
 };
 #endif

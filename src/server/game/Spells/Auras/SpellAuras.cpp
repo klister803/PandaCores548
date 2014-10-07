@@ -322,7 +322,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
 
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
     // stack amount has priority over charges (checked on retail with spell 50262)
-    data << uint8(aura->GetSpellInfo()->StackAmount ? aura->GetStackAmount() : aura->GetCharges());
+    data << uint8(aura->GetStackAmount() ? aura->GetStackAmount() : aura->GetCharges());
     data << uint32(GetEffectMask());
     if (flags & AFLAG_DURATION)
         data << uint32(aura->GetDuration());
@@ -1225,6 +1225,7 @@ bool Aura::CanBeSaved() const
         case 69303:
         case 72885:
         case 104571:
+        case 124458:
             return false;
         default:
             break;
@@ -1828,12 +1829,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                 switch (m_spellInfo->Id)
                 {
-                    case 119611: // Renewing Mist
-                    {
-                        if (AuraEffect* eff = GetEffect(EFFECT_1))
-                            SetCharges(eff->GetAmount());
-                        break;
-                    }
                     case 115078: // Cap
                     {
                         if (target->isInBack(caster))
@@ -2129,43 +2124,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                      // aura removed - remove death runes
                     target->ToPlayer()->RemoveRunesBySpell(GetId());
-                }
-                break;
-            }
-            case SPELLFAMILY_MONK:
-            {
-                if (!caster)
-                    break;
-
-                switch (m_spellInfo->Id)
-                {
-                    case 119611: // Renewing Mist
-                    {
-                        std::list<Unit*> unitTargets;
-                        bool hastarget = false;
-                        Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, 100);
-                        Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, unitTargets, u_check);
-                        caster->VisitNearbyObject(100.0f, searcher);
-
-                        if (target)
-                            unitTargets.remove(target);
-
-                        for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
-                        {
-                            if ((*iter)->HasAura(119611, caster->GetGUID()))
-                            {
-                                RefreshTimers();
-                                hastarget = true;
-                                break;
-                            }
-                        }
-
-                        if (!hastarget)
-                            caster->RemoveAura(123757);
-                        break;
-                    }
-                    default:
-                        break;
                 }
                 break;
             }

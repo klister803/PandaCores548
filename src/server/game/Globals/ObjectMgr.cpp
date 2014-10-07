@@ -9504,38 +9504,20 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             uint8 i = 0;
             AreaTriggerAction action;
             uint32 entry = fields[i++].GetUInt32();
-            action.id = fields[i++].GetUInt8();
-            action.moment = (AreaTriggerActionMoment)fields[i++].GetUInt8();
-            action.actionType = (AreaTriggerActionType)fields[i++].GetUInt8();
-            action.targetFlags = (AreaTriggerTargetFlags)fields[i++].GetUInt16();
+            action.id = fields[i++].GetUInt32();
+            action.moment = (AreaTriggerActionMoment)fields[i++].GetUInt32();
+            action.actionType = (AreaTriggerActionType)fields[i++].GetUInt32();
+            action.targetFlags = (AreaTriggerTargetFlags)fields[i++].GetUInt32();
             action.spellId = fields[i++].GetUInt32();
             action.maxCharges = fields[i++].GetInt8();
             action.chargeRecoveryTime = fields[i++].GetUInt32();
 
-            if (action.moment >= AT_ACTION_MOMENT_MAX)
-            {
-                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid action moment '%u' for areatrigger entry %u",
-                    action.moment, entry);
-                continue;
-            }
             if (action.actionType >= AT_ACTION_TYPE_MAX)
             {
                 sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid action type '%u' for areatrigger entry %u",
                     action.actionType, entry);
                 continue;
             }
-            /*if (action.targetType >= AT_TARGET_TYPE_MAX)
-            {
-                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid target type '%u' for areatrigger entry %u",
-                    action.targetType, id);
-                continue;
-            }*/
-            /*if (!action.maxCharges)
-            {
-                sLog->outError(LOG_FILTER_SQL, "DB table `areatrigger_actions` has invalid maxCharges = 0 for areatrigger entry %u",
-                    entry);
-                continue;
-            }*/
 
             if (!sSpellMgr->GetSpellInfo(action.spellId))
             {

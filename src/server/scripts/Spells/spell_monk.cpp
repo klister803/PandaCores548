@@ -431,82 +431,6 @@ public:
     }
 };
 
-// spell 119611 Renewing Mist
-class spell_monk_renewing_mist : public SpellScriptLoader
-{
-public:
-    spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
-
-    class spell_monk_renewing_mistAuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_monk_renewing_mistAuraScript);
-
-        void HandleEffectPeriodicUpdate(AuraEffect* aurEff)
-        {
-            std::list<Unit*> targets;
-            std::list<Unit*> unitTargets;
-            Unit* owner = GetUnitOwner();
-            Unit* caster = GetCaster();
-            Unit* target = NULL;
-            Aura* aura = GetAura();
-
-            if (!owner || !caster)
-                return;
-
-            if (Aura* Uplift = caster->GetAura(123757))
-                Uplift->RefreshTimers();
-                
-
-            if (aura && aura->GetCharges() < 2)
-                return;
-
-            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(owner, owner, 20);
-            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(owner, unitTargets, u_check);
-            owner->VisitNearbyObject(20.0f, searcher);
-
-            for (std::list<Unit*>::const_iterator iter = unitTargets.begin(); iter != unitTargets.end(); ++iter)
-            {
-                if ((*iter)->HasAura(GetId(), caster->GetGUID()) || !(*iter)->IsInPartyWith(caster) || (*iter)->GetTypeId() != TYPEID_PLAYER)
-                    continue;
-
-                targets.push_back(*iter);
-            }
-
-            targets.sort(Trinity::HealthPctOrderPred());
-
-            for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
-            {
-                if (!(*iter)->IsWithinLOSInMap(owner))
-                    continue;
-
-                target = (*iter);
-                break;
-            }
-
-            if (!target)
-                return;
-
-            if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
-            {
-                int32 setstack = aurEff1->GetAmount() - 1;
-                int32 amount = aurEff->GetAmount();
-                caster->CastCustomSpell(target, GetId(), &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
-                aura->SetCharges(1);
-            }
-        }
-
-        void Register()
-        {
-            OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_monk_renewing_mistAuraScript::HandleEffectPeriodicUpdate, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_monk_renewing_mistAuraScript();
-    }
-};
-
 // Diffuse Magic - 122783
 class spell_monk_diffuse_magic : public SpellScriptLoader
 {
@@ -1259,17 +1183,21 @@ class spell_monk_mana_tea_stacks : public SpellScriptLoader
                 chiConsumed = 0;
             }
 
-            void SetData(uint32 type, uint32 data)
+            void SetData(uint32 type, uint32 cost)
             {
-                while ((chiConsumed += data) >= 4)
+                chiConsumed += cost;
+                if (chiConsumed >= 4)
                 {
-                    chiConsumed = 0;
-                    data = data > 4 ? data - 4: 0;
+                    chiConsumed -= 4;
 
-                    if (GetCaster())
+                    if (Unit* caster = GetCaster())
                     {
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_MANA_TEA_STACKS, true);
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_PLUS_ONE_MANA_TEA, true);
+                        float critChance = 0.0f;
+                        bool crit = caster->isSpellCrit(caster, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), BASE_ATTACK, critChance);
+                        caster->CastSpell(caster, SPELL_MONK_MANA_TEA_STACKS, true);
+                        if(crit)
+                            caster->CastSpell(caster, SPELL_MONK_MANA_TEA_STACKS, true);
+                        caster->CastSpell(caster, SPELL_MONK_PLUS_ONE_MANA_TEA, true);
                     }
                 }
             }
@@ -2225,15 +2153,15 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
                 chiConsumed = 0;
             }
 
-            void SetData(uint32 type, uint32 data)
+            void SetData(uint32 type, uint32 cost)
             {
-                while ((chiConsumed += data) >= 4)
+                chiConsumed += cost;
+                if (chiConsumed >= 4)
                 {
-                    chiConsumed = 0;
-                    data = data > 4 ? data - 4: 0;
+                    chiConsumed -= 4;
 
-                    if (GetCaster())
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_TIGEREYE_BREW_STACKS, true);
+                    if (Unit* caster = GetCaster())
+                        caster->CastSpell(caster, SPELL_MONK_TIGEREYE_BREW_STACKS, true);
                 }
             }
 
@@ -2371,6 +2299,412 @@ class spell_monk_spinning_crane_kick : public SpellScriptLoader
         }
 };
 
+// Transcendence - 101643
+class spell_monk_transcendence : public SpellScriptLoader
+{
+    public:
+        spell_monk_transcendence() : SpellScriptLoader("spell_monk_transcendence") { }
+
+        class spell_monk_transcendence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_transcendence_SpellScript);
+
+            void HandleBeforeCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(caster->m_SummonSlot[17])
+                    {
+                        if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[17]))
+                            summon->DespawnOrUnsummon(500);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_monk_transcendence_SpellScript::HandleBeforeCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_transcendence_SpellScript();
+        }
+};
+
+// Transcendence: Transfer - 119996
+class spell_monk_transcendence_transfer : public SpellScriptLoader
+{
+    public:
+        spell_monk_transcendence_transfer() : SpellScriptLoader("spell_monk_transcendence_transfer") { }
+
+        class spell_monk_transcendence_transfer_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(caster->m_SummonSlot[17])
+                    {
+                        if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[17]))
+                            if (summon->IsWithinDistInMap(caster, 40.0f))
+                            {
+                                float x, y, z, o;
+                                summon->GetPosition(x, y, z, o);
+                                summon->NearTeleportTo(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation());
+                                caster->NearTeleportTo(x, y, z, o);
+                            }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_transcendence_transfer_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_transcendence_transfer_SpellScript();
+        }
+};
+
+// Charging Ox Wave - 125084
+class spell_monk_charging_ox_wave : public SpellScriptLoader
+{
+    public:
+        spell_monk_charging_ox_wave() : SpellScriptLoader("spell_monk_charging_ox_wave") { }
+
+        class spell_monk_charging_ox_wave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_charging_ox_wave_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    WorldLocation location = *GetExplTargetDest();
+                    Position position;
+                    caster->GetNearPosition(position, 30.0f, 0.0f);
+                    location.Relocate(position);
+                    SetExplTargetDest(location);
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_monk_charging_ox_wave_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_charging_ox_wave_SpellScript();
+        }
+};
+
+// spell 119611 Renewing Mist
+class spell_monk_renewing_mist : public SpellScriptLoader
+{
+public:
+    spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
+
+    class spell_monk_renewing_mistAuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_monk_renewing_mistAuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if(Aura* aura = GetAura())
+                aura->SetStackAmount(aurEff->GetAmount());
+        }
+
+        void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+        {
+            amount = aurEff->GetBaseAmount();
+        }
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Aura* Uplift = caster->GetAura(123757))
+                    Uplift->RefreshTimers();
+
+                if(GetAura()->GetStackAmount() > 1)
+                {
+                    int32 setstack = GetAura()->GetStackAmount() - 1;
+                    int32 amount = aurEff->GetAmount();
+                    caster->CastCustomSpell(caster, SPELL_MONK_RENEWING_MIST_JUMP_AURA, &amount, &setstack, NULL, true, NULL, aurEff, caster->GetGUID());
+                    GetAura()->SetStackAmount(1);
+                }
+            }
+        }
+
+        void Register()
+        {
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_renewing_mistAuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            OnEffectApply += AuraEffectApplyFn(spell_monk_renewing_mistAuraScript::OnApply, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mistAuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_monk_renewing_mistAuraScript();
+    }
+};
+
+//Renewing Mist selector - 119607
+class spell_monk_renewing_mist_selector : public SpellScriptLoader
+{
+    public:
+        spell_monk_renewing_mist_selector() : SpellScriptLoader("spell_monk_renewing_mist_selector") { }
+
+        class spell_monk_renewing_mist_selector_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_renewing_mist_selector_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(AuraCheck());
+                targets.remove_if(DistanceCheck(GetCaster(), 20.0f));
+                targets.sort(CheckHealthState());
+                if (targets.size() > 1)
+                    targets.resize(1);
+
+                if (targets.empty())
+                    targets.push_back(GetCaster());
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                SpellValue const* spellValue = GetSpellValue();
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if(!caster || !spellValue || !target)
+                    return;
+
+                int32 bp0 = spellValue->EffectBasePoints[0];
+                int32 bp1 = spellValue->EffectBasePoints[1];
+                caster->CastSpell(target, 119647, true);
+                caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, &bp1, NULL, true, NULL, NULL, caster->GetGUID());
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_renewing_mist_selector_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_renewing_mist_selector_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        private:
+            class CheckHealthState
+            {
+                public:
+                    CheckHealthState() { }
+
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        Unit* unita = a->ToUnit();
+                        Unit* unitb = b->ToUnit();
+                        if(!unita)
+                            return true;
+                        if(!unitb)
+                            return false;
+                        return unita->GetHealthPct() < unitb->GetHealthPct();
+                    }
+            };
+            class AuraCheck
+            {
+                public:
+                    AuraCheck(){}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                       return (!unit->ToUnit() || unit->ToUnit()->HasAura(119611));
+                    }
+            };
+            class DistanceCheck
+            {
+                public:
+                    DistanceCheck(Unit* caster, float dist) : _caster(caster), _dist(dist) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        return _caster->GetExactDist2d(unit) > _dist;
+                    }
+
+                private:
+                    Unit* _caster;
+                    float _dist;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_renewing_mist_selector_SpellScript();
+        }
+};
+
+//Renewing Mist start - 115151
+class spell_monk_renewing_mist_start : public SpellScriptLoader
+{
+    public:
+        spell_monk_renewing_mist_start() : SpellScriptLoader("spell_monk_renewing_mist_start") { }
+
+        class spell_monk_renewing_mist_start_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_renewing_mist_start_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if(!caster || !target)
+                    return;
+
+                int32 bp0 = GetHitHeal();
+                caster->CastCustomSpell(target, SPELL_MONK_RENEWING_MIST_HOT, &bp0, NULL, NULL, true, NULL, NULL, caster->GetGUID());
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_renewing_mist_start_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_HEAL);
+            }
+        private:
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_renewing_mist_start_SpellScript();
+        }
+};
+
+//Healing Sphere despawn - 135914, 135920
+class spell_monk_healing_sphere_despawn : public SpellScriptLoader
+{
+    public:
+        spell_monk_healing_sphere_despawn() : SpellScriptLoader("spell_monk_healing_sphere_despawn") { }
+
+        class spell_monk_healing_sphere_despawn_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_healing_sphere_despawn_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(DistanceCheck(GetCaster(), 6.0f));
+                targets.sort(CheckHealthState());
+                if (targets.size() > 1)
+                    targets.resize(1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_healing_sphere_despawn_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        private:
+            class CheckHealthState
+            {
+                public:
+                    CheckHealthState() { }
+
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        Unit* unita = a->ToUnit();
+                        Unit* unitb = b->ToUnit();
+                        if(!unita)
+                            return true;
+                        if(!unitb)
+                            return false;
+                        return unita->GetHealthPct() < unitb->GetHealthPct();
+                    }
+            };
+            class DistanceCheck
+            {
+                public:
+                    DistanceCheck(Unit* caster, float dist) : _caster(caster), _dist(dist) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        return _caster->GetExactDist2d(unit) > _dist;
+                    }
+
+                private:
+                    Unit* _caster;
+                    float _dist;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_healing_sphere_despawn_SpellScript();
+        }
+};
+
+//Eminence - 126890, 117895
+class spell_monk_eminence : public SpellScriptLoader
+{
+    public:
+        spell_monk_eminence() : SpellScriptLoader("spell_monk_eminence") { }
+
+        class spell_monk_eminence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_eminence_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(DistanceCheck(GetCaster(), 20.0f));
+                targets.sort(CheckHealthState());
+                if (targets.size() > 1)
+                    targets.resize(1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_eminence_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        private:
+            class CheckHealthState
+            {
+                public:
+                    CheckHealthState() { }
+
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        Unit* unita = a->ToUnit();
+                        Unit* unitb = b->ToUnit();
+                        if(!unita)
+                            return true;
+                        if(!unitb)
+                            return false;
+                        return unita->GetHealthPct() < unitb->GetHealthPct();
+                    }
+            };
+            class DistanceCheck
+            {
+                public:
+                    DistanceCheck(Unit* caster, float dist) : _caster(caster), _dist(dist) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        return _caster->GetExactDist2d(unit) > _dist;
+                    }
+
+                private:
+                    Unit* _caster;
+                    float _dist;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_eminence_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -2419,4 +2753,11 @@ void AddSC_monk_spell_scripts()
     new spell_mastery_bottled_fury();
     new spell_monk_remove_zen_flight();
     new spell_monk_spinning_crane_kick();
+    new spell_monk_transcendence();
+    new spell_monk_transcendence_transfer();
+    new spell_monk_charging_ox_wave();
+    new spell_monk_renewing_mist_selector();
+    new spell_monk_renewing_mist_start();
+    new spell_monk_healing_sphere_despawn();
+    new spell_monk_eminence();
 }

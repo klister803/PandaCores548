@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo()
+    _radius(1.0f), atInfo(), _on_despawn(false)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -137,9 +137,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             AreaTrigger* at = oldTriggers.front();
             oldTriggers.remove(at);
             if (at->GetCasterGUID() == caster->GetGUID())
-                at->Remove();
+                at->Remove(false);
         }
     }
+    UpdateAffectedList(0, AT_ACTION_MOMENT_SPAWN);
 
     return true;
 }
@@ -164,12 +165,12 @@ void AreaTrigger::FillCustiomData()
     }
 }
 
-void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
+void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment actionM)
 {
     if (atInfo.actions.empty())
         return;
 
-    if (!despawn)
+    if (actionM & AT_ACTION_MOMENT_ENTER)
     {
         for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
         {
@@ -186,7 +187,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
             if (!unit->IsWithinDistInMap(this, GetRadius()))
             {
                 affectedPlayers.erase(itr);
-                AffectUnit(unit, false);
+                AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
                 continue;
             }
 
@@ -200,7 +201,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
             if (!IsUnitAffected((*itr)->GetGUID()))
             {
                 affectedPlayers.push_back((*itr)->GetGUID());
-                AffectUnit(*itr, true);
+                AffectUnit(*itr, actionM);
             }
         }
     }
@@ -218,9 +219,10 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, bool despawn)
                 continue;
             }
 
-            AffectUnit(unit, false);
+            AffectUnit(unit, actionM);
             affectedPlayers.erase(itr);
         }
+        AffectOwner(actionM);
     }
 }
 
@@ -262,7 +264,7 @@ void AreaTrigger::Update(uint32 p_time)
                 _activationDelay = 0;
         }else
         {
-            Remove(); // expired
+            Remove(!_on_despawn); // expired
             return;
         }
     }
@@ -270,7 +272,7 @@ void AreaTrigger::Update(uint32 p_time)
     UpdateActionCharges(p_time);
 
     if (!_activationDelay)
-        UpdateAffectedList(p_time, false);
+        UpdateAffectedList(p_time, AT_ACTION_MOMENT_ENTER);
 
     //??
     //WorldObject::Update(p_time);
@@ -281,16 +283,31 @@ bool AreaTrigger::IsUnitAffected(uint64 guid) const
     return std::find(affectedPlayers.begin(), affectedPlayers.end(), guid) != affectedPlayers.end();
 }
 
-void AreaTrigger::AffectUnit(Unit* unit, bool enter)
+void AreaTrigger::AffectUnit(Unit* unit, AreaTriggerActionMoment actionM)
 {
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        if (info.action->moment == AT_ACTION_MOMENT_ENTER && !enter ||
-            info.action->moment ==  AT_ACTION_MOMENT_LEAVE && enter)
+        if (!(info.action->moment & actionM))
             continue;
 
         DoAction(unit, info);
+        // if(unit != _caster)
+            // AffectOwner(actionM);//action if action on area trigger
+    }
+}
+
+void AreaTrigger::AffectOwner(AreaTriggerActionMoment actionM)
+{
+    for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
+    {
+        ActionInfo& info = itr->second;
+        if (!(info.action->targetFlags & AT_TARGET_FLAG_ALWAYS_TRIGGER))
+            continue;
+        if (!(info.action->moment & actionM))
+            continue;
+
+        DoAction(_caster, info);
     }
 }
 
@@ -310,7 +327,7 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        if (info.action->moment != AT_ACTION_MOMENT_UPDATE)
+        if (!(info.action->moment & AT_ACTION_MOMENT_UPDATE))
             continue;
 
         DoAction(unit, info);
@@ -322,7 +339,7 @@ bool AreaTrigger::_HasActionsWithCharges()
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        if (info.action->moment == AT_ACTION_MOMENT_ENTER)
+        if (info.action->moment & AT_ACTION_MOMENT_ENTER)
         {
             if (info.charges || !info.action->maxCharges)
                 return false;
@@ -339,6 +356,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
 
     Unit* caster = _caster;
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction caster %s unit %s type %u spellID %u, moment %u, targetFlags %u",
+    //caster->GetString().c_str(), unit->GetString().c_str(), action.action->actionType, action.action->spellId, action.action->moment, action.action->targetFlags);
+
     if (action.action->targetFlags & AT_TARGET_FLAG_FRIENDLY)
         if (!caster || !caster->IsFriendlyTo(unit))
             return;
@@ -354,6 +374,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_PET)
         if (unit->isPet())
             return;
+    if (action.action->targetFlags & AT_TARGET_FLAG_NOT_FULL_HP)
+        if (unit->IsFullHealth())
+            return;
 
     if (action.action->targetFlags & AT_TARGET_FLAT_IN_FRONT)
         if (!HasInArc(static_cast<float>(M_PI), unit))
@@ -365,10 +388,6 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(action.action->spellId);
     if (!spellInfo)
         return;
-
-    #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction caster %s unit %s type %u spellID %u", caster->GetString().c_str(), unit->GetString().c_str(), action.action->actionType, action.action->spellId);
-    #endif
 
     // should cast on self.
     if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER
@@ -384,10 +403,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
                     caster->CastSpell(GetPositionX(), GetPositionY(), GetPositionZ(), action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
                 else
-                {
-                    
                     caster->CastSpell(unit, action.action->spellId, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
-                }
             }
             break;
         }
@@ -396,18 +412,35 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             unit->RemoveAurasDueToSpell(action.action->spellId);
             break;
         }
+        case AT_ACTION_TYPE_ADD_STACK:
+        {
+            if(Aura* aura = unit->GetAura(action.action->spellId))
+                aura->ModStackAmount(1);
+            break;
+        }
+        case AT_ACTION_TYPE_REMOVE_STACK:
+        {
+            if(Aura* aura = unit->GetAura(action.action->spellId))
+                aura->ModStackAmount(-1);
+            break;
+        }
     }
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction action");
 
     if (action.charges > 0)
     {
         --action.charges;
         //unload at next update.
         if (!action.charges && _HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
+        {
+            _on_despawn = true;
             SetDuration(0);
+        }
     }
 }
 
-void AreaTrigger::Remove()
+void AreaTrigger::Remove(bool duration)
 {
     if (_on_unload)
         return;
@@ -415,8 +448,13 @@ void AreaTrigger::Remove()
 
     if (IsInWorld())
     {
-        // triger AT_ACTION_MOMENT_LEAVE
-        UpdateAffectedList(0, true);
+        UpdateAffectedList(0, AT_ACTION_MOMENT_REMOVE);//any remove from world
+
+        if(duration)
+            UpdateAffectedList(0, AT_ACTION_MOMENT_DESPAWN);//remove from world with time
+        else
+            UpdateAffectedList(0, AT_ACTION_MOMENT_LEAVE);//remove from world in action
+
 
         // Possibly this?
         if (!IsInWorld())

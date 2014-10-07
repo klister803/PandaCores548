@@ -626,6 +626,7 @@ struct SpellPrcoCheck
     int32 specId;
     int32 spellAttr0;
     int32 targetTypeMask;
+    int32 mechanicMask;
 };
 
 struct SpellTriggered
@@ -644,6 +645,7 @@ struct SpellTriggered
     int32 aura;
     int32 chance;
     int32 group;
+    int32 procFlags;
 };
 
 struct SpellMountList
