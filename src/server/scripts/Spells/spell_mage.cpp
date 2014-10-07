@@ -2040,6 +2040,56 @@ class spell_mage_illusion : public SpellScriptLoader
         }
 };
 
+// Flameglow - 140468
+class spell_mage_flameglow : public SpellScriptLoader
+{
+    public:
+        spell_mage_flameglow() : SpellScriptLoader("spell_mage_flameglow") { }
+
+        class spell_mage_flameglow_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_flameglow_AuraScript);
+
+            uint32 absorb;
+            uint32 LimitAbsorb;
+            uint32 TakenDamage;
+
+            bool Load()
+            {
+                absorb = 0;
+                LimitAbsorb = 0;
+                TakenDamage = 0;
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount = -1;                
+            }
+
+            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                absorb = GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * 15 / 100;
+                LimitAbsorb = GetSpellInfo()->Effects[EFFECT_2].BasePoints;
+                
+                absorbAmount = CalculatePct(dmgInfo.GetDamage(), LimitAbsorb);
+                if (absorbAmount > absorb)
+                    absorbAmount = absorb;
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_flameglow_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_flameglow_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_flameglow_AuraScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2079,4 +2129,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_ring_of_frost_tick();
     new spell_mage_icicle();
     new spell_mage_illusion();
+    new spell_mage_flameglow();
 }
