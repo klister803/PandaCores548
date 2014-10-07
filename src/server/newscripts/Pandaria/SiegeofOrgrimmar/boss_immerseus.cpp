@@ -279,7 +279,7 @@ class boss_immerseus : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint32 checkvictim, lasthp, berserk;
+            uint32 lasthp, berserk;
             uint8 donecp, donesp, maxpcount;
             std::vector<uint64> shapoollist;
             float lasthppct;
@@ -304,7 +304,6 @@ class boss_immerseus : public CreatureScript
                 lasthppct = me->GetHealthPct();
                 shapoollist.clear();
                 phase_two = false;
-                checkvictim = 0;
                 berserk = 0;
                 donecp = 0; 
                 donesp = 0;
@@ -341,7 +340,6 @@ class boss_immerseus : public CreatureScript
             {
                 _EnterCombat();
                 berserk = 600000;
-                checkvictim = 2000;
                 if (me->GetMap()->IsHeroic())
                     events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
                 events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
@@ -436,7 +434,6 @@ class boss_immerseus : public CreatureScript
 
                     damage = 0;
                     phase_two = true;
-                    checkvictim = 0;
                     events.Reset();
                     me->InterruptNonMeleeSpells(true);
                     me->AttackStop();
@@ -489,7 +486,6 @@ class boss_immerseus : public CreatureScript
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     phase_two = false;
-                    checkvictim = 2000;
                     if (me->GetMap()->IsHeroic())
                         events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
                     events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
@@ -524,17 +520,6 @@ class boss_immerseus : public CreatureScript
             {
                 if (!phase_two && !UpdateVictim()) 
                     return;
-
-                if (checkvictim && !phase_two)
-                {
-                    if (checkvictim <= diff)
-                    {
-                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                            EnterEvadeMode();
-                    }
-                    else
-                        checkvictim -= diff;
-                }
                 
                 if (berserk)
                 {
