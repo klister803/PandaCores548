@@ -485,12 +485,10 @@ BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
 
 void BossAI::_Reset()
 {
-    if (!me->isAlive())
-        return;
-
     events.Reset();
     summons.DespawnAll();
-    if (instance)
+
+    if (instance && me->isAlive())
         instance->SetBossState(_bossId, NOT_STARTED);
 }
 
