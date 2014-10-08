@@ -10347,7 +10347,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         case 146195: // Flurry of Xuen
         case 146197: // Essence of Yu'lon
         {
-            if (victim->GetTypeId() == TYPEID_PLAYER)
+            if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
                 return false;
 
             if (Unit* owner = victim->GetOwner())
@@ -10363,7 +10363,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         }
         case 108215: // Paralysis
         {
-            if (victim->HasAura(113953, GetGUID()))
+            if (!victim || victim->HasAura(113953, GetGUID()))
                 return false;
             break;
         }
