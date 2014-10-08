@@ -186,7 +186,7 @@ enum Phases
     PHASE_INTRO_H       = 2,
     PHASE_COMBAT        = 3,
 
-    PHASE_INTRO_MASK    = (1 << PHASE_INTRO_A - 1) | (1 << PHASE_INTRO_H - 1),
+    PHASE_INTRO_MASK    = (1 << (PHASE_INTRO_A - 1)) | (1 << (PHASE_INTRO_H - 1)),
 };
 
 enum Actions
