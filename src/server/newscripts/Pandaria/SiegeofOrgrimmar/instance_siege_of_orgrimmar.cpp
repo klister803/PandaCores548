@@ -6,10 +6,14 @@
 #include "siege_of_orgrimmar.h"
 #include "AccountMgr.h"
 
-Position const LorewalkerChoSpawn[2]  = {
+Position const LorewalkerChoSpawn[4]  = {
     {1448.236f, 312.6528f, 289.2837f, 4.652967f},
     {1441.406f, 988.1795f, 340.1876f, 1.985304f},   //fallen
+    {0, 0, 0, 0},   //norushen
+    {805.7786f, 879.8768f, 371.0946f, 1.911932f},   //sha
 };
+
+Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
 
 DoorData const doorData[] =
 {
@@ -39,6 +43,7 @@ public:
         
         //Creature
         uint64 LorewalkerChoGUIDtmp;
+        uint64 npcShaNorushenGUID;
         uint64 immerseusGuid;
         uint64 npcpointGuid;
         uint64 fpGUID[3];
@@ -70,6 +75,8 @@ public:
 
         EventMap Events;
 
+        bool onInitEnterState;
+
         void Initialize()
         {
             SetBossNumber(DATA_MAX);
@@ -78,43 +85,46 @@ public:
             TeamInInstance = 0;
 
             //GameObject
-            energyWallGUID       = 0;
-            immerseusexdoorGuid  = 0;
-            norushenexdoorGuid   = 0;
+            energyWallGUID          = 0;
+            immerseusexdoorGuid     = 0;
+            norushenexdoorGuid      = 0;
             lightqGuids.clear();
            
             //Creature
             npcGoldenLotosMoverGUID = 0;
             npcGoldenLotosMainGUID  = 0;
-            LorewalkerChoGUIDtmp= 0;
-            immerseusGuid       = 0;
-            npcpointGuid        = 0;
-            noryshenGuid        = 0;
-            bhcGuid             = 0;
-            bhGuid              = 0;
-            shaGuid             = 0;
-            galakrasGuid        = 0;
-            juggernautGuid      = 0;
-            korkronGuid         = 0;
-            nazgrimGuid         = 0;
-            malkorokGuid        = 0;
-            thokGuid            = 0;
-            blackfuseGuid       = 0;
-            kilrukGuid          = 0;
-            xarilGuid           = 0;
-            kaztikGuid          = 0;
-            korvenGuid          = 0;
-            iyyokykGuid         = 0;
-            karozGuid           = 0;
-            skeerGuid           = 0;
-            rikkalGuid          = 0;
-            hisekGuid           = 0;
-            garroshGuid         = 0;
+            LorewalkerChoGUIDtmp    = 0;
+            npcShaNorushenGUID      = 0;
+            immerseusGuid           = 0;
+            npcpointGuid            = 0;
+            noryshenGuid            = 0;
+            bhcGuid                 = 0;
+            bhGuid                  = 0;
+            shaGuid                 = 0;
+            galakrasGuid            = 0;
+            juggernautGuid          = 0;
+            korkronGuid             = 0;
+            nazgrimGuid             = 0;
+            malkorokGuid            = 0;
+            thokGuid                = 0;
+            blackfuseGuid           = 0;
+            kilrukGuid              = 0;
+            xarilGuid               = 0;
+            kaztikGuid              = 0;
+            korvenGuid              = 0;
+            iyyokykGuid             = 0;
+            karozGuid               = 0;
+            skeerGuid               = 0;
+            rikkalGuid              = 0;
+            hisekGuid               = 0;
+            garroshGuid             = 0;
             memset(fpGUID, 0, 3 * sizeof(uint64));
             memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
             memset(npcEmbodiesGUID, 0, 6 * sizeof(uint64));
 
             EventfieldOfSha     = 0;
+
+            onInitEnterState = false;
         }
 
         void OnPlayerEnter(Player* player)
@@ -123,9 +133,15 @@ public:
                 TeamInInstance = player->GetTeam();
 
             //not handle lorewalker summon if already done.
-            if (LorewalkerChoGUIDtmp)
+            if (onInitEnterState)
                 return;
+            onInitEnterState = true;
 
+            DoSummoneEventCreatures();
+        }
+
+        void DoSummoneEventCreatures()
+        {
             if (GetBossState(DATA_IMMERSEUS) != DONE)
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
@@ -139,6 +155,19 @@ public:
                 {
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
+                }
+            }else if (GetBossState(DATA_NORUSHEN) != DONE)
+            {
+
+                //ToDo: Spawn lorewalker
+            }else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
+            {
+                if (Creature * c = instance->SummonCreature(NPC_SHA_NORUSHEN, Sha_of_pride_Norushe))
+                    c->setActive(true);
+                if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[3]))
+                {
+                    LorewalkerChoGUIDtmp = c->GetGUID();
+                    c->setActive(true);
                 }
             }
         }
@@ -196,6 +225,13 @@ public:
             case NPC_EMBODIED_SORROW_OF_ROOK:
                 npcEmbodiesGUID[5] = creature->GetGUID();
                 break;
+            //Sha
+            case NPC_SHA_OF_PRIDE: 
+                shaGuid = creature->GetGUID();
+                break;
+            case NPC_SHA_NORUSHEN:
+                npcShaNorushenGUID = creature->GetGUID();
+                break;
                 
             //  
             case NPC_NORUSHEN:  
@@ -206,9 +242,6 @@ public:
                 break;
             case NPC_BLIND_HATRED:
                 bhGuid = creature->GetGUID();
-                break;
-            case NPC_SHA_OF_PRIDE: 
-                shaGuid = creature->GetGUID();
                 break;
             case NPC_GALAKRAS: 
                 galakrasGuid = creature->GetGUID();
@@ -305,12 +338,6 @@ public:
                 {
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_IMMERSEUS, DONE);
-                    //Protectors intro
-                    if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
-                    {
-                        LorewalkerChoGUIDtmp = cho->GetGUID();
-                        cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
-                    }
                 }
                 break;
             case DATA_F_PROTECTORS:
@@ -336,13 +363,15 @@ public:
                         break;
                     case DONE:
                         for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
-                            HandleGameObject(*guid, true);
-                        HandleGameObject(norushenexdoorGuid, true);
+                            HandleGameObject(*guid, true);                
                         break;
                     }
                 }
                 break;
             }
+
+            if (state == DONE)
+                DoSummoneEventCreatures();
             return true;
         }
 
@@ -413,6 +442,11 @@ public:
                 case NPC_EMBODIED_SORROW_OF_ROOK:
                     return npcEmbodiesGUID[5];
 
+                //Sha
+                case GO_NORUSHEN_EX_DOOR:
+                    return norushenexdoorGuid;
+
+                break;
                 //  
                 case NPC_NORUSHEN:  
                     return noryshenGuid;
@@ -460,7 +494,10 @@ public:
                 case NPC_GARROSH:
                     return garroshGuid;
                 case NPC_LOREWALKER_CHO:
+                case NPC_LOREWALKER_CHO3:
                     return LorewalkerChoGUIDtmp;
+                case NPC_SHA_NORUSHEN:
+                    return npcShaNorushenGUID;
             }
             return 0;
         }

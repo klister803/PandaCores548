@@ -39,6 +39,7 @@ enum eCreatures
 {
     //Npc or summons
     NPC_LOREWALKER_CHO              = 73330,
+    NPC_LOREWALKER_CHO3             = 61348,
     NPC_CONTAMINATED_PUDDLE         = 71604,
     NPC_AQUEOUS_DEFENDER            = 73191,
     NPC_PUDDLE_POINT                = 90000,
@@ -71,6 +72,14 @@ enum eCreatures
     NPC_ARROGANCE                   = 72663, //Arrogance
     NPC_VANITY                      = 72662, //Vanity
 
+    //Sha of Pride
+    NPC_SHA_OF_PRIDE                = 71734,
+    NPC_LADY_JAINA_PROUDMORORE      = 73598, //Lady Jaina Proudmoore
+    NPC_SHA_TARAN_ZHU               = 72779, //Taran Zhu <Lord of the Shado-Pan>
+    NPC_SHA_NORUSHEN                = 71965,
+    NPC_LINGERING_CORRUPTION        = 72791, //Lingering Corruption
+    NPC_REFLECTION                  = 72172, //Reflection
+
     //  
     NPC_NORUSHEN                    = 71967,
     NPC_AMALGAM_OF_CORRUPTION       = 72276,
@@ -80,7 +89,6 @@ enum eCreatures
     NPC_GREATER_CORRUPTION          = 72001,
     NPC_PURIFYING_LIGHT             = 72065,
     //
-    NPC_SHA_OF_PRIDE                = 71734,
     NPC_GALAKRAS                    = 72249,
     NPC_IRON_JUGGERNAUT             = 71466,
     NPC_KORKRON_D_SHAMAN            = 71859,
