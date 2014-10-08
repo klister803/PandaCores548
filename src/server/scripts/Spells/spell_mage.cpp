@@ -2161,6 +2161,45 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
         }
 };
 
+// Glyph of Conjure Familiar - 126748
+enum CreateFamiliarStone
+{
+    ITEM_ICY_FAMILIAR_STONE_1 = 87259,
+    ITEM_FIERY_FAMILIAR_STONE_2 = 87258,
+    ITEM_ARCANE_FAMILIAR_STONE_3 = 87257,
+};
+
+class spell_mage_glyph_of_conjure_familiar : public SpellScriptLoader
+{
+    public:
+        spell_mage_glyph_of_conjure_familiar() : SpellScriptLoader("spell_mage_glyph_of_conjure_familiar") { }
+
+        class spell_mage_glyph_of_conjure_familiar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_glyph_of_conjure_familiar_SpellScript);
+
+            void HandleScript(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+                if (Player* target = GetHitPlayer())
+                {
+                    static const uint32 items[] = {ITEM_ICY_FAMILIAR_STONE_1, ITEM_FIERY_FAMILIAR_STONE_2, ITEM_ARCANE_FAMILIAR_STONE_3};
+                    target->AddItem(items[urand(0, 2)], 1);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_mage_glyph_of_conjure_familiar_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_CREATE_ITEM_2);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_glyph_of_conjure_familiar_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2202,4 +2241,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_illusion();
     new spell_mage_flameglow();
     new spell_mage_glyph_of_icy_veins();
+    new spell_mage_glyph_of_conjure_familiar();
 }
