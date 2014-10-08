@@ -67,10 +67,6 @@ enum Phases
     PHASE_ONE           = 1,
     PHASE_TWO           = 2,
     PHASE_THREE         = 3,
-
-    PHASE_ONE_MASK      = 1 << PHASE_ONE,
-    PHASE_TWO_MASK      = 1 << PHASE_TWO,
-    PHASE_THREE_MASK    = 1 << PHASE_THREE,
 };
 
 enum MiscData
@@ -155,7 +151,7 @@ class boss_garfrost : public CreatureScript
 
             void DamageTaken(Unit* /*attacker*/, uint32& /*uiDamage*/)
             {
-                if (events.GetPhaseMask() & PHASE_ONE_MASK && !HealthAbovePct(66))
+                if (events.IsInPhase(PHASE_ONE) && !HealthAbovePct(66))
                 {
                     events.SetPhase(PHASE_TWO);
                     events.DelayEvents(8000);
@@ -164,7 +160,7 @@ class boss_garfrost : public CreatureScript
                     return;
                 }
 
-                if (events.GetPhaseMask() & PHASE_TWO_MASK && !HealthAbovePct(33))
+                if (events.IsInPhase(PHASE_TWO) && !HealthAbovePct(33))
                 {
                     events.SetPhase(PHASE_THREE);
                     events.DelayEvents(8000);
@@ -179,9 +175,9 @@ class boss_garfrost : public CreatureScript
                 if ((type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE) || id != POINT_FORGE)
                     return;
 
-                if (events.GetPhaseMask() & PHASE_TWO_MASK)
+                if (events.IsInPhase(PHASE_TWO))
                     DoCast(me, SPELL_FORGE_BLADE);
-                if (events.GetPhaseMask() & PHASE_THREE_MASK)
+                else if (events.IsInPhase(PHASE_THREE))
                 {
                     me->RemoveAurasDueToSpell(SPELL_FORGE_BLADE_HELPER);
                     DoCast(me, SPELL_FORGE_MACE);
@@ -239,17 +235,17 @@ class boss_garfrost : public CreatureScript
                             me->AttackStop();
                             me->SetReactState(REACT_PASSIVE);
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                            if (events.GetPhaseMask() & PHASE_TWO_MASK)
+                            if (events.IsInPhase(PHASE_TWO))
                                 me->GetMotionMaster()->MoveJump(northForgePos.GetPositionX(), northForgePos.GetPositionY(), northForgePos.GetPositionZ(), 25.0f, 15.0f, POINT_FORGE);
-                            else if (events.GetPhaseMask() & PHASE_THREE_MASK)
+                            else if (events.IsInPhase(PHASE_THREE))
                                 me->GetMotionMaster()->MoveJump(southForgePos.GetPositionX(), southForgePos.GetPositionY(), southForgePos.GetPositionZ(), 25.0f, 15.0f, POINT_FORGE);
                             break;
                         case EVENT_RESUME_ATTACK:
                             me->SetReactState(REACT_AGGRESSIVE);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                            if (events.GetPhaseMask() & PHASE_TWO_MASK)
+                            if (events.IsInPhase(PHASE_TWO))
                                 events.ScheduleEvent(EVENT_CHILLING_WAVE, 5000, 0, PHASE_TWO);
-                            else if (events.GetPhaseMask() & PHASE_THREE_MASK)
+                            else if (events.IsInPhase(PHASE_THREE))
                                 events.ScheduleEvent(EVENT_DEEP_FREEZE, 10000, 0, PHASE_THREE);
                             AttackStart(me->getVictim());
                             break;

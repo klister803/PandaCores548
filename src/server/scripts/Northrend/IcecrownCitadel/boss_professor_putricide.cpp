@@ -145,8 +145,8 @@ enum Phases
     PHASE_COMBAT_2      = 5,
     PHASE_COMBAT_3      = 6,
 
-    PHASE_MASK_COMBAT   = (1 << PHASE_COMBAT_1) | (1 << PHASE_COMBAT_2) | (1 << PHASE_COMBAT_3),
-    PHASE_MASK_NOT_SELF = (1 << PHASE_FESTERGUT) | (1 << PHASE_ROTFACE),
+    PHASE_MASK_COMBAT   = (1 << PHASE_COMBAT_1 - 1) | (1 << PHASE_COMBAT_2- 1) | (1 << PHASE_COMBAT_3 - 1),
+    PHASE_MASK_NOT_SELF = (1 << PHASE_FESTERGUT - 1) | (1 << PHASE_ROTFACE - 1),
 };
 
 enum Points

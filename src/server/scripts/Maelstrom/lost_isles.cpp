@@ -1787,9 +1787,6 @@ enum Phases
 {
     PHASE_INTRO = 1,
     PHASE_COMBAT,
-
-    PHASE_MASK_INTRO            = 1 << PHASE_INTRO,
-    PHASE_MASK_COMBAT           = 1 << PHASE_COMBAT,
 };
 
 
@@ -1819,13 +1816,13 @@ class npc_faceless_of_the_deep : public CreatureScript
 
         void JustDied(Unit* /*killer*/) 
         {
-
+            events.Reset();
         }
 
         void MoveInLineOfSight(Unit* who)
         {
             Player *player = who->ToPlayer();
-            if (!player || events.GetPhaseMask())
+            if (!player || events.IsInPhase(PHASE_INTRO) || events.IsInPhase(PHASE_COMBAT))
                 return;
 
             me->CastSpell(me, SPELL_SOE_ABSORPTION_SHIELD, true);
@@ -1856,7 +1853,7 @@ class npc_faceless_of_the_deep : public CreatureScript
 
         void UpdateAI(uint32 diff)
         {
-            if (events.GetPhaseMask() & PHASE_MASK_COMBAT && !UpdateVictim())
+            if (events.IsInPhase(PHASE_COMBAT) && !UpdateVictim())
                 return;
 
             events.Update(diff);
@@ -2479,7 +2476,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
         void MoveInLineOfSight(Unit* who)
         {
             Player *player = who->ToPlayer();
-            if (!player || events.GetPhaseMask())
+            if (!player || events.IsInPhase(PHASE_PRINCE_COMBAT))
                 return;
             
             if (player->GetQuestStatus(QUEST_FINAL_CONFRONTATION) != QUEST_STATUS_INCOMPLETE)

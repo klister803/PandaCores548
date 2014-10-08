@@ -161,8 +161,8 @@ enum Phases
     PHASE_ONE       = 2,
     PHASE_TWO       = 3,
 
-    PHASE_INTRO_MASK    = 1 << PHASE_INTRO,
-    PHASE_ONE_MASK      = 1 << PHASE_ONE,
+    PHASE_INTRO_MASK    = 1 << PHASE_INTRO - 1,
+    PHASE_ONE_MASK      = 1 << PHASE_ONE - 1,
 };
 
 enum DeprogrammingData

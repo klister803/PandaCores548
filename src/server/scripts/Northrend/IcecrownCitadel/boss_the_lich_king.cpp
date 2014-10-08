@@ -284,15 +284,15 @@ enum Phases
     PHASE_FROSTMOURNE           = 6,    // only set on heroic mode when all players are sent into frostmourne
     PHASE_OUTRO                 = 7,
 
-    PHASE_MASK_INTRO            = 1 << PHASE_INTRO,
-    PHASE_MASK_ONE              = 1 << PHASE_ONE,
-    PHASE_MASK_TWO              = 1 << PHASE_TWO,
-    PHASE_MASK_THREE            = 1 << PHASE_THREE,
-    PHASE_MASK_TRANSITION       = 1 << PHASE_TRANSITION,
-    PHASE_MASK_NO_CAST_CHECK    = (1 << PHASE_TRANSITION) | (1 << PHASE_FROSTMOURNE) | (1 << PHASE_OUTRO),
-    PHASE_MASK_FROSTMOURNE      = 1 << PHASE_FROSTMOURNE,
-    PHASE_MASK_OUTRO            = 1 << PHASE_OUTRO,
-    PHASE_MASK_NO_VICTIM        = (1 << PHASE_INTRO) | (1 << PHASE_OUTRO) | (1 << PHASE_FROSTMOURNE),
+    PHASE_MASK_INTRO            = 1 << PHASE_INTRO -1,
+    PHASE_MASK_ONE              = 1 << PHASE_ONE - 1,
+    PHASE_MASK_TWO              = 1 << PHASE_TWO - 1,
+    PHASE_MASK_THREE            = 1 << PHASE_THREE - 1,
+    PHASE_MASK_TRANSITION       = 1 << PHASE_TRANSITION - 1,
+    PHASE_MASK_NO_CAST_CHECK    = (1 << PHASE_TRANSITION - 1) | (1 << PHASE_FROSTMOURNE - 1) | (1 << PHASE_OUTRO - 1),
+    PHASE_MASK_FROSTMOURNE      = 1 << PHASE_FROSTMOURNE - 1,
+    PHASE_MASK_OUTRO            = 1 << PHASE_OUTRO - 1,
+    PHASE_MASK_NO_VICTIM        = (1 << PHASE_INTRO - 1) | (1 << PHASE_OUTRO- 1) | (1 << PHASE_FROSTMOURNE - 1),
 };
 
 #define PHASE_TWO_THREE  (events.GetPhaseMask() & PHASE_MASK_TWO ? PHASE_TWO : PHASE_THREE)

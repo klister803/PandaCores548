@@ -517,9 +517,8 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!(events.GetPhaseMask() & PHASE_SUBMERGED))
-                if (!UpdateVictim())
-                    return;
+            if (!events.IsInPhase(PHASE_SUBMERGED) && !UpdateVictim())
+                return;
 
             if(me->getVictim() && me->getVictim()->GetTypeId() != TYPEID_PLAYER)
                 me->Kill(me->getVictim());

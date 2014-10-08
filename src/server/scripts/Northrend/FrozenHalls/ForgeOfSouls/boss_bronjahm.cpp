@@ -145,7 +145,7 @@ class boss_bronjahm : public CreatureScript
                 if (damage >= me->GetHealth() && soulcount >= 4 && !soulpower)
                     soulpower = true;
 
-                if (events.GetPhaseMask() & (1 << PHASE_1) && !HealthAbovePct(30))
+                if (events.IsInPhase(PHASE_1) && !HealthAbovePct(30))
                 {
                     events.SetPhase(PHASE_2);
                     DoCast(me, SPELL_TELEPORT);

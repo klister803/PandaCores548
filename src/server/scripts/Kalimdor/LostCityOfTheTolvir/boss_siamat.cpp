@@ -56,8 +56,6 @@ enum ePhases
     PHASE_DEFLECTING_WINDS           = 1,
     PHASE_WAILING_WINDS              = 2,
     PHASE_SIAMAT                     = 3,
-
-    PHASE_WAILING_WINDS_MASK         = 1 << PHASE_WAILING_WINDS,
 };
 
 enum eEvents
@@ -177,7 +175,7 @@ public:
 
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STATE_CASTING) && events.GetPhaseMask() != PHASE_WAILING_WINDS_MASK)
+            if (me->HasUnitState(UNIT_STATE_CASTING) && !events.IsInPhase(PHASE_WAILING_WINDS))
                 return;
 
             if (uint32 eventId = events.ExecuteEvent())
