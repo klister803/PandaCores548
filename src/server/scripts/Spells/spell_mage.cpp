@@ -967,7 +967,10 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                     {
                         std::list<Unit*> targetList;
 
-                        _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
+                        if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()) 
+                        || target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID())
+                        || target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
+                            _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         // Spreads any Pyroblast, Ignite, and Combustion effects to up to 2 nearby enemy targets within 10 yards
 
