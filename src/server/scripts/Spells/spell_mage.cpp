@@ -89,6 +89,11 @@ enum MageSpells
     SPELL_MAGE_INCANTERS_ABSORBTION              = 116267,
     SPELL_MAGE_INCANTERS_ABSORBTION_PASSIVE      = 118858,
     SPELL_DRUMS_OF_RAGE                          = 146555,
+    SPELL_MAGE_FROSTBOLT                         = 116,
+    SPELL_MAGE_ICE_LANCE                         = 30455, 
+    SPELL_MAGE_FROSTFIRE_BOLT                    = 44614, 
+    SPELL_MAGE_WATERBOLT                         = 31707,
+    SPELL_MAGE_ICY_VEINS                         = 131078,
 };
 
 // Incanter's Ward (Cooldown marker) - 118859
@@ -2090,6 +2095,69 @@ class spell_mage_flameglow : public SpellScriptLoader
         }
 };
 
+// Glyph of Icy Veins - 56364
+class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
+{
+    public:
+        spell_mage_glyph_of_icy_veins() : SpellScriptLoader("spell_mage_glyph_of_icy_veins") { }
+
+        class spell_mage_glyph_of_icy_veins_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_glyph_of_icy_veins_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {                
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(SPELL_MAGE_ICY_VEINS))    
+                        {    
+                            if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT)
+                            {    
+                                caster->CastSpell(target, 131079, true);
+                                caster->CastSpell(target, 131079, true);
+                            }
+                            
+                            if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
+                            {    
+                                caster->CastSpell(target, 131080, true);
+                                caster->CastSpell(target, 131080, true);
+                            }
+                            
+                            if (GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
+                            {    
+                                caster->CastSpell(target, 131081, true);
+                                caster->CastSpell(target, 131081, true);
+                            }
+                        }    
+                        if (Unit* owner = caster->GetOwner())
+                        { 
+                            if (GetSpellInfo()->Id == SPELL_MAGE_WATERBOLT)
+                            {    
+                                if (owner->HasAura(SPELL_MAGE_ICY_VEINS))
+                                {    
+                                    caster->CastSpell(target, 131581, true);
+                                    caster->CastSpell(target, 131581, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_glyph_of_icy_veins_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_glyph_of_icy_veins_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2130,4 +2198,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_icicle();
     new spell_mage_illusion();
     new spell_mage_flameglow();
+    new spell_mage_glyph_of_icy_veins();
 }
