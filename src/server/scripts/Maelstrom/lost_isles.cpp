@@ -2445,9 +2445,6 @@ enum princePhases
 {
     PHASE_PRINCE_COMBAT = 1,
     PHASE_PRINCE_FINAL,
-
-    PHASE_MASK_PRINCE_FINAL            = 1 << PHASE_PRINCE_FINAL,
-    PHASE_MASK_PRINCE_COMBAT           = 1 << PHASE_PRINCE_COMBAT,
 };
 
 const uint32 prince_spells[5] = {81000, 74003, 74005, 74000, 74004};
@@ -2496,7 +2493,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
         void DamageTaken(Unit* attacker, uint32& damage)
         {
             // God mode.
-            if (!(events.GetPhaseMask() & PHASE_MASK_PRINCE_COMBAT))
+            if (!events.IsInPhase(PHASE_PRINCE_COMBAT))
             {
                 damage = 0;
                 return;
@@ -2521,7 +2518,7 @@ class npc_trade_prince_gallywix_final : public CreatureScript
 
         void UpdateAI(uint32 diff)
         {
-            if (events.GetPhaseMask() & PHASE_MASK_PRINCE_COMBAT && !UpdateVictim())
+            if (events.IsInPhase(PHASE_PRINCE_COMBAT) && !UpdateVictim())
                 return;
 
             events.Update(diff);
