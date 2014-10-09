@@ -2077,7 +2077,7 @@ class spell_mage_flameglow : public SpellScriptLoader
 
             void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
-                absorb = GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * 15 / 100;
+                absorb = GetCaster()->GetSpellPowerDamage() * 15 / 100;
                 LimitAbsorb = GetSpellInfo()->Effects[EFFECT_2].BasePoints;
                 
                 absorbAmount = CalculatePct(dmgInfo.GetDamage(), LimitAbsorb);
