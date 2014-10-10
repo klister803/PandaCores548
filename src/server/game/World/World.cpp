@@ -800,6 +800,7 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_MAX_PLAYER_LEVEL] = ConfigMgr::GetIntDefault("MaxPlayerLevel", DEFAULT_MAX_LEVEL);
 
     m_int_configs[CONFIG_MAX_SKILL_VALUE] = ConfigMgr::GetIntDefault("MaxSkillValue", DEFAULT_MAX_SKILL_VALUE);
+    m_int_configs[CONFIG_TRANSFER_GOLD_LIMIT] = ConfigMgr::GetIntDefault("TransferGoldLimit", 100000000); // 10k gold for default limit transfer
 
     if (m_int_configs[CONFIG_MAX_PLAYER_LEVEL] > MAX_LEVEL)
     {

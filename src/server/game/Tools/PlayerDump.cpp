@@ -746,6 +746,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
     uint8 race = RACE_NONE;
     uint8 playerClass = 0;
     uint8 level = 0;
+    uint64 money = 0;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
@@ -795,15 +796,28 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             case DTT_CHARACTER:
             {
                 if (!changenth(line, 1, newguid))           // characters.guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.guid update line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 if (!changenth(line, 2, chraccount))        // characters.account update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.account update line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 race = uint8(atol(getnth(line, 5).c_str()));
                 playerClass = uint8(atol(getnth(line, 6).c_str()));
                 gender = uint8(atol(getnth(line, 7).c_str()));
                 level = uint8(atol(getnth(line, 8).c_str()));
+                money = uint64(atol(getnth(line, 10).c_str()));
+                if(money > sWorld->getIntConfig(CONFIG_TRANSFER_GOLD_LIMIT))
+                {
+                    char golddata[50];
+                    sprintf(golddata, "%u", sWorld->getIntConfig(CONFIG_TRANSFER_GOLD_LIMIT));
+                    changenth(line, 10, golddata);
+                }
                 if (name == "")
                 {
                     // check if the original name already exists
@@ -815,46 +829,79 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
                     if (result)
                         if (!changenth(line, 41, "129"))       // characters.at_login set to "rename on login"
+                        {
+                            sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.at_login set to rename on login line: '%s'!", line.c_str());
                             return DUMP_FILE_BROKEN;
+                        }
                 }
                 else if (!changenth(line, 3, name.c_str())) // characters.name
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.name line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 const char null[5] = "NULL";
                 if (!changenth(line, 70, null))             // characters.deleteInfos_Account
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteInfos_Account line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changenth(line, 71, null))             // characters.deleteInfos_Name
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteInfos_Name line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changenth(line, 72, null))             // characters.deleteDate
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteDate line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_CHAR_TABLE:
             {
                 if (!changenth(line, 1, newguid))           // character_*.guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_EQSET_TABLE:
             {
                 if (!changenth(line, 1, newguid))
-                    return DUMP_FILE_BROKEN;             // character_equipmentsets.guid
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_equipmentsets.guid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
 
                 char newSetGuid[24];
                 snprintf(newSetGuid, 24, UI64FMTD, sObjectMgr->GenerateEquipmentSetGuid());
                 if (!changenth(line, 2, newSetGuid))
-                    return DUMP_FILE_BROKEN;             // character_equipmentsets.setguid
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_equipmentsets.setguid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_INVENTORY:
             {
                 if (!changenth(line, 1, newguid))           // character_inventory.guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid, true))
-                    return DUMP_FILE_BROKEN;             // character_inventory.bag update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.bag line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 if (!changeGuid(line, 4, items, sObjectMgr->_hiItemGuid))
-                    return DUMP_FILE_BROKEN;             // character_inventory.item update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.item line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_VS_TABLE:
@@ -864,52 +911,91 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 snprintf(newItemId, 20, "%u", newItemIdNum);
 
                 if (!changenth(line, 1, newItemId))           // character_void_storage.itemId update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_void_storage.itemId line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changenth(line, 2, newguid))           // character_void_storage.playerGuid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_void_storage.playerGuid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_MAIL:                                  // mail
             {
                 if (!changeGuid(line, 1, mails, sObjectMgr->_mailId))
-                    return DUMP_FILE_BROKEN;             // mail.id update
-                if (!changenth(line, 6, newguid))           // mail.receiver update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
+                if (!changenth(line, 6, newguid))           // mail.receiver update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail.receiver line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_MAIL_ITEM:                             // mail_items
             {
                 if (!changeGuid(line, 1, mails, sObjectMgr->_mailId))
-                    return DUMP_FILE_BROKEN;             // mail_items.id
-                if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
-                    return DUMP_FILE_BROKEN;             // mail_items.item_guid
-                if (!changenth(line, 3, newguid))           // mail_items.receiver
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
+                if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.item_guid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
+                if (!changenth(line, 3, newguid))           // mail_items.receiver
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.receiver line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_ITEM:
             {
                 // item, owner, data field:item, owner guid
                 if (!changeGuid(line, 1, items, sObjectMgr->_hiItemGuid))
-                   return DUMP_FILE_BROKEN;              // item_instance.guid update
-                if (!changenth(line, 3, newguid))           // item_instance.owner_guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: item_instance.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
+                if (!changenth(line, 3, newguid))           // item_instance.owner_guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: item_instance.owner_guid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_ITEM_GIFT:
             {
                 if (!changenth(line, 1, newguid))           // character_gifts.guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_gifts.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
-                    return DUMP_FILE_BROKEN;             // character_gifts.item_guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_gifts.item_guid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_DONA_TABLE:
             {
                 if (!changenth(line, 1, newguid))           // character_donate.owner_guid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_donate.owner_guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
-                    return DUMP_FILE_BROKEN;             // character_donate.itemguid update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_donate.itemguid line: '%s'!", line.c_str());
+                    return DUMP_FILE_BROKEN;
+                }
                 break;
             }
             case DTT_PET:
@@ -932,9 +1018,15 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 }
 
                 if (!changenth(line, 1, newpetid))          // character_pet.id update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_pet.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
                 if (!changenth(line, 3, newguid))           // character_pet.owner update
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_pet.owne line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 break;
             }
@@ -945,13 +1037,18 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 // lookup currpetid and match to new inserted pet id
                 std::map<uint32, uint32> :: const_iterator petids_iter = petids.find(atoi(currpetid));
                 if (petids_iter == petids.end())             // couldn't find new inserted id
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: pet line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
+                }
 
                 snprintf(newpetid, 20, "%d", petids_iter->second);
 
                 if (!changenth(line, 1, newpetid))
+                {
+                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: pet line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
-
+                }
                 break;
             }
             default:
