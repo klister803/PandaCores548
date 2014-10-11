@@ -1050,7 +1050,7 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(CurrentSpellTypes(i), false);
 }
 
-void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     if (!spellInfo)
     {
@@ -1072,12 +1072,12 @@ void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo
     spell->prepare(&targets, triggeredByAura);
 }
 
-void Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
-    CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
+    CastSpell(victim, spellId, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags /*= TRIGGER_NONE*/, Item* castItem /*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/)
+void Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags /*= TRIGGER_NONE*/, Item* castItem /*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/, bool addCustomBP)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1086,22 +1086,22 @@ void Unit::CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags
         return;
     }
 
-    CastSpell(victim, spellInfo, triggerFlags, castItem, triggeredByAura, originalCaster);
+    CastSpell(victim, spellInfo, triggerFlags, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem/*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/)
+void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem/*= NULL*/, AuraEffect const* triggeredByAura /*= NULL*/, uint64 originalCaster /*= 0*/, bool addCustomBP)
 {
-    CastSpell(victim, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
+    CastSpell(victim, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     SpellCastTargets targets;
     targets.SetUnitTarget(victim);
-    CastSpell(targets, spellInfo, NULL, triggerFlags, castItem, triggeredByAura, originalCaster);
+    CastSpell(targets, spellInfo, NULL, triggerFlags, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     CustomSpellValues values;
     if (bp0)
@@ -1110,10 +1110,12 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32
         values.AddSpellMod(SPELLVALUE_BASE_POINT1, *bp1);
     if (bp2)
         values.AddSpellMod(SPELLVALUE_BASE_POINT2, *bp2);
-    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
+    if (addCustomBP)
+        values.AddSpellMod(SPELLVALUE_ADD_CUSTOM_VALUE, 1);
+    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     CustomSpellValues values;
     if (bp0)
@@ -1128,17 +1130,19 @@ void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32
         values.AddSpellMod(SPELLVALUE_BASE_POINT4, *bp4);
     if (bp5)
         values.AddSpellMod(SPELLVALUE_BASE_POINT5, *bp5);
-    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
+    if (addCustomBP)
+        values.AddSpellMod(SPELLVALUE_ADD_CUSTOM_VALUE, 1);
+    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* target, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* target, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     CustomSpellValues values;
     values.AddSpellMod(mod, value);
-    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
+    CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const& value, Unit* victim, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const& value, Unit* victim, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1149,10 +1153,10 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const& value, Unit*
     SpellCastTargets targets;
     targets.SetUnitTarget(victim);
 
-    CastSpell(targets, spellInfo, &value, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
+    CastSpell(targets, spellInfo, &value, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1163,10 +1167,10 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
     SpellCastTargets targets;
     targets.SetDst(x, y, z, GetOrientation());
 
-    CastSpell(targets, spellInfo, NULL, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
+    CastSpell(targets, spellInfo, NULL, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggeredCastFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggeredCastFlags, Item* castItem, AuraEffect const* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1177,10 +1181,10 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags
     SpellCastTargets targets;
     targets.SetDst(x, y, z, GetOrientation());
 
-    CastSpell(targets, spellInfo, NULL, triggeredCastFlags, castItem, triggeredByAura, originalCaster);
+    CastSpell(targets, spellInfo, NULL, triggeredCastFlags, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
-void Unit::CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem, AuraEffect* triggeredByAura, uint64 originalCaster)
+void Unit::CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem, AuraEffect* triggeredByAura, uint64 originalCaster, bool addCustomBP)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -1191,7 +1195,7 @@ void Unit::CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castI
     SpellCastTargets targets;
     targets.SetGOTarget(go);
 
-    CastSpell(targets, spellInfo, NULL, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster);
+    CastSpell(targets, spellInfo, NULL, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE, castItem, triggeredByAura, originalCaster, addCustomBP);
 }
 
 void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 damage, SpellInfo const* spellInfo, uint32 effectMask, WeaponAttackType attackType, bool crit)
@@ -5968,6 +5972,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
     uint32 effIndex = triggeredByAura->GetEffIndex();
     int32  triggerAmount = triggeredByAura->GetAmount();
+    bool addCustomBP = false;
 
     Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
         ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
@@ -9304,6 +9309,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     basepoints0 += add_spellpower;
                     AddPct(basepoints0, 50);
                     triggered_spell_id = 10444;
+                    addCustomBP = true;
                 }
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
@@ -9313,6 +9319,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     basepoints0 += add_spellpower;
                     AddPct(basepoints0, 50);
                     triggered_spell_id = 10444;
+                    addCustomBP = true;
                 }
                 // If not ready, we should  return, shouldn't we?!
                 else
@@ -9561,7 +9568,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         return false;
 
     if (basepoints0 || basepoints1 || basepoints2)
-        CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+        CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster, addCustomBP);
     else
         CastSpell(target, triggered_spell_id, true, castItem, triggeredByAura, originalCaster);
 
@@ -16005,9 +16012,9 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
 }
 
 // function uses real base points (typically value - 1)
-int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints, Item* m_castitem) const
+int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints, Item* m_castitem, bool addCustomBP) const
 {
-    return spellProto->GetEffect(effect_index, GetSpawnMode()).CalcValue(this, basePoints, target, m_castitem);
+    return spellProto->GetEffect(effect_index, GetSpawnMode()).CalcValue(this, basePoints, target, m_castitem, addCustomBP);
 }
 
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)

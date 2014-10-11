@@ -393,10 +393,11 @@ void SpellCastTargets::OutDebug() const
 SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
+        EffectBasePoints[i] = 0;
     MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
     RadiusMod = 1.0f;
     AuraStackAmount = 1;
+    addCustomBP = false;
 }
 
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
@@ -407,7 +408,7 @@ m_referencedFromCurrentSpell(false), m_executedCurrently(false), m_needComboPoin
 m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
-m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_currentExecutedEffect(SPELL_EFFECT_NONE)
+m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE)
 
 {
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
@@ -8677,6 +8678,9 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
         case SPELLVALUE_AURA_STACK:
             m_spellValue->AuraStackAmount = uint8(value);
+            break;
+        case SPELLVALUE_ADD_CUSTOM_VALUE:
+            m_spellValue->addCustomBP = bool(value);
             break;
     }
 }

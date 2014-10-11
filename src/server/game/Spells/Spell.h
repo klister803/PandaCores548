@@ -221,6 +221,7 @@ struct SpellValue
     uint32    MaxAffectedTargets;
     float     RadiusMod;
     uint8     AuraStackAmount;
+    bool      addCustomBP;
 };
 
 enum SpellState
@@ -461,7 +462,7 @@ class Spell
         SpellCastResult CheckCasterAuras() const;
         SpellCastResult CheckArenaAndRatedBattlegroundCastRules();
 
-        int32 CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem); }
+        int32 CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem, m_spellValue->addCustomBP); }
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();
