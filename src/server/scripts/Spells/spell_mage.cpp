@@ -1570,6 +1570,16 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
                 caster->m_livingBombTargets.push_back(target->GetGUID());
             }
+            
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        if (roll_chance_i(10))
+                            _player->CastSpell(_player, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                }
+            }
 
             void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
@@ -1580,15 +1590,13 @@ class spell_mage_living_bomb : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     caster->CastSpell(GetTarget(), SPELL_MAGE_LIVING_BOMB_TRIGGERED, true);
-
-                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
-                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
                 }
             }
 
             void Register()
             {
                 AfterEffectApply += AuraEffectApplyFn(spell_mage_living_bomb_AuraScript::AfterApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_living_bomb_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_mage_living_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
