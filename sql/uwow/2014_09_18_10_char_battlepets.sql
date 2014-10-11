@@ -1,4 +1,4 @@
-﻿DROP TABLE IF EXISTS `character_battle_pet_journal`;
+DROP TABLE IF EXISTS `character_battle_pet_journal`;
 
 CREATE TABLE `character_battle_pet_journal` (
   `guid` int(10) unsigned NOT NULL,

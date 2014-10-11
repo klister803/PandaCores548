@@ -20591,7 +20591,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             // Hack for Druid of the Flame, Fandral's Flamescythe
             if (HasAura(99245) || HasAura(138927))
                 return 38150;
-            
+
             // check Incarnation
             bool epic = HasAura(102543);
 
@@ -20778,9 +20778,6 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
         }
         case FORM_BEAR:
         {
-            // Hack for Druid of the Flame, Fandral's Flamescythe
-            if (HasAura(99245) || HasAura(138927))
-                return 38150;
             // check Incarnation
             bool epic = HasAura(102558);
 
