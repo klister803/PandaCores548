@@ -8271,7 +8271,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (GetTypeId() != TYPEID_PLAYER || triggeredByAura->GetEffIndex() != EFFECT_0)
                         return false;
 
-                    if ((procEx & PROC_EX_CRITICAL_HIT) == 0)
+                    if (((procEx & PROC_EX_CRITICAL_HIT) == 0) || (procEx & PROC_EX_INTERNAL_HOT) != 0)
                         return false;
 
                     // ignore when in Solar and Lunar Eclipse, Celestial Alignment
