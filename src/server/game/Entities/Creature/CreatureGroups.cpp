@@ -138,7 +138,7 @@ void FormationMgr::LoadCreatureFormations()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in formations in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void CreatureGroup::AddMember(Creature* member)
+void CreatureGroup::AddMember(Creature* member, FormationInfo* f)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "CreatureGroup::AddMember: Adding unit GUID: %u.", member->GetGUIDLow());
 
@@ -149,7 +149,12 @@ void CreatureGroup::AddMember(Creature* member)
         m_leader = member;
     }
 
-    m_members[member] = sFormationMgr->CreatureGroupMap.find(member->GetDBTableGUIDLow())->second;
+    CreatureGroupInfoType::iterator itr = sFormationMgr->CreatureGroupMap.find(member->GetDBTableGUIDLow());
+    if (itr != sFormationMgr->CreatureGroupMap.end())
+        m_members[member] = itr->second;
+    else if (f)
+        m_members[member] = f;
+
     member->SetFormation(this);
 }
 

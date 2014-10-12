@@ -12,6 +12,7 @@ EndScriptData */
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
 #include "Group.h"
+#include "CreatureGroups.h"
 
 enum ePoints
 {
@@ -168,6 +169,10 @@ void npc_escortAI::ReturnToLastPoint()
 void npc_escortAI::MovePoint(uint32 point, float x, float y, float z)
 {
     me->GetMotionMaster()->MovePoint(point, x, y, z);
+
+    //Call for creature group update
+    if (me->GetFormation() && me->GetFormation()->getLeader() == me)
+        me->GetFormation()->LeaderMoveTo(x, y, z);
 
     //ToDo: find fast way for find behind point in 3-5 range
     if (Creature* follower = Unit::GetCreature(*me, m_uifollowerGUID))

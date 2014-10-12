@@ -68,7 +68,7 @@ class CreatureGroup
         bool isEmpty() const { return m_members.empty(); }
         bool isFormed() const { return m_Formed; }
 
-        void AddMember(Creature* member);
+        void AddMember(Creature* member, FormationInfo* f = NULL);
         void RemoveMember(Creature* member);
         void FormationReset(bool dismiss);
 
