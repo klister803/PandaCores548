@@ -3189,10 +3189,18 @@ class spell_dru_healing_ouch : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Player* player = caster->ToPlayer();
+                if (!player)
+                    return;
+
+                if (AuraEffect const* eff = player->GetAuraEffect(108373, EFFECT_2))
                 {
-                    if (caster->HasAura(108373) && !caster->HasAura(77495))
-                        SetHitHeal(int32(GetHitHeal() * 1.2));
+                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                        SetHitHeal(int32(GetHitHeal() * eff->GetAmount() / 100.0f));
                 }
             }
 
