@@ -5454,7 +5454,10 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
     target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(OFF_ATTACK, float(GetAmount()), apply);
     target->ApplyAttackTimePercentMod(RANGED_ATTACK, float(GetAmount()), apply);
+    
     target->UpdateHastMod();
+    target->UpdateMeleeHastMod();
+    target->UpdateRangeHastMod();
 }
 
 void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
