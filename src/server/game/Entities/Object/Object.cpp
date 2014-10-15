@@ -1572,6 +1572,18 @@ bool Position::HasInLine(WorldObject const* target, float width) const
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
+bool Position::IsInDegreesRange(float x, float y, float degresA, float degresB, bool relative/* = false*/) const
+{
+    float angel = GetDegreesAngel(x, y, relative);
+    return angel >= degresA && angel <= degresB;
+}
+
+float Position::GetDegreesAngel(float x, float y, bool relative) const
+{
+    float angel = relative ? GetRelativeAngle(x, y) : GetAngle(x, y);
+    return NormalizeOrientation(angel) * M_RAD;
+}
+
 std::string Position::ToString() const
 {
     std::stringstream sstr;

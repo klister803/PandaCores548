@@ -234,6 +234,10 @@ extern ACE_Based::LockedQueue<ArenaLog*,  ACE_Thread_Mutex> ArenaLogQueue;
 #define M_PI            3.14159265358979323846f
 #endif
 
+#ifndef M_RAD
+#define M_RAD           57.295779513082320876846364344191f
+#endif
+
 #define MAX_QUERY_LEN 32*1024
 
 #define TRINITY_GUARD(MUTEX, LOCK) \

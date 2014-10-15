@@ -517,6 +517,8 @@ struct Position
         { return GetAngle(pos) - m_orientation; }
     float GetRelativeAngle(float x, float y) const { return GetAngle(x, y) - m_orientation; }
     void GetSinCos(float x, float y, float &vsin, float &vcos) const;
+    bool IsInDegreesRange(float x, float y, float degresA, float degresB, bool relative = false) const;
+    float GetDegreesAngel(float x, float y, bool relative = false) const;
 
     bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }
