@@ -83,8 +83,8 @@ class EffectMovementGenerator : public MovementGenerator
 class ChargeMovementGenerator : public MovementGenerator
 {
     public:
-        explicit ChargeMovementGenerator(uint32 Id, float _x, float _y, float _z, float _speed = 0.0f, PathFinderMovementGenerator* _path = NULL) : m_Id(Id),
-        i_x(_x), i_y(_y), i_z(_z), speed(_speed), i_path(_path)        {}
+        explicit ChargeMovementGenerator(uint32 Id, float _x, float _y, float _z, float _speed = 0.0f, uint32 _triggerspellId = 0, PathFinderMovementGenerator* _path = NULL) : m_Id(Id),
+        i_x(_x), i_y(_y), i_z(_z), speed(_speed), triggerspellId(_triggerspellId), i_path(_path)        {}
 
         void Initialize(Unit &);
         void Finalize(Unit &unit);
@@ -95,6 +95,7 @@ class ChargeMovementGenerator : public MovementGenerator
         bool IsReachable() const { return (i_path) ? (i_path->getPathType() & PATHFIND_NORMAL) : true; }
     private:
         uint32 m_Id;
+        uint32 triggerspellId;
         float i_x, i_y, i_z;
         float speed;
         bool i_recalculateSpeed;

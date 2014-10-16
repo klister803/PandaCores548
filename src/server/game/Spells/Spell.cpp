@@ -1557,10 +1557,6 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
             else
                 target = m_caster->GetGuardianPet();
             break;
-        case TARGET_UNIT_SUMMONER:
-            if (m_caster->isSummon())
-                target = m_caster->ToTempSummon()->GetSummoner();
-            break;
         case TARGET_UNIT_VEHICLE:
             target = m_caster->GetVehicleBase();
             break;

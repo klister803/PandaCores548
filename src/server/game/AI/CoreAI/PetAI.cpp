@@ -52,8 +52,8 @@ void PetAI::EnterEvadeMode()
 void PetAI::InitializeAI()
 {
     if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
-        if(pStats->state)
-            me->SetReactState(ReactStates(pStats->state));
+        me->SetReactState(ReactStates(pStats->state));
+
     if (TempSummon* summon = me->ToTempSummon())
         summon->CastPetAuras(true);
 

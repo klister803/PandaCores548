@@ -7097,6 +7097,11 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                                 Disable->RefreshTimers();
                     break;
                 }
+                case 125950: // Soothing Mist
+                {
+                    trigger_spell_id = 125953;
+                    break;
+                }
                 default:
                     break;
             }

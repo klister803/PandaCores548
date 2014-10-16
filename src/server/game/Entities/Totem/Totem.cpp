@@ -53,6 +53,7 @@ void Totem::Update(uint32 time)
 
 void Totem::InitStats(uint32 duration)
 {
+    bool damageSet = false;
     // client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
     if (m_owner->GetTypeId() == TYPEID_PLAYER
         && m_Properties->Slot >= SUMMON_SLOT_TOTEM
@@ -110,6 +111,8 @@ void Totem::InitStats(uint32 duration)
     m_duration = duration;
 
     SetLevel(m_owner->getLevel());
+
+    InitBaseStat(GetEntry(), damageSet);
 }
 
 void Totem::InitSummon()
@@ -159,6 +162,7 @@ void Totem::UnSummon(uint32 msTime)
 
     CombatStop();
     RemoveAurasDueToSpell(GetSpell(), GetGUID());
+    CastPetAuras(false);
 
     // clear owner's totem slot
     for (int i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)

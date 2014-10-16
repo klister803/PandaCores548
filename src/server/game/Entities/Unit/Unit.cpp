@@ -6166,9 +6166,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         check = true;
                         continue;
                     }
-                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), triggerAmount);
+                    int32 percent = triggerAmount;
                     if(bp0)
-                        basepoints0 *= bp0;
+                        percent += bp0;
+
+                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent);
 
                     triggered_spell_id = abs(itr->spell_trigger);
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
@@ -6617,7 +6619,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             basepoints0 = AP;
                             break;
                     }
-                    switch (int32(itr->bp0))
+                    switch (int32(itr->bp1))
                     {
                         case 1:
                             basepoints1 = SPD;
@@ -6629,7 +6631,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             basepoints1 = AP;
                             break;
                     }
-                    switch (int32(itr->bp0))
+                    switch (int32(itr->bp2))
                     {
                         case 1:
                             basepoints2 = SPD;
@@ -6701,6 +6703,52 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     {
                         if (Guardian* pet = GetGuardianPet())
                             _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_SUMM_DAMAGE_PROC: //31
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    int32 limited = 0;
+                    int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    if (itr->bp0)
+                        limited = int32(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp0);
+                    else if (itr->bp1)
+                        limited = int32(SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp1);
+                    else if (itr->bp2)
+                    {
+                        WeaponAttackType attType = BASE_ATTACK;
+                        if (procSpell && procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
+                            attType = RANGED_ATTACK;
+                        limited = int32(GetTotalAttackPowerValue(attType) * itr->bp2);
+                    }
+
+                    if(summ_damage < limited)
+                    {
+                        triggeredByAura->SetAmount(summ_damage);
+                        check = true;
+                        continue;
+                    }
+                    else
+                        triggeredByAura->SetAmount(0);
+
+                    _caster->CastSpell(target, triggered_spell_id, true);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastSpell(pet, triggered_spell_id, true);
                     }
                     check = true;
                 }
@@ -18769,7 +18817,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             {
                 if (-(itr->checkspell) == spellProcId)
                 {
-                    if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0)
+                    if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0 || itr->perchp != 0 || itr->fromlevel != 0)
                     {
                         if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
                         {
@@ -18804,7 +18852,27 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
                         {
                             procCheck = true;
-                            continue;
+                            break;
+                        }
+                        if(itr->fromlevel > 0 && _checkTarget->getLevel() >= itr->fromlevel)
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        else if(itr->fromlevel < 0 && _checkTarget->getLevel() < abs(itr->fromlevel))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        if(itr->perchp > 0 && _checkTarget->GetHealthPct() >= itr->perchp)
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        else if(itr->perchp < 0 && _checkTarget->GetHealthPct() < abs(itr->perchp))
+                        {
+                            procCheck = true;
+                            break;
                         }
                         if(itr->chance != 0 && !roll_chance_i(itr->chance) && procCheck)
                         {
@@ -18878,6 +18946,26 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
+                {
+                    procCheck = false;
+                    continue;
+                }
+                else if(itr->fromlevel < 0 && _checkTarget->getLevel() > abs(itr->fromlevel))
+                {
+                    procCheck = false;
+                    continue;
+                }
+                if(itr->perchp > 0 && _checkTarget->GetHealthPct() < itr->perchp)
+                {
+                    procCheck = false;
+                    continue;
+                }
+                else if(itr->perchp < 0 && _checkTarget->GetHealthPct() > abs(itr->perchp))
+                {
+                    procCheck = false;
+                    continue;
+                }
 
                 procCheck = false;
                 break;
@@ -18926,6 +19014,26 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     continue;
                 }
                 if(itr->mechanicMask != 0 && (AllEffectsMechanicMask & itr->mechanicMask))
+                {
+                    procCheck = false;
+                    continue;
+                }
+                if(itr->fromlevel > 0 && _checkTarget->getLevel() >= itr->fromlevel)
+                {
+                    procCheck = false;
+                    continue;
+                }
+                else if(itr->fromlevel < 0 && _checkTarget->getLevel() < abs(itr->fromlevel))
+                {
+                    procCheck = false;
+                    continue;
+                }
+                if(itr->perchp > 0 && _checkTarget->GetHealthPct() >= itr->perchp)
+                {
+                    procCheck = false;
+                    continue;
+                }
+                else if(itr->perchp < 0 && _checkTarget->GetHealthPct() < abs(itr->perchp))
                 {
                     procCheck = false;
                     continue;

@@ -316,6 +316,73 @@ void TempSummon::InitSummon()
     }
 }
 
+bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
+{
+    CreatureTemplate const* cinfo = GetCreatureTemplate();
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(getLevel(), cinfo->unit_class);
+    Unit* owner = GetAnyOwner();
+
+    PetStats const* pStats = sObjectMgr->GetPetStats(creatureId);
+    if (pStats)                                      // exist in DB
+    {
+        if(pStats->hp && owner)
+        {
+            SetCreateHealth(int32(owner->GetMaxHealth() * pStats->hp));
+            SetMaxHealth(GetCreateHealth());
+            SetHealth(GetCreateHealth());
+        }
+        else
+        {
+            SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
+            SetMaxHealth(int32(owner->GetMaxHealth() * pStats->hp));
+            SetHealth(GetCreateHealth());
+        }
+
+        if (getPowerType() != pStats->energy_type)
+            setPowerType(Powers(pStats->energy_type));
+
+        if(pStats->energy_type)
+        {
+            SetMaxPower(Powers(pStats->energy_type), pStats->energy);
+            SetPower(Powers(pStats->energy_type), pStats->energy);
+        }
+        else if(!pStats->energy_type && pStats->energy == 1)
+        {
+            SetMaxPower(Powers(pStats->energy_type), 0);
+            SetPower(Powers(pStats->energy_type), 0);
+        }
+        else
+        {
+            if(pStats->energy && owner)
+            {
+                int32 manaMax = int32(owner->GetMaxPower(Powers(pStats->energy_type)) * float(pStats->energy / 100.0f));
+                if(!pStats->energy_type)
+                    SetCreateMana(manaMax);
+                SetMaxPower(Powers(pStats->energy_type), manaMax);
+                SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
+            }
+            else
+            {
+                if(!pStats->energy_type)
+                    SetCreateMana(stats->BaseMana);
+                SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
+            }
+        }
+        if(pStats->damage && owner)
+        {
+            damageSet = true;
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
+        }
+        if(pStats->type)
+            SetCasterPet(true);
+
+        return true;
+    }
+    else
+        return false;
+}
+
 void TempSummon::SetTempSummonType(TempSummonType type)
 {
     m_type = type;
@@ -336,6 +403,7 @@ void TempSummon::UnSummon(uint32 msTime)
         return;
     onUnload = true;
 
+    CastPetAuras(false);
     //ASSERT(!isPet());
     if (isPet())
     {

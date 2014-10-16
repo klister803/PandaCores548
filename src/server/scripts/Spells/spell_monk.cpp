@@ -38,7 +38,7 @@ enum MonkSpells
     SPELL_MONK_ZEN_PILGRIMAGE_RETURN            = 126895,
     SPELL_MONK_DISABLE_ROOT                     = 116706,
     SPELL_MONK_DISABLE                          = 116095,
-    SPELL_MONK_SOOTHING_MIST_VISUAL             = 125955,
+    SPELL_MONK_SOOTHING_MIST_VISUAL             = 117899,
     SPELL_MONK_SOOTHING_MIST_ENERGIZE           = 116335,
     SPELL_MONK_BREATH_OF_FIRE_DOT               = 123725,
     SPELL_MONK_BREATH_OF_FIRE_CONFUSED          = 123393,
@@ -48,7 +48,8 @@ enum MonkSpells
     SPELL_MONK_KEG_SMASH_ENERGIZE               = 127796,
     SPELL_MONK_WEAKENED_BLOWS                   = 115798,
     SPELL_MONK_DIZZYING_HAZE                    = 116330,
-    SPELL_MONK_CLASH_CHARGE                     = 126452,
+    SPELL_MONK_CLASH_CHARGE_SELF                = 122235,
+    SPELL_MONK_CLASH_CHARGE_TARGET              = 122252,
     SPELL_MONK_LIGHT_STAGGER                    = 124275,
     SPELL_MONK_MODERATE_STAGGER                 = 124274,
     SPELL_MONK_HEAVY_STAGGER                    = 124273,
@@ -826,17 +827,17 @@ class spell_monk_spinning_fire_blossom_damage : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
-            void HandleAfterHit()
+            void HandleDamage(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (target->GetDistance(_player) > 10.0f)
-                        {
-                            SetHitDamage(int32(GetHitDamage() * 1.5f));
-                            _player->CastSpell(target, SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT, true);
-                        }
+                        int32 damage = GetSpell()->CalculateMonkMeleeAttacks(caster, 1.5f, 6);
+                         if (target->GetExactDist2d(caster) > 10.0f)
+                            SetHitDamage(int32(damage * 1.5f));
+                        else
+                            SetHitDamage(damage);
                     }
                 }
             }
@@ -844,7 +845,7 @@ class spell_monk_spinning_fire_blossom_damage : public SpellScriptLoader
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_monk_spinning_fire_blossom_damage_SpellScript::CheckTarget);
-                AfterHit += SpellHitFn(spell_monk_spinning_fire_blossom_damage_SpellScript::HandleAfterHit);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_spinning_fire_blossom_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
@@ -864,48 +865,53 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_spinning_fire_blossom_SpellScript)
 
-            void HandleAfterCast()
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                targets.remove(GetCaster());
+                targets.remove_if(DistanceCheck(GetCaster(), 50.0f));
+                if (targets.size() > 1)
+                    targets.resize(1);
+            }
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
                 {
-                    std::list<Unit*> tempList;
-                    std::list<Unit*> targetList;
-
-                    _player->GetAttackableUnitListInRange(tempList, 50.0f);
-
-                    for (std::list<Unit*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
+                    if (Unit* target = GetHitUnit())
                     {
-                        if (!_player->IsValidAttackTarget(*itr))
-                            continue;
-
-                        if (!_player->isInFront(*itr))
-                            continue;
-
-                        if (!(*itr)->IsWithinLOSInMap(_player))
-                            continue;
-
-                        if ((*itr)->GetGUID() == _player->GetGUID())
-                            continue;
-
-                        targetList.push_back(*itr);
+                        int32 damage = GetSpell()->CalculateMonkMeleeAttacks(caster, 1.5f, 6);
+                         if (target->GetExactDist2d(caster) > 10.0f)
+                        {
+                            SetHitDamage(int32(damage * 1.5f));
+                            caster->CastSpell(target, SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT, true);
+                        }
+                        else
+                            SetHitDamage(damage);
                     }
-
-                    if (!targetList.empty())
-                    {
-                        Trinity::Containers::RandomResizeList(targetList, 1);
-
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                            _player->CastSpell(*itr, SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE, true);
-                    }
-                    else
-                        _player->CastSpell(_player, SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE, true);
                 }
             }
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_monk_spinning_fire_blossom_SpellScript::HandleAfterCast);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_spinning_fire_blossom_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_spinning_fire_blossom_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_129);
             }
+
+        private:
+            class DistanceCheck
+            {
+                public:
+                    DistanceCheck(Unit* caster, float dist) : _caster(caster), _dist(dist) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        return _caster->GetExactDist2d(unit) > _dist;
+                    }
+
+                private:
+                    Unit* _caster;
+                    float _dist;
+            };
         };
 
         SpellScript* GetSpellScript() const
@@ -953,31 +959,28 @@ class spell_monk_thunder_focus_tea : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_thunder_focus_tea_SpellScript)
 
-            void HandleOnHit()
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(SPELL_MONK_THUNDER_FOCUS_TEA))
-                        {
-                            std::list<Unit*> groupList;
-
-                            _player->GetPartyMembers(groupList);
-
-                            for (std::list<Unit*>::const_iterator itr = groupList.begin(); itr != groupList.end(); ++itr)
-                                if (Aura* renewingMistGroup = (*itr)->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
-                                    renewingMistGroup->RefreshDuration();
-
-                            _player->RemoveAura(SPELL_MONK_THUNDER_FOCUS_TEA);
-                        }
+                        if (Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, caster->GetGUID()))
+                            aura->RefreshDuration();
                     }
                 }
             }
 
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                    caster->RemoveAura(SPELL_MONK_THUNDER_FOCUS_TEA);
+            }
+
             void Register()
             {
-                OnHit += SpellHitFn(spell_monk_thunder_focus_tea_SpellScript::HandleOnHit);
+                AfterCast += SpellCastFn(spell_monk_thunder_focus_tea_SpellScript::HandleAfterCast);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_thunder_focus_tea_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 
@@ -1192,8 +1195,8 @@ class spell_monk_mana_tea_stacks : public SpellScriptLoader
 
                     if (Unit* caster = GetCaster())
                     {
-                        float critChance = 0.0f;
-                        bool crit = caster->isSpellCrit(caster, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), BASE_ATTACK, critChance);
+                        float critChance = caster->ToPlayer()->GetFloatValue(PLAYER_CRIT_PERCENTAGE);
+                        bool crit = roll_chance_f(critChance);
                         caster->CastSpell(caster, SPELL_MONK_MANA_TEA_STACKS, true);
                         if(crit)
                             caster->CastSpell(caster, SPELL_MONK_MANA_TEA_STACKS, true);
@@ -1650,14 +1653,13 @@ class spell_monk_clash : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                     {
-                        if (Unit* target = GetHitUnit())
-                        {
-                            int32 basePoint = 2;
-                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
-                            target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
-                        }
+                        float distane = caster->GetDistance(target) / 2;
+                        Position position;
+                        caster->GetNearPosition(position, distane, caster->GetRelativeAngle(target->GetPositionX(), target->GetPositionY()));
+                        target->CastSpell(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), SPELL_MONK_CLASH_CHARGE_TARGET, true);
+                        caster->CastSpell(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), SPELL_MONK_CLASH_CHARGE_SELF, true);
                     }
                 }
             }
@@ -1822,74 +1824,63 @@ class spell_monk_soothing_mist : public SpellScriptLoader
 
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (!GetCaster())
+                Unit* target = GetTarget();
+                Unit* caster = GetCaster();
+                if (!caster || !target)
                     return;
 
-                if (Unit* target = GetTarget())
-                    target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+                caster->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
 
-                if (Player* _player = GetCaster()->ToPlayer())
+                for (int i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + 1; ++i)
                 {
-                    if (Unit* target = GetTarget())
+                    if(caster->m_SummonSlot[i])
                     {
-                        std::list<Unit*> playerList;
-                        std::list<Creature*> tempList;
-                        std::list<Creature*> statueList;
-                        Creature* statue;
-
-                        _player->GetPartyMembers(playerList);
-
-                        if (playerList.size() > 1)
-                        {
-                            playerList.remove(target);
-                            playerList.sort(Trinity::HealthPctOrderPred());
-                            playerList.resize(1);
-                        }
-
-                        _player->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
-                        _player->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
-
-                        // Remove other players jade statue
-                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                        {
-                            Unit* owner = (*i)->GetOwner();
-                            if (owner && owner == _player && (*i)->isSummon())
-                                continue;
-
-                            statueList.remove((*i));
-                        }
-
-                        for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                        {
-                            if (statueList.size() == 1)
+                        if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
+                            if(summon->GetEntry() == 60849)
                             {
-                                for (std::list<Creature*>::const_iterator itrBis = statueList.begin(); itrBis != statueList.end(); ++itrBis)
-                                    statue = *itrBis;
-
-                                if (statue && (statue->isPet() || statue->isGuardian()))
-                                    if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
-                                        statue->CastSpell(*itr, GetSpellInfo()->Id, true);
+                                if(caster->IsInRaidWith(target))
+                                {
+                                    target->CastSpell(target, 125955, true);
+                                    summon->CastSpell(target, 125950, true);
+                                }
+                                else
+                                {
+                                    caster->CastSpell(caster, 125955, true);
+                                    summon->CastSpell(caster, 125950, true);
+                                }
                             }
-                        }
                     }
                 }
             }
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(AuraEffect const* aurEff)
             {
                 if (Unit* caster = GetCaster())
+                {
                     if (Unit* target = GetTarget())
                         // 25% to give 1 chi per tick
                         if (roll_chance_i(25))
                             caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+                }
             }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetTarget())
-                        if (target->HasAura(SPELL_MONK_SOOTHING_MIST_VISUAL))
-                            target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+                Unit* caster = GetCaster();
+                Unit* target = GetTarget();
+                if (!caster || !target)
+                    return;
+                target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+                if(caster->IsInRaidWith(target))
+                {
+                    target->RemoveAura(125955);
+                    target->RemoveAura(125950);
+                }
+                else
+                {
+                    caster->RemoveAura(125955);
+                    caster->RemoveAura(125950);
+                }
             }
 
             void Register()
@@ -2705,6 +2696,77 @@ class spell_monk_eminence : public SpellScriptLoader
         }
 };
 
+//Guard from Sanctuary of the Ox - 118605
+class spell_monk_guard_ox : public SpellScriptLoader
+{
+    public:
+        spell_monk_guard_ox() : SpellScriptLoader("spell_monk_guard_ox") { }
+
+        class spell_monk_guard_ox_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_guard_ox_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove(GetCaster());
+                if (Unit* owner = GetCaster()->GetOwner())
+                    targets.remove(owner);
+                targets.remove_if(AuraCheck());
+                targets.remove_if(DistanceCheck(GetCaster(), 40.0f));
+                if (targets.size() > 1)
+                    targets.resize(1);
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                if(!caster || !target)
+                    return;
+
+                caster->CastSpell(target, 118627, true);
+                caster->CastSpell(target, 118604, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_guard_ox_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ALLY);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_guard_ox_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+
+        private:
+            class AuraCheck
+            {
+                public:
+                    AuraCheck(){}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                       return (!unit->ToUnit() || unit->ToUnit()->HasAura(118604));
+                    }
+            };
+            class DistanceCheck
+            {
+                public:
+                    DistanceCheck(Unit* caster, float dist) : _caster(caster), _dist(dist) {}
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        return _caster->GetExactDist2d(unit) > _dist;
+                    }
+
+                private:
+                    Unit* _caster;
+                    float _dist;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_guard_ox_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -2760,4 +2822,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_renewing_mist_start();
     new spell_monk_healing_sphere_despawn();
     new spell_monk_eminence();
+    new spell_monk_guard_ox();
 }

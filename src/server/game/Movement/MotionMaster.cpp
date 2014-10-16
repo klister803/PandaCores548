@@ -492,7 +492,7 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id,
     }
 }
 
-bool MotionMaster::SpellMoveCharge(float x, float y, float z, float speed, uint32 id, Spell* spell)
+bool MotionMaster::SpellMoveCharge(float x, float y, float z, float speed, uint32 id, uint32 triggerspellId)
 {
     if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return false;
@@ -504,7 +504,7 @@ bool MotionMaster::SpellMoveCharge(float x, float y, float z, float speed, uint3
 
     sLog->outDebug(LOG_FILTER_GENERAL, "Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), x, y, z);
 
-    Mutate(new ChargeMovementGenerator(id, x, y, z, speed), MOTION_SLOT_CONTROLLED);
+    Mutate(new ChargeMovementGenerator(id, x, y, z, speed, triggerspellId), MOTION_SLOT_CONTROLLED);
 
     return true;
 }

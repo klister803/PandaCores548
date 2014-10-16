@@ -1793,7 +1793,7 @@ enum Targets
     TARGET_DEST_TRAJ                   = 89,
     TARGET_UNIT_TARGET_MINIPET         = 90,
     TARGET_DEST_DEST_RADIUS            = 91,
-    TARGET_UNIT_SUMMONER               = 92,
+    TARGET_UNIT_SELECTED               = 92,
     TARGET_CORPSE_SRC_AREA_ENEMY       = 93, // NYI
     TARGET_UNIT_VEHICLE                = 94,
     TARGET_UNIT_TARGET_PASSENGER       = 95,
@@ -1889,6 +1889,9 @@ enum SpellPreventionType
     SPELL_PREVENTION_TYPE_PACIFY    = 2,
     SPELL_PREVENTION_TYPE_UNK1      = 3, // Only a few spells have this, but most of the should be interruptable.
     SPELL_PREVENTION_TYPE_UNK2      = 4,
+    SPELL_PREVENTION_TYPE_UNK3      = 5,
+    SPELL_PREVENTION_TYPE_UNK4      = 6,
+    SPELL_PREVENTION_TYPE_UNK5      = 7,
 };
 
 enum GameobjectTypes

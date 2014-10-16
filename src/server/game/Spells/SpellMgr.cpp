@@ -2636,8 +2636,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2663,6 +2663,8 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 spellAttr0 = fields[11].GetInt32();
         int32 targetTypeMask = fields[12].GetInt32();
         int32 mechanicMask = fields[13].GetInt32();
+        int32 fromlevel = fields[14].GetInt32();
+        int32 perchp = fields[15].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2684,6 +2686,8 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.spellAttr0 = spellAttr0;
         templink.targetTypeMask = targetTypeMask;
         templink.mechanicMask = mechanicMask;
+        templink.fromlevel = fromlevel;
+        templink.perchp = perchp;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);
@@ -3580,10 +3584,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 138123: // Storm, Earth and Fire
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
-                case 115175: // Soothing Mist
-                    spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
-                    spellInfo->PowerPerSecondPercentage = 1;
-                    break;
                 case 130121: // Item - Scotty's Lucky Coin
                 case 26364:  // Lightning Shield
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
@@ -4005,11 +4005,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 61316: // Dalaran Illumination
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
                     spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
-                    break;
-                case 115073:// Spinning Fire Blossom
-                    spellInfo->Effects[EFFECT_0].TargetA = 0;
-                    spellInfo->Effects[EFFECT_0].Effect = 0;
-                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
                     break;
                 case 86150: // Guardian of Ancient Kings
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_CHECK_ENTRY;

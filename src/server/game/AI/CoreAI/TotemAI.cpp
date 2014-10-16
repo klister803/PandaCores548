@@ -40,6 +40,21 @@ TotemAI::TotemAI(Creature* c) : CreatureAI(c), i_victimGuid(0)
     ASSERT(c->isTotem());
 }
 
+void TotemAI::InitializeAI()
+{
+    CreatureAI::InitializeAI();
+
+    if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+        if(pStats->state)
+        {
+            me->SetReactState(ReactStates(pStats->state));
+            if(Unit* victim = me->GetTargetUnit())
+                me->Attack(victim, !me->GetCasterPet());
+        }
+    if (TempSummon* summon = me->ToTempSummon())
+        summon->CastPetAuras(true);
+}
+
 void TotemAI::MoveInLineOfSight(Unit* /*who*/)
 {
 }

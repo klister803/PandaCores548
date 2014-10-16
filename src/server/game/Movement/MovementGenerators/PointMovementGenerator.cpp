@@ -193,4 +193,7 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
         ((Creature&)unit).AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
     if (unit.GetTypeId() == TYPEID_PLAYER)
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
+
+    if(triggerspellId)
+        unit.CastSpell(i_x, i_y, i_z, triggerspellId, true);
 }

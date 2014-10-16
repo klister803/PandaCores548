@@ -883,54 +883,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(petlevel, cinfo->unit_class);
 
     //health, mana, armor and resistance
-    PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID);
-    if (pStats)                                      // exist in DB
-    {
-        if(pStats->hp && owner)
-            SetCreateHealth(int32(owner->GetMaxHealth() * pStats->hp));
-        else
-            SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
-
-        if (getPowerType() != pStats->energy_type)
-            setPowerType(Powers(pStats->energy_type));
-
-        if(pStats->energy_type)
-        {
-            SetMaxPower(Powers(pStats->energy_type), pStats->energy);
-            SetPower(Powers(pStats->energy_type), pStats->energy);
-        }
-        else if(!pStats->energy_type && pStats->energy == 1)
-        {
-            SetMaxPower(Powers(pStats->energy_type), 0);
-            SetPower(Powers(pStats->energy_type), 0);
-        }
-        else
-        {
-            if(pStats->energy && owner)
-            {
-                int32 manaMax = int32(owner->GetMaxPower(Powers(pStats->energy_type)) * float(pStats->energy / 100.0f));
-                if(!pStats->energy_type)
-                    SetCreateMana(manaMax);
-                SetMaxPower(Powers(pStats->energy_type), manaMax);
-                SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
-            }
-            else
-            {
-                if(!pStats->energy_type)
-                    SetCreateMana(stats->BaseMana);
-                SetPower(Powers(pStats->energy_type), GetMaxPower(Powers(pStats->energy_type)));
-            }
-        }
-        if(pStats->damage && owner)
-        {
-            damageSet = true;
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(owner->GetFloatValue(UNIT_FIELD_MINDAMAGE) * pStats->damage));
-        }
-        if(pStats->type)
-            SetCasterPet(true);
-    }
-    else
+    if(!InitBaseStat(creature_ID, damageSet))
     {
         SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
         SetCreateMana(stats->BaseMana);
@@ -1767,7 +1720,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u", GetGUIDLow(), apply, GetEntry());
 
-    Unit* owner = GetCharmerOrOwner();
+    Unit* owner = GetAnyOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
@@ -1779,10 +1732,10 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             Unit* _caster = this;
             Unit* _targetaura = this;
 
-            if(itr->target == 1) //get target owner
+            if(itr->target == 1 || itr->target == 4) //get target owner
                 _target = owner;
 
-            if(itr->target == 2) //set caster owner
+            if(itr->target == 2 || itr->target == 4) //set caster owner
                 _caster = owner;
 
             if(itr->target == 3) //get target from spell chain
@@ -1817,7 +1770,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             {
                 if (!apply)
                 {
-                    RemoveAurasDueToSpell(itr->spellId);
+                    _target->RemoveAurasDueToSpell(itr->spellId);
                     continue;
                 }
                 switch (itr->option)
@@ -1837,7 +1790,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             {
                 if (apply)
                 {
-                    RemoveAurasDueToSpell(abs(itr->spellId));
+                    _target->RemoveAurasDueToSpell(abs(itr->spellId));
                     continue;
                 }
                 switch (itr->option)
@@ -1868,10 +1821,10 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
 
             sLog->outDebug(LOG_FILTER_PETS, "CastPetAuras spellId %i", itr->spellId);
 
-            if(itr->target == 1) //get target owner
+            if(itr->target == 1 || itr->target == 4) //get target owner
                 _target = owner;
 
-            if(itr->target == 2) //set caster owner
+            if(itr->target == 2 || itr->target == 4) //set caster owner
                 _caster = owner;
 
             if(itr->target == 3) //get target from spell chain
@@ -1906,7 +1859,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             {
                 if (!apply)
                 {
-                    RemoveAurasDueToSpell(itr->spellId);
+                    _target->RemoveAurasDueToSpell(itr->spellId);
                     continue;
                 }
                 switch (itr->option)
@@ -1926,7 +1879,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
             {
                 if (apply)
                 {
-                    RemoveAurasDueToSpell(abs(itr->spellId));
+                    _target->RemoveAurasDueToSpell(abs(itr->spellId));
                     continue;
                 }
                 switch (itr->option)
