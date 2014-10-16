@@ -5504,7 +5504,7 @@ void Spell::SendInterrupted(uint8 result)
     data.WriteGuidBytes<4, 1>(guid);
     data << uint32(m_spellInfo->Id);
     data << uint8(result);
-    data.WriteGuidBytes<0, 6, 2>(guid[0]);
+    data.WriteGuidBytes<0, 6, 2>(guid);
     m_caster->SendMessageToSet(&data, true);
 }
 

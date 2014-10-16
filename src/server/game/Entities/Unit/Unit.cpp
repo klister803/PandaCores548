@@ -21844,7 +21844,7 @@ void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 // baseRage means damage taken when attacker = false
 void Unit::RewardRage(float baseRage, bool attacker)
 {
-    float addRage;
+    float addRage = 1.0f;
 
     if (attacker)
     {
