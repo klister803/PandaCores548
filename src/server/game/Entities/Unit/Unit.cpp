@@ -6724,9 +6724,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
                     triggered_spell_id = abs(itr->spell_trigger);
                     if (itr->bp0)
-                        limited = int32(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp0);
+                        limited = int32(GetSpellPowerDamage() * itr->bp0);
                     else if (itr->bp1)
-                        limited = int32(SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp1);
+                        limited = int32(GetSpellPowerHealing() * itr->bp1);
                     else if (itr->bp2)
                     {
                         WeaponAttackType attType = BASE_ATTACK;
