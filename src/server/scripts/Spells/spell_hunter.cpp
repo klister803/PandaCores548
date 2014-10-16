@@ -57,7 +57,6 @@ enum HunterSpells
     SPELL_SHAMAN_EXHAUSTED                       = 57723,
     HUNTER_SPELL_CAMOUFLAGE_VISUAL               = 80326,
     HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_VISUAL      = 119450,
-    HUNTER_SPELL_POWERSHOT                       = 109259,
     HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA     = 82834,
     HUNTER_SPELL_IMPROVED_SERPENT_STING          = 83077,
     HUNTER_SPELL_GLAIVE_TOSS_DAMAGES             = 121414,
@@ -929,84 +928,6 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_hun_improved_serpent_sting_SpellScript();
-        }
-};
-
-// Powershot - 109259
-class spell_hun_powershot : public SpellScriptLoader
-{
-    public:
-        spell_hun_powershot() : SpellScriptLoader("spell_hun_powershot") { }
-
-        class spell_hun_powershot_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_powershot_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        std::list<Unit*> tempUnitMap;
-                        _player->GetAttackableUnitListInRange(tempUnitMap, _player->GetDistance(target));
-
-                        for (std::list<Unit*>::const_iterator itr = tempUnitMap.begin(); itr != tempUnitMap.end(); ++itr)
-                        {
-                            Unit* unit = *itr;
-                            if (!unit->IsValidAttackTarget(_player))
-                                continue;
-
-                            if (unit->GetGUID() == _player->GetGUID())
-                                continue;
-
-                            if (!unit->IsInBetween(_player, target, 1.0f))
-                                continue;
-
-                            SpellNonMeleeDamage damageInfo(_player, unit, GetSpellInfo()->Id, GetSpellInfo()->SchoolMask);
-                            damageInfo.damage = int32(GetHitDamage() / 2);
-                            _player->SendSpellNonMeleeDamageLog(&damageInfo);
-                            _player->DealSpellDamage(&damageInfo, true);
-
-                            if (Creature* creatureTarget = unit->ToCreature())
-                                if (creatureTarget->isWorldBoss() || creatureTarget->IsDungeonBoss())
-                                    continue;
-
-                            if (unit->GetTypeId() == TYPEID_PLAYER)
-                                if (unit->ToPlayer()->GetKnockBackTime())
-                                    continue;
-
-                            // Instantly interrupt non melee spells being casted
-                            if (unit->IsNonMeleeSpellCasted(true))
-                                unit->InterruptNonMeleeSpells(true);
-
-                            float ratio = 0.1f;
-                            float speedxy = float(GetSpellInfo()->Effects[EFFECT_1].MiscValue) * ratio;
-                            float speedz = float(GetSpellInfo()->Effects[EFFECT_1].BasePoints) * ratio;
-                            if (speedxy < 0.1f && speedz < 0.1f)
-                                return;
-
-                            float x, y;
-                            _player->GetPosition(x, y);
-
-                            unit->KnockbackFrom(x, y, speedxy, speedz);
-
-                            if (unit->GetTypeId() == TYPEID_PLAYER)
-                                unit->ToPlayer()->SetKnockBackTime(getMSTime());
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_hun_powershot_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_powershot_SpellScript();
         }
 };
 
@@ -2208,7 +2129,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_binding_shot();
     new spell_hun_binding_shot_zone();
     new spell_hun_improved_serpent_sting();
-    new spell_hun_powershot();
     new spell_hun_camouflage_visual();
     new spell_hun_serpent_spread();
     new spell_hun_ancient_hysteria();

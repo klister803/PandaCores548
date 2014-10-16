@@ -79,6 +79,7 @@ enum SpellTargetSelectionCategories
     TARGET_SELECT_CATEGORY_NEARBY,
     TARGET_SELECT_CATEGORY_CONE,
     TARGET_SELECT_CATEGORY_AREA,
+    TARGET_SELECT_CATEGORY_BETWEEN,
 };
 
 enum SpellTargetReferenceTypes
@@ -89,6 +90,7 @@ enum SpellTargetReferenceTypes
     TARGET_REFERENCE_TYPE_LAST,
     TARGET_REFERENCE_TYPE_SRC,
     TARGET_REFERENCE_TYPE_DEST,
+    TARGET_REFERENCE_TYPE_NEAR_DEST,
 };
 
 enum SpellTargetObjectTypes

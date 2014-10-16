@@ -865,12 +865,22 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_spinning_fire_blossom_SpellScript)
 
+            bool find_target;
+
+            bool Load()
+            {
+                find_target - false;
+                return true;
+            }
+
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove(GetCaster());
                 targets.remove_if(DistanceCheck(GetCaster(), 50.0f));
                 if (targets.size() > 1)
                     targets.resize(1);
+                if (!targets.empty())
+                    find_target = true;
             }
 
             void HandleDamage(SpellEffIndex /*effIndex*/)
@@ -891,10 +901,18 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
                 }
             }
 
+            void HandleAfterCast()
+            {
+                Unit* caster = GetCaster();
+                if(!find_target && caster)
+                    caster->CastSpell(caster, SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE, true);
+            }
+
             void Register()
             {
+                AfterCast += SpellCastFn(spell_monk_spinning_fire_blossom_SpellScript::HandleAfterCast);
                 OnEffectHitTarget += SpellEffectFn(spell_monk_spinning_fire_blossom_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_spinning_fire_blossom_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_129);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_spinning_fire_blossom_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_ENEMY_BETWEEN_DEST);
             }
 
         private:

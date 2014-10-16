@@ -747,6 +747,9 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
 
     switch (targetType.GetSelectionCategory())
     {
+        case TARGET_SELECT_CATEGORY_BETWEEN:
+            SelectImplicitBetweenTargets(effIndex, targetType, effectMask);
+            break;
         case TARGET_SELECT_CATEGORY_CHANNEL:
             SelectImplicitChannelTargets(effIndex, targetType);
             break;
@@ -952,6 +955,99 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
     SelectImplicitChainTargets(effIndex, targetType, target, effMask);
 }
 
+void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask)
+{
+    std::list<WorldObject*> targets;
+    SpellTargetObjectTypes objectType = targetType.GetObjectType();
+    SpellTargetCheckTypes selectionType = targetType.GetCheckType();
+    ConditionList* condList = m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions;
+    float width = 5.0f;
+    float coneAngle = targetType.CalcDirectionAngle();
+    float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
+
+    if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))
+    {
+        Unit* referer = NULL;
+        switch (targetType.GetReferenceType())
+        {
+            case TARGET_REFERENCE_TYPE_TARGET:
+                referer = m_targets.GetUnitTarget();
+                break;
+            case TARGET_REFERENCE_TYPE_LAST:
+            {
+                // find last added target for this effect
+                for (std::list<TargetInfo>::reverse_iterator ihit = m_UniqueTargetInfo.rbegin(); ihit != m_UniqueTargetInfo.rend(); ++ihit)
+                {
+                    if (ihit->effectMask & (1<<effIndex))
+                    {
+                        referer = ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID);
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
+                referer = m_caster;
+                break;
+        }
+
+        Position const* center = NULL;
+        switch (targetType.GetReferenceType())
+        {
+            case TARGET_REFERENCE_TYPE_NEAR_DEST:
+            {
+                Position position;
+                m_caster->GetNearPosition(position, radius, coneAngle);
+                center = &position;
+                break;
+            }
+            case TARGET_REFERENCE_TYPE_SRC:
+                center = m_targets.GetSrcPos();
+                break;
+            case TARGET_REFERENCE_TYPE_DEST:
+                center = m_targets.GetDstPos();
+                break;
+             default:
+                center = referer;
+                break;
+        }
+
+        Trinity::WorldObjectSpellBetweenTargetCheck check(width, radius, m_caster, center, referer, m_spellInfo, selectionType, condList);
+        Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
+        SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius);
+
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitBetweenTargets coneAngle %f, radius %f, x %f, y %f, Id %u, targets.size %u", coneAngle, radius, center->GetPositionX(), center->GetPositionY(), m_spellInfo->Id, targets.size());
+
+        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex);
+
+        if (!targets.empty())
+        {
+            // Other special target selection goes here
+            if (uint32 maxTargets = m_spellValue->MaxAffectedTargets)
+                Trinity::Containers::RandomResizeList(targets, maxTargets);
+
+            // for compability with older code - add only unit and go targets
+            // TODO: remove this
+            std::list<Unit*> unitTargets;
+            std::list<GameObject*> gObjTargets;
+
+            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
+            {
+                if (Unit* unitTarget = (*itr)->ToUnit())
+                    unitTargets.push_back(unitTarget);
+                else if (GameObject* gObjTarget = (*itr)->ToGameObject())
+                    gObjTargets.push_back(gObjTarget);
+            }
+
+            for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end(); ++itr)
+                AddUnitTarget(*itr, effMask, false);
+
+            for (std::list<GameObject*>::iterator itr = gObjTargets.begin(); itr != gObjTargets.end(); ++itr)
+                AddGOTarget(*itr, effMask);
+        }
+    }
+}
+
 void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask)
 {
     if (targetType.GetReferenceType() != TARGET_REFERENCE_TYPE_CASTER)
@@ -965,8 +1061,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     ConditionList* condList = m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions;
     float coneAngle = M_PI/2;
 
-    if (m_spellInfo->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110 ||
-        m_spellInfo->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_129)
+    if (m_spellInfo->GetEffect(effIndex, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
         coneAngle = M_PI/6;
 
     switch (m_spellInfo->Id)
@@ -1313,7 +1408,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 break;
         }
 
-        if (targetType.GetTarget() == TARGET_UNK_118)
+        if (targetType.GetTarget() == TARGET_UNIT_FRIEND_OR_RAID)
         {
             if (m_originalTarget)
             {
@@ -9233,6 +9328,20 @@ bool WorldObjectSpellAreaTargetCheck::operator()(WorldObject* target)
     if (!target->IsWithinDist3d(_position, _range))
         return false;
     return WorldObjectSpellTargetCheck::operator ()(target);
+}
+
+WorldObjectSpellBetweenTargetCheck::WorldObjectSpellBetweenTargetCheck(float width, float range, Unit* caster, Position const* position, Unit* referer,
+    SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
+    : WorldObjectSpellAreaTargetCheck(range, caster, caster, referer, spellInfo, selectionType, condList), _width(width), _range(range), _position(position)
+{
+}
+
+bool WorldObjectSpellBetweenTargetCheck::operator()(WorldObject* target)
+{
+    if (!target->IsInBetween(_caster, _position->GetPositionX(), _position->GetPositionY(), _width))
+        return false;
+
+    return WorldObjectSpellAreaTargetCheck::operator ()(target);
 }
 
 WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(float coneAngle, float range, Unit* caster,

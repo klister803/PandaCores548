@@ -4611,7 +4611,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
             case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                return;     // we must calculate only at last weapon effect
+                if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == m_spellInfo->Effects[j].TargetA.GetTarget() && m_spellInfo->Effects[effIndex].TargetB.GetTarget() == m_spellInfo->Effects[j].TargetB.GetTarget())
+                    return;     // we must calculate only at last weapon effect
             break;
         }
     }
