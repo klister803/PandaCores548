@@ -2014,6 +2014,9 @@ void Player::Update(uint32 p_time)
     {
         m_regenTimer += p_time;
         RegenerateAll();
+
+        if (IsAIEnabled && GetAI())
+            GetAI()->UpdateAI(p_time);
     }
 
     if (m_deathState == JUST_DIED)

@@ -278,10 +278,12 @@ class PlayerAI : public UnitAI
 {
     protected:
         Player* const me;
+        Creature* const owner;
     public:
-        explicit PlayerAI(Player* player) : UnitAI((Unit*)player), me(player) {}
+        explicit PlayerAI(Player* player, Creature* o = NULL) : UnitAI((Unit*)player), me(player), owner(o) {}
 
         void OnCharmed(bool apply);
+        bool UpdateVictim();
 };
 
 class SimpleCharmedAI : public PlayerAI

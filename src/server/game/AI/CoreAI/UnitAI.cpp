@@ -225,6 +225,20 @@ void UnitAI::FillAISpellInfo()
 //Enable PlayerAI when charmed
 void PlayerAI::OnCharmed(bool apply) { me->IsAIEnabled = apply; }
 
+bool PlayerAI::UpdateVictim()
+{
+    if (!owner)
+        return false;
+
+    if (!owner->isInCombat())
+        return false;
+
+    if (Unit* victim = owner->SelectVictim())
+        AttackStart(victim);
+
+    return owner->getVictim();
+}
+
 void SimpleCharmedAI::UpdateAI(uint32 /*diff*/)
 {
   Creature* charmer = me->GetCharmer()->ToCreature();
