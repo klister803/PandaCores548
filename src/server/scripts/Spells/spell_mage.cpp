@@ -1573,11 +1573,11 @@ class spell_mage_living_bomb : public SpellScriptLoader
             
             void OnTick(AuraEffect const* aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
-                    if (_player->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
                         if (roll_chance_i(10))
-                            _player->CastSpell(_player, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                            caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
                 }
             }
 
