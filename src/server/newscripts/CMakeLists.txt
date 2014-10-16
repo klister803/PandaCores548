@@ -26,6 +26,7 @@ set(scripts_STAT_SRCS
 
 if(SCRIPTS)
   include(Pandaria/CMakeLists.txt)
+  include(EasternKingdoms/CMakeLists.txt)
 endif()
 
 message(STATUS "SCRIPT PREPARATION COMPLETE")
