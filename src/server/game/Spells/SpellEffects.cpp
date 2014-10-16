@@ -2632,6 +2632,8 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     if (!m_originalCaster)
         return;
 
+    uint32 divider = 1;
+
     if (m_spellInfo->AttributesEx11 & SPELL_ATTR11_UNK4)
     {
         bool resetHeal = true;
@@ -2650,7 +2652,10 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
 
     switch (m_spellInfo->Id)
     {
-        case 59754:  // Rune Tap - Party
+        case 63106: // Siphon Life
+            divider = 100;
+            break;
+        case 59754: // Rune Tap - Party
             if (unitTarget == m_caster)
                 return;
             break;
@@ -2701,9 +2706,8 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
         heal = unitTarget->SpellHealingBonusTaken(m_originalCaster, m_spellInfo, heal, HEAL, effIndex);
     }
 
+    heal /= divider;
     m_healing += heal;
-
-
 }
 
 void Spell::EffectHealMechanical(SpellEffIndex effIndex)

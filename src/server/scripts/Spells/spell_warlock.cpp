@@ -2063,34 +2063,6 @@ class spell_warl_corruption : public SpellScriptLoader
         }
 };
 
-// Siphon Life - 63106 - correct percent hael
-class spell_warl_siphon_life : public SpellScriptLoader
-{
-    public:
-        spell_warl_siphon_life() : SpellScriptLoader("spell_warl_siphon_life") { }
-
-        class spell_warl_siphon_life_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_siphon_life_SpellScript);
-
-            void HandleHeal(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                    SetHitHeal(int32(caster->GetMaxHealth() * 0.005f));
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_siphon_life_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL_PCT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_siphon_life_SpellScript();
-        }
-};
-
 // Healthstone - 6262
 class spell_warl_healthstone : public SpellScriptLoader
 {
@@ -2224,7 +2196,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_rain_of_fire_damage();
     new spell_warl_metamorphosis();
     new spell_warl_corruption();
-    new spell_warl_siphon_life();
     new spell_warl_healthstone();
     new spell_warl_imp_swarm();
 }
