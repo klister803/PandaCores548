@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "deadmines.h"
 
 enum Adds

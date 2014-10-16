@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "blackrock_caverns.h"
 
 //todo: сделать скалирование дамага от стаков брони

@@ -1,5 +1,5 @@
 #include "grim_batol.h"
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 
 
 //todo: щит ночных кошмаров, аое, евент с адами

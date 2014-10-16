@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "zulaman.h"
 #include "ScriptedEscortAI.h"
 

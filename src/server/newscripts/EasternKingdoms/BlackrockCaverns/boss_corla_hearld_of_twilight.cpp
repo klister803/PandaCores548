@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "Spell.h"
 #include "blackrock_caverns.h"
 

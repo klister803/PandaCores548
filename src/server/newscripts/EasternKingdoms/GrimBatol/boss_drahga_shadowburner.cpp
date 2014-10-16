@@ -1,6 +1,6 @@
 #include "grim_batol.h"
 #include "Spell.h"
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "Vehicle.h"
 
 

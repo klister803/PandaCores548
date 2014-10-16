@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "blackwing_descent.h"
 
 #define MAX_ENCOUNTER 6
