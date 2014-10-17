@@ -20053,7 +20053,15 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
             case CHARM_TYPE_CONVERT:
                 break;
         }
+    }else if (type == CHARM_TYPE_CONVERT)
+    {
+        if (ToPlayer())
+        {
+            ToPlayer()->SetClientControl(charmer, 1);
+            ToPlayer()->SetMover(charmer);
+        }
     }
+
     return true;
 }
 
@@ -20155,6 +20163,13 @@ void Unit::RemoveCharmedBy(Unit* charmer)
             default:
             case CHARM_TYPE_CONVERT:
                 break;
+        }
+    }else if (type == CHARM_TYPE_CONVERT)
+    {
+        if (ToPlayer())
+        {
+            ToPlayer()->SetClientControl(charmer, 0);
+            ToPlayer()->SetMover(this);
         }
     }
 
