@@ -7832,10 +7832,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), dmg, target);
 
     if (!(GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && m_spellInfo->Id != 110914)
-    {
         caster->ApplyResilience(target, &dmg, crit);
-        caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, dmg, &absorb, &resist, GetSpellInfo());
-    }
+
+    caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, dmg, &absorb, &resist, GetSpellInfo());
 
     damage = dmg;
 
