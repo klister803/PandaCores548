@@ -802,7 +802,7 @@ namespace Trinity
     struct WorldObjectSpellBetweenTargetCheck : public WorldObjectSpellAreaTargetCheck
     {
         float _width, _range;
-        Position const* _position = NULL;
+        Position const* _position;
         WorldObjectSpellBetweenTargetCheck(float width, float range, Unit* caster, Position const* position,
             Unit* referer, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList);
         bool operator()(WorldObject* target);

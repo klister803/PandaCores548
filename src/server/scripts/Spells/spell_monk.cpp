@@ -1980,22 +1980,25 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->HasAura(128595))
+                        if (caster->GetGUID() != target->GetGUID())
                         {
-                            uint32 triggered_spell_id = 128531;
-                            Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
-                            int32 basepoints0 = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].BasePoints);
-                            if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
-                                triggered_spell_id = 128591;
+                            if (caster->HasAura(128595))
+                            {
+                                uint32 triggered_spell_id = 128531;
+                                Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
+                                int32 basepoints0 = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                                if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
+                                    triggered_spell_id = 128591;
 
-                            if (triggered_spell_id == 128531)
-                                basepoints0 /= 4;
+                                if (triggered_spell_id == 128531)
+                                    basepoints0 /= 4;
 
-                            caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
+                                caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
+                            }
+                            // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
+                            if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+                                caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                         }
-                        // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
-                            caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
                 }
             }
