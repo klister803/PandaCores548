@@ -769,12 +769,12 @@ class spell_mage_nether_tempest : public SpellScriptLoader
             {
                 if (GetCaster())
                 {
-                    if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* pCaster = GetCaster())
                     {
                         std::list<Unit*> targetList;
 
                         GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
-                        targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
+                        targetList.remove_if(CheckNetherImpactPredicate(pCaster, GetTarget()));
 
                         Trinity::Containers::RandomResizeList(targetList, 1);
 
