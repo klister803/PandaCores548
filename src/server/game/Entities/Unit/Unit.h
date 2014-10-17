@@ -1340,6 +1340,7 @@ class Unit : public WorldObject
 
         UnitAI* GetAI() { return i_AI; }
         void SetAI(UnitAI* newAI) { i_AI = newAI; }
+        void SetDisabledCurrentAI() { i_disabledAI = i_AI; i_AI = NULL; }
 
         void AddToWorld();
         void RemoveFromWorld();
