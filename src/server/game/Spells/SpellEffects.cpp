@@ -274,7 +274,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectNULL,                                     //201 SPELL_EFFECT_BATTLE_PET
     &Spell::EffectNULL,                                     //202 SPELL_EFFECT_APPLY_AURA_WITH_VALUE
-    &Spell::EffectTriggerSpell,                             //203 SPELL_EFFECT_TRIGGER_SPELL_3
+    &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras.
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_UPGRADE_BATTLE_PET
     &Spell::EffectNULL,                                     //205 SPELL_EFFECT_205
     &Spell::EffectCreateItem3,                              //206 SPELL_EFFECT_CREATE_ITEM_3

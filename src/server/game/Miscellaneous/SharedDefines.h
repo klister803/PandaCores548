@@ -1122,7 +1122,7 @@ enum SpellEffects
     SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
     SPELL_EFFECT_BATTLE_PET                         = 201, // Battle pet first slot
     SPELL_EFFECT_APPLY_AURA_WITH_VALUE              = 202,
-    SPELL_EFFECT_TRIGGER_SPELL_3                    = 203,
+    SPELL_EFFECT_REMOVE_AURA_2                      = 203, // Based on 144863 -> This spell remove auras.
     SPELL_EFFECT_UPGRADE_BATTLE_PET                 = 204,
     SPELL_EFFECT_205                                = 205, // Launch PvE/PvP Choice
     SPELL_EFFECT_CREATE_ITEM_3                      = 206, // Create item from Timeless Isle
