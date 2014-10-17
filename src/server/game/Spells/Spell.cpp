@@ -2599,6 +2599,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Reset damage/healing counter
     m_damage = target->damage;
     m_healing = -target->damage;
+    m_absorb = 0;
 
     // Fill base trigger info
     uint32 procAttacker = m_procAttacker;
@@ -2739,6 +2740,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Add bonuses and fill damageInfo struct
         caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, mask, m_attackType, target->crit);
         caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
+
+        m_absorb = damageInfo.absorb;
 
         // Send log damage message to client
         caster->SendSpellNonMeleeDamageLog(&damageInfo);

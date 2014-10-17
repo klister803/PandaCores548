@@ -386,6 +386,7 @@ class SpellScript : public _SpellScript
         int32 GetHitBlocked();
         int32 GetHitDamage();
         int32 GetFinalHitDamage();
+        int32 GetAbsorbDamage();
         void SetHitDamage(int32 damage);
         void PreventHitDamage() { SetHitDamage(0); }
         // setter/getter for for heal done by spell to target of spell hit

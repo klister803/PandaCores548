@@ -594,6 +594,16 @@ int32 SpellScript::GetFinalHitDamage()
     return m_spell->m_final_damage;
 }
 
+int32 SpellScript::GetAbsorbDamage()
+{
+    if (!IsInTargetHook())
+    {
+        sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetAbsorbDamage was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
+        return 0;
+    }
+    return m_spell->m_absorb;
+}
+
 void SpellScript::SetHitDamage(int32 damage)
 {
     if (!IsInTargetHook())
