@@ -767,28 +767,25 @@ class spell_mage_nether_tempest : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (GetCaster())
+                if (Unit* pCaster = GetCaster())
                 {
-                    if (Unit* pCaster = GetCaster())
+                    std::list<Unit*> targetList;
+
+                    GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
+                    targetList.remove_if(CheckNetherImpactPredicate(pCaster, GetTarget()));
+
+                    Trinity::Containers::RandomResizeList(targetList, 1);
+
+                    for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                     {
-                        std::list<Unit*> targetList;
-
-                        GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
-                        targetList.remove_if(CheckNetherImpactPredicate(pCaster, GetTarget()));
-
-                        Trinity::Containers::RandomResizeList(targetList, 1);
-
-                        for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                        {
-                            GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
-                            GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
-                            GetTarget()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
-                        }
-
-                        if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
-                            if (roll_chance_i(10))
-                                GetCaster()->CastSpell(GetCaster(), SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                        GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                        GetCaster()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
+                        GetTarget()->CastSpell(*itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
                     }
+
+                    if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        if (roll_chance_i(10))
+                            GetCaster()->CastSpell(GetCaster(), SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
                 }
             }
 
