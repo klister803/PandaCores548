@@ -3644,7 +3644,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 138121: // Storm, Earth and Fire
                 case 138122: // Storm, Earth and Fire
                 case 138123: // Storm, Earth and Fire
-                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[EFFECT_0].BasePoints = 2;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;
                 case 130121: // Item - Scotty's Lucky Coin
                 case 26364:  // Lightning Shield
