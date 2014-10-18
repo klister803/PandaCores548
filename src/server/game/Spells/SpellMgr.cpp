@@ -4221,14 +4221,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
                     spellInfo->Effects[EFFECT_1].BasePoints = 30;
                     break;
-                case 124273:// Heavy Stagger
-                case 124274:// Moderate Stagger
-                case 124275:// Light Stagger
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
-                    spellInfo->Effects[EFFECT_0].Amplitude = 1000;
-                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
-                    break;
                 case 126451:// Clash - Impact
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                     break;

@@ -1630,18 +1630,10 @@ class spell_monk_purifying_brew : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
-                    {
-                        AuraApplication* staggerAmount = _player->GetAuraApplication(SPELL_MONK_LIGHT_STAGGER);
-
-                        if (!staggerAmount)
-                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_MODERATE_STAGGER);
-                        if (!staggerAmount)
-                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_HEAVY_STAGGER);
-
-                        if (staggerAmount)
-                            _player->RemoveAura(staggerAmount->GetBase()->GetId());
-                    }
+                    caster->RemoveAura(124255);
+                    caster->RemoveAura(SPELL_MONK_MODERATE_STAGGER);
+                    caster->RemoveAura(SPELL_MONK_LIGHT_STAGGER);
+                    caster->RemoveAura(SPELL_MONK_LIGHT_STAGGER);
                 }
             }
 
@@ -2788,6 +2780,167 @@ class spell_monk_guard_ox : public SpellScriptLoader
         }
 };
 
+// Touch of Death - 115080
+class spell_monk_touch_of_death : public SpellScriptLoader
+{
+    public:
+        spell_monk_touch_of_death() : SpellScriptLoader("spell_monk_touch_of_death") { }
+
+        class spell_monk_touch_of_death_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_touch_of_death_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetExplTargetUnit();
+
+                if(!caster || !target)
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                if (Creature* unit = target->ToCreature())
+                    if (unit->IsDungeonBoss())
+                        return SPELL_FAILED_BAD_TARGETS;
+
+                if (target->GetHealth() > caster->GetMaxHealth())
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                if (caster->HasAura(124490))
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        if (target->GetHealthPct() > 10)
+                            return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_TARGETS;
+
+                    if (Unit* owner = target->GetOwner())
+                        if (owner->GetTypeId() == TYPEID_PLAYER)
+                            return SPELL_FAILED_BAD_TARGETS;
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 damage = caster->GetMaxHealth();
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "spell_monk_touch_of_death damage %i", damage);
+                    SetHitDamage(damage);
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_touch_of_death_SpellScript::CheckTarget);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_touch_of_death_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_touch_of_death_SpellScript();
+        }
+};
+
+// Stagger - 124255
+class spell_monk_stagger : public SpellScriptLoader
+{
+    public:
+        spell_monk_stagger() : SpellScriptLoader("spell_monk_stagger") { }
+
+        class spell_monk_stagger_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_stagger_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 bp0 = aurEff->GetAmount();
+                    int32 bp1 = 0;
+                    if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
+                    {
+                        bp1 = aurEff1->GetAmount() - bp0;
+                        if(bp1 > 0)
+                            aurEff1->ChangeAmount(bp1);
+                        else
+                            Remove(AURA_REMOVE_BY_DEFAULT);
+                    }
+                    if (Aura* aura = caster->GetAura(124273))
+                    {
+                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
+                            aurEffh0->ChangeAmount(bp0);
+                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
+                            aurEffh1->ChangeAmount(bp1);
+                    }
+                    if (Aura* aura = caster->GetAura(124274))
+                    {
+                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
+                            aurEffh0->ChangeAmount(bp0);
+                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
+                            aurEffh1->ChangeAmount(bp1);
+                    }
+                    if (Aura* aura = caster->GetAura(124275))
+                    {
+                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
+                            aurEffh0->ChangeAmount(bp0);
+                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
+                            aurEffh1->ChangeAmount(bp1);
+                    }
+                }
+            }
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount += aurEff->GetOldBaseAmount();
+            }
+
+            void CalculateAmount1(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount += aurEff->GetOldBaseAmount();
+
+                if (Unit* caster = GetCaster())
+                {
+                    if (amount < int32(caster->CountPctFromMaxHealth(3)))
+                    {
+                        caster->RemoveAura(124274);
+                        caster->RemoveAura(124273);
+                        caster->CastSpell(caster, 124275, true);
+                    }
+                    else if (amount < int32(caster->CountPctFromMaxHealth(6)))
+                    {
+                        caster->RemoveAura(124275);
+                        caster->RemoveAura(124273);
+                        caster->CastSpell(caster, 124274, true);
+                    }
+                    else
+                    {
+                        caster->RemoveAura(124275);
+                        caster->RemoveAura(124274);
+                        caster->CastSpell(caster, 124273, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_stagger_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_stagger_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_stagger_AuraScript::CalculateAmount1, EFFECT_1, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_stagger_AuraScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -2844,4 +2997,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_healing_sphere_despawn();
     new spell_monk_eminence();
     new spell_monk_guard_ox();
+    new spell_monk_touch_of_death();
+    new spell_monk_stagger();
 }

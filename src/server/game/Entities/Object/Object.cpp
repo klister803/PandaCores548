@@ -415,13 +415,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(0);              //byte20C
         data->WriteBit(0);              //byte210
         data->WriteBit(t->GetVisualScale());//byte23C
-        data->WriteBit(0);              //byte298
+        data->WriteBit(0);              //byte298 areatrigger movement
         data->WriteBit(0);              //byte20F
         data->WriteBit(0);              //byte20E
         data->WriteBit(0);              //byte218
         data->WriteBit(0);              //byte220
         //if (byte298)
-        //    dword288 = p.ReadBits(20);
+        //    dword288 = p.ReadBits(20); // count areatrigger movement point
         data->WriteBit(0);              //byte228
         data->WriteBit(0);              //byte20D
         data->WriteBit(0);              //byte230

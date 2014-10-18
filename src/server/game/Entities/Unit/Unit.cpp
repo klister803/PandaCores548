@@ -641,12 +641,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
         GetOwner()->CastSpell(GetOwner(), 77661, true);
     // Stagger Amount
-    if (spellProto && spellProto->Id != LIGHT_STAGGER && spellProto->Id != MODERATE_STAGGER && spellProto->Id != HEAVY_STAGGER)
-    {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
-                damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask, spellProto);
-    }
-    else if (!spellProto)
+    if (!spellProto || (spellProto && spellProto->Id != 124255))
     {
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
@@ -964,78 +959,9 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
                 stagger -= 0.20f;
         }
 
-        int32 bp = damage - (damage * stagger);
-        int32 spellId;
-        int32 ticks = sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetDuration() / sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetEffect(0, GetSpawnMode()).Amplitude;
-
-        AuraEffect* aurEff = victim->GetAuraEffect(LIGHT_STAGGER, 0, victim->GetGUID());
-        if (!aurEff)
-            aurEff = victim->GetAuraEffect(MODERATE_STAGGER, 0, victim->GetGUID());
-        if (!aurEff)
-            aurEff = victim->GetAuraEffect(HEAVY_STAGGER, 0, victim->GetGUID());
-
-        if (aurEff)
-        {
-            // Add remaining ticks to damage done
-            bp += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
-        }
-
-        if (bp < int32(victim->CountPctFromMaxHealth(3)))
-            spellId = LIGHT_STAGGER;
-        else if (bp < int32(victim->CountPctFromMaxHealth(6)))
-            spellId = MODERATE_STAGGER;
-        else
-            spellId = HEAVY_STAGGER;
-
-        bp /= ticks;
-
-        if (!aurEff)
-            victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
-
-        switch (spellId)
-        {
-            case LIGHT_STAGGER:
-                if (aurEff && aurEff->GetId() != spellId)
-                {
-                    victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
-                }
-                else if (aurEff && aurEff->GetId() == spellId)
-                {
-                    aurEff->SetAmount(bp);
-                    aurEff->GetBase()->RefreshDuration();
-                    aurEff->ResetPeriodic();
-                }
-                break;
-            case MODERATE_STAGGER:
-                if (aurEff && aurEff->GetId() != spellId)
-                {
-                    victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
-                }
-                else if (aurEff && aurEff->GetId() == spellId)
-                {
-                    aurEff->SetAmount(bp);
-                    aurEff->GetBase()->RefreshDuration();
-                    aurEff->ResetPeriodic();
-                }
-                break;
-            case HEAVY_STAGGER:
-                if (aurEff && aurEff->GetId() != spellId)
-                {
-                    victim->RemoveAura(aurEff->GetId());
-                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
-                }
-                else if (aurEff && aurEff->GetId() == spellId)
-                {
-                    aurEff->SetAmount(bp);
-                    aurEff->GetBase()->RefreshDuration();
-                    aurEff->ResetPeriodic();
-                }
-                break;
-            default:
-                break;
-        }
+        int32 bp1 = damage - (damage * stagger);
+        int32 bp0 = bp1 / 10;
+        victim->CastCustomSpell(victim, 124255, &bp0, &bp1, NULL, true);
 
         return damage *= stagger;
     }
@@ -1698,6 +1624,8 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
     {
         // there are spells with no specific attribute but they have "ignores armor" in tooltip
         if (spellInfo->AttributesCu & SPELL_ATTR0_CU_IGNORE_ARMOR)
+            return false;
+        if (spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
             return false;
 
         // bleeding effects are not reduced by armor
@@ -2975,6 +2903,7 @@ float Unit::GetUnitParryChance() const
         {
             chance = 5.0f;
             chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
+            chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT2);
         }
     }
 
@@ -12831,7 +12760,11 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
 
     // small exception for Stagger Amount, can't find any general rules
     // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
-    if (spellProto->Id == 124275 || spellProto->Id == 124274 || spellProto->Id == 124273)
+    if (spellProto->Id == 115080)
+        return pdamage;
+
+    // Some spells don't benefit from done mods
+    if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return pdamage;
 
     int32 TakenTotal = 0;
@@ -13657,6 +13590,11 @@ float Unit::CalcPvPPower(Unit* target, float amount, bool isHeal)
 int32 Unit::SpellBaseHealingBonusDone(SpellSchoolMask schoolMask, int32 baseBonus)
 {
     int32 AdvertisedBenefit = 0;
+
+    AuraEffectList const& mHealingDone2 = GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE2);
+    for (AuraEffectList::const_iterator i = mHealingDone2.begin(); i != mHealingDone2.end(); ++i)
+        if (!(*i)->GetMiscValue() || ((*i)->GetMiscValue() & schoolMask) != 0)
+            AdvertisedBenefit += (*i)->GetAmount();
 
     // Healing bonus of spirit, intellect and strength
     if (GetTypeId() == TYPEID_PLAYER)
@@ -17421,6 +17359,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_SPELL] = true;
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_DAMAGE] = true;
     isTriggerAura[SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK] = true;
+    isTriggerAura[SPELL_AURA_MOD_CASTING_SPEED] = true;
     isTriggerAura[SPELL_AURA_SCHOOL_ABSORB] = true; // Savage Defense untested
     isTriggerAura[SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT] = true;
     isTriggerAura[SPELL_AURA_MOD_POWER_COST_SCHOOL] = true;
@@ -17883,6 +17822,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                     }
                     case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
+                    case SPELL_AURA_MOD_CASTING_SPEED:
                         // Skip melee hits or instant cast spells
                         if (procSpell && procSpell->CalcCastTime() != 0)
                             takeCharges = true;
@@ -18789,13 +18729,14 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
 {
     bool procCheck = false;
     Unit* _checkTarget = this;
-    uint32 spellProcId = procSpell ? procSpell->Id : 0;
+    int32 spellProcId = procSpell ? procSpell->Id : -1;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
+    uint32 Attributes = procSpell ? procSpell->Attributes : 0;
     uint32 AllEffectsMechanicMask = procSpell ? procSpell->GetAllEffectsMechanicMask() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i", 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i",
     //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid);
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
@@ -18835,12 +18776,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             procCheck = true;
                             break;
                         }
-                        else if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                        else if(itr->spellAttr0 > 0 && !(Attributes & itr->spellAttr0))
                         {
                             procCheck = true;
                             break;
                         }
-                        else if(itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
+                        else if(itr->spellAttr0 < 0 && (Attributes & abs(itr->spellAttr0)))
                         {
                             procCheck = true;
                             break;
@@ -18927,12 +18868,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
-                if(itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
+                if(itr->spellAttr0 > 0 && !(Attributes & itr->spellAttr0))
                 {
                     procCheck = true;
                     continue;
                 }
-                else if(itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
+                else if(itr->spellAttr0 < 0 && (Attributes & abs(itr->spellAttr0)))
                 {
                     procCheck = true;
                     continue;
@@ -18974,88 +18915,87 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             //other check
             else if (itr->checkspell == 0)
             {
-                procCheck = true;
                 if(itr->hastalent != 0)
                 {
-                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                    if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent))
                     {
-                        procCheck = false;
+                        procCheck = true;
                         break;
                     }
-                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                    else if(itr->hastalent < 0 && _checkTarget->HasAura(-(itr->hastalent)))
                     {
-                        procCheck = false;
+                        procCheck = true;
                         break;
                     }
-                }
-                if(itr->chance != 0 && roll_chance_i(itr->chance))
-                {
-                    procCheck = false;
-                    break;
                 }
 
-                if(itr->specId != 0 && itr->specId == specCheckid)
+                if(itr->specId != 0 && itr->specId != specCheckid)
                 {
-                    procCheck = false;
+                    procCheck = true;
                     break;
                 }
-                if(procSpell && itr->spellAttr0 > 0 && (procSpell->Attributes & itr->spellAttr0))
+                if(procSpell && itr->spellAttr0 > 0 && !(procSpell->Attributes & itr->spellAttr0))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     break;
                 }
-                else if(procSpell && itr->spellAttr0 < 0 && !(procSpell->Attributes & abs(itr->spellAttr0)))
+                else if(procSpell && itr->spellAttr0 < 0 && (procSpell->Attributes & abs(itr->spellAttr0)))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     break;
                 }
-                if(itr->targetTypeMask != 0 && (itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
+                if(itr->targetTypeMask != 0 && !(itr->targetTypeMask & (1 << _checkTarget->GetTypeId())))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
-                if(itr->mechanicMask != 0 && (AllEffectsMechanicMask & itr->mechanicMask))
+                if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
-                if(itr->fromlevel > 0 && _checkTarget->getLevel() >= itr->fromlevel)
+                if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
-                else if(itr->fromlevel < 0 && _checkTarget->getLevel() < abs(itr->fromlevel))
+                else if(itr->fromlevel < 0 && _checkTarget->getLevel() >= abs(itr->fromlevel))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
-                if(itr->perchp > 0 && _checkTarget->GetHealthPct() >= itr->perchp)
+                if(itr->perchp > 0 && _checkTarget->GetHealthPct() < itr->perchp)
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
-                else if(itr->perchp < 0 && _checkTarget->GetHealthPct() < abs(itr->perchp))
+                else if(itr->perchp < 0 && _checkTarget->GetHealthPct() >= abs(itr->perchp))
                 {
-                    procCheck = false;
+                    procCheck = true;
                     continue;
                 }
 
                 if(itr->powertype != -1 && itr->dmgclass != -1)
                 {
-                    if(itr->powertype == procPowerType && itr->dmgclass == procDmgClass)
+                    if(itr->powertype != procPowerType || itr->dmgclass != procDmgClass)
                     {
-                        procCheck = false;
+                        procCheck = true;
                         break;
                     }
                 }
-                else if(itr->dmgclass != -1 && itr->dmgclass == procDmgClass)
+                else if(itr->dmgclass != -1 && itr->dmgclass != procDmgClass)
                 {
-                    procCheck = false;
+                    procCheck = true;
                     break;
                 }
-                else if(itr->powertype != -1 && itr->powertype == procPowerType)
+                else if(itr->powertype != -1 && itr->powertype != procPowerType)
                 {
-                    procCheck = false;
+                    procCheck = true;
+                    break;
+                }
+                if(!procCheck && itr->chance != 0 && !roll_chance_i(itr->chance))
+                {
+                    procCheck = true;
                     break;
                 }
             }

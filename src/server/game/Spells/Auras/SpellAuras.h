@@ -33,6 +33,7 @@ struct SpellProcEntry;
 class AuraEffect;
 class Aura;
 class DynamicObject;
+class AreaTrigger;
 class AuraScript;
 class ProcInfo;
 
@@ -112,6 +113,8 @@ class Aura
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
         void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
         DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+        void SetSpellAreaTrigger(AreaTrigger* areaTr) { m_spellAreaTr = areaTr;}
+        AreaTrigger* GetSpellAreaTrigger() const { return m_spellAreaTr; }
 
         AuraObjectType GetType() const;
 
@@ -253,6 +256,7 @@ class Aura
         time_t const m_applyTime;
         WorldObject* m_owner;
         DynamicObject* m_spellDynObj;
+        AreaTrigger* m_spellAreaTr;
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time

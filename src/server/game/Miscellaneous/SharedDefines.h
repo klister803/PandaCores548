@@ -262,6 +262,7 @@ enum Stats
 
 enum Powers
 {
+    POWER_NULL                          = -1,
     POWER_MANA                          = 0,
     POWER_RAGE                          = 1,
     POWER_FOCUS                         = 2,
@@ -1079,7 +1080,7 @@ enum SpellEffects
     SPELL_EFFECT_CREATE_ITEM_2                      = 157,
     SPELL_EFFECT_MILLING                            = 158,
     SPELL_EFFECT_ALLOW_RENAME_PET                   = 159,
-    SPELL_EFFECT_160                                = 160, // forcecast trigger spell ?
+    SPELL_EFFECT_TRIGGER_SPELL_4                    = 160, // forcecast trigger spell ?
     SPELL_EFFECT_TALENT_SPEC_COUNT                  = 161,
     SPELL_EFFECT_TALENT_SPEC_SELECT                 = 162,
     SPELL_EFFECT_163                                = 163, // Unused (5.4.1)
@@ -1096,16 +1097,16 @@ enum SpellEffects
     SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,
     SPELL_EFFECT_175                                = 175, // random target ? only 125570
     SPELL_EFFECT_SANCTUARY_2                        = 176,
-    SPELL_EFFECT_177                                = 177, // despawn areatrigger
+    SPELL_EFFECT_DESPAWN_DYNOBJECT                  = 177, // despawn DynamicObject
     SPELL_EFFECT_178                                = 178, // Unused (5.4.1)
     SPELL_EFFECT_CREATE_AREATRIGGER                 = 179,
-    SPELL_EFFECT_180                                = 180, // "Update Area Triggers" 106584 133355
+    SPELL_EFFECT_UPDATE_AREATRIGGER                 = 180, // "Update Area Triggers" 106584 133355
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
     SPELL_EFFECT_DESPAWN_AREATRIGGER                = 182, // despawwn areatrigger
     SPELL_EFFECT_183                                = 183, // Unused (5.4.1)
     SPELL_EFFECT_REPUTATION_REWARD                  = 184, // add 400 (normal) 800 (10/25 player mode) Avengers of Hyjal (TDF ?) see 73843
-    SPELL_EFFECT_185                                = 185, // Scene related
-    SPELL_EFFECT_186                                = 186, // Scene related
+    SPELL_EFFECT_ACTIVATE_SCENE4                    = 185, // Scene related
+    SPELL_EFFECT_ACTIVATE_SCENE5                    = 186, // Scene related
     SPELL_EFFECT_RANDOMIZE_DIGSITES                 = 187, // 126957 only
     SPELL_EFFECT_STAMPEDE                           = 188, // Stampede 121818
     SPELL_EFFECT_LOOT_BONUS                         = 189, // Boss loot bonus ?
@@ -1116,7 +1117,7 @@ enum SpellEffects
     SPELL_EFFECT_194                                = 194, // 0 spells
     SPELL_EFFECT_ACTIVATE_SCENE                     = 195, // Scene related
     SPELL_EFFECT_ACTIVATE_SCENE2                    = 196, // summon multi NPC
-    SPELL_EFFECT_197                                = 197, // 130243 only
+    SPELL_EFFECT_ACTIVATE_SCENE6                    = 197, // 130243 only
     SPELL_EFFECT_ACTIVATE_SCENE3                    = 198, // Mini scene event
     SPELL_EFFECT_199                                = 199, // 0 spells
     SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
@@ -1127,7 +1128,7 @@ enum SpellEffects
     SPELL_EFFECT_205                                = 205, // Launch PvE/PvP Choice
     SPELL_EFFECT_CREATE_ITEM_3                      = 206, // Create item from Timeless Isle
     SPELL_EFFECT_207                                = 207, // 0 spells
-    SPELL_EFFECT_208                                = 208, // Test Reputation Set
+    SPELL_EFFECT_REPUTATION_SET                     = 208, // Test Reputation Set
     TOTAL_SPELL_EFFECTS                             = 209
 };
 

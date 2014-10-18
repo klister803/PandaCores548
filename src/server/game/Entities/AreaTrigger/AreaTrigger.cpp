@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false)
+    _radius(1.0f), atInfo(), _on_despawn(false), _aura(NULL), _removedAura(NULL)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -54,13 +54,19 @@ void AreaTrigger::RemoveFromWorld()
     ///- Remove the AreaTrigger from the accessor and from all lists of objects in world
     if (IsInWorld())
     {
+        //if (_aura)
+            //RemoveAura();
+
+        if (!IsInWorld())
+            return;
+
         UnbindFromCaster();
         WorldObject::RemoveFromWorld();
         sObjectAccessor->RemoveObject(this);
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/, Unit* target /*=NULL*/)
 {
     // Caster not in world, might be spell triggered from aura removal
     if (!caster->IsInWorld())
@@ -115,6 +121,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_SPELLVISUALID, info->SpellVisual[0] ? info->SpellVisual[0] : info->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
+    SetTarget(target);
 
     FillCustiomData();
 
@@ -170,6 +177,10 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
     if (atInfo.actions.empty())
         return;
 
+    WorldObject const* searcher = this;
+    if(Unit* target = GetTarget())
+        searcher = target;
+
     if (actionM & AT_ACTION_MOMENT_ENTER)
     {
         for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
@@ -184,7 +195,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                 continue;
             }
 
-            if (!unit->IsWithinDistInMap(this, GetRadius()))
+            if (!unit->IsWithinDistInMap(searcher, GetRadius()))
             {
                 affectedPlayers.erase(itr);
                 AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
@@ -195,7 +206,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
         }
 
         std::list<Unit*> unitList;
-        GetAttackableUnitListInRange(unitList, GetRadius());
+        searcher->GetAttackableUnitListInRange(unitList, GetRadius());
         for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
         {
             if (!IsUnitAffected((*itr)->GetGUID()))
@@ -511,4 +522,17 @@ void AreaTrigger::UnbindFromCaster()
     ASSERT(_caster);
     _caster->_UnregisterAreaObject(this);
     _caster = NULL;
+}
+
+void AreaTrigger::SetAura(Aura* aura)
+{
+    _aura = aura;
+}
+
+void AreaTrigger::RemoveAura()
+{
+    _removedAura = _aura;
+    _aura = NULL;
+    if (!_removedAura->IsRemoved())
+        _removedAura->_Remove(AURA_REMOVE_BY_DEFAULT);
 }

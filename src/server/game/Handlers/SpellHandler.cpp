@@ -45,14 +45,15 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     SpellCastTargets targets;
     uint8 bagIndex, slot;
-    uint8 castCount;                                        // next cast if exists (single or not)
+    uint8 castCount = 0;                                        // next cast if exists (single or not)
+    uint8 castFlags = 0;
     ObjectGuid itemGUID;
     ObjectGuid targetGuid;
     ObjectGuid dstTransportGuid;
     ObjectGuid srcTransportGuid;
     ObjectGuid guid38;                                      // posible item target
-    uint32 glyphIndex;                                      // something to do with glyphs?
-    uint32 spellId;                                         // casted spell id
+    uint32 glyphIndex = 0;                                      // something to do with glyphs?
+    uint32 spellId = 0;                                         // casted spell id
 
     recvPacket >> bagIndex >> slot;
     bool hasElevation = !recvPacket.ReadBit();
@@ -141,7 +142,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     if (hasCastFlags)
-        recvPacket.ReadBits(5);
+        castFlags = recvPacket.ReadBits(5);
 
     if (hasTargetMask)
         targets.SetTargetMask(recvPacket.ReadBits(20));
@@ -503,7 +504,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
-    uint32 spellId = 0, glyphIndex = 0;
+    uint32 spellId = 0, glyphIndex = 0, castFlags = 0;
     uint8 castCount = 0;
     // client provided targets
     SpellCastTargets targets;
@@ -603,7 +604,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     recvPacket.ReadGuidMask<3, 4, 2, 0, 7, 6, 5, 1>(itemTargetGuid);
 
     if (hasCastFlags)
-        recvPacket.ReadBits(5);
+        castFlags = recvPacket.ReadBits(5);
     if (hasTargetMask)
         targets.SetTargetMask(recvPacket.ReadBits(20));
 

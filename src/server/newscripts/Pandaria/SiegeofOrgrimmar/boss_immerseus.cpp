@@ -1039,8 +1039,8 @@ class spell_swirl : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectApply += AuraEffectApplyFn(spell_swirl_AuraScript::OnApply, EFFECT_1, SPELL_AURA_395, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_swirl_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_395, AURA_EFFECT_HANDLE_REAL);
+                OnEffectApply += AuraEffectApplyFn(spell_swirl_AuraScript::OnApply, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_swirl_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

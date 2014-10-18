@@ -676,6 +676,7 @@ void Player::UpdateParryPercentage()
         diminishing += GetStat(STAT_STRENGTH) / 951.158596f;
         // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
         nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
+        nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT2);
         // apply diminishing formula to diminishing parry chance
         value = nondiminishing + diminishing * parry_cap[pclass] / (diminishing + parry_cap[pclass] * m_diminishing_k[pclass]);
         value = value < 0.0f ? 0.0f : value;
@@ -943,7 +944,7 @@ void Unit::UpdateMeleeHastMod()
     SetFloatValue(UNIT_MOD_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
 
-    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_416);		
+    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE);
     for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
     {	
         (*itr)->SetCanBeRecalculated(true);
@@ -971,6 +972,7 @@ void Unit::UpdateHastMod()
     m_baseHastRatingPct = amount / 100.0f + 1.0f;
 
     amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED);
     amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
     amount += GetTotalAuraModifier(SPELL_AURA_MELEE_SLOW);
 
