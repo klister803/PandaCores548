@@ -2286,14 +2286,14 @@ class spell_monk_spinning_crane_kick : public SpellScriptLoader
                             if(!plr->HasSpellCooldown(139597))
                             {
                                 caster->CastSpell(caster, 139597, true);
-                                plr->AddSpellCooldown(139597, 0, getPreciseTime() + 3.0);
+                                plr->AddSpellCooldown(139597, 0, getPreciseTime() + 6.0);
                             }
                         }
 
                         if(!plr->HasSpellCooldown(129881))
                         {
                             caster->CastSpell(caster, 129881, true);
-                            plr->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
+                            plr->AddSpellCooldown(129881, 0, getPreciseTime() + 6.0);
                         }
                     }
                 }

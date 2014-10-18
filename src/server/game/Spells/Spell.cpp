@@ -1467,7 +1467,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             if (m_spellInfo->Id == 117640 && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
-                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, getPreciseTime() + 3.0);
+                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, getPreciseTime() + 6.0);
             }
         }
 
