@@ -3518,6 +3518,9 @@ void Spell::cast(bool skipCheck)
         SpellCastResult castResult = CheckCast(false);
         if (castResult != SPELL_CAST_OK)
         {
+            #ifdef WIN32
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::cast::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, castResult, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
+            #endif
             SendCastResult(castResult);
             SendInterrupted(0);
             //restore spell mods
@@ -6159,7 +6162,7 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     uint16 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
    
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u", m_spellInfo->Id, eff);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u mode %u", m_spellInfo->Id, eff, mode);
     #endif
 
     damage = CalculateDamage(i, unitTarget);

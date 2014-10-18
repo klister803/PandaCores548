@@ -2,7 +2,8 @@
 /*!40101 SET NAMES utf8 */;
 /*!40014 SET FOREIGN_KEY_CHECKS=0 */;
 
-UPDATE `creature_template` SET `mechanic_immune_mask` = '650854399', `ScriptName` = 'boss_sha_of_pride' WHERE `entry` = 71734;
+UPDATE `creature_template` SET `mechanic_immune_mask` = '650854399', `lootid` =  '0', `ScriptName` = 'boss_sha_of_pride' WHERE `entry` = 71734;
+DELETE FROM  `creature_loot_template` WHERE  `entry` =71734;
 UPDATE `creature_template` SET `unit_class` = '4' WHERE `creature_template`.`entry` = 71734;
 
 UPDATE `creature_template_addon` SET `auras` = '103742' WHERE `creature_template_addon`.`entry` = 71734;
@@ -197,7 +198,7 @@ REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('144863', '
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('146822', 'spell_sha_of_pride_projection');
 
 --
-UPDATE `creature_template` SET `ScriptName` = 'npc_sha_of_pride_rift_of_corruption', `flags_extra` = '128' WHERE `entry` = 72846;
+UPDATE `creature_template` SET `ScriptName` = 'npc_sha_of_pride_rift_of_corruption', `flags_extra` = '0', `modelid2` = '47641', `faction_A` = '16', `faction_H` = '16', `minlevel` = '93', `maxlevel` = '93', unit_flags = 0x2 | 0x02000000 WHERE `entry` = 72846;
 REPLACE INTO `creature_template_addon` (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES ('72846', '0', '0', '0', '0', '0', '147211');
 
 DELETE FROM `areatrigger_data` WHERE entry = 1344;
@@ -213,3 +214,6 @@ REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('144363', '
 
 --
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('144351', 'spell_sha_of_pride_mark_of_arrogance');
+
+--
+UPDATE `gameobject` SET `spawntimesecs` = '-7200' WHERE id = 221739;

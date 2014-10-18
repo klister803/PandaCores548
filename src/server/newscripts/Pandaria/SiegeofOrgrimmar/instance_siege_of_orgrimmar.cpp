@@ -39,6 +39,7 @@ public:
 
         //GameObjects
         uint64 immerseusexdoorGUID;
+        uint64 chestShaVaultOfForbiddenTreasures;
         std::vector<uint64> lightqGUIDs;
         
         //Creature
@@ -60,6 +61,7 @@ public:
 
             //GameObject
             immerseusexdoorGUID     = 0;
+            chestShaVaultOfForbiddenTreasures = 0;
             lightqGUIDs.clear();
            
             //Creature
@@ -227,24 +229,34 @@ public:
                 case GO_CORRUPTED_BUTTON_SOUTH_3:
                     easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
                     break;
-            case GO_IMMERSEUS_EX_DOOR:
-            case GO_SHA_FIELD:
-                AddDoor(go, true);
-                break;
-            case GO_LIGTH_QUARANTINE:
-            case GO_LIGTH_QUARANTINE_2:
-            case GO_LIGTH_QUARANTINE_3:
-            case GO_LIGTH_QUARANTINE_4:
-            case GO_LIGTH_QUARANTINE_5:
-            case GO_LIGTH_QUARANTINE_6:
-                lightqGUIDs.push_back(go->GetGUID());
-                break;
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_1:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_2:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_3:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_4:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_5:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_6:
+                case GO_VAULT_OF_FORBIDDEN_TREASURES_7:
+                    chestShaVaultOfForbiddenTreasures = go->GetGUID();
+                    break;
 
-            case GO_SHA_ENERGY_WALL:
-                easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
-                if (EventfieldOfSha >= 3)
-                    HandleGameObject(go->GetGUID(), true, go);
-                break;
+                case GO_IMMERSEUS_EX_DOOR:
+                case GO_SHA_FIELD:
+                    AddDoor(go, true);
+                    break;
+                case GO_LIGTH_QUARANTINE:
+                case GO_LIGTH_QUARANTINE_2:
+                case GO_LIGTH_QUARANTINE_3:
+                case GO_LIGTH_QUARANTINE_4:
+                case GO_LIGTH_QUARANTINE_5:
+                case GO_LIGTH_QUARANTINE_6:
+                    lightqGUIDs.push_back(go->GetGUID());
+                    break;
+
+                case GO_SHA_ENERGY_WALL:
+                    easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
+                    if (EventfieldOfSha >= 3)
+                        HandleGameObject(go->GetGUID(), true, go);
+                    break;
             // Sha
             }
         }
@@ -293,6 +305,13 @@ public:
                             HandleGameObject(*guid, true);                
                         break;
                     }
+                }
+                break;
+            case DATA_SHA_OF_PRIDE:
+                if(state == DONE)
+                {
+                    if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
+                        pChest->SetRespawnTime(pChest->GetRespawnDelay());
                 }
                 break;
             }

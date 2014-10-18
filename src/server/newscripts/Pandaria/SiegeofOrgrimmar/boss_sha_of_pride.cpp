@@ -103,6 +103,7 @@ enum PhaseEvents
     EVENT_SPELL_GIFT_OF_THE_TITANS      = 7,
     EVENT_PRIDE_GENERATION              = 8,
     EVENT_SPELL_UNLEASHED               = 9,
+    EVENT_RIFT_OF_CORRUPTION            =10,
 };
 
 enum Phases
@@ -199,12 +200,12 @@ class boss_sha_of_pride : public CreatureScript
                 events.SetPhase(PHASE_BATTLE);
                 uint32 t = 0;
                 
-                //WARNING! TMP FOR TESTING.
-                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 3000, 0, PHASE_BATTLE);           //19:02:03.000
+                events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);                 //19:02:02.000
+                events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);           //19:02:03.000
                 events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);                //19:02:06.000
                 events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);            //19:02:08.000
                 events.RescheduleEvent(EVENT_SPELL_SELF_REFLECTION, t += 13000, 0, PHASE_BATTLE);             //19:02:21.000
-                //events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, t += 27000, 0, PHASE_BATTLE);          //19:02:48.000
+                events.RescheduleEvent(EVENT_SPELL_CORRUPTED_PRISON, t += 27000, 0, PHASE_BATTLE);            //19:02:48.000
                 events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, t += 9000, 0, PHASE_BATTLE);      //19:02:57.000
                 events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);                                         //first SPELL_SWELLING_PRIDE at 19:03:11.000
                 events.RescheduleEvent(EVENT_SPELL_REACHING_ATTACK, 15000, 0, PHASE_BATTLE);                  //19:03:49.000. Cast only if no in attack range ppl.
@@ -360,6 +361,14 @@ class boss_sha_of_pride : public CreatureScript
                                 nor->AI()->SetData(SPELL_GIFT_OF_THE_TITANS, 0);
 
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
+                            break;
+                        }
+                        case EVENT_RIFT_OF_CORRUPTION:
+                        {
+                            float x, y, z;
+                            me->GetRandomPoint(*me, 50.0f, x, y, z);
+                            me->SummonCreature(NPC_RIFT_OF_CORRUPTION, x, y, z, 0.0f);
+                            events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, urand(10000, 20000), 0, PHASE_BATTLE);
                             break;
                         }
                     }
@@ -1014,11 +1023,20 @@ public:
             addPride(spell->Id, target);
         }
 
-        void UpdateAI(uint32 diff)
+        void MoveInLineOfSight(Unit* who)
         {
-            if (!UpdateVictim())
+            if (who->GetTypeId() != TYPEID_PLAYER)
                 return;
 
+            if (me->GetDistance(who) > 2.0f || who->HasAura(SPELL_WEAKENED_RESOLVE))
+                return;
+
+            who->CastSpell(who, SPELL_WEAKENED_RESOLVE, true);
+            me->DespawnOrUnsummon();
+        }
+
+        void UpdateAI(uint32 diff)
+        {
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
@@ -1029,8 +1047,12 @@ public:
                         me->CastSpell(me, SPELL_RIFT_OF_CORRUPTION_AT, true);
                         break;
                     case EVENT_SPELL_RIFT_OF_CORRUPTION_DMG:
-                        DoCastVictim(SPELL_RIFT_OF_CORRUPTION_DMG);
-                        //ToDo: what next...
+                        if (Creature * sha = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE)))
+                        {
+                            if (Unit* target = sha->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                me->CastSpell(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_RIFT_OF_CORRUPTION_DMG);
+                        }
+                        events.RescheduleEvent(EVENT_SPELL_RIFT_OF_CORRUPTION_DMG, 5000); //18:37:47.000
                         break;
                     default:
                         break;
@@ -1243,10 +1265,7 @@ class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster() && GetCaster()->ToCreature())
-                {
-                    sLog->outU(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AAAA");
                     GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID());
-                }
             }
 
             void Register()
