@@ -11639,7 +11639,8 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
             return true;
         // Check per caster aura state
         // If aura with aurastate by caster not found return false
-        if ((1<<(flag-1)) & PER_CASTER_AURA_STATE_MASK)
+        // OO: Sha of Pride: 144363 hack fix.
+        if ((1<<(flag-1)) & PER_CASTER_AURA_STATE_MASK && (!spellProto || spellProto->Id != 144363))
         {
             for (AuraStateAurasMap::const_iterator itr = m_auraStateAuras.lower_bound(flag); itr != m_auraStateAuras.upper_bound(flag); ++itr)
                 if (itr->second->GetBase()->GetCasterGUID() == Caster->GetGUID())

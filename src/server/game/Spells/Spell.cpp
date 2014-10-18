@@ -9243,8 +9243,15 @@ WorldObjectSpellTargetCheck::~WorldObjectSpellTargetCheck()
 
 bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
 {
-    if (_spellInfo->CheckTarget(_caster, target, true) != SPELL_CAST_OK)
+    uint8 res = _spellInfo->CheckTarget(_caster, target, true);
+    if (res != SPELL_CAST_OK)
+    {
+        #ifdef WIN32
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::WorldObjectSpellTargetCheck::checkcast fail. spell id %u res %u caster %s target %s ", _spellInfo->Id, res, _caster->GetString().c_str(), target->GetString().c_str());
+        #endif
         return false;
+    }
+
     Unit* unitTarget = target->ToUnit();
     if (Corpse* corpseTarget = target->ToCorpse())
     {

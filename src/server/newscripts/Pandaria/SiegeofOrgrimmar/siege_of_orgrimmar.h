@@ -9,6 +9,11 @@
 #include "Creature.h"
 #include "CreatureAIImpl.h"
 
+enum globalSpells
+{
+    SPELL_SHA_VORTEX                = 146024,
+};
+
 enum eData
 {
     // Encounter States/Boss GUIDs
@@ -30,6 +35,7 @@ enum eData
 
     DATA_FIELD_OF_SHA,
     DATA_FP_EVADE,
+    DATA_SHA_PRE_EVENT,
 
     // Additional data
     DATA_IMMERSEUS_INTRO,
@@ -77,8 +83,12 @@ enum eCreatures
     NPC_LADY_JAINA_PROUDMORORE      = 73598, //Lady Jaina Proudmoore
     NPC_SHA_TARAN_ZHU               = 72779, //Taran Zhu <Lord of the Shado-Pan>
     NPC_SHA_NORUSHEN                = 71965,
-    NPC_LINGERING_CORRUPTION        = 72791, //Lingering Corruption
     NPC_REFLECTION                  = 72172, //Reflection
+    NPC_LINGERING_CORRUPTION        = 72791, //Lingering Corruption
+    NPC_MANIFEST_OF_PRIDE           = 71946, //Manifestation of Pride
+    NPC_SLG_GENERIC_MOP             = 68553, //SLG Generic MoP
+    NPC_RIFT_OF_CORRUPTION          = 72846, //Rift of Corruption
+    //controller 68553?? Sha Vortex triger 146034
 
     //  
     NPC_NORUSHEN                    = 71967,
@@ -120,6 +130,24 @@ enum eGameObjects
 
     //Field of Sha
     GO_SHA_ENERGY_WALL              = 221602,
+
+    //Sha
+    GO_CORRUPTED_PRISON_WEST        = 221678,
+    GO_CORRUPTED_BUTTON_WEST_1      = 221753,
+    GO_CORRUPTED_BUTTON_WEST_2      = 221751,
+    GO_CORRUPTED_BUTTON_WEST_3      = 221752,
+    GO_CORRUPTED_PRISON_EAST        = 221676,
+    GO_CORRUPTED_BUTTON_EAST_1      = 221758,
+    GO_CORRUPTED_BUTTON_EAST_2      = 221759,
+    GO_CORRUPTED_BUTTON_EAST_3      = 221757,
+    GO_CORRUPTED_PRISON_NORTH       = 221677,
+    GO_CORRUPTED_BUTTON_NORTH_1     = 221755,
+    GO_CORRUPTED_BUTTON_NORTH_2     = 221750,
+    GO_CORRUPTED_BUTTON_NORTH_3     = 221754,
+    GO_CORRUPTED_PRISON_SOUTH       = 221679,
+    GO_CORRUPTED_BUTTON_SOUTH_1     = 221761,
+    GO_CORRUPTED_BUTTON_SOUTH_2     = 221760,
+    GO_CORRUPTED_BUTTON_SOUTH_3     = 221756,
 
     //Norushen
     GO_LIGTH_QUARANTINE             = 223142,

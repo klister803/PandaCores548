@@ -143,7 +143,7 @@ void CreatureGroup::AddMember(Creature* member, FormationInfo* f)
     sLog->outDebug(LOG_FILTER_UNITS, "CreatureGroup::AddMember: Adding unit GUID: %u.", member->GetGUIDLow());
 
     //Check if it is a leader
-    if (member->GetDBTableGUIDLow() == m_groupID)
+    if (member->GetDBTableGUIDLow() == m_groupID || member->GetGUIDLow() == m_groupID)
     {
         sLog->outDebug(LOG_FILTER_UNITS, "Unit GUID: %u is formation leader. Adding group.", member->GetGUIDLow());
         m_leader = member;

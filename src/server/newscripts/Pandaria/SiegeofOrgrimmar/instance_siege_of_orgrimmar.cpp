@@ -31,47 +31,20 @@ public:
     {
         instance_siege_of_orgrimmar_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
+        std::map<uint32, uint64> easyGUIDconteiner;
         //Misc
         uint32 TeamInInstance;
         uint32 EventfieldOfSha;
+        uint32 lingering_corruption_count;
 
         //GameObjects
-        uint64 energyWallGUID;
-        uint64 immerseusexdoorGuid;
-        uint64 norushenexdoorGuid;
-        std::vector<uint64> lightqGuids;
+        uint64 immerseusexdoorGUID;
+        std::vector<uint64> lightqGUIDs;
         
         //Creature
+        std::set<uint64> shaSlgGUID;
         uint64 LorewalkerChoGUIDtmp;
-        uint64 npcShaNorushenGUID;
-        uint64 immerseusGuid;
-        uint64 npcpointGuid;
         uint64 fpGUID[3];
-        uint64 noryshenGuid;
-        uint64 bhcGuid;
-        uint64 bhGuid;
-        uint64 shaGuid;
-        uint64 galakrasGuid;
-        uint64 juggernautGuid;
-        uint64 korkronGuid;
-        uint64 nazgrimGuid;
-        uint64 malkorokGuid;
-        uint64 thokGuid;
-        uint64 blackfuseGuid;
-        uint64 kilrukGuid;
-        uint64 xarilGuid;
-        uint64 kaztikGuid;
-        uint64 korvenGuid;
-        uint64 iyyokykGuid;
-        uint64 karozGuid;
-        uint64 skeerGuid;
-        uint64 rikkalGuid;
-        uint64 hisekGuid;
-        uint64 garroshGuid;
-        uint64 npcGoldenLotosMoverGUID;
-        uint64 npcGoldenLotosMainGUID;
-        uint64 npcGoldenLotosGUID[3];
-        uint64 npcEmbodiesGUID[6];
 
         EventMap Events;
 
@@ -83,45 +56,15 @@ public:
             LoadDoorData(doorData);
 
             TeamInInstance = 0;
+            lingering_corruption_count = 0;
 
             //GameObject
-            energyWallGUID          = 0;
-            immerseusexdoorGuid     = 0;
-            norushenexdoorGuid      = 0;
-            lightqGuids.clear();
+            immerseusexdoorGUID     = 0;
+            lightqGUIDs.clear();
            
             //Creature
-            npcGoldenLotosMoverGUID = 0;
-            npcGoldenLotosMainGUID  = 0;
             LorewalkerChoGUIDtmp    = 0;
-            npcShaNorushenGUID      = 0;
-            immerseusGuid           = 0;
-            npcpointGuid            = 0;
-            noryshenGuid            = 0;
-            bhcGuid                 = 0;
-            bhGuid                  = 0;
-            shaGuid                 = 0;
-            galakrasGuid            = 0;
-            juggernautGuid          = 0;
-            korkronGuid             = 0;
-            nazgrimGuid             = 0;
-            malkorokGuid            = 0;
-            thokGuid                = 0;
-            blackfuseGuid           = 0;
-            kilrukGuid              = 0;
-            xarilGuid               = 0;
-            kaztikGuid              = 0;
-            korvenGuid              = 0;
-            iyyokykGuid             = 0;
-            karozGuid               = 0;
-            skeerGuid               = 0;
-            rikkalGuid              = 0;
-            hisekGuid               = 0;
-            garroshGuid             = 0;
             memset(fpGUID, 0, 3 * sizeof(uint64));
-            memset(npcGoldenLotosGUID, 0, 3 * sizeof(uint64));
-            memset(npcEmbodiesGUID, 0, 6 * sizeof(uint64));
-
             EventfieldOfSha     = 0;
 
             onInitEnterState = false;
@@ -132,12 +75,31 @@ public:
             if (!TeamInInstance)
                 TeamInInstance = player->GetTeam();
 
+            //Custom check.
+            CustomSpellCheck(player);
+
             //not handle lorewalker summon if already done.
             if (onInitEnterState)
                 return;
             onInitEnterState = true;
 
             DoSummoneEventCreatures();
+        }
+
+        //Some auras should not stay after relog. If player out of dung whey remove automatically
+        //but if player on dungeon he could use it.
+        void CustomSpellCheck(Player* player)
+        {
+            if (GetBossState(DATA_SHA_OF_PRIDE) != IN_PROGRESS)
+            {
+                //Sha of pride: SPELL_OVERCOME
+                if (player->HasAura(144843))
+                    player->RemoveAura(144843);
+
+                //Sha of pride: SPELL_PRIDE
+                if (player->HasAura(144343))
+                    player->RemoveAura(144343);
+            }
         }
 
         void DoSummoneEventCreatures()
@@ -158,7 +120,6 @@ public:
                 }
             }else if (GetBossState(DATA_NORUSHEN) != DONE)
             {
-
                 //ToDo: Spawn lorewalker
             }else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
             {
@@ -174,135 +135,98 @@ public:
 
         void OnCreatureCreate(Creature* creature)
         {
+
             switch (creature->GetEntry())
             {
-            case NPC_IMMERSEUS:
-                immerseusGuid = creature->GetGUID();
+                case NPC_IMMERSEUS:
+                case NPC_PUDDLE_POINT:
+                case NPC_GOLD_LOTOS_MOVER:
+                case NPC_GOLD_LOTOS_MAIN:
+                case NPC_GOLD_LOTOS_HE:
+                case NPC_GOLD_LOTOS_SUN:
+                case NPC_GOLD_LOTOS_ROOK:
+                case NPC_EMBODIED_ANGUISH_OF_HE:
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                case NPC_SHA_NORUSHEN:
+                case NPC_SHA_TARAN_ZHU:
+                case NPC_NORUSHEN:
+                case NPC_B_H_CONTROLLER:
+                case NPC_BLIND_HATRED:
+                case NPC_GALAKRAS:
+                case NPC_IRON_JUGGERNAUT:
+                case NPC_KORKRON_D_SHAMAN:
+                case NPC_GENERAL_NAZGRIM:
+                case NPC_MALKOROK:
+                case NPC_THOK:
+                case NPC_BLACKFUSE:
+                case NPC_KILRUK:
+                case NPC_XARIL:
+                case NPC_KAZTIK:
+                case NPC_KORVEN: 
+                case NPC_IYYOKYK:
+                case NPC_KAROZ:
+                case NPC_SKEER:
+                case NPC_RIKKAL:
+                case NPC_HISEK:
+                case NPC_GARROSH:
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
                 break;
-            case NPC_PUDDLE_POINT:
-                npcpointGuid = creature->GetGUID();
-                break;
-            //Fallen Protectors
-            case NPC_ROOK_STONETOE: 
-                fpGUID[0] = creature->GetGUID();
-                break;
-            case NPC_SUN_TENDERHEART:
-                fpGUID[1] = creature->GetGUID();
-                break;
-            case NPC_HE_SOFTFOOT:
-                fpGUID[2] = creature->GetGUID();
-                break;
-            case NPC_GOLD_LOTOS_MOVER:
-                npcGoldenLotosMoverGUID = creature->GetGUID();
-                break;
-            case NPC_GOLD_LOTOS_MAIN:
-                npcGoldenLotosMainGUID = creature->GetGUID();
-                break;
-            case NPC_GOLD_LOTOS_HE:
-                npcGoldenLotosGUID[0] = creature->GetGUID();
-                break;
-            case NPC_GOLD_LOTOS_SUN:
-                npcGoldenLotosGUID[1] = creature->GetGUID();
-                break;
-            case NPC_GOLD_LOTOS_ROOK:
-                npcGoldenLotosGUID[2] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_ANGUISH_OF_HE:
-                npcEmbodiesGUID[0] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_DESPERATION_OF_SUN:
-                npcEmbodiesGUID[1] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_DESPIRE_OF_SUN:
-                npcEmbodiesGUID[2] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_MISERY_OF_ROOK:
-                npcEmbodiesGUID[3] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_GLOOM_OF_ROOK:
-                npcEmbodiesGUID[4] = creature->GetGUID();
-                break;
-            case NPC_EMBODIED_SORROW_OF_ROOK:
-                npcEmbodiesGUID[5] = creature->GetGUID();
-                break;
-            //Sha
-            case NPC_SHA_OF_PRIDE: 
-                shaGuid = creature->GetGUID();
-                break;
-            case NPC_SHA_NORUSHEN:
-                npcShaNorushenGUID = creature->GetGUID();
-                break;
-                
-            //  
-            case NPC_NORUSHEN:  
-                noryshenGuid = creature->GetGUID();
-                break;
-            case NPC_B_H_CONTROLLER:
-                bhcGuid = creature->GetGUID();
-                break;
-            case NPC_BLIND_HATRED:
-                bhGuid = creature->GetGUID();
-                break;
-            case NPC_GALAKRAS: 
-                galakrasGuid = creature->GetGUID();
-                break;
-            case NPC_IRON_JUGGERNAUT: 
-                juggernautGuid = creature->GetGUID();
-                break;
-            case NPC_KORKRON_D_SHAMAN:
-                korkronGuid = creature->GetGUID();
-                break;
-            case NPC_GENERAL_NAZGRIM:
-                nazgrimGuid = creature->GetGUID();
-                break;
-            case NPC_MALKOROK:  
-                malkorokGuid = creature->GetGUID();
-                break;
-            case NPC_THOK:  
-                thokGuid = creature->GetGUID();
-                break;
-            case NPC_BLACKFUSE: 
-                blackfuseGuid = creature->GetGUID();
-                break;
-            //Paragons of the Klaxxi
-            case NPC_KILRUK:  
-                kilrukGuid = creature->GetGUID();
-                break;
-            case NPC_XARIL:
-                xarilGuid = creature->GetGUID();
-                break;
-            case NPC_KAZTIK:   
-                kaztikGuid = creature->GetGUID();
-                break;
-            case NPC_KORVEN: 
-                korvenGuid = creature->GetGUID();
-                break;
-            case NPC_IYYOKYK:
-                iyyokykGuid = creature->GetGUID();
-                break;
-            case NPC_KAROZ:
-                karozGuid = creature->GetGUID();
-                break;
-            case NPC_SKEER:
-                skeerGuid = creature->GetGUID();
-                break;
-            case NPC_RIKKAL:
-                rikkalGuid = creature->GetGUID();
-                break;
-            case NPC_HISEK:
-                hisekGuid = creature->GetGUID();
-                break;
-            //
-            case NPC_GARROSH:
-                garroshGuid = creature->GetGUID();
-                break;
+           
+                //Fallen Protectors
+                case NPC_ROOK_STONETOE: 
+                    fpGUID[0] = creature->GetGUID();
+                    break;
+                case NPC_SUN_TENDERHEART:
+                    fpGUID[1] = creature->GetGUID();
+                    break;
+                case NPC_HE_SOFTFOOT:
+                    fpGUID[2] = creature->GetGUID();
+                    break;
+
+                //Sha
+                case NPC_SHA_OF_PRIDE:
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    creature->SetVisible(false);
+                    break;
+                case NPC_LINGERING_CORRUPTION:
+                    ++lingering_corruption_count;
+                    if (!creature->isAlive())
+                        creature->Respawn(true);
+                    break;
+                case NPC_SLG_GENERIC_MOP:
+                    shaSlgGUID.insert(creature->GetGUID());
+                    break;
+
+                //Paragons of the Klaxxi
             }
         }
 
         void OnGameObjectCreate(GameObject* go)
-        {    
+        {
             switch (go->GetEntry())
             {
+                case GO_NORUSHEN_EX_DOOR:
+                case GO_CORRUPTED_PRISON_WEST:
+                case GO_CORRUPTED_BUTTON_WEST_1:
+                case GO_CORRUPTED_BUTTON_WEST_2:
+                case GO_CORRUPTED_BUTTON_WEST_3:
+                case GO_CORRUPTED_PRISON_EAST:
+                case GO_CORRUPTED_BUTTON_EAST_1:
+                case GO_CORRUPTED_BUTTON_EAST_2:
+                case GO_CORRUPTED_BUTTON_EAST_3:
+                case GO_CORRUPTED_PRISON_NORTH:
+                case GO_CORRUPTED_BUTTON_NORTH_1:
+                case GO_CORRUPTED_BUTTON_NORTH_2:
+                case GO_CORRUPTED_BUTTON_NORTH_3:
+                case GO_CORRUPTED_PRISON_SOUTH:
+                case GO_CORRUPTED_BUTTON_SOUTH_1:
+                case GO_CORRUPTED_BUTTON_SOUTH_2:
+                case GO_CORRUPTED_BUTTON_SOUTH_3:
+                    easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
+                    break;
             case GO_IMMERSEUS_EX_DOOR:
             case GO_SHA_FIELD:
                 AddDoor(go, true);
@@ -313,21 +237,24 @@ public:
             case GO_LIGTH_QUARANTINE_4:
             case GO_LIGTH_QUARANTINE_5:
             case GO_LIGTH_QUARANTINE_6:
-                lightqGuids.push_back(go->GetGUID());
+                lightqGUIDs.push_back(go->GetGUID());
                 break;
-            case GO_NORUSHEN_EX_DOOR:
-                norushenexdoorGuid = go->GetGUID();
-                break;
+
             case GO_SHA_ENERGY_WALL:
-                energyWallGUID = go->GetGUID();
+                easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
                 if (EventfieldOfSha >= 3)
-                    HandleGameObject(energyWallGUID, true, go);
+                    HandleGameObject(go->GetGUID(), true, go);
                 break;
+            // Sha
             }
         }
 
         bool SetBossState(uint32 id, EncounterState state)
         {
+            //Privent overwrite state.
+            if (GetBossState(id) == DONE)
+                return false;
+
             if (!InstanceScript::SetBossState(id, state))
                 return false;
 
@@ -354,15 +281,15 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
                             HandleGameObject(*guid, true);
                         break;
                     case IN_PROGRESS:
-                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
                             HandleGameObject(*guid, false);
                         break;
                     case DONE:
-                        for (std::vector<uint64>::const_iterator guid = lightqGuids.begin(); guid != lightqGuids.end(); guid++)
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
                             HandleGameObject(*guid, true);                
                         break;
                     }
@@ -382,7 +309,7 @@ public:
                 ++EventfieldOfSha;
                 if (EventfieldOfSha >= 3)
                 {
-                    HandleGameObject(energyWallGUID, true);
+                    HandleGameObject(GetData64(GO_SHA_ENERGY_WALL), true);
                     SaveToDB();
                 }
             }else if (type == DATA_FP_EVADE)
@@ -394,6 +321,16 @@ public:
                 {
                     if (Creature* me = instance->GetCreature(fpGUID[i]))
                         me->AI()->EnterEvadeMode();
+                }
+            }else if (type == DATA_SHA_PRE_EVENT)
+            {
+                for(std::set<uint64>::iterator itr =  shaSlgGUID.begin(); itr != shaSlgGUID.end(); ++itr)
+                {
+                    if (Creature* slg = instance->GetCreature(*itr))
+                    {
+                        if (data == IN_PROGRESS) slg->AddAura(SPELL_SHA_VORTEX, slg);
+                        else slg->RemoveAura(SPELL_SHA_VORTEX);
+                    }
                 }
             }
         }
@@ -407,11 +344,6 @@ public:
         {
             switch (type)
             {
-                case NPC_IMMERSEUS:
-                    return immerseusGuid;
-                case NPC_PUDDLE_POINT:
-                    return npcpointGuid;
-
                 //Fallen Protectors
                 case NPC_ROOK_STONETOE: 
                     return fpGUID[0];
@@ -419,86 +351,19 @@ public:
                     return fpGUID[1];
                 case NPC_HE_SOFTFOOT:
                     return fpGUID[2];
-                case NPC_GOLD_LOTOS_MOVER:
-                    return npcGoldenLotosMoverGUID;
-                case NPC_GOLD_LOTOS_MAIN:
-                    return npcGoldenLotosMainGUID;
-                case NPC_GOLD_LOTOS_HE:
-                    return npcGoldenLotosGUID[0];
-                case NPC_GOLD_LOTOS_SUN:
-                    return npcGoldenLotosGUID[1];
-                case NPC_GOLD_LOTOS_ROOK:
-                    return npcGoldenLotosGUID[2];
-                case NPC_EMBODIED_ANGUISH_OF_HE:
-                    return npcEmbodiesGUID[0];
-                case NPC_EMBODIED_DESPERATION_OF_SUN:
-                    return npcEmbodiesGUID[1];
-                case NPC_EMBODIED_DESPIRE_OF_SUN:
-                    return npcEmbodiesGUID[2];
-                case NPC_EMBODIED_MISERY_OF_ROOK:
-                    return npcEmbodiesGUID[3];
-                case NPC_EMBODIED_GLOOM_OF_ROOK:
-                    return npcEmbodiesGUID[4];
-                case NPC_EMBODIED_SORROW_OF_ROOK:
-                    return npcEmbodiesGUID[5];
-
                 //Sha
-                case GO_NORUSHEN_EX_DOOR:
-                    return norushenexdoorGuid;
-
-                break;
-                //  
-                case NPC_NORUSHEN:  
-                    return noryshenGuid;
-                case NPC_B_H_CONTROLLER:
-                    return bhcGuid;
-                case NPC_BLIND_HATRED:
-                    return bhGuid;
-                case NPC_SHA_OF_PRIDE: 
-                    return shaGuid;
-                case NPC_GALAKRAS: 
-                    return galakrasGuid;
-                case NPC_IRON_JUGGERNAUT: 
-                    return juggernautGuid;
-                case NPC_KORKRON_D_SHAMAN:
-                    return korkronGuid;
-                case NPC_GENERAL_NAZGRIM:
-                    return nazgrimGuid;
-                case NPC_MALKOROK:  
-                    return malkorokGuid;
-                case NPC_THOK:  
-                    return thokGuid;
-                case NPC_BLACKFUSE: 
-                    return blackfuseGuid;
 
                 //Paragons of the Klaxxi
-                case NPC_KILRUK:  
-                    return kilrukGuid;
-                case NPC_XARIL:
-                    return xarilGuid;
-                case NPC_KAZTIK:   
-                    return kaztikGuid;
-                case NPC_KORVEN: 
-                    return korvenGuid;
-                case NPC_IYYOKYK:
-                    return iyyokykGuid;
-                case NPC_KAROZ:
-                    return karozGuid;
-                case NPC_SKEER:
-                    return skeerGuid;
-                case NPC_RIKKAL:
-                    return rikkalGuid;
-                case NPC_HISEK:
-                    return hisekGuid;
                 //
-                case NPC_GARROSH:
-                    return garroshGuid;
                 case NPC_LOREWALKER_CHO:
                 case NPC_LOREWALKER_CHO3:
                     return LorewalkerChoGUIDtmp;
-                case NPC_SHA_NORUSHEN:
-                    return npcShaNorushenGUID;
             }
+
+            std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
+            if (itr != easyGUIDconteiner.end())
+                return itr->second;
+
             return 0;
         }
 
@@ -510,6 +375,14 @@ public:
                 case NPC_ARROGANCE:
                 case NPC_VANITY:
                     SetData(DATA_FIELD_OF_SHA, true);
+                    break;
+                case NPC_LINGERING_CORRUPTION:
+                    --lingering_corruption_count;
+                    if (!lingering_corruption_count)
+                    {
+                        if (Creature* Norushen = instance->GetCreature(GetData64(NPC_SHA_NORUSHEN)))
+                            Norushen->AI()->SetData(NPC_LINGERING_CORRUPTION, DONE);
+                    }
                     break;
             }
         }
@@ -605,12 +478,12 @@ public:
             {
                 Events.Update(diff);
 
-                while (uint32 eventId = Events.ExecuteEvent())
+                /*while (uint32 eventId = Events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
                     }
-                }
+                }*/
             }
     };
 

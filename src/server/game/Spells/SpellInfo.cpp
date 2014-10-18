@@ -1138,14 +1138,20 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     // loadinf all difficulties.
     for(int difficulty = NONE_DIFFICULTY; difficulty < MAX_DIFFICULTY; ++difficulty)
-        if(SpellTargetRestrictionsEntry const* _restr = GetSpellTargetRestrioctions(Id, difficulty))
-        {
-            RestrrictionsMap[difficulty] = _restr;
-            // on MoP no different betwine difficulties for targets.
-            if (!CustomMaxAffectedTargets) CustomMaxAffectedTargets = _restr->MaxAffectedTargets;       //Support old dungeon spells.
-            if (!GeneralTargets) GeneralTargets = _restr->Targets;
-            if (!GeneralTargetCreatureType) GeneralTargetCreatureType = _restr->TargetCreatureType;
-        }
+    {
+        SpellTargetRestrictionsEntry const* _restr = GetSpellTargetRestrioctions(Id, difficulty);
+        if (!_restr && difficulty == MAN25_HEROIC_DIFFICULTY)
+            _restr = GetSpellTargetRestrioctions(Id, MAN25_DIFFICULTY);
+
+        if (!_restr)
+            continue;
+
+        RestrrictionsMap[difficulty] = _restr;
+        // on MoP no different betwine difficulties for targets.
+        if (!CustomMaxAffectedTargets) CustomMaxAffectedTargets = _restr->MaxAffectedTargets;       //Support old dungeon spells.
+        if (!GeneralTargets) GeneralTargets = _restr->Targets;
+        if (!GeneralTargetCreatureType) GeneralTargetCreatureType = _restr->TargetCreatureType;
+    }
 
     // SpellTotemsEntry
     SpellTotemsEntry const* _totem = GetSpellTotems();
@@ -2357,6 +2363,8 @@ AuraStateType SpellInfo::GetAuraState() const
         case 71465: // Divine Surge
         case 50241: // Evasive Charges
             return AURA_STATE_UNKNOWN22;
+        case 144359://OO: Sha of Pride. Gift of the Titans
+            return AURA_STATE_CONFLAGRATE;
         default:
             break;
     }
@@ -2843,6 +2851,10 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 34700: // Allergic Reaction
                 case 54836: // Wrath of the Plaguebringer
                 case 143276:// OO: Noxious Poison
+                case 144574:// OO: Corrupted Prison
+                case 144636:// OO: Corrupted Prison
+                case 144683:// OO: Corrupted Prison
+                case 144684:// OO: Corrupted Prison
                     return false;
                 case 30877: // Tag Murloc
                 case 61716: // Rabbit Costume
