@@ -566,7 +566,7 @@ public:
                 instance->SetData(DATA_HORSEMAN_EVENT, DONE);
 
             Map::PlayerList const& players = me->GetMap()->GetPlayers();
-            if (!players.isEmpty())
+            if (!players.isEmpty() && players.begin()->getSource() && players.begin()->getSource()->GetGroup())
                 sLFGMgr->FinishDungeon(players.begin()->getSource()->GetGroup()->GetGUID(), 285);
         }
 
