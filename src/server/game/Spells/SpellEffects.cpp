@@ -3891,17 +3891,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         {
             if (roll_chance_i(chance))
             {
-                bool alreadyListed = false;
-                for (DispelChargesList::iterator successItr = success_list.begin(); successItr != success_list.end(); ++successItr)
-                {
-                    if (successItr->first->GetId() == itr->first->GetId())
-                    {
-                        ++successItr->second;
-                        alreadyListed = true;
-                    }
-                }
-                if (!alreadyListed)
-                    success_list.push_back(std::make_pair(itr->first, 1));
+                success_list.push_back(std::make_pair(itr->first, 1));
                 --itr->second;
                 if (itr->second <= 0)
                     dispel_list.erase(itr);
