@@ -103,7 +103,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Ring of Frost
             else if (spellproto->Id == 82691)
                 return DIMINISHING_DISORIENT;
-            // Slow
+            // Slow, Frostbolt
             else if (spellproto->Id == 31589 || spellproto->Id == 116)
                 return DIMINISHING_LIMITONLY;
             break;
