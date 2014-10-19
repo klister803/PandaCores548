@@ -104,7 +104,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             else if (spellproto->Id == 82691)
                 return DIMINISHING_DISORIENT;
             // Slow
-            else if (spellproto->Id == 31589)
+            else if (spellproto->Id == 31589 || spellproto->Id == 116)
                 return DIMINISHING_LIMITONLY;
             break;
         }
