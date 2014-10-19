@@ -4040,6 +4040,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 116694:// Surging Mists
                 case 117952:// Crackling Jade Lightning
+                case 116: // Frost Bolt
                     spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                     break;
                 case 102793:
