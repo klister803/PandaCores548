@@ -2052,10 +2052,6 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
     if (!unitTarget || unitTarget->isInFlight())
         return;
 
-    // Glyph of Rapid Teleportation 
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags[0] & 0x80000000 && m_caster->HasAura(89749))
-        m_caster->CastSpell(m_caster, 46989, true);
-    
     // Pre effects
     uint8 uiMaxSafeLevel = 0;
     switch (m_spellInfo->Id)
