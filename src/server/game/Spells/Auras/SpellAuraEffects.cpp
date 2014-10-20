@@ -8687,7 +8687,7 @@ void AuraEffect::HandleBattlegroundFlag(AuraApplication const* aurApp, uint8 mod
 
 void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
-    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+    /*if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
 
     Unit* target = aurApp->GetTarget();
@@ -8712,6 +8712,6 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
     {
         if(AreaTrigger* areaTrigger = GetBase()->GetSpellAreaTrigger())
             areaTrigger->SetDuration(0);
-    }
+    }*/
 }
 
