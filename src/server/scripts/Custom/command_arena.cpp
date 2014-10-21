@@ -16,6 +16,7 @@ public:
             { "2x2",            SEC_GAMEMASTER,     false, &HandleArenaDel2x2Command,           "", NULL },
             { "3x3",            SEC_GAMEMASTER,     false, &HandleArenaDel3x3Command,           "", NULL },
             { "5x5",            SEC_GAMEMASTER,     false, &HandleArenaDel5x5Command,           "", NULL },
+            { "rbg",            SEC_GAMEMASTER,     false, &HandleArenaDelRbgCommand,           "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
@@ -50,17 +51,22 @@ public:
 
     static bool HandleArenaDel2x2Command(ChatHandler* handler, const char* args)
     {
-        return DelTeam(handler, args, 2);
+        return DelTeam(handler, args, 0);
     }
 
     static bool HandleArenaDel3x3Command(ChatHandler* handler, const char* args)
     {
-        return DelTeam(handler, args, 3);
+        return DelTeam(handler, args, 1);
     }
 
     static bool HandleArenaDel5x5Command(ChatHandler* handler, const char* args)
     {
-        return DelTeam(handler, args, 5);
+        return DelTeam(handler, args, 2);
+    }
+
+    static bool HandleArenaDelRbgCommand(ChatHandler* handler, const char* args)
+    {
+        return DelTeam(handler, args, 3);
     }
 
     static bool HandleArenaDelIdCommand(ChatHandler* handler, const char* args)
@@ -301,35 +307,14 @@ public:
             return false;
 
         //sLog->outString("giud: %u", target_guid);
-        QueryResult memberResult = CharacterDatabase.PQuery("SELECT arenaTeamId FROM arena_team_member WHERE guid = %u", target_guid);
-
-        if (memberResult)
+        QueryResult bracketsResult = CharacterDatabase.PQuery("SELECT * FROM character_brackets_info WHERE guid = '%u' AND `bracket` = '%u'", target_guid, type);
+        if (bracketsResult)
         {
-            do {
-                Field* memberFields = memberResult->Fetch();
-                uint32 teamId = memberFields[0].GetUInt32();
-                QueryResult teamResult = CharacterDatabase.PQuery("SELECT type FROM arena_team WHERE arenaTeamId = %u", teamId);
-                if (teamResult)
-                {
-                    Field* arenaFields = teamResult->Fetch();
-                    uint8 tmpType = arenaFields[0].GetUInt8();
-
-                    if (tmpType == type)
-                    {
-                        ArenaTeam *aTeam = sArenaTeamMgr->GetArenaTeamById(teamId);
-                        if (aTeam)
-                        {
-                            aTeam->Disband(NULL);
-                            handler->PSendSysMessage("Team: \"%s\" was deleted.", aTeam->GetName().c_str());
-                            return true;
-                        }
-                    }
-                }
-            }
-            while (memberResult->NextRow());
+            CharacterDatabase.PQuery("DELETE FROM character_brackets_info WHERE guid = '%u' AND `bracket` = '%u'", target_guid, type);
+            handler->PSendSysMessage("Player: \"%s\" was deleted bracket %u stats.", target_name.c_str(), type);
         }
 
-        handler->PSendSysMessage("Cant find player or team.");
+        handler->PSendSysMessage("Cant find player bracket %u stats.", type);
         handler->SetSentErrorMessage(true);
         return false;
     }
