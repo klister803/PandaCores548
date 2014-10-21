@@ -34,7 +34,7 @@ struct DumpTable
 static DumpTable dumpTables[DUMP_TABLE_COUNT] =
 {
     { "characters",                       DTT_CHARACTER, "`guid`, `account`, `name`, `slot`, `race`, `class`, `gender`, `level`, `xp`, `money`, `playerBytes`, `playerBytes2`, `playerFlags`, `position_x`, `position_y`, `position_z`, `map`, `instance_id`, `instance_mode_mask`, `orientation`, `taximask`, `online`, `cinematic`, `totaltime`, `leveltime`, `logout_time`, `is_logout_resting`, `rest_bonus`, `resettalents_cost`, `resettalents_time`, `resetspecialization_cost`, `resetspecialization_time`, `talentTree`, `trans_x`, `trans_y`, `trans_z`, `trans_o`, `transguid`, `extra_flags`, `stable_slots`, `at_login`, `zone`, `death_expire_time`, `taxi_path`, `totalKills`, `todayKills`, `yesterdayKills`, `chosenTitle`, `watchedFaction`, `drunk`, `health`, `power1`, `power2`, `power3`, `power4`, `power5`, `latency`, `speccount`, `activespec`, `specialization1`, `specialization2`, `exploredZones`, `equipmentCache`, `knownTitles`, `actionBars`, `currentpetnumber`, `petslot`, `grantableLevels`, `guildId`, `deleteInfos_Account`, `deleteInfos_Name`, `deleteDate`, `transfer`"},
-    { "character_donate",                 DTT_DONA_TABLE, "`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`, `state`, `date`"},
+    { "character_donate",                 DTT_DONA_TABLE, "`owner_guid`, `itemguid`, `type`, `itemEntry`, `efircount`, `count`, `state`, `date`, `deletedate`, `account`"},
     { "character_achievement",            DTT_CHAR_TABLE, "guid, achievement"},
     { "character_achievement_progress",   DTT_CHAR_TABLE, "guid, criteria, counter, date"},
     { "character_action",                 DTT_CHAR_TABLE, "guid, spec, button, action, type"},

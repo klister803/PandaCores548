@@ -321,7 +321,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT itemguid, itemEntry, count FROM character_donate WHERE owner_guid = '%u' AND state = 0", player->GetGUIDLow());
+        QueryResult result = CharacterDatabase.PQuery("SELECT itemguid, itemEntry, count FROM character_donate WHERE owner_guid = '%u' AND state = 0 AND `type` = 0", player->GetGUIDLow());
         if (!result)
         {
             LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
@@ -393,7 +393,7 @@ public:
             if(!result2)
             {
                 if(countitem == 0)
-                    CharacterDatabase.PExecute("UPDATE character_donate SET state = 3 WHERE itemguid = '%u'", action);
+                    CharacterDatabase.PExecute("UPDATE character_donate SET state = 3, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), action);
 
                 player->CLOSE_GOSSIP_MENU(); return true;
             }
