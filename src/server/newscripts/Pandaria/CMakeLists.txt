@@ -70,8 +70,6 @@ set(scripts_STAT_SRCS
   
   Pandaria/ScarletHalls/instance_scarlet_halls.cpp
   
-  Pandaria/ScarletMonastery/instance_scarlet_monasrtery.cpp
-
   Pandaria/HeartFear/instance_heart_of_fear.cpp
   Pandaria/HeartFear/heart_of_fear.h
   Pandaria/HeartFear/boss_vizier_zorlok.cpp

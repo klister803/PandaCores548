@@ -99,33 +99,33 @@ struct Locations
 
 static Locations FlightPoint[]=
 {
-    {1754.00f, 1346.00f, 17.50f},
-    {1765.00f, 1347.00f, 19.00f},
-    {1784.00f, 1346.80f, 25.40f},
-    {1803.30f, 1347.60f, 33.00f},
-    {1824.00f, 1350.00f, 42.60f},
-    {1838.80f, 1353.20f, 49.80f},
-    {1852.00f, 1357.60f, 55.70f},
-    {1861.30f, 1364.00f, 59.40f},
-    {1866.30f, 1374.80f, 61.70f},
-    {1864.00f, 1387.30f, 63.20f},
-    {1854.80f, 1399.40f, 64.10f},
-    {1844.00f, 1406.90f, 64.10f},
-    {1824.30f, 1411.40f, 63.30f},
-    {1801.00f, 1412.30f, 60.40f},
-    {1782.00f, 1410.10f, 55.50f},
-    {1770.50f, 1405.20f, 50.30f},
-    {1765.20f, 1400.70f, 46.60f},
-    {1761.40f, 1393.40f, 41.70f},
-    {1759.10f, 1386.70f, 36.60f},
-    {1757.80f, 1378.20f, 29.00f},
-    {1758.00f, 1367.00f, 19.51f}
+    {1082.84f, 607.62f, -2.23f},
+    {1093.84f, 608.62f, -0.63f},
+    {1112.84f, 608.42f, 5.77f},
+    {1132.14f, 609.22f, 5.77f},
+    {1152.84f, 611.62f, 22.97f},
+    {1167.64f, 614.82f, 30.17f},
+    {1180.84f, 619.22f, 36.07f},
+    {1190.14f, 625.62f, 39.77f},
+    {1195.14f, 636.42f, 42.07f},
+    {1192.84f, 648.92f, 43.57f},
+    {1183.64f, 661.02f, 44.47f},
+    {1172.84f, 668.52f, 44.47f},
+    {1153.14f, 673.02f, 43.67f},
+    {1129.84f, 673.92f, 40.77f},
+    {1110.84f, 671.72f, 35.87f},
+    {1099.34f, 666.82f, 30.67f},
+    {1094.04f, 662.32f, 26.97f},
+    {1090.24f, 655.02f, 22.07f},
+    {1087.94f, 648.32f, 16.97f},
+    {1086.64f, 639.82f, 9.37f},
+    {1086.84f, 628.62f, -0.12f},//{1758.00f, 1367.00f, 19.51f}
 };
 
 static Locations Spawn[]=
 {
-    {1776.27f, 1348.74f, 19.20f},       //spawn point for pumpkin shrine mob
-    {1765.28f, 1347.46f, 17.55f}     //spawn point for smoke
+    {1105.11f, 610.36f, -0.43f},    //spawn point for pumpkin shrine mob
+    {1094.12f, 609.08f, -2.08f}     //spawn point for smoke
 };
 
 static const char* Text[]=
@@ -866,7 +866,7 @@ public:
         InstanceScript* instance = player->GetInstanceScript();
         if (instance)
         {
-            if (instance->GetData(DATA_HORSEMAN_EVENT) != NOT_STARTED)
+            if (instance->GetData(DATA_HORSEMAN_EVENT) != NOT_STARTED || instance->GetData64(ENTRY_HORSEMAN))
                 return true;
             instance->SetData(DATA_HORSEMAN_EVENT, IN_PROGRESS);
         }

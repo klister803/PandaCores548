@@ -21,12 +21,15 @@
 
 enum eEnums
 {
-    TYPE_MOGRAINE_AND_WHITE_EVENT   = 1,
+    DATA_HORSEMAN_EVENT             = 1,
+    GAMEOBJECT_PUMPKIN_SHRINE       = 2,
+};
 
-    DATA_MOGRAINE                   = 2,
-    DATA_WHITEMANE                  = 3,
-    DATA_DOOR_WHITEMANE             = 4,
-
-    DATA_VORREL                     = 7
+enum eEntry
+{
+    ENTRY_PUMPKIN_SHRINE    = 186267,
+    ENTRY_HORSEMAN          = 23682,
+    ENTRY_HEAD              = 23775,
+    ENTRY_PUMPKIN           = 23694
 };
 #endif

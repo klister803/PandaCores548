@@ -82,6 +82,9 @@ set(scripts_STAT_SRCS
   EasternKingdoms/ScarletEnclave/chapter5.cpp
   EasternKingdoms/ScarletEnclave/chapter1.cpp
   EasternKingdoms/ScarletEnclave/the_scarlet_enclave.cpp
+  EasternKingdoms/ScarletMonasteryCathedralGY/instance_scarlet_monasrtery.cpp
+  EasternKingdoms/ScarletMonasteryCathedralGY/scarlet_monastery.h
+  EasternKingdoms/ScarletMonasteryCathedralGY/boss_headless_horseman.cpp
   EasternKingdoms/eastern_plaguelands.cpp
   EasternKingdoms/MoltenCore/boss_coren_direbrew.cpp
   EasternKingdoms/MoltenCore/boss_gehennas.cpp
@@ -195,7 +198,6 @@ set(scripts_STAT_SRCS
   EasternKingdoms/ScarletMonastery/boss_mograine_and_whitemane.cpp
   EasternKingdoms/ScarletMonastery/boss_bloodmage_thalnos.cpp
   EasternKingdoms/ScarletMonastery/boss_interrogator_vishas.cpp
-  EasternKingdoms/ScarletMonastery/boss_headless_horseman.cpp
   EasternKingdoms/ScarletMonastery/instance_scarlet_monastery.cpp
   EasternKingdoms/ScarletMonastery/boss_houndmaster_loksey.cpp
   EasternKingdoms/ScarletMonastery/scarlet_monastery.h
