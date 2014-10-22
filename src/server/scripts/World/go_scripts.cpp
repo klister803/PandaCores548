@@ -1346,6 +1346,20 @@ public:
     }
 };
 
+// Quest: Clean Up in Stormwind - 29144 and Clean Up in Undercity - 29375
+class go_forsaken_stink_bomb : public GameObjectScript
+{
+    public:
+        go_forsaken_stink_bomb() : GameObjectScript("go_forsaken_stink_bomb") { }
+
+        bool OnGossipHello(Player* player, GameObject* go)
+        {
+            go->SetLootState(GO_JUST_DEACTIVATED);
+            player->CastSpell(player, 97157, true);
+            return true;
+        }
+};
+
 void AddSC_go_scripts()
 {
     new go_cat_figurine;
@@ -1389,4 +1403,5 @@ void AddSC_go_scripts()
     new go_frostblade_shrine;
     new go_midsummer_bonfire;
     new go_sikthik_cage;
+    new go_forsaken_stink_bomb;
 }
