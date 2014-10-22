@@ -190,7 +190,10 @@ class boss_sha_of_pride : public CreatureScript
                     DoCast(me, SPELL_SUBMERGE, false);
                 }
             }
-
+            void KilledUnit(Unit* /*victim*/) 
+            {
+                ZoneTalk(urand(TEXT_GENERIC_9, TEXT_GENERIC_10), 0);
+            }
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
@@ -291,6 +294,7 @@ class boss_sha_of_pride : public CreatureScript
                             if (me->GetPower(POWER_ENERGY) == 100)
                             {
                                 ZoneTalk(TEXT_GENERIC_12, 0);
+                                ZoneTalk(urand(TEXT_GENERIC_5, TEXT_GENERIC_6), 0);
                                 DoCast(me, SPELL_SWELLING_PRIDE, false);
                             }
                             events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);
@@ -306,6 +310,8 @@ class boss_sha_of_pride : public CreatureScript
                             break;
                         case EVENT_SPELL_CORRUPTED_PRISON:
                         {
+                            ZoneTalk(TEXT_GENERIC_11, 0);
+                            ZoneTalk(TEXT_GENERIC_3, 0);
                             //Should be done by casting this spell, but this half-hack better check targets and cast spells by order.
                             DoCast(me, SPELL_IMPRISON, true);
                             uint8 count = Is25ManRaid() ? 4 : 2;
