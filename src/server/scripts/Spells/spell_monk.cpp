@@ -869,7 +869,7 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
 
             bool Load()
             {
-                find_target - false;
+                find_target = false;
                 return true;
             }
 
