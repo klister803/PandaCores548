@@ -91,6 +91,9 @@ class boss_ra_den : public CreatureScript
             {
                 _Reset();
                 me->SetReactState(REACT_AGGRESSIVE);
+                me->RemoveAurasDueToSpell(SPELL_LINGERING_ENERGIES);
+                me->RemoveAurasDueToSpell(SPELL_IMBUED_WITH_VITA);
+                me->RemoveAurasDueToSpell(SPELL_IMBUED_WITH_ANIMA);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 if (instance)
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLEASHED_ANIMA);
@@ -675,8 +678,15 @@ class spell_unleashed_anima : public SpellScriptLoader
             {
                 if (GetTarget())
                 {
-                    if (GetTarget()->GetMap()->GetId() != 1098)
-                        GetTarget()->RemoveAurasDueToSpell(SPELL_UNLEASHED_ANIMA);
+                    if (GetTarget()->GetMap()->GetId() == 1098)
+                    {
+                        if (Creature* rd = GetTarget()->FindNearestCreature(NPC_RA_DEN, 100, true))
+                        {
+                            if (rd->isInCombat())
+                                return;
+                        }
+                    }
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_UNLEASHED_ANIMA);
                 }
             }
 
