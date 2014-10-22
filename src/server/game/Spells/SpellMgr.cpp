@@ -5146,8 +5146,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 24858: // Moonkin Form. Hot Fix 5.4.x
                     spellInfo->Effects[2].BasePoints = 100;
                     break;
-                 case 127663: // Astral Communion. Hot Fix 5.4.x
+                case 127663: // Astral Communion. Hot Fix 5.4.x
                     spellInfo->PreventionType = 0;
+                    break;
+                case 96117: // Toss Stink Bomb Credit
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_PASSENGER_0;
                     break;
                 default:
                     break;
