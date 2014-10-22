@@ -26,6 +26,7 @@
 #include "SpellAuraEffects.h"
 #include "GridNotifiers.h"
 #include "CellImpl.h"
+#include "GameObjectAI.h"
 
 // 45102 Romantic Picnic
 enum SpellsPicnic
@@ -109,7 +110,135 @@ class spell_love_is_in_the_air_romantic_picnic : public SpellScriptLoader
         }
 };
 
+// Hallowen: Q29075 Q29376
+enum hallow
+{
+    GO_THE_WICKERMAN        = 180433, //The Wickerman
+    GO_WICKERMAN_EMBER      = 180437, //Wickerman Ember
+    GO_TORCH                = 208186,
+    Q29075                  = 29075,
+    Q29376                  = 29376,
+};
+
+enum evens
+{
+    ENABLE_WICKERMAN            = 1,
+    END_BURN_WICKERMAN          = 2,
+};
+
+class spell_hallowen_torch_wickerman : public SpellScriptLoader
+{
+    public:
+        spell_hallowen_torch_wickerman() : SpellScriptLoader("spell_hallowen_torch_wickerman") { }
+
+        class sspell_hallowen_torch_wickerman_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(sspell_hallowen_torch_wickerman_SpellScript);
+
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GameObject* go = _player->FindNearestGameObject(GO_THE_WICKERMAN, 100.0f))
+                    {
+                        go->AI()->DoAction(ENABLE_WICKERMAN);
+                        go->AI()->SetGUID(_player->GetGUID(), 0);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectLaunchTarget += SpellEffectFn(sspell_hallowen_torch_wickerman_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new sspell_hallowen_torch_wickerman_SpellScript();
+        }
+};
+
+class go_hallow_wickerman : public GameObjectScript
+{
+public:
+    go_hallow_wickerman() : GameObjectScript("go_hallow_wickerman") { }
+
+    struct go_hallow_wickermanAI : public GameObjectAI
+    {
+        go_hallow_wickermanAI(GameObject* go) : GameObjectAI(go)
+        {
+            emberGUID = 0;
+            playerGUID = 0;
+        }
+
+        EventMap events;
+        uint64 emberGUID;
+        uint64 playerGUID;
+
+        void SetGUID(const uint64& guid, int32 /*id = 0 */)
+        {
+            if (playerGUID)
+                return;
+
+            playerGUID = guid;
+        }
+
+        void DoAction(const int32 param)
+        {
+            if (playerGUID)
+                return;
+
+            events.RescheduleEvent(END_BURN_WICKERMAN, 10000);
+            go->EnableOrDisableGo(true, true);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case END_BURN_WICKERMAN:
+                    {
+                        go->EnableOrDisableGo(false, false);
+
+                        if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
+                            if (GameObject * e = player->SummonGameObject(GO_WICKERMAN_EMBER, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, DAY))
+                                emberGUID = e->GetGUID();                            
+                        events.RescheduleEvent(ENABLE_WICKERMAN, 20000);
+                        go->UpdateObjectVisibility();
+                        go->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER);
+                        break;
+                    }
+                    case ENABLE_WICKERMAN:
+                    {
+                        playerGUID = 0;
+                        go->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+                        go->UpdateObjectVisibility();
+                        if (GameObject* e = ObjectAccessor::GetGameObject(*go, emberGUID))
+                        {
+                            e->Delete();
+                            emberGUID = 0;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+    GameObjectAI* GetAI(GameObject* go) const
+    {
+        return new go_hallow_wickermanAI(go);
+    }
+};
+
 void AddSC_holiday_spell_scripts()
 {
     new spell_love_is_in_the_air_romantic_picnic();
+    new spell_hallowen_torch_wickerman();
+    new go_hallow_wickerman();
 }

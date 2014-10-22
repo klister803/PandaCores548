@@ -24,3 +24,8 @@ INSERT INTO `gameobject` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMa
 (186269, 1004, 6109, 6384, 2, 1, 1107.45, 616.274, 0.184674, 0.294147, 0, 0, 0.146544, 0.989204, 300, 0, 1, 0),
 (186314, 1004, 6109, 6384, 2, 1, 1097.96, 613.258, 0.10568, 0.42295, 0, 0, 0.209902, 0.977722, 300, 0, 1, 0);
 INSERT INTO game_event_gameobject (eventEntry, game_event_gameobject.guid) SELECT 12, guid FROM  gameobject WHERE `id` in (186267, 186269, 186314);
+
+-- Hack Q29075 Q29376
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('95958', 'spell_hallowen_torch_wickerman');
+UPDATE `gameobject` SET state = 1 WHERE `id` = 180433;
+UPDATE `gameobject_template` SET `flags` = `flags` | 0x10, `ScriptName` = 'go_hallow_wickerman' WHERE entry  = 180433;
