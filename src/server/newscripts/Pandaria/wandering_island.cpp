@@ -3332,10 +3332,12 @@ class mob_master_shang_xi_thousand_staff : public CreatureScript
                         break;
                     case EVENT_DESPAWN:
                     {
-                        me->CastSpell(me, 106625, true);
                         me->DespawnOrUnsummon();
-                        //if (Player* owner = ObjectAccessor::GetPlayer(*me, playerGuid))
-                        //    owner->KilledMonsterCredit(56688);
+                        if (Player* owner = ObjectAccessor::GetPlayer(*me, playerGuid))
+                        {
+                            owner->CastSpell(owner, 106625, true);
+                            //owner->KilledMonsterCredit(56688);
+                        }
                         break;
                     }
                 }
