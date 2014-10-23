@@ -58,6 +58,9 @@ public:
         uint32 accountId = handler->GetSession()->GetAccountId();
 
         char* morphId = strtok((char*)args, " ");
+        if(!morphId)
+            return false;
+
         int32 morph = atoi(morphId);
         if(!morph)
             return false;
