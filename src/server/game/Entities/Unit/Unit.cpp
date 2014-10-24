@@ -3715,13 +3715,6 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
             if (aura->CanStackWith(auraBase))
                 continue;
 
-            if (!spellProto->_IsPositiveSpell())
-                if (SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(auraBase->GetId()))
-                    if (!_spellinfo->_IsPositiveSpell())
-                        if (aura->GetCasterGUID() != auraBase->GetCasterGUID())
-                            continue;
-            
-
             // Hack fix remove seal by consecration
             if ((auraBase->GetId() == 105361 ||
                 auraBase->GetId() == 101423 ||

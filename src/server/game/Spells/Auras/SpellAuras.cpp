@@ -2404,6 +2404,9 @@ bool Aura::CanStackWith(Aura const* existingAura) const
                     break;
             }
         }
+
+        if (!m_spellInfo->_IsPositiveSpell() && !existingSpellInfo->_IsPositiveSpell())
+            return true;
     }
 
     if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE) && existingAura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
