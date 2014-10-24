@@ -305,8 +305,8 @@ void Player::UpdateArmor()
     float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    value  = GetModifierValue(unitMod, BASE_VALUE);         // base armor (from items)
-    value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
+    value = GetModifierValue(unitMod, BASE_VALUE);                                        // base armor (from items)
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, 1);     // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
     //add dynamic flat mods
@@ -317,7 +317,7 @@ void Player::UpdateArmor()
             value += CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
     }
 
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
 
     SetArmor(int32(value));
 
@@ -1375,12 +1375,12 @@ void Guardian::UpdateArmor()
     uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
 
     if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
-        value = m_owner->GetArmor() * pStats->armor;
+        value = m_owner->GetModifierValue(unitMod, BASE_VALUE) * pStats->armor;
     else
-        value = m_owner->GetArmor();
-
-    value *= GetModifierValue(unitMod, BASE_PCT);
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+        value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
+    
+    value += GetModifierValue(unitMod, BASE_PCT);
+    value *= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
     value *= m_owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_ARMOR), GetEntry());
 
     SetArmor(int32(value));
