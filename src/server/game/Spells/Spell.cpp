@@ -901,7 +901,6 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
     // handle emergency case - try to use other provided targets if no conditions provided
     if (targetType.GetCheckType() == TARGET_CHECK_ENTRY && (!condList || condList->empty()))
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: no conditions entry for target with TARGET_CHECK_ENTRY of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
         switch (targetType.GetObjectType())
         {
             case TARGET_OBJECT_TYPE_GOBJ:
@@ -917,23 +916,25 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
                 {
                     if (focusObject)
                         m_targets.SetDst(*focusObject);
-
-                    // A lot off new spells for dungeons not have target entry. Just use spell target position system.
-                    // it's right way and no need all time write hacks.
-                    if (SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
-                    {
-                        // TODO: fix this check
-                        if (m_spellInfo->HasEffect(SPELL_EFFECT_TELEPORT_UNITS))
-                            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation, (int32)st->target_mapId);
-                        else if (st->target_mapId == m_caster->GetMapId())
-                            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation);
-                    }
                     return;
                 }
+                // A lot off new spells for dungeons not have target entry. Just use spell target position system.
+                // it's right way and no need all time write hacks.
+                if (SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
+                {
+                    // TODO: fix this check
+                    if (m_spellInfo->HasEffect(SPELL_EFFECT_TELEPORT_UNITS))
+                        m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation, (int32)st->target_mapId);
+                    else if (st->target_mapId == m_caster->GetMapId())
+                        m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation);
+                    return;
+                }else
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: no target destination on db: spell_target_position of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
                 break;
             default:
                 break;
         }
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: no conditions entry for target with TARGET_CHECK_ENTRY of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
     }
 
     WorldObject* target = SearchNearbyTarget(range, targetType.GetObjectType(), targetType.GetCheckType(), condList);
