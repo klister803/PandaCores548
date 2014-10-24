@@ -917,6 +917,17 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
                 {
                     if (focusObject)
                         m_targets.SetDst(*focusObject);
+
+                    // A lot off new spells for dungeons not have target entry. Just use spell target position system.
+                    // it's right way and no need all time write hacks.
+                    if (SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
+                    {
+                        // TODO: fix this check
+                        if (m_spellInfo->HasEffect(SPELL_EFFECT_TELEPORT_UNITS))
+                            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation, (int32)st->target_mapId);
+                        else if (st->target_mapId == m_caster->GetMapId())
+                            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation);
+                    }
                     return;
                 }
                 break;
