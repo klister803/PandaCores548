@@ -3710,22 +3710,32 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
             i = m_appliedAuras.begin();
         }
 
-        if (aura->CanStackWith(i->second->GetBase()))
-            continue;
+        if (Aura* auraBase = i->second->GetBase())
+        {
+            if (aura->CanStackWith(auraBase))
+                continue;
 
-        // Hack fix remove seal by consecration
-        if ((i->second->GetBase()->GetId() == 105361 ||
-            i->second->GetBase()->GetId() == 101423 ||
-            i->second->GetBase()->GetId() == 31801 ||
-            i->second->GetBase()->GetId() == 20165 ||
-            i->second->GetBase()->GetId() == 20164)
-            && spellProto->Id == 26573)
-            continue;
+            if (!spellProto->_IsPositiveSpell())
+                if (SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(auraBase->GetId()))
+                    if (!_spellinfo->_IsPositiveSpell())
+                        if (aura->GetCasterGUID() != auraBase->GetCasterGUID())
+                            continue;
+            
 
-        RemoveAura(i, AURA_REMOVE_BY_DEFAULT);
-        if (i == m_appliedAuras.end())
-            break;
-        remove = true;
+            // Hack fix remove seal by consecration
+            if ((auraBase->GetId() == 105361 ||
+                auraBase->GetId() == 101423 ||
+                auraBase->GetId() == 31801 ||
+                auraBase->GetId() == 20165 ||
+                auraBase->GetId() == 20164)
+                && spellProto->Id == 26573)
+                continue;
+
+            RemoveAura(i, AURA_REMOVE_BY_DEFAULT);
+            if (i == m_appliedAuras.end())
+                break;
+            remove = true;
+        }
     }
 }
 
@@ -21986,11 +21996,10 @@ void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 // baseRage means damage taken when attacker = false
 void Unit::RewardRage(float baseRage, bool attacker)
 {
-    float addRage = 1.0f;
+    float addRage = baseRage;
 
     if (attacker)
     {
-        addRage = baseRage;
         // talent who gave more rage on attack
         AddPct(addRage, GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT));
     }
