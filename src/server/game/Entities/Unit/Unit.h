@@ -2114,7 +2114,6 @@ class Unit : public WorldObject
 
         // Visibility system
         bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true; }
-        void SetVisible(bool x);
 
         // common function for visibility checks for player/creatures with detection code
         void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask

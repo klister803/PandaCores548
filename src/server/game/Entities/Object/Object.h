@@ -909,6 +909,8 @@ class WorldObject : public Object, public WorldLocation
         float GetSightRange(const WorldObject* target = NULL) const;
         bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
 
+        void SetVisible(bool x);
+
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
 

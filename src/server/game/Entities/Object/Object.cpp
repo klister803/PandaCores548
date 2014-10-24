@@ -2173,6 +2173,16 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     return 0.0f;
 }
 
+void WorldObject::SetVisible(bool x)
+{
+    if (!x)
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER);
+    else
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+
+    UpdateObjectVisibility();
+}
+
 bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck) const
 {
     if (this == obj)
