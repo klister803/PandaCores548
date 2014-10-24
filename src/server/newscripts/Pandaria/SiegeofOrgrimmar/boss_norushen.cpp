@@ -18,10 +18,18 @@
 
 #include "NewScriptPCH.h"
 #include "siege_of_orgrimmar.h"
+#include "CreatureTextMgr.h"
+#include "ScriptedEscortAI.h"
 
 enum eSpells
 {
+    SPELL_VISUAL_TELEPORT      = 149634,
+    SPELL_VISUAL_TELEPORT_AC   = 145188,
+    SPELL_EXTRACT_CORRUPTION   = 145143,
+    SPELL_EXTRACT_CORRUPTION_S = 145149,
+
     //Amalgam_of_Corruption
+    SPELL_SPAWN_AMALGAM        = 145118,
     SPELL_CORRUPTION           = 144421, 
     SPELL_PURIFIED             = 144452,
     SPELL_ICY_FEAR             = 145733,
@@ -119,10 +127,22 @@ Position const plspos[5] =  //purifying light spawn pos
 
 float const radius = 38.0f;
 
+Position const Norushen  = {767.6754f, 1015.564f, 356.1747f, 4.922687f };
+Position const Amalgan  = {777.3924f, 974.2292f, 356.3398f, 1.786108f };
+
 class boss_norushen : public CreatureScript
 {
     public:
         boss_norushen() : CreatureScript("boss_norushen") {}
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        { 
+            player->CLOSE_GOSSIP_MENU();
+            if (action)
+                creature->AI()->DoAction(true);
+
+            return true;
+        }
 
         struct boss_norushenAI : public ScriptedAI
         {
@@ -132,33 +152,51 @@ class boss_norushen : public CreatureScript
             }
 
             InstanceScript* instance;
+            EventMap events;
 
             void Reset()
             {
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
             }
 
-            void EnterCombat(Unit* who)
-            {
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-            }
 
             void DoAction(int32 const action)
             {
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                //continue from EVENT_13
+                uint32 t = 0;
+                events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
+                events.ScheduleEvent(EVENT_2, t += 8000);       //18:23:22.000
+                events.ScheduleEvent(EVENT_3, t += 11000);      //18:23:32.000
+                events.ScheduleEvent(EVENT_4, t += 2000);       //18:23:34.000
             }
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
+                events.Update(diff);
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            me->CastSpell(me, SPELL_VISUAL_TELEPORT, true);
+                            me->CastSpell(me, SPELL_VISUAL_TELEPORT_AC, true);
+                            ZoneTalk(eventId + 6, me->GetGUID());
+                            break;
+                        case EVENT_2:
+                            instance->SetBossState(DATA_NORUSHEN, IN_PROGRESS);
+                            me->SetFacingTo(1.791488f);
+                            ZoneTalk(eventId + 6, me->GetGUID());
+                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION);
+                            break;
+                        case EVENT_3:
+                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION_S);
+                            break;
+                        case EVENT_4:
+                            ZoneTalk(TEXT_GENERIC_9, me->GetGUID());
+                            break;
+                    }
+                }
             }
         };
 
@@ -166,6 +204,122 @@ class boss_norushen : public CreatureScript
         {
             return new boss_norushenAI(creature);
         }
+};
+
+class npc_norushen_lowerwalker : public CreatureScript
+{
+public:
+    npc_norushen_lowerwalker() : CreatureScript("npc_norushen_lowerwalker") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_norushen_lowerwalkerAI (creature);
+    }
+
+    enum phases
+    {
+        PHASE_EVENT     = 1,
+    };
+
+    struct npc_norushen_lowerwalkerAI : public npc_escortAI
+    {
+        npc_norushen_lowerwalkerAI(Creature* creature) : npc_escortAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        uint64 norushGUID;
+
+        void Reset()
+        {
+            norushGUID = 0;
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (events.IsInPhase(PHASE_EVENT))
+                return;
+
+            Start(false, false);
+            events.SetPhase(PHASE_EVENT);
+            uint32 t = 0;
+            events.ScheduleEvent(EVENT_1, t += 1000);    //18:20:50.000
+            events.ScheduleEvent(EVENT_2, t += 6000);    //18:20:56.000
+            events.ScheduleEvent(EVENT_3, t += 8000);    //18:21:04.000
+            events.ScheduleEvent(EVENT_4, t += 8000);    //18:21:11.000
+            events.ScheduleEvent(EVENT_5, t += 2000);    //18:21:13.000
+            events.ScheduleEvent(EVENT_6, t += 7000);    //18:21:20.000
+            events.ScheduleEvent(EVENT_7, t += 7000);    //18:21:27.000
+            events.ScheduleEvent(EVENT_8, t += 8000);    //18:21:35.000
+            events.ScheduleEvent(EVENT_9, t += 5000);    //18:21:40.000
+            events.ScheduleEvent(EVENT_10, t += 3000);   //18:21:43.000
+            events.ScheduleEvent(EVENT_11, t += 14000);  //18:21:56.000
+            events.ScheduleEvent(EVENT_12, t += 8000);   //18:22:04.000
+            events.ScheduleEvent(EVENT_13, t += 10000);  //18:22:14.000
+            events.ScheduleEvent(EVENT_14, t += 1);
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            if (i == 2)
+                SetEscortPaused(true);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                    case EVENT_2:
+                    case EVENT_3:
+                        ZoneTalk(eventId - 1, me->GetGUID());
+                        break;                    
+                    case EVENT_4:
+                        if (Creature* norush = instance->instance->SummonCreature(NPC_NORUSHEN, Norushen))
+                        {
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_0, me->GetGUID());
+                            norushGUID = norush->GetGUID();
+                        }
+                        break;
+                    case EVENT_5:
+                        ZoneTalk(TEXT_GENERIC_3, me->GetGUID());
+                        break;
+                    case EVENT_6:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_1, me->GetGUID());
+                        break;
+                    case EVENT_7:
+                        ZoneTalk(TEXT_GENERIC_4, me->GetGUID());
+                        break;
+                    case EVENT_8:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_2, me->GetGUID());
+                        break;
+                    case EVENT_9:
+                        ZoneTalk(TEXT_GENERIC_5, me->GetGUID());
+                        break;
+                    case EVENT_10:
+                    case EVENT_11:
+                    case EVENT_12:
+                    case EVENT_13:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(eventId - 7, me->GetGUID());
+                        break;
+                    case EVENT_14:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        break;
+                }
+            }
+        }
+    };
 };
 
 class boss_amalgam_of_corruption : public CreatureScript
@@ -178,7 +332,7 @@ class boss_amalgam_of_corruption : public CreatureScript
             boss_amalgam_of_corruptionAI(Creature* creature) : BossAI(creature, DATA_NORUSHEN)
             {
                 instance = creature->GetInstanceScript();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                SetCombatMovement(false);
             }
 
             InstanceScript* instance;
@@ -195,6 +349,13 @@ class boss_amalgam_of_corruption : public CreatureScript
                 two = false;
                 three = false;
                 four = false;
+            }
+
+            void IsSummonedBy(Unit* /*summoner*/)
+            {
+                me->AddAura(SPELL_SPAWN_AMALGAM, me);
+                me->SetInCombatWithZone();
+                //summon->CastSpell(summon, SPELL_SPAWN_AMALGAM, true);
             }
 
             void ApplyOrRemoveBar(bool state)
@@ -867,6 +1028,7 @@ class spell_icy_fear_dmg : public SpellScriptLoader
 void AddSC_boss_norushen()
 {
     new boss_norushen();
+    new npc_norushen_lowerwalker();
     new boss_amalgam_of_corruption();
     new npc_blind_hatred_controller();
     new npc_blind_hatred();

@@ -548,6 +548,7 @@ public:
         npc_sha_of_pride_lowerwalkerAI(Creature* creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
+            group_member = sFormationMgr->CreateCustomFormation(me);
         }
 
         InstanceScript* instance;
@@ -557,15 +558,6 @@ public:
         void Reset()
         {
             Start(false, true);
-
-            group_member                        = new FormationInfo();
-            group_member->leaderGUID            = me->GetGUIDLow();
-            group_member->groupAI               = NULL;
-            group_member->follow_dist           = 1.0f;
-            group_member->follow_angle          = 45 * M_PI / 180;
-            sFormationMgr->AddCreatureToGroup(me->GetGUIDLow(), me);
-            if (CreatureGroup* f = me->GetFormation())
-                f->AddMember(me, group_member);
         }
 
         void DoAction(int32 const action)
