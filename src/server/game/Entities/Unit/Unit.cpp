@@ -22329,7 +22329,7 @@ void Unit::ApplySoulSwapDOT(Unit* target)
     _SoulSwapDOTList.clear();
 }
 
-void Unit::SendTeleportPacket(Position &oldPos)
+void Unit::SendTeleportPacket(Position &destPos)
 {
     ObjectGuid guid = GetGUID();
     ObjectGuid transGuid = GetTransGUID();
@@ -22349,13 +22349,13 @@ void Unit::SendTeleportPacket(Position &oldPos)
     data.WriteGuidBytes<6, 1>(guid);
     data << uint32(0);  // counter
     data.WriteGuidBytes<7, 5>(guid);
-    data << float(GetPositionX());
+    data << float(destPos.GetPositionX());
     data.WriteGuidBytes<4, 3, 2>(guid);
-    data << float(GetPositionY());
-    data << float(NormalizeOrientation(GetOrientation()));
-    data << float(GetPositionZMinusOffset());
+    data << float(destPos.GetPositionY());
+    data << float(NormalizeOrientation(destPos.GetOrientation()));
+    data << float(destPos.GetPositionZ());//oldPos.GetPositionZMinusOffset()
 
-    Relocate(&oldPos);
+    Relocate(&destPos);
     SendMessageToSet(&data, true);
 }
 
