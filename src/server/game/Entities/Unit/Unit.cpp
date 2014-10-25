@@ -640,12 +640,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
     if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
         GetOwner()->CastSpell(GetOwner(), 77661, true);
-    // Stagger Amount
-    if (!spellProto || (spellProto && spellProto->Id != 124255))
-    {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
-            damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
-    }
 
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
@@ -961,6 +955,18 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
 
         int32 bp1 = damage - (damage * stagger);
         int32 bp0 = bp1 / 10;
+
+        if (AuraEffect const* aurEff = victim->GetAuraEffect(124255, EFFECT_0))
+        {
+            int32 amount = aurEff->GetAmount() + bp0;
+            if (amount < int32(victim->CountPctFromMaxHealth(3)))
+                victim->CastSpell(victim, 124275, true);
+            else if (amount < int32(victim->CountPctFromMaxHealth(6)))
+                victim->CastSpell(victim, 124274, true);
+            else
+                victim->CastSpell(victim, 124273, true);
+        }
+
         victim->CastCustomSpell(victim, 124255, &bp0, &bp1, NULL, true);
 
         return damage *= stagger;
@@ -1943,6 +1949,17 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
+        }
+    }
+
+        // Stagger Amount
+    if (!spellInfo || (spellInfo && spellInfo->Id != 124255))
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+        {
+            int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, schoolMask);
+            int32 staggerAbsorb = damage - staggerDamage;
+            dmgInfo.AbsorbDamage(dmgInfo.GetAbsorb() + staggerAbsorb);
         }
     }
 
@@ -4023,18 +4040,17 @@ void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura* except,
 {
     for (AuraEffectList::iterator iter = m_modAuras[auraType].begin(), next; iter != m_modAuras[auraType].end();iter = next)
     {
+        next = iter;
         Aura* aura = (*iter)->GetBase();
         AuraApplication * aurApp = aura->GetApplicationOfTarget(GetGUID());
 
         if (!aurApp)
         {
             printf("CRASH ALERT : Unit::RemoveAurasByType no AurApp pointer for Aura Id %u\n", aura->GetId());
-            next = iter;
             ++next;
             continue;
         }
 
-        next = iter;
         ++next;
         if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
             && ((negative && !aurApp->IsPositive()) || (positive && aurApp->IsPositive())))
