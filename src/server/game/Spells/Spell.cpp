@@ -408,8 +408,8 @@ m_referencedFromCurrentSpell(false), m_executedCurrently(false), m_needComboPoin
 m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
-m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE),
-m_absorb(0),m_resist(0),m_blocked(0)
+m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE)
+
 {
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
     m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
@@ -2697,9 +2697,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
     CallScriptOnHitHandlers();
 
-    sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: spellProto->Id %i, canEffectTrigger %i, procAttacker %i, procVictim %i, m_damage %i, m_healing %i",
-    m_spellInfo->Id, canEffectTrigger, procAttacker, procVictim, m_damage, m_healing);
-
     // All calculated do it!
     // Do healing and triggers
     if (m_healing > 0)
@@ -2763,10 +2760,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
         caster->DealSpellDamage(&damageInfo, true);
         m_final_damage = damageInfo.damage;
-        m_absorb = damageInfo.absorb;
-        m_resist = damageInfo.resist;
-        m_blocked = damageInfo.blocked;
-
+        
         // Hunter's pet special attacks
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
             if (Unit * owner = caster->GetOwner())
@@ -2796,9 +2790,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             if (unitTarget->ToCreature()->IsAIEnabled)
                 unitTarget->ToCreature()->AI()->AttackStart(m_caster);
         }
-        m_absorb = damageInfo.absorb;
-        m_resist = damageInfo.resist;
-        m_blocked = damageInfo.blocked;
     }
 
     // process reflect removal (delayed)
@@ -3727,8 +3718,6 @@ void Spell::handle_immediate()
 
     // process immediate effects (items, ground, etc.) also initialize some variables
     _handle_immediate_phase();
-
-    sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: spellProto->Id %i, m_UniqueTargetInfo %i", m_spellInfo->Id, m_UniqueTargetInfo.size());
 
     for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
         DoAllEffectOnTarget(&(*ihit));

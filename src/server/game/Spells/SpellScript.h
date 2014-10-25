@@ -381,9 +381,6 @@ class SpellScript : public _SpellScript
         WorldLocation* GetHitDest();
         // setter/getter for for damage done by spell to target of spell hit
         // returns damage calculated before hit, and real dmg done after hit
-        int32 GetHitAbsorb();
-        int32 GetHitResist();
-        int32 GetHitBlocked();
         int32 GetHitDamage();
         int32 GetFinalHitDamage();
         void SetHitDamage(int32 damage);

@@ -3371,9 +3371,6 @@ class spell_dru_genesis : public SpellScriptLoader
                 {
                     if (Aura* aura = target->GetAura(774))
                     {
-                        if(aura->GetDuration() < 4000)
-                            return;
-
                         int32 tick = (aura->GetEffect(2)->GetTotalTicks() - aura->GetEffect(2)->GetTickNumber()) + 1;
                         int32 dur = tick * (aura->GetEffect(2)->GetAmplitude() / 4);
                         aura->SetDuration(dur);

@@ -389,19 +389,6 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (!spellInfo)
         return;
 
-    if (action.action->targetFlags & AT_TARGET_FLAG_NOT_FULL_ENERGY)
-    {
-        Powers energeType = POWER_NULL;
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        {
-            if(spellInfo->Effects[i].Effect == SPELL_EFFECT_ENERGIZE)
-                energeType = Powers(spellInfo->Effects[i].MiscValue);
-        }
-
-        if (energeType == -1 || unit->GetMaxPower(energeType) == 0 || unit->GetMaxPower(energeType) == unit->GetPower(energeType))
-            return;
-    }
-
     // should cast on self.
     if (spellInfo->Effects[EFFECT_0].TargetA.GetTarget() == TARGET_UNIT_CASTER
         || action.action->targetFlags & AT_TARGET_FLAG_CASTER_IS_TARGET)

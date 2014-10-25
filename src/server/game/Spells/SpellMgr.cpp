@@ -939,8 +939,6 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
         // No extra req, so can trigger only for hit/crit - spell has to be active
         if ((procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) && active)
             return true;
-        if ((procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) && !active && (EventProcFlag & (PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS|PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS|PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG|PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG)))
-            return true;
     }
     else // Passive spells hits here only if resist/reflect/immune/evade
     {
@@ -4611,7 +4609,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Council of Elders
                 //Mallak 
                 case 136992: //Bitting cold
-                case 140023: //Ring of Peace
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 136991: //Bitting cold tr ef 
