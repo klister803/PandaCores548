@@ -15217,16 +15217,6 @@ bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
     return false;
 }
 
-void Unit::SetVisible(bool x)
-{
-    if (!x)
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER);
-    else
-        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
-
-    UpdateObjectVisibility();
-}
-
 void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
 {
     float old_speed = m_speed_rate[MOVE_RUN];
