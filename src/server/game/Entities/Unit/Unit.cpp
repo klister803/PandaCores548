@@ -5967,6 +5967,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 case 146200: // Spirit of Chi-Ji
                 {
+                    if(!target)
+                        return false;
+
                     basepoints0 = damage - (target->GetMaxHealth() - target->GetHealth());
 
                     if (basepoints0 > 0)
