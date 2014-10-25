@@ -110,6 +110,7 @@ public:
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
                 {
+                    cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_IMMERSEUS, NOT_STARTED);
                 }
@@ -117,6 +118,7 @@ public:
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                 {
+                    cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                 }
@@ -124,6 +126,7 @@ public:
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
                 {
+                    cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                 }
             }else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)

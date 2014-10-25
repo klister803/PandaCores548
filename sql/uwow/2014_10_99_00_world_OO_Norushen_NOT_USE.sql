@@ -2,6 +2,7 @@
 /*!40101 SET NAMES utf8 */;
 /*!40014 SET FOREIGN_KEY_CHECKS=0 */;
 
+DELETE FROM `creature_template` WHERE `entry` = 90008;
 UPDATE `creature_template` SET `unit_flags` = '32768' WHERE `entry` = 72276;
 
 DELETE FROM creature where id in (72872, 71967, 72276);
