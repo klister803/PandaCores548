@@ -21676,8 +21676,8 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     else
     {
         Position pos = {x, y, z, orientation};
-        UpdatePosition(x, y, z, orientation, true);
         SendTeleportPacket(pos);
+        UpdatePosition(x, y, z, orientation, true);
         UpdateObjectVisibility();
     }
 }
@@ -22345,8 +22345,8 @@ void Unit::SendTeleportPacket(Position &destPos)
     data << float(NormalizeOrientation(destPos.GetOrientation()));
     data << float(destPos.GetPositionZ());//oldPos.GetPositionZMinusOffset()
 
-    Relocate(&destPos);
     SendMessageToSet(&data, true);
+    Relocate(&destPos);
 }
 
 bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
