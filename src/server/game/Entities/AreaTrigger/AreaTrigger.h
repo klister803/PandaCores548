@@ -55,6 +55,7 @@ enum AreaTriggerTargetFlags
     AT_TARGET_FLAG_NOT_FULL_HP       = 0x080,             // casted on targets if not full hp
     AT_TARGET_FLAG_ALWAYS_TRIGGER    = 0x100,             // casted always at any action on owner
     AT_TARGET_FLAT_IN_FRONT          = 0x200,             // WARNING! If target come from back he not get cast. ToDo it..
+    AT_TARGET_FLAG_NOT_FULL_ENERGY   = 0x400,             // casted on targets if not full enegy
 
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |

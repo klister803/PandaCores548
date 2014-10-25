@@ -632,6 +632,9 @@ class Spell
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
         int32 m_final_damage;     // Final damage in effects count here
+        int32 m_absorb;           // Absorb
+        int32 m_resist;           // Resist
+        int32 m_blocked;          // Blocked
 
         // ******************************************
         // Spell trigger system

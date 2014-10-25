@@ -640,12 +640,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
     if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
         GetOwner()->CastSpell(GetOwner(), 77661, true);
-    // Stagger Amount
-    if (!spellProto || (spellProto && spellProto->Id != 124255))
-    {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
-            damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
-    }
 
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
@@ -961,6 +955,18 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
 
         int32 bp1 = damage - (damage * stagger);
         int32 bp0 = bp1 / 10;
+
+        if (AuraEffect const* aurEff = victim->GetAuraEffect(124255, EFFECT_0))
+        {
+            int32 amount = aurEff->GetAmount() + bp0;
+            if (amount < int32(victim->CountPctFromMaxHealth(3)))
+                victim->CastSpell(victim, 124275, true);
+            else if (amount < int32(victim->CountPctFromMaxHealth(6)))
+                victim->CastSpell(victim, 124274, true);
+            else
+                victim->CastSpell(victim, 124273, true);
+        }
+
         victim->CastCustomSpell(victim, 124255, &bp0, &bp1, NULL, true);
 
         return damage *= stagger;
@@ -1943,6 +1949,17 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
+        }
+    }
+
+        // Stagger Amount
+    if (!spellInfo || (spellInfo && spellInfo->Id != 124255))
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+        {
+            int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, schoolMask);
+            int32 staggerAbsorb = damage - staggerDamage;
+            dmgInfo.AbsorbDamage(dmgInfo.GetAbsorb() + staggerAbsorb);
         }
     }
 
@@ -3531,6 +3548,7 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         return;
 
     aura->HandleAuraSpecificMods(aurApp, caster, true, false);
+    aura->SetAuraEffectMask(effMask);
 
     // Epicurean
     if (GetTypeId() == TYPEID_PLAYER &&
@@ -3696,6 +3714,30 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
         m_modAuras[aurEff->GetAuraType()].push_back(aurEff);
     else
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
+}
+
+// All aura base removes should go threw this function!
+void Unit::ChangeOwnedAura(Aura* aura, Unit* newOwner, Unit* caster)
+{
+    // if (aura->IsRemoved())
+        // return;
+
+    ASSERT(!aura->IsRemoved());
+
+    uint32 spellId = aura->GetId();
+    for (AuraMap::iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId);)
+    {
+        if (itr->second == aura)
+        {
+            m_ownedAuras.erase(itr);
+            m_removedAuras.push_back(aura);
+            itr = m_ownedAuras.begin();
+        }
+        else
+            ++itr;
+    }
+
+    newOwner->_AddAura((UnitAura*)aura, caster);
 }
 
 // All aura base removes should go threw this function!
@@ -5916,782 +5958,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
     uint64 originalCaster = 0;
     Unit* procSpellCaster = dmgInfoProc->GetAttacker();
     uint64 procSpellCasterGUID = procSpellCaster ? procSpellCaster->GetGUID(): 0;
-
-    if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
-    {
-        bool check = false;
-        std::list<int32> groupList;
-        for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
-        {
-            if(itr->spell_cooldown)
-                cooldown_spell_id = abs(itr->spell_cooldown);
-            else
-                cooldown_spell_id = abs(itr->spell_trigger);
-            if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
-                return false;
-
-            if (!(itr->effectmask & (1<<effIndex)))
-                continue;
-
-            if (itr->procFlags && !(itr->procFlags & procFlag))
-                continue;
-
-            if(itr->chance != 0)
-            {
-                if(itr->chance > 100) // chance get from amount
-                {
-                    if(!roll_chance_i(triggerAmount))
-                        continue;
-                }
-                else if(itr->chance == -1) // chance get from amount / 10
-                {
-                    int32 rollchance = urand(0, 1000);
-                    if (rollchance > triggerAmount)
-                        continue;
-                }
-                else if(itr->chance == -2) // chance get from amount / 100
-                {
-                    int32 rollchance = urand(0, 10000);
-                    if (rollchance > triggerAmount)
-                        continue;
-                }
-                else if(!roll_chance_i(itr->chance))
-                    continue;
-            }
-
-            if(itr->group != 0 && !groupList.empty())
-            {
-                bool groupFind = false;
-                for (std::list<int32>::const_iterator group_itr = groupList.begin(); group_itr != groupList.end(); ++group_itr)
-                    if((*group_itr) == itr->group)
-                        groupFind = true;
-                if(groupFind)
-                    continue;
-            }
-
-            if(itr->target == 1 || itr->target == 6 || !target) //get target self
-                target = this;
-            if(itr->target == 3 && ToPlayer()) //get target owner
-                if (Pet* pet = ToPlayer()->GetPet())
-                    target = (Unit*)pet;
-            if(itr->target == 4 && target->ToPlayer()) //get target pet
-                if (Pet* pet = target->ToPlayer()->GetPet())
-                    target = (Unit*)pet;
-            if(itr->target == 5) //get target owner
-                if (Unit* owner = GetOwner())
-                    target = owner;
-            if(itr->target == 7) //get target self
-                target = triggeredByAura->GetCaster();
-
-            Unit* _caster = this;
-            Unit* _targetAura = this;
-
-            if(itr->caster == 1) //get caster aura
-                _caster = triggeredByAura->GetCaster();
-            if(itr->caster == 3 && ToPlayer()) //get caster owner
-                if (Pet* pet = ToPlayer()->GetPet())
-                    _caster = (Unit*)pet;
-            if(itr->caster == 4) //get caster owner
-                if (Unit* owner = GetOwner())
-                    _caster = owner;
-            if(!_caster)
-                _caster = this;
-
-            if(itr->targetaura == 1) //get caster aura
-                _targetAura = triggeredByAura->GetCaster();
-            if(itr->targetaura == 2) //get target aura
-                _targetAura = victim;
-
-            int32 bp0 = int32(itr->bp0);
-            int32 bp1 = int32(itr->bp1);
-            int32 bp2 = int32(itr->bp2);
-            switch (itr->option)
-            {
-                case SPELL_TRIGGER_BP: //0
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->spell_trigger > 0)
-                        basepoints0 = triggerAmount;
-                    else
-                        basepoints0 = -(triggerAmount);
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_BP_CUSTOM: //1
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_MANA_COST: //2
-                {
-                    if(!procSpell)
-                        continue;
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    int32 cost = int32(procSpell->PowerCost + CalculatePct(GetCreateMana(), procSpell->PowerCostPercentage));
-                    basepoints0 = CalculatePct(cost, bp0);
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_DAM_HEALTH: //3
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    int32 percent = triggerAmount;
-                    if(bp0)
-                        percent += bp0;
-
-                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent);
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_COOLDOWN: //4
-                {
-                    if(Player* player = target->ToPlayer())
-                    {
-                        uint32 spellid = abs(itr->spell_trigger);
-                        if(itr->bp0 == 0.0f)
-                            player->RemoveSpellCooldown(spellid, true);
-                        else
-                        {
-                            if(itr->aura && !procSpell)
-                                continue;
-                            if(itr->aura && procSpell && itr->aura != procSpell->Id)
-                                continue;
-
-                            int32 delay = itr->bp0;
-                            if (delay > -1 * IN_MILLISECONDS)
-                            {
-                                if (roll_chance_i(50))
-                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
-                            }
-                            else
-                                player->ModifySpellCooldown(spellid, delay);
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_UPDATE_DUR: //5
-                {
-                    if (itr->aura)
-                    {
-                        if (itr->aura > 0)
-                        {
-                            if (!HasAura(itr->aura))
-                            {
-                                check = true;
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            if (HasAura(-(itr->aura)))
-                            {
-                                check = true;
-                                continue;
-                            }
-                        }
-                    }
-
-                    if (itr->spell_trigger > 0)
-                    {
-                        if (Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
-                            aura->RefreshTimers();
-                    }
-                    else
-                    {
-                        if (procSpell->Id == -(itr->spell_trigger))
-                            if (procSpellCasterGUID == triggeredByAura->GetCasterGUID())
-                                triggeredByAura->GetBase()->RefreshTimers();
-                    }
-
-                    check = true;
-                    break;
-                }
-                case SPELL_TRIGGER_GET_DUR_AURA: //6
-                {
-                    if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
-                        basepoints0 = int32(aura->GetDuration() / 1000);
-                    if(basepoints0)
-                    {
-                        triggered_spell_id = abs(itr->spell_trigger);
-                        _caster->CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
-                        if(itr->target == 6)
-                        {
-                            if (Guardian* pet = GetGuardianPet())
-                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
-                {
-                    if(!procSpell || !procSpell->NeedsComboPoints())
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    int32 chance = 20 * ToPlayer()->GetComboPoints();
-                    if (roll_chance_i(chance))
-                    {
-                        triggered_spell_id = abs(itr->spell_trigger);
-                        _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
-                        if(itr->target == 6)
-                        {
-                            if (Guardian* pet = GetGuardianPet())
-                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
-                {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
-                        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    float amount = bp0;
-
-                    if (!bp0)
-                        amount = triggerAmount / 100.0f;
-
-                    basepoints0 = CalculatePct(damage, amount);
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_MAX_MANA: //10
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetMaxPower(POWER_MANA));
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_BASE_MANA: //11
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetCreateMana());
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_PERC_CUR_MANA: //12
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetPower(POWER_MANA));
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_CHECK_PROCK: //13
-                {
-                    if(!procSpell)
-                    {
-                        check = true;
-                        continue;
-                    }
-                    triggered_spell_id = abs(itr->spell_trigger);
-
-                    if(itr->aura == procSpell->Id)
-                        _caster->CastSpell(target, triggered_spell_id, true);
-
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_CHECK_DAMAGE: //16
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    triggered_spell_id = abs(itr->spell_trigger);
-
-                    if(int32(damage) >= triggerAmount)
-                    {
-                        _caster->CastSpell(target, triggered_spell_id, true);
-                        triggeredByAura->GetBase()->Remove(AURA_REMOVE_BY_DEFAULT);
-                        check = true;
-                        continue;
-                    }
-
-                    triggeredByAura->SetAmount(triggerAmount - damage);
-
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_CAST_SPELL: // 20
-                {
-                    triggered_spell_id = abs(itr->spell_trigger);
-
-                    if (itr->aura)
-                    {
-                        if (_caster->HasAura(itr->aura))
-                            _caster->CastSpell(target, triggered_spell_id, true);
-                    }
-                    else
-                        _caster->CastSpell(target, triggered_spell_id, true);
-
-                    check = true;
-                    break;
-                }
-                case SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX: //21
-                {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
-                    {
-                        int32 _duration = int32(aura->GetDuration() + int32(triggerAmount * 1000));
-                        aura->SetDuration(_duration, true);
-                        if (_duration > aura->GetMaxDuration())
-                            aura->SetMaxDuration(_duration);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_ADD_DURATION: //22
-                {
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    if(Aura* aura = target->GetAura(triggered_spell_id))
-                    {
-                        int32 _duration = int32(aura->GetDuration() + triggerAmount);
-                        if (_duration < aura->GetMaxDuration())
-                            aura->SetDuration(_duration, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_MODIFY_COOLDOWN: //23
-                {
-                    if(Player* player = target->ToPlayer())
-                    {
-                        uint32 triggered_spell_id = abs(itr->spell_trigger);
-                        if(itr->aura && !procSpell)
-                            continue;
-                        if(itr->aura && procSpell && itr->aura != procSpell->Id)
-                            continue;
-
-                        int32 ChangeCooldown = triggerAmount;
-                        if(ChangeCooldown < 100)
-                            ChangeCooldown *= IN_MILLISECONDS;
-                        player->ModifySpellCooldown(triggered_spell_id, -ChangeCooldown);
-                    }
-                    check = true;
-                    break;
-                }
-                case SPELL_TRIGGER_VENGEANCE: // 24
-                {
-                    if (!victim || victim->GetCharmerOrOwnerPlayerOrPlayerItself())
-                        return false;
-
-                    if (itr->aura)
-                        if (!HasAura(itr->aura))
-                            return false;
-
-                    triggered_spell_id = itr->spell_trigger;
-
-                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb())
-                    {
-                        int32 bp = CalculatePct(alldamage, triggerAmount / 100.0f);
-
-                        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
-                            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
-                                bp += oldEff->GetAmount();
-
-                        int32 maxVal = GetMaxHealth();
-
-                        if (bp > maxVal)
-                            bp = maxVal;
-
-                        basepoints0 = bp;
-                        basepoints1 = bp;
-                    }
-                    break;
-                }
-                case SPELL_TRIGGER_ADD_DURATION_OR_CAST: //25
-                {
-                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger)))
-                    {
-                        int32 _duration = int32(aura->GetDuration() + aura->CalcMaxDuration(target));
-                        aura->SetDuration(_duration, true);
-                        if (_duration > aura->GetMaxDuration())
-                            aura->SetMaxDuration(_duration);
-                    }
-                    else
-                        _caster->CastSpell(target, itr->spell_trigger, true);
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_REMOVE_CD_RUNE: //26
-                {
-                    if(Player* _player = _caster->ToPlayer())
-                    {
-                        int32 runesRestor = 0;
-                        for (int i = 0; i < MAX_RUNES ; i++)
-                        {
-                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1)
-                            {
-                                runesRestor++;
-                                _player->SetRuneCooldown(i, 0);
-                                _player->AddRunePower(i);
-                            }
-                        }
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_BP_SPELLID: //27
-                {
-                    if(!procSpell)
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    if(itr->bp0)
-                        basepoints0 = procSpell->Id;
-                    if(itr->bp1)
-                        basepoints1 = procSpell->Id;
-                    if(itr->bp2)
-                        basepoints2 = procSpell->Id;
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_BP_SPD_AP: //28
-                {
-                    if(!procSpell)
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    WeaponAttackType attType = BASE_ATTACK;
-                    if (procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
-                        attType = RANGED_ATTACK;
-
-                    int32 SPD = GetSpellPowerDamage();
-                    int32 SPDH = GetSpellPowerHealing();
-                    int32 AP = GetTotalAttackPowerValue(attType);
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    switch (int32(itr->bp0))
-                    {
-                        case 1:
-                            basepoints0 = SPD;
-                            break;
-                        case 2:
-                            basepoints0 = SPDH;
-                            break;
-                        case 3:
-                            basepoints0 = AP;
-                            break;
-                    }
-                    switch (int32(itr->bp1))
-                    {
-                        case 1:
-                            basepoints1 = SPD;
-                            break;
-                        case 2:
-                            basepoints1 = SPDH;
-                            break;
-                        case 3:
-                            basepoints1 = AP;
-                            break;
-                    }
-                    switch (int32(itr->bp2))
-                    {
-                        case 1:
-                            basepoints2 = SPD;
-                            break;
-                        case 2:
-                            basepoints2 = SPDH;
-                            break;
-                        case 3:
-                            basepoints2 = AP;
-                            break;
-                    }
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_COMBOPOINT_BP: //29
-                {
-                    if(!procSpell || !procSpell->NeedsComboPoints())
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    int32 basepoints0 = triggerAmount * ToPlayer()->GetComboPoints();
-                    triggered_spell_id = abs(itr->spell_trigger);
-
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP: //30
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    basepoints0 = int32(float(dmgInfoProc->GetDamage() * 100.0f) / target->GetMaxHealth());
-                    if(bp0)
-                        basepoints0 *= bp0;
-
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
-                    }
-                    check = true;
-                }
-                break;
-                case SPELL_TRIGGER_SUMM_DAMAGE_PROC: //31
-                {
-                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
-                    {
-                        check = true;
-                        continue;
-                    }
-                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
-                    {
-                        check = true;
-                        continue;
-                    }
-
-                    int32 limited = 0;
-                    int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
-                    triggered_spell_id = abs(itr->spell_trigger);
-                    if (itr->bp0)
-                        limited = int32(GetSpellPowerDamage() * itr->bp0);
-                    else if (itr->bp1)
-                        limited = int32(GetSpellPowerHealing() * itr->bp1);
-                    else if (itr->bp2)
-                    {
-                        WeaponAttackType attType = BASE_ATTACK;
-                        if (procSpell && procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
-                            attType = RANGED_ATTACK;
-                        limited = int32(GetTotalAttackPowerValue(attType) * itr->bp2);
-                    }
-
-                    if(summ_damage < limited)
-                    {
-                        triggeredByAura->SetAmount(summ_damage);
-                        check = true;
-                        continue;
-                    }
-                    else
-                        triggeredByAura->SetAmount(0);
-
-                    _caster->CastSpell(target, triggered_spell_id, true);
-                    if(itr->target == 6)
-                    {
-                        if (Guardian* pet = GetGuardianPet())
-                            _caster->CastSpell(pet, triggered_spell_id, true);
-                    }
-                    check = true;
-                }
-                break;
-            }
-            if(itr->group != 0 && check)
-                groupList.push_back(itr->group);
-        }
-
-        if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
-            ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
-        if(check)
-            return true;
-    }
 
     switch (dummySpell->SpellFamilyName)
     {
@@ -17343,6 +16609,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_PROC_ON_POWER_AMOUNT] = true;
     isTriggerAura[SPELL_AURA_DUMMY] = true;
     isTriggerAura[SPELL_AURA_PERIODIC_DUMMY] = true;
+    isTriggerAura[SPELL_AURA_PERIODIC_HEAL] = true;
     isTriggerAura[SPELL_AURA_MOD_CONFUSE] = true;
     isTriggerAura[SPELL_AURA_MOD_THREAT] = true;
     isTriggerAura[SPELL_AURA_MOD_STUN] = true; // Aura does not have charges but needs to be removed on trigger
@@ -17620,6 +16887,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
         if (triggerData.effMask)
         {
+            sLog->outDebug(LOG_FILTER_PROC, "Unit::ProcDamageAndSpellFor: spellProto->Id %i, effMask %i, procSpell %i", spellProto->Id, triggerData.effMask, procSpell ? procSpell->Id : 0);
             // If set trigger always but only one time
             if(triggerData.spellProcEvent && (triggerData.spellProcEvent->procEx & PROC_EX_EX_ONE_TIME_TRIGGER))
             {
@@ -17744,7 +17012,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_DUMMY: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
-                        if (HandleDummyAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                        if(SpellProcTriggered(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        else if (HandleDummyAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
+                    }
+                    case SPELL_AURA_PERIODIC_HEAL:
+                    {
+                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_PERIODIC_HEAL: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
+                        if(SpellProcTriggered(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
                     }
@@ -18723,6 +18000,807 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
     //pet->InitLevelupSpellsForLevel();
     pet->SetFullHealth();
     return true;
+}
+
+bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown)
+{
+    uint32 damage = dmgInfoProc->GetDamage();
+    SpellInfo const* dummySpell = triggeredByAura->GetSpellInfo();
+    uint32 effIndex = triggeredByAura->GetEffIndex();
+    int32  triggerAmount = triggeredByAura->GetAmount();
+    int32 cooldown_spell_id = 0;
+    uint32 triggered_spell_id = 0;
+
+    Item* castItem = triggeredByAura->GetBase()->GetCastItemGUID() && GetTypeId() == TYPEID_PLAYER
+        ? ToPlayer()->GetItemByGuid(triggeredByAura->GetBase()->GetCastItemGUID()) : NULL;
+
+    Unit* target = victim;
+    int32 basepoints0 = NULL;
+    int32 basepoints1 = NULL;
+    int32 basepoints2 = NULL;
+    uint64 originalCaster = 0;
+    Unit* procSpellCaster = dmgInfoProc->GetAttacker();
+    uint64 procSpellCasterGUID = procSpellCaster ? procSpellCaster->GetGUID(): 0;
+
+    if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
+    {
+        bool check = false;
+        std::list<int32> groupList;
+        for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
+        {
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellTriggered target %u, caster %u, spell_trigger %i, chance %i, triggerAmount %i, damage %i, GetAbsorb %i, GetResist %i, GetBlock %i, group %i, effIndex %i, effectmask %i, option %i, (1<<effIndex) %i, procFlag %i",
+            itr->target, itr->caster, itr->spell_trigger, itr->chance, triggerAmount, damage, dmgInfoProc->GetAbsorb(), dmgInfoProc->GetResist(), dmgInfoProc->GetBlock(), itr->group, effIndex, itr->effectmask, itr->option, (1<<effIndex), procFlag);
+
+            if(itr->spell_cooldown)
+                cooldown_spell_id = abs(itr->spell_cooldown);
+            else
+                cooldown_spell_id = abs(itr->spell_trigger);
+            if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(cooldown_spell_id))
+                return false;
+
+            if (!(itr->effectmask & (1<<effIndex)))
+                continue;
+
+            if (itr->procFlags && !(itr->procFlags & procFlag))
+                continue;
+
+            if(itr->chance != 0)
+            {
+                if(itr->chance > 100) // chance get from amount
+                {
+                    if(!roll_chance_i(triggerAmount))
+                        continue;
+                }
+                else if(itr->chance == -1) // chance get from amount / 10
+                {
+                    int32 rollchance = urand(0, 1000);
+                    if (rollchance > triggerAmount)
+                        continue;
+                }
+                else if(itr->chance == -2) // chance get from amount / 100
+                {
+                    int32 rollchance = urand(0, 10000);
+                    if (rollchance > triggerAmount)
+                        continue;
+                }
+                else if(!roll_chance_i(itr->chance))
+                    continue;
+            }
+
+            if(itr->group != 0 && !groupList.empty())
+            {
+                bool groupFind = false;
+                for (std::list<int32>::const_iterator group_itr = groupList.begin(); group_itr != groupList.end(); ++group_itr)
+                    if((*group_itr) == itr->group)
+                        groupFind = true;
+                if(groupFind)
+                    continue;
+            }
+
+            if(itr->target == 1 || itr->target == 6 || !target) //get target self
+                target = this;
+            if(itr->target == 3 && ToPlayer()) //get target owner
+                if (Pet* pet = ToPlayer()->GetPet())
+                    target = (Unit*)pet;
+            if(itr->target == 4 && target->ToPlayer()) //get target pet
+                if (Pet* pet = target->ToPlayer()->GetPet())
+                    target = (Unit*)pet;
+            if(itr->target == 5) //get target owner
+                if (Unit* owner = GetOwner())
+                    target = owner;
+            if(itr->target == 7) //get target self
+                target = triggeredByAura->GetCaster();
+
+            Unit* _caster = this;
+            Unit* _targetAura = this;
+
+            if(itr->caster == 1) //get caster aura
+                _caster = triggeredByAura->GetCaster();
+            if(itr->caster == 3 && ToPlayer()) //get caster owner
+                if (Pet* pet = ToPlayer()->GetPet())
+                    _caster = (Unit*)pet;
+            if(itr->caster == 4) //get caster owner
+                if (Unit* owner = GetOwner())
+                    _caster = owner;
+            if(!_caster)
+                _caster = this;
+
+            if(itr->targetaura == 1) //get caster aura
+                _targetAura = triggeredByAura->GetCaster();
+            if(itr->targetaura == 2) //get target aura
+                _targetAura = victim;
+
+            int32 bp0 = int32(itr->bp0);
+            int32 bp1 = int32(itr->bp1);
+            int32 bp2 = int32(itr->bp2);
+            switch (itr->option)
+            {
+                case SPELL_TRIGGER_BP: //0
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->spell_trigger > 0)
+                        basepoints0 = triggerAmount;
+                    else
+                        basepoints0 = -(triggerAmount);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_BP_CUSTOM: //1
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_MANA_COST: //2
+                {
+                    if(!procSpell)
+                        continue;
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 cost = int32(procSpell->PowerCost + CalculatePct(GetCreateMana(), procSpell->PowerCostPercentage));
+                    basepoints0 = CalculatePct(cost, bp0);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_DAM_HEALTH: //3
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 percent = triggerAmount;
+                    if(bp0)
+                        percent += bp0;
+
+                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_COOLDOWN: //4
+                {
+                    if(Player* player = target->ToPlayer())
+                    {
+                        uint32 spellid = abs(itr->spell_trigger);
+                        if(itr->bp0 == 0.0f)
+                            player->RemoveSpellCooldown(spellid, true);
+                        else
+                        {
+                            if(itr->aura && !procSpell)
+                                continue;
+                            if(itr->aura && procSpell && itr->aura != procSpell->Id)
+                                continue;
+
+                            int32 delay = itr->bp0;
+                            if (delay > -1 * IN_MILLISECONDS)
+                            {
+                                if (roll_chance_i(50))
+                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
+                            }
+                            else
+                                player->ModifySpellCooldown(spellid, delay);
+                        }
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR: //5
+                {
+                    if (itr->aura)
+                    {
+                        if (itr->aura > 0)
+                        {
+                            if (!HasAura(itr->aura))
+                            {
+                                check = true;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (HasAura(-(itr->aura)))
+                            {
+                                check = true;
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (itr->spell_trigger > 0)
+                    {
+                        if (Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                            aura->RefreshTimers();
+                    }
+                    else
+                    {
+                        if (procSpell->Id == -(itr->spell_trigger))
+                            if (procSpellCasterGUID == triggeredByAura->GetCasterGUID())
+                                triggeredByAura->GetBase()->RefreshTimers();
+                    }
+
+                    check = true;
+                    break;
+                }
+                case SPELL_TRIGGER_GET_DUR_AURA: //6
+                {
+                    if(Aura* aura = target->GetAura(itr->aura, GetGUID()))
+                        basepoints0 = int32(aura->GetDuration() / 1000);
+                    if(basepoints0)
+                    {
+                        triggered_spell_id = abs(itr->spell_trigger);
+                        _caster->CastCustomSpell(this, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = GetGuardianPet())
+                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
+                {
+                    if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 chance = 20 * ToPlayer()->GetComboPoints();
+                    if (roll_chance_i(chance))
+                    {
+                        triggered_spell_id = abs(itr->spell_trigger);
+                        _caster->CastCustomSpell(target, triggered_spell_id, &bp0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                        if(itr->target == 6)
+                        {
+                            if (Guardian* pet = GetGuardianPet())
+                                _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                        }
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_UPDATE_DUR_TO_MAX: //8
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                        aura->SetDuration(aura->GetSpellInfo()->GetMaxDuration(), true);
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_FROM_DAMGE: //9
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    float amount = bp0;
+
+                    if (!bp0)
+                        amount = triggerAmount / 100.0f;
+
+                    basepoints0 = CalculatePct(damage, amount);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &bp1, &bp2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &bp1, &bp2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_MAX_MANA: //10
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetMaxPower(POWER_MANA));
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_BASE_MANA: //11
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetCreateMana());
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_PERC_CUR_MANA: //12
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    basepoints0 = int32((itr->bp0 / 100.0f) * target->GetPower(POWER_MANA));
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    target->EnergizeBySpell(target, triggered_spell_id, basepoints0, POWER_MANA);
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_CHECK_PROCK: //13
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if(itr->aura == procSpell->Id)
+                        _caster->CastSpell(target, triggered_spell_id, true);
+
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_CHECK_DAMAGE: //16
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if(int32(damage) >= triggerAmount)
+                    {
+                        _caster->CastSpell(target, triggered_spell_id, true);
+                        triggeredByAura->GetBase()->Remove(AURA_REMOVE_BY_DEFAULT);
+                        check = true;
+                        continue;
+                    }
+
+                    triggeredByAura->SetAmount(triggerAmount - damage);
+
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_CAST_SPELL: // 20
+                {
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    if (itr->aura)
+                    {
+                        if (_caster->HasAura(itr->aura))
+                            _caster->CastSpell(target, triggered_spell_id, true);
+                    }
+                    else
+                        _caster->CastSpell(target, triggered_spell_id, true);
+
+                    check = true;
+                    break;
+                }
+                case SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX: //21
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
+                    {
+                        int32 _duration = int32(aura->GetDuration() + int32(triggerAmount * 1000));
+                        aura->SetDuration(_duration, true);
+                        if (_duration > aura->GetMaxDuration())
+                            aura->SetMaxDuration(_duration);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_ADD_DURATION: //22
+                {
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    if(Aura* aura = target->GetAura(triggered_spell_id))
+                    {
+                        int32 _duration = int32(aura->GetDuration() + triggerAmount);
+                        if (_duration < aura->GetMaxDuration())
+                            aura->SetDuration(_duration, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_MODIFY_COOLDOWN: //23
+                {
+                    if(Player* player = target->ToPlayer())
+                    {
+                        uint32 triggered_spell_id = abs(itr->spell_trigger);
+                        if(itr->aura && !procSpell)
+                            continue;
+                        if(itr->aura && procSpell && itr->aura != procSpell->Id)
+                            continue;
+
+                        int32 ChangeCooldown = triggerAmount;
+                        if(ChangeCooldown < 100)
+                            ChangeCooldown *= IN_MILLISECONDS;
+                        player->ModifySpellCooldown(triggered_spell_id, -ChangeCooldown);
+                    }
+                    check = true;
+                    break;
+                }
+                case SPELL_TRIGGER_VENGEANCE: // 24
+                {
+                    if (!victim || victim->GetCharmerOrOwnerPlayerOrPlayerItself())
+                        return false;
+
+                    if (itr->aura)
+                        if (!HasAura(itr->aura))
+                            return false;
+
+                    triggered_spell_id = itr->spell_trigger;
+
+                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb())
+                    {
+                        int32 bp = CalculatePct(alldamage, triggerAmount / 100.0f);
+
+                        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
+                            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                                bp += oldEff->GetAmount();
+
+                        int32 maxVal = GetMaxHealth();
+
+                        if (bp > maxVal)
+                            bp = maxVal;
+
+                        basepoints0 = bp;
+                        basepoints1 = bp;
+                    }
+                    break;
+                }
+                case SPELL_TRIGGER_ADD_DURATION_OR_CAST: //25
+                {
+                    if(Aura* aura = target->GetAura(abs(itr->spell_trigger)))
+                    {
+                        int32 _duration = int32(aura->GetDuration() + aura->CalcMaxDuration(target));
+                        aura->SetDuration(_duration, true);
+                        if (_duration > aura->GetMaxDuration())
+                            aura->SetMaxDuration(_duration);
+                    }
+                    else
+                        _caster->CastSpell(target, itr->spell_trigger, true);
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_REMOVE_CD_RUNE: //26
+                {
+                    if(Player* _player = _caster->ToPlayer())
+                    {
+                        int32 runesRestor = 0;
+                        for (int i = 0; i < MAX_RUNES ; i++)
+                        {
+                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1)
+                            {
+                                runesRestor++;
+                                _player->SetRuneCooldown(i, 0);
+                                _player->AddRunePower(i);
+                            }
+                        }
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_BP_SPELLID: //27
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    if(itr->bp0)
+                        basepoints0 = procSpell->Id;
+                    if(itr->bp1)
+                        basepoints1 = procSpell->Id;
+                    if(itr->bp2)
+                        basepoints2 = procSpell->Id;
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_BP_SPD_AP: //28
+                {
+                    if(!procSpell)
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    WeaponAttackType attType = BASE_ATTACK;
+                    if (procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
+                        attType = RANGED_ATTACK;
+
+                    int32 SPD = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 SPDH = SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
+                    int32 AP = GetTotalAttackPowerValue(attType);
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    switch (int32(itr->bp0))
+                    {
+                        case 1:
+                            basepoints0 = SPD;
+                            break;
+                        case 2:
+                            basepoints0 = SPDH;
+                            break;
+                        case 3:
+                            basepoints0 = AP;
+                            break;
+                    }
+                    switch (int32(itr->bp1))
+                    {
+                        case 1:
+                            basepoints1 = SPD;
+                            break;
+                        case 2:
+                            basepoints1 = SPDH;
+                            break;
+                        case 3:
+                            basepoints1 = AP;
+                            break;
+                    }
+                    switch (int32(itr->bp2))
+                    {
+                        case 1:
+                            basepoints2 = SPD;
+                            break;
+                        case 2:
+                            basepoints2 = SPDH;
+                            break;
+                        case 3:
+                            basepoints2 = AP;
+                            break;
+                    }
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_COMBOPOINT_BP: //29
+                {
+                    if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 basepoints0 = triggerAmount * ToPlayer()->GetComboPoints();
+                    triggered_spell_id = abs(itr->spell_trigger);
+
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP: //30
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    basepoints0 = int32(float(dmgInfoProc->GetDamage() * 100.0f) / target->GetMaxHealth());
+                    if(bp0)
+                        basepoints0 *= bp0;
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
+                case SPELL_TRIGGER_SUMM_DAMAGE_PROC: //31
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    int32 limited = 0;
+                    int32 summ_damage = triggerAmount + dmgInfoProc->GetDamage();
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    if (itr->bp0)
+                        limited = int32(SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp0);
+                    else if (itr->bp1)
+                        limited = int32(SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL) * itr->bp1);
+                    else if (itr->bp2)
+                    {
+                        WeaponAttackType attType = BASE_ATTACK;
+                        if (procSpell && procSpell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
+                            attType = RANGED_ATTACK;
+                        limited = int32(GetTotalAttackPowerValue(attType) * itr->bp2);
+                    }
+
+                    if(summ_damage < limited)
+                    {
+                        triggeredByAura->SetAmount(summ_damage);
+                        check = true;
+                        continue;
+                    }
+                    else
+                        triggeredByAura->SetAmount(0);
+
+                    _caster->CastSpell(target, triggered_spell_id, true);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastSpell(pet, triggered_spell_id, true);
+                    }
+                    check = true;
+                }
+                break;
+            }
+            if(itr->group != 0 && check)
+                groupList.push_back(itr->group);
+        }
+
+        if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
+        if(check)
+            return true;
+    }
+    return false;
 }
 
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)

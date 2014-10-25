@@ -322,7 +322,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
 
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
     // stack amount has priority over charges (checked on retail with spell 50262)
-    data << uint8(aura->GetStackAmount() ? aura->GetStackAmount() : aura->GetCharges());
+    data << uint8(aura->GetStackAmount() > 1 ? aura->GetStackAmount() : aura->GetCharges());
     data << uint32(GetEffectMask());
     if (flags & AFLAG_DURATION)
         data << uint32(aura->GetDuration());
@@ -492,27 +492,21 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
                 return NULL;
 
     Aura* aura = NULL;
-    if(spellproto->IsSingleTarget(caster))
+    if(spellproto->IsSingleTarget(caster) && owner->ToUnit())
     {
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
         for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
-            if ((*itr)->GetId() == spellproto->Id)
+            if ((*itr)->GetId() == spellproto->Id && (*itr)->GetDuration() > 2000)
             {
-                //test code
-                /*sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura* Aura::Create aura %u, GetCasterGUID %u", (*itr)->GetId(), caster->GetGUID());
+                //Transfer aura to new target without recalculate aura data
                 Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
                 for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
                 {
-                    AuraApplication * aurApp = app->second;
+                    (*itr)->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second);
                     ++app;
-                    Unit* target = aurApp->GetTarget();
-                    aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
-                    (*itr)->_UnapplyForTarget(target, caster, aurApp);
-                    (*itr)->ChangeOwner(owner);
                 }
-                return (*itr);*/
-                stackAmount = (*itr)->GetStackAmount();
+                return (*itr);
             }
             ++itr;
         }
@@ -677,6 +671,17 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
             caster->ToPlayer()->SendCooldownEvent(GetSpellInfo());
     }
+}
+
+void Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
+{
+    ASSERT(!auraApp->GetRemoveMode());
+    ASSERT(auraApp);
+    Unit* owner = auraApp->GetTarget();
+    owner->_UnapplyAura(auraApp, AURA_REMOVE_BY_DEFAULT);
+    ChangeOwner(target);
+    owner->ChangeOwnedAura(this, target, caster);
+    ChangeCaster(caster->GetGUID());
 }
 
 // removes aura from all targets
