@@ -156,7 +156,7 @@ class boss_norushen : public CreatureScript
 
             void Reset()
             {
-                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 1);
             }
 
 
@@ -353,9 +353,9 @@ class boss_amalgam_of_corruption : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/)
             {
-                me->AddAura(SPELL_SPAWN_AMALGAM, me);
+                //me->AddAura(SPELL_SPAWN_AMALGAM, me);
                 me->SetInCombatWithZone();
-                //summon->CastSpell(summon, SPELL_SPAWN_AMALGAM, true);
+                me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
             }
 
             void ApplyOrRemoveBar(bool state)
