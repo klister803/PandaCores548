@@ -4021,7 +4021,7 @@ void Unit::RemoveAurasDueToItemSpell(Item* castItem, uint32 spellId)
 
 void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura* except, bool negative, bool positive)
 {
-    for (AuraEffectList::iterator iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end();)
+    for (AuraEffectList::iterator iter = m_modAuras[auraType].begin(), next; iter != m_modAuras[auraType].end();iter = next)
     {
         Aura* aura = (*iter)->GetBase();
         AuraApplication * aurApp = aura->GetApplicationOfTarget(GetGUID());
@@ -4029,18 +4029,20 @@ void Unit::RemoveAurasByType(AuraType auraType, uint64 casterGUID, Aura* except,
         if (!aurApp)
         {
             printf("CRASH ALERT : Unit::RemoveAurasByType no AurApp pointer for Aura Id %u\n", aura->GetId());
-            ++iter;
+            next = iter;
+            ++next;
             continue;
         }
 
-        ++iter;
+        next = iter;
+        ++next;
         if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
             && ((negative && !aurApp->IsPositive()) || (positive && aurApp->IsPositive())))
         {
             uint32 removedAuras = m_removedAurasCount;
             RemoveAura(aurApp);
             if (m_removedAurasCount > removedAuras + 1)
-                iter = m_modAuras[auraType].begin();
+                next = m_modAuras[auraType].begin();
         }
     }
 }
