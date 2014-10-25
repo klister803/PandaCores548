@@ -118,7 +118,7 @@ class Aura
 
         virtual void _ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         virtual void _UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
-        void MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
+        bool MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         void _Remove(AuraRemoveMode removeMode);
         virtual void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) = 0;
 

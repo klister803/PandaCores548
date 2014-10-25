@@ -494,6 +494,7 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
     Aura* aura = NULL;
     if(spellproto->IsSingleTarget(caster) && owner->ToUnit())
     {
+        bool moving = false;
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
         for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
@@ -503,10 +504,14 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
                 Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
                 for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
                 {
-                    (*itr)->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second);
+                    if((*itr)->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second))
+                        moving = true;
                     ++app;
                 }
-                return (*itr);
+                if(moving)
+                    return (*itr);
+                else
+                    stackAmount = (*itr)->GetStackAmount();
             }
             ++itr;
         }
@@ -673,15 +678,17 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
     }
 }
 
-void Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
+bool Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
 {
-    ASSERT(!auraApp->GetRemoveMode());
-    ASSERT(auraApp);
+    if(!auraApp || auraApp->GetRemoveMode())
+        return false;
+
     Unit* owner = auraApp->GetTarget();
     owner->_UnapplyAura(auraApp, AURA_REMOVE_BY_DEFAULT);
     ChangeOwner(target);
     owner->ChangeOwnedAura(this, target, caster);
     ChangeCaster(caster->GetGUID());
+    return true;
 }
 
 // removes aura from all targets
