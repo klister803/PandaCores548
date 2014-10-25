@@ -1584,6 +1584,19 @@ float Position::GetDegreesAngel(float x, float y, bool relative) const
     return NormalizeOrientation(angel) * M_RAD;
 }
 
+Position Position::GetRandPointBetween(const Position &B) const
+{
+    float Lambda = urand(0.0f, 100.0f) / 100.0f;
+    float X = (B.GetPositionX() + Lambda * GetPositionX()) / (1 + Lambda);
+    float Y = (B.GetPositionY() + Lambda * GetPositionY()) / (1 + Lambda);
+    //Z should be updated by Vmap
+    float Z = (B.GetPositionZ() + Lambda * GetPositionZ()) / (1 + Lambda);
+
+    Position result;
+    result.Relocate(X, Y, Z);
+    return result;
+}
+
 std::string Position::ToString() const
 {
     std::stringstream sstr;
