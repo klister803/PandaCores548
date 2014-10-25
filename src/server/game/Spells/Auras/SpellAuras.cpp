@@ -501,7 +501,7 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
             if ((*itr)->GetId() == spellproto->Id && (*itr)->GetDuration() > 2000)
             {
                 //Transfer aura to new target without recalculate aura data
-                Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
+                /*Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
                 for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
                 {
                     if((*itr)->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second))
@@ -510,7 +510,7 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
                 }
                 if(moving)
                     return (*itr);
-                else
+                else*/
                     stackAmount = (*itr)->GetStackAmount();
             }
             ++itr;
