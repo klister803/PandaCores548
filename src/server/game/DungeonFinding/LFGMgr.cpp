@@ -1574,7 +1574,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         }
         LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
         // if 'random' dungeon is not random nor seasonal, check actual dungeon (it can be raid finder)
-        if (rDungeon->type != LFG_TYPE_RANDOM && !rDungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
+        if (rDungeon->type != LFG_TYPE_RANDOM && rDungeon->seasonal && dungeonDone && dungeonDone->dbc->CanBeRewarded())
         {
             // there can be more that 1 non-random dungeon selected, so fall back to current dungeon id
             rDungeonId = dungeonDone->id;
