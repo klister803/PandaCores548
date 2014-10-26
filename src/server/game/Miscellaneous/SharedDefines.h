@@ -1129,7 +1129,12 @@ enum SpellEffects
     SPELL_EFFECT_CREATE_ITEM_3                      = 206, // Create item from Timeless Isle
     SPELL_EFFECT_207                                = 207, // 0 spells
     SPELL_EFFECT_REPUTATION_SET                     = 208, // Test Reputation Set
-    TOTAL_SPELL_EFFECTS                             = 209
+    SPELL_EFFECT_209                                = 209,
+    SPELL_EFFECT_210                                = 210,
+    SPELL_EFFECT_211                                = 211,
+    SPELL_EFFECT_212                                = 212,
+    SPELL_EFFECT_213                                = 213,
+    TOTAL_SPELL_EFFECTS                             = 214
 };
 
 enum PetTameResult
