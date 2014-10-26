@@ -174,6 +174,7 @@ void InstanceScript::AddDoor(GameObject* door, bool add)
 
         if (add)
         {
+            door->setActive(true);
             data.bossInfo->door[data.type].insert(door);
             switch (data.boundary)
             {

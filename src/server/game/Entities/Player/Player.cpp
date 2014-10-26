@@ -7769,6 +7769,19 @@ int8 Player::GetFreeActionButton()
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop /*=false*/)
 {
+    // half opt method
+    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
+    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+
+    if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS)
+    {
+        //Ban
+        std::ostringstream ss;
+        ss << "Out of Map " << GetMapId() << " x:" << x << " y:" << y  << " z:" << z;
+        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d", ss.str().c_str(), "System");
+        return false;
+    }
+
     if (!Unit::UpdatePosition(x, y, z, orientation, teleport))
         return false;
 
