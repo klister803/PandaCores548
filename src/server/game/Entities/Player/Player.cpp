@@ -4408,6 +4408,29 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
         if(spellInfo->IsMountOrCompanions())
         {
+            // added battlepets
+            uint32 petEntry = spellInfo->GetBattlePetEntry();
+            if(petEntry)
+            {
+                if (BattlePetSpeciesEntry const* spEntry = GetBattlePetMgr()->GetBattlePetSpeciesEntry(petEntry))
+                {
+                    if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry))
+                    {
+                        // check having pet in DB
+                        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CHECK_EXIST_BATTLE_PET);
+                        stmt->setUInt32(0, GetSession()->GetAccountId());
+                        stmt->setUInt32(1, spellId);
+                        stmt->setUInt32(2, petEntry);
+                        PreparedQueryResult res = CharacterDatabase.Query(stmt);
+                        if (!res)
+                        {
+                            uint64 guid = sObjectMgr->GenerateBattlePetGuid();
+                            GetBattlePetMgr()->AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
+                        }
+                    }
+                }
+            }
+            // added or replaced mounts
             mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(charload)
             {

@@ -634,6 +634,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Battle Pets
     PREPARE_STATEMENT(CHAR_SAVE_BATTLE_PET_JOURNAL, "REPLACE INTO character_battle_pet_journal (guid, ownerAccID, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_LOAD_BATTLE_PET_JOURNAL, "SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags FROM character_battle_pet_journal WHERE ownerAccID = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_CHECK_EXIST_BATTLE_PET, "SELECT guid FROM character_battle_pet_journal WHERE ownerAccID = ? AND spell = ? AND creatureEntry = ?", CONNECTION_SYNCH);
 
     // Else
     PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_ASYNC);

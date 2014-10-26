@@ -46,40 +46,6 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
     m_PetJournal.clear();
 }
 
-void BattlePetMgr::FillPetJournal()
-{
-    PlayerSpellMap const& spellMap = m_player->GetSpellMap();
-    for (PlayerSpellMap::const_iterator itr = spellMap.begin(); itr != spellMap.end(); ++itr)
-    {
-        if (itr->second->state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if (!itr->second->active || itr->second->disabled)
-            continue;
-
-        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
-        if (!spell)
-            continue;
-
-        uint32 petEntry = spell->GetBattlePetEntry();
-        if(petEntry == 0)
-            continue;
-
-        BattlePetSpeciesEntry const* spEntry = GetBattlePetSpeciesEntry(petEntry);
-
-        if (!spEntry)
-            continue;
-
-        CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry);
-
-        if (!creature)
-            continue;
-
-        uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-        AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spell->Id);
-    }
-}
-
 void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
 {
     m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName);
@@ -88,10 +54,6 @@ void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatur
 void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 {
     ObjectGuid placeholderPet;
-
-    if (m_PetJournal.empty())
-        FillPetJournal();
-
     data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
     data->WriteBits(m_PetJournal.size(), 19);
 

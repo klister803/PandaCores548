@@ -90,7 +90,7 @@ enum BattlePetSpeciesFlags
 
 enum BattlePetSpeciesSource
 {
-    SOURCE_RANDOM_LOOT = 0,
+    SOURCE_LOOT        = 0,
     SOURCE_QUEST       = 1,
     SOURCE_VENDOR      = 2,
     SOURCE_PROFESSION  = 3,
@@ -112,7 +112,6 @@ public:
             delete itr->second;
     }
 
-    void FillPetJournal();
     void BuildPetJournal(WorldPacket *data);
 
     void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = -1);
