@@ -108,8 +108,7 @@ class Aura
         uint64 GetCasterGUID() const { return m_casterGuid; }
         Unit* GetCaster() const;
         WorldObject* GetOwner() const { return m_owner; }
-        void ChangeOwner(WorldObject* owner) { m_owner = owner; }
-        void ChangeCaster(uint32 newGuid) { m_casterGuid = newGuid; }
+        WorldObject* ChangeOwner(WorldObject* owner) { return m_owner = owner; }
         Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
         void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
@@ -121,7 +120,6 @@ class Aura
 
         virtual void _ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         virtual void _UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
-        bool MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         void _Remove(AuraRemoveMode removeMode);
         virtual void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) = 0;
 
@@ -253,7 +251,7 @@ class Aura
         void _DeleteRemovedApplications();
     protected:
         SpellInfo const* const m_spellInfo;
-        uint64 m_casterGuid;
+        uint64 const m_casterGuid;
         uint64 const m_castItemGuid;                        // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t const m_applyTime;
         WorldObject* m_owner;

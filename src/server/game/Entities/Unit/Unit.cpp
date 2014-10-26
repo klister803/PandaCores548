@@ -3456,19 +3456,16 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
         caster->GetSingleCastAuras().push_back(aura);
         // remove other single target auras
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
-        for (Unit::AuraList::iterator itr = scAuras.begin(), next; itr != scAuras.end();itr = next)
+        for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
-            next = itr;
-            Aura* aurasc = (*itr);
-            if (aurasc != aura &&
-                aurasc->IsSingleTargetWith(aura))
+            if ((*itr) != aura &&
+                (*itr)->IsSingleTargetWith(aura))
             {
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::_AddAura aura %u, GetCasterGUID %u, GetGUID %u", aurasc->GetId(), aura->GetCasterGUID(), GetGUID());
-                aurasc->Remove();
-                next = scAuras.begin();
+                (*itr)->Remove();
+                itr = scAuras.begin();
             }
             else
-                ++next;
+                ++itr;
         }
     }
 }
@@ -3716,30 +3713,6 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
         m_modAuras[aurEff->GetAuraType()].push_back(aurEff);
     else
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
-}
-
-// All aura base removes should go threw this function!
-void Unit::ChangeOwnedAura(Aura* aura, Unit* newOwner, Unit* caster)
-{
-    // if (aura->IsRemoved())
-        // return;
-
-    ASSERT(!aura->IsRemoved());
-
-    uint32 spellId = aura->GetId();
-    for (AuraMap::iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId);)
-    {
-        if (itr->second == aura)
-        {
-            m_ownedAuras.erase(itr);
-            m_removedAuras.push_back(aura);
-            itr = m_ownedAuras.begin();
-        }
-        else
-            ++itr;
-    }
-
-    newOwner->_AddAura((UnitAura*)aura, caster);
 }
 
 // All aura base removes should go threw this function!

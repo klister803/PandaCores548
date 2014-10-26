@@ -498,22 +498,22 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
         for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
-            Aura* auraSin = (*itr);
-            if (!auraSin->IsRemoved() && auraSin->GetId() == spellproto->Id && auraSin->GetDuration() > 2000)
+            if ((*itr)->GetId() == spellproto->Id)
             {
-                //Transfer aura to new target without recalculate aura data
-                Aura::ApplicationMap const& appMap = auraSin->GetApplicationMap();
-                for (Aura::ApplicationMap::const_iterator app = appMap.begin(), next; app!= appMap.end();app = next)
+                //test code
+                /*sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura* Aura::Create aura %u, GetCasterGUID %u", (*itr)->GetId(), caster->GetGUID());
+                Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
+                for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
                 {
-                    next = app;
-                    if(auraSin->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second))
-                        moving = true;
-                    ++next;
+                    AuraApplication * aurApp = app->second;
+                    ++app;
+                    Unit* target = aurApp->GetTarget();
+                    aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
+                    (*itr)->_UnapplyForTarget(target, caster, aurApp);
+                    (*itr)->ChangeOwner(owner);
                 }
-                if(moving)
-                    return auraSin;
-                else
-                    stackAmount = auraSin->GetStackAmount();
+                return (*itr);*/
+                stackAmount = (*itr)->GetStackAmount();
             }
             ++itr;
         }
@@ -678,19 +678,6 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
             caster->ToPlayer()->SendCooldownEvent(GetSpellInfo());
     }
-}
-
-bool Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
-{
-    if(!auraApp || auraApp->GetRemoveMode())
-        return false;
-
-    Unit* owner = auraApp->GetTarget();
-    owner->_UnapplyAura(auraApp, AURA_REMOVE_BY_DEFAULT);
-    ChangeOwner(target);
-    owner->ChangeOwnedAura(this, target, caster);
-    ChangeCaster(caster->GetGUID());
-    return true;
 }
 
 // removes aura from all targets
