@@ -8687,6 +8687,8 @@ void AuraEffect::HandleBattlegroundFlag(AuraApplication const* aurApp, uint8 mod
 
 void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
+    //Use custom summon at spell_norushen_residual_corruption id 145074
+
     /*if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
 

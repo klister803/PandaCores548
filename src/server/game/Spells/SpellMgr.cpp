@@ -4781,6 +4781,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145212: //Unleashed Anger dmg
                     spellInfo->Effects[0].TargetA = 25;
                     break;
+                case 147082: //Burst of Anger
+                    spellInfo->TargetAuraSpell = 144421;
+                    break;
                 case 145214: //Unleashed Anger
                     spellInfo->CasterAuraSpell = 0;
                     spellInfo->Effects[2].TargetA = 25;

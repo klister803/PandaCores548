@@ -57,3 +57,14 @@ REPLACE INTO`spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145571', 's
 DELETE FROM `conditions` WHERE `SourceEntry` = 145226;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
  ('13', '3', '145226', '0', '0', '31', '0', '3', '72565', '0', '0', '0', '', NULL);
+ 
+--
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_challenge' WHERE `creature_template`.`entry` = 71977;
+
+--
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption' WHERE `creature_template`.`entry` = 72264;
+
+--
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
+INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `visualId`, `comment`) VALUES 
+('5022', '1', '0', '0', '0', '0', '32875', '0', 'OO:NN spell_norushen_residual_corruption');

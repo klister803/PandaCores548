@@ -91,7 +91,7 @@ enum eCreatures
     NPC_RIFT_OF_CORRUPTION          = 72846, //Rift of Corruption
     //controller 68553?? Sha Vortex triger 146034
 
-    //  
+    //  Norushen
     NPC_NORUSHEN                    = 71967,
     NPC_AMALGAM_OF_CORRUPTION       = 72276,
     NPC_ESSENCE_OF_CORRUPTION       = 71976,
@@ -99,6 +99,8 @@ enum eCreatures
     NPC_TITANIC_CORRUPTION          = 72051,
     NPC_GREATER_CORRUPTION          = 72001,
     NPC_PURIFYING_LIGHT             = 72065,
+    NPC_RESIDUAL_CORRUPTION         = 72550,
+
     //
     NPC_GALAKRAS                    = 72249,
     NPC_IRON_JUGGERNAUT             = 71466,

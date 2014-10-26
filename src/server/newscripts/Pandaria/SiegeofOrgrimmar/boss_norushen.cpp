@@ -40,6 +40,7 @@ enum eSpells
     SPELL_SELF_DOUBT           = 146124,
     SPELL_QUARANTINE_SAFETY    = 145779,
     SPELL_FRAYED               = 146179,
+    SPELL_UNLEASH_CORRUPTION   = 145769,
 
     //Phase spells
     SPELL_LOOK_WITHIN          = 146837,
@@ -62,6 +63,12 @@ enum eSpells
     SPELL_BOTTOMLESS_PIT       = 146703,
     SPELL_DISHEARTENING_LAUGH  = 146707,
     SPELL_LINGERING_CORRUPTION = 144514,
+
+    // Frayed. Manifestation of corruption.
+    SPELL_BURST_OF_ANGER       = 147082,
+
+    //RESIDUAL_CORRUPTION
+    SPELL_CORRUPTION_AREA      = 145052,
 
     //Manifestation of Corruption
     SPELL_TEAR_REALITY         = 144482,
@@ -377,6 +384,7 @@ class boss_amalgam_of_corruption : public CreatureScript
             void Reset()
             {
                 _Reset();
+                me->RemoveAurasDueToSpell(SPELL_FRAYED);
                 me->RemoveAurasDueToSpell(SPELL_ICY_FEAR);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
@@ -419,7 +427,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                 //events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
                 //events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);     //18:23:51.000 - 18:24:02.000
                 //events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
-                events.ScheduleEvent(EVENT_BLIND_HATRED, 1/*12000*/);
+                //events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
                 me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
             }
 
@@ -435,22 +443,16 @@ class boss_amalgam_of_corruption : public CreatureScript
                 damage = CalculatePct(damage, 100 - attacker->GetPower(POWER_ALTERNATE_POWER));
 
                 //Frayed summon manifestation of corruption every 10% after 50 pct.
-                if (HealthBelowPct(50) && damage > me->GetHealth())
+                if (HealthBelowPct(50) && damage < me->GetHealth())
                 {
-                    if (HealthBelowPct(50 + 10*FrayedCounter))
+                    if (HealthBelowPct(50 - 10*FrayedCounter))
                     {
                         if (!me->HasAura(SPELL_FRAYED))
                             me->AddAura(SPELL_FRAYED, me);
                         ++FrayedCounter;
-                        SummonManifestationofCorruption();
+                        DoCast(me, SPELL_UNLEASH_CORRUPTION);
                     }
                 }
-            }
-
-            void SummonManifestationofCorruption()
-            {
-                if (Creature* moc = me->SummonCreature(NPC_MANIFESTATION_OF_CORRUPTION, me->GetPositionX()+ 5.0f, me->GetPositionY(), me->GetPositionZ()))
-                    DoZoneInCombat(moc, 100.0f);
             }
 
             void DoAction(int32 const action)
@@ -573,7 +575,7 @@ public:
     }
 };
 
-//72065
+//72264 summoned at FRAYED
 class npc_purifying_light : public CreatureScript
 {
 public:
@@ -602,6 +604,119 @@ public:
     CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_purifying_lightAI(pCreature);
+    }
+};
+
+class npc_norushen_manifestation_of_corruption : public CreatureScript
+{
+public:
+    npc_norushen_manifestation_of_corruption() : CreatureScript("npc_norushen_manifestation_of_corruption") { }
+
+    struct npc_norushen_manifestation_of_corruptionAI : public ScriptedAI
+    {
+        npc_norushen_manifestation_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+
+            me->setPowerType(POWER_ENERGY);
+            me->SetMaxPower(POWER_ENERGY, 100);
+            me->SetPower(POWER_ENERGY, 100);
+        }
+        
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_1, 5000);
+        }
+
+        void IsSummonedBy(Unit* /*summoner*/)
+        {
+            me->SetInCombatWithZone();
+        }
+
+        void JustDied(Unit* killer)
+        {
+            //Summon NPC_RESIDUAL_CORRUPTION by not existent spell 145522
+            Unit* owner = me->GetAnyOwner();
+            if (!owner)
+                return;
+
+            if (Creature* rc = owner->SummonCreature(NPC_RESIDUAL_CORRUPTION, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+            {
+                rc->CastSpell(rc, 145074, true);
+            }
+        }
+       
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+            
+            while (uint32 eventId = events.ExecuteEvent())
+            {   
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        DoCastAOE(SPELL_BURST_OF_ANGER);
+                        events.ScheduleEvent(EVENT_1, 5000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_norushen_manifestation_of_corruptionAI(pCreature);
+    }
+};
+
+//72550
+class npc_norushen_residual_corruption : public CreatureScript
+{
+public:
+    npc_norushen_residual_corruption() : CreatureScript("npc_norushen_residual_corruption") { }
+
+    struct npc_norushen_residual_corruptionAI : public ScriptedAI
+    {
+        npc_norushen_residual_corruptionAI(Creature* creature) : ScriptedAI(creature)
+        {
+            SetCombatMovement(false);
+        }
+
+        void Reset() { }
+
+        void MoveInLineOfSight(Unit* target)
+        {
+            if (target->GetTypeId() != TYPEID_PLAYER ||
+                me->GetDistance(target) > 1.0f ||
+                !target->HasAura(SPELL_CORRUPTION))
+                return;
+
+            uint32 power = target->GetPower(POWER_ALTERNATE_POWER) + 25;
+            if (power > 100)
+                return;
+
+            target->SetPower(POWER_ALTERNATE_POWER, power);
+            me->DespawnOrUnsummon();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_norushen_residual_corruptionAI(creature);
     }
 };
 
@@ -659,15 +774,15 @@ public:
     }
 };
 
-//72264 for dd
-class npc_manifestation_of_corruption : public CreatureScript
+//71977 for dd
+class npc_norushen_manifestation_of_corruption_challenge : public CreatureScript
 {
 public:
-    npc_manifestation_of_corruption() : CreatureScript("npc_manifestation_of_corruption") { }
+    npc_norushen_manifestation_of_corruption_challenge() : CreatureScript("npc_norushen_manifestation_of_corruption_challenge") { }
 
-    struct npc_manifestation_of_corruptionAI : public ScriptedAI
+    struct npc_norushen_manifestation_of_corruption_challengeAI : public ScriptedAI
     {
-        npc_manifestation_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        npc_norushen_manifestation_of_corruption_challengeAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
         }
@@ -730,7 +845,7 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_manifestation_of_corruptionAI(pCreature);
+        return new npc_norushen_manifestation_of_corruption_challengeAI(pCreature);
     }
 };
 
@@ -1024,6 +1139,45 @@ class spell_icy_fear_dmg : public SpellScriptLoader
         }
 };
 
+//145074 Residual Corruption
+class spell_norushen_residual_corruption : public SpellScriptLoader
+{
+    public:
+        spell_norushen_residual_corruption() : SpellScriptLoader("spell_norushen_residual_corruption") { }
+
+        class spell_norushen_residual_corruption_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_norushen_residual_corruption_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                PreventDefaultAction();
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                AreaTrigger * areaTrigger = new AreaTrigger;
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), 5022, caster, GetSpellInfo(), *caster))
+                {
+                    delete areaTrigger;
+                    return;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_norushen_residual_corruption_AuraScript::OnApply, EFFECT_0, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
+            }
+
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_norushen_residual_corruption_AuraScript();
+        }
+};
+
 void AddSC_boss_norushen()
 {
     new boss_norushen();
@@ -1031,12 +1185,15 @@ void AddSC_boss_norushen()
     new boss_amalgam_of_corruption();
     new npc_blind_hatred();
     new npc_purifying_light();
+    new npc_norushen_manifestation_of_corruption();
+    new npc_norushen_residual_corruption();
     new npc_essence_of_corruption();
-    new npc_manifestation_of_corruption();
+    new npc_norushen_manifestation_of_corruption_challenge();
     new npc_titanic_corruption();
     new npc_greater_corruption();
     new spell_norushen_blind_hatred();
     new spell_norushen_blind_hatred_prock();
     new spell_unleashed_anger();
     new spell_icy_fear_dmg();
+    new spell_norushen_residual_corruption();
 }
