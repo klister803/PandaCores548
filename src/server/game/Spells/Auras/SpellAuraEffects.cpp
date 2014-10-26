@@ -7154,7 +7154,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
         if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
         {
             Unit* owner = caster->GetAnyOwner();
-            if(DynamicObject* dynObj = ObjectAccessor::GetAreaTrigger(*triggerCaster, dynObjGuid))
+            if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, dynObjGuid))
                 caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
         }
         else if(target)
@@ -7496,7 +7496,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
             {
                 Unit* owner = triggerCaster->GetAnyOwner();
-                if(DynamicObject* dynObj = ObjectAccessor::GetAreaTrigger(*triggerCaster, dynObjGuid))
+                if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*triggerCaster, dynObjGuid))
                     triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
                 else
                     triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
@@ -8707,7 +8707,7 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
         target->GetPosition(&pos);
 
         AreaTrigger* areaTrigger = new AreaTrigger;
-        if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos, NULL, target))
+        if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos, NULL, target->GetGUID()))
             delete areaTrigger;
 
         GetBase()->SetSpellAreaTrigger(areaTrigger->GetGUID());

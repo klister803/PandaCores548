@@ -403,7 +403,7 @@ SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
 m_spellInfo(info),
 m_caster((info->AttributesEx6 & SPELL_ATTR6_CAST_BY_CHARMER && caster->GetCharmerOrOwner()) ? caster->GetCharmerOrOwner() : caster),
-m_customError(SPELL_CUSTOM_ERROR_NONE), m_skipCheck(skipCheck), m_spellMissMask(0), m_selfContainer(NULL), m_spellDynObj(NULL),
+m_customError(SPELL_CUSTOM_ERROR_NONE), m_skipCheck(skipCheck), m_spellMissMask(0), m_selfContainer(NULL), m_spellDynObjGuid(NULL),
 m_referencedFromCurrentSpell(false), m_executedCurrently(false), m_needComboPoints(info->NeedsComboPoints()), hasPredictedDispel(NULL),
 m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling(0), m_applyMultiplierMask(0), m_auraScaleMask(0),
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),

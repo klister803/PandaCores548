@@ -498,22 +498,22 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
         for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
-            if ((*itr)->GetId() == spellproto->Id)
+            Aura* auraSin = (*itr);
+            if (!auraSin->IsRemoved() && auraSin->GetId() == spellproto->Id && auraSin->GetDuration() > 2000)
             {
-                //test code
-                /*sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura* Aura::Create aura %u, GetCasterGUID %u", (*itr)->GetId(), caster->GetGUID());
-                Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
-                for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
+                //Transfer aura to new target without recalculate aura data
+                Aura::ApplicationMap const& appMap = auraSin->GetApplicationMap();
+                for (Aura::ApplicationMap::const_iterator app = appMap.begin(), next; app!= appMap.end();app = next)
                 {
-                    AuraApplication * aurApp = app->second;
-                    ++app;
-                    Unit* target = aurApp->GetTarget();
-                    aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
-                    (*itr)->_UnapplyForTarget(target, caster, aurApp);
-                    (*itr)->ChangeOwner(owner);
+                    next = app;
+                    if(auraSin->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second))
+                        moving = true;
+                    ++next;
                 }
-                return (*itr);*/
-                stackAmount = (*itr)->GetStackAmount();
+                if(moving)
+                    return auraSin;
+                else
+                    stackAmount = auraSin->GetStackAmount();
             }
             ++itr;
         }
@@ -552,7 +552,7 @@ m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(stackAmount ? stackAmount: 1),
 m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_aura_amount(0),
-m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
+m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAreaTrGuid(0)
 {
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -678,6 +678,19 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
             caster->ToPlayer()->SendCooldownEvent(GetSpellInfo());
     }
+}
+
+bool Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
+{
+    if(!auraApp || auraApp->GetRemoveMode())
+        return false;
+
+    Unit* owner = auraApp->GetTarget();
+    owner->_UnapplyAura(auraApp, AURA_REMOVE_BY_DEFAULT);
+    ChangeOwner(target);
+    owner->ChangeOwnedAura(this, target, caster);
+    ChangeCaster(caster->GetGUID());
+    return true;
 }
 
 // removes aura from all targets
@@ -1215,6 +1228,7 @@ bool Aura::CanBeSaved() const
         // we skip saving this aura
         case 44413:
         // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
+        case 33763:
         case 67483:
         case 67484:
         case 48517:
