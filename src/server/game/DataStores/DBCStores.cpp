@@ -606,7 +606,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sSoundEntriesStore,           dbcPath, "SoundEntries.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpecializationSpellStore,    dbcPath, "SpecializationSpells.dbc");
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellStore,                  dbcPath, "Spell.dbc", &CustomSpellEntryfmt, &CustomSpellEntryIndex);//
-    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellMiscStore,              dbcPath, "SpellMisc.dbc", &CustomSpellMiscEntryfmt, &CustomSpellMiscEntryIndex);//16038
+    LoadDBC(availableDbcLocales, bad_dbc_files, sSpellMiscStore,              dbcPath, "SpellMisc.dbc", &CustomSpellMiscEntryfmt, &CustomSpellMiscEntryIndex);//18414
 
     for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
     {
@@ -868,11 +868,11 @@ void LoadDBCStores(const std::string& dataPath)
     }
 
     // Check loaded DBC files proper version
-    if (!sAreaStore.LookupEntry(5491)          ||     // last area (areaflag) added in 5.4.1 (17538)
-        !sCharTitlesStore.LookupEntry(389)     ||     // last char title added in 5.4.1 (17538)
-        !sGemPropertiesStore.LookupEntry(2467) ||     // last gem property added in 5.4.1 (17538)
-        !sMapStore.LookupEntry(1173)           ||     // last map added in 5.4.1 (17538)
-        !sSpellStore.LookupEntry(152028)       )      // last spell added in 5.4.1 (17538)
+    if (!sAreaStore.LookupEntry(5491)          ||     // last area (areaflag) added in 5.4.8 (18414)
+        !sCharTitlesStore.LookupEntry(389)     ||     // last char title added in 5.4.8 (18414)
+        !sGemPropertiesStore.LookupEntry(2467) ||     // last gem property added in 5.4.8 (18414)
+        !sMapStore.LookupEntry(1173)           ||     // last map added in 5.4.8 (18414)
+        !sSpellStore.LookupEntry(163227)       )      // last spell added in 5.4.8 (18414)
     {
         sLog->outError(LOG_FILTER_GENERAL, "You have _outdated_ DBC files. Please extract correct versions from current using client.");
         exit(1);
