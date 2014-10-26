@@ -68,3 +68,4 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_cor
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `visualId`, `comment`) VALUES 
 ('5022', '1', '0', '0', '0', '0', '32875', '0', 'OO:NN spell_norushen_residual_corruption');
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_residual_corruption' WHERE `creature_template`.`entry` = 72550;
