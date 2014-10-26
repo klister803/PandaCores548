@@ -3652,11 +3652,19 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         uint64 battlePetGUID = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetGUIDBySpell(m_spellInfo->Id);
                         if (battlePetGUID)
                         {
+                            // pet data
                             if (PetInfo * pet = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
-                                summon->SetLevel(pet->level);
+                            {
+                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->quality);
+                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->level);
+                            }
                         }
+
+                        // set guids
                         m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
                         summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
+                        // timestamp
+                        summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
                     }
 
                     summon->AI()->EnterEvadeMode();
