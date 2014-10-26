@@ -101,6 +101,11 @@ public:
                 //Sha of pride: SPELL_PRIDE
                 if (player->HasAura(144343))
                     player->RemoveAura(144343);
+            }else if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
+            {
+                //Norushen: Coruption
+                if (player->HasAura(144421))
+                    player->RemoveAura(144421);
             }
         }
 

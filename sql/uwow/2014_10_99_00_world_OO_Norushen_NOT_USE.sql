@@ -52,26 +52,8 @@ INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `
 (@entry, @id := @id+ 1, 797.319, 880.821, 371.112, NULL),
 (@entry, @id := @id+ 1, 797.319, 880.821, 371.112, NULL);
 
-
-remove at start.
-[0] [1] Object GUID: Full: 0xF113672400000193 Type: GameObject Entry: 223012 Low: 403
-[0] [2] Object GUID: Full: 0xF113672500000194 Type: GameObject Entry: 223013 Low: 404
-[0] [3] Object GUID: Full: 0xF113672600000195 Type: GameObject Entry: 223014 Low: 405
-[0] [4] Object GUID: Full: 0xF113672700000196 Type: GameObject Entry: 223015 Low: 406
-
-ServerToClient: SMSG_PLAY_SOUND (0x102A) Length: 10 ConnectionIndex: 0 Time: 10/08/2014 18:28:10.000 Type: Normal Opcode Number: 1579
-Sound Id: 38883
-Guid: Full: 0xF131191F00000038 Type: Unit Entry: 71967 Low: 56
-
-ServerToClient: SMSG_MESSAGECHAT (0x1A9A) Length: 99 ConnectionIndex: 0 Time: 10/08/2014 18:28:10.000 Type: Unknown Opcode Type Number: 1580
-Show only in bubble: 0
-Chat type: MonsterYell (14)
-Realm Id 2: 50659408
-Text: Стойте!
-Receiver Name: Хранитель истории Чо
-Sender Name: Норусхен
-Realm Id: 50659408
-SenderGUID: Full: 0xF131191F00000038 Type: Unit Entry: 71967 Low: 56
-ReceiverGUID: Full: 0xF1311CA8000006C0 Type: Unit Entry: 72872 Low: 1728
-GuildGUID: 0x0
-GroupGUID: 0x0
+--
+REPLACE INTO`spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145571', 'spell_norushen_blind_hatred');
+DELETE FROM `conditions` WHERE `SourceEntry` = 145226;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+ ('13', '3', '145226', '0', '0', '31', '0', '3', '72565', '0', '0', '0', '', NULL);

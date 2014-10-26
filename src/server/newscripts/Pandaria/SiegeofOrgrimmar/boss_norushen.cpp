@@ -45,6 +45,7 @@ enum eSpells
     SPELL_LOOK_WITHIN          = 146837,
 
     //Blind Hatred
+    SPELL_BLIND_HATRED         = 145571,
     SPELL_BLIND_HATRED_V       = 145226,
     SPELL_BLIND_HATRED_D       = 145227,
 
@@ -214,13 +215,13 @@ class boss_norushen : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_1:
-                            me->CastSpell(me, SPELL_VISUAL_TELEPORT, true);
+                            me->CastSpell(me, SPELL_VISUAL_TELEPORT, false);
                             me->CastSpell(me, SPELL_VISUAL_TELEPORT_AC, true);
                             ZoneTalk(eventId + 6, me->GetGUID());
                             break;
                         case EVENT_2:
-                            instance->SetBossState(DATA_NORUSHEN, IN_PROGRESS);
                             me->SetFacingTo(1.791488f);
+                            instance->SetBossState(DATA_NORUSHEN, IN_PROGRESS);
                             ZoneTalk(eventId + 6, me->GetGUID());
                             me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION);
                             break;
@@ -436,11 +437,10 @@ class boss_amalgam_of_corruption : public CreatureScript
                 //Frayed summon manifestation of corruption every 10% after 50 pct.
                 if (HealthBelowPct(50) && damage > me->GetHealth())
                 {
-                    if (!me->HasAura(SPELL_FRAYED))
-                        me->AddAura(SPELL_FRAYED, me);
-
                     if (HealthBelowPct(50 + 10*FrayedCounter))
                     {
+                        if (!me->HasAura(SPELL_FRAYED))
+                            me->AddAura(SPELL_FRAYED, me);
                         ++FrayedCounter;
                         SummonManifestationofCorruption();
                     }
@@ -490,16 +490,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                             break;
                         case EVENT_BLIND_HATRED:
                         {
-                            BlindOrderList m;
-                            GenerateOrder(m);
-                            Position p = GetFirstRandPoin(m);
-                            if (Creature* bh = me->SummonCreature(NPC_BLIND_HATRED, p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
-                            {
-                                DoCast(bh, SPELL_BLIND_HATRED_V, false);
-                                for(BlindOrderList::iterator itr = m.begin(); itr != m.end(); ++itr)
-                                    bh->AI()->SetData(DATA_FILL_MOVE_ORDER, *itr);
-                                bh->AI()->SetData(DATA_START_MOVING, 0);
-                            }
+                            DoCast(me, SPELL_BLIND_HATRED, false);
                             events.ScheduleEvent(EVENT_BLIND_HATRED, 40000);
                             break;
                         }
@@ -863,6 +854,110 @@ public:
     }
 };
 
+//145571 Blind Hatred
+class spell_norushen_blind_hatred : public SpellScriptLoader
+{
+    public:
+        spell_norushen_blind_hatred() : SpellScriptLoader("spell_norushen_blind_hatred") { }
+
+        class spell_norushen_blind_hatred_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_norushen_blind_hatred_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                BlindOrderList m;
+                GenerateOrder(m);
+                Position p = GetFirstRandPoin(m);
+                if (Creature* bh = caster->SummonCreature(NPC_BLIND_HATRED, p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                {
+                    for(BlindOrderList::iterator itr = m.begin(); itr != m.end(); ++itr)
+                        bh->AI()->SetData(DATA_FILL_MOVE_ORDER, *itr);
+                    bh->AI()->SetData(DATA_START_MOVING, 0);
+                    caster->CastSpell(bh, SPELL_BLIND_HATRED_V, true);
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_norushen_blind_hatred_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_norushen_blind_hatred_SpellScript();
+        }
+};
+
+class BlindHatredDmgSelector
+{
+public:
+    BlindHatredDmgSelector(Unit* caster, Creature* blindhatred) : _caster(caster), _blindhatred(blindhatred) {}
+    
+    bool operator()(WorldObject* target)
+    {
+        Unit* unit = target->ToUnit();
+        
+        if (!unit)
+            return true;
+
+        if (unit->IsInBetween(_caster, _blindhatred))
+            return false;
+        
+        return true;
+    }
+private:
+    Unit* _caster;
+    Creature* _blindhatred;
+};
+
+//145227
+class spell_norushen_blind_hatred_prock : public SpellScriptLoader
+{
+    public:
+        spell_norushen_blind_hatred_prock() : SpellScriptLoader("spell_blind_hatred") { }
+
+        class spell_norushen_blind_hatred_prock_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_norushen_blind_hatred_prock_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& unitList)
+            {
+                InstanceScript* instance = GetCaster()->GetInstanceScript();
+                if (!instance)
+                {
+                    unitList.clear();
+                    return;
+                }
+
+                Creature *bh = instance->instance->GetCreature(instance->GetData64(NPC_BLIND_HATRED));
+                if (!bh)
+                {
+                    unitList.clear();
+                    return;
+                }
+
+                unitList.remove_if (BlindHatredDmgSelector(GetCaster(), bh));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_norushen_blind_hatred_prock_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_norushen_blind_hatred_prock_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_norushen_blind_hatred_prock_SpellScript();
+        }
+};
+
 //145216
 class spell_unleashed_anger : public SpellScriptLoader
 {
@@ -891,59 +986,6 @@ class spell_unleashed_anger : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_unleashed_anger_SpellScript();
-        }
-};
-
-class BlindHatredDmgSelector
-{
-public:
-    BlindHatredDmgSelector(Unit* caster, Creature* blindhatred) : _caster(caster), _blindhatred(blindhatred) {}
-    
-    bool operator()(WorldObject* target)
-    {
-        Unit* unit = target->ToUnit();
-        
-        if (!unit)
-            return true;
-
-        if (unit->IsInBetween(_caster, _blindhatred))
-            return false;
-        
-        return true;
-    }
-private:
-    Unit* _caster;
-    Creature* _blindhatred;
-};
-
-//145227
-class spell_blind_hatred : public SpellScriptLoader
-{
-    public:
-        spell_blind_hatred() : SpellScriptLoader("spell_blind_hatred") { }
-
-        class spell_blind_hatred_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_blind_hatred_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                if (Creature* bh = GetCaster()->FindNearestCreature(NPC_BLIND_HATRED, 50.0f, true))
-                {
-                    unitList.remove_if (BlindHatredDmgSelector(GetCaster(), bh));
-                }
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_blind_hatred_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_blind_hatred_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_blind_hatred_SpellScript();
         }
 };
 
@@ -993,7 +1035,8 @@ void AddSC_boss_norushen()
     new npc_manifestation_of_corruption();
     new npc_titanic_corruption();
     new npc_greater_corruption();
+    new spell_norushen_blind_hatred();
+    new spell_norushen_blind_hatred_prock();
     new spell_unleashed_anger();
-    new spell_blind_hatred();
     new spell_icy_fear_dmg();
 }

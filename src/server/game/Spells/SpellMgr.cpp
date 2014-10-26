@@ -4785,9 +4785,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CasterAuraSpell = 0;
                     spellInfo->Effects[2].TargetA = 25;
                     break;
-                case 145226: //Blind Hatred
-                    spellInfo->Effects[0].TargetA = 25;
-                    break;
                 case 145573: //Blind Hatred Dummy
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
                     spellInfo->Effects[0].Amplitude = 500;
