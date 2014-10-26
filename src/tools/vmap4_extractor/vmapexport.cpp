@@ -72,11 +72,11 @@ HANDLE WorldMpq[WORLD_MPQ_COUNT];
 HANDLE DbcLocaleMpq = NULL;
 HANDLE DbcMpq = NULL;
 
-uint32 CONF_TargetBuild = 17538;              // 5.4.1 17538
+uint32 CONF_TargetBuild = 18273;              // 5.4.8 18273
 
 
 
-uint32 const Builds[] = {16016, 16048, 16057, 16309, 16357, 16516, 16650, 16844, 16965, 17116, 17266, 17325, 17345, 17538, 0};
+uint32 const Builds[] = {16016, 16048, 16057, 16309, 16357, 16516, 16650, 16844, 16965, 17116, 17266, 17325, 17345, 17538, 17645, 17688, 17898, 18273, 0};
 #define NEW_BASE_SET_BUILD  16016
 
 char* const Locales[] = {"enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU"};

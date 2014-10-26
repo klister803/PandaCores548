@@ -2228,15 +2228,16 @@ struct SpellMiscEntry
     uint32    AttributesEx9;                                // 12       m_attributesExI
     uint32    AttributesEx10;                               // 13       m_attributesExJ
     uint32    AttributesEx11;                               // 14       m_attributesExK
-    uint32    AttributesEx12;                               // 14       m_attributesExL
-    uint32    CastingTimeIndex;                             // 15       m_castingTimeIndex
-    uint32    DurationIndex;                                // 16       m_durationIndex
-    uint32    rangeIndex;                                   // 17       m_rangeIndex
-    float     speed;                                        // 18       m_speed
-    uint32    SpellVisual[2];                               // 19-20    m_spellVisualID
-    uint32    SpellIconID;                                  // 21       m_spellIconID
-    uint32    activeIconID;                                 // 22       m_activeIconID
-    uint32    SchoolMask;                                   // 23       m_schoolMask
+    uint32    AttributesEx12;                               // 15       m_attributesExL
+    uint32    AttributesEx13;                               // 16       m_attributesExL
+    uint32    CastingTimeIndex;                             // 17       m_castingTimeIndex
+    uint32    DurationIndex;                                // 18       m_durationIndex
+    uint32    rangeIndex;                                   // 19       m_rangeIndex
+    float     speed;                                        // 20       m_speed
+    uint32    SpellVisual[2];                               // 21-22    m_spellVisualID
+    uint32    SpellIconID;                                  // 23       m_spellIconID
+    uint32    activeIconID;                                 // 24       m_activeIconID
+    uint32    SchoolMask;                                   // 25       m_schoolMask
 };
 
 // SpellPower.dbc
