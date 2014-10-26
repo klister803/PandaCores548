@@ -2989,7 +2989,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        SetSpellDynamicObject(dynObj);
+        SetSpellDynamicObject(dynObj->GetGUID());
         Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
@@ -4007,7 +4007,7 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
         return;
     }
 
-    SetSpellDynamicObject(dynObj);
+    SetSpellDynamicObject(dynObj->GetGUID());
     dynObj->SetDuration(duration);
     dynObj->SetCasterViewpoint();
 }
@@ -8343,7 +8343,7 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
         return;
     }
 
-    SetSpellDynamicObject(dynObj);
+    SetSpellDynamicObject(dynObj->GetGUID());
     dynObj->SetDuration(duration);
     group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }

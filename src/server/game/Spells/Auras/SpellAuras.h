@@ -33,6 +33,7 @@ struct SpellProcEntry;
 class AuraEffect;
 class Aura;
 class DynamicObject;
+class AreaTrigger;
 class AuraScript;
 class ProcInfo;
 
@@ -110,8 +111,10 @@ class Aura
         WorldObject* ChangeOwner(WorldObject* owner) { return m_owner = owner; }
         Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
-        void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
-        DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+        void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
+        uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
+        void SetSpellAreaTrigger(uint64 areaTr) { m_spellAreaTrGuid = areaTr;}
+        uint64 GetSpellAreaTrigger() const { return m_spellAreaTrGuid; }
 
         AuraObjectType GetType() const;
 
@@ -252,7 +255,8 @@ class Aura
         uint64 const m_castItemGuid;                        // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t const m_applyTime;
         WorldObject* m_owner;
-        DynamicObject* m_spellDynObj;
+        uint64 m_spellDynObjGuid;
+        uint64 m_spellAreaTrGuid;
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time

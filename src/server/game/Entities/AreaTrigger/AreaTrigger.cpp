@@ -60,7 +60,7 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/, uint64 targetGuid /*=0*/)
 {
     // Caster not in world, might be spell triggered from aura removal
     if (!caster->IsInWorld())
@@ -115,6 +115,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_SPELLVISUALID, info->SpellVisual[0] ? info->SpellVisual[0] : info->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
+    SetTargetGuid(targetGuid);
 
     FillCustiomData();
 
@@ -170,6 +171,11 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
     if (atInfo.actions.empty())
         return;
 
+    WorldObject const* searcher = this;
+    if(uint64 targetGuid = GetTargetGuid())
+        if(Unit* target = ObjectAccessor::GetUnit(*this, targetGuid))
+            searcher = target;
+
     if (actionM & AT_ACTION_MOMENT_ENTER)
     {
         for (std::list<uint64>::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
@@ -184,7 +190,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                 continue;
             }
 
-            if (!unit->IsWithinDistInMap(this, GetRadius()))
+            if (!unit->IsWithinDistInMap(searcher, GetRadius()))
             {
                 affectedPlayers.erase(itr);
                 AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
@@ -195,7 +201,7 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
         }
 
         std::list<Unit*> unitList;
-        GetAttackableUnitListInRange(unitList, GetRadius());
+        searcher->GetAttackableUnitListInRange(unitList, GetRadius());
         for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
         {
             if (!IsUnitAffected((*itr)->GetGUID()))

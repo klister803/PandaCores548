@@ -555,8 +555,8 @@ class Spell
         uint32 GetCountDispel() const { return m_count_dispeling; }
         void WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID);
 
-        void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
-        DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+        void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
+        uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -626,7 +626,7 @@ class Spell
 
         // -------------------------------------------
         GameObject* focusObject;
-        DynamicObject* m_spellDynObj;
+        uint64 m_spellDynObjGuid;
 
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here

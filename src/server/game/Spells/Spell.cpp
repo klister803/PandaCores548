@@ -3075,8 +3075,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         }
                     }
                     m_spellAura->_RegisterForTargets();
-                    if(DynamicObject* dynObj = GetSpellDynamicObject())
-                        m_spellAura->SetSpellDynamicObject(dynObj);
+                    if(uint64 dynObjGuid = GetSpellDynamicObject())
+                        m_spellAura->SetSpellDynamicObject(dynObjGuid);
                 }
             }
         }

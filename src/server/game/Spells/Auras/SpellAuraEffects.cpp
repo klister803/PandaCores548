@@ -7150,11 +7150,12 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
 
     if(caster && trigger_spell_id)
     {
-        //if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
-        if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
+        //if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
+        if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
         {
             Unit* owner = caster->GetAnyOwner();
-            caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
+            if(DynamicObject* dynObj = ObjectAccessor::GetAreaTrigger(*triggerCaster, dynObjGuid))
+                caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
         }
         else if(target)
             caster->CastSpell(target, trigger_spell_id, true, NULL, this);
@@ -7491,11 +7492,14 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            //if (DynamicObject* dynObj = GetBase()->GetSpellDynamicObject())
-            if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
+            //if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
+            if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
             {
                 Unit* owner = triggerCaster->GetAnyOwner();
-                triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
+                if(DynamicObject* dynObj = ObjectAccessor::GetAreaTrigger(*triggerCaster, dynObjGuid))
+                    triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
+                else
+                    triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
             }
             else
                 triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
@@ -8688,8 +8692,7 @@ void AuraEffect::HandleBattlegroundFlag(AuraApplication const* aurApp, uint8 mod
 void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     //Use custom summon at spell_norushen_residual_corruption id 145074
-
-    /*if (!(mode & AURA_EFFECT_HANDLE_REAL))
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
 
     Unit* target = aurApp->GetTarget();
@@ -8707,13 +8710,13 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
         if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos, NULL, target))
             delete areaTrigger;
 
-        areaTrigger->SetAura(GetBase());
-        GetBase()->SetSpellAreaTrigger(areaTrigger);
+        GetBase()->SetSpellAreaTrigger(areaTrigger->GetGUID());
     }
     else if(!apply)
     {
-        if(AreaTrigger* areaTrigger = GetBase()->GetSpellAreaTrigger())
-            areaTrigger->SetDuration(0);
-    }*/
+        if(uint64 areaTriggerGuid = GetBase()->GetSpellAreaTrigger())
+            if(AreaTrigger* areaTrigger = ObjectAccessor::GetAreaTrigger(*GetCaster(), areaTriggerGuid))
+                areaTrigger->SetDuration(0);
+    }
 }
 
