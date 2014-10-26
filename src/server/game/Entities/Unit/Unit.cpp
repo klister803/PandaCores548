@@ -10958,7 +10958,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         // Shadow's Fate (Shadowmourne questline)
         case 71169:
         {
-            if (GetTypeId() != TYPEID_PLAYER)
+            if (!victim || GetTypeId() != TYPEID_PLAYER)
                 return false;
 
             Player* player = ToPlayer();
