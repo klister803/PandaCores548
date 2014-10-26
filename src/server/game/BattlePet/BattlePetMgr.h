@@ -131,6 +131,19 @@ public:
         return NULL;
     }
 
+    uint64 GetPetGUIDBySpell(uint32 spell)
+    {
+        for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
+        {
+            PetInfo * pi = pet->second;
+
+            if (pi && pi->summonSpellID == spell)
+                return pet->first;
+        }
+
+        return 0;
+    }
+
     bool HasPet(uint64 guid)
     {
         PetJournal::const_iterator pet = m_PetJournal.find(guid);
