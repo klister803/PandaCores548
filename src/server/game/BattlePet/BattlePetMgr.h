@@ -77,6 +77,17 @@ enum BattlePetFlags
     BATTLE_PET_FLAG_CUSTOM_ABILITY_3    = 0x40,
 };
 
+enum BattlePetSpeciesFlags
+{
+    SPECIES_FLAG_UNK1            = 0x02,
+    SPECIES_FLAG_UNK2            = 0x04,
+    SPECIES_FLAG_CAPTURABLE      = 0x08,
+    SPECIES_FLAG_CANT_TRADE      = 0x10, // ~(unsigned __int8)(v3->speciesFlags >> 4) & 1 (cannot put in cage)
+    SPECIES_FLAG_UNOBTAINABLE    = 0x20,
+    SPECIES_FLAG_UNIQUE          = 0x40, // (v2->speciesFlags >> 6) & 1)
+    SPECIES_FLAG_CANT_BATTLE     = 0x80,
+};
+
 enum BattlePetSpeciesSource
 {
     SOURCE_RANDOM_LOOT = 0,
