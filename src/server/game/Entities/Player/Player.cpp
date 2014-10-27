@@ -19231,9 +19231,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_reputationMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
     // m_zoneUpdateId fill for correct load LoadInventory.
-    if (!m_zoneUpdateId) m_zoneUpdateId = GetZoneId();
-
+    m_zoneUpdateId = GetZoneId();
     _LoadInventory(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
+    m_zoneUpdateId = 0; // for correct enter zone on add to map.
 
     if (IsVoidStorageUnlocked())
         _LoadVoidStorage(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE));
