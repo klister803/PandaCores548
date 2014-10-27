@@ -991,7 +991,8 @@ void VehicleJoinEvent::Abort(uint64)
         /// When this code is triggered it means that something went wrong in @Vehicle::AddPassenger, and we should remove
         /// the aura manually.
         if(Unit* targetBase = Target->GetBase())
-            targetBase->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID());
+            if (targetBase->IsInWorld())
+                targetBase->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID());
     }
     else
         sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on uninstalled vehicle SeatId: %d cancelled",
