@@ -565,6 +565,7 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAr
 
     m_maxDuration = CalcMaxDuration(caster);
     m_duration = m_maxDuration;
+    m_allDuration = 0;
     m_procCharges = CalcMaxCharges(caster);
     m_isUsingCharges = m_procCharges != 0;
     //For scaling trinket
@@ -899,6 +900,7 @@ void Aura::Update(uint32 diff, Unit* caster)
     if (m_duration > 0)
     {
         m_duration -= diff;
+        m_allDuration += diff;
         if (m_duration < 0)
             m_duration = 0;
 

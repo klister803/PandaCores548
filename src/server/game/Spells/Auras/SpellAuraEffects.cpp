@@ -8138,6 +8138,9 @@ void AuraEffect::HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster, Spel
 {
     Powers powerType = Powers(GetMiscValue());
 
+    if (target->GetTypeId() == TYPEID_PLAYER && target->getPowerType() != powerType && !(m_spellInfo->AttributesEx7 & SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
+        return;
+
     if (!target->isAlive() || !target->GetMaxPower(powerType))
         return;
 
@@ -8697,11 +8700,11 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
 
     Unit* target = aurApp->GetTarget();
     uint32 triggerEntry = GetMiscValue();
-    if (!triggerEntry)
+    if (!triggerEntry || !target || !GetCaster() || GetCaster()->GetMap() != target->GetMap())
         return;
 
     // when removing flag aura, handle flag drop
-    if (apply && target)
+    if (apply)
     {
         Position pos;
         target->GetPosition(&pos);

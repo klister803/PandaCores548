@@ -497,7 +497,7 @@ enum SpellAttr3
     SPELL_ATTR3_MAIN_HAND                        = 0x00000400, // 10 Main hand weapon required
     SPELL_ATTR3_BATTLEGROUND                     = 0x00000800, // 11 Can casted only on battleground
     SPELL_ATTR3_ONLY_TARGET_GHOSTS               = 0x00001000, // 12
-    SPELL_ATTR3_UNK13                            = 0x00002000, // 13
+    SPELL_ATTR3_DONT_DISPLAY_CHANNEL_BAR         = 0x00002000, // 13 Clientside attribute - will not display channeling bar
     SPELL_ATTR3_IS_HONORLESS_TARGET              = 0x00004000, // 14 "Honorless Target" only this spells have this flag
     SPELL_ATTR3_UNK15                            = 0x00008000, // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
     SPELL_ATTR3_CANT_TRIGGER_PROC                = 0x00010000, // 16 confirmed with many patchnotes
@@ -614,7 +614,7 @@ enum SpellAttr6
     SPELL_ATTR6_UNK19                            = 0x00080000, // 19 only 47488, 50782
     SPELL_ATTR6_ONLY_VISIBLE_TO_CASTER           = 0x00100000, // 20 Auras with this attribute are only visible to their caster (or pet's owner)
     SPELL_ATTR6_CLIENT_UI_TARGET_EFFECTS         = 0x00200000, // 21 it's only client-side attribute
-    SPELL_ATTR6_UNK22                            = 0x00400000, // 22 only 72054
+    SPELL_ATTR6_NOT_LIMIT_ABSORB                 = 0x00400000, // 22 Absorb not limit
     SPELL_ATTR6_UNK23                            = 0x00800000, // 23
     SPELL_ATTR6_CAN_TARGET_UNTARGETABLE          = 0x01000000, // 24
     SPELL_ATTR6_UNK25                            = 0x02000000, // 25 Exorcism, Flash of Light
@@ -629,12 +629,12 @@ enum SpellAttr6
 enum SpellAttr7
 {
     SPELL_ATTR7_UNK0                             = 0x00000001, //  0 Shaman's new spells (Call of the ...), Feign Death.
-    SPELL_ATTR7_UNK1                             = 0x00000002, //  1 Not set in 3.2.2a.
+    SPELL_ATTR7_IGNORE_DURATION_MODS             = 0x00000002, //  1 Duration is not affected by duration modifiers
     SPELL_ATTR7_REACTIVATE_AT_RESURRECT          = 0x00000004, //  2 Paladin's auras and 65607 only.
     SPELL_ATTR7_IS_CHEAT_SPELL                   = 0x00000008, //  3 Cannot cast if caster doesn't have UnitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS
     SPELL_ATTR7_UNK4                             = 0x00000010, //  4 Only 47883 (Soulstone Resurrection) and test spell.
     SPELL_ATTR7_SUMMON_TOTEM                     = 0x00000020, //  5 Only Shaman totems.
-    SPELL_ATTR7_UNK6                             = 0x00000040, //  6 Dark Surge, Surge of Light, Burning Breath triggers (boss spells).
+    SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE            = 0x00000040, //  6 Does not cause spell pushback on damage
     SPELL_ATTR7_UNK7                             = 0x00000080, //  7 66218 (Launch) spell.
     SPELL_ATTR7_HORDE_ONLY                       = 0x00000100, //  8 Teleports, mounts and other spells.
     SPELL_ATTR7_ALLIANCE_ONLY                    = 0x00000200, //  9 Teleports, mounts and other spells.
@@ -644,7 +644,7 @@ enum SpellAttr7
     SPELL_ATTR7_UNK13                            = 0x00002000, // 13 Not set in 3.2.2a.
     SPELL_ATTR7_UNK14                            = 0x00004000, // 14 Only 52150 (Raise Dead - Pet) spell.
     SPELL_ATTR7_UNK15                            = 0x00008000, // 15 Exorcism. Usable on players? 100% crit chance on undead and demons?
-    SPELL_ATTR7_UNK16                            = 0x00010000, // 16 Druid spells (29166, 54833, 64372, 68285).
+    SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER      = 0x00010000, // 16 These spells can replenish a powertype, which is not the current powertype.
     SPELL_ATTR7_UNK17                            = 0x00020000, // 17 Only 27965 (Suicide) spell.
     SPELL_ATTR7_HAS_CHARGE_EFFECT                = 0x00040000, // 18 Only spells that have Charge among effects.
     SPELL_ATTR7_ZONE_TELEPORT                    = 0x00080000, // 19 Teleports to specific zones.
@@ -687,7 +687,7 @@ enum SpellAttr8
     SPELL_ATTR8_ARMOR_SPECIALIZATION             = 0x00100000, // 20
     SPELL_ATTR8_UNK21                            = 0x00200000, // 21
     SPELL_ATTR8_UNK22                            = 0x00400000, // 22
-    SPELL_ATTR8_UNK23                            = 0x00800000, // 23
+    SPELL_ATTR8_BATTLE_RESURRECTION              = 0x00800000, // 23 Used to limit the Amount of Resurrections in Boss Encounters
     SPELL_ATTR8_HEALING_SPELL                    = 0x01000000, // 24
     SPELL_ATTR8_UNK25                            = 0x02000000, // 25
     SPELL_ATTR8_RAID_MARKER                      = 0x04000000, // 26 probably spell no need learn to cast
@@ -708,7 +708,7 @@ enum SpellAttr9
     SPELL_ATTR9_SUMMON_PLAYER_TOTEM              = 0x00000020, // 5
     SPELL_ATTR9_UNK6                             = 0x00000040, // 6
     SPELL_ATTR9_UNK7                             = 0x00000080, // 7
-    SPELL_ATTR9_UNK8                             = 0x00000100, // 8
+    SPELL_ATTR9_AIMED_SHOT                       = 0x00000100, //  8
     SPELL_ATTR9_NOT_USABLE_IN_ARENA              = 0x00000200, // 9 Cannot be used in arenas
     SPELL_ATTR9_UNK10                            = 0x00000400, // 10
     SPELL_ATTR9_UNK11                            = 0x00000800, // 11
@@ -804,6 +804,70 @@ enum SpellAttr11
     SPELL_ATTR11_UNK29                            = 0x20000000, // 29
     SPELL_ATTR11_UNK30                            = 0x40000000, // 30
     SPELL_ATTR11_UNK31                            = 0x80000000  // 31
+};
+
+enum SpellAttr12
+{
+    SPELL_ATTR12_UNK0                             = 0x00000001, //  0
+    SPELL_ATTR12_UNK1                             = 0x00000002, //  1
+    SPELL_ATTR12_UNK2                             = 0x00000004, //  2
+    SPELL_ATTR12_UNK3                             = 0x00000008, //  3
+    SPELL_ATTR12_UNK4                             = 0x00000010, //  4
+    SPELL_ATTR12_UNK5                             = 0x00000020, //  5
+    SPELL_ATTR12_UNK6                             = 0x00000040, //  6
+    SPELL_ATTR12_UNK7                             = 0x00000080, //  7
+    SPELL_ATTR12_UNK8                             = 0x00000100, //  8
+    SPELL_ATTR12_UNK9                             = 0x00000200, //  9
+    SPELL_ATTR12_UNK10                            = 0x00000400, // 10
+    SPELL_ATTR12_UNK11                            = 0x00000800, // 11
+    SPELL_ATTR12_UNK12                            = 0x00001000, // 12
+    SPELL_ATTR12_UNK13                            = 0x00002000, // 13
+    SPELL_ATTR12_UNK14                            = 0x00004000, // 14
+    SPELL_ATTR12_UNK15                            = 0x00008000, // 15
+    SPELL_ATTR12_UNK16                            = 0x00010000, // 16
+    SPELL_ATTR12_UNK17                            = 0x00020000, // 17
+    SPELL_ATTR12_UNK18                            = 0x00040000, // 18
+    SPELL_ATTR12_UNK19                            = 0x00080000, // 19
+    SPELL_ATTR12_UNK20                            = 0x00100000, // 20
+    SPELL_ATTR12_UNK21                            = 0x00200000, // 21
+    SPELL_ATTR12_UNK22                            = 0x00400000, // 22
+    SPELL_ATTR12_UNK23                            = 0x00800000, // 23
+    SPELL_ATTR12_UNK24                            = 0x01000000, // 24
+    SPELL_ATTR12_UNK25                            = 0x02000000, // 25
+    SPELL_ATTR12_UNK26                            = 0x04000000, // 26
+    SPELL_ATTR12_UNK27                            = 0x08000000, // 27
+    SPELL_ATTR12_UNK28                            = 0x10000000, // 28
+    SPELL_ATTR12_UNK29                            = 0x20000000, // 29
+    SPELL_ATTR12_UNK30                            = 0x40000000, // 30
+    SPELL_ATTR12_UNK31                            = 0x80000000  // 31
+};
+
+enum SpellAttr13
+{
+    SPELL_ATTR13_UNK0                             = 0x00000001, //  0
+    SPELL_ATTR13_UNK1                             = 0x00000002, //  1
+    SPELL_ATTR13_UNK2                             = 0x00000004, //  2
+    SPELL_ATTR13_UNK3                             = 0x00000008, //  3
+    SPELL_ATTR13_UNK4                             = 0x00000010, //  4
+    SPELL_ATTR13_UNK5                             = 0x00000020, //  5
+    SPELL_ATTR13_UNK6                             = 0x00000040, //  6
+    SPELL_ATTR13_UNK7                             = 0x00000080, //  7
+    SPELL_ATTR13_UNK8                             = 0x00000100, //  8
+    SPELL_ATTR13_UNK9                             = 0x00000200, //  9
+    SPELL_ATTR13_UNK10                            = 0x00000400, // 10
+    SPELL_ATTR13_UNK11                            = 0x00000800, // 11
+    SPELL_ATTR13_UNK12                            = 0x00001000, // 12
+    SPELL_ATTR13_UNK13                            = 0x00002000, // 13
+    SPELL_ATTR13_UNK14                            = 0x00004000, // 14
+    SPELL_ATTR13_UNK15                            = 0x00008000, // 15
+    SPELL_ATTR13_UNK16                            = 0x00010000, // 16
+    SPELL_ATTR13_UNK17                            = 0x00020000, // 17
+    SPELL_ATTR13_UNK18                            = 0x00040000, // 18
+    SPELL_ATTR13_UNK19                            = 0x00080000, // 19
+    SPELL_ATTR13_UNK20                            = 0x00100000, // 20
+    SPELL_ATTR13_UNK21                            = 0x00200000, // 21
+    SPELL_ATTR13_UNK22                            = 0x00400000, // 22
+    SPELL_ATTR13_UNK23                            = 0x00800000  // 23
 };
 
 #define MIN_TALENT_SPEC         0

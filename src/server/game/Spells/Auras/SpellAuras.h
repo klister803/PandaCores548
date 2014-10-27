@@ -139,6 +139,7 @@ class Aura
         int32 CalcMaxDuration() { return CalcMaxDuration(GetCaster()); }
         int32 CalcMaxDuration(Unit* caster);
         int32 GetDuration() const { return m_duration; }
+        int32 GetAllDuration() const { return m_allDuration; }
         void SetDuration(int32 duration, bool withMods = false);
         void RefreshDuration(bool recalculate = true);
         void RefreshTimers();
@@ -260,6 +261,7 @@ class Aura
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time
+        int32 m_allDuration;                                // Duration from apply aura
         int32 m_timeCla;                                    // Timer for power per sec calcultion
         int32 m_updateTargetMapInterval;                    // Timer for UpdateTargetMapOfEffect
 

@@ -105,15 +105,16 @@ m_damageType(_damageType), m_attackType(BASE_ATTACK)
     m_absorb = 0;
     m_resist = 0;
     m_block = 0;
+    m_cleanDamage = 0;
 }
 DamageInfo::DamageInfo(CalcDamageInfo& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.damageSchoolMask)),
-m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked_amount)
+m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked_amount), m_cleanDamage(dmgInfo.cleanDamage)
 {
 }
 DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
-m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked)
+m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage)
 {
 }
 
@@ -883,7 +884,8 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (damagetype != NODAMAGE && damage)
         {
-            if (victim != this && victim->GetTypeId() == TYPEID_PLAYER) // does not support creature push_back
+            if (victim != this && victim->GetTypeId() == TYPEID_PLAYER && // does not support creature push_back
+                (!spellProto || !(spellProto->AttributesEx7 & SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE)))
             {
                 if (damagetype != DOT)
                     if (Spell* spell = victim->m_currentSpells[CURRENT_GENERIC_SPELL])
@@ -966,6 +968,8 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
             else
                 victim->CastSpell(victim, 124273, true);
         }
+        else
+            victim->CastSpell(victim, 124275, true);
 
         victim->CastCustomSpell(victim, 124255, &bp0, &bp1, NULL, true);
 
@@ -1510,7 +1514,28 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
     if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK && HasAura(128938)
         && damageInfo->hitOutCome == MELEE_HIT_CRIT
         && (damageInfo->attackType == BASE_ATTACK || damageInfo->attackType == OFF_ATTACK))
-        CastSpell(this, 128939, true); // Add one stack of Elusive Brew
+        {
+            CastSpell(this, 128939, true); // Add one stack of Elusive Brew
+            float WeaponSpeed = GetAttackTime(damageInfo->attackType) / 1000.0f;
+            float chance = 0.0f;
+            if(haveOffhandWeapon())
+                chance = (((3.0f * WeaponSpeed) / 3.6f) - 1.0f) * 100.f;
+            else
+                chance = (((1.5f * WeaponSpeed) / 2.6f) - 1.0f) * 100.f;
+            if(chance > 200.0f)
+            {
+                CastSpell(this, 128939, true);
+                CastSpell(this, 128939, true);
+                chance -= 200.0f;
+            }
+            else if(chance > 100.0f)
+            {
+                CastSpell(this, 128939, true);
+                chance -= 100.0f;
+            }
+            if(chance > 0.0f && roll_chance_f(chance))
+                CastSpell(this, 128939, true);
+        }
 
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
     if ((damageInfo->hitOutCome == MELEE_HIT_CRIT || damageInfo->hitOutCome == MELEE_HIT_CRUSHING || damageInfo->hitOutCome == MELEE_HIT_NORMAL || damageInfo->hitOutCome == MELEE_HIT_GLANCING) &&
@@ -1845,12 +1870,12 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
             currentAbsorb = dmgInfo.GetAbsorb();
 
         // Check if our aura is using amount to count damage
-        if (absorbAurEff->GetAmount() >= 0 && currentAbsorb)
+        if (absorbAurEff->GetAmount() >= 0 && currentAbsorb && !(absorbAurEff->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_NOT_LIMIT_ABSORB))
         {
             // Reduce shield amount
             absorbAurEff->SetAmount(absorbAurEff->GetAmount() - currentAbsorb);
             // Aura cannot absorb anything more - remove it
-            if (absorbAurEff->GetAmount() <= 0 && absorbAurEff->GetBase()->GetId() != 115069) // Custom MoP Script - Stance of the Sturdy Ox shoudn't be removed at any damage
+            if (absorbAurEff->GetAmount() <= 0) // Custom MoP Script - Stance of the Sturdy Ox shoudn't be removed at any damage
                 absorbAurEff->GetBase()->Remove(AURA_REMOVE_BY_ENEMY_SPELL);
         }
     }
@@ -1955,11 +1980,11 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         // Stagger Amount
     if (!spellInfo || (spellInfo && spellInfo->Id != 124255))
     {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK && dmgInfo.GetAbsorb() == 0)
         {
             int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, schoolMask);
             int32 staggerAbsorb = damage - staggerDamage;
-            dmgInfo.AbsorbDamage(dmgInfo.GetAbsorb() + staggerAbsorb);
+            dmgInfo.AbsorbDamage(staggerAbsorb);
         }
     }
 
@@ -15269,6 +15294,10 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
     if (duration < 0)
         return duration;
 
+    // some auras are not affected by duration modifiers
+    if (spellProto->AttributesEx7 & SPELL_ATTR7_IGNORE_DURATION_MODS)
+        return duration;
+
     if (caster)
     {
         // Skull Bash
@@ -18491,7 +18520,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || dmgInfoProc->GetAbsorb() != 0)
                         return false;
 
                     if (itr->aura)
@@ -18500,13 +18529,27 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     triggered_spell_id = itr->spell_trigger;
 
-                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb())
+                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage())
                     {
-                        int32 bp = CalculatePct(alldamage, triggerAmount / 100.0f);
+                        uint32 count = getThreatManager().getThreatList().size();
+                        float _percent = triggerAmount / 100.0f;
+                        if(count > 1)
+                            _percent -= float((float(count * 5) / 100.0f) * _percent);
+
+                        int32 bp = CalculatePct(alldamage, _percent);
 
                         if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
                             if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
-                                bp += oldEff->GetAmount();
+                            {
+                                int32 oldamount = oldEff->GetAmount();
+                                if(oldAura->GetAllDuration() > 20000)
+                                {
+                                    oldamount -= int32(oldamount / int32(oldAura->GetDuration() / 1000));
+                                    oldEff->SetAmount(oldamount);
+                                }
+
+                                bp += oldamount;
+                            }
 
                         int32 maxVal = GetMaxHealth();
 

@@ -7407,6 +7407,8 @@ SpellCastResult Spell::CheckCasterAuras() const
     }
 
     bool usableInStun = m_spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_STUNNED;
+    if (m_spellInfo->Id == 116849 && m_caster->HasAura(124989)) //Hack for gliph
+        usableInStun = true;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;

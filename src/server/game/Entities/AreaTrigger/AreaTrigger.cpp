@@ -174,7 +174,8 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
     WorldObject const* searcher = this;
     if(uint64 targetGuid = GetTargetGuid())
         if(Unit* target = ObjectAccessor::GetUnit(*this, targetGuid))
-            searcher = target;
+            if(_caster->GetMap() == target->GetMap())
+                searcher = target;
 
     if (actionM & AT_ACTION_MOMENT_ENTER)
     {
