@@ -874,7 +874,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 default:
                     break;
             }
-            if(m_aura_amount && !m_send_baseAmount)
+            if(m_aura_amount && !m_baseAmount)
             {
                 amount = m_aura_amount;
                 return amount;

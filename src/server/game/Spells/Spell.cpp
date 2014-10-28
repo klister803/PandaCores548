@@ -393,11 +393,10 @@ void SpellCastTargets::OutDebug() const
 SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        EffectBasePoints[i] = 0;
+        EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
     MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
     RadiusMod = 1.0f;
     AuraStackAmount = 1;
-    addCustomBP = false;
 }
 
 Spell::Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID, bool skipCheck) :
@@ -8764,9 +8763,6 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
         case SPELLVALUE_AURA_STACK:
             m_spellValue->AuraStackAmount = uint8(value);
-            break;
-        case SPELLVALUE_ADD_CUSTOM_VALUE:
-            m_spellValue->addCustomBP = bool(value);
             break;
     }
 }
