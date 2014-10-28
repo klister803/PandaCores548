@@ -443,7 +443,6 @@ bool Map::AddPlayerToMap(Player* player)
     Cell cell(cellCoord);
     EnsureGridLoadedForActiveObject(cell, player);
     AddToGrid(player, cell);
-    ASSERT(player->IsInGrid());
 
     // Check if we are adding to correct map
     ASSERT (player->GetMap() == this);
@@ -660,7 +659,6 @@ void Map::RemoveFromMap(T *obj, bool remove)
 void Map::PlayerRelocation(Player* player, float x, float y, float z, float orientation)
 {
     ASSERT(player);
-    ASSERT(player->IsInWorld());
 
     Cell old_cell(player->GetPositionX(), player->GetPositionY());
     Cell new_cell(x, y);
@@ -687,7 +685,6 @@ void Map::PlayerRelocation(Player* player, float x, float y, float z, float orie
             EnsureGridLoadedForActiveObject(new_cell, player);
 
         AddToGrid(player, new_cell);
-        ASSERT(player->IsInGrid());
     }
 
     player->UpdateObjectVisibility(false);
