@@ -90,6 +90,7 @@ namespace VMAP
     // load one tile (internal use only)
     bool VMapManager2::_loadMap(unsigned int mapId, const std::string& basePath, uint32 tileX, uint32 tileY)
     {
+        TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, instanceLock);
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
         {
@@ -108,6 +109,7 @@ namespace VMAP
 
     void VMapManager2::unloadMap(unsigned int mapId)
     {
+        TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, instanceLock);
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
         {
@@ -122,6 +124,7 @@ namespace VMAP
 
     void VMapManager2::unloadMap(unsigned int mapId, int x, int y)
     {
+        TRINITY_WRITE_GUARD(ACE_RW_Thread_Mutex, instanceLock);
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
         {
@@ -139,6 +142,7 @@ namespace VMAP
         if (!isLineOfSightCalcEnabled() || DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LOS))
             return true;
 
+        TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, instanceLock);
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
         {
@@ -161,6 +165,7 @@ namespace VMAP
     {
         if (isLineOfSightCalcEnabled() && !DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LOS))
         {
+            TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, instanceLock);
             InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
             {
@@ -191,6 +196,7 @@ namespace VMAP
     {
         if (isHeightCalcEnabled() && !DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_HEIGHT))
         {
+            TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, instanceLock);
             InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
             {
@@ -206,10 +212,11 @@ namespace VMAP
         return VMAP_INVALID_HEIGHT_VALUE;
     }
 
-    bool VMapManager2::getAreaInfo(unsigned int mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
+    bool VMapManager2::getAreaInfo(unsigned int mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId)
     {
         if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_AREAFLAG))
         {
+            TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, instanceLock);
             InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
             {
@@ -224,10 +231,11 @@ namespace VMAP
         return false;
     }
 
-    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type) const
+    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type)
     {
         if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LIQUIDSTATUS))
         {
+            TRINITY_READ_GUARD(ACE_RW_Thread_Mutex, instanceLock);
             InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
             {

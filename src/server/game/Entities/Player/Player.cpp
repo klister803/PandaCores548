@@ -1750,7 +1750,7 @@ void Player::Update(uint32 p_time)
     }
 
     // Zone Skip Update
-	if (sObjectMgr->IsSkipZone(GetZoneId()) || isAFK())
+	if (sObjectMgr->IsSkipZone(m_zoneUpdateId) || isAFK())
 	{
 		_skipCount++;
 		_skipDiff += p_time;
@@ -3530,7 +3530,7 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     if (victim && victim->GetTypeId() == TYPEID_UNIT && !victim->ToCreature()->hasLootRecipient())
         return;
     
-    if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
+    if (IsForbiddenMapForLevel(GetMapId(), m_zoneUpdateId))
         xp = 0;
         
     if (IsLoXpMap(GetMapId()))
@@ -3541,9 +3541,8 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     sScriptMgr->OnGivePlayerXP(this, xp, victim);
 
     // Favored experience increase START
-    uint32 zone = GetZoneId();
     float favored_exp_mult = 0;
-    if ((HasAura(32096) || HasAura(32098)) && (zone == 3483 || zone == 3562 || zone == 3836 || zone == 3713 || zone == 3714))
+    if ((HasAura(32096) || HasAura(32098)) && (m_zoneUpdateId == 3483 || m_zoneUpdateId == 3562 || m_zoneUpdateId == 3836 || m_zoneUpdateId == 3713 || m_zoneUpdateId == 3714))
         favored_exp_mult = 0.05f; // Thrallmar's Favor and Honor Hold's Favor
     xp = uint32(xp * (1 + favored_exp_mult));
     // Favored experience increase END
@@ -8107,11 +8106,10 @@ void Player::RewardReputation(Unit* victim, float rate)
     }
 
     // Favored reputation increase START
-    uint32 zone = GetZoneId();
     uint32 team = GetTeam();
     float favored_rep_mult = 0;
 
-    if ((HasAura(32096) || HasAura(32098)) && (zone == 3483 || zone == 3562 || zone == 3836 || zone == 3713 || zone == 3714)) favored_rep_mult = 0.25; // Thrallmar's Favor and Honor Hold's Favor
+    if ((HasAura(32096) || HasAura(32098)) && (m_zoneUpdateId == 3483 || m_zoneUpdateId == 3562 || m_zoneUpdateId == 3836 || m_zoneUpdateId == 3713 || m_zoneUpdateId == 3714)) favored_rep_mult = 0.25; // Thrallmar's Favor and Honor Hold's Favor
     else if (HasAura(30754) && (Rep->RepFaction1 == 609 || Rep->RepFaction2 == 609) && !ChampioningFaction)                   favored_rep_mult = 0.25; // Cenarion Favor
 
     if (favored_rep_mult > 0) favored_rep_mult *= 2; // Multiplied by 2 because the reputation is divided by 2 for some reason (See "donerep1 / 2" and "donerep2 / 2") -- if you know why this is done, please update/explain :)
@@ -9012,7 +9010,7 @@ void Player::UpdateArea(uint32 newArea)
     //Pandaria area update for monk level < 85
     if(area && getLevel() < 85 && getClass() == CLASS_MONK && GetMapId() == 870 && area->mapid == 870 &&
         newArea != 6081 && newArea != 6526 && newArea != 6527 
-        && GetZoneId() == 5841 && !isGameMaster())
+        && m_zoneUpdateId == 5841 && !isGameMaster())
         TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
 
     UpdateAreaDependentAuras(newArea);
@@ -21007,7 +21005,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
-        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt16(index++, m_zoneUpdateId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
 
         ss.str("");
@@ -21139,7 +21137,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
-        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt16(index++, m_zoneUpdateId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
 
         ss.str("");
@@ -29728,7 +29726,7 @@ void Player::SendCemeteryList(bool onMap)
     ByteBuffer buf(16);
     uint32 count = 0;
 
-    uint32 zoneId = GetZoneId();
+    uint32 zoneId = m_zoneUpdateId;
     GraveYardContainer::const_iterator graveLow  = sObjectMgr->GraveYardStore.lower_bound(zoneId);
     GraveYardContainer::const_iterator graveUp   = sObjectMgr->GraveYardStore.upper_bound(zoneId);
     for (GraveYardContainer::const_iterator itr = graveLow; itr != graveUp; ++itr)
