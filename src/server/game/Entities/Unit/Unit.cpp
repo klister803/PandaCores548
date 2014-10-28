@@ -18544,8 +18544,9 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                                 int32 oldamount = oldEff->GetAmount();
                                 if(oldAura->GetAllDuration() > 20000)
                                 {
-                                    int32 dur = oldAura->GetDuration() > 1000 ? int32(oldAura->GetDuration() / 1000) : 1;
-                                    oldamount -= int32(oldamount / dur);
+                                    float dur = oldAura->GetDuration() > 1000 ? (oldAura->GetDuration() / 1000) : 1.0f;
+                                    int32 amout = int32(oldamount / dur);
+                                    oldamount -= amout;
                                     oldEff->SetAmount(oldamount);
                                 }
 
