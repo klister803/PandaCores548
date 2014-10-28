@@ -262,7 +262,6 @@ enum Stats
 
 enum Powers
 {
-    POWER_NULL                          = -1,
     POWER_MANA                          = 0,
     POWER_RAGE                          = 1,
     POWER_FOCUS                         = 2,
@@ -281,6 +280,7 @@ enum Powers
     POWER_UNKNOWN                       = 16,
     MAX_POWERS                          = 17,
     POWER_TYPE_VAULT_CRACKING_PROGRESS  = 82,
+    POWER_NULL                          = 126,
     POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };
