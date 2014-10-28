@@ -69,3 +69,7 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 's
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `visualId`, `comment`) VALUES 
 ('5022', '1', '0', '0', '0', '0', '32875', '0', 'OO:NN spell_norushen_residual_corruption');
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_residual_corruption' WHERE `creature_template`.`entry` = 72550;
+
+--
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_purifying_light' WHERE `entry` = 72065;
+UPDATE `creature_template_addon` SET `auras` = '144717' WHERE `creature_template_addon`.`entry` = 72065;

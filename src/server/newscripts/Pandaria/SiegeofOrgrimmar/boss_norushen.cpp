@@ -42,9 +42,6 @@ enum eSpells
     SPELL_FRAYED               = 146179,
     SPELL_UNLEASH_CORRUPTION   = 145769,
 
-    //Phase spells
-    SPELL_LOOK_WITHIN          = 146837,
-
     //Blind Hatred
     SPELL_BLIND_HATRED         = 145571,
     SPELL_BLIND_HATRED_V       = 145226,
@@ -78,11 +75,15 @@ enum eSpells
     SPELL_EXPEL_CORRUPTION_AT  = 144548, //Create areatrigger
     SPELL_EXPELLED_CORRUPTION  = 144480,
 
-
     //Test for players
     SPELL_TEST_OF_SERENITY     = 144849, //dd
     SPELL_TEST_OF_RELIANCE     = 144850, //heal
     SPELL_TEST_OF_CONFIDENCE   = 144851, //tank
+
+    //Phase spells
+    SPELL_LOOK_WITHIN_DD       = 146837,
+    SPELL_LOOK_WITHIN_HEALER   = 144724,
+    SPELL_LOOK_WITHIN_TANK     = 144727, //Look Within
 };
 
 enum sEvents
@@ -429,6 +430,10 @@ class boss_amalgam_of_corruption : public CreatureScript
                 //events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
                 //events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
                 me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
+
+                //Summon Purifying light.
+                for(uint8 i = 0; i < 5; ++i)
+                    me->SummonCreature(NPC_PURIFYING_LIGHT, plspos[i].GetPositionX(), plspos[i].GetPositionY(), plspos[i].GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN); 
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -468,7 +473,7 @@ class boss_amalgam_of_corruption : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim()/* || me->HasUnitState(UNIT_STATE_CASTING)*/)
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
@@ -575,25 +580,49 @@ public:
     }
 };
 
-//72264 summoned at FRAYED
-class npc_purifying_light : public CreatureScript
+
+class npc_norushen_purifying_light : public CreatureScript
 {
 public:
-    npc_purifying_light() : CreatureScript("npc_purifying_light") { }
+    npc_norushen_purifying_light() : CreatureScript("npc_norushen_purifying_light") { }
 
-    struct npc_purifying_lightAI : public CreatureAI
+    struct npc_norushen_purifying_lightAI : public CreatureAI
     {
-        npc_purifying_lightAI(Creature* pCreature) : CreatureAI(pCreature)
+        npc_norushen_purifying_lightAI(Creature* pCreature) : CreatureAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
         }
 
         InstanceScript* pInstance;
 
-        void Reset(){}
+        void Reset()
+        {
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+        }
 
         void OnSpellClick(Unit* clicker)
         {
+            Player* p = clicker->ToPlayer();
+            if (!p)
+                return;
+
+            uint8 role = p->GetRoleForGroup(p->GetSpecializationId(p->GetActiveSpec()));
+            switch(role)
+            {
+                case ROLES_TANK:
+                    p->CastSpell(p, SPELL_TEST_OF_CONFIDENCE, false);
+                    break;
+                case ROLES_DPS:
+                    p->CastSpell(p, SPELL_TEST_OF_SERENITY, false);
+                    break;
+                case ROLES_HEALER:
+                    p->CastSpell(p, SPELL_TEST_OF_RELIANCE, false);
+                    break;
+                default:
+                    p->CastSpell(p, SPELL_TEST_OF_SERENITY, false);
+                    sLog->outError(LOG_FILTER_PLAYER, "Script::npc_norushen_purifying_light: Player %s has not localized role specID.", p->ToString().c_str(), role);
+                    break;
+            }
         }
 
         void EnterCombat(Unit* who){}
@@ -603,10 +632,11 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_purifying_lightAI(pCreature);
+        return new npc_norushen_purifying_lightAI(pCreature);
     }
 };
 
+//72264 summoned at FRAYED
 class npc_norushen_manifestation_of_corruption : public CreatureScript
 {
 public:
@@ -1184,7 +1214,7 @@ void AddSC_boss_norushen()
     new npc_norushen_lowerwalker();
     new boss_amalgam_of_corruption();
     new npc_blind_hatred();
-    new npc_purifying_light();
+    new npc_norushen_purifying_light();
     new npc_norushen_manifestation_of_corruption();
     new npc_norushen_residual_corruption();
     new npc_essence_of_corruption();
