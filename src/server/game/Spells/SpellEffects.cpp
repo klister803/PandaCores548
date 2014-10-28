@@ -3666,6 +3666,12 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             {
                                 m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->quality);
                                 summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->level);
+                                summon->SetHealth(pet->health);
+                                summon->SetMaxHealth(pet->maxHealth);
+                                // test
+                                summon->SetClass(CLASS_NONE);
+                                if (pet->customName != "")
+                                    summon->SetName(pet->customName);
                             }
                         }
 
