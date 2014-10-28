@@ -2053,9 +2053,6 @@ void World::SetInitialWorldSettings()
         if (m_realmName[i] != ' ')
             m_trimmedRealmName += m_realmName[i];
 
-    sLog->outInfo(LOG_FILTER_GENERAL, "Loading area skip update...");
-    sObjectMgr->LoadSkipUpdateZone();
-
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "World initialized in %u minutes %u seconds", (startupDuration / 60000), ((startupDuration % 60000) / 1000));

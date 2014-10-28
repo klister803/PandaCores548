@@ -474,20 +474,6 @@ void Creature::Update(uint32 diff)
             isPlayersPet = true;
     }
 
-	// Zone Skip Update
-    if (!isPlayersPet && (sObjectMgr->IsSkipZone(GetZoneId()) || (!isInCombat() && !GetMap()->Instanceable())))
-	{
-		_skipCount++;
-		_skipDiff += diff;
-
-        if (_skipCount != sObjectMgr->GetSkipUpdateCount())
-            return;
-
-		diff = _skipDiff;
-		_skipCount = 0;
-		_skipDiff = 0;
-	}
-
     if (IsAIEnabled && TriggerJustRespawned)
     {
         TriggerJustRespawned = false;

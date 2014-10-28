@@ -2537,9 +2537,6 @@ class Unit : public WorldObject
         LiquidTypeEntry const* _lastLiquid;
         MountCapabilityEntry const* _mount;
 
-        // Zone Skip Update
-        uint32 _skipCount;
-        uint32 _skipDiff;
         uint8 m_diffMode;
 
         bool m_IsInKillingProcess;

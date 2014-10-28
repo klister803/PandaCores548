@@ -1242,24 +1242,6 @@ class ObjectMgr
             return ret ? ret : time(NULL);
         }
 
-        void LoadSkipUpdateZone();
-
-        bool IsSkipZone(uint32 zone)
-        {
-        	if (skipData.find(zone) != skipData.end())
-        		return skipData[zone];
-
-            return false;
-        }
-
-        uint32 GetSkipUpdateCount()
-        {
-        	return _skipUpdateCount;
-        }
-
-
-        UpdateSkipData skipData;
-
         ///Temporaire pour la création des Z, a remettre en private après
         GameObjectDataContainer _gameObjectDataStore;
 

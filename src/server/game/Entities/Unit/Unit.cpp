@@ -285,10 +285,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _isWalkingBeforeCharm = false;
     _mount = NULL;
 
-    // Area Skip Update
-    _skipCount = 0;
-    _skipDiff = 0;
-
     m_IsInKillingProcess = false;
     m_VisibilityUpdScheduled = false;
     m_VisibilityUpdateTask = false;

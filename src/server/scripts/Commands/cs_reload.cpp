@@ -70,7 +70,6 @@ public:
             { "achievement_criteria_data",    SEC_ADMINISTRATOR, true,  &HandleReloadAchievementCriteriaDataCommand,    "", NULL },
             { "achievement_reward",           SEC_ADMINISTRATOR, true,  &HandleReloadAchievementRewardCommand,          "", NULL },
             { "all",                          SEC_ADMINISTRATOR, true,  NULL,                          "", reloadAllCommandTable },
-            { "area_skip_update",             SEC_ADMINISTRATOR, true,  &HandleReloadAreaSkipUpdateCommand,             "", NULL },
             { "areatrigger_data",             SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerDataCommand,            "", NULL },
             { "areatrigger_involvedrelation", SEC_ADMINISTRATOR, true,  &HandleReloadQuestAreaTriggersCommand,          "", NULL },
             { "areatrigger_tavern",           SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTavernCommand,          "", NULL },
@@ -1357,13 +1356,6 @@ public:
         sLog->outInfo(LOG_FILTER_SERVER_LOADING,"Re-Loading Banned Addons...");
         sObjectMgr->LoadBannedAddons();
         handler->SendGlobalGMSysMessage("DB table `banned_addons` reloaded.");
-        return true;
-    }
-
-    static bool HandleReloadAreaSkipUpdateCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        sObjectMgr->LoadSkipUpdateZone();
-        handler->SendGlobalGMSysMessage("Area skip update reloaded");
         return true;
     }
 

@@ -9072,29 +9072,6 @@ VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) con
     return NULL;
 }
 
-void ObjectMgr::LoadSkipUpdateZone()
-{
-	skipData.clear();
-
-	_skipUpdateCount = ConfigMgr::GetIntDefault("ZoneSkipUpdate.count", 1);
-
-	QueryResult result = WorldDatabase.PQuery("SELECT zone FROM zone_skip_update");
-	if (!result)
-		return;
-
-	uint32 count = 0;
-
-	do
-	{
-		Field* fields = result->Fetch();
-		uint32 zoneId = fields[0].GetUInt32();
-		skipData[zoneId] = true;
-		count++;
-	} while (result->NextRow());
-
-	 sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u zone skip update.", count);
-}
-
 void ObjectMgr::RestructCreatureGUID(uint32 nbLigneToRestruct)
 {
     QueryResult result = WorldDatabase.PQuery("SELECT guid FROM creature ORDER BY guid DESC LIMIT %u;", nbLigneToRestruct);

@@ -1749,23 +1749,6 @@ void Player::Update(uint32 p_time)
         m_Store = true;
     }
 
-    // Zone Skip Update
-	if (sObjectMgr->IsSkipZone(m_zoneUpdateId) || isAFK())
-	{
-		_skipCount++;
-		_skipDiff += p_time;
-
-		if (_skipCount < sObjectMgr->GetSkipUpdateCount())
-        {
-            plrUpdate = false;
-			return;
-        }
-
-		p_time = _skipDiff;
-		_skipCount = 0;
-		_skipDiff = 0;
-	}
-
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
