@@ -23,7 +23,6 @@
 #include "Dynamic/UnorderedMap.h"
 #include "Define.h"
 #include <ace/Thread_Mutex.h>
-#include <ace/Singleton.h>
 
 //===========================================================
 
@@ -75,7 +74,6 @@ namespace VMAP
             InstanceTreeMap iInstanceMapTrees;
             // Mutex for iLoadedModelFiles
             ACE_Thread_Mutex LoadedModelFilesLock;
-            ACE_RW_Thread_Mutex instanceLock;
 
             bool _loadMap(uint32 mapId, const std::string& basePath, uint32 tileX, uint32 tileY);
             /* void _unloadMap(uint32 pMapId, uint32 x, uint32 y); */
@@ -102,8 +100,8 @@ namespace VMAP
 
             bool processCommand(char* /*command*/) { return false; } // for debug and extensions
 
-            bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId);
-            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type);
+            bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const;
+            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type) const;
 
             WorldModel* acquireModelInstance(const std::string& basepath, const std::string& filename);
             void releaseModelInstance(const std::string& filename);
