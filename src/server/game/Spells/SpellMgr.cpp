@@ -726,6 +726,40 @@ void SpellMgr::GetSetOfSpellsInSpellGroup(SpellGroup group_id, std::set<uint32>&
     }
 }
 
+bool SpellMgr::AddSameEffectStackRuleSpellGroups(SpellInfo const* spellInfo, AuraEffect* eff, std::multimap<SpellGroup, AuraEffect*>& groups) const
+{
+    uint32 spellId = spellInfo->GetFirstRankSpell()->Id;
+    SpellSpellGroupMapBounds spellGroup = GetSpellSpellGroupMapBounds(spellId);
+    for (SpellSpellGroupMap::const_iterator itr = spellGroup.first; itr != spellGroup.second; ++itr)
+    {
+        SpellGroup group = itr->second;
+        SpellGroupStackMap::const_iterator found = mSpellGroupStack.find(group);
+        if (found != mSpellGroupStack.end())
+        {
+            if (found->second == SPELL_GROUP_STACK_RULE_EXCLUSIVE_SAME_EFFECT)
+            {
+                if (groups.find(group) == groups.end())
+                    groups.insert(std::multimap<SpellGroup, AuraEffect*>::value_type(group, eff));
+                else
+                {
+                    for (std::multimap<SpellGroup, AuraEffect*>::iterator iter = groups.lower_bound(group); iter != groups.upper_bound(group);)
+                    {
+                        AuraEffect* iterEff = iter->second;
+                        if (abs(iterEff->GetAmount()) <= abs(eff->GetAmount()))
+                        {
+                            groups.erase(iter);
+                            groups.insert(std::multimap<SpellGroup, AuraEffect*>::value_type(group, eff));
+                        }
+                        break;
+                    }
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool SpellMgr::AddSameEffectStackRuleSpellGroups(SpellInfo const* spellInfo, int32 amount, std::map<SpellGroup, int32>& groups) const
 {
     uint32 spellId = spellInfo->GetFirstRankSpell()->Id;

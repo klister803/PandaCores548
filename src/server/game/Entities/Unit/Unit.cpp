@@ -4822,6 +4822,22 @@ uint32 Unit::GetDoTsByCaster(uint64 casterGUID) const
     return dots;
 }
 
+std::list<AuraEffect*> Unit::GetTotalNotStuckAuraEffectByType(AuraType auratype) const
+{
+    AuraEffectList FinishedEffectList;
+    std::multimap<SpellGroup, AuraEffect*> SameEffectSpellGroup;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i), SameEffectSpellGroup))
+            FinishedEffectList.push_back(*i);
+
+    for (std::map<SpellGroup, AuraEffect*>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        FinishedEffectList.push_back(itr->second);
+
+    return FinishedEffectList;
+}
+
 int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 {
     std::map<SpellGroup, int32> SameEffectSpellGroup;
@@ -11717,7 +11733,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         // Some spells don't benefit from pct done mods
         if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && !spellProto->IsRankOf(sSpellMgr->GetSpellInfo(12162)))
         {
-            AuraEffectList const& mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+            AuraEffectList const& mModDamagePercentDone = GetTotalNotStuckAuraEffectByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
             {
                 // Mastery: Unshackled Fury
@@ -13190,7 +13206,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     if (spellProto)
         if (!(spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && !spellProto->IsRankOf(sSpellMgr->GetSpellInfo(12162)))
         {
-            AuraEffectList const& mModDamagePercentDone = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+            AuraEffectList const& mModDamagePercentDone = GetTotalNotStuckAuraEffectByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (AuraEffectList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
             {
                 // Mastery: Unshackled Fury
