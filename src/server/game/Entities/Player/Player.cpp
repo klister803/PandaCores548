@@ -4416,16 +4416,12 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                 {
                     if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry))
                     {
-                        // check having pet in DB
-                        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_CHECK_EXIST_BATTLE_PET);
-                        stmt->setUInt32(0, GetSession()->GetAccountId());
-                        stmt->setUInt32(1, spellId);
-                        stmt->setUInt32(2, petEntry);
-                        PreparedQueryResult res = CharacterDatabase.Query(stmt);
-                        if (!res)
+                        // check exist pet in journal
+                        uint64 petguid = GetBattlePetMgr()->GetPetGUIDBySpell(spellInfo->Id);
+                        if (!petguid)
                         {
-                            uint64 guid = sObjectMgr->GenerateBattlePetGuid();
-                            GetBattlePetMgr()->AddPetInJournal(guid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
+                            petguid = sObjectMgr->GenerateBattlePetGuid();
+                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
                         }
                     }
                 }
@@ -19178,6 +19174,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
+    // load battle pets journal before spells and other
+    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
 
@@ -19355,8 +19354,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
-
-    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
 
     SetLfgBonusFaction(fields[66].GetUInt32());
 
