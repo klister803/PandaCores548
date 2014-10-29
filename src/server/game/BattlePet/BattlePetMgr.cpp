@@ -158,6 +158,68 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
         _player->CastSpell(_player, spellId, true);
 }
 
+void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
+{
+    ObjectGuid guid, guid1;
+    recvData.ReadGuidMask<7, 6>(guid1);
+    recvData.ReadGuidMask<6>(guid);
+    recvData.ReadGuidMask<1>(guid1);
+    recvData.ReadGuidMask<4, 5>(guid);
+    recvData.ReadGuidMask<2, 5, 0>(guid1);
+    recvData.ReadGuidMask<0, 3, 1, 2>(guid);
+    recvData.ReadGuidMask<4, 3>(guid1);
+    recvData.ReadGuidMask<7>(guid);
+
+    recvData.ReadGuidBytes<5>(guid1);
+    recvData.ReadGuidBytes<7>(guid);
+    recvData.ReadGuidBytes<2>(guid1);
+    recvData.ReadGuidBytes<3>(guid);
+    recvData.ReadGuidBytes<1, 4>(guid1);
+    recvData.ReadGuidBytes<0>(guid);
+    recvData.ReadGuidBytes<0>(guid1);
+    recvData.ReadGuidBytes<1, 6, 4, 2, 5>(guid);
+    recvData.ReadGuidBytes<7, 3, 6>(guid1);
+
+    if (Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]))
+    {
+        // check creature guid
+        if (summon->GetObjectGuid() != guid)
+            return;
+
+        // check battlepet guid
+        if (summon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) != guid1)
+            return;
+
+        if (PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid1))
+        {
+            // send query battle pet name response
+            WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
+            data << uint32(summon->GetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP));  // cache name timestamp
+            data << uint32(pet->creatureEntry);                                                      // creature entry
+            data << uint64(guid1);                                                                   // battlepet guid
+            bool hasCustomName = pet->customName == "" ? false : true;
+            // need store declined names at rename
+            bool hasDeclinedNames = false;
+            data.WriteBit(hasCustomName);
+            if (hasCustomName)
+            {
+                data.WriteBits(pet->customName.length(), 8);
+                data.WriteBit(hasDeclinedNames);
+
+                for (int i = 0; i < 5; i++)
+                    data.WriteBits(0, 7);
+
+                data.WriteString(pet->customName);
+
+                /*for (int i = 0; i < 5; i++)
+                    data.WriteString(pet->declinedNames[i]);*/
+            }
+
+            SendPacket(&data);
+        }
+    }
+}
+
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;
@@ -1130,11 +1192,11 @@ void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<1, 6>(guid);
-    uint32 len = recvData.ReadBits(7);
+    uint8 len = recvData.ReadBits(7);
     recvData.ReadGuidMask<3, 5>(guid);
     bool hasDeclined = recvData.ReadBit();
     recvData.ReadGuidMask<7, 4, 0, 2>(guid);
-    uint32 len1[5];
+    uint8 len1[5];
     if (hasDeclined)
     {
         for (uint8 i = 0; i < 5; ++i)
