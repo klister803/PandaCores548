@@ -192,12 +192,15 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
 
         if (PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid1))
         {
+            bool hasCustomName = pet->customName == "" ? false : true;
             // send query battle pet name response
             WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
-            data << uint32(summon->GetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP));  // cache name timestamp
-            data << uint32(pet->creatureEntry);                                                      // creature entry
-            data << uint64(guid1);                                                                   // battlepet guid
-            bool hasCustomName = pet->customName == "" ? false : true;
+             // creature entry
+            data << uint32(pet->creatureEntry);
+            // timestamp for custom name cache
+            data << uint32(hasCustomName ? summon->GetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP) : 0);
+            // battlepet guid
+            data << uint64(guid1);
             // need store declined names at rename
             bool hasDeclinedNames = false;
             data.WriteBit(hasCustomName);

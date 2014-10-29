@@ -3666,8 +3666,9 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                                 // set guids
                                 m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
                                 summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
-                                // timestamp for name cache
-                                summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
+                                // timestamp for custom name cache
+                                if (pet->customName != "")
+                                    summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
                                 // quality
                                 m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->quality);
                                 // level
