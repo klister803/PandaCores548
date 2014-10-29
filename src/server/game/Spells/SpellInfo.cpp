@@ -1058,21 +1058,25 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellLevel = _levels ? _levels->spellLevel : 0;
 
     // SpellPowerEntry
+    PowerType = POWER_NULL;
     PowerCost =  0;
     PowerPerSecond = 0;
     PowerCostPercentage = 0.0f;
     PowerPerSecondPercentage = 0.0f;
-    PowerType = POWER_NULL;
+    PowerRequestId = 0;
+    PowerGetPercentHp = 0.0f;
 
     for (uint8 i = 0; i < MAX_POWERS_FOR_SPELL; ++i)
     {
+        spellPower[i].Id = 0;
+        spellPower[i].SpellId = Id;
+        spellPower[i].powerType = POWER_NULL;
         spellPower[i].powerCost = 0;
+        spellPower[i].powerPerSecond = 0;
         spellPower[i].powerCostPercentage = 0.0f;
         spellPower[i].powerPerSecondPercentage = 0.0f;
-        spellPower[i].powerPerSecond = 0;
-        spellPower[i].SpellId = Id;
-        spellPower[i].powerType = POWER_MANA;
-        spellPower[i].Id = 0;
+        spellPower[i].spellRequestId = 0;
+        spellPower[i].getpercentHp = 0.0f;
     }
 
     // SpellMiscEntry
@@ -3464,11 +3468,13 @@ bool SpellInfo::AddPowerData(SpellPowerEntry const *power)
             continue;
 
         spellPower[i].Id = power->Id;
-        spellPower[i].powerCost = power->powerCost;
-        spellPower[i].powerCostPercentage = power->powerCostPercentage;
-        spellPower[i].powerPerSecond = power->powerPerSecond;
         spellPower[i].powerType = power->powerType;
+        spellPower[i].powerCost = power->powerCost;
+        spellPower[i].powerPerSecond = power->powerPerSecond;
+        spellPower[i].powerCostPercentage = power->powerCostPercentage;
+        spellPower[i].powerPerSecondPercentage = power->powerPerSecondPercentage;
         spellPower[i].spellRequestId = power->spellRequestId;
+        spellPower[i].getpercentHp = power->getpercentHp;
         return true;
     }
 
@@ -3477,7 +3483,7 @@ bool SpellInfo::AddPowerData(SpellPowerEntry const *power)
 
 bool SpellInfo::IsPowerActive(uint8 powerIndex) const
 {
-    return GetPowerInfo(powerIndex).Id;
+    return GetPowerInfo(powerIndex).Id != 0;
 }
 
 SpellPowerEntry const SpellInfo::GetPowerInfo(uint8 powerIndex) const
@@ -3516,11 +3522,13 @@ bool SpellInfo::GetSpellPowerByCasterPower(Unit const * caster, SpellPowerEntry 
     if (spellPower[index].Id)
     {
         power.Id = spellPower[index].Id;
+        power.powerType = spellPower[index].powerType;
         power.powerCost = spellPower[index].powerCost;
+        power.powerPerSecond = spellPower[index].powerPerSecond;
         power.powerCostPercentage = spellPower[index].powerCostPercentage;
         power.powerPerSecondPercentage = spellPower[index].powerPerSecondPercentage;
-        power.powerPerSecond = spellPower[index].powerPerSecond;
-        power.powerType = spellPower[index].powerType;
+        power.spellRequestId = spellPower[index].spellRequestId;
+        power.getpercentHp = spellPower[index].getpercentHp;
         return true;
     }
 

@@ -1013,6 +1013,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
+        case 123273:        // Surging Mist - 123273 and Surging Mist - 116995
         case 116694:        // Surging Mist - 116694 and Surging Mist - 116995
         {
             // Surging Mist is instantly casted if player is channeling Soothing Mist

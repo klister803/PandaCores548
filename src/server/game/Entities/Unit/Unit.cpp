@@ -942,14 +942,14 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
         {
             float masteryMod = aurEff->GetAmount() / 100.0f;
             stagger = 0.80f - masteryMod;
-
-            // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
-            if (victim->HasAura(115203) && victim->HasAura(117967))
-                stagger -= 0.20f;
-            // Shuffle also increase stagger amount by 20%
-            if (victim->HasAura(115307))
-                stagger -= 0.20f;
         }
+
+        // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
+        if (victim->HasAura(115203) && victim->HasAura(117967))
+            stagger -= 0.20f;
+        // Shuffle also increase stagger amount by 20%
+        if (victim->HasAura(115307))
+            stagger -= 0.20f;
 
         int32 bp1 = damage - (damage * stagger);
         int32 bp0 = bp1 / 10;
@@ -14502,7 +14502,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             }
             else
             {
-                main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_SPEED);
+                main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_SPEED) - GetMaxNegativeAuraModifier(SPELL_AURA_MOD_INCREASE_SPEED);
                 stack_bonus     = GetTotalAuraMultiplier(SPELL_AURA_MOD_SPEED_ALWAYS);
                 non_stack_bonus += GetMaxPositiveAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK) / 100.0f;
             }
@@ -18509,7 +18509,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || dmgInfoProc->GetAbsorb() != 0 || (procSpell && procSpell->IsAffectingArea()))
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && procSpell->IsAffectingArea()))
                         return false;
 
                     if (itr->aura)
@@ -18518,7 +18518,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     triggered_spell_id = itr->spell_trigger;
 
-                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage())
+                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage() + dmgInfoProc->GetAbsorb())
                     {
                         uint32 count = getThreatManager().getThreatList().size();
                         float _percent = triggerAmount / 100.0f;

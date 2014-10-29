@@ -519,6 +519,22 @@ class Spell
 
         UsedSpellMods m_appliedMods;
 
+        uint32 AttributesCustom;
+        uint32 AttributesCustomEx;
+        uint32 AttributesCustomEx2;
+        uint32 AttributesCustomEx3;
+        uint32 AttributesCustomEx4;
+        uint32 AttributesCustomEx5;
+        uint32 AttributesCustomEx6;
+        uint32 AttributesCustomEx7;
+        uint32 AttributesCustomEx8;
+        uint32 AttributesCustomEx9;
+        uint32 AttributesCustomEx10;
+        uint32 AttributesCustomEx11;
+        uint32 AttributesCustomEx12;
+        uint32 AttributesCustomEx13;
+        void LoadAttrDummy();
+
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }

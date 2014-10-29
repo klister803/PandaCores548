@@ -1157,6 +1157,12 @@ const std::vector<SpellTriggered>* SpellMgr::GetSpellTriggeredDummy(int32 spell_
     return itr != mSpellTriggeredDummyMap.end() ? &(itr->second) : NULL;
 }
 
+const std::vector<SpellAuraDummy>* SpellMgr::GetSpellAuraDummy(int32 spell_id) const
+{
+    SpellAuraDummyMap::const_iterator itr = mSpellAuraDummyMap.find(spell_id);
+    return itr != mSpellAuraDummyMap.end() ? &(itr->second) : NULL;
+}
+
 PetLevelupSpellSet const* SpellMgr::GetPetLevelupSpellList(uint32 petFamily) const
 {
     PetLevelupSpellMap::const_iterator itr = mPetLevelupSpellMap.find(petFamily);
@@ -2706,7 +2712,9 @@ void SpellMgr::LoadSpellTriggered()
 
     mSpellTriggeredMap.clear();    // need for reload case
     mSpellTriggeredDummyMap.clear();    // need for reload case
+    mSpellAuraDummyMap.clear();    // need for reload case
 
+    uint32 count = 0;
     //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14
     QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags` FROM `spell_trigger`");
     if (!result)
@@ -2715,7 +2723,6 @@ void SpellMgr::LoadSpellTriggered()
         return;
     }
 
-    uint32 count = 0;
     do
     {
         Field* fields = result->Fetch();
@@ -2740,7 +2747,7 @@ void SpellMgr::LoadSpellTriggered()
         if (!spellInfo)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger` does not exist", abs(spell_id));
-            WorldDatabase.PExecute("DELETE FROM `spell_trigger` WHERE spell_id = %u", abs(spell_id));
+            //WorldDatabase.PExecute("DELETE FROM `spell_trigger` WHERE spell_id = %u", abs(spell_id));
             continue;
         }
         spellInfo = GetSpellInfo(abs(spell_trigger));
@@ -2802,7 +2809,7 @@ void SpellMgr::LoadSpellTriggered()
         if (!spellInfo)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger_dummy` does not exist", abs(spell_id));
-            WorldDatabase.PExecute("DELETE FROM `spell_trigger_dummy` WHERE spell_id = %u", abs(spell_id));
+            //WorldDatabase.PExecute("DELETE FROM `spell_trigger_dummy` WHERE spell_id = %u", abs(spell_id));
             continue;
         }
 
@@ -2823,6 +2830,59 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.group = group;
         temptrigger.procFlags = 0;
         mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
+
+        ++count;
+    } while (result->NextRow());
+
+    //                                        0             1          2         3         4           5              6             7           8        9          10         11        12
+    result = WorldDatabase.Query("SELECT `spellId`, `spellDummyId`, `option`, `target`, `caster`, `targetaura`, `effectmask`, `effectDummy`, `aura`, `chance`, `removeAura`, `attr`, `attrValue` FROM `spell_aura_dummy`");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 aura dummy spells. DB table `spell_aura_dummy` is empty.");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spellId = fields[0].GetInt32();
+        int32 spellDummyId = fields[1].GetInt32();
+        int32 option = fields[2].GetInt32();
+        int32 target = fields[3].GetInt32();
+        int32 caster = fields[4].GetInt32();
+        int32 targetaura = fields[5].GetInt32();
+        int32 effectmask = fields[6].GetInt32();
+        int32 effectDummy = fields[7].GetInt32();
+        int32 aura = fields[7].GetInt32();
+        int32 chance = fields[9].GetInt32();
+        int32 removeAura = fields[10].GetInt32();
+        int32 attr = fields[11].GetInt32();
+        int32 attrValue = fields[12].GetInt32();
+
+        SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
+        if (!spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_aura_dummy` does not exist", abs(spellId));
+            //WorldDatabase.PExecute("DELETE FROM `spell_aura_dummy` WHERE spellId = %u", abs(spellId));
+            continue;
+        }
+
+        SpellAuraDummy tempdummy;
+        tempdummy.spellId = spellId;
+        tempdummy.spellDummyId = spellDummyId;
+        tempdummy.option = option;
+        tempdummy.target = target;
+        tempdummy.caster = caster;
+        tempdummy.targetaura = targetaura;
+        tempdummy.effectmask = effectmask;
+        tempdummy.effectDummy = effectDummy;
+        tempdummy.aura = aura;
+        tempdummy.removeAura = removeAura;
+        tempdummy.chance = chance;
+        tempdummy.attr = attr;
+        tempdummy.attrValue = attrValue;
+        mSpellAuraDummyMap[spellId].push_back(tempdummy);
 
         ++count;
     } while (result->NextRow());
@@ -3391,14 +3451,16 @@ void SpellMgr::LoadSpellInfoStore()
         if (!spell)
             continue;
 
+        spell->PowerType = spellPower->powerType;
         spell->PowerCost = spellPower->powerCost;
         spell->PowerCostPercentage = spellPower->powerCostPercentage;
         spell->PowerPerSecond = spellPower->powerPerSecond;
         spell->PowerPerSecondPercentage = spellPower->powerPerSecondPercentage;
-        spell->PowerType = spellPower->powerType;
+        spell->PowerRequestId = spellPower->spellRequestId;
+        spell->PowerGetPercentHp = spellPower->getpercentHp;
 
         if (!spell->AddPowerData(spellPower))
-            sLog->outInfo(LOG_FILTER_WORLDSERVER, "Spell - %u has more powers than two.", spell->Id);
+            sLog->outInfo(LOG_FILTER_WORLDSERVER, "Spell - %u has more powers > 4.", spell->Id);
     }
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
@@ -4245,11 +4307,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 130320:// Rising Sun Kick - Monks abilities deal 10% more damage
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_SRC_CASTER;
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                    break;
-                case 101546:// Spinning Crane Kick - Decrease Speed
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
-                    spellInfo->Effects[EFFECT_1].BasePoints = -30;
                     spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
                     break;
                 case 107270:// Spinning Crane Kick - Radius

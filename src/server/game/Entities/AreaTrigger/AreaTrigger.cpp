@@ -80,9 +80,9 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
     }
 
-    if (AreaTriggerInfo const* info = sObjectMgr->GetAreaTriggerInfo(triggerEntry))
+    if (AreaTriggerInfo const* infoAt = sObjectMgr->GetAreaTriggerInfo(triggerEntry))
     {
-        atInfo = *info;
+        atInfo = *infoAt;
         _activationDelay = atInfo.activationDelay;
         _updateDelay = atInfo.updateDelay;
 
@@ -94,6 +94,11 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
     SetEntry(triggerEntry);
     uint32 duration = info->GetDuration();
+
+    Player* modOwner = caster->GetSpellModOwner();
+    if (duration != -1 && modOwner)
+        modOwner->ApplySpellMod(info->Id, SPELLMOD_DURATION, duration);
+
     SetDuration(duration);
     SetObjectScale(1);
 
@@ -405,7 +410,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 energeType = Powers(spellInfo->Effects[i].MiscValue);
         }
 
-        if (energeType == -1 || unit->GetMaxPower(energeType) == 0 || unit->GetMaxPower(energeType) == unit->GetPower(energeType))
+        if (energeType == POWER_NULL || unit->GetMaxPower(energeType) == 0 || unit->GetMaxPower(energeType) == unit->GetPower(energeType))
             return;
     }
 
