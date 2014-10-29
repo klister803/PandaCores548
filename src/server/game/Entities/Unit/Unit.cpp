@@ -18509,7 +18509,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || dmgInfoProc->GetAbsorb() != 0)
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || dmgInfoProc->GetAbsorb() != 0 || (procSpell && procSpell->IsAffectingArea()))
                         return false;
 
                     if (itr->aura)
@@ -18542,7 +18542,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                                 bp += oldamount;
                             }
 
-                        int32 maxVal = GetMaxHealth();
+                        int32 maxVal = int32(GetMaxHealth() * 0.5f);
 
                         if (bp > maxVal)
                             bp = maxVal;
