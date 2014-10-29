@@ -160,65 +160,63 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
 
 void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
 {
-    ObjectGuid guid, guid1;
-    recvData.ReadGuidMask<7, 6>(guid1);
-    recvData.ReadGuidMask<6>(guid);
-    recvData.ReadGuidMask<1>(guid1);
-    recvData.ReadGuidMask<4, 5>(guid);
-    recvData.ReadGuidMask<2, 5, 0>(guid1);
-    recvData.ReadGuidMask<0, 3, 1, 2>(guid);
-    recvData.ReadGuidMask<4, 3>(guid1);
-    recvData.ReadGuidMask<7>(guid);
+    ObjectGuid creatureGuid, battlepetGuid;
+    recvData.ReadGuidMask<7, 6>(battlepetGuid);
+    recvData.ReadGuidMask<6>(creatureGuid);
+    recvData.ReadGuidMask<1>(battlepetGuid);
+    recvData.ReadGuidMask<4, 5>(creatureGuid);
+    recvData.ReadGuidMask<2, 5, 0>(battlepetGuid);
+    recvData.ReadGuidMask<0, 3, 1, 2>(creatureGuid);
+    recvData.ReadGuidMask<4, 3>(battlepetGuid);
+    recvData.ReadGuidMask<7>(creatureGuid);
 
-    recvData.ReadGuidBytes<5>(guid1);
-    recvData.ReadGuidBytes<7>(guid);
-    recvData.ReadGuidBytes<2>(guid1);
-    recvData.ReadGuidBytes<3>(guid);
-    recvData.ReadGuidBytes<1, 4>(guid1);
-    recvData.ReadGuidBytes<0>(guid);
-    recvData.ReadGuidBytes<0>(guid1);
-    recvData.ReadGuidBytes<1, 6, 4, 2, 5>(guid);
-    recvData.ReadGuidBytes<7, 3, 6>(guid1);
+    recvData.ReadGuidBytes<5>(battlepetGuid);
+    recvData.ReadGuidBytes<7>(creatureGuid);
+    recvData.ReadGuidBytes<2>(battlepetGuid);
+    recvData.ReadGuidBytes<3>(creatureGuid);
+    recvData.ReadGuidBytes<1, 4>(battlepetGuid);
+    recvData.ReadGuidBytes<0>(creatureGuid);
+    recvData.ReadGuidBytes<0>(battlepetGuid);
+    recvData.ReadGuidBytes<1, 6, 4, 2, 5>(creatureGuid);
+    recvData.ReadGuidBytes<7, 3, 6>(battlepetGuid);
 
-    if (Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]))
+    if (Creature* summon = _player->GetMap()->GetCreature(creatureGuid))
     {
-        // check creature guid
-        if (summon->GetObjectGuid() != guid)
-            return;
-
         // check battlepet guid
-        if (summon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) != guid1)
+        if (summon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) != battlepetGuid)
             return;
 
-        if (PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid1))
+        if (Player * owner = summon->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
-            bool hasCustomName = pet->customName == "" ? false : true;
-            // send query battle pet name response
-            WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
-             // creature entry
-            data << uint32(pet->creatureEntry);
-            // timestamp for custom name cache
-            data << uint32(hasCustomName ? summon->GetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP) : 0);
-            // battlepet guid
-            data << uint64(guid1);
-            // need store declined names at rename
-            bool hasDeclinedNames = false;
-            data.WriteBit(hasCustomName);
-            if (hasCustomName)
+            if (PetInfo* pet = owner->GetBattlePetMgr()->GetPetInfoByPetGUID(battlepetGuid))
             {
-                data.WriteBits(pet->customName.length(), 8);
-                data.WriteBit(hasDeclinedNames);
+                bool hasCustomName = pet->customName == "" ? false : true;
+                WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
+                // creature entry
+                data << uint32(pet->creatureEntry);
+                // timestamp for custom name cache
+                data << uint32(hasCustomName ? summon->GetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP) : 0);
+                // battlepet guid
+                data << uint64(battlepetGuid);
+                // need store declined names at rename
+                bool hasDeclinedNames = false;
+                data.WriteBit(hasCustomName);
+                if (hasCustomName)
+                {
+                    data.WriteBits(pet->customName.length(), 8);
+                    data.WriteBit(hasDeclinedNames);
 
-                for (int i = 0; i < 5; i++)
-                    data.WriteBits(0, 7);
+                    for (int i = 0; i < 5; i++)
+                        data.WriteBits(0, 7);
 
-                data.WriteString(pet->customName);
+                    data.WriteString(pet->customName);
 
-                /*for (int i = 0; i < 5; i++)
-                    data.WriteString(pet->declinedNames[i]);*/
+                    /*for (int i = 0; i < 5; i++)
+                        data.WriteString(pet->declinedNames[i]);*/
+                }
+
+                SendPacket(&data);
             }
-
-            SendPacket(&data);
         }
     }
 }
