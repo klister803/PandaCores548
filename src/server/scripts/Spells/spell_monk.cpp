@@ -468,14 +468,14 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
                         if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
                             continue;
 
-                        _player->AddAura(aura->GetSpellInfo()->Id, caster);
+                        target->AddAura(aura->GetSpellInfo()->Id, caster);
 
-                        if (Aura* targetAura = caster->GetAura(aura->GetSpellInfo()->Id, _player->GetGUID()))
+                        if (Aura* targetAura = caster->GetAura(aura->GetSpellInfo()->Id, target->GetGUID()))
                             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                                 if (targetAura->GetEffect(i) && aura->GetEffect(i))
                                     targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
 
-                        _player->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
+                        target->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
                     }
                 }
             }
