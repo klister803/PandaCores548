@@ -19,6 +19,7 @@ set(scripts_STAT_SRCS
 	Custom/custom_reward.cpp
 	Custom/command_arena.cpp
 	Custom/npc_profession.cpp
+	Custom/command_donate.cpp
 )
 
 message("  -> Prepared: Custom")
