@@ -17,7 +17,8 @@ set(scripts_STAT_SRCS
 	Custom/bracket.cpp
 	Custom/traffic_log.cpp
 	Custom/custom_reward.cpp
-	Custom/command_donate.cpp
+	Custom/command_arena.cpp
+	Custom/npc_profession.cpp
 )
 
 message("  -> Prepared: Custom")
