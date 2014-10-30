@@ -131,6 +131,15 @@ public:
         return NULL;
     }
 
+    void DeletePetByGUID(uint64 guid)
+    {
+        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        if (pet == m_PetJournal.end())
+            return;
+
+        m_PetJournal.erase(guid);
+    }
+
     uint64 GetPetGUIDBySpell(uint32 spell)
     {
         for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)

@@ -221,6 +221,42 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
     }
 }
 
+void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
+{
+    ObjectGuid guid;
+    recvData.ReadGuidMask<5, 0, 3, 4, 7, 2, 1>(guid);
+    recvData.ReadGuidBytes<4, 1, 5, 3, 0, 6, 7, 2>(guid);
+
+    if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
+    {
+        // at first - all operations with create item
+        uint32 itemId = 82800; // Pet Cage
+        uint32 _noSpaceForCount = 0;
+        ItemPosCountVec dest;
+        InventoryResult msg = _player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1, &_noSpaceForCount);
+        if (msg != EQUIP_ERR_OK)
+            count -= _noSpaceForCount;
+
+        if (count == 0 || dest.empty())
+        {
+            // -- TODO: Send to mailbox if no space
+            //ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
+            return;
+        }
+
+        // delete from journal
+        DeletePetByGUID(guid);
+
+        WorldPacket data(SMSG_BATTLE_PET_DELETED);
+        data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
+        data.WriteGuidBytes<1, 0, 6, 5, 2, 4, 3, 7>(guid);
+
+        // send packet twice? (sniff data)
+        SendPacket(&data);
+        SendPacket(&data);
+    }
+}
+
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;
