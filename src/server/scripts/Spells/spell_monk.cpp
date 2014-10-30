@@ -446,9 +446,9 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* target = GetCaster())
                 {
-                    Unit::AuraApplicationMap AuraList = _player->GetAppliedAuras();
+                    Unit::AuraApplicationMap AuraList = target->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
                     {
                         Aura* aura = iter->second->GetBase();
@@ -456,10 +456,10 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
                             continue;
 
                         Unit* caster = aura->GetCaster();
-                        if (!caster || caster->GetGUID() == _player->GetGUID())
+                        if (!caster || caster->GetGUID() == target->GetGUID())
                             continue;
 
-                        if (!caster->IsWithinDist(_player, 40.0f))
+                        if (!caster->IsWithinDist(target, 40.0f))
                             continue;
 
                         if (aura->GetSpellInfo()->IsPositive())
@@ -476,7 +476,6 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
                                     targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
 
                         _player->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
-                        
                     }
                 }
             }
@@ -1929,36 +1928,20 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->GetGUID() != target->GetGUID())
+                        if (caster->HasAura(128595))
                         {
-                            if (caster->HasAura(128595))
-                            {
-                                uint32 triggered_spell_id = 128531;
-                                Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
-                                int32 damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
-                                int32 basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+                            uint32 triggered_spell_id = 128531;
+                            Unit* originalCaster = caster->GetOwner() ? caster->GetOwner(): caster;
+                            int32 damsges = GetHitAbsorb() + GetHitDamage() + GetHitResist() + GetHitBlocked();
+                            int32 basepoints0 = CalculatePct(damsges, GetSpellInfo()->Effects[EFFECT_1].BasePoints);
 
-                                if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
-                                    triggered_spell_id = 128591;
+                            if (!originalCaster->HasAura(132005) && !target->isInBack(caster))
+                                triggered_spell_id = 128591;
 
-                                if (triggered_spell_id == 128531)
-                                    basepoints0 /= 4;
+                            if (triggered_spell_id == 128531)
+                                basepoints0 /= 4;
 
-                                caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
-                            }
-                            // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-                            if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
-                            {
-                                if (Aura* aura = caster->GetAura(SPELL_MONK_SHUFFLE))
-                                {
-                                    int32 _duration = int32(aura->GetDuration() + 6000);
-                                    aura->SetDuration(_duration, true);
-                                    if (_duration > aura->GetMaxDuration())
-                                        aura->SetMaxDuration(_duration);
-                                }
-                                else
-                                    caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
-                            }
+                            caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
                         }
                     }
                 }
@@ -1970,8 +1953,29 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                     SetHitDamage(int32(GetHitDamage() * 0.5f));
             }
 
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
+                    if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+                    {
+                        if (Aura* aura = caster->GetAura(SPELL_MONK_SHUFFLE))
+                        {
+                            int32 _duration = int32(aura->GetDuration() + 6000);
+                            aura->SetDuration(_duration);
+                            if (_duration > aura->GetMaxDuration())
+                                aura->SetMaxDuration(_duration);
+                        }
+                        else
+                            caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
+                    }
+                }
+            }
+
             void Register()
             {
+                AfterCast += SpellCastFn(spell_monk_blackout_kick_SpellScript::HandleAfterCast);
                 AfterHit += SpellHitFn(spell_monk_blackout_kick_SpellScript::HandleAfterHit);
                 OnEffectHitTarget += SpellEffectFn(spell_monk_blackout_kick_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
@@ -3131,21 +3135,25 @@ class spell_monk_glyph_of_paralysis : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_glyph_of_paralysis_SpellScript);
 
-            void HandleStun(SpellEffIndex /*effIndex*/)
+            void HandleBeforeCast()
             {
-                Unit* caster = GetCaster();
-                Unit* target = GetHitUnit();
-                if (target && caster && caster->HasAura(125755))
+                if (Unit* caster = GetCaster())
                 {
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
-                    target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (caster->HasAura(125755))
+                        {
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
+                        }
+                    }
                 }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_monk_glyph_of_paralysis_SpellScript::HandleStun, EFFECT_0, SPELL_AURA_MOD_STUN);
+                BeforeCast += SpellCastFn(spell_monk_glyph_of_paralysis_SpellScript::HandleBeforeCast);
             }
         };
 
@@ -3256,6 +3264,169 @@ class spell_monk_glyph_of_targeted_expulsion : public SpellScriptLoader
         }
 };
 
+//Chi Wave - 132466
+class spell_monk_chi_wave_filter : public SpellScriptLoader
+{
+    public:
+        spell_monk_chi_wave_filter() : SpellScriptLoader("spell_monk_chi_wave_filter") { }
+
+        class spell_monk_chi_wave_filter_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_chi_wave_filter_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove(GetCaster());
+                targets.remove(GetOriginalCaster());
+                targets.remove_if(OptionCheck(GetCaster()));
+                if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
+                {
+                    targets.sort(CheckHealthState());
+                    if (targets.size() > 1)
+                        targets.resize(1);
+                }
+                else
+                    Trinity::Containers::RandomResizeList(targets, 1);
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                int32 bp1 = GetEffectValue();
+
+                if(bp1 >= 7)
+                    return;
+
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit();
+                Unit* origCaster = GetOriginalCaster();
+                if (target && caster && origCaster)
+                {
+                    bp1++;
+                    if (target->IsFriendlyTo(origCaster))
+                        caster->CastCustomSpell(target, 132464, NULL, &bp1, NULL, true, NULL, NULL, origCaster->GetGUID());
+                    else
+                        caster->CastCustomSpell(target, 132467, NULL, &bp1, NULL, true, NULL, NULL, origCaster->GetGUID());
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_chi_wave_filter_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENTRY);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_chi_wave_filter_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+            }
+        private:
+            class OptionCheck
+            {
+                public:
+                    OptionCheck(Unit* caster) : _caster(caster) {}
+
+                    Unit* _caster;
+
+                    bool operator()(WorldObject* unit)
+                    {
+                        if(!unit->ToUnit())
+                            return true;
+                        if(!_caster->IsValidAttackTarget(unit->ToUnit()))
+                            return true;
+                        return false;
+                    }
+            };
+            class CheckHealthState
+            {
+                public:
+                    CheckHealthState() { }
+
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        Unit* unita = a->ToUnit();
+                        Unit* unitb = b->ToUnit();
+                        if(!unita)
+                            return true;
+                        if(!unitb)
+                            return false;
+                        return unita->GetHealthPct() < unitb->GetHealthPct();
+                    }
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_chi_wave_filter_SpellScript();
+        }
+};
+
+// Chi Wave - 132464, 132467
+class spell_monk_chi_wave_dummy : public SpellScriptLoader
+{
+    public:
+        spell_monk_chi_wave_dummy() : SpellScriptLoader("spell_monk_chi_wave_dummy") { }
+
+        class spell_monk_chi_wave_dummy_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_chi_wave_dummy_AuraScript);
+
+            void ApplyDummy(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetTarget();
+                if (target && caster)
+                {
+                    int32 bp1 = aurEff->GetAmount();
+                    target->CastCustomSpell(target, 132466, NULL, &bp1, NULL, true, NULL, NULL, GetCasterGUID());
+                    if (target->IsFriendlyTo(caster))
+                        caster->CastCustomSpell(target, 132463, NULL, &bp1, NULL, true, NULL, NULL, GetCasterGUID());
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_monk_chi_wave_dummy_AuraScript::ApplyDummy, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_chi_wave_dummy_AuraScript();
+        }
+};
+
+// Chi Wave - 115098
+class spell_monk_chi_wave : public SpellScriptLoader
+{
+    public:
+        spell_monk_chi_wave() : SpellScriptLoader("spell_monk_chi_wave") { }
+
+        class spell_monk_chi_wave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_chi_wave_SpellScript);
+
+            void HandleBeforeCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        int32 bp = 1;
+                        if (target->IsFriendlyTo(caster))
+                            caster->CastCustomSpell(target, 132464, NULL, &bp, NULL, true, NULL, NULL, caster->GetGUID());
+                        else
+                            caster->CastCustomSpell(target, 132467, NULL, &bp, NULL, true, NULL, NULL, caster->GetGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_monk_chi_wave_SpellScript::HandleBeforeCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_chi_wave_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -3320,4 +3491,7 @@ void AddSC_monk_spell_scripts()
     new spell_monk_glyph_of_paralysis();
     new spell_monk_glyph_of_surging_mist();
     new spell_monk_glyph_of_targeted_expulsion();
+    new spell_monk_chi_wave_filter();
+    new spell_monk_chi_wave();
+    new spell_monk_chi_wave_dummy();
 }

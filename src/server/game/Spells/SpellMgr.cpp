@@ -3694,9 +3694,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 132464: // Chi Wave (Pos)
                     spellInfo->SpellFamilyName = SPELLFAMILY_MONK;
                     break;
-                case 115098: // Chi Wave (Main)
-                    spellInfo->Speed = 0;
-                    break;
                 case 145640: // Chi Brew
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;

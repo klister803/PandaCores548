@@ -754,7 +754,7 @@ enum SpellAttr10
     SPELL_ATTR10_UNK15                            = 0x00008000, // 15
     SPELL_ATTR10_UNK16                            = 0x00010000, // 16
     SPELL_ATTR10_UNK17                            = 0x00020000, // 17
-    SPELL_ATTR10_UNK18                            = 0x00040000, // 18
+    SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK            = 0x00040000, // 18 When player casted spell 46924, 101546, 113656 he can parry
     SPELL_ATTR10_UNK19                            = 0x00080000, // 19
     SPELL_ATTR10_UNK20                            = 0x00100000, // 20
     SPELL_ATTR10_UNK21                            = 0x00200000, // 21

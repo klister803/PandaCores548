@@ -1950,6 +1950,7 @@ class Unit : public WorldObject
         bool HasAuraTypeWithValue(AuraType auratype, int32 value) const;
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0);
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
+        bool HasAuraWithAttribute(uint32 Attributes, uint32 flag) const;
         bool HasAuraWithMechanic(uint32 mechanicMask);
         bool HasAuraCastWhileWalking(SpellInfo const* spellInfo);
 

@@ -1507,26 +1507,29 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
         && damageInfo->hitOutCome == MELEE_HIT_CRIT
         && (damageInfo->attackType == BASE_ATTACK || damageInfo->attackType == OFF_ATTACK))
         {
-            CastSpell(this, 128939, true); // Add one stack of Elusive Brew
             float WeaponSpeed = GetAttackTime(damageInfo->attackType) / 1000.0f;
             float chance = 0.0f;
-            if(haveOffhandWeapon())
+            if(WeaponSpeed > 2.6f)
+            {
+                CastSpell(this, 128939, true);
                 chance = (((3.0f * WeaponSpeed) / 3.6f) - 1.0f) * 100.f;
+
+                if(chance >= 100.0f)
+                {
+                    CastSpell(this, 128939, true);
+                    chance -= 100.0f;
+                }
+                if(chance > 0.0f && roll_chance_f(chance))
+                    CastSpell(this, 128939, true);
+            }
             else
+            {
                 chance = (((1.5f * WeaponSpeed) / 2.6f) - 1.0f) * 100.f;
-            if(chance > 200.0f)
-            {
-                CastSpell(this, 128939, true);
-                CastSpell(this, 128939, true);
-                chance -= 200.0f;
+                if(chance > 0.0f && roll_chance_f(chance))
+                    CastSpell(this, 128939, true);
+                if(chance > 0.0f && roll_chance_f(chance))
+                    CastSpell(this, 128939, true);
             }
-            else if(chance > 100.0f)
-            {
-                CastSpell(this, 128939, true);
-                chance -= 100.0f;
-            }
-            if(chance > 0.0f && roll_chance_f(chance))
-                CastSpell(this, 128939, true);
         }
 
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
@@ -2894,7 +2897,7 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
 
 float Unit::GetUnitDodgeChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -2914,7 +2917,7 @@ float Unit::GetUnitDodgeChance() const
 
 float Unit::GetUnitParryChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     float chance = 0.0f;
@@ -2958,7 +2961,7 @@ float Unit::GetUnitMissChance(WeaponAttackType attType) const
 
 float Unit::GetUnitBlockChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED))
+    if (!HasAuraWithAttribute(10, SPELL_ATTR10_CAN_PARRY_DODGE_BLOCK) && (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED)))
         return 0.0f;
 
     if (Player const* player = ToPlayer())
@@ -4652,6 +4655,74 @@ bool Unit::HasNegativeAuraWithAttribute(uint32 flag, uint64 guid)
         Aura const* aura = iter->second->GetBase();
         if (!iter->second->IsPositive() && aura->GetSpellInfo()->Attributes & flag && (!guid || aura->GetCasterGUID() == guid))
             return true;
+    }
+    return false;
+}
+
+bool Unit::HasAuraWithAttribute(uint32 Attributes, uint32 flag) const
+{
+    for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+    {
+        Aura const* aura = iter->second->GetBase();
+        switch(Attributes)
+        {
+            case 0:
+                if(aura->GetSpellInfo()->Attributes & flag)
+                    return true;
+                break;
+            case 1:
+                if(aura->GetSpellInfo()->AttributesEx & flag)
+                    return true;
+                break;
+            case 2:
+                if(aura->GetSpellInfo()->AttributesEx2 & flag)
+                    return true;
+                break;
+            case 3:
+                if(aura->GetSpellInfo()->AttributesEx3 & flag)
+                    return true;
+                break;
+            case 4:
+                if(aura->GetSpellInfo()->AttributesEx4 & flag)
+                    return true;
+                break;
+            case 5:
+                if(aura->GetSpellInfo()->AttributesEx5 & flag)
+                    return true;
+                break;
+            case 6:
+                if(aura->GetSpellInfo()->AttributesEx6 & flag)
+                    return true;
+                break;
+            case 7:
+                if(aura->GetSpellInfo()->AttributesEx7 & flag)
+                    return true;
+                break;
+            case 8:
+                if(aura->GetSpellInfo()->AttributesEx8 & flag)
+                    return true;
+                break;
+            case 9:
+                if(aura->GetSpellInfo()->AttributesEx9 & flag)
+                    return true;
+                break;
+            case 10:
+                if(aura->GetSpellInfo()->AttributesEx10 & flag)
+                    return true;
+                break;
+            case 11:
+                if(aura->GetSpellInfo()->AttributesEx11 & flag)
+                    return true;
+                break;
+            case 12:
+                if(aura->GetSpellInfo()->AttributesEx12 & flag)
+                    return true;
+                break;
+            case 13:
+                if(aura->GetSpellInfo()->AttributesEx13 & flag)
+                    return true;
+                break;
+        }
     }
     return false;
 }

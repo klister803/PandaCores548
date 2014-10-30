@@ -1572,19 +1572,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
             break;
         }
-        case 115098: // Chi Wave (Main)
-        {
-            int32 bp = 1;
-            if (unitTarget->IsFriendlyTo(m_caster))
-            {
-                m_caster->CastCustomSpell(unitTarget, 132464, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
-            }
-            else
-            {
-                m_caster->CastCustomSpell(unitTarget, 132467, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
-            }
-            break;
-        }
         case 145640: // Chi Brew
         {
             uint32 spellid = 115867;
@@ -2450,6 +2437,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         switch (m_spellInfo->Id)
         {
             case 115072: // Expel Harm
+            case 147489: // Expel Harm
             {
                 SpellInfo const* _triggerInfo = sSpellMgr->GetSpellInfo(115129);
                 addhealth = CalculateMonkSpellDamage(m_caster, 7.0f / 1.1125f, 0.5f, 7);

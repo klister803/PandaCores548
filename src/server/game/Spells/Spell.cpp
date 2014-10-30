@@ -8538,6 +8538,8 @@ bool Spell::IsValidDeadOrAliveTarget(Unit const* target) const
         return !m_spellInfo->IsRequiringDeadTarget();
     if (m_spellInfo->IsAllowingDeadTarget())
         return true;
+    if (AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_DEAD)
+        return true;
     return false;
 }
 
