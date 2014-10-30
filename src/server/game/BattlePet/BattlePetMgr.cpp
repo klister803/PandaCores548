@@ -229,11 +229,12 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
 
     if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
     {
-        // at first - all operations with create item
+        // at first - all operations with check free space
         uint32 itemId = 82800; // Pet Cage
+        uint32 count = 1;
         uint32 _noSpaceForCount = 0;
         ItemPosCountVec dest;
-        InventoryResult msg = _player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1, &_noSpaceForCount);
+        InventoryResult msg = _player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &_noSpaceForCount);
         if (msg != EQUIP_ERR_OK)
             count -= _noSpaceForCount;
 
@@ -245,7 +246,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         }
 
         // delete from journal
-        DeletePetByGUID(guid);
+        //_player->GetBattlePetMgr()->DeletePetByGUID(guid);
 
         WorldPacket data(SMSG_BATTLE_PET_DELETED);
         data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
@@ -253,6 +254,63 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
 
         // send packet twice? (sniff data)
         SendPacket(&data);
+        SendPacket(&data);
+
+        // operations with item - only TEST
+        Item* item = _player->StoreNewItem(dest, itemId, true, 0);
+        item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, pet->speciesID);
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, pet->level);
+
+        // push item to client - only TEST
+        if (!item)                                               // prevent crash
+            return;
+
+        WorldPacket data(SMSG_ITEM_PUSH_RESULT);
+        ObjectGuid guid = _player->GetObjectGuid();
+        ObjectGuid guid2 = 0;
+
+        data.WriteBit(0);                                       // by bonus roll
+        data.WriteGuidMask<6>(guid2);
+        data.WriteBit(received);
+        data.WriteGuidMask<5, 4>(guid2);
+        data.WriteBit(created);
+        data.WriteGuidMask<7>(guid2);
+        data.WriteGuidMask<5, 3, 2>(guid);
+        data.WriteGuidMask<1, 4>(guid2);
+        data.WriteGuidMask<4, 6, 0>(guid);
+        data.WriteGuidMask<2>(guid2);
+        data.WriteBit(1);                                       // show mesage
+        data.WriteGuidMask<1, 7>(guid);
+        data.WriteGuidMask<0>(guid2);
+
+        data << uint32(_player->GetItemCount(item->GetEntry()));         // count of items in inventory
+        data.WriteGuidBytes<1, 2>(guid2);
+        data << uint32(count);                                  // count of items
+        data.WriteGuidBytes<3, 2>(guid);
+        data.WriteGuidBytes<4>(guid2);
+        data.WriteGuidBytes<0, 1>(guid);
+        data.WriteGuidBytes<7>(guid2);
+        data << uint32(0);                                      // battle pet unk
+        data.WriteGuidBytes<3>(guid2);
+        data << uint32(0);                                      // battle pet unk
+        data.WriteGuidBytes<5>(guid2);
+        data << uint32(0);                                      // battle pet unk
+        data.WriteGuidBytes<7>(guid);
+        data.WriteGuidBytes<6>(guid2);
+        data.WriteGuidBytes<4>(guid);
+                                                            // item slot, but when added to stack: 0xFFFFFFFF
+        data << uint32((item->GetCount() == count) ? item->GetSlot() : -1);
+        data.WriteGuidBytes<5>(guid);
+        data.WriteGuidBytes<0>(guid2);
+        data << uint8(item->GetBagSlot());                      // bagslot
+        data << uint32(0);                                      // battle pet unk
+        data << uint32(item->GetItemRandomPropertyId());        // random property
+        data << uint32(item->GetEntry());                       // item id
+        data.WriteGuidBytes<6>(guid);
+        data << uint32(item->GetItemSuffixFactor());            // suffix factor
+
         SendPacket(&data);
     }
 }
