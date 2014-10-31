@@ -448,7 +448,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteGuidMask<3, 4, 0>(ownerGuid);
                 data1.WriteBit(0);
                 data1.WriteGuidMask<6>(ownerGuid);
-                data1.WriteBits(6, 21);  // state count?
+                data1.WriteBits(6, 21);  // state count
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(ownerGuid);
 
@@ -467,7 +467,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteGuidMask<3, 4, 0>(guid3);
                 data1.WriteBit(0);
                 data1.WriteGuidMask<6>(guid3);
-                data1.WriteBits(5, 21);   // state count?
+                data1.WriteBits(5, 21);   // state count
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(guid3);
 
@@ -536,34 +536,34 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
                 data1.WriteGuidBytes<1>(guid3);
 
-            //
+            // States
             if (i == 0)
             {
-                data1 << uint32(1600);
-                data1 << uint32(20);
-                data1 << uint32(1800);
-                data1 << uint32(18);
-                data1 << uint32(1700);
-                data1 << uint32(19);
-                data1 << uint32(5);
-                data1 << uint32(40);
-                data1 << uint32(1);
-                data1 << uint32(45);
-                data1 << uint32(50);
-                data1 << uint32(25);
+                data1 << uint32(1600); // some fucking strange value!
+                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
+                data1 << uint32(1800); // some fucking strange value1!
+                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
+                data1 << uint32(1700); // some fucking strange value2!
+                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
+                data1 << uint32(5);    // crit chance % value
+                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
+                data1 << uint32(1);    // enable
+                data1 << uint32(45);   // stateID from BattlePetState.db2 -> Passive_Flying
+                data1 << uint32(50);   // % value
+                data1 << uint32(25);   // stateID from BattlePetState.db2 -> Mod_SpeedPercent
             }
             else
             {
                 data1 << uint32(1900);
-                data1 << uint32(19);
+                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
                 data1 << uint32(1700);
-                data1 << uint32(18);
+                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
                 data1 << uint32(1600);
-                data1 << uint32(20);
+                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
                 data1 << uint32(5);
-                data1 << uint32(40);
+                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
                 data1 << uint32(1);
-                data1 << uint32(42);
+                data1 << uint32(42);   // stateID from BattlePetState.db2 -> Passive_Critter
             }
 
             data1 << uint32(0);
