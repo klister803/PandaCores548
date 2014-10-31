@@ -7771,9 +7771,6 @@ int8 Player::GetFreeActionButton()
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop /*=false*/)
 {
-    // Enable check for zone.
-    m_zoneUpdateAllow = true;
-
     // half opt method
     int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
     int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
@@ -7805,6 +7802,12 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
     CheckAreaExploreAndOutdoor();
 
+    // Enable check for zone.
+    if (!m_zoneUpdateAllow && !m_lastZoneUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
+    {
+        m_zoneUpdateAllow = true;
+        m_lastZoneUpdPos = *this;
+    }
     return true;
 }
 

@@ -99,6 +99,7 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 
 float World::Visibility_RelocationLowerLimit = 20.0f;
 uint32 World::Visibility_AINotifyDelay = 1000;
+float World::ZoneUpdateDistanceRangeLimit = 5.0f;
 
 // movement anticheat
 bool World::m_EnableMvAnticheat = true;
@@ -1236,6 +1237,8 @@ void World::LoadConfigSettings(bool reload)
     m_visibility_notify_periodOnContinents = ConfigMgr::GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
     m_visibility_notify_periodInInstances = ConfigMgr::GetIntDefault("Visibility.Notify.Period.InInstances",   DEFAULT_VISIBILITY_NOTIFY_PERIOD);
     m_visibility_notify_periodInBGArenas = ConfigMgr::GetIntDefault("Visibility.Notify.Period.InBGArenas",    DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+
+    ZoneUpdateDistanceRangeLimit = ConfigMgr::GetFloatDefault("Zone.UpdateDistanceRage", 5.f);
 
     ///- Load the CharDelete related config options
     m_int_configs[CONFIG_CHARDELETE_METHOD] = ConfigMgr::GetIntDefault("CharDelete.Method", 0);
