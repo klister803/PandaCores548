@@ -754,6 +754,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
+    m_zoneUpdateAllow = false;
 
     m_areaUpdateId = 0;
 
@@ -1962,10 +1963,12 @@ void Player::Update(uint32 p_time)
             m_weaponChangeTimer -= p_time;
     }
 
-    if (m_zoneUpdateTimer > 0)
+    if (m_zoneUpdateTimer > 0 && m_zoneUpdateAllow)
     {
         if (p_time >= m_zoneUpdateTimer)
         {
+            m_zoneUpdateAllow = false;
+
             uint32 newzone, newarea;
             GetZoneAndAreaId(newzone, newarea);
 
@@ -7768,6 +7771,9 @@ int8 Player::GetFreeActionButton()
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop /*=false*/)
 {
+    // Enable check for zone.
+    m_zoneUpdateAllow = true;
+
     // half opt method
     int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
     int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
