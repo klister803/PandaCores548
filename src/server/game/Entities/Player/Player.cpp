@@ -13420,7 +13420,7 @@ InventoryResult Player::CanRollForItemInLFG(ItemTemplate const* proto, WorldObje
 Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update, int32 randomPropertyId)
 {
     AllowedLooterSet allowedLooters;
-    return StoreNewItem(dest, item, update, randomPropertyId, allowedLooters, petData);
+    return StoreNewItem(dest, item, update, randomPropertyId, allowedLooters);
 }
 
 // Return stored item (if stored to stack, it can diff. from pItem). And pItem ca be deleted in this case.
