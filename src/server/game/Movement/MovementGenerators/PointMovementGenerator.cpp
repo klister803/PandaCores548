@@ -75,7 +75,7 @@ void PointMovementGenerator<T>::Finalize(T &unit)
 
     if (unit.movespline->Finalized())
         MovementInform(unit);
-    if (unit.GetTypeId() == TYPEID_PLAYER)
+    if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 }
 
@@ -190,7 +190,7 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
-    if (unit.GetTypeId() == TYPEID_PLAYER)
+    if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 
     if(triggerspellId)
