@@ -30,6 +30,7 @@
 class SpellInfo;
 class Bag;
 class Unit;
+class BattlePetMgr;
 
 struct ItemSetEffect
 {
@@ -387,10 +388,15 @@ class Item : public Object
         void AppendDynamicInfo(ByteBuffer& buff) const;
         void SetLevelCap(uint32 cup, bool pvp);
 
+        // item battle pet
+        //void SetItemBattlePet(PetInfo* petData, bool apply);
+        //PetInfo* GetBattlePetData() { return m_battlePetData; }
+
     private:
         std::string m_text;
         uint8 m_slot;
         Bag* m_container;
+        //PetInfo* m_battlePetData;
         ItemUpdateState uState;
         int16 uQueuePos;
         bool mb_in_trade;                                   // true if item is currently in trade-window

@@ -248,6 +248,7 @@ Item::Item() : ItemLevelBeforeCap(0)
     uState = ITEM_NEW;
     uQueuePos = -1;
     m_container = NULL;
+    //m_battlePetData = NULL;
     m_lootGenerated = false;
     mb_in_trade = false;
     m_lastPlayedTimeUpdate = time(NULL);
@@ -691,6 +692,28 @@ void Item::SetItemRandomProperties(int32 randomPropId)
         }
     }
 }
+
+/*void Item::SetItemBattlePet(PetInfo* petData, bool apply)
+{
+    if (apply)
+    {
+        m_battlePetData = petData;
+        // set dynamic data
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, petData->speciesID);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, petData->level);
+    }
+    else
+    {
+        m_battlePetData = NULL;
+        // set dynamic data
+        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, 0);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, 0);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, 0);
+    }
+}*/
 
 void Item::UpdateItemSuffixFactor()
 {

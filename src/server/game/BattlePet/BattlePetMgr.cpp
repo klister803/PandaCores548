@@ -221,6 +221,107 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
     }
 }
 
+void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
+{
+    ObjectGuid guid;
+    recvData.ReadGuidMask<5, 0, 3, 4, 7, 2, 1>(guid);
+    recvData.ReadGuidBytes<4, 1, 5, 3, 0, 6, 7, 2>(guid);
+
+    // for live
+    return;
+
+    //PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
+    //{
+        // at first - all operations with check free space
+        uint32 itemId = 82800; // Pet Cage
+        uint32 count = 1;
+        uint32 _noSpaceForCount = 0;
+        ItemPosCountVec dest;
+        InventoryResult msg = _player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &_noSpaceForCount);
+        if (msg != EQUIP_ERR_OK)
+            count -= _noSpaceForCount;
+
+        if (count == 0 || dest.empty())
+        {
+            // -- TODO: Send to mailbox if no space
+            //ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
+            return;
+        }
+
+        // delete from journal
+        //_player->GetBattlePetMgr()->DeletePetByGUID(guid);
+
+        //WorldPacket data(SMSG_BATTLE_PET_DELETED);
+        //data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
+        //data.WriteGuidBytes<1, 0, 6, 5, 2, 4, 3, 7>(guid);
+
+        // send packet twice? (sniff data)
+        //SendPacket(&data);
+        //SendPacket(&data);
+
+        // operations with item - only TEST
+        uint32 speciesID = 41;
+        uint8 breedID = 12;
+        uint8 quality = 4;
+        uint8 level = 5;
+        Item* item = _player->StoreNewItem(dest, itemId, true, 0);
+        item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, speciesID); // speciesID
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, guid);      // unk strange guid
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, level);     // level
+
+        // push item to client - only TEST
+        if (!item)                                               // prevent crash
+            return;
+
+        WorldPacket data1(SMSG_ITEM_PUSH_RESULT);
+        ObjectGuid guid1 = _player->GetObjectGuid();
+        ObjectGuid guid2 = 0;
+
+        data1.WriteBit(0);                                       // by bonus roll
+        data1.WriteGuidMask<6>(guid2);
+        data1.WriteBit(0);
+        data1.WriteGuidMask<5, 4>(guid2);
+        data1.WriteBit(1);
+        data1.WriteGuidMask<7>(guid2);
+        data1.WriteGuidMask<5, 3, 2>(guid1);
+        data1.WriteGuidMask<1, 4>(guid2);
+        data1.WriteGuidMask<4, 6, 0>(guid1);
+        data1.WriteGuidMask<2>(guid2);
+        data1.WriteBit(1);                                       // show mesage
+        data1.WriteGuidMask<1, 7>(guid1);
+        data1.WriteGuidMask<0>(guid2);
+
+        data1 << uint32(_player->GetItemCount(item->GetEntry()));         // count of items in inventory
+        data1.WriteGuidBytes<1, 2>(guid2);
+        data1 << uint32(count);                                  // count of items
+        data1.WriteGuidBytes<3, 2>(guid1);
+        data1.WriteGuidBytes<4>(guid2);
+        data1.WriteGuidBytes<0, 1>(guid1);
+        data1.WriteGuidBytes<7>(guid2);
+        data1 << uint32(quality);                                 // battle pet quality
+        data1.WriteGuidBytes<3>(guid2);
+        data1 << uint32(breedID);                                 // battle pet breedID
+        data1.WriteGuidBytes<5>(guid2);
+        data1 << uint32(level);                                   // battle pet level
+        data1.WriteGuidBytes<7>(guid1);
+        data1.WriteGuidBytes<6>(guid2);
+        data1.WriteGuidBytes<4>(guid1);
+                                                            // item slot, but when added to stack: 0xFFFFFFFF
+        data1 << uint32((item->GetCount() == count) ? item->GetSlot() : -1);
+        data1.WriteGuidBytes<5>(guid1);
+        data1.WriteGuidBytes<0>(guid2);
+        data1 << uint8(item->GetBagSlot());                      // bagslot
+        data1 << uint32(speciesID);                              // battle pet speciesID
+        data1 << uint32(item->GetItemRandomPropertyId());        // random property
+        data1 << uint32(item->GetEntry());                       // item id
+        data1.WriteGuidBytes<6>(guid1);
+        data1 << uint32(item->GetItemSuffixFactor());            // suffix factor
+
+        SendPacket(&data1);
+    //}
+}
+
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;
@@ -347,7 +448,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteGuidMask<3, 4, 0>(ownerGuid);
                 data1.WriteBit(0);
                 data1.WriteGuidMask<6>(ownerGuid);
-                data1.WriteBits(6, 21);  // state count?
+                data1.WriteBits(6, 21);  // state count
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(ownerGuid);
 
@@ -366,7 +467,7 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
                 data1.WriteGuidMask<3, 4, 0>(guid3);
                 data1.WriteBit(0);
                 data1.WriteGuidMask<6>(guid3);
-                data1.WriteBits(5, 21);   // state count?
+                data1.WriteBits(5, 21);   // state count
                 data1.WriteBits(1, 20);
                 data1.WriteGuidMask<5>(guid3);
 
@@ -435,34 +536,34 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
             else
                 data1.WriteGuidBytes<1>(guid3);
 
-            //
+            // States
             if (i == 0)
             {
-                data1 << uint32(1600);
-                data1 << uint32(20);
-                data1 << uint32(1800);
-                data1 << uint32(18);
-                data1 << uint32(1700);
-                data1 << uint32(19);
-                data1 << uint32(5);
-                data1 << uint32(40);
-                data1 << uint32(1);
-                data1 << uint32(45);
-                data1 << uint32(50);
-                data1 << uint32(25);
+                data1 << uint32(1600); // some fucking strange value!
+                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
+                data1 << uint32(1800); // some fucking strange value1!
+                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
+                data1 << uint32(1700); // some fucking strange value2!
+                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
+                data1 << uint32(5);    // crit chance % value
+                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
+                data1 << uint32(1);    // enable
+                data1 << uint32(45);   // stateID from BattlePetState.db2 -> Passive_Flying
+                data1 << uint32(50);   // % value
+                data1 << uint32(25);   // stateID from BattlePetState.db2 -> Mod_SpeedPercent
             }
             else
             {
                 data1 << uint32(1900);
-                data1 << uint32(19);
+                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
                 data1 << uint32(1700);
-                data1 << uint32(18);
+                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
                 data1 << uint32(1600);
-                data1 << uint32(20);
+                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
                 data1 << uint32(5);
-                data1 << uint32(40);
+                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
                 data1 << uint32(1);
-                data1 << uint32(42);
+                data1 << uint32(42);   // stateID from BattlePetState.db2 -> Passive_Critter
             }
 
             data1 << uint32(0);
