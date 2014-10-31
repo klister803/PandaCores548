@@ -22431,7 +22431,6 @@ void Unit::SendTeleportPacket(Position &destPos)
     data << float(destPos.GetPositionZ());//oldPos.GetPositionZMinusOffset()
 
     SendMessageToSet(&data, true);
-    Relocate(&destPos);
 }
 
 bool Unit::HandleCastWhileWalkingAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, double cooldown)
