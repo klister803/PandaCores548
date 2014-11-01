@@ -60,6 +60,9 @@ bool UpdateData::BuildPacket(std::list<WorldPacket*>& packets)
         *packet << uint16(m_map);
         *packet << uint32(count + (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded ? 1 : 0));
 
+        for (BlockList::const_iterator itr = m_blocks.begin(); itr != m_blocks.end() && count > 0; ++itr, --count, --blockCount)
+            packet->append(*itr);
+
         if (!m_outOfRangeGUIDs.empty() && !outOfRangeAdded)
         {
             outOfRangeAdded = true;
@@ -69,9 +72,6 @@ bool UpdateData::BuildPacket(std::list<WorldPacket*>& packets)
             for (std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin(); i != m_outOfRangeGUIDs.end(); ++i)
                 packet->appendPackGUID(*i);
         }
-
-        for (BlockList::const_iterator itr = m_blocks.begin(); itr != m_blocks.end() && count > 0; ++itr, --count, --blockCount)
-            packet->append(*itr);
 
         packets.push_back(packet);
     }
