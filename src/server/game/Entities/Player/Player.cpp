@@ -24993,6 +24993,7 @@ void Player::UpdateTriggerVisibility()
         return;
 
     UpdateData udata(GetMapId());
+    WorldPacket packet;
     for (ClientGUIDs::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_CREATURE_GUID(*itr))
@@ -25005,15 +25006,8 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    std::list<WorldPacket*> packets;
-    if (udata.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -26018,6 +26012,7 @@ void Player::UpdateForQuestWorldObjects()
         return;
 
     UpdateData udata(GetMapId());
+    WorldPacket packet;
     for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_GAMEOBJECT_GUID(*itr))
@@ -26054,16 +26049,8 @@ void Player::UpdateForQuestWorldObjects()
             }
         }
     }
-
-    std::list<WorldPacket*> packets;
-    if (udata.BuildPacket(packets))
-    {
-        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-        {
-            GetSession()->SendPacket(*itr);
-            delete *itr;
-        }
-    }
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::UpdateForRaidMarkers(Group* group)
@@ -26088,7 +26075,9 @@ void Player::UpdateForRaidMarkers(Group* group)
     if (!udata.HasData())
         return;
 
-    udata.SendTo(this);
+    WorldPacket packet;
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::SummonIfPossible(bool agree)

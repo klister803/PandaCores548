@@ -2329,8 +2329,8 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvData)
     recvData.ReadGuidBytes<1, 2, 5, 0, 3, 4, 6, 7>(guid);
 
     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
-    //if(obj)
-    //    obj->SendUpdateToPlayer(GetPlayer());
+    if(obj)
+        obj->SendUpdateToPlayer(GetPlayer());
 
     sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object " UI64FMTD " (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());*/
 }

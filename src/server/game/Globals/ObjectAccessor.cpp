@@ -385,17 +385,12 @@ void ObjectAccessor::Update(uint32 /*diff*/)
         obj->BuildUpdate(update_players);
     }
 
+    WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
     for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
     {
-        std::list<WorldPacket*> packets;
-        if (iter->second.BuildPacket(packets))
-        {
-            for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
-            {
-                iter->first->GetSession()->SendPacket(*itr);
-                delete *itr;
-            }
-        }
+        iter->second.BuildPacket(&packet);
+        iter->first->GetSession()->SendPacket(&packet);
+        packet.clear();                                     // clean the string
     }
 }
 
