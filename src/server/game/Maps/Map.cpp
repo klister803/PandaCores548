@@ -2010,7 +2010,15 @@ void Map::SendInitSelf(Player* player)
         }
     }
 
-    data.SendTo(player);
+    std::list<WorldPacket*> packets;
+    if (data.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Map::SendInitTransports(Player* player)
@@ -2035,7 +2043,15 @@ void Map::SendInitTransports(Player* player)
         }
     }
 
-    transData.SendTo(player);
+    std::list<WorldPacket*> packets;
+    if (transData.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Map::SendRemoveTransports(Player* player)
@@ -2056,8 +2072,15 @@ void Map::SendRemoveTransports(Player* player)
         if ((*i) != player->GetTransport() && (*i)->GetMapId() != GetId())
             (*i)->BuildOutOfRangeUpdateBlock(&transData);
 
-    std::list<WorldPacket> packets;
-    transData.SendTo(player);
+    std::list<WorldPacket*> packets;
+    if (transData.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)

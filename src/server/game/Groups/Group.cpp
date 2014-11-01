@@ -511,13 +511,33 @@ bool Group::AddMember(Player* player)
                         WorldPacket newDataPacket;
                         player->BuildValuesUpdateBlockForPlayer(&newData, member);
                         if (newData.HasData())
-                            newData.SendTo(member);
+                        {
+                            std::list<WorldPacket*> packets;
+                            if (newData.BuildPacket(packets))
+                            {
+                                for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                                {
+                                    member->SendDirectMessage(*itr);
+                                    delete *itr;
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             if (groupData.HasData())
-                groupData.SendTo(player);
+            {
+                std::list<WorldPacket*> packets;
+                if (groupData.BuildPacket(packets))
+                {
+                    for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+                    {
+                        player->SendDirectMessage(*itr);
+                        delete *itr;
+                    }
+                }
+            }
 
             player->RemoveFieldNotifyFlag(UF_FLAG_PARTY_MEMBER);
         }

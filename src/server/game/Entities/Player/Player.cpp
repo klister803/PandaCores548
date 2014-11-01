@@ -25005,7 +25005,15 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    udata.SendTo(this);
+    std::list<WorldPacket*> packets;
+    if (udata.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -26047,7 +26055,15 @@ void Player::UpdateForQuestWorldObjects()
         }
     }
 
-    udata.SendTo(this);
+    std::list<WorldPacket*> packets;
+    if (udata.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void Player::UpdateForRaidMarkers(Group* group)

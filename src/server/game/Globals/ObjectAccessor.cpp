@@ -386,7 +386,17 @@ void ObjectAccessor::Update(uint32 /*diff*/)
     }
 
     for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-        iter->second.SendTo(iter->first);
+    {
+        std::list<WorldPacket*> packets;
+        if (iter->second.BuildPacket(packets))
+        {
+            for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+            {
+                iter->first->GetSession()->SendPacket(*itr);
+                delete *itr;
+            }
+        }
+    }
 }
 
 void ObjectAccessor::UnloadAll()

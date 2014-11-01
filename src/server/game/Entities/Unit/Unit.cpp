@@ -10929,7 +10929,16 @@ void Unit::SetOwnerGUID(uint64 owner)
 
     UpdateData udata(GetMapId());
     BuildValuesUpdateBlockForPlayer(&udata, player);
-    udata.SendTo(player);
+
+    std::list<WorldPacket*> packets;
+    if (udata.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->SendDirectMessage(*itr);
+            delete *itr;
+        }
+    }
 
     RemoveFieldNotifyFlag(UF_FLAG_OWNER);
 }

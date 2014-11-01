@@ -80,7 +80,15 @@ void BattlegroundIC::SendTransportInit(Player* player)
     gunshipAlliance->BuildCreateUpdateBlockForPlayer(&transData, player);
     gunshipHorde->BuildCreateUpdateBlockForPlayer(&transData, player);
 
-    transData.SendTo(player);
+    std::list<WorldPacket*> packets;
+    if (transData.BuildPacket(packets))
+    {
+        for (std::list<WorldPacket*>::iterator itr = packets.begin(); itr != packets.end(); ++itr)
+        {
+            player->GetSession()->SendPacket(*itr);
+            delete *itr;
+        }
+    }
 }
 
 void BattlegroundIC::DoAction(uint32 action, uint64 var)
