@@ -32,10 +32,10 @@ EndScriptData */
 
 #define MAX_ENCOUNTER 1
 
-class instance_scarlet_monastery : public InstanceMapScript
+class instance_scarlet_monastery_old : public InstanceMapScript
 {
 public:
-    instance_scarlet_monastery() : InstanceMapScript("instance_scarlet_monastery_old", 189) { }
+    instance_scarlet_monastery_old() : InstanceMapScript("instance_scarlet_monastery_old", 189) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
@@ -119,5 +119,5 @@ public:
 
 void AddSC_instance_scarlet_monasteryOld()
 {
-    new instance_scarlet_monastery();
+    new instance_scarlet_monastery_old();
 }
