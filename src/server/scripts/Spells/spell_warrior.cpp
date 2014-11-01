@@ -921,37 +921,6 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         }
 };
 
-// Curse of Enfeeblement - 109466
-class spell_warr_curse_of_enfeeblement : public SpellScriptLoader
-{
-    public:
-        spell_warr_curse_of_enfeeblement() : SpellScriptLoader("spell_warr_curse_of_enfeeblement") { }
-
-
-        class spell_warr_curse_of_enfeeblement_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warr_curse_of_enfeeblement_AuraScript);
-
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* player = caster->ToPlayer())
-                        if (player->GetSelectedPlayer())
-                            amount /= 5;
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_curse_of_enfeeblement_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_HASTE_SPELLS);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warr_curse_of_enfeeblement_AuraScript();
-        }
-};
-
 // Avatar - 107574
 class spell_war_avatar : public SpellScriptLoader
 {
@@ -1255,7 +1224,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_last_stand();
     new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
-    new spell_warr_curse_of_enfeeblement();
     new spell_war_avatar();
     new spell_war_intimidating_shout();
     new spell_war_glyph_of_die_by_the_sword();

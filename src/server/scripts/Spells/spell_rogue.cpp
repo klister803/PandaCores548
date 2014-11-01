@@ -691,29 +691,6 @@ class spell_rog_master_poisoner : public SpellScriptLoader
             }
         };
 
-        class spell_rog_master_poisoner_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_master_poisoner_AuraScript);
-
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* player = caster->ToPlayer())
-                        if (player->GetSelectedPlayer())
-                            amount /= 5;
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_master_poisoner_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_HASTE_SPELLS);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_master_poisoner_AuraScript();
-        }
-
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_master_poisoner_SpellScript();

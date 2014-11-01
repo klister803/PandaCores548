@@ -1237,18 +1237,31 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             switch (m_spellInfo->Id)
             {                
-                case 5760:   // Mind-numbing Poison                
-                case 25810:  // Mind-numbing Poison
+                case 5760:   // Mind-numbing Poison  
+                case 31589:  // Slow
+                case 50274:
+                case 73975:  // Necrotic Strike             
                 case 58604:  // Lava Breath
                 case 90315:  // Tailspin
+                case 109466: // Curse of Enfeeblement
+                case 109468: // Curse of Enfeeblement (Soulburn)
+                case 116198: // Enfeeblement Aura (Metamorphosis)
                 case 126406: // Trample
                 {
                     if (target->GetTypeId() == TYPEID_PLAYER)
-                        amount = -10;
+                        amount /= 5;
+                    break;
+                }
+                case 25810:
+                {
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        amount /= 3;
+                    break;
                 }
                 default:
                     break;
             }
+            break;
         }
         case SPELL_AURA_MOD_INCREASE_HEALTH:
             // Vampiric Blood
@@ -5546,11 +5559,6 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
         return;
 
     Unit* target = aurApp->GetTarget();
-
-    float value = float(GetAmount());
-
-    if (target->GetTypeId() == TYPEID_PLAYER && m_spellInfo->IsReducingCastTime())
-        value /= 2.0f;
 
     target->UpdateHastMod();
 }

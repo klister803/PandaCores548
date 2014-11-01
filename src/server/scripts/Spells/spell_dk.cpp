@@ -310,18 +310,9 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
                 }
             }
 
-            void CalculateAmounteff2(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* player = caster->ToPlayer())
-                        if (player->GetSelectedPlayer())
-                            amount /= 5;
-            }
-
             void Register()
             {
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_necrotic_strike_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_necrotic_strike_AuraScript::CalculateAmounteff2, EFFECT_2, SPELL_AURA_HASTE_SPELLS);
             }
         };
 
