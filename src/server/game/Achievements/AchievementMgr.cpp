@@ -2436,7 +2436,9 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     {
         ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        
+        if(!criteriaTree)
+            continue;
+
         data.WriteByteSeq(counter[5]);
         data.WriteByteSeq(counter[7]);
         data.WriteByteSeq(guid[3]);
