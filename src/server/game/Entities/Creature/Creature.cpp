@@ -299,7 +299,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
 
     // known valid are: CLASS_WARRIOR, CLASS_PALADIN, CLASS_ROGUE, CLASS_MAGE
-    SetByteValue(UNIT_FIELD_BYTES_0, 1, uint8(cinfo->unit_class));
+    SetClass(cinfo->unit_class);
 
     // Cancel load if no model defined
     if (!(cinfo->GetFirstValidModelId()))
@@ -318,7 +318,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
 
     SetDisplayId(displayID);
     SetNativeDisplayId(displayID);
-    SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+    SetGender(minfo->gender);
 
     // Load creature equipment
     if (!data || data->equipmentId == 0)                    // use default from the template
@@ -814,7 +814,7 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     {
         SetDisplayId(displayID);
         SetNativeDisplayId(displayID);
-        SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+        SetGender(minfo->gender);
     }
 
     LastUsedScriptID = GetCreatureTemplate()->ScriptID;
@@ -1217,6 +1217,13 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
 
     uint32 basehp = stats->GenerateHealth(cinfo, diffStats);
     uint32 health = uint32(basehp * healthmod);
+
+    //shouldn't be more. Check stats.
+    if (basehp > 0x7FFFFFFF)
+    {
+        sLog->outError(LOG_FILTER_UNITS, "Creature::GenerateHealth  entry %u too long. Posible error in creature_difficulty_stat for dif %u", GetEntry(), diffStats->Difficulty);
+        health = 1;
+    }
 
     SetCreateHealth(health);
     SetMaxHealth(health);
@@ -1754,7 +1761,7 @@ void Creature::Respawn(bool force)
         {
             SetDisplayId(displayID);
             SetNativeDisplayId(displayID);
-            SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+            SetGender(minfo->gender);
         }
 
         GetMotionMaster()->InitDefault();
