@@ -92,14 +92,16 @@ enum eCreatures
     //controller 68553?? Sha Vortex triger 146034
 
     //  Norushen
-    NPC_NORUSHEN                    = 71967,
-    NPC_AMALGAM_OF_CORRUPTION       = 72276,
-    NPC_ESSENCE_OF_CORRUPTION       = 71976,
-    NPC_MANIFESTATION_OF_CORRUPTION = 72264,
-    NPC_TITANIC_CORRUPTION          = 72051,
-    NPC_GREATER_CORRUPTION          = 72001,
-    NPC_PURIFYING_LIGHT             = 72065,
-    NPC_RESIDUAL_CORRUPTION         = 72550,
+    NPC_NORUSHEN                        = 71967,
+    NPC_AMALGAM_OF_CORRUPTION           = 72276,
+    NPC_ESSENCE_OF_CORRUPTION_C         = 71976,
+    NPC_ESSENCE_OF_CORRUPTION           = 72263,
+    NPC_MANIFESTATION_OF_CORRUPTION_C   = 71977,
+    NPC_MANIFESTATION_OF_CORRUPTION     = 72264, //FRAYED & release
+    NPC_TITANIC_CORRUPTION              = 72051,
+    NPC_GREATER_CORRUPTION              = 72001,
+    NPC_PURIFYING_LIGHT                 = 72065,
+    NPC_RESIDUAL_CORRUPTION             = 72550, // by spell 145522
 
     //
     NPC_GALAKRAS                    = 72249,

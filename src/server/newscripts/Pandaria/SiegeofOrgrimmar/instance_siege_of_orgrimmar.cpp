@@ -106,6 +106,10 @@ public:
                 //Norushen: Coruption
                 if (player->HasAura(144421))
                     player->RemoveAura(144421);
+
+                //Norushen: PURIFIED
+                if (player->HasAura(144452))
+                    player->RemoveAura(144452);
             }
         }
 
@@ -166,6 +170,7 @@ public:
                 case NPC_SHA_NORUSHEN:
                 case NPC_SHA_TARAN_ZHU:
                 case NPC_NORUSHEN:
+                case NPC_AMALGAM_OF_CORRUPTION:
                 case NPC_B_H_CONTROLLER:
                 case NPC_BLIND_HATRED:
                 case NPC_GALAKRAS:

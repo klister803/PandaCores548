@@ -62,7 +62,7 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_challenge' WHERE `creature_template`.`entry` = 71977;
 
 --
-UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption' WHERE `creature_template`.`entry` = 72264;
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_resurected' WHERE `creature_template`.`entry` = 72264;
 
 --
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
@@ -73,3 +73,36 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_residual_corruption'
 --
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_purifying_light' WHERE `entry` = 72065;
 UPDATE `creature_template_addon` SET `auras` = '144717' WHERE `creature_template_addon`.`entry` = 72065;
+
+--
+DELETE FROM `spell_script_names` WHERE `ScriptName` LIKE 'spell_norushen_challenge';
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES 
+('144849', 'spell_norushen_challenge'),
+('144850', 'spell_norushen_challenge'),
+('144851', 'spell_norushen_challenge');
+
+--
+REPLACE INTO `creature_template_addon` (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES 
+('71976', '0', '0', '0', '0', '0', '148452');
+UPDATE `creature_template` SET `unit_flags` = '34816', `unit_flags2` = '2048', `rangeattacktime` = '2000', `ScriptName` = 'npc_essence_of_corruption_challenge' WHERE `creature_template`.`entry` = 71976;
+REPLACE INTO `creature_template_addon` (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES 
+('71976', '0', '0', '0', '1', '0', NULL);
+UPDATE `creature_model_info` SET `gender` = '2' WHERE `creature_model_info`.`modelid` = 51859;
+
+-- class 1 92 lvl base hp - 421592
+-- used for heroic25 but should be same for all.
+DELETE FROM `creature_difficulty_stat` WHERE entry = 71976;
+INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(71976, 0, 1.15, 1.8),  -- not shure
+(71976, 1, 1.15, 2.2),  -- not shure
+(71976, 2, 1.15, 2.0),  -- not shure
+(71976, 3, 1.15, 2.4),
+(71976, 4, 1.15, 2.4);  -- not shure
+
+DELETE FROM `creature_difficulty_stat` WHERE entry = 71977;
+INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(71977, 0, 1.15, 2.6),  -- not shure
+(71977, 1, 1.15, 3.0),  -- not shure
+(71977, 2, 1.15, 2.8),  -- not shure
+(71977, 3, 1.15, 3.2),
+(71977, 4, 1.15, 3.2);  -- not shure
