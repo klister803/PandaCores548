@@ -754,6 +754,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
+    m_zoneUpdateAllow = false;
 
     m_areaUpdateId = 0;
 
@@ -1749,23 +1750,6 @@ void Player::Update(uint32 p_time)
         m_Store = true;
     }
 
-    // Zone Skip Update
-	if (sObjectMgr->IsSkipZone(GetZoneId()) || isAFK())
-	{
-		_skipCount++;
-		_skipDiff += p_time;
-
-		if (_skipCount < sObjectMgr->GetSkipUpdateCount())
-        {
-            plrUpdate = false;
-			return;
-        }
-
-		p_time = _skipDiff;
-		_skipCount = 0;
-		_skipDiff = 0;
-	}
-
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -1979,10 +1963,12 @@ void Player::Update(uint32 p_time)
             m_weaponChangeTimer -= p_time;
     }
 
-    if (m_zoneUpdateTimer > 0)
+    if (m_zoneUpdateTimer > 0 && m_zoneUpdateAllow)
     {
         if (p_time >= m_zoneUpdateTimer)
         {
+            m_zoneUpdateAllow = false;
+
             uint32 newzone, newarea;
             GetZoneAndAreaId(newzone, newarea);
 
@@ -2512,10 +2498,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // near teleport, triggering send CMSG_MOVE_TELEPORT_ACK from client at landing
         if (!GetSession()->PlayerLogout())
         {
-            Position oldPos;
-            GetPosition(&oldPos);
-            Relocate(x, y, z, orientation);
-            SendTeleportPacket(oldPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
+            Position newPos;
+            newPos.Relocate(x, y, z, orientation);
+            SendTeleportPacket(newPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
     }
     else
@@ -3530,7 +3515,7 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     if (victim && victim->GetTypeId() == TYPEID_UNIT && !victim->ToCreature()->hasLootRecipient())
         return;
     
-    if (IsForbiddenMapForLevel(GetMapId(), GetZoneId()))
+    if (IsForbiddenMapForLevel(GetMapId(), m_zoneUpdateId))
         xp = 0;
         
     if (IsLoXpMap(GetMapId()))
@@ -3541,9 +3526,8 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     sScriptMgr->OnGivePlayerXP(this, xp, victim);
 
     // Favored experience increase START
-    uint32 zone = GetZoneId();
     float favored_exp_mult = 0;
-    if ((HasAura(32096) || HasAura(32098)) && (zone == 3483 || zone == 3562 || zone == 3836 || zone == 3713 || zone == 3714))
+    if ((HasAura(32096) || HasAura(32098)) && (m_zoneUpdateId == 3483 || m_zoneUpdateId == 3562 || m_zoneUpdateId == 3836 || m_zoneUpdateId == 3713 || m_zoneUpdateId == 3714))
         favored_exp_mult = 0.05f; // Thrallmar's Favor and Honor Hold's Favor
     xp = uint32(xp * (1 + favored_exp_mult));
     // Favored experience increase END
@@ -4408,6 +4392,25 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
         if(spellInfo->IsMountOrCompanions())
         {
+            // added battlepets
+            uint32 petEntry = spellInfo->GetBattlePetEntry();
+            if(petEntry)
+            {
+                if (BattlePetSpeciesEntry const* spEntry = GetBattlePetMgr()->GetBattlePetSpeciesEntry(petEntry))
+                {
+                    if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(petEntry))
+                    {
+                        // check exist pet in journal
+                        uint64 petguid = GetBattlePetMgr()->GetPetGUIDBySpell(spellInfo->Id);
+                        if (!petguid)
+                        {
+                            petguid = sObjectMgr->GenerateBattlePetGuid();
+                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
+                        }
+                    }
+                }
+            }
+            // added or replaced mounts
             mountReplace = sSpellMgr->GetMountListId(spellId, GetTeamId());
             if(charload)
             {
@@ -6620,7 +6623,6 @@ void Player::RepopAtGraveyard()
     // Special handle for battleground maps
     if (Battleground* bg = GetBattleground())
         ClosestGrave = bg->GetClosestGraveYard(this);
-
     else
     {
         if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
@@ -7769,6 +7771,19 @@ int8 Player::GetFreeActionButton()
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport, bool stop /*=false*/)
 {
+    // half opt method
+    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
+    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+
+    if (gx >= MAX_NUMBER_OF_GRIDS || gy >= MAX_NUMBER_OF_GRIDS)
+    {
+        //Ban
+        std::ostringstream ss;
+        ss << "Out of Map " << GetMapId() << " x:" << x << " y:" << y  << " z:" << z;
+        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d", ss.str().c_str(), "System");
+        return false;
+    }
+
     if (!Unit::UpdatePosition(x, y, z, orientation, teleport))
         return false;
 
@@ -7787,6 +7802,12 @@ bool Player::UpdatePosition(float x, float y, float z, float orientation, bool t
 
     CheckAreaExploreAndOutdoor();
 
+    // Enable check for zone.
+    if (!m_zoneUpdateAllow && !m_lastZoneUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit))
+    {
+        m_zoneUpdateAllow = true;
+        m_lastZoneUpdPos = *this;
+    }
     return true;
 }
 
@@ -8075,11 +8096,10 @@ void Player::RewardReputation(Unit* victim, float rate)
     }
 
     // Favored reputation increase START
-    uint32 zone = GetZoneId();
     uint32 team = GetTeam();
     float favored_rep_mult = 0;
 
-    if ((HasAura(32096) || HasAura(32098)) && (zone == 3483 || zone == 3562 || zone == 3836 || zone == 3713 || zone == 3714)) favored_rep_mult = 0.25; // Thrallmar's Favor and Honor Hold's Favor
+    if ((HasAura(32096) || HasAura(32098)) && (m_zoneUpdateId == 3483 || m_zoneUpdateId == 3562 || m_zoneUpdateId == 3836 || m_zoneUpdateId == 3713 || m_zoneUpdateId == 3714)) favored_rep_mult = 0.25; // Thrallmar's Favor and Honor Hold's Favor
     else if (HasAura(30754) && (Rep->RepFaction1 == 609 || Rep->RepFaction2 == 609) && !ChampioningFaction)                   favored_rep_mult = 0.25; // Cenarion Favor
 
     if (favored_rep_mult > 0) favored_rep_mult *= 2; // Multiplied by 2 because the reputation is divided by 2 for some reason (See "donerep1 / 2" and "donerep2 / 2") -- if you know why this is done, please update/explain :)
@@ -8980,7 +9000,7 @@ void Player::UpdateArea(uint32 newArea)
     //Pandaria area update for monk level < 85
     if(area && getLevel() < 85 && getClass() == CLASS_MONK && GetMapId() == 870 && area->mapid == 870 &&
         newArea != 6081 && newArea != 6526 && newArea != 6527 
-        && GetZoneId() == 5841 && !isGameMaster())
+        && m_zoneUpdateId == 5841 && !isGameMaster())
         TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
 
     UpdateAreaDependentAuras(newArea);
@@ -13427,6 +13447,8 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM, item, 1);
         if (randomPropertyId)
             pItem->SetItemRandomProperties(randomPropertyId);
+        /*if (petData)
+            pItem->SetItemBattlePet(petData, true);*/
         pItem = StoreItem(dest, pItem, update);
 
         if (allowedLooters.size() > 1 && pItem->GetTemplate()->GetMaxStackSize() == 1 && pItem->IsSoulBound())
@@ -14011,6 +14033,9 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
                 RemoveAurasDueToSpell(proto->Spells[i].SpellId);
 
         ItemRemovedQuestCheck(pItem->GetEntry(), pItem->GetCount());
+
+        /*if (PetInfo* petData = pItem->GetBattlePetData())
+            pItem->SetItemBattlePet(petData, false);*/
 
         if (bag == INVENTORY_SLOT_BAG_0)
         {
@@ -19142,6 +19167,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
+    // load battle pets journal before spells and other
+    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
 
@@ -19319,8 +19347,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
-
-    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
 
     SetLfgBonusFaction(fields[66].GetUInt32());
 
@@ -20974,7 +21000,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
-        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt16(index++, m_zoneUpdateId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
 
         ss.str("");
@@ -21106,7 +21132,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
         stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
-        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt16(index++, m_zoneUpdateId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
 
         ss.str("");
@@ -24967,6 +24993,7 @@ void Player::UpdateTriggerVisibility()
         return;
 
     UpdateData udata(GetMapId());
+    WorldPacket packet;
     for (ClientGUIDs::iterator itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_CREATURE_GUID(*itr))
@@ -24979,7 +25006,8 @@ void Player::UpdateTriggerVisibility()
         }
     }
 
-    udata.SendTo(this);
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -25779,6 +25807,7 @@ void Player::SendAurasForTarget(Unit* target)
 
     for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
         itr->second->BuildBitUpdatePacket(data, false);
+
     for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
         itr->second->BuildByteUpdatePacket(data, false);
     /*
@@ -25983,6 +26012,7 @@ void Player::UpdateForQuestWorldObjects()
         return;
 
     UpdateData udata(GetMapId());
+    WorldPacket packet;
     for (ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
     {
         if (IS_GAMEOBJECT_GUID(*itr))
@@ -26019,8 +26049,8 @@ void Player::UpdateForQuestWorldObjects()
             }
         }
     }
-
-    udata.SendTo(this);
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::UpdateForRaidMarkers(Group* group)
@@ -26045,7 +26075,9 @@ void Player::UpdateForRaidMarkers(Group* group)
     if (!udata.HasData())
         return;
 
-    udata.SendTo(this);
+    WorldPacket packet;
+    udata.BuildPacket(&packet);
+    GetSession()->SendPacket(&packet);
 }
 
 void Player::SummonIfPossible(bool agree)
@@ -29695,7 +29727,7 @@ void Player::SendCemeteryList(bool onMap)
     ByteBuffer buf(16);
     uint32 count = 0;
 
-    uint32 zoneId = GetZoneId();
+    uint32 zoneId = m_zoneUpdateId;
     GraveYardContainer::const_iterator graveLow  = sObjectMgr->GraveYardStore.lower_bound(zoneId);
     GraveYardContainer::const_iterator graveUp   = sObjectMgr->GraveYardStore.upper_bound(zoneId);
     for (GraveYardContainer::const_iterator itr = graveLow; itr != graveUp; ++itr)

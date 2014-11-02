@@ -9,7 +9,7 @@
 Position const LorewalkerChoSpawn[4]  = {
     {1448.236f, 312.6528f, 289.2837f, 4.652967f},
     {1441.406f, 988.1795f, 340.1876f, 1.985304f},   //fallen
-    {0, 0, 0, 0},   //norushen
+    {806.067f,  841.3726f, 371.2589f, 1.791488f},   //norushen
     {805.7786f, 879.8768f, 371.0946f, 1.911932f},   //sha
 };
 
@@ -101,6 +101,11 @@ public:
                 //Sha of pride: SPELL_PRIDE
                 if (player->HasAura(144343))
                     player->RemoveAura(144343);
+            }else if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
+            {
+                //Norushen: Coruption
+                if (player->HasAura(144421))
+                    player->RemoveAura(144421);
             }
         }
 
@@ -110,6 +115,7 @@ public:
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[0]))
                 {
+                    cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_IMMERSEUS, NOT_STARTED);
                 }
@@ -117,12 +123,17 @@ public:
             {
                 if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO, LorewalkerChoSpawn[1]))
                 {
+                    cho->setActive(true);
                     LorewalkerChoGUIDtmp = cho->GetGUID();
                     cho->AI()->SetData(DATA_F_PROTECTORS, NOT_STARTED);
                 }
             }else if (GetBossState(DATA_NORUSHEN) != DONE)
             {
-                //ToDo: Spawn lorewalker
+                if (Creature* cho = instance->SummonCreature(NPC_LOREWALKER_CHO2, LorewalkerChoSpawn[2]))
+                {
+                    cho->setActive(true);
+                    LorewalkerChoGUIDtmp = cho->GetGUID();
+                }
             }else if (GetBossState(DATA_SHA_OF_PRIDE) != DONE)
             {
                 if (Creature * c = instance->SummonCreature(NPC_SHA_NORUSHEN, Sha_of_pride_Norushe))
@@ -249,9 +260,24 @@ public:
                 case GO_LIGTH_QUARANTINE_4:
                 case GO_LIGTH_QUARANTINE_5:
                 case GO_LIGTH_QUARANTINE_6:
+                case GO_LIGHT_RAY_01:
+                case GO_LIGHT_RAY_02:
+                case GO_LIGHT_RAY_03:
+                case GO_LIGHT_RAY_04:
+                case GO_LIGHT_RAY_05:
+                case GO_LIGHT_RAY_06:
+                case GO_LIGHT_RAY_07:
+                case GO_LIGHT_RAY_08:
+                case GO_LIGHT_RAY_09:
+                case GO_LIGHT_RAY_10:
+                case GO_LIGHT_RAY_11:
+                case GO_LIGHT_RAY_12:
+                case GO_LIGHT_RAY_13:
+                case GO_LIGHT_RAY_14:
+                case GO_LIGHT_RAY_15:
+                case GO_LIGHT_RAY_16:
                     lightqGUIDs.push_back(go->GetGUID());
                     break;
-
                 case GO_SHA_ENERGY_WALL:
                     easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
                     if (EventfieldOfSha >= 3)

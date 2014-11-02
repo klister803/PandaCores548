@@ -112,7 +112,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell = NULL);
+        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell = NULL, uint64 targetGuid = 0);
         void Update(uint32 p_time);
         void UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment actionM);
         void Remove(bool duration = true);
@@ -120,6 +120,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetSpellId(uint32 spell) { return SetUInt32Value(AREATRIGGER_SPELLID, spell); }
         uint64 GetCasterGUID() const { return GetUInt64Value(AREATRIGGER_CASTER); }
         Unit* GetCaster() const;
+        void SetTargetGuid(uint64 targetGuid) { _targetGuid = targetGuid; }
+        uint64 GetTargetGuid() { return _targetGuid; }
         int32 GetDuration() const { return _duration; }
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
@@ -143,6 +145,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
     protected:
         Unit* _caster;
+        uint64 _targetGuid;
         int32 _duration;
         uint32 _activationDelay;
         uint32 _updateDelay;

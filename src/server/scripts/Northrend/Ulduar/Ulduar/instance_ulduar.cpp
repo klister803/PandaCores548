@@ -520,8 +520,10 @@ public:
                                         if (Player* pPlayer = i->getSource())
                                         {
                                             UpdateData data(pPlayer->GetMapId());
+                                            WorldPacket pkt;
                                             MimironTram->BuildValuesUpdateBlockForPlayer(&data, pPlayer);
-                                            data.SendTo(pPlayer);
+                                            data.BuildPacket(&pkt);
+                                            pPlayer->GetSession()->SendPacket(&pkt);
                                         }
                                     }
                                 }

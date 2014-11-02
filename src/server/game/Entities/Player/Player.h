@@ -3351,6 +3351,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_drunkTimer;
         uint32 m_weaponChangeTimer;
 
+        bool m_zoneUpdateAllow;
+        Position m_lastZoneUpdPos;
         uint32 m_zoneUpdateId;
         uint32 m_zoneUpdateTimer;
         uint32 m_areaUpdateId;

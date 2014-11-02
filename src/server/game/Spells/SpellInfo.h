@@ -275,7 +275,7 @@ public:
     bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
-    int32 CalcValue(Unit const* caster = NULL, int32 const* basePoints = NULL, Unit const* target = NULL, Item* m_castitem = NULL, bool addCustomBP = false) const;
+    int32 CalcValue(Unit const* caster = NULL, int32 const* basePoints = NULL, Unit const* target = NULL, Item* m_castitem = NULL) const;
     int32 CalcBaseValue(int32 value) const;
     float CalcValueMultiplier(Unit* caster, Spell* spell = NULL) const;
     float CalcDamageMultiplier(Unit* caster, Spell* spell = NULL) const;
@@ -323,6 +323,7 @@ public:
     uint32 AttributesEx10;
     uint32 AttributesEx11;
     uint32 AttributesEx12;
+    uint32 AttributesEx13;
     uint32 AttributesCu;
     uint32 Stances;
     uint32 StancesNot;
@@ -361,6 +362,8 @@ public:
     uint32 PowerPerSecond;
     float PowerPerSecondPercentage;
     float PowerCostPercentage;
+    uint32 PowerRequestId;
+    float PowerGetPercentHp;
     uint32 RuneCostID;
     SpellRangeEntry const* RangeEntry;
     float  Speed;

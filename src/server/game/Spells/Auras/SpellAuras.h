@@ -33,6 +33,7 @@ struct SpellProcEntry;
 class AuraEffect;
 class Aura;
 class DynamicObject;
+class AreaTrigger;
 class AuraScript;
 class ProcInfo;
 
@@ -107,18 +108,18 @@ class Aura
         uint64 GetCasterGUID() const { return m_casterGuid; }
         Unit* GetCaster() const;
         WorldObject* GetOwner() const { return m_owner; }
-        void ChangeOwner(WorldObject* owner) { m_owner = owner; }
-        void ChangeCaster(uint32 newGuid) { m_casterGuid = newGuid; }
+        WorldObject* ChangeOwner(WorldObject* owner) { return m_owner = owner; }
         Unit* GetUnitOwner() const { if(GetType() == UNIT_AURA_TYPE) return (Unit*)m_owner; else return NULL; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
-        void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
-        DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+        void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
+        uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
+        void SetSpellAreaTrigger(uint64 areaTr) { m_spellAreaTrGuid = areaTr;}
+        uint64 GetSpellAreaTrigger() const { return m_spellAreaTrGuid; }
 
         AuraObjectType GetType() const;
 
         virtual void _ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         virtual void _UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
-        bool MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication * auraApp);
         void _Remove(AuraRemoveMode removeMode);
         virtual void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) = 0;
 
@@ -138,6 +139,7 @@ class Aura
         int32 CalcMaxDuration() { return CalcMaxDuration(GetCaster()); }
         int32 CalcMaxDuration(Unit* caster);
         int32 GetDuration() const { return m_duration; }
+        int32 GetAllDuration() const { return m_allDuration; }
         void SetDuration(int32 duration, bool withMods = false);
         void RefreshDuration(bool recalculate = true);
         void RefreshTimers();
@@ -182,8 +184,6 @@ class Aura
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }
         void RecalculateAmountOfEffects();
         void HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply);
-        void SetAuraEffectMask (uint32 effMask) { m_auraEffMask = effMask; }
-        uint32 GetAuraEffectMask() { return m_auraEffMask; }
 
         // Helpers for targets
         ApplicationMap const & GetApplicationMap() {return m_applications;}
@@ -252,14 +252,16 @@ class Aura
         void _DeleteRemovedApplications();
     protected:
         SpellInfo const* const m_spellInfo;
-        uint64 m_casterGuid;
+        uint64 const m_casterGuid;
         uint64 const m_castItemGuid;                        // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t const m_applyTime;
         WorldObject* m_owner;
-        DynamicObject* m_spellDynObj;
+        uint64 m_spellDynObjGuid;
+        uint64 m_spellAreaTrGuid;
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time
+        int32 m_allDuration;                                // Duration from apply aura
         int32 m_timeCla;                                    // Timer for power per sec calcultion
         int32 m_updateTargetMapInterval;                    // Timer for UpdateTargetMapOfEffect
 
@@ -267,7 +269,6 @@ class Aura
         uint8 m_procCharges;                                // Aura charges (0 for infinite)
         uint8 m_stackAmount;                                // Aura stack amount
         uint8 m_diffMode;
-        uint32 m_auraEffMask;
 
         AuraEffect* m_effects[MAX_SPELL_EFFECTS];
         ApplicationMap m_applications;

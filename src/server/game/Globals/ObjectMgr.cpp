@@ -336,7 +336,7 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
     {
         Field* fields = result->Fetch();
 
-        uint16 menuId   = fields[0].GetUInt16();
+        uint32 menuId   = fields[0].GetUInt16();
         uint16 id       = fields[1].GetUInt16();
 
         GossipMenuItemsLocale& data = _gossipMenuItemsLocaleStore[MAKE_PAIR32(menuId, id)];
@@ -8289,7 +8289,7 @@ void ObjectMgr::LoadGossipMenu()
 
         GossipMenus gMenu;
 
-        gMenu.entry             = fields[0].GetUInt16();
+        gMenu.entry             = fields[0].GetUInt32();
         gMenu.text_id           = fields[1].GetUInt32();
 
         if (!GetGossipText(gMenu.text_id))
@@ -8335,7 +8335,7 @@ void ObjectMgr::LoadGossipMenuItems()
 
         GossipMenuItems gMenuItem;
 
-        gMenuItem.MenuId                = fields[0].GetUInt16();
+        gMenuItem.MenuId                = fields[0].GetUInt32();
         gMenuItem.OptionIndex           = fields[1].GetUInt16();
         gMenuItem.OptionIcon            = fields[2].GetUInt32();
         gMenuItem.OptionText            = fields[3].GetString();
@@ -9070,29 +9070,6 @@ VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) con
     }
     
     return NULL;
-}
-
-void ObjectMgr::LoadSkipUpdateZone()
-{
-	skipData.clear();
-
-	_skipUpdateCount = ConfigMgr::GetIntDefault("ZoneSkipUpdate.count", 1);
-
-	QueryResult result = WorldDatabase.PQuery("SELECT zone FROM zone_skip_update");
-	if (!result)
-		return;
-
-	uint32 count = 0;
-
-	do
-	{
-		Field* fields = result->Fetch();
-		uint32 zoneId = fields[0].GetUInt32();
-		skipData[zoneId] = true;
-		count++;
-	} while (result->NextRow());
-
-	 sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u zone skip update.", count);
 }
 
 void ObjectMgr::RestructCreatureGUID(uint32 nbLigneToRestruct)

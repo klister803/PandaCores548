@@ -419,7 +419,10 @@ void TempSummon::UnSummon(uint32 msTime)
     if (isMinion() && owner && owner->GetTypeId() == TYPEID_PLAYER)
     {
         if (sBattlePetSpeciesBySpellId.find(GetEntry()) != sBattlePetSpeciesBySpellId.end())
+        {
             owner->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, 0);
+            owner->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, 0);
+        }
     }
     if (owner && owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled)
         owner->ToCreature()->AI()->SummonedCreatureDespawn(this);

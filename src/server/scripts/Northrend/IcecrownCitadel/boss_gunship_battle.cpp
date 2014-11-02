@@ -359,7 +359,9 @@ void StartFlyShip(Transport* t)
         {
             UpdateData transData(pPlayer->GetMapId());
             t->BuildCreateUpdateBlockForPlayer(&transData, pPlayer);
-            transData.SendTo(pPlayer);
+            WorldPacket packet;
+            transData.BuildPacket(&packet);
+            pPlayer->SendDirectMessage(&packet);
         }
     }
 }
@@ -417,7 +419,9 @@ void StopFlyShip(Transport* t)
         {
             UpdateData transData(pPlayer->GetMapId());
             t->BuildCreateUpdateBlockForPlayer(&transData, pPlayer);
-            transData.SendTo(pPlayer);
+            WorldPacket packet;
+            transData.BuildPacket(&packet);
+            pPlayer->SendDirectMessage(&packet);
         }
     }
 }

@@ -161,7 +161,6 @@ enum SpellValueMod
     SPELLVALUE_RADIUS_MOD,
     SPELLVALUE_MAX_TARGETS,
     SPELLVALUE_AURA_STACK,
-    SPELLVALUE_ADD_CUSTOM_VALUE,
 };
 
 typedef std::pair<SpellValueMod, int32>     CustomSpellValueMod;
@@ -934,6 +933,7 @@ private:
     uint32 m_absorb;
     uint32 m_resist;
     uint32 m_block;
+    uint32 m_cleanDamage;
 public:
     explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
@@ -954,6 +954,7 @@ public:
     uint32 GetAbsorb() const { return m_absorb; };
     uint32 GetResist() const { return m_resist; };
     uint32 GetBlock() const { return m_block; };
+    uint32 GetCleanDamage() const { return m_cleanDamage; };
 };
 
 class HealInfo
@@ -1694,18 +1695,18 @@ class Unit : public WorldObject
         void SendEnergizeSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, Powers powertype);
         void EnergizeBySpell(Unit* victim, uint32 SpellID, int32 Damage, Powers powertype);
 
-        void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggeredCastFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
-        void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, uint64 originalCaster = 0, bool addCustomBP = false);
+        void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(Unit* victim, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(Unit* victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(Unit* victim, SpellInfo const* spellInfo, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(Unit* victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(float x, float y, float z, uint32 spellId, TriggerCastFlags triggeredCastFlags = TRIGGERED_NONE, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, int32 const* bp3, int32 const* bp4, int32 const* bp5, bool triggered, Item* castItem= NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
+        void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, uint64 originalCaster = 0);
         Aura* ToggleAura(uint32 spellId, Unit* target);
         Aura* AddAura(uint32 spellId, Unit* target, Item* castItem = NULL, uint16 stackAmount = 0);
         Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target, Item* castItem = NULL, uint16 stackAmount = 0);
@@ -1880,7 +1881,6 @@ class Unit : public WorldObject
         void RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
-        void ChangeOwnedAura(Aura* aura, Unit* newOwner, Unit* caster);
 
         Aura* GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, Aura* except = NULL) const;
 
@@ -1950,6 +1950,7 @@ class Unit : public WorldObject
         bool HasAuraTypeWithValue(AuraType auratype, int32 value) const;
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0);
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
+        bool HasAuraWithAttribute(uint32 Attributes, uint32 flag) const;
         bool HasAuraWithMechanic(uint32 mechanicMask);
         bool HasAuraCastWhileWalking(SpellInfo const* spellInfo);
 
@@ -2114,7 +2115,6 @@ class Unit : public WorldObject
 
         // Visibility system
         bool IsVisible() const { return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true; }
-        void SetVisible(bool x);
 
         // common function for visibility checks for player/creatures with detection code
         void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
@@ -2251,7 +2251,7 @@ class Unit : public WorldObject
         bool isCamouflaged() const { return HasAuraType(SPELL_AURA_MOD_CAMOUFLAGE); }
 
         float ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index, float value) const;
-        int32 CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints = NULL, Item* m_castitem = NULL, bool addCustomBP = false) const;
+        int32 CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints = NULL, Item* m_castitem = NULL) const;
         int32 CalcSpellDuration(SpellInfo const* spellProto);
         int32 ModSpellDuration(SpellInfo const* spellProto, Unit const* target, int32 duration, bool positive, uint32 effectMask, Unit* caster = NULL);
         void  ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell* spell=NULL);
@@ -2538,9 +2538,6 @@ class Unit : public WorldObject
         LiquidTypeEntry const* _lastLiquid;
         MountCapabilityEntry const* _mount;
 
-        // Zone Skip Update
-        uint32 _skipCount;
-        uint32 _skipDiff;
         uint8 m_diffMode;
 
         bool m_IsInKillingProcess;

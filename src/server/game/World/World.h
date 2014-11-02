@@ -809,6 +809,8 @@ class World
         static float Visibility_RelocationLowerLimit;
         static uint32 Visibility_AINotifyDelay;
 
+        static float ZoneUpdateDistanceRangeLimit;
+
         // movement anticheat
         static bool GetEnableMvAnticheat()       { return m_EnableMvAnticheat;     }
         static bool GetEnableMvAnticheatDebug()       { return m_EnableMvAnticheatDebug;     }

@@ -77,9 +77,20 @@ enum BattlePetFlags
     BATTLE_PET_FLAG_CUSTOM_ABILITY_3    = 0x40,
 };
 
+enum BattlePetSpeciesFlags
+{
+    SPECIES_FLAG_UNK1            = 0x02,
+    SPECIES_FLAG_UNK2            = 0x04,
+    SPECIES_FLAG_CAPTURABLE      = 0x08,
+    SPECIES_FLAG_CANT_TRADE      = 0x10, // ~(unsigned __int8)(v3->speciesFlags >> 4) & 1 (cannot put in cage)
+    SPECIES_FLAG_UNOBTAINABLE    = 0x20,
+    SPECIES_FLAG_UNIQUE          = 0x40, // (v2->speciesFlags >> 6) & 1)
+    SPECIES_FLAG_CANT_BATTLE     = 0x80,
+};
+
 enum BattlePetSpeciesSource
 {
-    SOURCE_RANDOM_LOOT = 0,
+    SOURCE_LOOT        = 0,
     SOURCE_QUEST       = 1,
     SOURCE_VENDOR      = 2,
     SOURCE_PROFESSION  = 3,
@@ -101,7 +112,6 @@ public:
             delete itr->second;
     }
 
-    void FillPetJournal();
     void BuildPetJournal(WorldPacket *data);
 
     void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = -1);
@@ -119,6 +129,28 @@ public:
             return pet->second;
 
         return NULL;
+    }
+
+    void DeletePetByGUID(uint64 guid)
+    {
+        PetJournal::const_iterator pet = m_PetJournal.find(guid);
+        if (pet == m_PetJournal.end())
+            return;
+
+        m_PetJournal.erase(guid);
+    }
+
+    uint64 GetPetGUIDBySpell(uint32 spell)
+    {
+        for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
+        {
+            PetInfo * pi = pet->second;
+
+            if (pi && pi->summonSpellID == spell)
+                return pet->first;
+        }
+
+        return 0;
     }
 
     bool HasPet(uint64 guid)

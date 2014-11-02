@@ -137,6 +137,14 @@ enum SpellTriggeredType
     SPELL_TRIGGER_SUMM_DAMAGE_PROC              = 31,           // summ damage in amount, proc if damage > bp0(1,2) * SPD(SPDH,AP)
 };
 
+enum SpellAuraDummyType
+{
+    SPELL_DUMMY_ENABLE                          = 0,            // enable or disable aura(set amount to 0)
+    SPELL_DUMMY_ADD_PERC                        = 1,            // add percent to amount
+    SPELL_DUMMY_ADD_VALUE                       = 2,            // add value to amount
+    SPELL_DUMMY_ADD_ATTRIBUTE                   = 3,            // add attribute to spell value
+};
+
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
 {
@@ -677,8 +685,26 @@ struct SpellPendingCast
     int32 check;
 };
 
+struct SpellAuraDummy
+{
+    int32 spellId;
+    int32 spellDummyId;
+    int32 target;
+    int32 caster;
+    int32 targetaura;
+    int32 option;
+    int32 effectmask;
+    int32 effectDummy;
+    int32 aura;
+    int32 removeAura;
+    int32 chance;
+    int32 attr;
+    int32 attrValue;
+};
+
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
+typedef std::map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
 typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
@@ -796,6 +822,7 @@ class SpellMgr
         const std::vector<SpellPrcoCheck> *GetSpellPrcoCheck(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggeredDummy(int32 spell_id) const;
+        const std::vector<SpellAuraDummy> *GetSpellAuraDummy(int32 spell_id) const;
         const std::vector<SpellVisual> *GetSpellVisual(int32 spell_id) const;
         const std::vector<SpellPendingCast> *GetSpellPendingCast(int32 spell_id) const;
 
@@ -880,6 +907,7 @@ class SpellMgr
         SpellPrcoCheckMap          mSpellPrcoCheckMap;
         SpellTriggeredMap          mSpellTriggeredMap;
         SpellTriggeredDummyMap     mSpellTriggeredDummyMap;
+        SpellAuraDummyMap          mSpellAuraDummyMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;
         EnchantCustomAttribute     mEnchantCustomAttr;
         SpellAreaMap               mSpellAreaMap;

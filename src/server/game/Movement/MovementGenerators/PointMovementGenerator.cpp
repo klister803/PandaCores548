@@ -75,7 +75,7 @@ void PointMovementGenerator<T>::Finalize(T &unit)
 
     if (unit.movespline->Finalized())
         MovementInform(unit);
-    if (unit.GetTypeId() == TYPEID_PLAYER)
+    if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 }
 
@@ -128,7 +128,7 @@ void EffectMovementGenerator::Finalize(Unit &unit)
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
-    if (unit.GetTypeId() == TYPEID_PLAYER)
+    if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 
     // Effect event. Used for delay cast after jump for example
@@ -137,7 +137,6 @@ void EffectMovementGenerator::Finalize(Unit &unit)
         m_event->Execute(&unit);
         delete m_event;
         m_event = NULL;
-
     }
 }
 
@@ -191,7 +190,7 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
-    if (unit.GetTypeId() == TYPEID_PLAYER)
+    if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         unit.UpdatePosition(i_x, i_y, i_z, unit.GetOrientation(), false);
 
     if(triggerspellId)

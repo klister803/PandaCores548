@@ -492,26 +492,28 @@ Aura* Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
                 return NULL;
 
     Aura* aura = NULL;
-    if(spellproto->IsSingleTarget(caster) && owner->ToUnit())
+    if(spellproto->IsSingleTarget(caster))
     {
         bool moving = false;
         Unit::AuraList& scAuras = caster->GetSingleCastAuras();
         for (Unit::AuraList::iterator itr = scAuras.begin(); itr != scAuras.end();)
         {
-            if ((*itr)->GetId() == spellproto->Id && (*itr)->GetDuration() > 2000)
+            if ((*itr)->GetId() == spellproto->Id)
             {
-                //Transfer aura to new target without recalculate aura data
-                /*Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
+                //test code
+                /*sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura* Aura::Create aura %u, GetCasterGUID %u", (*itr)->GetId(), caster->GetGUID());
+                Aura::ApplicationMap const& appMap = (*itr)->GetApplicationMap();
                 for (Aura::ApplicationMap::const_iterator app = appMap.begin(); app!= appMap.end();)
                 {
-                    if((*itr)->MoveAuraToNewTarget(owner->ToUnit(), caster, app->second))
-                        moving = true;
+                    AuraApplication * aurApp = app->second;
                     ++app;
+                    Unit* target = aurApp->GetTarget();
+                    aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
+                    (*itr)->_UnapplyForTarget(target, caster, aurApp);
+                    (*itr)->ChangeOwner(owner);
                 }
-                if(moving)
-                    return (*itr);
-                else*/
-                    stackAmount = (*itr)->GetStackAmount();
+                return (*itr);*/
+                stackAmount = (*itr)->GetStackAmount();
             }
             ++itr;
         }
@@ -550,7 +552,7 @@ m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(stackAmount ? stackAmount: 1),
 m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_aura_amount(0),
-m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
+m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAreaTrGuid(0)
 {
     SpellPowerEntry power;
     if (!GetSpellInfo()->GetSpellPowerByCasterPower(GetCaster(), power))
@@ -563,6 +565,7 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObj(NULL)
 
     m_maxDuration = CalcMaxDuration(caster);
     m_duration = m_maxDuration;
+    m_allDuration = 0;
     m_procCharges = CalcMaxCharges(caster);
     m_isUsingCharges = m_procCharges != 0;
     //For scaling trinket
@@ -676,19 +679,6 @@ void Aura::_UnapplyForTarget(Unit* target, Unit* caster, AuraApplication * auraA
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
             caster->ToPlayer()->SendCooldownEvent(GetSpellInfo());
     }
-}
-
-bool Aura::MoveAuraToNewTarget(Unit* target, Unit* caster, AuraApplication* auraApp)
-{
-    if(!auraApp || auraApp->GetRemoveMode())
-        return false;
-
-    Unit* owner = auraApp->GetTarget();
-    owner->_UnapplyAura(auraApp, AURA_REMOVE_BY_DEFAULT);
-    ChangeOwner(target);
-    owner->ChangeOwnedAura(this, target, caster);
-    ChangeCaster(caster->GetGUID());
-    return true;
 }
 
 // removes aura from all targets
@@ -867,7 +857,8 @@ void Aura::_ApplyEffectForTargets(uint8 effIndex)
 }
 void Aura::UpdateOwner(uint32 diff, WorldObject* owner)
 {
-    ASSERT(owner == m_owner);
+    if(owner != m_owner)
+        return;
 
     Unit* caster = GetCaster();
     // Apply spellmods for channeled auras
@@ -909,6 +900,7 @@ void Aura::Update(uint32 diff, Unit* caster)
     if (m_duration > 0)
     {
         m_duration -= diff;
+        m_allDuration += diff;
         if (m_duration < 0)
             m_duration = 0;
 
@@ -1225,6 +1217,7 @@ bool Aura::CanBeSaved() const
         // we skip saving this aura
         case 44413:
         // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
+        case 33763:
         case 67483:
         case 67484:
         case 48517:
@@ -1851,71 +1844,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             AddPct(duration, m_spellInfo->Effects[EFFECT_1].BasePoints);
                             SetMaxDuration(duration);
                             SetDuration(duration);
-                        }
-                        break;
-                    }
-                    case 132467: // Chi Wave Neg
-                    {
-                        int32 bp = aurApp->GetBase()->GetEffect(1)->GetAmount();
-                        if (bp == 7)
-                            break;
-
-                        std::list<Unit*> targetList;
-                        Unit* Chi_Wave_target = NULL;
-                        target->GetAttackableUnitListInRange(targetList, 25.0f);
-
-                        targetList.remove(target);
-
-                        if (!targetList.empty())
-                        {
-                            targetList.sort(Trinity::HealthPctOrderPred());
-                            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                            {
-                                if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsInPartyWith(*itr) || (*itr)->GetTypeId() != TYPEID_PLAYER)
-                                    continue;
-
-                                bp ++;
-                                Chi_Wave_target = *itr;
-                                break;
-                            }
-
-                            if (!Chi_Wave_target)
-                                for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                                {
-                                    if (!(*itr)->IsWithinLOSInMap(target) || !caster->IsInPartyWith(*itr))
-                                        continue;
-
-                                    bp ++;
-                                    Chi_Wave_target = *itr;
-                                    break;
-                                }
-
-                            if (Chi_Wave_target)
-                                target->CastCustomSpell(Chi_Wave_target, 132464, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
-                        }
-                        break;
-
-                    }
-                    case 132464: // Chi Wave Pos
-                    {
-                        if (!caster)
-                            break;
-
-                        caster->CastSpell(target, 132463, true, NULL, NULL, m_casterGuid);
-                        int32 bp = aurApp->GetBase()->GetEffect(1)->GetAmount();
-
-                        if (bp == 7)
-                            break;
-
-                        Unit* nearby = target->GetNearbyVictim(target, 25.0f, false, true);
-
-                        if (!nearby)
-                            nearby = target->GetNearbyVictim(target, 25.0f);
-
-                        if (nearby)
-                        {
-                            bp ++;
-                            target->CastCustomSpell(nearby, 132467, NULL, &bp, NULL, true, NULL, NULL, m_casterGuid);
                         }
                         break;
                     }

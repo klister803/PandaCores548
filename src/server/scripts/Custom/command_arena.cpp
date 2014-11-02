@@ -1,7 +1,6 @@
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
-#include "ArenaTeamMgr.h"
 
 class command_arena : public CommandScript
 {
@@ -23,7 +22,6 @@ public:
         static ChatCommand arenaCommandTable[] =
         {
             { "del",            SEC_GAMEMASTER,     false, NULL,                                "", arenaDelCommandTable },
-            { "delid",          SEC_GAMEMASTER,     false, &HandleArenaDelIdCommand,            "", NULL },
             { "closeseason",    SEC_ADMINISTRATOR,  false, &HandleCloseSeasonCommand,           "", NULL },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
@@ -67,22 +65,6 @@ public:
     static bool HandleArenaDelRbgCommand(ChatHandler* handler, const char* args)
     {
         return DelTeam(handler, args, 3);
-    }
-
-    static bool HandleArenaDelIdCommand(ChatHandler* handler, const char* args)
-    {
-        char* TeamId = strtok((char*)args, " ");
-        uint32 IdTeam = atoi(TeamId);
-        if(!IdTeam)
-            return false;
-        ArenaTeam *aTeam = sArenaTeamMgr->GetArenaTeamById(IdTeam);
-        if (aTeam)
-        {
-            aTeam->Disband(NULL);
-            handler->PSendSysMessage("Team: \"%s\" was deleted.", aTeam->GetName().c_str());
-            return true;
-        }
-        return true;
     }
 
     static bool HandleArenaSliverCommand(ChatHandler* handler, const char* args)
@@ -319,33 +301,9 @@ public:
         return false;
     }
 
-    static bool IsTeamMemberActive(ArenaTeamMember member, ArenaTeam* team)
-    {
-        if ( ((float)member.SeasonGames / team->GetStats().SeasonGames * 100) >= 50 && int32(team->GetStats().Rating) - int32(member.PersonalRating) < 200)
-            return true;
-
-        return false;
-    }
-
-    static bool IsTeamActive(ArenaTeam* team)
-    {
-        if (team->GetStats().SeasonGames < 25)
-            return false;
-
-        for (ArenaTeam::MemberList::iterator pItr = team->m_membersBegin(); pItr != team->m_membersEnd(); ++pItr)
-        {
-            ArenaTeamMember member = *pItr;
-            // reward players which has 70% games
-            if (IsTeamMemberActive(member, team))
-                return true;
-        }
-
-        return false;
-    }
-
     static bool HandleCloseSeasonCommand(ChatHandler* handler, const char* args)
     {
-        sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_START);
+        /*sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_START);
         sLog->outArena("ARENA_CLOSESEASON_START");
         // by default:
         // 1 type - top 3 team
@@ -614,7 +572,7 @@ public:
             }
         }
 
-        sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_END);
+        sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_END);*/
         return true;
     }
 };

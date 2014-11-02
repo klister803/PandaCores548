@@ -295,8 +295,10 @@ void GameObject::Update(uint32 diff)
                             SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata(caster->GetMapId());
+                            WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata, caster->ToPlayer());
-                            udata.SendTo(caster->ToPlayer());
+                            udata.BuildPacket(&packet);
+                            caster->ToPlayer()->GetSession()->SendPacket(&packet);
 
                             SendCustomAnim(GetGoAnimProgress());
                         }

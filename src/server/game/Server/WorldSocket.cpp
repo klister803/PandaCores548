@@ -53,44 +53,26 @@
 #pragma pack(push, 1)
 #endif
 
-// TODO : Large Packet
-struct ServerPktHeader
+struct CompressedWorldPacket
 {
-    /**
-    * size is the length of the payload _plus_ the length of the opcode
-    */
-    ServerPktHeader(uint32 size, uint16 cmd, AuthCrypt* _authCrypt) : size(size)
-    {
-        if (_authCrypt->IsInitialized())
-        {
-            uint64 data =  (size << 13) | cmd & 0x1FFF;
-            if (isLargePacket())    // like on cata mark last bit.
-                                    // but in any way we should find compression method and find handler where 
-                data |= 0x8000000000;
-            memcpy(&header[0], &data, getHeaderLength());
-            _authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
-        }
-        else
-        {
-            // Dynamic header size is not needed anymore, we are using not encrypted part for only the first few packets
-            memcpy(&header[0], &size, 2);
-            memcpy(&header[2], &cmd, 2);
-        }
-    }
+    uint32 UncompressedSize;
+    uint32 UncompressedAdler;
+    uint32 CompressedAdler;
+};
 
-    uint8 getHeaderLength()
+union ServerPktHeader
+{
+    struct
     {
-        // cmd = 2 bytes, size= 2||3bytes
-        return 2 + (isLargePacket() ? 3 : 2);
-    }
+        uint16 Size;
+        uint32 Command;
+    } Setup;
 
-    bool isLargePacket() const
+    struct
     {
-        return size > 0x7FFFF;
-    }
-
-    const uint32 size;
-    uint8 header[5];
+        uint32 Command : 13;
+        uint32 Size : 19;
+    } Normal;
 };
 
 struct AuthClientPktHeader
@@ -104,6 +86,14 @@ struct WorldClientPktHeader
     uint16 size;
     uint16 cmd;
 };
+
+uint32 const SizeOfClientHeader[2][2] =
+{
+    { 2, 0 },
+    { 6, 4 }
+};
+
+uint32 const SizeOfServerHeader[2] = { /*sizeof(uint16) +*/ sizeof(uint32), sizeof(uint32) };
 
 #if defined(__GNUC__)
 #pragma pack()
@@ -164,6 +154,69 @@ const std::string& WorldSocket::GetRemoteAddress (void) const
     return m_Address;
 }
 
+void WorldSocket::WritePacketToBuffer(WorldPacket const& packet, MessageBuffer& buffer)
+{
+    ServerPktHeader header;
+    uint32 sizeOfHeader = SizeOfServerHeader[m_Crypt.IsInitialized()];
+    uint32 opcode = packet.GetOpcode();
+    uint32 packetSize = packet.size();
+
+    // Reserve space for buffer
+    uint8* headerPos = buffer.GetWritePointer();
+    buffer.WriteCompleted(sizeOfHeader);
+
+    if (packetSize > 0x400 && m_Session)
+    {
+        CompressedWorldPacket cmp;
+        cmp.UncompressedSize = packetSize + 4;
+        cmp.UncompressedAdler = adler32(adler32(0x9827D8F1, (Bytef*)&opcode, 4), packet.contents(), packetSize);
+
+        // Reserve space for compression info - uncompressed size and checksums
+        uint8* compressionInfo = buffer.GetWritePointer();
+        buffer.WriteCompleted(sizeof(CompressedWorldPacket));
+
+        uint32 compressedSize = m_Session->CompressPacket(buffer.GetWritePointer(), packet);
+
+        cmp.CompressedAdler = adler32(0x9827D8F1, buffer.GetWritePointer(), compressedSize);
+
+        memcpy(compressionInfo, &cmp, sizeof(CompressedWorldPacket));
+        buffer.WriteCompleted(compressedSize);
+        packetSize = compressedSize + sizeof(CompressedWorldPacket);
+
+        opcode = SMSG_COMPRESSED_OPCODE;
+    }
+    else if (!packet.empty())
+        buffer.Write(packet.contents(), packet.size());
+
+    if (m_Crypt.IsInitialized())
+    {
+        //uint8 _header[5];
+        //uint64 data = (packetSize << 13) | opcode & 0x1FFF;
+        //memcpy(&_header[0], &data, sizeOfHeader);
+        //m_Crypt.EncryptSend((uint8*)&_header[0], sizeOfHeader);
+        //memcpy(headerPos, &_header, sizeOfHeader);
+        //return;
+
+        header.Normal.Size = packetSize;
+        header.Normal.Command = opcode;
+        m_Crypt.EncryptSend((uint8*)&header, sizeOfHeader);
+    }
+    else
+    {
+        //uint8 _header[5];
+        //packetSize += 2;
+        //memcpy(&_header[0], &packetSize, 2);
+        //memcpy(&_header[2], &opcode, 2);
+        //memcpy(headerPos, &_header, 4);
+        //return;
+
+        header.Setup.Size = packetSize + 2;
+        header.Setup.Command = opcode;
+    }
+
+    memcpy(headerPos, &header, sizeOfHeader);
+}
+
 int WorldSocket::SendPacket(WorldPacket const* pct)
 {
     ACE_GUARD_RETURN (LockType, Guard, m_OutBufferLock, -1);
@@ -172,16 +225,6 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
         return -1;
 
     size_t size = pct->wpos();
-    WorldPacket* compressed = NULL;
-
-    // Empty buffer used in case packet should be compressed
-    // Disable compression for now :)
-    //WorldPacket buff;
-    //if (m_Session && pct->size() > 0x400 && pct->GetOpcode() != SMSG_COMPRESSED_OPCODE && m_Session->GetPlayer() && !m_Session->GetPlayer()->isBeingLoaded())
-    //{
-        //if (buff.Compress(m_Session->GetCompressionStream(), pct))
-        //    pct = &buff;
-    //}
 
     // Dump outgoing packet
     if (sPacketLog->CanLogPacket())
@@ -190,34 +233,33 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
 
-    SendSize[pct->GetOpcode()] += pct->wpos();
+    uint32 packetSize = pct->size();
+    uint32 sizeOfHeader = SizeOfServerHeader[m_Crypt.IsInitialized()];
+    if (packetSize > 0x400 && m_Session)
+        packetSize = compressBound(packetSize) + sizeof(CompressedWorldPacket);
+
+    SendSize[pct->GetOpcode()] += packetSize;
     ++SendCount[pct->GetOpcode()];
 
     sScriptMgr->OnPacketSend(this, *pct);
 
-    ServerPktHeader header(!m_Crypt.IsInitialized() ? pct->size() + 2 : pct->size(), pct->GetOpcode(), &m_Crypt);
+    MessageBuffer buffer(sizeOfHeader + packetSize);
+    WritePacketToBuffer(*pct, buffer);
 
-    if (m_OutBuffer->space() >= pct->wpos() + header.getHeaderLength() && msg_queue()->is_empty())
+    if (m_OutBuffer->space() >= buffer.GetActiveSize() && msg_queue()->is_empty())
     {
         // Put the packet on the buffer.
-        if (m_OutBuffer->copy((char*) header.header, header.getHeaderLength()) == -1)
+        if (m_OutBuffer->copy((char*)buffer.GetBasePointer(), buffer.GetActiveSize()) == -1)
             ACE_ASSERT (false);
-
-        if (!pct->empty())
-            if (m_OutBuffer->copy((char*) pct->contents(), pct->wpos()) == -1)
-                ACE_ASSERT (false);
     }
     else
     {
         // Enqueue the packet.
         ACE_Message_Block* mb;
 
-        ACE_NEW_RETURN(mb, ACE_Message_Block(pct->wpos() + header.getHeaderLength()), -1);
+        ACE_NEW_RETURN(mb, ACE_Message_Block(buffer.GetActiveSize()), -1);
 
-        mb->copy((char*) header.header, header.getHeaderLength());
-
-        if (!pct->empty())
-            mb->copy((const char*)pct->contents(), pct->wpos());
+        mb->copy((const char*)buffer.GetBasePointer(), buffer.GetActiveSize());
 
         if (msg_queue()->enqueue_tail(mb, (ACE_Time_Value*)&ACE_Time_Value::zero) == -1)
         {

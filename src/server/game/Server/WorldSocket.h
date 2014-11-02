@@ -40,6 +40,7 @@
 
 #include "Common.h"
 #include "AuthCrypt.h"
+#include "MessageBuffer.h"
 
 class ACE_Message_Block;
 class WorldPacket;
@@ -109,6 +110,9 @@ class WorldSocket : public WorldHandler
         /// @param pct packet to send
         /// @return -1 of failure
         int SendPacket(WorldPacket const* pct);
+
+        //
+        void WritePacketToBuffer(WorldPacket const& packet, MessageBuffer& buffer);
 
         /// Add reference to this object.
         long AddReference (void);

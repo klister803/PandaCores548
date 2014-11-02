@@ -520,6 +520,8 @@ struct Position
     bool IsInDegreesRange(float x, float y, float degresA, float degresB, bool relative = false) const;
     float GetDegreesAngel(float x, float y, bool relative = false) const;
 
+    Position GetRandPointBetween(const Position &B) const;
+
     bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }
     bool IsInDist2d(const Position* pos, float dist) const
@@ -770,6 +772,11 @@ class WorldObject : public Object, public WorldLocation
             MovePosition(pos, radius * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
         }
 
+        void GetRandomNearDest(Position &pos, Position dest, float radius)
+        {
+            MovePosition(dest, radius * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
+        }
+
         void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
         {
             // angle to face `obj` to `this` using distance includes size of `obj`
@@ -908,6 +915,8 @@ class WorldObject : public Object, public WorldLocation
         float GetVisibilityRange() const;
         float GetSightRange(const WorldObject* target = NULL) const;
         bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
+
+        void SetVisible(bool x);
 
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;

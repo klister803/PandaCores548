@@ -99,6 +99,7 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 
 float World::Visibility_RelocationLowerLimit = 20.0f;
 uint32 World::Visibility_AINotifyDelay = 1000;
+float World::ZoneUpdateDistanceRangeLimit = 5.0f;
 
 // movement anticheat
 bool World::m_EnableMvAnticheat = true;
@@ -1237,6 +1238,8 @@ void World::LoadConfigSettings(bool reload)
     m_visibility_notify_periodInInstances = ConfigMgr::GetIntDefault("Visibility.Notify.Period.InInstances",   DEFAULT_VISIBILITY_NOTIFY_PERIOD);
     m_visibility_notify_periodInBGArenas = ConfigMgr::GetIntDefault("Visibility.Notify.Period.InBGArenas",    DEFAULT_VISIBILITY_NOTIFY_PERIOD);
 
+    ZoneUpdateDistanceRangeLimit = ConfigMgr::GetFloatDefault("Zone.UpdateDistanceRage", 5.f);
+
     ///- Load the CharDelete related config options
     m_int_configs[CONFIG_CHARDELETE_METHOD] = ConfigMgr::GetIntDefault("CharDelete.Method", 0);
     m_int_configs[CONFIG_CHARDELETE_MIN_LEVEL] = ConfigMgr::GetIntDefault("CharDelete.MinLevel", 0);
@@ -2052,9 +2055,6 @@ void World::SetInitialWorldSettings()
     for (uint8 i = 0; i < m_realmName.size(); ++i)
         if (m_realmName[i] != ' ')
             m_trimmedRealmName += m_realmName[i];
-
-    sLog->outInfo(LOG_FILTER_GENERAL, "Loading area skip update...");
-    sObjectMgr->LoadSkipUpdateZone();
 
     uint32 startupDuration = GetMSTimeDiffToNow(startupBegin);
 
@@ -3778,13 +3778,18 @@ void World::Transfer()
                     stmt->setUInt32(8, transferId);
                     LoginDatabase.Execute(stmt);
                     if(transferId)
-                        LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", dumpState, newguid, transferId);
+                    {
+                        if(realmID == 59)
+                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
+                        else
+                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", dumpState, newguid, transferId);
+                    }
                 }
             }
             else
             {
                 LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", dumpState, transaction);
-                if(transferId)
+                if(transferId && realmID != 59)
                     LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", dumpState, transferId);
                 continue;
             }

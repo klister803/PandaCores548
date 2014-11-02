@@ -56,21 +56,17 @@ class UpdateData
         void AddOutOfRangeGUID(std::set<uint64>& guids);
         void AddOutOfRangeGUID(uint64 guid);
         void AddUpdateBlock(const ByteBuffer &block);
-        bool BuildPacket();
-        void SendTo(Player* player);
-        bool HasData() const { return m_blocks.size() > 0 || !m_outOfRangeGUIDs.empty(); }
+        bool BuildPacket(WorldPacket* packet);
+        bool HasData() const { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
 
         std::set<uint64> const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
         uint16 m_map;
+        uint32 m_blockCount;
         std::set<uint64> m_outOfRangeGUIDs;
-        typedef std::list<ByteBuffer> BlockList;
-        BlockList m_blocks;
-
-        std::list<WorldPacket> packets;
-        bool m_build;
+        ByteBuffer m_data;
 };
 #endif
 

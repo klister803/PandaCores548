@@ -277,7 +277,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     Unit* mover = _player->m_mover;
 
     if(!mover || mover == NULL)                                  // there must always be a mover
+    {
+        recvPacket.rfinish();                     // prevent warnings spam
         return;
+    }
 
     Player* plrMover = mover->ToPlayer();
 
@@ -306,14 +309,17 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     ReadMovementInfo(recvPacket, &movementInfo);
 
     // prevent tampered movement data
-    if (movementInfo.guid != mover->GetGUID())
+    if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
     {
         //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        recvPacket.rfinish();                     // prevent warnings spam
         return;
     }
+
     if (!movementInfo.pos.IsPositionValid())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        recvPacket.rfinish();                     // prevent warnings spam
         return;
     }
 

@@ -77,6 +77,7 @@ class AuraEffect
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
 
         int32 CalculateAmount(Unit* caster, int32 &m_aura_amount);
+        void CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amount);
         void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
         void CalculateSpellMod();
         void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false);

@@ -590,6 +590,8 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_USE_ACTION,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetUseAction );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_SET_DATA,                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetSetData );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_RENAME,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetRename );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_NAME_QUERY,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetNameQuery );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_PUT_IN_CAGE,                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetPutInCage );
 
 
     //------------                      S M S G                  ------------//
@@ -639,7 +641,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLEPAY_PRODUCT_ITEM,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_BATTLE_FINISHED,              STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_CHAT_RESTRICTED,              STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_DELETED,                      STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_DELETED,                      STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_ERROR,                        STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_FINALIZE_LOCATION,            STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_FINAL_ROUND,                  STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
@@ -660,6 +662,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_SLOT_UPDATE,                  STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_TRAP_LEVEL,                   STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_UPDATES,                      STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLE_PET_NAME_QUERY_RESPONSE,          STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLEFIELD_LIST,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLEFIELD_MGR_EJECTED,                 STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_BATTLEFIELD_MGR_EJECT_PENDING,           STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );

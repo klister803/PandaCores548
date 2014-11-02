@@ -2010,7 +2010,9 @@ void Map::SendInitSelf(Player* player)
         }
     }
 
-    data.SendTo(player);
+    WorldPacket packet;
+    data.BuildPacket(&packet);
+    player->GetSession()->SendPacket(&packet);
 }
 
 void Map::SendInitTransports(Player* player)
@@ -2035,7 +2037,9 @@ void Map::SendInitTransports(Player* player)
         }
     }
 
-    transData.SendTo(player);
+    WorldPacket packet;
+    transData.BuildPacket(&packet);
+    player->GetSession()->SendPacket(&packet);
 }
 
 void Map::SendRemoveTransports(Player* player)
@@ -2056,8 +2060,9 @@ void Map::SendRemoveTransports(Player* player)
         if ((*i) != player->GetTransport() && (*i)->GetMapId() != GetId())
             (*i)->BuildOutOfRangeUpdateBlock(&transData);
 
-    std::list<WorldPacket> packets;
-    transData.SendTo(player);
+    WorldPacket packet;
+    transData.BuildPacket(&packet);
+    player->GetSession()->SendPacket(&packet);
 }
 
 inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)

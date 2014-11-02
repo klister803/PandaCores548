@@ -45,6 +45,7 @@ enum eCreatures
 {
     //Npc or summons
     NPC_LOREWALKER_CHO              = 73330,
+    NPC_LOREWALKER_CHO2             = 72872,
     NPC_LOREWALKER_CHO3             = 61348,
     NPC_CONTAMINATED_PUDDLE         = 71604,
     NPC_AQUEOUS_DEFENDER            = 73191,
@@ -90,7 +91,7 @@ enum eCreatures
     NPC_RIFT_OF_CORRUPTION          = 72846, //Rift of Corruption
     //controller 68553?? Sha Vortex triger 146034
 
-    //  
+    //  Norushen
     NPC_NORUSHEN                    = 71967,
     NPC_AMALGAM_OF_CORRUPTION       = 72276,
     NPC_ESSENCE_OF_CORRUPTION       = 71976,
@@ -98,6 +99,8 @@ enum eCreatures
     NPC_TITANIC_CORRUPTION          = 72051,
     NPC_GREATER_CORRUPTION          = 72001,
     NPC_PURIFYING_LIGHT             = 72065,
+    NPC_RESIDUAL_CORRUPTION         = 72550,
+
     //
     NPC_GALAKRAS                    = 72249,
     NPC_IRON_JUGGERNAUT             = 71466,
@@ -164,6 +167,23 @@ enum eGameObjects
     GO_LIGTH_QUARANTINE_4           = 223145,
     GO_LIGTH_QUARANTINE_5           = 223146,
     GO_LIGTH_QUARANTINE_6           = 223147,
+    GO_LIGHT_RAY_01                 = 223192,
+    GO_LIGHT_RAY_02                 = 223020,
+    GO_LIGHT_RAY_03                 = 223019,
+    GO_LIGHT_RAY_04                 = 223018,
+    GO_LIGHT_RAY_05                 = 223017,
+    GO_LIGHT_RAY_06                 = 223016,
+    GO_LIGHT_RAY_07                 = 223015,
+    GO_LIGHT_RAY_08                 = 223014,
+    GO_LIGHT_RAY_09                 = 223013,
+    GO_LIGHT_RAY_10                 = 223012,
+    GO_LIGHT_RAY_11                 = 223011,
+    GO_LIGHT_RAY_12                 = 223010,
+    GO_LIGHT_RAY_13                 = 223009,
+    GO_LIGHT_RAY_14                 = 223008,
+    GO_LIGHT_RAY_15                 = 223007,
+    GO_LIGHT_RAY_16                 = 223021,
+
     GO_NORUSHEN_EX_DOOR             = 221447,
 
     //Sha of Pride

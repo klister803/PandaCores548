@@ -616,6 +616,8 @@ enum Opcodes
     CMSG_BATTLE_PET_USE_ACTION                        = 0x08E4, // 5.4.1 17538
     CMSG_BATTLE_PET_SET_DATA                          = 0x1464, // 5.4.1 17538 maybe only favorite flag???
     CMSG_BATTLE_PET_RENAME                            = 0x056C, // 5.4.1 17538
+    CMSG_BATTLE_PET_NAME_QUERY                        = 0x17C5, // 5.4.1 17538
+    CMSG_BATTLE_PET_PUT_IN_CAGE                       = 0x1345, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -737,7 +739,7 @@ enum Opcodes
     SMSG_BATTLEPAY_PRODUCT_ITEM                       = 0x0CAF, // 5.4.1 17538
     SMSG_BATTLE_PET_BATTLE_FINISHED                   = 0x118C, // 5.4.1 17538
     SMSG_BATTLE_PET_CHAT_RESTRICTED                   = 0xB68,  // 5.0.5 16048
-    SMSG_BATTLE_PET_DELETED                           = 0xF49,  // 5.0.5 16048
+    SMSG_BATTLE_PET_DELETED                           = 0x1034, // 5.4.1 17548
     SMSG_BATTLE_PET_ERROR                             = 0xBA0,  // 5.0.5 16048
     SMSG_BATTLE_PET_FINALIZE_LOCATION                 = 0x0C04, // 5.4.1 17538
     SMSG_BATTLE_PET_FINAL_ROUND                       = 0x0C06, // 5.4.1 17538
@@ -758,6 +760,7 @@ enum Opcodes
     SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
     SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
     SMSG_BATTLE_PET_UPDATES                           = 0x414,  // 5.4.1 17538
+    SMSG_BATTLE_PET_NAME_QUERY_RESPONSE               = 0x100D, // 5.4.1 17538
     SMSG_BATTLEFIELD_LIST                             = 0x09B7, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0x089D, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048

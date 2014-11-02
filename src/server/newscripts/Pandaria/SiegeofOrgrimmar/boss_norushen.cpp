@@ -18,10 +18,19 @@
 
 #include "NewScriptPCH.h"
 #include "siege_of_orgrimmar.h"
+#include "CreatureTextMgr.h"
+#include "ScriptedEscortAI.h"
 
 enum eSpells
 {
+    SPELL_VISUAL_TELEPORT      = 149634,
+    SPELL_VISUAL_TELEPORT_AC   = 145188,
+    SPELL_EXTRACT_CORRUPTION   = 145143,
+    SPELL_EXTRACT_CORRUPTION_S = 145149,
+    //SPELL_PURIFIED             = 146022,
+
     //Amalgam_of_Corruption
+    SPELL_SPAWN_AMALGAM        = 145118,
     SPELL_CORRUPTION           = 144421, 
     SPELL_PURIFIED             = 144452,
     SPELL_ICY_FEAR             = 145733,
@@ -31,11 +40,10 @@ enum eSpells
     SPELL_SELF_DOUBT           = 146124,
     SPELL_QUARANTINE_SAFETY    = 145779,
     SPELL_FRAYED               = 146179,
-
-    //Phase spells
-    SPELL_LOOK_WITHIN          = 146837,
+    SPELL_UNLEASH_CORRUPTION   = 145769,
 
     //Blind Hatred
+    SPELL_BLIND_HATRED         = 145571,
     SPELL_BLIND_HATRED_V       = 145226,
     SPELL_BLIND_HATRED_D       = 145227,
 
@@ -53,6 +61,12 @@ enum eSpells
     SPELL_DISHEARTENING_LAUGH  = 146707,
     SPELL_LINGERING_CORRUPTION = 144514,
 
+    // Frayed. Manifestation of corruption.
+    SPELL_BURST_OF_ANGER       = 147082,
+
+    //RESIDUAL_CORRUPTION
+    SPELL_CORRUPTION_AREA      = 145052,
+
     //Manifestation of Corruption
     SPELL_TEAR_REALITY         = 144482,
     SPELL_RESIDUAL_CORRUPTION  = 145074,
@@ -61,11 +75,15 @@ enum eSpells
     SPELL_EXPEL_CORRUPTION_AT  = 144548, //Create areatrigger
     SPELL_EXPELLED_CORRUPTION  = 144480,
 
-
     //Test for players
     SPELL_TEST_OF_SERENITY     = 144849, //dd
     SPELL_TEST_OF_RELIANCE     = 144850, //heal
     SPELL_TEST_OF_CONFIDENCE   = 144851, //tank
+
+    //Phase spells
+    SPELL_LOOK_WITHIN_DD       = 146837,
+    SPELL_LOOK_WITHIN_HEALER   = 144724,
+    SPELL_LOOK_WITHIN_TANK     = 144727, //Look Within
 };
 
 enum sEvents
@@ -98,8 +116,8 @@ enum sEvents
 enum sData
 {
     //Blind Hatred
-    DATA_GET_NEW_POS           = 1,
-    DATA_START_MOVING          = 2,
+    DATA_START_MOVING          = 1,
+    DATA_FILL_MOVE_ORDER       = 2,
 };
 
 enum sAction
@@ -117,12 +135,58 @@ Position const plspos[5] =  //purifying light spawn pos
     {805.67f, 991.16f, 356.3400f},
 };
 
+//Blind Hatred
+Position const BlindHatred[4] =
+{
+    { 808.897f, 1023.77f, 356.3f}, //A
+    { 728.585f, 1006.259f,356.3f}, //B
+    { 748.132f, 911.165f, 356.3f}, //C
+    { 828.936f, 929.101f, 356.3f}, //D
+};
+typedef std::list<uint8> BlindOrderList;
+
+void GenerateOrder(BlindOrderList &m)
+{
+    uint8 c = urand(0, 3);
+    bool decrase = urand(0, 1);
+    for(int8 i = 0; i < 4; ++i)
+    {
+        if (c > 3)      c = 0;
+
+        if (decrase)    m.push_back(c);
+        else            m.push_front(c);
+
+        ++c;
+    }
+}
+
+Position GetFirstRandPoin(BlindOrderList &m)
+{
+    BlindOrderList::iterator itr = m.begin();
+    uint8 A = *itr;
+    ++itr;
+    uint8 B = *itr;
+    return BlindHatred[A].GetRandPointBetween(BlindHatred[B]);
+}
+
 float const radius = 38.0f;
+
+Position const Norushen  = {767.6754f, 1015.564f, 356.1747f, 4.922687f };
+Position const Amalgan  = {777.3924f, 974.2292f, 356.3398f, 1.786108f };
 
 class boss_norushen : public CreatureScript
 {
     public:
         boss_norushen() : CreatureScript("boss_norushen") {}
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        { 
+            player->CLOSE_GOSSIP_MENU();
+            if (action)
+                creature->AI()->DoAction(true);
+
+            return true;
+        }
 
         struct boss_norushenAI : public ScriptedAI
         {
@@ -132,33 +196,51 @@ class boss_norushen : public CreatureScript
             }
 
             InstanceScript* instance;
+            EventMap events;
 
             void Reset()
             {
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 1);
             }
 
-            void EnterCombat(Unit* who)
-            {
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
-            }
 
             void DoAction(int32 const action)
             {
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                //continue from EVENT_13
+                uint32 t = 0;
+                events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
+                events.ScheduleEvent(EVENT_2, t += 8000);       //18:23:22.000
+                events.ScheduleEvent(EVENT_3, t += 11000);      //18:23:32.000
+                events.ScheduleEvent(EVENT_4, t += 2000);       //18:23:34.000
             }
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
+                events.Update(diff);
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            me->CastSpell(me, SPELL_VISUAL_TELEPORT, false);
+                            me->CastSpell(me, SPELL_VISUAL_TELEPORT_AC, true);
+                            ZoneTalk(eventId + 6, me->GetGUID());
+                            break;
+                        case EVENT_2:
+                            me->SetFacingTo(1.791488f);
+                            instance->SetBossState(DATA_NORUSHEN, IN_PROGRESS);
+                            ZoneTalk(eventId + 6, me->GetGUID());
+                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION);
+                            break;
+                        case EVENT_3:
+                            me->CastSpell(Amalgan.GetPositionX(), Amalgan.GetPositionY(), Amalgan.GetPositionZ(), SPELL_EXTRACT_CORRUPTION_S);
+                            break;
+                        case EVENT_4:
+                            ZoneTalk(TEXT_GENERIC_9, me->GetGUID());
+                            break;
+                    }
+                }
             }
         };
 
@@ -166,6 +248,122 @@ class boss_norushen : public CreatureScript
         {
             return new boss_norushenAI(creature);
         }
+};
+
+class npc_norushen_lowerwalker : public CreatureScript
+{
+public:
+    npc_norushen_lowerwalker() : CreatureScript("npc_norushen_lowerwalker") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_norushen_lowerwalkerAI (creature);
+    }
+
+    enum phases
+    {
+        PHASE_EVENT     = 1,
+    };
+
+    struct npc_norushen_lowerwalkerAI : public npc_escortAI
+    {
+        npc_norushen_lowerwalkerAI(Creature* creature) : npc_escortAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        uint64 norushGUID;
+
+        void Reset()
+        {
+            norushGUID = 0;
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (events.IsInPhase(PHASE_EVENT))
+                return;
+
+            Start(false, false);
+            events.SetPhase(PHASE_EVENT);
+            uint32 t = 0;
+            events.ScheduleEvent(EVENT_1, t += 1000);    //18:20:50.000
+            events.ScheduleEvent(EVENT_2, t += 6000);    //18:20:56.000
+            events.ScheduleEvent(EVENT_3, t += 8000);    //18:21:04.000
+            events.ScheduleEvent(EVENT_4, t += 8000);    //18:21:11.000
+            events.ScheduleEvent(EVENT_5, t += 2000);    //18:21:13.000
+            events.ScheduleEvent(EVENT_6, t += 7000);    //18:21:20.000
+            events.ScheduleEvent(EVENT_7, t += 7000);    //18:21:27.000
+            events.ScheduleEvent(EVENT_8, t += 8000);    //18:21:35.000
+            events.ScheduleEvent(EVENT_9, t += 5000);    //18:21:40.000
+            events.ScheduleEvent(EVENT_10, t += 3000);   //18:21:43.000
+            events.ScheduleEvent(EVENT_11, t += 14000);  //18:21:56.000
+            events.ScheduleEvent(EVENT_12, t += 8000);   //18:22:04.000
+            events.ScheduleEvent(EVENT_13, t += 10000);  //18:22:14.000
+            events.ScheduleEvent(EVENT_14, t += 1);
+        }
+
+        void WaypointReached(uint32 i)
+        {
+            if (i == 2)
+                SetEscortPaused(true);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            npc_escortAI::UpdateAI(diff);
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                    case EVENT_2:
+                    case EVENT_3:
+                        ZoneTalk(eventId - 1, me->GetGUID());
+                        break;                    
+                    case EVENT_4:
+                        if (Creature* norush = instance->instance->SummonCreature(NPC_NORUSHEN, Norushen))
+                        {
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_0, me->GetGUID());
+                            norushGUID = norush->GetGUID();
+                        }
+                        break;
+                    case EVENT_5:
+                        ZoneTalk(TEXT_GENERIC_3, me->GetGUID());
+                        break;
+                    case EVENT_6:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_1, me->GetGUID());
+                        break;
+                    case EVENT_7:
+                        ZoneTalk(TEXT_GENERIC_4, me->GetGUID());
+                        break;
+                    case EVENT_8:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(TEXT_GENERIC_2, me->GetGUID());
+                        break;
+                    case EVENT_9:
+                        ZoneTalk(TEXT_GENERIC_5, me->GetGUID());
+                        break;
+                    case EVENT_10:
+                    case EVENT_11:
+                    case EVENT_12:
+                    case EVENT_13:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->AI()->ZoneTalk(eventId - 7, me->GetGUID());
+                        break;
+                    case EVENT_14:
+                        if (Creature* norush = instance->instance->GetCreature(norushGUID))
+                            norush->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        break;
+                }
+            }
+        }
+    };
 };
 
 class boss_amalgam_of_corruption : public CreatureScript
@@ -178,110 +376,88 @@ class boss_amalgam_of_corruption : public CreatureScript
             boss_amalgam_of_corruptionAI(Creature* creature) : BossAI(creature, DATA_NORUSHEN)
             {
                 instance = creature->GetInstanceScript();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                SetCombatMovement(false);
             }
 
             InstanceScript* instance;
-            bool one, two, three, four;
+            uint8 FrayedCounter;
 
             void Reset()
             {
                 _Reset();
+                me->RemoveAurasDueToSpell(SPELL_FRAYED);
                 me->RemoveAurasDueToSpell(SPELL_ICY_FEAR);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
                 ApplyOrRemoveBar(false);
-                one = false;
-                two = false;
-                three = false;
-                four = false;
+                FrayedCounter = 0;
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            }
+
+            void IsSummonedBy(Unit* /*summoner*/)
+            {
+                me->SetInCombatWithZone();
+                //me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
             }
 
             void ApplyOrRemoveBar(bool state)
             {
                 Map* pMap = me->GetMap();
-                if (pMap && pMap->IsDungeon())
-                {
-                    Map::PlayerList const &players = pMap->GetPlayers();
-                    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                    {
-                        if (Player* pl = i->getSource())
-                        {
-                            if (pl->isAlive() && state)
-                                pl->AddAura(SPELL_CORRUPTION, pl);
-                            else
-                                pl->RemoveAurasDueToSpell(SPELL_CORRUPTION);
-                        }
-                    }
-                }
-            }
+                if (!pMap || !pMap->IsDungeon())
+                    return;
 
-            void CheckPlayers()
-            {
-                Map* pMap = me->GetMap();
-                if (pMap && pMap->IsDungeon())
+                Map::PlayerList const &players = pMap->GetPlayers();
+                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
-                    Map::PlayerList const &players = pMap->GetPlayers();
-                    for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                    if (Player* pl = i->getSource())
                     {
-                        if (Player* pl = i->getSource())
-                        {
-                            if (pl->isAlive() && pl->GetPower(POWER_ALTERNATE_POWER))
-                            {
-                                if (pl->GetPower(POWER_ALTERNATE_POWER) >= 75)
-                                    SummonManifestationofCorruption();
-                            }
-                        }
+                        if (pl->isAlive() && state)
+                            pl->AddAura(SPELL_CORRUPTION, pl);
+                        else
+                            pl->RemoveAurasDueToSpell(SPELL_CORRUPTION);
                     }
                 }
             }
 
             void EnterCombat(Unit* who)
             {
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 _EnterCombat();
                 me->AddAura(SPELL_ICY_FEAR, me);
                 ApplyOrRemoveBar(true);
-                events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
-                events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);
-                events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
-                events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
+                //events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
+                //events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);     //18:23:51.000 - 18:24:02.000
+                //events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
+                //events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
+                me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
+
+                //Summon Purifying light.
+                for(uint8 i = 0; i < 5; ++i)
+                    me->SummonCreature(NPC_PURIFYING_LIGHT, plspos[i].GetPositionX(), plspos[i].GetPositionY(), plspos[i].GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN); 
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (HealthBelowPct(50) && !me->HasAura(SPELL_FRAYED))
+                if (!attacker->HasAura(SPELL_CORRUPTION))
                 {
-                    me->AddAura(SPELL_FRAYED, me);
-                    SummonManifestationofCorruption();
+                    damage = 0;
+                    return;
                 }
 
-                if (HealthBelowPct(40) && !four)
-                {
-                    four = true;
-                    CheckPlayers();
-                    SummonManifestationofCorruption();
-                }
-                else if (HealthBelowPct(30) && !three)
-                {
-                    three = true;
-                    SummonManifestationofCorruption();
-                }
-                else if (HealthBelowPct(20) && !two)
-                {
-                    two = true;
-                    SummonManifestationofCorruption();
-                }
-                else if (HealthBelowPct(10) && !one)
-                {
-                    one = true;
-                    SummonManifestationofCorruption();
-                }
-            }
+                //deal less damage if plr have corruptuin. Default value - 75%
+                damage = CalculatePct(damage, 100 - attacker->GetPower(POWER_ALTERNATE_POWER));
 
-            void SummonManifestationofCorruption()
-            {
-                if (Creature* moc = me->SummonCreature(NPC_MANIFESTATION_OF_CORRUPTION, me->GetPositionX()+ 5.0f, me->GetPositionY(), me->GetPositionZ()))
-                    DoZoneInCombat(moc, 100.0f);
+                //Frayed summon manifestation of corruption every 10% after 50 pct.
+                if (HealthBelowPct(50) && damage < me->GetHealth())
+                {
+                    if (HealthBelowPct(50 - 10*FrayedCounter))
+                    {
+                        if (!me->HasAura(SPELL_FRAYED))
+                            me->AddAura(SPELL_FRAYED, me);
+                        ++FrayedCounter;
+                        DoCast(me, SPELL_UNLEASH_CORRUPTION);
+                    }
+                }
             }
 
             void DoAction(int32 const action)
@@ -292,11 +468,12 @@ class boss_amalgam_of_corruption : public CreatureScript
             {
                 _JustDied();
                 ApplyOrRemoveBar(false);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 events.Update(diff);
@@ -305,26 +482,27 @@ class boss_amalgam_of_corruption : public CreatureScript
                 {
                     switch (eventId)
                     {
-                    case EVENT_CHECK_VICTIM:
-                        if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
-                            DoCastAOE(SPELL_UNCHECKED_CORRUPTION);
-                        events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
-                        break;
-                    case EVENT_QUARANTINE_SAFETY:
-                        DoCastAOE(SPELL_QUARANTINE_SAFETY);
-                        break;
-                    case EVENT_UNLEASHED_ANGER:
-                        if (me->getVictim())
-                            DoCast(me->getVictim(), SPELL_UNLEASHED_ANGER);
-                        events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);
-                        break;
-                    case EVENT_BLIND_HATRED:
-                        float ang = (float)urand(0, 6);
-                        if (Creature* bhc = me->SummonCreature(NPC_B_H_CONTROLLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+ 2.0f, ang, TEMPSUMMON_TIMED_DESPAWN, 32000))
-                            bhc->AI()->DoAction(ACTION_START_EVENT);
-                        events.ScheduleEvent(EVENT_BLIND_HATRED, 40000);
-                        break;
+                        case EVENT_CHECK_VICTIM:
+                            if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()))
+                                DoCastAOE(SPELL_UNCHECKED_CORRUPTION);
+                            events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
+                            break;
+                        case EVENT_QUARANTINE_SAFETY:
+                            DoCastAOE(SPELL_QUARANTINE_SAFETY);
+                            break;
+                        case EVENT_UNLEASHED_ANGER:
+                            if (me->getVictim())
+                                DoCast(me->getVictim(), SPELL_UNLEASHED_ANGER);
+                            events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);
+                            break;
+                        case EVENT_BLIND_HATRED:
+                        {
+                            DoCast(me, SPELL_BLIND_HATRED, false);
+                            events.ScheduleEvent(EVENT_BLIND_HATRED, 40000);
+                            break;
+                        }
                     }
+
                 }
                 DoMeleeAttackIfReady();
             }
@@ -334,71 +512,6 @@ class boss_amalgam_of_corruption : public CreatureScript
         {
             return new boss_amalgam_of_corruptionAI(creature);
         }
-};
-
-//90008 new trigger
-class npc_blind_hatred_controller : public CreatureScript
-{
-public:
-    npc_blind_hatred_controller() : CreatureScript("npc_blind_hatred_controller") { }
-
-    struct npc_blind_hatred_controllerAI : public ScriptedAI
-    {
-        npc_blind_hatred_controllerAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {
-            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
-            me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-            me->SetDisplayId(11686);
-        }
-
-        InstanceScript* pInstance;
-
-        void Reset(){}
-        
-        void EnterEvadeMode(){}
-
-        void EnterCombat(Unit* who){}
-
-        void DoAction(int32 const action)
-        {
-            if (action == ACTION_START_EVENT)
-            {
-                if (me->ToTempSummon())
-                {
-                    float x, y;
-                    GetPositionWithDistInOrientation(me, radius, me->GetOrientation(), x, y);
-                    if (Unit* ac = me->ToTempSummon()->GetSummoner())
-                    {
-                        if (Creature* bh = ac->SummonCreature(NPC_BLIND_HATRED, x, y, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
-                        {
-                            me->GetMotionMaster()->MoveRotate(60000, rand()%2 ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
-                            DoCast(bh, SPELL_BLIND_HATRED_V, true);
-                            bh->AI()->SetData(DATA_START_MOVING, 0);
-                        }
-                    }
-                }
-            }
-        }
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_GET_NEW_POS && pInstance)
-            {
-                float x, y;
-                GetPositionWithDistInOrientation(me, radius, me->GetOrientation(), x, y);
-                if (Creature* bh = me->GetCreature(*me, pInstance->GetData64(NPC_BLIND_HATRED)))
-                    bh->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 5.0f, 0);
-            }
-        }
-
-        void UpdateAI(uint32 diff){}        
-    };
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_blind_hatred_controllerAI(pCreature);
-    }
 };
 
 //72565 
@@ -418,6 +531,7 @@ public:
 
         InstanceScript* pInstance;
         EventMap events;
+        BlindOrderList order;
 
         void Reset()
         {
@@ -430,30 +544,32 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
+            if (type == DATA_FILL_MOVE_ORDER)
+                order.push_back(data);
+
             if (type == DATA_START_MOVING)
-                events.ScheduleEvent(EVENT_GET_NEW_POS, 1000);
+            {
+                order.pop_front();  //remove first point as it was source rand generation.
+                Position p = BlindHatred[*order.begin()];
+                me->GetMotionMaster()->MoveCharge(p.GetPositionX(), p.GetPositionY(), me->GetPositionZ(), 5.0f, 0);
+                order.pop_front();  //remove secont point as we just move from it.
+            }
         }
 
         void MovementInform(uint32 type, uint32 id)
         {
-            if (type == POINT_MOTION_TYPE)
-            {
-                if (id == 0)
-                    events.ScheduleEvent(EVENT_GET_NEW_POS, 100); 
-            }
+            if (type == POINT_MOTION_TYPE && !order.empty())
+                events.ScheduleEvent(DATA_START_MOVING, 1);
         }
 
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
-
             while (uint32 eventId = events.ExecuteEvent())
             {
-                if (eventId == EVENT_GET_NEW_POS && pInstance)
-                {
-                    if (Creature* bhc = me->GetCreature(*me, pInstance->GetData64(NPC_B_H_CONTROLLER)))
-                        bhc->AI()->SetData(DATA_GET_NEW_POS, 0);
-                }
+                Position p = BlindHatred[*order.begin()];
+                me->GetMotionMaster()->MoveCharge(p.GetPositionX(), p.GetPositionY(), me->GetPositionZ(), 5.0f, 0);
+                order.pop_front();  //remove secont point as we just move from it.
             }
         }
     };
@@ -464,25 +580,49 @@ public:
     }
 };
 
-//72065
-class npc_purifying_light : public CreatureScript
+
+class npc_norushen_purifying_light : public CreatureScript
 {
 public:
-    npc_purifying_light() : CreatureScript("npc_purifying_light") { }
+    npc_norushen_purifying_light() : CreatureScript("npc_norushen_purifying_light") { }
 
-    struct npc_purifying_lightAI : public CreatureAI
+    struct npc_norushen_purifying_lightAI : public CreatureAI
     {
-        npc_purifying_lightAI(Creature* pCreature) : CreatureAI(pCreature)
+        npc_norushen_purifying_lightAI(Creature* pCreature) : CreatureAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
         }
 
         InstanceScript* pInstance;
 
-        void Reset(){}
+        void Reset()
+        {
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+        }
 
         void OnSpellClick(Unit* clicker)
         {
+            Player* p = clicker->ToPlayer();
+            if (!p)
+                return;
+
+            uint8 role = p->GetRoleForGroup(p->GetSpecializationId(p->GetActiveSpec()));
+            switch(role)
+            {
+                case ROLES_TANK:
+                    p->CastSpell(p, SPELL_TEST_OF_CONFIDENCE, false);
+                    break;
+                case ROLES_DPS:
+                    p->CastSpell(p, SPELL_TEST_OF_SERENITY, false);
+                    break;
+                case ROLES_HEALER:
+                    p->CastSpell(p, SPELL_TEST_OF_RELIANCE, false);
+                    break;
+                default:
+                    p->CastSpell(p, SPELL_TEST_OF_SERENITY, false);
+                    sLog->outError(LOG_FILTER_PLAYER, "Script::npc_norushen_purifying_light: Player %s has not localized role specID.", p->ToString().c_str(), role);
+                    break;
+            }
         }
 
         void EnterCombat(Unit* who){}
@@ -492,7 +632,121 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_purifying_lightAI(pCreature);
+        return new npc_norushen_purifying_lightAI(pCreature);
+    }
+};
+
+//72264 summoned at FRAYED
+class npc_norushen_manifestation_of_corruption : public CreatureScript
+{
+public:
+    npc_norushen_manifestation_of_corruption() : CreatureScript("npc_norushen_manifestation_of_corruption") { }
+
+    struct npc_norushen_manifestation_of_corruptionAI : public ScriptedAI
+    {
+        npc_norushen_manifestation_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+
+            me->setPowerType(POWER_ENERGY);
+            me->SetMaxPower(POWER_ENERGY, 100);
+            me->SetPower(POWER_ENERGY, 100);
+        }
+        
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_1, 5000);
+        }
+
+        void IsSummonedBy(Unit* /*summoner*/)
+        {
+            me->SetInCombatWithZone();
+        }
+
+        void JustDied(Unit* killer)
+        {
+            //Summon NPC_RESIDUAL_CORRUPTION by not existent spell 145522
+            Unit* owner = me->GetAnyOwner();
+            if (!owner)
+                return;
+
+            if (Creature* rc = owner->SummonCreature(NPC_RESIDUAL_CORRUPTION, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+            {
+                rc->CastSpell(rc, 145074, true);
+            }
+        }
+       
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+            
+            while (uint32 eventId = events.ExecuteEvent())
+            {   
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        DoCastAOE(SPELL_BURST_OF_ANGER);
+                        events.ScheduleEvent(EVENT_1, 5000);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_norushen_manifestation_of_corruptionAI(pCreature);
+    }
+};
+
+//72550
+class npc_norushen_residual_corruption : public CreatureScript
+{
+public:
+    npc_norushen_residual_corruption() : CreatureScript("npc_norushen_residual_corruption") { }
+
+    struct npc_norushen_residual_corruptionAI : public ScriptedAI
+    {
+        npc_norushen_residual_corruptionAI(Creature* creature) : ScriptedAI(creature)
+        {
+            SetCombatMovement(false);
+        }
+
+        void Reset() { }
+
+        void MoveInLineOfSight(Unit* target)
+        {
+            if (target->GetTypeId() != TYPEID_PLAYER ||
+                me->GetDistance(target) > 1.0f ||
+                !target->HasAura(SPELL_CORRUPTION))
+                return;
+
+            uint32 power = target->GetPower(POWER_ALTERNATE_POWER) + 25;
+            if (power > 100)
+                return;
+
+            target->SetPower(POWER_ALTERNATE_POWER, power);
+            me->DespawnOrUnsummon();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_norushen_residual_corruptionAI(creature);
     }
 };
 
@@ -550,15 +804,15 @@ public:
     }
 };
 
-//72264 for dd
-class npc_manifestation_of_corruption : public CreatureScript
+//71977 for dd
+class npc_norushen_manifestation_of_corruption_challenge : public CreatureScript
 {
 public:
-    npc_manifestation_of_corruption() : CreatureScript("npc_manifestation_of_corruption") { }
+    npc_norushen_manifestation_of_corruption_challenge() : CreatureScript("npc_norushen_manifestation_of_corruption_challenge") { }
 
-    struct npc_manifestation_of_corruptionAI : public ScriptedAI
+    struct npc_norushen_manifestation_of_corruption_challengeAI : public ScriptedAI
     {
-        npc_manifestation_of_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        npc_norushen_manifestation_of_corruption_challengeAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
         }
@@ -621,7 +875,7 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_manifestation_of_corruptionAI(pCreature);
+        return new npc_norushen_manifestation_of_corruption_challengeAI(pCreature);
     }
 };
 
@@ -745,6 +999,110 @@ public:
     }
 };
 
+//145571 Blind Hatred
+class spell_norushen_blind_hatred : public SpellScriptLoader
+{
+    public:
+        spell_norushen_blind_hatred() : SpellScriptLoader("spell_norushen_blind_hatred") { }
+
+        class spell_norushen_blind_hatred_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_norushen_blind_hatred_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                BlindOrderList m;
+                GenerateOrder(m);
+                Position p = GetFirstRandPoin(m);
+                if (Creature* bh = caster->SummonCreature(NPC_BLIND_HATRED, p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
+                {
+                    for(BlindOrderList::iterator itr = m.begin(); itr != m.end(); ++itr)
+                        bh->AI()->SetData(DATA_FILL_MOVE_ORDER, *itr);
+                    bh->AI()->SetData(DATA_START_MOVING, 0);
+                    caster->CastSpell(bh, SPELL_BLIND_HATRED_V, true);
+                }
+            }
+
+            void Register() override
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_norushen_blind_hatred_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const override
+        {
+            return new spell_norushen_blind_hatred_SpellScript();
+        }
+};
+
+class BlindHatredDmgSelector
+{
+public:
+    BlindHatredDmgSelector(Unit* caster, Creature* blindhatred) : _caster(caster), _blindhatred(blindhatred) {}
+    
+    bool operator()(WorldObject* target)
+    {
+        Unit* unit = target->ToUnit();
+        
+        if (!unit)
+            return true;
+
+        if (unit->IsInBetween(_caster, _blindhatred))
+            return false;
+        
+        return true;
+    }
+private:
+    Unit* _caster;
+    Creature* _blindhatred;
+};
+
+//145227
+class spell_norushen_blind_hatred_prock : public SpellScriptLoader
+{
+    public:
+        spell_norushen_blind_hatred_prock() : SpellScriptLoader("spell_blind_hatred") { }
+
+        class spell_norushen_blind_hatred_prock_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_norushen_blind_hatred_prock_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& unitList)
+            {
+                InstanceScript* instance = GetCaster()->GetInstanceScript();
+                if (!instance)
+                {
+                    unitList.clear();
+                    return;
+                }
+
+                Creature *bh = instance->instance->GetCreature(instance->GetData64(NPC_BLIND_HATRED));
+                if (!bh)
+                {
+                    unitList.clear();
+                    return;
+                }
+
+                unitList.remove_if (BlindHatredDmgSelector(GetCaster(), bh));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_norushen_blind_hatred_prock_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_norushen_blind_hatred_prock_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_norushen_blind_hatred_prock_SpellScript();
+        }
+};
+
 //145216
 class spell_unleashed_anger : public SpellScriptLoader
 {
@@ -773,59 +1131,6 @@ class spell_unleashed_anger : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_unleashed_anger_SpellScript();
-        }
-};
-
-class BlindHatredDmgSelector
-{
-public:
-    BlindHatredDmgSelector(Unit* caster, Creature* blindhatred) : _caster(caster), _blindhatred(blindhatred) {}
-    
-    bool operator()(WorldObject* target)
-    {
-        Unit* unit = target->ToUnit();
-        
-        if (!unit)
-            return true;
-
-        if (unit->IsInBetween(_caster, _blindhatred))
-            return false;
-        
-        return true;
-    }
-private:
-    Unit* _caster;
-    Creature* _blindhatred;
-};
-
-//145227
-class spell_blind_hatred : public SpellScriptLoader
-{
-    public:
-        spell_blind_hatred() : SpellScriptLoader("spell_blind_hatred") { }
-
-        class spell_blind_hatred_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_blind_hatred_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                if (Creature* bh = GetCaster()->FindNearestCreature(NPC_BLIND_HATRED, 50.0f, true))
-                {
-                    unitList.remove_if (BlindHatredDmgSelector(GetCaster(), bh));
-                }
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_blind_hatred_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_blind_hatred_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_blind_hatred_SpellScript();
         }
 };
 
@@ -864,18 +1169,61 @@ class spell_icy_fear_dmg : public SpellScriptLoader
         }
 };
 
+//145074 Residual Corruption
+class spell_norushen_residual_corruption : public SpellScriptLoader
+{
+    public:
+        spell_norushen_residual_corruption() : SpellScriptLoader("spell_norushen_residual_corruption") { }
+
+        class spell_norushen_residual_corruption_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_norushen_residual_corruption_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                PreventDefaultAction();
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                AreaTrigger * areaTrigger = new AreaTrigger;
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), 5022, caster, GetSpellInfo(), *caster))
+                {
+                    delete areaTrigger;
+                    return;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_norushen_residual_corruption_AuraScript::OnApply, EFFECT_0, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
+            }
+
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_norushen_residual_corruption_AuraScript();
+        }
+};
+
 void AddSC_boss_norushen()
 {
     new boss_norushen();
+    new npc_norushen_lowerwalker();
     new boss_amalgam_of_corruption();
-    new npc_blind_hatred_controller();
     new npc_blind_hatred();
-    new npc_purifying_light();
+    new npc_norushen_purifying_light();
+    new npc_norushen_manifestation_of_corruption();
+    new npc_norushen_residual_corruption();
     new npc_essence_of_corruption();
-    new npc_manifestation_of_corruption();
+    new npc_norushen_manifestation_of_corruption_challenge();
     new npc_titanic_corruption();
     new npc_greater_corruption();
+    new spell_norushen_blind_hatred();
+    new spell_norushen_blind_hatred_prock();
     new spell_unleashed_anger();
-    new spell_blind_hatred();
     new spell_icy_fear_dmg();
+    new spell_norushen_residual_corruption();
 }

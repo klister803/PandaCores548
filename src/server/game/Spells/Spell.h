@@ -221,7 +221,6 @@ struct SpellValue
     uint32    MaxAffectedTargets;
     float     RadiusMod;
     uint8     AuraStackAmount;
-    bool      addCustomBP;
 };
 
 enum SpellState
@@ -465,7 +464,7 @@ class Spell
         SpellCastResult CheckCasterAuras() const;
         SpellCastResult CheckArenaAndRatedBattlegroundCastRules();
 
-        int32 CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem, m_spellValue->addCustomBP); }
+        int32 CalculateDamage(uint8 i, Unit const* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_spellValue->EffectBasePoints[i], m_CastItem); }
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();
@@ -520,6 +519,22 @@ class Spell
 
         UsedSpellMods m_appliedMods;
 
+        uint32 AttributesCustom;
+        uint32 AttributesCustomEx;
+        uint32 AttributesCustomEx2;
+        uint32 AttributesCustomEx3;
+        uint32 AttributesCustomEx4;
+        uint32 AttributesCustomEx5;
+        uint32 AttributesCustomEx6;
+        uint32 AttributesCustomEx7;
+        uint32 AttributesCustomEx8;
+        uint32 AttributesCustomEx9;
+        uint32 AttributesCustomEx10;
+        uint32 AttributesCustomEx11;
+        uint32 AttributesCustomEx12;
+        uint32 AttributesCustomEx13;
+        void LoadAttrDummy();
+
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
@@ -555,8 +570,8 @@ class Spell
         uint32 GetCountDispel() const { return m_count_dispeling; }
         void WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID);
 
-        void SetSpellDynamicObject(DynamicObject* dynObj) { m_spellDynObj = dynObj;}
-        DynamicObject* GetSpellDynamicObject() const { return m_spellDynObj; }
+        void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
+        uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -626,7 +641,7 @@ class Spell
 
         // -------------------------------------------
         GameObject* focusObject;
-        DynamicObject* m_spellDynObj;
+        uint64 m_spellDynObjGuid;
 
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here

@@ -357,7 +357,7 @@ void FleeingMovementGenerator<Player>::Finalize(Player &owner)
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
     owner.StopMoving();
-    //if (owner.GetTypeId() == TYPEID_PLAYER)
+    //if (owner.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
         //owner.UpdatePosition(i_x, i_y, i_z, owner.GetOrientation(), false);
 }
 

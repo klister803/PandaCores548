@@ -299,24 +299,15 @@ void Object::SendUpdateToPlayer(Player* player)
 {
     // send create update to player
     UpdateData upd(player->GetMapId());
-    std::list<WorldPacket*> packets;
+    WorldPacket packet;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    upd.SendTo(player);
+    upd.BuildPacket(&packet);
+    player->GetSession()->SendPacket(&packet);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const
 {
-    // hack
-    if (target->isBeingLoaded())
-    {
-        BuildCreateUpdateBlockForPlayer(data, target);
-        return;
-    }
-
-    //if (!isType(TYPEMASK_ITEM) && !target->HaveAtClient((WorldObject*)this))
-    //    return;
-
     ByteBuffer buf(500);
 
     buf << uint8(UPDATETYPE_VALUES);
@@ -1584,6 +1575,19 @@ float Position::GetDegreesAngel(float x, float y, bool relative) const
     return NormalizeOrientation(angel) * M_RAD;
 }
 
+Position Position::GetRandPointBetween(const Position &B) const
+{
+    float Lambda = urand(0.0f, 100.0f) / 100.0f;
+    float X = (B.GetPositionX() + Lambda * GetPositionX()) / (1 + Lambda);
+    float Y = (B.GetPositionY() + Lambda * GetPositionY()) / (1 + Lambda);
+    //Z should be updated by Vmap
+    float Z = (B.GetPositionZ() + Lambda * GetPositionZ()) / (1 + Lambda);
+
+    Position result;
+    result.Relocate(X, Y, Z);
+    return result;
+}
+
 std::string Position::ToString() const
 {
     std::stringstream sstr;
@@ -2171,6 +2175,16 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     }
 
     return 0.0f;
+}
+
+void WorldObject::SetVisible(bool x)
+{
+    if (!x)
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER);
+    else
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+
+    UpdateObjectVisibility();
 }
 
 bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck) const

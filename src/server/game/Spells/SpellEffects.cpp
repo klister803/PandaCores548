@@ -274,7 +274,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectNULL,                                     //201 SPELL_EFFECT_BATTLE_PET
     &Spell::EffectNULL,                                     //202 SPELL_EFFECT_APPLY_AURA_WITH_VALUE
-    &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras.
+    &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras. 145052 possible trigger spell.
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_UPGRADE_BATTLE_PET
     &Spell::EffectNULL,                                     //205 SPELL_EFFECT_205
     &Spell::EffectCreateItem3,                              //206 SPELL_EFFECT_CREATE_ITEM_3
@@ -1572,19 +1572,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
             break;
         }
-        case 115098: // Chi Wave (Main)
-        {
-            int32 bp = 1;
-            if (unitTarget->IsFriendlyTo(m_caster))
-            {
-                m_caster->CastCustomSpell(unitTarget, 132464, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
-            }
-            else
-            {
-                m_caster->CastCustomSpell(unitTarget, 132467, NULL, &bp, NULL, true, NULL, NULL, m_originalCasterGUID);
-            }
-            break;
-        }
         case 145640: // Chi Brew
         {
             uint32 spellid = 115867;
@@ -2450,6 +2437,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         switch (m_spellInfo->Id)
         {
             case 115072: // Expel Harm
+            case 147489: // Expel Harm
             {
                 SpellInfo const* _triggerInfo = sSpellMgr->GetSpellInfo(115129);
                 addhealth = CalculateMonkSpellDamage(m_caster, 7.0f / 1.1125f, 0.5f, 7);
@@ -2989,7 +2977,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        SetSpellDynamicObject(dynObj);
+        SetSpellDynamicObject(dynObj->GetGUID());
         Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]);
         if (aura != NULL)
         {
@@ -3020,6 +3008,12 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         return;
 
     Powers power = Powers(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);
+
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->getPowerType() != power && !(m_spellInfo->AttributesEx7 & SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
+        return;
+
+    if (unitTarget->GetMaxPower(power) == 0)
+        return;
 
     // Some level depends spells
     int level_multiplier = 0;
@@ -3164,6 +3158,9 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
         return;
 
     Powers power = Powers(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);
+
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->getPowerType() != power && !(m_spellInfo->AttributesEx7 & SPELL_ATTR7_CAN_RESTORE_SECONDARY_POWER))
+        return;
 
     uint32 maxPower = unitTarget->GetMaxPower(power);
     if (maxPower == 0)
@@ -3649,8 +3646,27 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
                     if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
                     {
-                        m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, uint64(m_spellInfo->Id));
-                        summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, uint64(m_spellInfo->Id));
+                        uint64 battlePetGUID = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetGUIDBySpell(m_spellInfo->Id);
+                        if (battlePetGUID)
+                        {
+                            if (PetInfo * pet = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
+                            {
+                                // set guids
+                                m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
+                                summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
+                                // timestamp for custom name cache
+                                if (pet->customName != "")
+                                    summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
+                                // quality
+                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->quality);
+                                // level
+                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->level);
+                                // some pet data
+                                summon->SetHealth(pet->health);
+                                summon->SetMaxHealth(pet->maxHealth);
+                                // more....
+                            }
+                        }
                     }
 
                     summon->AI()->EnterEvadeMode();
@@ -4007,7 +4023,7 @@ void Spell::EffectAddFarsight(SpellEffIndex effIndex)
         return;
     }
 
-    SetSpellDynamicObject(dynObj);
+    SetSpellDynamicObject(dynObj->GetGUID());
     dynObj->SetDuration(duration);
     dynObj->SetCasterViewpoint();
 }
@@ -8343,7 +8359,7 @@ void Spell::EffectSummonRaidMarker(SpellEffIndex effIndex)
         return;
     }
 
-    SetSpellDynamicObject(dynObj);
+    SetSpellDynamicObject(dynObj->GetGUID());
     dynObj->SetDuration(duration);
     group->SetRaidMarker(slot, pCaster, dynObj->GetObjectGuid());
 }
