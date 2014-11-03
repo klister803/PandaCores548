@@ -32,6 +32,8 @@ enum AreaTriggerActionMoment
     AT_ACTION_MOMENT_DESPAWN    = 0x08,                // when areatrigger despawn
     AT_ACTION_MOMENT_SPAWN      = 0x10,                // when areatrigger spawn
     AT_ACTION_MOMENT_REMOVE     = 0x20,                // when areatrigger remove
+    //range should be = distance.
+    AT_ACTION_MOMENT_ON_THE_WAY = 0x40,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
 };
 
 enum AreaTriggerActionType
@@ -153,7 +155,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void PutObjectUpdateMovement(ByteBuffer* data) const;
 
     private:
-        bool _HasActionsWithCharges();
+        bool _HasActionsWithCharges(AreaTriggerActionMoment action = AT_ACTION_MOMENT_ENTER);
         void FillCustiomData();
 
     protected:

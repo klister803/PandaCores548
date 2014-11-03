@@ -215,8 +215,9 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                 affectedPlayers.erase(itr);
                 continue;
             }
-
-            if (!unit->IsWithinDistInMap(searcher, GetRadius()))
+            
+            if (!unit->IsWithinDistInMap(searcher, GetRadius()) ||
+                (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY())))
             {
                 affectedPlayers.erase(itr);
                 AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
@@ -232,6 +233,9 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
         {
             if (!IsUnitAffected((*itr)->GetGUID()))
             {
+                //No 
+                if (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !(*itr)->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY()))
+                    continue;
                 affectedPlayers.push_back((*itr)->GetGUID());
                 AffectUnit(*itr, actionM);
             }
@@ -302,12 +306,10 @@ void AreaTrigger::Update(uint32 p_time)
     }
 
     UpdateActionCharges(p_time);
+    UpdateMovement(p_time);
 
     if (!_activationDelay)
-    {
-        UpdateMovement(p_time);
         UpdateAffectedList(p_time, AT_ACTION_MOMENT_ENTER);
-    }
 
     //??
     //WorldObject::Update(p_time);
@@ -369,18 +371,18 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
     }
 }
 
-bool AreaTrigger::_HasActionsWithCharges()
+bool AreaTrigger::_HasActionsWithCharges(AreaTriggerActionMoment action /*= AT_ACTION_MOMENT_ENTER*/)
 {
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        if (info.action->moment & AT_ACTION_MOMENT_ENTER)
+        if (info.action->moment & action)
         {
             if (info.charges || !info.action->maxCharges)
-                return false;
+                return true;
         }
     }
-    return true;
+    return false;
 }
 
 void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
@@ -480,7 +482,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     {
         --action.charges;
         //unload at next update.
-        if (!action.charges && _HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
+        if (!action.charges && !_HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
         {
             _on_despawn = true;
             SetDuration(0);
