@@ -45,14 +45,13 @@ enum eSpells
     SPELL_BLIND_HATRED_V            = 145226,
     SPELL_BLIND_HATRED_D            = 145227,
 
-    SPELL_CLEANSE                   = 147657,
-
     //Titanic Corruption
     SPELL_BURST_OF_CORRUPTION       = 144654,
     SPELL_CORRUPTION_TC             = 144639,
     SPELL_HURL_CORRUPTION           = 144649,
     SPELL_PIERCING_CORRUPTION       = 144657,
     SPELL_TITANIC_SMASH             = 144628,
+    SPELL_TC_CLEANSE                = 147657,
 
     //Greater Corruption
     SPELL_BOTTOMLESS_PIT            = 146703,
@@ -87,15 +86,15 @@ enum eSpells
     SPELL_LOOK_WITHIN_HEALER        = 144724,
     SPELL_LOOK_WITHIN_TANK          = 144727, //Look Within
 
-    //Unleash Corruption
+    //DD
     SPELL_SPAWN_VICTORY_ORB_DD_BIG  = 144491, //Spawn Victory Orb summon NPC_MANIFESTATION_OF_CORRUPTION in world
     SPELL_SPAWN_VICTORY_ORB_DD_SML  = 145006/*144490*/, //Spawn Victory Orb summon NPC_ESSENCE_OF_CORRUPTION in world
 
     SPELL_SUM_ESSENCE_OF_CORRUPT_C  = 144733, //Summon NPC_ESSENCE_OF_CORRUPTION_C by Player
     SPELL_SUM_MANIFESTATION_OF_C    = 144739, //Summon NPC_MANIFESTATION_OF_CORRUPTION_C by Player
 
-    //
-    SPELL_UNLEASHED                 = 146173, // from DD
+    //Tank
+    SPELL_TITANIC_CORRUPTION        = 144848, //Titanic Corruption
 };
 
 enum sEvents
@@ -956,6 +955,11 @@ public:
         InstanceScript* pInstance;
         EventMap events;
 
+        enum sp
+        {
+            SPELL_UNLEASHED                              = 146173,
+        };
+
         void Reset()
         {
             events.Reset();
@@ -972,6 +976,7 @@ public:
 
         void IsSummonedBy(Unit* /*summoner*/)
         {
+            me->CastSpell(me, SPELL_UNLEASHED, false);
             me->SetInCombatWithZone();
         }
 
@@ -1092,15 +1097,24 @@ public:
     {
         npc_titanic_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            instance = (InstanceScript*)pCreature->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
         EventMap events;
 
         void Reset()
         {
             events.Reset();
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            if (!instance)
+                return;
+
+            events.RescheduleEvent(EVENT_1, 60000);
+            me->SetInCombatWithZone();
         }
 
         void EnterCombat(Unit* who)
@@ -1113,8 +1127,7 @@ public:
         
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
-                return;
+            UpdateVictim();
 
             events.Update(diff);
 
@@ -1122,31 +1135,34 @@ public:
             { 
                 switch (eventId)
                 {
-                case EVENT_PIERCING_CORRUPTION:
-                    if (me->getVictim())
-                        DoCast(me->getVictim(), SPELL_PIERCING_CORRUPTION);
-                    events.ScheduleEvent(EVENT_PIERCING_CORRUPTION, 14000);
-                    break;
-                case EVENT_TITANIC_SMASH:
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
-                    DoCastAOE(SPELL_TITANIC_SMASH);
-                    events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
-                    events.ScheduleEvent(EVENT_TITANIC_SMASH, 16000);
-                    break;
-                case EVENT_HURL_CORRUPTION:
-                    if (me->getVictim())
-                        DoCast(me->getVictim(), SPELL_HURL_CORRUPTION);
-                    events.ScheduleEvent(EVENT_HURL_CORRUPTION, 20000);
-                    break;
-                case EVENT_BURST_OF_CORRUPTION:
-                    DoCastAOE(SPELL_BURST_OF_CORRUPTION);
-                    events.ScheduleEvent(EVENT_BURST_OF_CORRUPTION, 35000);
-                    break;
-                case EVENT_RE_ATTACK:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    DoZoneInCombat(me, 75.0f);
-                    break;
+                    case EVENT_1:
+                        me->DespawnOrUnsummon();
+                        break;
+                    case EVENT_PIERCING_CORRUPTION:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_PIERCING_CORRUPTION);
+                        events.ScheduleEvent(EVENT_PIERCING_CORRUPTION, 14000);
+                        break;
+                    case EVENT_TITANIC_SMASH:
+                        me->AttackStop();
+                        me->SetReactState(REACT_PASSIVE);
+                        DoCastAOE(SPELL_TITANIC_SMASH);
+                        events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
+                        events.ScheduleEvent(EVENT_TITANIC_SMASH, 16000);
+                        break;
+                    case EVENT_HURL_CORRUPTION:
+                        if (me->getVictim())
+                            DoCast(me->getVictim(), SPELL_HURL_CORRUPTION);
+                        events.ScheduleEvent(EVENT_HURL_CORRUPTION, 20000);
+                        break;
+                    case EVENT_BURST_OF_CORRUPTION:
+                        DoCastAOE(SPELL_BURST_OF_CORRUPTION);
+                        events.ScheduleEvent(EVENT_BURST_OF_CORRUPTION, 35000);
+                        break;
+                    case EVENT_RE_ATTACK:
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        DoZoneInCombat(me, 75.0f);
+                        break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -1468,6 +1484,7 @@ class spell_norushen_challenge : public SpellScriptLoader
                     case SPELL_TEST_OF_RELIANCE:    //heal
                         break;
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
+                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_TITANIC_CORRUPTION);
                         break;
                 }
             }
@@ -1480,7 +1497,17 @@ class spell_norushen_challenge : public SpellScriptLoader
 
                 //remove phase
                 target->RemoveAurasDueToSpell(getPhaseSpell());
-                target->CastSpell(target, SPELL_PURIFIED_CHALLENGE, true);                
+                target->CastSpell(target, SPELL_PURIFIED_CHALLENGE, true);
+
+                switch(GetId())
+                {
+                    case SPELL_TEST_OF_CONFIDENCE:  //tank
+                        target->CastSpell(target, SPELL_TC_CLEANSE, true);
+                        CheckCorruptionForCleanse(target->ToPlayer());
+                        break;
+                    default:
+                        break;                    
+                }
             }
 
             void Register()
