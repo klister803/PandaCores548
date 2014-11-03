@@ -89,7 +89,7 @@ enum eSpells
 
     //Unleash Corruption
     SPELL_SPAWN_VICTORY_ORB_DD_BIG  = 144491, //Spawn Victory Orb summon NPC_MANIFESTATION_OF_CORRUPTION in world
-    SPELL_SPAWN_VICTORY_ORB_DD_SML  = 144490, //Spawn Victory Orb summon NPC_ESSENCE_OF_CORRUPTION in world
+    SPELL_SPAWN_VICTORY_ORB_DD_SML  = 145006/*144490*/, //Spawn Victory Orb summon NPC_ESSENCE_OF_CORRUPTION in world
 
     SPELL_SUM_ESSENCE_OF_CORRUPT_C  = 144733, //Summon NPC_ESSENCE_OF_CORRUPTION_C by Player
     SPELL_SUM_MANIFESTATION_OF_C    = 144739, //Summon NPC_MANIFESTATION_OF_CORRUPTION_C by Player
@@ -157,7 +157,8 @@ Position const BlindHatred[4] =
     { 728.585f, 1006.259f,356.3f}, //B
     { 748.132f, 911.165f, 356.3f}, //C
     { 828.936f, 929.101f, 356.3f}, //D
-};
+};                
+
 typedef std::list<uint8> BlindOrderList;
 
 void GenerateOrder(BlindOrderList &m)
@@ -479,8 +480,12 @@ class boss_amalgam_of_corruption : public CreatureScript
                             DoCast(me, SPELL_SPAWN_VICTORY_ORB_DD_BIG);
                             break;
                         case NPC_ESSENCE_OF_CORRUPTION_C:
-                            DoCast(me, SPELL_SPAWN_VICTORY_ORB_DD_SML);
+                        {
+                            float rand_x, rand_y, rand_z;
+                            me->GetRandomPoint(*me, 50.0f, rand_x, rand_y, rand_z);
+                            me->CastSpell(rand_x, rand_y, rand_z, SPELL_SPAWN_VICTORY_ORB_DD_SML);
                             break;
+                        }
                     }
                 }
             }
@@ -764,7 +769,6 @@ struct npc_norushenChallengeAI : public ScriptedAI
 
     void Reset()
     {
-        events.Reset();
     }
 
     void IsSummonedBy(Unit* summoner)
@@ -831,6 +835,7 @@ public:
         npc_essence_of_corruptionAI(Creature* pCreature) : npc_norushenChallengeAI(pCreature)
         {
             cleanseSpellID = SPELL_CLEANSE;
+            SetCombatMovement(false);
         }
        
         enum spell
@@ -936,14 +941,14 @@ public:
 };
 
 //72264
-class npc_norushen_manifestation_of_corruption_resurected : public CreatureScript
+class npc_norushen_manifestation_of_corruption_released : public CreatureScript
 {
 public:
-    npc_norushen_manifestation_of_corruption_resurected() : CreatureScript("npc_norushen_manifestation_of_corruption_resurected") { }
+    npc_norushen_manifestation_of_corruption_released() : CreatureScript("npc_norushen_manifestation_of_corruption_released") { }
 
-    struct npc_norushen_manifestation_of_corruption_resurectedAI : public ScriptedAI
+    struct npc_norushen_manifestation_of_corruption_releasedAI : public ScriptedAI
     {
-        npc_norushen_manifestation_of_corruption_resurectedAI(Creature* pCreature) : ScriptedAI(pCreature)
+        npc_norushen_manifestation_of_corruption_releasedAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
         }
@@ -1008,7 +1013,72 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_norushen_manifestation_of_corruption_resurectedAI(pCreature);
+        return new npc_norushen_manifestation_of_corruption_releasedAI(pCreature);
+    }
+};
+
+class npc_essence_of_corruption_released : public CreatureScript
+{
+public:
+    npc_essence_of_corruption_released() : CreatureScript("npc_essence_of_corruption_released") { }
+
+    struct npc_essence_of_corruption_releasedAI : public ScriptedAI
+    {
+        npc_essence_of_corruption_releasedAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            instance = (InstanceScript*)pCreature->GetInstanceScript();
+            SetCombatMovement(false);
+        }
+       
+        enum spell
+        {
+            SPELL_UNLEASHED                     = 146174,
+            SPELL_STEALTH_DETECTION             = 8279,     //Stealth Detection
+            SPELL_EXPEL_CORRUPTION              = 145064,   //145132 on friend | 145134 on enemy
+        };
+
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            //events.Reset();
+        }
+
+        void IsSummonedBy(Unit* /*summoner*/)
+        {
+            me->CastSpell(me, SPELL_UNLEASHED, false);          //18:38:25.000 
+            me->CastSpell(me, SPELL_STEALTH_DETECTION, false);
+
+            if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+                me->SetFacingToObject(amalgam);
+
+            me->CastSpell(me, SPELL_EXPEL_CORRUPTION, true);
+            events.RescheduleEvent(EVENT_1, 6*IN_MILLISECONDS);                  //18:38:25.000
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+                            me->SetFacingToObject(amalgam);
+                         me->CastSpell(me, SPELL_EXPEL_CORRUPTION, false);
+                        events.RescheduleEvent(EVENT_1, 6*IN_MILLISECONDS);
+                        break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_essence_of_corruption_releasedAI(pCreature);
     }
 };
 
@@ -1436,7 +1506,8 @@ void AddSC_boss_norushen()
     new npc_norushen_residual_corruption();
     new npc_essence_of_corruption_challenge();
     new npc_norushen_manifestation_of_corruption_challenge();
-    new npc_norushen_manifestation_of_corruption_resurected();
+    new npc_norushen_manifestation_of_corruption_released();
+    new npc_essence_of_corruption_released();
     new npc_titanic_corruption();
     new npc_greater_corruption();
     new spell_norushen_blind_hatred();

@@ -95,7 +95,7 @@ enum eCreatures
     NPC_NORUSHEN                        = 71967,
     NPC_AMALGAM_OF_CORRUPTION           = 72276,
     NPC_ESSENCE_OF_CORRUPTION_C         = 71976,
-    NPC_ESSENCE_OF_CORRUPTION           = 72263,
+    NPC_ESSENCE_OF_CORRUPTION           = 72263, //released
     NPC_MANIFESTATION_OF_CORRUPTION_C   = 71977,
     NPC_MANIFESTATION_OF_CORRUPTION     = 72264, //FRAYED & release
     NPC_TITANIC_CORRUPTION              = 72051,

@@ -62,7 +62,7 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_challenge' WHERE `creature_template`.`entry` = 71977;
 
 --
-UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_resurected' WHERE `creature_template`.`entry` = 72264;
+UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_released' WHERE `creature_template`.`entry` = 72264;
 
 --
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
@@ -106,3 +106,21 @@ INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`,
 (71977, 2, 1.15, 2.8),  -- not shure
 (71977, 3, 1.15, 3.2),
 (71977, 4, 1.15, 3.2);  -- not shure
+
+UPDATE `creature_template` SET `unit_flags` = '34816', `unit_flags2` = '2048', `rangeattacktime` = '2000', `ScriptName` = 'npc_essence_of_corruption_released' WHERE `creature_template`.`entry` = 72263;
+
+-- 145064
+REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, isMoving, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
+('1106', '0', '0', '1', '0', '0', '0', '32660', '5021', 'OO:NN Expel Corruption released 145064');
+
+REPLACE INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('1106', '0', '1', '0', '1', '145132', '0', '0', 'OO:NN Expel Corruption released 145064 onHit friend'), 
+('1106', '1', '1', '0', '2', '145134', '1', '0', 'OO:NN Expel Corruption released 145064 onHit enemy');
+
+-- 144479
+REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, isMoving, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
+('1080', '100', '0', '1', '0', '0', '0', '32660', '4985', 'OO:NN Expel Corruption 144479');
+
+REPLACE INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('1080', '0', '65', '0', '2', '144480', '0', '0', 'OO:NN Expel Corruption 144479 on enemy between source and dest'),
+('1080', '1', 0x2|0x8, '1', '2', '144480', '0', '0', 'OO:NN Expel Corruption 144479 onHit enemy');
