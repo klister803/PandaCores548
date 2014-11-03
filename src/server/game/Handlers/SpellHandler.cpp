@@ -1253,7 +1253,12 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
         return;
 
     if(Creature* summon = GetPlayer()->GetMap()->GetCreature(_player->m_SummonSlot[slotId]))
+    {
+        if(uint32 spellId = summon->GetUInt32Value(UNIT_CREATED_BY_SPELL))
+            if(AreaTrigger* arTrigger = _player->GetAreaObject(spellId))
+                arTrigger->SetDuration(0);
         summon->DespawnOrUnsummon();
+    }
 }
 
 void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)

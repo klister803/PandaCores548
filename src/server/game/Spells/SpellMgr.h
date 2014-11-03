@@ -143,6 +143,7 @@ enum SpellAuraDummyType
     SPELL_DUMMY_ADD_PERC                        = 1,            // add percent to amount
     SPELL_DUMMY_ADD_VALUE                       = 2,            // add value to amount
     SPELL_DUMMY_ADD_ATTRIBUTE                   = 3,            // add attribute to spell value
+    SPELL_DUMMY_MOD_EFFECT_MASK                 = 4,            // Modify effect mask for add aura
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

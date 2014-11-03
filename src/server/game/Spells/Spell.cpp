@@ -476,7 +476,12 @@ m_absorb(0),m_resist(0),m_blocked(0)
     memset(m_effectExecuteData, 0, MAX_SPELL_EFFECTS * sizeof(EffectExecuteData*));
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        damageCalculate[i] = false;
+        saveDamageCalculate[i] = 0;
         m_destTargets[i] = SpellDestination(*m_caster);
+    }
+
 }
 
 Spell::~Spell()
@@ -3028,10 +3033,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         // Haste modifies duration of channeled spells
                         if (m_spellInfo->IsChanneled())
                         {
-                            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
+                            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                                 m_originalCaster->ModSpellCastTime(aurSpellInfo, duration, this);
                         }
-                        else if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
+                        else if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                         {
                             int32 origDuration = duration;
                             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3706,7 +3711,7 @@ void Spell::handle_immediate()
             if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             // Apply haste mods
-            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_DURATION)
+            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                 m_caster->ModSpellCastTime(m_spellInfo, duration, this);
 
             m_spellState = SPELL_STATE_CASTING;
@@ -6182,12 +6187,19 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     destTarget = &m_destTargets[i]._position;
 
     uint16 eff = m_spellInfo->GetEffect(i, m_diffMode).Effect;
-   
-    #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u mode %u", m_spellInfo->Id, eff, mode);
-    #endif
 
-    damage = CalculateDamage(i, unitTarget);
+    if(!damageCalculate[i])
+    {
+        damage = CalculateDamage(i, unitTarget);
+        saveDamageCalculate[i] = damage;
+        damageCalculate[i] = true;
+    }
+    else
+        damage = saveDamageCalculate[i];
+
+    #ifdef WIN32
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u, damage %i, mode %i", m_spellInfo->Id, eff, damage, mode);
+    #endif
 
     bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
 

@@ -29,6 +29,7 @@ void AddSC_multi_vendor();
 void AddSC_traffic_commandscript();
 void AddSC_custom_reward();
 void AddSC_command_donate();
+void AddSC_command_arena();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -840,6 +841,7 @@ void AddExampleScripts()
 {
     AddSC_custom_reward();
     AddSC_command_donate();
+    AddSC_command_arena();
 }
 
 void AddSpellScripts()

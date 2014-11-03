@@ -631,6 +631,8 @@ class Spell
         GameObject* gameObjTarget;
         WorldLocation* destTarget;
         int32 damage;
+        bool damageCalculate[MAX_SPELL_EFFECTS];
+        int32 saveDamageCalculate[MAX_SPELL_EFFECTS];
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
         Aura* m_spellAura;

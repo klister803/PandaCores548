@@ -385,34 +385,21 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
 
-            void HandleAfterHit()
+            void HandleEffectHit(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        uint8 chargeCount = 0;
-                        int32 bp = 0;
-
-                        if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                        /*if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                         {
                             chargeCount = arcaneCharge->GetStackAmount();
                             _player->RemoveAura(arcaneCharge);
-                        }
-
-                        if (chargeCount)
+                        }*/
+                        if(_player->GetSelectedUnit() != target)
                         {
-                            bp = GetHitDamage() / 2;
-
-                            std::list<Unit*> targetList;
-
-                            target->GetAttackableUnitListInRange(targetList, 10.0f);
-                            targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
-
-                            Trinity::Containers::RandomResizeList(targetList, chargeCount);
-
-                            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                                target->CastCustomSpell(*itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
+                            int32 _damage = int32((GetHitDamage() * GetSpellInfo()->Effects[EFFECT_1].BasePoints) / 100);
+                            SetHitDamage(_damage);
                         }
                     }
                 }
@@ -420,7 +407,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleAfterHit);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_barrage_SpellScript::HandleEffectHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
@@ -1655,7 +1642,21 @@ class spell_mage_greater_invisibility : public SpellScriptLoader
             void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
+                {
+                    int32 count = 0;
+                    Unit::AuraEffectList const mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for (Unit::AuraEffectList::const_iterator iter = mPeriodic.begin(); iter != mPeriodic.end(); ++iter)
+                    {
+                        if (!(*iter)) // prevent crash
+                            continue;
+                        Aura* aura = (*iter)->GetBase();
+                        aura->Remove();
+                        count++;
+                        if(count > 1)
+                            return;
+                    }
                     caster->CastSpell(GetTarget(), 113862, true, NULL, aurEff);
+                }
             }
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)

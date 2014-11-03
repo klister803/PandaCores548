@@ -95,6 +95,8 @@ static bool isTriggerAura[TOTAL_AURAS];
 static bool isNonTriggerAura[TOTAL_AURAS];
 // Triggered always, even from triggered spells
 static bool isAlwaysTriggeredAura[TOTAL_AURAS];
+// Has cap to damage
+static bool isDamageCapAura[TOTAL_AURAS];
 // Prepare lists
 static bool procPrepared = InitTriggerAuraData();
 
@@ -16645,10 +16647,12 @@ struct ProcTriggeredData
     {
         effMask = 0;
         spellProcEvent = NULL;
+        isProcOneEff = false;
     }
     SpellProcEventEntry const* spellProcEvent;
     Aura* aura;
     uint32 effMask;
+    bool isProcOneEff;
 };
 
 typedef std::list< ProcTriggeredData > ProcTriggeredList;
@@ -16664,6 +16668,7 @@ bool InitTriggerAuraData()
         isTriggerAura[i] = false;
         isNonTriggerAura[i] = false;
         isAlwaysTriggeredAura[i] = false;
+        isDamageCapAura[i] = false;
     }
     isTriggerAura[SPELL_AURA_PROC_ON_POWER_AMOUNT] = true;
     isTriggerAura[SPELL_AURA_DUMMY] = true;
@@ -16729,6 +16734,13 @@ bool InitTriggerAuraData()
     isAlwaysTriggeredAura[SPELL_AURA_CAST_WHILE_WALKING] = true;
     isAlwaysTriggeredAura[SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING] = true;
     isAlwaysTriggeredAura[SPELL_AURA_WATER_WALK] = true;
+
+    isDamageCapAura[SPELL_AURA_MOD_CONFUSE] = true;
+    isDamageCapAura[SPELL_AURA_MOD_FEAR] = true;
+    isDamageCapAura[SPELL_AURA_MOD_FEAR_2] = true;
+    isDamageCapAura[SPELL_AURA_MOD_ROOT] = true;
+    isDamageCapAura[SPELL_AURA_MOD_STUN] = true;
+    isDamageCapAura[SPELL_AURA_TRANSFORM] = true;
 
     return true;
 }
@@ -16933,6 +16945,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 // Skip this auras
                 if (isNonTriggerAura[aurEff->GetAuraType()])
                     continue;
+                if (isDamageCapAura[aurEff->GetAuraType()])
+                    triggerData.isProcOneEff = true;
                 // If not trigger by default and spellProcEvent == NULL - skip
                 if (!isTriggerAura[aurEff->GetAuraType()] && (triggerData.spellProcEvent == NULL || !(triggerData.spellProcEvent->effectMask & (1<<i))))
                     continue;
@@ -17020,6 +17034,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 AuraEffect* triggeredByAura = i->aura->GetEffect(effIndex);
                 ASSERT(triggeredByAura);
 
+                //if aura has cap to damage, do not proc other auras
+                if(i->isProcOneEff && !isDamageCapAura[triggeredByAura->GetAuraType()])
+                    continue;
+
                 bool prevented = i->aura->CallScriptEffectProcHandlers(triggeredByAura, aurApp, eventInfo);
                 if (prevented)
                 {
@@ -17066,12 +17084,21 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MANA_SHIELD:
                     case SPELL_AURA_DUMMY:
                     case SPELL_AURA_PERIODIC_DUMMY:
-                    case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     {
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_DUMMY: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
                         if(SpellProcTriggered(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         else if (HandleDummyAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
+                            takeCharges = true;
+                        break;
+                    }
+                    case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
+                    {
+                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                            break;
+
+                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
+                        if(SpellProcTriggered(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
                     }
@@ -17267,6 +17294,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_CAST_WHILE_WALKING:
                     case SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING:
                     {
+                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                            break;
                         if (HandleCastWhileWalkingAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
@@ -17274,10 +17303,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     {
-                        if(triggeredByAura->GetMiscValue() == SPELLMOD_CASTING_TIME && procSpell)
-                            if(SpellCastTimesEntry const* CastTimeEntry = procSpell->CastTimeEntry)
-                                if(!CastTimeEntry->CastTime && !procSpell->IsChanneled())
-                                    break;
+                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                            break;
+
                         if (HandleSpellModAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
                         break;
@@ -17301,7 +17329,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+        if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
             && !(i->aura->GetId() == 79683))
 
