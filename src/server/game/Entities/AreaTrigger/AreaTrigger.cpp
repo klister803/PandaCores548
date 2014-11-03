@@ -459,7 +459,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         }
         case AT_ACTION_TYPE_REMOVE_AURA:
         {
-            unit->RemoveAurasDueToSpell(action.action->spellId);
+            unit->RemoveAura(action.action->spellId);       //only one aura should be removed.
             break;
         }
         case AT_ACTION_TYPE_ADD_STACK:
