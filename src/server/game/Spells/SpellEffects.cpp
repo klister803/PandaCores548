@@ -280,6 +280,11 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectCreateItem3,                              //206 SPELL_EFFECT_CREATE_ITEM_3
     &Spell::EffectNULL,                                     //207 SPELL_EFFECT_207
     &Spell::EffectNULL,                                     //208 SPELL_EFFECT_REPUTATION_SET
+    &Spell::EffectNULL,                                     //209 SPELL_EFFECT_209
+    &Spell::EffectNULL,                                     //210 SPELL_EFFECT_210
+    &Spell::EffectNULL,                                     //211 SPELL_EFFECT_211
+    &Spell::EffectNULL,                                     //212 SPELL_EFFECT_212
+    &Spell::EffectJumpDest,                                 //213 SPELL_EFFECT_JUMP_DEST2
 };
 
 void Spell::EffectNULL(SpellEffIndex /*effIndex*/)

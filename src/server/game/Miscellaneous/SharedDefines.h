@@ -1197,7 +1197,7 @@ enum SpellEffects
     SPELL_EFFECT_210                                = 210,
     SPELL_EFFECT_211                                = 211,
     SPELL_EFFECT_212                                = 212,
-    SPELL_EFFECT_213                                = 213,
+    SPELL_EFFECT_JUMP_DEST2                         = 213,
     TOTAL_SPELL_EFFECTS                             = 214
 };
 
