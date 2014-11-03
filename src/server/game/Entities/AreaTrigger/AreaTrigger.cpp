@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false)
+    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -62,6 +62,14 @@ void AreaTrigger::RemoveFromWorld()
 
 bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/, uint64 targetGuid /*=0*/)
 {
+    m_spellInfo = info;
+
+    if (!info)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (entry %u) caster %s no spellInfo", triggerEntry, caster->GetString().c_str());
+        return false;
+    }
+
     // Caster not in world, might be spell triggered from aura removal
     if (!caster->IsInWorld())
         return false;
@@ -92,7 +100,8 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
 
-    SetEntry(triggerEntry);
+    _realEntry = triggerEntry;
+    SetEntry(_realEntry);
     uint32 duration = info->GetDuration();
 
     Player* modOwner = caster->GetSpellModOwner();
@@ -122,6 +131,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
     SetTargetGuid(targetGuid);
 
+    // culculate destination point
+    if (isMoving())
+        pos.SimplePosXYRelocationByAngle(_destination, GetSpellInfo()->GetMaxRange(), 0.0f);
+
     FillCustiomData();
 
     setActive(true);
@@ -130,7 +143,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), info->Id, _radius);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f", caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), _destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ());
     #endif
 
     if (atInfo.maxCount)
@@ -156,6 +169,9 @@ void AreaTrigger::FillCustiomData()
     //custom visual case.
     if (GetCustomVisualId())
         SetUInt32Value(AREATRIGGER_SPELLVISUALID, GetCustomVisualId());
+
+    if (GetCustomEntry())
+        SetEntry(GetCustomEntry());
 
     switch(GetSpellId())
     {
@@ -497,16 +513,6 @@ float AreaTrigger::GetVisualScale(bool max /*=false*/) const
     return atInfo.radius;
 }
 
-float AreaTrigger::GetRadius() const
-{
-    return _radius;
-}
-
-float AreaTrigger::GetCustomVisualId() const
-{
-    return atInfo.visualId;
-}
-
 Unit* AreaTrigger::GetCaster() const
 {
     return ObjectAccessor::GetUnit(*this, GetCasterGUID());
@@ -536,4 +542,32 @@ void AreaTrigger::UnbindFromCaster()
     ASSERT(_caster);
     _caster->_UnregisterAreaObject(this);
     _caster = NULL;
+}
+
+uint32 AreaTrigger::GetObjectMovementParts() const
+{
+    //now only source and destination points send.
+    //ToDo: find interval calculation. On some spels only 2 points send (each 2 times)
+    return 4;
+}
+
+void AreaTrigger::PutObjectUpdateMovement(ByteBuffer* data) const
+{
+    //Source position 2 times.
+    *data << float(GetPositionX());
+    *data << float(GetPositionZ());
+    *data << float(GetPositionY());
+            
+    *data << float(GetPositionX());
+    *data << float(GetPositionZ());
+    *data << float(GetPositionY());
+
+    //Dest position 2 times.
+    *data << float(_destination.GetPositionX());
+    *data << float(_destination.GetPositionZ());
+    *data << float(_destination.GetPositionY());
+
+    *data << float(_destination.GetPositionX());
+    *data << float(_destination.GetPositionZ());
+    *data << float(_destination.GetPositionY());
 }

@@ -406,13 +406,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(0);              //byte20C
         data->WriteBit(0);              //byte210
         data->WriteBit(t->GetVisualScale());//byte23C
-        data->WriteBit(0);              //byte298 areatrigger movement
+        data->WriteBit(t->isMoving());  //byte298 areatrigger movement
         data->WriteBit(0);              //byte20F
         data->WriteBit(0);              //byte20E
         data->WriteBit(0);              //byte218
         data->WriteBit(0);              //byte220
-        //if (byte298)
-        //    dword288 = p.ReadBits(20); // count areatrigger movement point
+        if (t->isMoving())
+            data->WriteBits(t->GetObjectMovementParts(), 20); // count areatrigger movement point dword288
         data->WriteBit(0);              //byte228
         data->WriteBit(0);              //byte20D
         data->WriteBit(0);              //byte230
@@ -518,11 +518,15 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
-        if (t->GetVisualScale())   //byte23C
+        if (t->GetVisualScale())                //byte23C
         {          
             *data << t->GetVisualScale(true);
             *data << t->GetVisualScale();
         }
+
+        if (t->isMoving())                      //byte298
+            t->PutObjectUpdateMovement(data);  //dword288
+
         *data << uint32(1);
     }
 
@@ -1586,6 +1590,27 @@ Position Position::GetRandPointBetween(const Position &B) const
     Position result;
     result.Relocate(X, Y, Z);
     return result;
+}
+
+void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float angle) const
+{
+    angle += GetOrientation();
+
+    pos.m_positionX = m_positionX + dist * std::cos(angle);
+    pos.m_positionY = m_positionY + dist * std::sin(angle);
+    pos.m_positionZ = m_positionZ;
+
+    // Prevent invalid coordinates here, position is unchanged
+    if (!Trinity::IsValidMapCoord(pos.m_positionX, pos.m_positionY))
+    {
+        pos.Relocate(this);
+        sLog->outFatal(LOG_FILTER_GENERAL, "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", pos.m_positionX, pos.m_positionY);
+        return;
+    }
+
+    Trinity::NormalizeMapCoord(pos.m_positionX);
+    Trinity::NormalizeMapCoord(pos.m_positionY);
+    pos.SetOrientation(GetOrientation());
 }
 
 std::string Position::ToString() const

@@ -78,13 +78,15 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 struct AreaTriggerInfo
 {
     AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1){}
+        visualId(1), customEntry(0), speed(0){}
 
+    uint16 speed;
     float radius;
     float radius2;
     uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
     uint32 activationDelay;
     uint32 updateDelay;
+    uint32 customEntry;
     uint8 maxCount;
     AreaTriggerActionList actions;
 };
@@ -126,8 +128,10 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetVisualScale(bool max = false) const;
-        float GetRadius() const;
-        float GetCustomVisualId() const;
+        float GetRadius() const { return _radius; }
+        float GetCustomVisualId() const { return atInfo.visualId; }
+        uint32 GetCustomEntry() const { return atInfo.customEntry; }
+        uint32 GetRealEntry() const { return _realEntry; }
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, AreaTriggerActionMoment actionM);
         void AffectOwner(AreaTriggerActionMoment actionM);
@@ -138,6 +142,13 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
 
         void BindToCaster();
         void UnbindFromCaster();
+
+        SpellInfo const*  GetSpellInfo() { return m_spellInfo; }
+
+        //movement
+        bool isMoving() const {  return atInfo.speed > 0; }
+        uint32 GetObjectMovementParts() const;
+        void PutObjectUpdateMovement(ByteBuffer* data) const;
 
     private:
         bool _HasActionsWithCharges();
@@ -153,8 +164,12 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
+        Position _destination;
+        uint32 _realEntry;
         
         bool _on_unload;
         bool _on_despawn;
+
+        SpellInfo const* m_spellInfo;
 };
 #endif

@@ -521,6 +521,7 @@ struct Position
     float GetDegreesAngel(float x, float y, bool relative = false) const;
 
     Position GetRandPointBetween(const Position &B) const;
+    void SimplePosXYRelocationByAngle(Position &pos, float dist, float angle) const;
 
     bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }
@@ -748,6 +749,7 @@ class WorldObject : public Object, public WorldLocation
             // angle calculated from current orientation
             GetNearPoint(NULL, x, y, z, size, distance2d, GetOrientation() + angle);
         }
+        
         void MovePosition(Position &pos, float dist, float angle);
         void GetNearPosition(Position &pos, float dist, float angle)
         {
