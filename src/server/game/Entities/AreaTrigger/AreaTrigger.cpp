@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL)
+    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -121,7 +121,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             find = true;
         }
 
-    if (!find)
+    if (!find && atInfo.radius)
         _radius = atInfo.radius;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
@@ -133,7 +133,11 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
     // culculate destination point
     if (isMoving())
-        pos.SimplePosXYRelocationByAngle(_destination, GetSpellInfo()->GetMaxRange(), 0.0f);
+    {
+        _startPosition.Relocate(pos);
+        pos.SimplePosXYRelocationByAngle(_destPosition, GetSpellInfo()->GetMaxRange(), 0.0f);
+        _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
+    }
 
     FillCustiomData();
 
@@ -143,7 +147,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f", caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), _destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ());
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f", caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), _destPosition.GetPositionX(), _destPosition.GetPositionY(), _destPosition.GetPositionZ());
     #endif
 
     if (atInfo.maxCount)
@@ -300,7 +304,10 @@ void AreaTrigger::Update(uint32 p_time)
     UpdateActionCharges(p_time);
 
     if (!_activationDelay)
+    {
+        UpdateMovement(p_time);
         UpdateAffectedList(p_time, AT_ACTION_MOMENT_ENTER);
+    }
 
     //??
     //WorldObject::Update(p_time);
@@ -563,11 +570,20 @@ void AreaTrigger::PutObjectUpdateMovement(ByteBuffer* data) const
     *data << float(GetPositionY());
 
     //Dest position 2 times.
-    *data << float(_destination.GetPositionX());
-    *data << float(_destination.GetPositionZ());
-    *data << float(_destination.GetPositionY());
+    *data << float(_destPosition.GetPositionX());
+    *data << float(_destPosition.GetPositionZ());
+    *data << float(_destPosition.GetPositionY());
 
-    *data << float(_destination.GetPositionX());
-    *data << float(_destination.GetPositionZ());
-    *data << float(_destination.GetPositionY());
+    *data << float(_destPosition.GetPositionX());
+    *data << float(_destPosition.GetPositionZ());
+    *data << float(_destPosition.GetPositionY());
+}
+
+void AreaTrigger::UpdateMovement(uint32 diff)
+{
+    if (!isMoving())
+        return;
+
+    _moveTime += diff;
+    _startPosition.SimplePosXYRelocationByAngle(*this, getMoveSpeed() * _moveTime, 0.0f);
 }

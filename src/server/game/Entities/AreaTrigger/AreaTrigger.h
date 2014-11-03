@@ -78,9 +78,9 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 struct AreaTriggerInfo
 {
     AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1), customEntry(0), speed(0){}
+        visualId(1), customEntry(0), isMoving(false){}
 
-    uint16 speed;
+    bool isMoving;
     float radius;
     float radius2;
     uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
@@ -146,7 +146,9 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         SpellInfo const*  GetSpellInfo() { return m_spellInfo; }
 
         //movement
-        bool isMoving() const {  return atInfo.speed > 0; }
+        void UpdateMovement(uint32 diff);
+        bool isMoving() const { return atInfo.isMoving; }
+        float getMoveSpeed() const { return _moveSpeed; }
         uint32 GetObjectMovementParts() const;
         void PutObjectUpdateMovement(ByteBuffer* data) const;
 
@@ -164,9 +166,11 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
-        Position _destination;
+        Position _destPosition;
+        Position _startPosition;
         uint32 _realEntry;
-        
+        float _moveSpeed;
+        uint32 _moveTime;
         bool _on_unload;
         bool _on_despawn;
 
