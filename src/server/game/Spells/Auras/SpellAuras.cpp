@@ -431,7 +431,8 @@ Aura* Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMa
     if (refresh)
         *refresh = false;
     uint32 effMask = Aura::BuildEffectMaskForOwner(spellproto, tryEffMask, owner);
-    effMask = CalculateEffMaskFromDummy(caster, owner, effMask, spellproto);
+    if(caster)
+        effMask = CalculateEffMaskFromDummy(caster, owner, effMask, spellproto);
     if (!effMask)
         return NULL;
 
@@ -462,7 +463,8 @@ Aura* Aura::TryCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjec
     ASSERT(caster || casterGUID);
     ASSERT(tryEffMask <= MAX_EFFECT_MASK);
     uint32 effMask = Aura::BuildEffectMaskForOwner(spellproto, tryEffMask, owner);
-    effMask = CalculateEffMaskFromDummy(caster, owner, effMask, spellproto);
+    if(caster)
+        effMask = CalculateEffMaskFromDummy(caster, owner, effMask, spellproto);
     if (!effMask)
         return NULL;
     return Create(spellproto, effMask, owner, caster, baseAmount, castItem, casterGUID);
