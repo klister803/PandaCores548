@@ -9758,12 +9758,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 return false;
 
             if (Aura* arcaneMissiles = GetAura(79683))
-            {
-                arcaneMissiles->ModCharges(1);
-                arcaneMissiles->RefreshDuration();
-                return false;
-            }
-
+                CastSpell(this, 79808, true);
             break;
         }
         // Lightning Shield (Symbiosis)
@@ -17113,7 +17108,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     }
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     {
-                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                        if ((procSpell && !triggeredByAura->IsAffectingSpell(procSpell)) && (procAura && !triggeredByAura->IsAffectingSpell(procAura)))
                             break;
 
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS: casting spell id %u (triggered by %s dummy aura of spell %u), procSpell %u", spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId(), (procSpell ? procSpell->Id : 0));
@@ -17313,7 +17308,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_CAST_WHILE_WALKING:
                     case SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING:
                     {
-                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                        if ((procSpell && !triggeredByAura->IsAffectingSpell(procSpell)) && (procAura && !triggeredByAura->IsAffectingSpell(procAura)))
                             break;
                         if (HandleCastWhileWalkingAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                             takeCharges = true;
@@ -17322,7 +17317,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     {
-                        if (procSpell && !triggeredByAura->IsAffectingSpell(procSpell))
+                        if ((procSpell && !triggeredByAura->IsAffectingSpell(procSpell)) && (procAura && !triggeredByAura->IsAffectingSpell(procAura)))
                             break;
 
                         if (HandleSpellModAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
@@ -17349,8 +17344,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Remove charge (aura can be removed by triggers)
         if (prepare && useCharges && takeCharges && i->aura->GetId() != 324 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
-            && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004)
-            && !(i->aura->GetId() == 79683))
+            && !(i->aura->GetId() == 16246 && procSpell && procSpell->Id == 8004))
 
         {
             // Hack Fix for Tiger Strikes

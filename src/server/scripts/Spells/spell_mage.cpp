@@ -220,12 +220,6 @@ class spell_mage_arcane_missile : public SpellScriptLoader
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 casterCharge = false;
-                if (!GetCaster())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Aura* arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
-                        arcaneMissiles->DropCharge();
             }
 
             void OnTick(AuraEffect const* aurEff)
@@ -2183,6 +2177,41 @@ class spell_mage_glyph_of_conjure_familiar : public SpellScriptLoader
         }
 };
 
+// Inferno Blast - 118280
+class spell_mage_inferno_blast_impact : public SpellScriptLoader
+{
+    public:
+        spell_mage_inferno_blast_impact() : SpellScriptLoader("spell_mage_inferno_blast_impact") { }
+
+        class spell_mage_inferno_blast_impact_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_inferno_blast_impact_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                uint32 count = 3;
+                if (Unit* caster = GetCaster())
+                    if (Aura* aura = caster->GetAura(89926))
+                    {
+                        if(aura->GetEffect(EFFECT_0))
+                            count += aura->GetEffect(EFFECT_0)->GetAmount();
+                    }
+                if(targets.size() > count)
+                    Trinity::Containers::RandomResizeList(targets, count);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_inferno_blast_impact_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_inferno_blast_impact_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2225,4 +2254,5 @@ void AddSC_mage_spell_scripts()
     new spell_mage_flameglow();
     new spell_mage_glyph_of_icy_veins();
     new spell_mage_glyph_of_conjure_familiar();
+    new spell_mage_inferno_blast_impact();
 }

@@ -3134,7 +3134,7 @@ void Player::RegenerateHealth()
 
     // polymorphed case
     if (IsPolymorphed())
-        addvalue = (float)GetMaxHealth()/3;
+        addvalue = (float)GetMaxHealth()/10;
     // normal regen case (maybe partly in combat case)
     else if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT))
     {
@@ -23253,8 +23253,6 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(mod->spellId);
     if(!spellInfo || spellInfo->ProcFlags != 0)
         return;
-
-
 
     if (spell && mod->ownerAura && mod->charges > 0)
     {
