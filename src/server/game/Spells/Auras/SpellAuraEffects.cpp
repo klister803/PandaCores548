@@ -1248,13 +1248,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 case 116198: // Enfeeblement Aura (Metamorphosis)
                 case 126406: // Trample
                 {
-                    if (target->GetTypeId() == TYPEID_PLAYER)
+                    if (target && target->GetTypeId() == TYPEID_PLAYER)
                         amount /= 5;
                     break;
                 }
                 case 25810:
                 {
-                    if (target->GetTypeId() == TYPEID_PLAYER)
+                    if (target && target->GetTypeId() == TYPEID_PLAYER)
                         amount /= 3;
                     break;
                 }
