@@ -1415,11 +1415,11 @@ void Guardian::UpdateMaxHealth()
         {
             if(pStats->hp)
                 multiplicator = pStats->hp;
-            else
-            {
-                SetMaxHealth(GetCreateHealth());
-                return;
-            }
+        }
+        else
+        {
+            SetMaxHealth(GetCreateHealth());
+            return;
         }
 
         multiplicator *= owner->GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT);
