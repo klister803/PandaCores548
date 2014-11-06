@@ -346,21 +346,23 @@ public:
             {
                 uint32 count = 1;
                 uint32 playerCount = arenaWinner->GetRowCount();
-                uint32 firstWinTypeCount = uint32(playerCount * 0.1f);
+                uint32 firstWinTypeCount = uint32(playerCount * 0.001f);
                 if(firstWinTypeCount < 3)
                     firstWinTypeCount = 3;
-                uint32 secondWinTypeCount = uint32(playerCount * 0.5f);
+                uint32 secondWinTypeCount = uint32(playerCount * 0.005f);
                 if(secondWinTypeCount < 3)
                     secondWinTypeCount = 3;
-                uint32 thirdWinTypeCount  = uint32(playerCount * 3.0f);
+                uint32 thirdWinTypeCount  = uint32(playerCount * 0.03f);
                 if(thirdWinTypeCount < 3)
                     thirdWinTypeCount = 3;
-                uint32 fothWinTypeCount  = uint32(playerCount * 10.0f);
+                uint32 fothWinTypeCount  = uint32(playerCount * 0.1f);
                 if(fothWinTypeCount < 3)
                     fothWinTypeCount = 3;
-                uint32 fifthWinTypeCount  = uint32(playerCount * 35.0f);
+                uint32 fifthWinTypeCount  = uint32(playerCount * 0.35f);
                 if(fifthWinTypeCount < 3)
                     fifthWinTypeCount = 3;
+
+                sLog->outArena("Количество чаров %u первая %u, вторая %u, третья %u, четвертая %u, петая %u", playerCount, firstWinTypeCount, secondWinTypeCount, thirdWinTypeCount, fothWinTypeCount, rating);
 
                 do
                 {
@@ -451,19 +453,19 @@ public:
             {
                 uint32 count = 1;
                 uint32 playerCount = arenaWinner->GetRowCount();
-                uint32 firstWinTypeCount = uint32(playerCount * 0.1f);
+                uint32 firstWinTypeCount = uint32(playerCount * 0.001f);
                 if(firstWinTypeCount < 5)
                     firstWinTypeCount = 5;
-                uint32 secondWinTypeCount = uint32(playerCount * 0.5f);
+                uint32 secondWinTypeCount = uint32(playerCount * 0.005f);
                 if(secondWinTypeCount < 5)
                     secondWinTypeCount = 5;
-                uint32 thirdWinTypeCount  = uint32(playerCount * 3.0f);
+                uint32 thirdWinTypeCount  = uint32(playerCount * 0.03f);
                 if(thirdWinTypeCount < 5)
                     thirdWinTypeCount = 5;
-                uint32 fothWinTypeCount  = uint32(playerCount * 10.0f);
+                uint32 fothWinTypeCount  = uint32(playerCount * 0.1f);
                 if(fothWinTypeCount < 5)
                     fothWinTypeCount = 5;
-                uint32 fifthWinTypeCount  = uint32(playerCount * 35.0f);
+                uint32 fifthWinTypeCount  = uint32(playerCount * 0.35f);
                 if(fifthWinTypeCount < 5)
                     fifthWinTypeCount = 5;
 
@@ -552,7 +554,7 @@ public:
             {
                 uint32 count = 1;
                 uint32 playerCount = arenaWinner->GetRowCount();
-                uint32 firstWinTypeCount = uint32(playerCount * 0.5f);
+                uint32 firstWinTypeCount = uint32(playerCount * 0.005f);
                 if(firstWinTypeCount < 10)
                     firstWinTypeCount = 10;
 
