@@ -29,6 +29,8 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
+#define MAX_PET_BATTLE_SLOT 3
+
 struct PetInfo
 {
     PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName) :
@@ -62,7 +64,6 @@ struct PetBattleSlot
     uint8 slotID;
     uint64 petGUID;
     bool locked;
-    bool empty;
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
@@ -86,6 +87,8 @@ enum BattlePetSpeciesFlags
     SPECIES_FLAG_UNOBTAINABLE    = 0x20,
     SPECIES_FLAG_UNIQUE          = 0x40, // (v2->speciesFlags >> 6) & 1)
     SPECIES_FLAG_CANT_BATTLE     = 0x80,
+    SPECIES_FLAG_UNK3            = 0x200,
+    SPECIES_FLAG_ELITE           = 0x400,
 };
 
 enum BattlePetSpeciesSource
@@ -131,7 +134,7 @@ public:
         return NULL;
     }
 
-    void DeletePetByGUID(uint64 guid)
+    void DeletePetByPetGUID(uint64 guid)
     {
         PetJournal::const_iterator pet = m_PetJournal.find(guid);
         if (pet == m_PetJournal.end())

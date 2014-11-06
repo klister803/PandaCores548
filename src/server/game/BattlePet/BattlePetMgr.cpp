@@ -44,6 +44,9 @@
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 {
     m_PetJournal.clear();
+
+    for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+        m_battleSlots[i] = NULL;
 }
 
 void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
@@ -224,14 +227,14 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
 void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
 {
     ObjectGuid guid;
-    recvData.ReadGuidMask<5, 0, 3, 4, 7, 2, 1>(guid);
+    recvData.ReadGuidMask<6, 5, 0, 3, 4, 7, 2, 1>(guid);
     recvData.ReadGuidBytes<4, 1, 5, 3, 0, 6, 7, 2>(guid);
 
     // for live
-    return;
+    //return;
 
-    //PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
-    //{
+    if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
+    {
         // at first - all operations with check free space
         uint32 itemId = 82800; // Pet Cage
         uint32 count = 1;
@@ -249,7 +252,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         }
 
         // delete from journal
-        //_player->GetBattlePetMgr()->DeletePetByGUID(guid);
+        //_player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
 
         //WorldPacket data(SMSG_BATTLE_PET_DELETED);
         //data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
@@ -264,10 +267,11 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         uint8 breedID = 12;
         uint8 quality = 4;
         uint8 level = 5;
+        uint32 data = 0x02000003;
         Item* item = _player->StoreNewItem(dest, itemId, true, 0);
         item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
         item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, speciesID); // speciesID
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, guid);      // unk strange guid
+        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, data);      // unk strange data
         item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, level);     // level
 
         // push item to client - only TEST
@@ -319,7 +323,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         data1 << uint32(item->GetItemSuffixFactor());            // suffix factor
 
         SendPacket(&data1);
-    //}
+    }
 }
 
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
