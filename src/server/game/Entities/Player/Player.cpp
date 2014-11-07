@@ -22069,6 +22069,14 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     // save journal
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
+        if (pet->second->deleteMeLater)
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
+            stmt->setUInt64(0, pet->first);
+            stmt->setUInt32(1, GetSession()->GetAccountId());
+            continue;
+        }
+
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
         stmt->setUInt64(0, pet->first);
         stmt->setUInt32(1, GetSession()->GetAccountId());
