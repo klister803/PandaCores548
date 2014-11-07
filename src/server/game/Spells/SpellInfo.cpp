@@ -453,7 +453,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     // base amount modification based on spell lvl vs caster lvl
     if (ScalingMultiplier != 0.0f)
     {
-        if (caster && _spellInfo->Id != 113344) // Hack Fix Bloodbath
+        if (caster)
         {
             int32 level = caster->getLevel();
             int32 Reqlvl = 0;
@@ -465,11 +465,24 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
             {
                 Reqlvl = m_castItem->GetTemplate()->RequiredLevel;
 
-                if (Reqlvl != 1)
-                    level = Reqlvl ? Reqlvl: 1;
+                if (Reqlvl > 1)
+                    level = Reqlvl;
             }
 
-            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_spellInfo->ScalingClass != -1 ? (_spellInfo->ScalingClass - 1) * 100 + level - 1 : (MAX_CLASSES - 1) * 100 + level - 1))
+            if(SpellScalingEntry const* _scaling = _spellInfo->GetSpellScaling())
+                if(_scaling->MaxScalingLevel && level > _scaling->MaxScalingLevel)
+                    level = _scaling->MaxScalingLevel;
+
+            uint32 _gtscalingId = 0;
+            if(_spellInfo->ScalingClass > -1)
+                _gtscalingId = (_spellInfo->ScalingClass - 1) * 100 + level - 1;
+            else
+                _gtscalingId = (MAX_CLASSES - (_spellInfo->ScalingClass + 2)) * 100 + level - 1;
+
+            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellEffectInfo::CalcValue Id %u, ScalingClass %i, level %i, basePoints %i, basePointsPerLevel %f, _gtscalingId %i",
+            //_spellInfo->Id, _spellInfo->ScalingClass, level, basePoints, basePointsPerLevel, _gtscalingId);
+
+            if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_gtscalingId))
             {
                 float multiplier = gtScaling->value;
                 if (_spellInfo->CastTimeMax > 0 && _spellInfo->CastTimeMaxLevel > level)

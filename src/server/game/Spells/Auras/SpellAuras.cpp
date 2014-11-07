@@ -617,13 +617,13 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAr
         m_casterLevel = castItem->GetLevel();
 
     if(SpellScalingEntry const* _scaling = m_spellInfo->GetSpellScaling())
+    {
         if(_scaling->ScalesFromItemLevel && castItem)
             m_casterLevel = castItem->GetLevel();
-
-    //For scaling max level
-    if(SpellScalingEntry const* _scaling = m_spellInfo->GetSpellScaling())
+        //For scaling max level
         if(_scaling->MaxScalingLevel && caster && caster->getLevel() > _scaling->MaxScalingLevel)
             m_casterLevel = _scaling->MaxScalingLevel;
+    }
 }
 
 void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount)
