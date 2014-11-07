@@ -156,7 +156,7 @@ public:
         {
             PetInfo * pi = pet->second;
 
-            if (pi && pi->summonSpellID == spell)
+            if (pi && !pi->deleteMeLater && pi->summonSpellID == spell)
                 return pet->first;
         }
 

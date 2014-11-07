@@ -8411,7 +8411,7 @@ void Spell::EffectUncagePet(SpellEffIndex effIndex)
             return;
         // create new pet guid
         uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
-        // learn pet spell, TODO: fix it
+        // learn pet spell, hack, TODO: fix it
         player->learnSpell(bp->spellId, false);
         // add pet
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))

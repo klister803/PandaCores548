@@ -61,8 +61,10 @@ void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked)
 void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 {
     ObjectGuid placeholderPet;
+    uint32 count = 0;
     data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
-    data->WriteBits(m_PetJournal.size(), 19);
+    uint32 bit_pos = data->bitwpos();
+    data->WriteBits(count, 19);
 
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
@@ -137,9 +139,12 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         if (pet->second->flags)
             *data << uint16(pet->second->flags);              // flags
         data->WriteGuidBytes<5>(guid);
+
+        count++;
     }
 
     *data << uint16(0);         // unk
+    data->PutBits<uint8>(bit_pos, count, 19);
 }
 
 void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
