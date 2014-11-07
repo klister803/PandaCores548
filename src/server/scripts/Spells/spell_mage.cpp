@@ -220,6 +220,12 @@ class spell_mage_arcane_missile : public SpellScriptLoader
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 casterCharge = false;
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Aura* arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
+                        arcaneMissiles->DropCharge();
             }
 
             void OnTick(AuraEffect const* aurEff)
@@ -1029,34 +1035,6 @@ class spell_mage_arcane_brilliance : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_arcane_brilliance_SpellScript();
-        }
-};
-
-// Replenish Mana - 5405
-class spell_mage_replenish_mana : public SpellScriptLoader
-{
-    public:
-        spell_mage_replenish_mana() : SpellScriptLoader("spell_mage_replenish_mana") { }
-
-        class spell_mage_replenish_mana_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_replenish_mana_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 10052, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_replenish_mana_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_replenish_mana_SpellScript();
         }
 };
 
@@ -2231,7 +2209,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_combustion();
     new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();
-    new spell_mage_replenish_mana();
     new spell_mage_conjure_refreshment();
     new spell_mage_conjure_refreshment_table();
     new spell_mage_time_warp();

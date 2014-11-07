@@ -3210,8 +3210,16 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     // Polymorph (sheep)
                     if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_MAGE && GetSpellInfo()->SpellIconID == 82 && GetSpellInfo()->SpellVisual[0] == 12978)
                         if (Unit* caster = GetCaster())
+                        {
                             if (caster->HasAura(52648))         // Glyph of the Penguin
                                 model_id = 26452;
+                            else if (caster->HasAura(57924))         // Glyph of a porcupine
+                                model_id = 40119;
+                            else if (caster->HasAura(57927))         // Glyph of a monkey
+                                model_id = 29963;
+                            else if (caster->HasAura(58136))         // Glyph of a polar bear
+                                model_id = 23948;
+                        }
 
                     target->SetDisplayId(model_id);
 

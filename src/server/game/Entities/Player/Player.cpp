@@ -4877,6 +4877,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     }
 
     RemoveAurasDueToSpell(spell_id);
+    RemoveOwnedAura(spell_id);
 
     uint32 talentCosts = sSpellMgr->IsTalent(spell_id) ? 1 : 0;
 
@@ -23218,7 +23219,7 @@ void Player::RestoreAllSpellMods(uint32 ownerAuraId, Aura* aura)
             RestoreSpellMods(m_currentSpells[i], ownerAuraId, aura);
 }
 
-void Player::RemoveSpellMods(Spell* spell)
+void Player::RemoveSpellMods(Spell* spell, bool casting)
 {
     if (!spell)
         return;
@@ -23240,6 +23241,11 @@ void Player::RemoveSpellMods(Spell* spell)
             // check if mod affected this spell
             Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
             if (iterMod == spell->m_appliedMods.end())
+                continue;
+
+            if(casting && (mod->op != SPELLMOD_CASTING_TIME || !(mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT)))
+                continue;
+            if(!casting && mod->op == SPELLMOD_CASTING_TIME && (mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT))
                 continue;
 
             // remove from list
@@ -23686,7 +23692,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
             continue;
 
-        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+        if (spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY || spellInfo->PreventionType == SPELL_PREVENTION_TYPE_NONE)
             continue;
 
         if ((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs * 1.0 / IN_MILLISECONDS)
@@ -23906,6 +23912,10 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             stmt->setUInt32(  ++index, it->GetEntry());
             stmt->setUInt32(  ++index, uicount);
             stmt->setUInt32(  ++index, count);
+            if(pVendor->GetEntry() == 220024)
+                stmt->setUInt32(  ++index, 2);
+            else
+                stmt->setUInt32(  ++index, 0);
             trans->Append(stmt);
             CharacterDatabase.CommitTransaction(trans);
 

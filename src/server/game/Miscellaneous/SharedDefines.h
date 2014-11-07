@@ -1158,7 +1158,7 @@ enum SpellEffects
     SPELL_EFFECT_OBJECT_WITH_PERSONAL_VISIBILITY    = 171, // Summons gamebject (player farm related)
     SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
-    SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,
+    SPELL_EFFECT_APPLY_AURA_ON_PET_OR_SELF          = 174,
     SPELL_EFFECT_175                                = 175, // random target ? only 125570
     SPELL_EFFECT_SANCTUARY_2                        = 176,
     SPELL_EFFECT_DESPAWN_DYNOBJECT                  = 177, // despawn DynamicObject
@@ -1897,13 +1897,13 @@ enum Targets
     TARGET_UNK_128                     = 128, //not use
     TARGET_UNIT_ENEMY_BETWEEN_DEST     = 129,
     TARGET_UNIT_ENEMY_BETWEEN_DEST2    = 130,
-    TARGET_DEST_RANDOM_CASTER_FRONT2   = 131,
+    TARGET_DEST_RANDOM_CASTER_FRONT    = 131,
     TARGET_DEST_TARGET_FRIEND          = 132,
     TARGET_UNK_133                     = 133, //not use
     TARGET_UNIT_BETWEEN_ENEMY          = 134,
     TARGET_UNK_135                     = 135,
     TARGET_UNK_136                     = 136,
-    TARGET_DEST_RANDOM_CASTER_FRONT    = 137,
+    TARGET_DEST_RANDOM_CASTER_GOTOMOVE = 137,
     TARGET_DEST_TARGET_SELECT          = 138,
     TARGET_UNK_139                     = 139,
     TARGET_UNK_140                     = 140,

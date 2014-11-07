@@ -504,7 +504,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
-    uint32 spellId = 0, glyphIndex = 0, castFlags = 0;
+    uint32 spellId = 0, glyphIndex = 0, castFlags = 0, flags = 0, flags2 = 0;
     uint8 castCount = 0;
     // client provided targets
     SpellCastTargets targets;
@@ -547,7 +547,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     bool dword198 = false;
     ObjectGuid moverGuid;
     bool hasSplineElevation = false;
-    uint32 dword188 = 0;
+    uint32 counter = 0;
     bool hasFallData = false;
     bool hasFallDirection = false;
     bool hasPitch = false;
@@ -569,7 +569,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         hasPitch = !recvPacket.ReadBit();
         recvPacket.ReadGuidMask<6>(moverGuid);
         if (hasMoveFlags)
-            recvPacket.ReadBits(30);
+            flags = recvPacket.ReadBits(30);
         hasOrientation = !recvPacket.ReadBit();
         recvPacket.ReadBit();               // byte19C
         hasTransportData = recvPacket.ReadBit();
@@ -590,10 +590,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         hasSplineElevation = !recvPacket.ReadBit();
         recvPacket.ReadGuidMask<2>(moverGuid);
         if (hasMoveFlags2)
-            recvPacket.ReadBits(13);
+            flags2 = recvPacket.ReadBits(13);
         dword198 = !recvPacket.ReadBit();
         recvPacket.ReadGuidMask<5>(moverGuid);
-        dword188 = recvPacket.ReadBits(22);
+        counter = recvPacket.ReadBits(22);
         recvPacket.ReadGuidMask<3>(moverGuid);
     }
 
@@ -674,7 +674,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
         recvPacket.read_skip<float>();          // position Y
         recvPacket.ReadGuidBytes<0, 6>(moverGuid);
-        for (uint32 i = 0; i < dword188; ++i)
+        for (uint32 i = 0; i < counter; ++i)
             recvPacket.read_skip<uint32>();
         recvPacket.read_skip<float>();          // position Z
         recvPacket.ReadGuidBytes<2>(moverGuid);

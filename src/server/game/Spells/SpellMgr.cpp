@@ -4239,20 +4239,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
-                case 110717: // Fear Ward (Symbiosis)
+                case 81292:  // Glyph of Mind Spike
+                case 132158: // Nature's Swiftness
+                case 143333: // Water Strider Water Walking
                 case 48108:  // Hot Streak
                 case 57761:  // Brain Freeze
-                case 132158: // Nature's Swiftness
                 case 34936:  // Backlash
-                //case 50334:  // Berserk (bear)
-                case 23920:  // Spell Reflection
-                case 114028: // Mass Spell Reflection
-                case 113002: // Spell Reflection (Symbiosis)
                 case 124430: // Divine Insight (Shadow)
-                case 81292:  // Glyph of Mind Spike
-                case 131567: // Holy Spark
-                case 125831: // Taste for Blood
-                case 143333: // Water Strider Water Walking
+                case 93400:  // Shooting Stars
                     spellInfo->ProcCharges = 1;
                     break;
                 case 89485:  // Inner Focus

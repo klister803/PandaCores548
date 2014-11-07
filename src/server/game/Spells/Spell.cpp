@@ -753,6 +753,9 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
 
     switch (targetType.GetSelectionCategory())
     {
+        case TARGET_SELECT_CATEGORY_GOTOMOVE:
+            SelectImplicitGotoMoveTargets(effIndex, targetType, effectMask);
+            break;
         case TARGET_SELECT_CATEGORY_BETWEEN:
             SelectImplicitBetweenTargets(effIndex, targetType, effectMask);
             break;
@@ -1572,6 +1575,10 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         case TARGET_DEST_CASTER_BACK_RIGHT:
         case TARGET_DEST_CASTER_BACK_LEFT:
         case TARGET_DEST_CASTER_FRONT_LEFT:
+        case TARGET_DEST_CASTER_FRONT:
+        case TARGET_DEST_CASTER_BACK:
+        case TARGET_DEST_CASTER_RIGHT:
+        case TARGET_DEST_CASTER_LEFT:
         case TARGET_UNK_125:
             m_caster->GetFirstCollisionPosition(pos, dist, angle);
             break;
@@ -1579,6 +1586,35 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             m_caster->GetNearPosition(pos, dist, angle);
             break;
     }
+    m_targets.SetDst(*m_caster);
+    m_targets.ModDst(pos);
+}
+
+void Spell::SelectImplicitGotoMoveTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& /*targetType*/, uint32 /*effMask*/)
+{
+    float dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
+    float angle = 0.0f;
+
+    if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) && m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+        angle = static_cast<float>(M_PI/4);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FORWARD) && m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+        angle = static_cast<float>(-M_PI/4);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD) && m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+        angle = static_cast<float>(3*M_PI/4);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD) && m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+        angle = static_cast<float>(-3*M_PI/4);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD))
+        angle = static_cast<float>(M_PI);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+        angle = static_cast<float>(M_PI/2);
+    else if(m_caster->HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+        angle = static_cast<float>(-M_PI/2);
+    float objSize = m_caster->GetObjectSize();
+    if (dist < objSize)
+        dist = objSize;
+
+    Position pos;
+    m_caster->GetFirstCollisionPosition(pos, dist, angle);
     m_targets.SetDst(*m_caster);
     m_targets.ModDst(pos);
 }
@@ -3649,6 +3685,10 @@ void Spell::cast(bool skipCheck)
     SendSpellCreateVisual();
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
+
+    //test fix for take some charges from aura mods
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->RemoveSpellMods(this, true);
 
     uint32 CCDelay = GetSpellDelay(m_spellInfo);
 
@@ -6205,6 +6245,8 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     #endif
 
     bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
+    if(!preventDefault)
+        preventDefault = CheckEffFromDummy(unitTarget, i);
 
     if (!preventDefault && eff < TOTAL_SPELL_EFFECTS)
     {
@@ -6212,6 +6254,51 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
         (this->*SpellEffects[eff])((SpellEffIndex)i);
         m_currentExecutedEffect = SPELL_EFFECT_NONE;
     }
+}
+
+bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
+{
+    bool prevent = false;
+    if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(m_spellInfo->Id))
+    {
+        for (std::vector<SpellAuraDummy>::const_iterator itr = spellAuraDummy->begin(); itr != spellAuraDummy->end(); ++itr)
+        {
+            Unit* _caster = m_caster;
+            Unit* _targetAura = m_caster;
+            bool check = false;
+
+            switch (itr->option)
+            {
+                case SPELL_DUMMY_MOD_EFFECT_MASK: //4
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && !_caster->HasAura(itr->spellDummyId))
+                    {
+                        if(itr->effectmask & (1 << eff))
+                            prevent = true;
+                        check = true;
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(itr->effectmask & (1 << eff))
+                            prevent = true;
+                        check = true;
+                    }
+                    break;
+                }
+            }
+            if(check && itr->removeAura)
+                _caster->RemoveAurasDueToSpell(itr->removeAura);
+        }
+    }
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::CheckEffFromDummy: eff %i, prevent %i, Id %u", eff, prevent, m_spellInfo->Id);
+
+    return prevent;
 }
 
 SpellCastResult Spell::CheckCast(bool strict)

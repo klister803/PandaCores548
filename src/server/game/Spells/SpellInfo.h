@@ -80,6 +80,7 @@ enum SpellTargetSelectionCategories
     TARGET_SELECT_CATEGORY_CONE,
     TARGET_SELECT_CATEGORY_AREA,
     TARGET_SELECT_CATEGORY_BETWEEN,
+    TARGET_SELECT_CATEGORY_GOTOMOVE,
 };
 
 enum SpellTargetReferenceTypes

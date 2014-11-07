@@ -2151,7 +2151,7 @@ class Player : public Unit, public GridObject<Player>
         void SendSpellMods();
         bool IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
-        void RemoveSpellMods(Spell* spell);
+        void RemoveSpellMods(Spell* spell, bool casting = false);
         void RestoreSpellMods(Spell* spell, uint32 ownerAuraId = 0, Aura* aura = NULL);
         void RestoreAllSpellMods(uint32 ownerAuraId = 0, Aura* aura = NULL);
         void DropModCharge(SpellModifier* mod, Spell* spell);

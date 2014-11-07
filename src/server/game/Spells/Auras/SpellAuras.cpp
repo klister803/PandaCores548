@@ -1088,11 +1088,21 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 {
     if (IsUsingCharges())
     {
-        if(GetId() == 60503)
+        //if aura not modify and have stack and have charges aura use stack for drop stack visual
+        if(m_spellInfo->StackAmount > 1 && GetId() != 114637 && GetId() != 128863)
         {
-            ModStackAmount(num);
-            return false;
+            bool _useStack = true;
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (AuraEffect* aurEff = GetEffect(i))
+                    if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
+                        _useStack = false;
+            if(_useStack)
+            {
+                ModStackAmount(num);
+                return false;
+            }
         }
+
         int32 charges = m_procCharges + num;
         int32 maxCharges = CalcMaxCharges();
 
@@ -3087,13 +3097,21 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:
-                    case SPELL_EFFECT_APPLY_AURA_ON_PET:
                         targetList.push_back(GetUnitOwner());
                     case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
                     {
                         if (Unit* owner = GetUnitOwner()->GetCharmerOrOwner())
                             if (GetUnitOwner()->IsWithinDistInMap(owner, radius))
                                 targetList.push_back(owner);
+                        break;
+                    }
+                    case SPELL_EFFECT_APPLY_AURA_ON_PET_OR_SELF:
+                    {
+                        if (!(m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF))
+                            targetList.push_back(GetUnitOwner());
+                        if (Unit* pet = GetUnitOwner()->GetGuardianPet())
+                            if (GetUnitOwner()->IsWithinDistInMap(pet, radius))
+                                targetList.push_back(pet);
                         break;
                     }
                 }
