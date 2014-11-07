@@ -66,6 +66,10 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
+        // prevent loading deleted pet
+        if (pet->second->deleteMeLater)
+            continue;
+
         ObjectGuid guid = pet->first;
         uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
 
@@ -105,6 +109,10 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
+        // prevent loading deleted pet
+        if (pet->second->deleteMeLater)
+            continue;
+
         ObjectGuid guid = pet->first;
         uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
 
