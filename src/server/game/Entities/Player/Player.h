@@ -1944,7 +1944,7 @@ class Player : public Unit, public GridObject<Player>
         void SendTalentWipeConfirm(uint64 guid, bool specializaion);
         void CalcRage(uint32 damage, bool attacker);
         void RegenerateAll();
-        void Regenerate(Powers power);
+        void Regenerate(Powers power, uint32 saveTimer);
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}

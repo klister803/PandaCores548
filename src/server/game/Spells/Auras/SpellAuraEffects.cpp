@@ -545,13 +545,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
     Unit* target = GetBase()->GetUnitOwner();
 
-    //negative area aura for self is 0(need recalc for area aura)
-    /*if(m_spellInfo->GetEffect(m_effIndex, m_diffMode).Effect == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY && caster == target)
-    {
-        m_send_baseAmount = 0;
-        return 0;
-    }*/
-
     // default amount calculation
     m_send_baseAmount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
     amount = m_send_baseAmount;
@@ -2028,89 +2021,6 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                 case SPELLFAMILY_GENERIC:
                     switch (GetId())
                     {
-                        // Drink
-                        case 430:
-                        case 431:
-                        case 432:
-                        case 1133:
-                        case 1135:
-                        case 1137:
-                        case 10250:
-                        case 22734:
-                        case 27089:
-                        case 34291:
-                        case 43182:
-                        case 43183:
-                        case 46755:
-                        case 49472: // Drink Coffee
-                        case 57073:
-                        case 61830:
-                        case 72623:
-                        case 80166:
-                        case 80167:
-                        case 87958:
-                        case 87959:
-                        case 92736:
-                        case 92797:
-                        case 92800:
-                        case 92803:
-                        case 104262:
-                        case 104269:
-                        case 104270:
-                        case 105230:
-                        case 105232:
-                        case 118358:
-                        case 130336:
-                            if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                                return;
-                            // Get SPELL_AURA_MOD_POWER_REGEN aura from spell
-                            if (AuraEffect* aurEff = GetBase()->GetEffect(0))
-                            {
-                                if (aurEff->GetAuraType() != SPELL_AURA_MOD_POWER_REGEN)
-                                {
-                                    m_isPeriodic = false;
-                                    sLog->outError(LOG_FILTER_SPELLS_AURAS, "Aura %d structure has been changed - first aura is no longer SPELL_AURA_MOD_POWER_REGEN", GetId());
-                                }
-                                else
-                                {
-                                    // default case - not in arena
-                                    if (!caster->ToPlayer()->InArena())
-                                    {
-                                        aurEff->ChangeAmount(GetAmount());
-                                        m_isPeriodic = false;
-                                    }
-                                    else
-                                    {
-                                        // **********************************************
-                                        // This feature uses only in arenas
-                                        // **********************************************
-                                        // Here need increase mana regen per tick (6 second rule)
-                                        // on 0 tick -   0  (handled in 2 second)
-                                        // on 1 tick - 166% (handled in 4 second)
-                                        // on 2 tick - 133% (handled in 6 second)
-
-                                        // Apply bonus for 1 - 4 tick
-                                        switch (m_tickNumber)
-                                        {
-                                            case 1:   // 0%
-                                                aurEff->ChangeAmount(0);
-                                                break;
-                                            case 2:   // 166%
-                                                aurEff->ChangeAmount(GetAmount() * 5 / 3);
-                                                break;
-                                            case 3:   // 133%
-                                                aurEff->ChangeAmount(GetAmount() * 4 / 3);
-                                                break;
-                                            default:  // 100% - normal regen
-                                                aurEff->ChangeAmount(GetAmount());
-                                                // No need to update after 4th tick
-                                                m_isPeriodic = false;
-                                                break;
-                                        }
-                                    }
-                                }
-                            }
-                            break;
                         case 58549: // Tenacity
                         case 59911: // Tenacity (vehicle)
                            GetBase()->RefreshDuration();

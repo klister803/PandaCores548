@@ -2791,8 +2791,8 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
-    Regenerate(POWER_ENERGY);
-    Regenerate(POWER_MANA);
+    Regenerate(POWER_ENERGY, m_regenTimer);
+    Regenerate(POWER_MANA, m_regenTimer);
 
     // Runes act as cooldowns, and they don't need to send any data
     if (getClass() == CLASS_DEATH_KNIGHT)
@@ -2840,7 +2840,7 @@ void Player::RegenerateAll()
 
     if (m_focusRegenTimerCount >= 200 && getClass() == CLASS_HUNTER)
     {
-        Regenerate(POWER_FOCUS);
+        Regenerate(POWER_FOCUS, m_focusRegenTimerCount);
         m_focusRegenTimerCount -= 200;
     }
 
@@ -2855,10 +2855,10 @@ void Player::RegenerateAll()
         }
 
         if (!isInCombat())
-            Regenerate(POWER_RAGE);
+            Regenerate(POWER_RAGE, m_regenTimerCount);
 
         if (getClass() == CLASS_DEATH_KNIGHT)
-            Regenerate(POWER_RUNIC_POWER);
+            Regenerate(POWER_RUNIC_POWER, m_regenTimerCount);
 
         m_regenTimerCount -= 2000;
     }
@@ -2869,34 +2869,34 @@ void Player::RegenerateAll()
         {
             m_chiholyPowerRegenTimerCount = 10000;
             if (getClass() == CLASS_PALADIN)
-                Regenerate(POWER_HOLY_POWER);
+                Regenerate(POWER_HOLY_POWER, m_chiholyPowerRegenTimerCount);
 
             if (getClass() == CLASS_MONK)
-                Regenerate(POWER_CHI);
+                Regenerate(POWER_CHI, m_chiholyPowerRegenTimerCount);
         }
         else
             m_chiholyPowerRegenTimerCount -= m_regenTimer;
 
         if (m_demonicFuryPowerRegenTimerCount <= m_regenTimer)
         {
-            Regenerate(POWER_DEMONIC_FURY);
             m_demonicFuryPowerRegenTimerCount = 100;
+            Regenerate(POWER_DEMONIC_FURY, m_demonicFuryPowerRegenTimerCount);
         }
         else
             m_demonicFuryPowerRegenTimerCount -= m_regenTimer;
 
         if (m_soulShardsRegenTimerCount <= m_regenTimer)
         {
-            Regenerate(POWER_SOUL_SHARDS);
             m_soulShardsRegenTimerCount = 20000;
+            Regenerate(POWER_SOUL_SHARDS, m_soulShardsRegenTimerCount);
         }
         else
             m_soulShardsRegenTimerCount -= m_regenTimer;
 
         if (m_burningEmbersRegenTimerCount <= m_regenTimer)
         {
-            Regenerate(POWER_BURNING_EMBERS);
             m_burningEmbersRegenTimerCount = 2500;
+            Regenerate(POWER_BURNING_EMBERS, m_burningEmbersRegenTimerCount);
         }
         else
             m_burningEmbersRegenTimerCount -= m_regenTimer;
@@ -2912,7 +2912,7 @@ void Player::RegenerateAll()
     m_regenTimer = 0;
 }
 
-void Player::Regenerate(Powers power)
+void Player::Regenerate(Powers power, uint32 saveTimer)
 {
     uint32 maxValue = GetMaxPower(power);
     if (!maxValue)
@@ -2955,9 +2955,9 @@ void Player::Regenerate(Powers power)
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
 
             if (isInCombat()) // Trinity Updates Mana in intervals of 2s, which is correct
-                addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
+                addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * saveTimer) + CalculatePct(0.001f, spellHaste));
             else
-                addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
+                addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * saveTimer) + CalculatePct(0.001f, spellHaste));
 
             break;
         }
@@ -2979,7 +2979,7 @@ void Player::Regenerate(Powers power)
         }
         case POWER_ENERGY: // Regenerate Energy
         {
-            float defaultreg = 0.01f * m_regenTimer;
+            float defaultreg = 0.01f * saveTimer;
             addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         }
@@ -3034,16 +3034,14 @@ void Player::Regenerate(Powers power)
     }
 
     // Mana regen calculated in Player::UpdateManaRegen()
-    if (power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_BURNING_EMBERS && power != POWER_DEMONIC_FURY)
+    if (power > POWER_MANA)
     {
         AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
         for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
             if (Powers((*i)->GetMiscValue()) == power)
                 AddPct(addvalue, (*i)->GetAmount());
 
-        // Butchery requires combat for this effect
-        if (power != POWER_RUNIC_POWER || isInCombat())
-            addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * ((power != POWER_ENERGY) ? m_regenTimerCount : m_regenTimer) / (5 * IN_MILLISECONDS);
+        addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * saveTimer / (5 * IN_MILLISECONDS);
     }
 
     if (addvalue <= 0.0f)

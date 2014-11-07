@@ -832,7 +832,24 @@ void Player::UpdateManaRegen()
 
     // manaMod% of base mana every 5 seconds is base for all classes
     float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
-    float auraMp5regen = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
+    float auraMp5regen = 0.0f;
+    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
+    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
+    {
+        if (Powers((*i)->GetMiscValue()) == POWER_MANA)
+        {
+            bool periodic = false;
+            if (Aura* aur = (*i)->GetBase())
+                if (AuraEffect const* aurEff = aur->GetEffect(1))
+                    if(aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
+                    {
+                        periodic = true;
+                        auraMp5regen += aurEff->GetAmount() / 5.0f;
+                    }
+            if(!periodic)
+                auraMp5regen += (*i)->GetAmount() / 5.0f;
+        }
+    }
 
     float interruptMod = std::max(float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100)), 1.0f);
     float baseMod = std::max(GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT), 1.0f);
