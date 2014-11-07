@@ -22074,6 +22074,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
             stmt->setUInt64(0, pet->first);
             stmt->setUInt32(1, GetSession()->GetAccountId());
+            trans->Append(stmt);
             continue;
         }
 
