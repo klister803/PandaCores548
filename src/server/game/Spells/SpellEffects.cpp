@@ -8411,13 +8411,13 @@ void Spell::EffectUncagePet(SpellEffIndex effIndex)
             return;
         // create new pet guid
         uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
-        // learn pet spell, hack, TODO: fix it
-        player->learnSpell(bp->spellId, false);
         // add pet
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
             player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, true);
         // update
         player->GetBattlePetMgr()->SendUpdatePets();
+        // learn pet spell, hack, TODO: fix it
+        player->learnSpell(bp->spellId, false);
         // destroy the cage
         uint32 count = 1;
         player->DestroyItemCount(m_CastItem, count, true);
