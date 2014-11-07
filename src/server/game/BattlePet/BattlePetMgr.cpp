@@ -232,9 +232,6 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 5, 0, 3, 4, 7, 2, 1>(guid);
     recvData.ReadGuidBytes<4, 1, 5, 3, 0, 6, 7, 2>(guid);
 
-    // for live
-    //return;
-
     if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
     {
         // at first - all operations with check free space
@@ -254,18 +251,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         dynData |= pet->breedID;
         dynData |= uint32(pet->quality << 24);
 
-        // delete from journal
-        //_player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
-
-        //WorldPacket data(SMSG_BATTLE_PET_DELETED);
-        //data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
-        //data.WriteGuidBytes<1, 0, 6, 5, 2, 4, 3, 7>(guid);
-
-        // send packet twice? (sniff data)
-        //SendPacket(&data);
-        //SendPacket(&data);
-
-        // operations with item - only TEST
+        // at third - send item
         Item* item = _player->StoreNewItem(dest, itemId, true, 0);
 
         if (!item)                                               // prevent crash
@@ -273,6 +259,21 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
 
         item->SetBattlePet(pet->speciesID, dynData, pet->level);
         _player->SendNewItem(item, pet, 1, false, true);
+
+        // at fourth - unlearn spell - TODO: fix it because more than one spell/battle pet of same type
+        _player->removeSpell(pet->summonSpellID);
+
+        // delete from journal
+        _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
+
+        // send visual to client
+        WorldPacket data(SMSG_BATTLE_PET_DELETED);
+        data.WriteGuidMask<5, 6, 4, 0, 1, 2, 7, 4>(guid);
+        data.WriteGuidBytes<1, 0, 6, 5, 2, 4, 3, 7>(guid);
+
+        // send packet twice? (sniff data)
+        SendPacket(&data);
+        SendPacket(&data);
     }
 }
 

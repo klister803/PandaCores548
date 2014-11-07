@@ -1641,7 +1641,7 @@ void Item::UpdateDynamicValues(bool battlePet)
             SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, offs++, value);
         }
         else
-            RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << i);
+            RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, battlePet ? (8 << i) : (1 << i));
     }
 
     for (; offs < ITEM_DYN_MOD_END; ++offs)
