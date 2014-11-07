@@ -362,7 +362,7 @@ public:
                 if(fifthWinTypeCount < 3)
                     fifthWinTypeCount = 3;
 
-                sLog->outArena("Количество чаров %u первая %u, вторая %u, третья %u, четвертая %u, петая %u", playerCount, firstWinTypeCount, secondWinTypeCount, thirdWinTypeCount, fothWinTypeCount, rating);
+                sLog->outArena("Количество чаров %u первая %u, вторая %u, третья %u, четвертая %u, петая %u", playerCount, firstWinTypeCount, secondWinTypeCount, thirdWinTypeCount, fothWinTypeCount, fifthWinTypeCount);
 
                 do
                 {
