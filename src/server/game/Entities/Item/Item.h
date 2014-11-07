@@ -387,6 +387,7 @@ class Item : public Object
         // item battle pet
         bool isBattlePet() { return GetEntry() == ITEM_BATTLE_PET_CAGE_ID; }
         void SetBattlePet(uint32 speciesID, uint32 data, uint32 level);
+        uint32 GetBattlePetData(ItemDynamicModifiersOffset off);
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;

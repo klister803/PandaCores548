@@ -48,9 +48,9 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
     memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_PET_BATTLE_SLOT);
 }
 
-void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
+void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, bool update)
 {
-    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID);
+    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, update);
 }
 
 void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked)
@@ -1192,27 +1192,30 @@ void BattlePetMgr::SendClosePetBattle()
     m_player->GetSession()->SendPacket(&data);
 }
 
-// placeholder
 // packet updates pet stats after finish battle and other actions (renaming?)
-void BattlePetMgr::SendUpdatePets(uint8 petCount)
+void BattlePetMgr::SendUpdatePets()
 {
-    ObjectGuid petGuid = ObjectGuid();
-
+    uint32 count = 0;
     WorldPacket data(SMSG_BATTLE_PET_UPDATES);
     data.WriteBit(1);
-    data.WriteBits(petCount, 19);
-    for (uint8 i = 0; i < petCount; i++)
+    uint32 bit_pos = data.bitwpos();
+    data.WriteBits(0, 19);                              // placeholder, count of update pets
+    for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
-        // ObjectGuid petGuid[i] = plr->GetBattlePetMgr()->GetBattlePet(i);
+        if (!pet->second->sendUpdate || pet->second->deleteMeLater)
+            continue;
 
-        data.WriteBits(0, 7); // custom name length
-        data.WriteBit(1);     // !hasFlags
-        data.WriteBit(0);     // hasUnk
-        data.WriteGuidMask<2>(petGuid);
-        data.WriteBit(1);     // !hasBreed
-        data.WriteBit(1);     // !hasQuality
-        data.WriteGuidMask<1, 6, 3, 7, 0, 4, 5>(petGuid);
-        data.WriteBit(0);     // hasGuid
+        ObjectGuid guid = pet->first;
+        uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
+
+        data.WriteBits(len, 7);                         // custom name length
+        data.WriteBit(!pet->second->flags);             // !hasFlags
+        data.WriteBit(1);                               // !hasUnk
+        data.WriteGuidMask<2>(guid);
+        data.WriteBit(!pet->second->breedID);           // !hasBreed
+        data.WriteBit(!pet->second->quality);           // !hasQuality
+        data.WriteGuidMask<1, 6, 3, 7, 0, 4, 5>(guid);
+        data.WriteBit(0);                               // hasGuid
 
         /*if (hasGuid)
         {
@@ -1220,8 +1223,14 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
         }*/
     }
 
-    for (uint8 i = 0; i < petCount; i++)
+    for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
+        if (!pet->second->sendUpdate || pet->second->deleteMeLater)
+            continue;
+
+        ObjectGuid guid = pet->first;
+        uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
+
         /*if (hasGuid)
         {
             data << uint32(0); // unk
@@ -1229,33 +1238,34 @@ void BattlePetMgr::SendUpdatePets(uint8 petCount)
             data << uint32(0); // unk1
         }*/
 
-        data << uint16(0); // level
-        data << uint32(0); // total health
+        data << uint16(pet->second->level);                  // level
+        data << uint32(pet->second->maxHealth);              // total health
+        if (pet->second->flags)
+            data << uint16(pet->second->flags);              // flags
+        if (pet->second->quality)
+            data << uint8(pet->second->quality);             // quality
+        data.WriteGuidBytes<3>(guid);
+        data << uint32(pet->second->creatureEntry);          // creature ID
+        data << uint32(pet->second->speed);                  // speed
+        if (pet->second->breedID)
+            data << uint16(pet->second->breedID);            // breed ID
 
-        //if (!hasFlags)
-            //data << uint16(0); // flags
+        data << uint32(pet->second->health);                 // remaining health
+        data << uint32(pet->second->displayID);              // display ID
+        if (len > 0)
+            data.WriteString(pet->second->customName);       // custom name
+        data.WriteGuidBytes<5, 4, 7>(guid);
+        data << uint32(pet->second->speciesID);              // species ID
+        data.WriteGuidBytes<2, 6>(guid);
+        data << uint16(pet->second->xp);                     // experience
+        data.WriteGuidBytes<0, 1>(guid);
+        data << uint32(pet->second->power);                  // power
 
-        //if (!hasQuality)
-            //data << uint8(0);  // quality
-
-        data.WriteGuidBytes<3>(petGuid);
-        data << uint32(0); // creature ID
-        data << uint32(0); // speed
-
-        //if (!hasBreed)
-            //data << uint16(0); // breed ID
-
-        data << uint32(0); // remaining health
-        data << uint32(0); // display ID
-        //data.WriteString(""); // custom name
-        data.WriteGuidBytes<5, 4, 7>(petGuid);
-        data << uint32(0); // species ID
-        data.WriteGuidBytes<2, 6>(petGuid);
-        data << uint16(0); // experience
-        data.WriteGuidBytes<0, 1>(petGuid);
-        data << uint32(0); // power
+        count++;
+        pet->second->sendUpdate = false;
     }
 
+    data.PutBits<uint8>(bit_pos, count, 19);
     m_player->GetSession()->SendPacket(&data);
 }
 

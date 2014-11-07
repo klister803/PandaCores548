@@ -263,7 +263,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
     &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
-    &Spell::EffectNULL,                                     //192 SPELL_EFFECT_UNCAGE_PET
+    &Spell::EffectUncagePet,                                //192 SPELL_EFFECT_UNCAGE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
     &Spell::EffectNULL,                                     //195 SPELL_EFFECT_ACTIVATE_SCENE
@@ -8384,6 +8384,52 @@ void Spell::EffectTeleportToDigsite(SpellEffIndex effIndex)
     player->TeleportToDigsiteInMap(player->GetMapId());
 }
 
+void Spell::EffectUncagePet(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!m_CastItem || m_CastItem->GetEntry() != ITEM_BATTLE_PET_CAGE_ID)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    // get data from cage
+    uint32 speciesID = m_CastItem->GetBattlePetData(ITEM_DYN_MOD_1);
+    uint32 tempData = m_CastItem->GetBattlePetData(ITEM_DYN_MOD_2);
+    uint32 level = m_CastItem->GetBattlePetData(ITEM_DYN_MOD_3);
+    uint32 quality = tempData >> 24;
+    uint32 breedID = tempData & 0xFF;
+
+    if (BattlePetSpeciesEntry const* bp = sBattlePetSpeciesStore.LookupEntry(speciesID))
+    {
+        // TODO: fix it
+        if (player->HasActiveSpell(bp->spellId))
+            return;
+        // create new pet guid
+        uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
+        // learn pet spell, TODO: fix it
+        player->learnSpell(bp->spellId, false);
+        // add pet
+        if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
+            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, true);
+        // update
+        player->GetBattlePetMgr()->SendUpdatePets();
+        // destroy the cage
+        uint32 count = 1;
+        player->DestroyItemCount(m_CastItem, count, true);
+
+        // prevent crash at access to deleted m_targets.GetItemTarget
+        if (m_CastItem == m_targets.GetItemTarget())
+            m_targets.SetItemTarget(NULL);
+
+        m_CastItem = NULL;
+    }
+}
+
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
 void Spell::SendScene(SpellEffIndex effIndex)
 {
@@ -8391,7 +8437,7 @@ void Spell::SendScene(SpellEffIndex effIndex)
         return;
 
     Player* player = m_caster->ToPlayer();
-    if(!player)
+    if (!player)
         return;
 
     ObjectGuid casterGuid = /*m_caster->GetObjectGuid()*/0; // not caster something else??? wrong val. could break scean.

@@ -1630,6 +1630,11 @@ void Item::SetBattlePet(uint32 speciesID, uint32 data, uint32 level)
     UpdateDynamicValues(true);
 }
 
+uint32 Item::GetBattlePetData(ItemDynamicModifiersOffset off)
+{
+    return m_dynamicModInfo[off];
+}
+
 void Item::UpdateDynamicValues(bool battlePet)
 {
     uint32 offs = 0;

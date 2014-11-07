@@ -33,9 +33,9 @@
 
 struct PetInfo
 {
-    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID) :
+    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, bool _update) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
-        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), deleteMeLater(false) {}
+        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), deleteMeLater(false), sendUpdate(_update) {}
 
     // game vars
     uint32 speciesID;
@@ -54,6 +54,7 @@ struct PetInfo
     std::string customName;
     // service vars
     bool deleteMeLater;
+    bool sendUpdate;
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
@@ -122,11 +123,11 @@ public:
 
     void BuildPetJournal(WorldPacket *data);
 
-    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0);
+    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, bool update = false);
     void AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked = true);
 
     void SendClosePetBattle();
-    void SendUpdatePets(uint8 petCount);
+    void SendUpdatePets();
 
     void GiveXP();
 
