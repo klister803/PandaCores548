@@ -232,8 +232,22 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 5, 0, 3, 4, 7, 2, 1>(guid);
     recvData.ReadGuidBytes<4, 1, 5, 3, 0, 6, 7, 2>(guid);
 
+    // unsummon pet if active
+    if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
+    {
+        Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
+        if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == guid)
+            oldSummon->ToTempSummon()->UnSummon();
+    }
+
     if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
     {
+        // some validate
+        BattlePetSpeciesEntry const* bp = _player->GetBattlePetMgr()->GetBattlePetSpeciesEntry(pet->creatureEntry);
+
+        if (!bp || bp->flags & SPECIES_FLAG_CANT_TRADE)
+            return;
+
         // at first - all operations with check free space
         uint32 itemId = ITEM_BATTLE_PET_CAGE_ID; // Pet Cage
         uint32 count = 1;
