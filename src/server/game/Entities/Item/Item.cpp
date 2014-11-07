@@ -470,36 +470,51 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     std::string enchants = fields[6].GetString();
     _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
 
-    if (uint32 reforgeEntry = fields[8].GetUInt32())
-    {
-        if (ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(reforgeEntry))
-            SetReforge(reforgeEntry);
-    }
+    uint32 dynMod1 = fields[8].GetUInt32();
+    uint32 dynMod2 = fields[9].GetUInt32();
+    uint32 dynMod3 = fields[10].GetUInt32();
 
-    if (uint32 transmogId = fields[9].GetUInt32())
+    if (isBattlePet())
     {
-        if (ItemTemplate const* transProto = sObjectMgr->GetItemTemplate(transmogId))
+        if (dynMod1 && dynMod2 && dynMod3)
         {
-            if (proto->Class == transProto->Class)
-                SetTransmogrification(transmogId);
+            if (BattlePetSpeciesEntry const* bp = sBattlePetSpeciesStore.LookupEntry(dynMod1))
+                SetBattlePet(dynMod1, dynMod2, dynMod3);
         }
     }
-
-    ItemLevel = proto->ItemLevel;
-    uint32 upgradeId = fields[10].GetUInt32();
-    if (ItemUpgradeData const* upgradeData = GetItemUpgradeData(entry))
+    else
     {
-        for (uint32 i = 0; i < MAX_ITEM_UPDGRADES; ++i)
+        if (dynMod1)
         {
-            ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[i];
-            if (!upgradeEntry)
-                continue;
+            if (ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(dynMod1))
+                SetReforge(dynMod1);
+        }
 
-            if (upgradeEntry->id == upgradeId || !upgradeId && !upgradeEntry->prevUpgradeId)
+        if (dynMod2)
+        {
+            if (ItemTemplate const* transProto = sObjectMgr->GetItemTemplate(dynMod2))
             {
-                ItemLevel += upgradeEntry->levelBonus;
-                SetUpgradeId(upgradeEntry->id);
-                break;
+                if (proto->Class == transProto->Class)
+                    SetTransmogrification(dynMod2);
+            }
+        }
+
+        ItemLevel = proto->ItemLevel;
+        if (ItemUpgradeData const* upgradeData = GetItemUpgradeData(entry))
+        {
+            for (uint32 i = 0; i < MAX_ITEM_UPDGRADES; ++i)
+            {
+                ItemUpgradeEntry const* upgradeEntry = upgradeData->upgrade[i];
+
+                if (!upgradeEntry)
+                    continue;
+
+                if (upgradeEntry->id == dynMod3 || !dynMod3 && !upgradeEntry->prevUpgradeId)
+                {
+                    ItemLevel += upgradeEntry->levelBonus;
+                    SetUpgradeId(upgradeEntry->id);
+                    break;
+                }
             }
         }
     }
@@ -1119,7 +1134,7 @@ Item* Item::CloneItem(uint32 count, Player const* player) const
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
 
     memcpy(newItem->m_dynamicModInfo, m_dynamicModInfo, sizeof(uint32) * ITEM_DYN_MOD_END);
-    newItem->UpdateDynamicValues();
+    newItem->UpdateDynamicValues(newItem->isBattlePet() ? true : false);
 
     return newItem;
 }
@@ -1576,48 +1591,53 @@ int32 Item::GetReforgableStat(ItemModType statType) const
 
 void Item::SetReforge(uint32 value)
 {
-    m_dynamicModInfo[ITEM_DYN_MOD_REFORGE] = value;
-
-    UpdateDynamicValues();
+    m_dynamicModInfo[ITEM_DYN_MOD_1] = value;
+    UpdateDynamicValues(false);
 }
 
 uint32 Item::GetReforge() const
 {
-    return m_dynamicModInfo[ITEM_DYN_MOD_REFORGE];
+    return m_dynamicModInfo[ITEM_DYN_MOD_1];
 }
 
 void Item::SetTransmogrification(uint32 value)
 {
-    m_dynamicModInfo[ITEM_DYN_MOD_TRANSMOGRIFICATION] = value;
-
-    UpdateDynamicValues();
+    m_dynamicModInfo[ITEM_DYN_MOD_2] = value;
+    UpdateDynamicValues(false);
 }
 
 uint32 Item::GetTransmogrification() const
 {
-    return m_dynamicModInfo[ITEM_DYN_MOD_TRANSMOGRIFICATION];
+    return m_dynamicModInfo[ITEM_DYN_MOD_2];
 }
 
 void Item::SetUpgradeId(uint32 value)
 {
-    m_dynamicModInfo[ITEM_DYN_MOD_UPGRADE_ID] = value;
-
-    UpdateDynamicValues();
+    m_dynamicModInfo[ITEM_DYN_MOD_3] = value;
+    UpdateDynamicValues(false);
 }
 
 uint32 Item::GetUpgradeId() const
 {
-    return m_dynamicModInfo[ITEM_DYN_MOD_UPGRADE_ID];
+    return m_dynamicModInfo[ITEM_DYN_MOD_3];
 }
 
-void Item::UpdateDynamicValues()
+void Item::SetBattlePet(uint32 speciesID, uint32 data, uint32 level)
+{
+    m_dynamicModInfo[ITEM_DYN_MOD_1] = speciesID;
+    m_dynamicModInfo[ITEM_DYN_MOD_2] = data;
+    m_dynamicModInfo[ITEM_DYN_MOD_3] = level;
+    UpdateDynamicValues(true);
+}
+
+void Item::UpdateDynamicValues(bool battlePet)
 {
     uint32 offs = 0;
     for (uint32 i = 0; i < ITEM_DYN_MOD_END; ++i)
     {
         if (uint32 value = m_dynamicModInfo[i])
         {
-            SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1 << i);
+            SetFlag(ITEM_FIELD_MODIFIERS_MASK, battlePet ? (8 << i) : (1 << i));
             SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, offs++, value);
         }
         else

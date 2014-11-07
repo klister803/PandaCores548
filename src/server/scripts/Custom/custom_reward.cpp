@@ -97,7 +97,7 @@ public:
                             Item* item = player->StoreNewItem(dest, id, true, Item::GenerateItemRandomPropertyId(id));
 
                             if (count > 0 && item)
-                                player->SendNewItem(item, count, false, true);
+                                player->SendNewItem(item, NULL, count, false, true);
 
                             if (noSpaceForCount > 0)
                             {

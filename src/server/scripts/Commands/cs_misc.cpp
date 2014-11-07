@@ -1445,9 +1445,9 @@ public:
 
         if (count > 0 && item)
         {
-            player->SendNewItem(item, count, false, true);
+            player->SendNewItem(item, NULL, count, false, true);
             if (player != playerTarget)
-                playerTarget->SendNewItem(item, count, true, false);
+                playerTarget->SendNewItem(item, NULL, count, true, false);
         }
 
         if (noSpaceForCount > 0)
@@ -1499,9 +1499,9 @@ public:
                     if (player == playerTarget)
                         item->SetBinding(false);
 
-                    player->SendNewItem(item, 1, false, true);
+                    player->SendNewItem(item, NULL, 1, false, true);
                     if (player != playerTarget)
-                        playerTarget->SendNewItem(item, 1, true, false);
+                        playerTarget->SendNewItem(item, NULL, 1, true, false);
                 }
                 else
                 {

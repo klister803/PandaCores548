@@ -2838,7 +2838,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
 
         // send info to the client
-        player->SendNewItem(pItem, num_to_add, true, bgType == 0);
+        player->SendNewItem(pItem, NULL, num_to_add, true, bgType == 0);
 
         // we succeeded in creating at least one item, so a level up is possible
         if (bgType == 0)

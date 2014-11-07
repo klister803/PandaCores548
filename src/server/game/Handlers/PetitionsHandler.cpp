@@ -129,7 +129,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     charter->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1, charter->GetGUIDLow());
     charter->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, 0);
     charter->SetState(ITEM_CHANGED, _player);
-    _player->SendNewItem(charter, 1, true, false);
+    _player->SendNewItem(charter, NULL, 1, true, false);
 
     // a petition is invalid, if both the owner and the type matches
     // we checked above, if this player is in an arenateam, so this must be

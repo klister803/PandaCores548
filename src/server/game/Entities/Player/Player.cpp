@@ -14034,9 +14034,6 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
 
         ItemRemovedQuestCheck(pItem->GetEntry(), pItem->GetCount());
 
-        /*if (PetInfo* petData = pItem->GetBattlePetData())
-            pItem->SetItemBattlePet(petData, false);*/
-
         if (bag == INVENTORY_SLOT_BAG_0)
         {
             SetUInt64Value(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2), 0);
@@ -15972,7 +15969,7 @@ void Player::SendItemDurations()
         (*itr)->SendTimeUpdate(this);
 }
 
-void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast)
+void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received, bool created, bool broadcast)
 {
     if (!item)                                               // prevent crash
         return;
@@ -16002,11 +15999,11 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     data.WriteGuidBytes<4>(guid2);
     data.WriteGuidBytes<0, 1>(guid);
     data.WriteGuidBytes<7>(guid2);
-    data << uint32(0);                                      // battle pet unk
+    data << uint32(pet ? pet->quality : 0);                 // battle pet quality
     data.WriteGuidBytes<3>(guid2);
-    data << uint32(0);                                      // battle pet unk
+    data << uint32(pet ? pet->breedID : 0);                 // battle pet breedID
     data.WriteGuidBytes<5>(guid2);
-    data << uint32(0);                                      // battle pet unk
+    data << uint32(pet ? pet->level : 0);                   // battle pet level
     data.WriteGuidBytes<7>(guid);
     data.WriteGuidBytes<6>(guid2);
     data.WriteGuidBytes<4>(guid);
@@ -16015,7 +16012,7 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     data.WriteGuidBytes<5>(guid);
     data.WriteGuidBytes<0>(guid2);
     data << uint8(item->GetBagSlot());                      // bagslot
-    data << uint32(0);                                      // battle pet unk
+    data << uint32(pet ? pet->speciesID : 0);               // battle pet speciesID
     data << uint32(item->GetItemRandomPropertyId());        // random property
     data << uint32(item->GetEntry());                       // item id
     data.WriteGuidBytes<6>(guid);
@@ -16985,7 +16982,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
             if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, quest->RewardChoiceItemCount[reward]) == EQUIP_ERR_OK)
             {
                 Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-                SendNewItem(item, quest->RewardChoiceItemCount[reward], true, false);
+                SendNewItem(item, NULL, quest->RewardChoiceItemCount[reward], true, false);
             }
         }
     }
@@ -17000,7 +16997,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, quest->RewardItemIdCount[i]) == EQUIP_ERR_OK)
                 {
                     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-                    SendNewItem(item, quest->RewardItemIdCount[i], true, false);
+                    SendNewItem(item, NULL, quest->RewardItemIdCount[i], true, false);
                 }
             }
         }
@@ -17016,7 +17013,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, PackageItem->ItemID, PackageItem->count) == EQUIP_ERR_OK)
                 {
                     Item* item = StoreNewItem(dest, PackageItem->ItemID, true, Item::GenerateItemRandomPropertyId(PackageItem->ItemID));
-                    SendNewItem(item, PackageItem->count, true, false);
+                    SendNewItem(item, NULL, PackageItem->count, true, false);
                 }
             }
         }
@@ -17624,7 +17621,7 @@ bool Player::GiveQuestSourceItem(Quest const* quest)
         if (msg == EQUIP_ERR_OK)
         {
             Item* item = StoreNewItem(dest, srcitem, true);
-            SendNewItem(item, count, true, false);
+            SendNewItem(item, NULL, count, true, false);
             return true;
         }
         // player already have max amount required item, just report success
@@ -20401,9 +20398,9 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         uint8 quality = fields[11].GetUInt8();
         uint16 xp = fields[12].GetUInt16();
         uint16 flags = fields[13].GetUInt16();
-        // int16 breedID
+        int16 breedID = fields[14].GetUInt16();
 
-        GetBattlePetMgr()->AddPetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName);
+        GetBattlePetMgr()->AddPetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
     }
     while (result->NextRow());
 }
@@ -22088,7 +22085,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
         stmt->setUInt8(12, pet->second->quality);
         stmt->setUInt16(13, pet->second->xp);
         stmt->setUInt16(14, pet->second->flags);
-        //stmt->setInt16(15, pet->second->breedID);
+        stmt->setInt16(15, pet->second->breedID);
 
         trans->Append(stmt);
     }
@@ -23874,7 +23871,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         data.WriteGuidBytes<6, 4>(guid);
 
         GetSession()->SendPacket(&data);
-        SendNewItem(it, count, true, false, false);
+        SendNewItem(it, NULL, count, true, false, false);
 
         if (!bStore)
             AutoUnequipOffhandIfNeed();
@@ -27459,7 +27456,7 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
             }
 
             Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
-            SendNewItem(pItem, lootItem->count, false, false, broadcast);
+            SendNewItem(pItem, NULL, lootItem->count, false, false, broadcast);
         }
     }
     if (max_slot > 0)
@@ -27545,7 +27542,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
                 if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
                     guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
 
-        SendNewItem(newitem, uint32(item->count), false, false, true);
+        SendNewItem(newitem, NULL, uint32(item->count), false, false, true);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item->itemid, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item->itemid, item->count);
@@ -28710,7 +28707,7 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 
     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
     if (item)
-        SendNewItem(item, count, true, false);
+        SendNewItem(item, NULL, count, true, false);
     else
         return false;
     return true;
@@ -28846,7 +28843,7 @@ void Player::RefundItem(Item* item)
             InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, count);
             ASSERT(msg == EQUIP_ERR_OK) /// Already checked before
             Item* it = StoreNewItem(dest, itemid, true);
-            SendNewItem(it, count, true, false, true);
+            SendNewItem(it, NULL, count, true, false, true);
         }
     }
 

@@ -39,19 +39,23 @@
 #include "Map.h"
 #include "InstanceScript.h"
 #include "Group.h"
+#include "Item.h"
 #include "BattlePetMgr.h"
 
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 {
     m_PetJournal.clear();
-
-    for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
-        m_battleSlots[i] = NULL;
+    memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_PET_BATTLE_SLOT);
 }
 
 void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID)
 {
-    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName);
+    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID);
+}
+
+void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked)
+{
+    m_battleSlots[slotID] = new PetBattleSlot(guid, locked);
 }
 
 void BattlePetMgr::BuildPetJournal(WorldPacket *data)
@@ -63,10 +67,9 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         ObjectGuid guid = pet->first;
-        bool hasBreed = pet->second->breedID == 0xFFFFFFFF;
         uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
 
-        data->WriteBit(hasBreed);                 // hasBreed, inverse
+        data->WriteBit(!pet->second->breedID);    // hasBreed, inverse
         data->WriteGuidMask<1, 5, 3>(guid);
         data->WriteBit(0);                        // has guid
         data->WriteBit(!pet->second->quality);    // hasQuality, inverse
@@ -78,9 +81,9 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteBit(1);                        // hasUnk, inverse
     }
 
-    data->WriteBits(3, 25);                 // total battle pet slot count
+    data->WriteBits(MAX_PET_BATTLE_SLOT, 25);     // total battle pet slot count
 
-    for (uint32 i = 0; i < 3; ++i)
+    for (uint32 i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
     {
         data->WriteBit(!i);                                          // unk bit, related to Int8 (slot ID?)
         data->WriteBit(1);                                           // unk bit, related to Int32 (hasCustomAbility?)
@@ -103,10 +106,9 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         ObjectGuid guid = pet->first;
-        bool hasBreed = pet->second->breedID == 0xFFFFFFFF;
         uint8 len = pet->second->customName == "" ? 0 : pet->second->customName.length();
 
-        if (!hasBreed)
+        if (pet->second->breedID)
             *data << uint16(pet->second->breedID);            // breedID
         *data << uint32(pet->second->speciesID);              // speciesID
         *data << uint32(pet->second->speed);                  // speed
@@ -236,7 +238,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
     if (PetInfo * pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid))
     {
         // at first - all operations with check free space
-        uint32 itemId = 82800; // Pet Cage
+        uint32 itemId = ITEM_BATTLE_PET_CAGE_ID; // Pet Cage
         uint32 count = 1;
         uint32 _noSpaceForCount = 0;
         ItemPosCountVec dest;
@@ -245,11 +247,12 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
             count -= _noSpaceForCount;
 
         if (count == 0 || dest.empty())
-        {
-            // -- TODO: Send to mailbox if no space
-            //ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
             return;
-        }
+
+        // at second - create item dynamic data
+        uint32 dynData = 0;
+        dynData |= pet->breedID;
+        dynData |= uint32(pet->quality << 24);
 
         // delete from journal
         //_player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
@@ -263,66 +266,13 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         //SendPacket(&data);
 
         // operations with item - only TEST
-        uint32 speciesID = 41;
-        uint8 breedID = 12;
-        uint8 quality = 4;
-        uint8 level = 5;
-        uint32 data = 0x02000003;
         Item* item = _player->StoreNewItem(dest, itemId, true, 0);
-        item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, 0x38);
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, speciesID); // speciesID
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1, data);      // unk strange data
-        item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 2, level);     // level
 
-        // push item to client - only TEST
         if (!item)                                               // prevent crash
             return;
 
-        WorldPacket data1(SMSG_ITEM_PUSH_RESULT);
-        ObjectGuid guid1 = _player->GetObjectGuid();
-        ObjectGuid guid2 = 0;
-
-        data1.WriteBit(0);                                       // by bonus roll
-        data1.WriteGuidMask<6>(guid2);
-        data1.WriteBit(0);
-        data1.WriteGuidMask<5, 4>(guid2);
-        data1.WriteBit(1);
-        data1.WriteGuidMask<7>(guid2);
-        data1.WriteGuidMask<5, 3, 2>(guid1);
-        data1.WriteGuidMask<1, 4>(guid2);
-        data1.WriteGuidMask<4, 6, 0>(guid1);
-        data1.WriteGuidMask<2>(guid2);
-        data1.WriteBit(1);                                       // show mesage
-        data1.WriteGuidMask<1, 7>(guid1);
-        data1.WriteGuidMask<0>(guid2);
-
-        data1 << uint32(_player->GetItemCount(item->GetEntry()));         // count of items in inventory
-        data1.WriteGuidBytes<1, 2>(guid2);
-        data1 << uint32(count);                                  // count of items
-        data1.WriteGuidBytes<3, 2>(guid1);
-        data1.WriteGuidBytes<4>(guid2);
-        data1.WriteGuidBytes<0, 1>(guid1);
-        data1.WriteGuidBytes<7>(guid2);
-        data1 << uint32(quality);                                 // battle pet quality
-        data1.WriteGuidBytes<3>(guid2);
-        data1 << uint32(breedID);                                 // battle pet breedID
-        data1.WriteGuidBytes<5>(guid2);
-        data1 << uint32(level);                                   // battle pet level
-        data1.WriteGuidBytes<7>(guid1);
-        data1.WriteGuidBytes<6>(guid2);
-        data1.WriteGuidBytes<4>(guid1);
-                                                            // item slot, but when added to stack: 0xFFFFFFFF
-        data1 << uint32((item->GetCount() == count) ? item->GetSlot() : -1);
-        data1.WriteGuidBytes<5>(guid1);
-        data1.WriteGuidBytes<0>(guid2);
-        data1 << uint8(item->GetBagSlot());                      // bagslot
-        data1 << uint32(speciesID);                              // battle pet speciesID
-        data1 << uint32(item->GetItemRandomPropertyId());        // random property
-        data1 << uint32(item->GetEntry());                       // item id
-        data1.WriteGuidBytes<6>(guid1);
-        data1 << uint32(item->GetItemSuffixFactor());            // suffix factor
-
-        SendPacket(&data1);
+        item->SetBattlePet(pet->speciesID, dynData, pet->level);
+        _player->SendNewItem(item, pet, 1, false, true);
     }
 }
 

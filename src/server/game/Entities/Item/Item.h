@@ -26,6 +26,7 @@
 #include "DatabaseEnv.h"
 
 #define MIN_ITEM_LEVEL_CUP  463
+#define ITEM_BATTLE_PET_CAGE_ID 82800
 
 class SpellInfo;
 class Bag;
@@ -380,17 +381,16 @@ class Item : public Object
         uint32 GetReforge() const;
         void SetTransmogrification(uint32 value);
         uint32 GetTransmogrification() const;
-        void UpdateDynamicValues();
+        void UpdateDynamicValues(bool battlePet);
         void SetUpgradeId(uint32 value);
         uint32 GetUpgradeId() const;
+        // item battle pet
+        bool isBattlePet() { return GetEntry() == ITEM_BATTLE_PET_CAGE_ID; }
+        void SetBattlePet(uint32 speciesID, uint32 data, uint32 level);
 
         uint32 m_dynamicModInfo[ITEM_DYN_MOD_END];
         void AppendDynamicInfo(ByteBuffer& buff) const;
         void SetLevelCap(uint32 cup, bool pvp);
-
-        // item battle pet
-        //void SetItemBattlePet(PetInfo* petData, bool apply);
-        //PetInfo* GetBattlePetData() { return m_battlePetData; }
 
     private:
         std::string m_text;

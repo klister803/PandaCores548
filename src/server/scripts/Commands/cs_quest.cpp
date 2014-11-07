@@ -189,7 +189,7 @@ public:
             if (msg == EQUIP_ERR_OK)
             {
                 Item* item = player->StoreNewItem(dest, id, true);
-                player->SendNewItem(item, count-curItemCount, true, false);
+                player->SendNewItem(item, NULL, count-curItemCount, true, false);
             }
         }
 
