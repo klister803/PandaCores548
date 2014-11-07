@@ -151,7 +151,7 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet)
+    if (!pet || pet->deleteMeLater)
         return;
 
     uint32 spellId = pet->summonSpellID;
@@ -203,6 +203,9 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
         {
             if (PetInfo* pet = owner->GetBattlePetMgr()->GetPetInfoByPetGUID(battlepetGuid))
             {
+                if (pet->deleteMeLater)
+                    return;
+
                 bool hasCustomName = pet->customName == "" ? false : true;
                 WorldPacket data(SMSG_BATTLE_PET_NAME_QUERY_RESPONSE);
                 // creature entry
@@ -254,6 +257,9 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         BattlePetSpeciesEntry const* bp = _player->GetBattlePetMgr()->GetBattlePetSpeciesEntry(pet->creatureEntry);
 
         if (!bp || bp->flags & SPECIES_FLAG_CANT_TRADE)
+            return;
+
+        if (pet->deleteMeLater)
             return;
 
         // at first - all operations with check free space
@@ -1304,7 +1310,7 @@ void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet)
+    if (!pet || pet->deleteMeLater)
         return;
 
     // set custom name
@@ -1324,7 +1330,7 @@ void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet)
+    if (!pet || pet->deleteMeLater)
         return;
 
     // set data (only for testing)
