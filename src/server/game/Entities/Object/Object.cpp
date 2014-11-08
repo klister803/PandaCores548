@@ -2251,7 +2251,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         return true;
 
     //Temp creatures already checked.
-    if (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES) & ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE)
+    if (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES) & ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE && obj->ToUnit())
         return false;
 
     bool corpseVisibility = false;
