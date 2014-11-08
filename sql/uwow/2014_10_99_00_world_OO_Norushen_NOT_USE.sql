@@ -92,12 +92,6 @@ UPDATE `creature_model_info` SET `gender` = '2' WHERE `creature_model_info`.`mod
 -- class 1 92 lvl base hp - 421592
 -- used for heroic25 but should be same for all.
 DELETE FROM `creature_difficulty_stat` WHERE entry = 71976;
-INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
-(71976, 0, 1.15, 1.8),  -- not shure
-(71976, 1, 1.15, 2.2),  -- not shure
-(71976, 2, 1.15, 2.0),  -- not shure
-(71976, 3, 1.15, 2.4),
-(71976, 4, 1.15, 2.4);  -- not shure
 
 DELETE FROM `creature_difficulty_stat` WHERE entry = 71977;
 INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
@@ -108,6 +102,15 @@ INSERT INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`,
 (71977, 4, 1.15, 3.2);  -- not shure
 
 UPDATE `creature_template` SET `unit_flags` = '34816', `unit_flags2` = '2048', `rangeattacktime` = '2000', `ScriptName` = 'npc_essence_of_corruption_released' WHERE `creature_template`.`entry` = 72263;
+
+--
+UPDATE `creature_template` SET `mindmg` = '7686', `maxdmg` = '2000', `attackpower` = '1' WHERE `creature_template`.`entry` = 72051;
+REPLACE INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(72051, 0, 1.5, 10),
+(72051, 1, 1.5, 10),
+(72051, 2, 2.3, 15),
+(72051, 3, 2.3, 15),
+(72051, 4, 1, 6.5);
 
 -- 145064
 REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, isMoving, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
@@ -124,3 +127,60 @@ REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, isMoving, `activa
 REPLACE INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
 ('1080', '0', '65', '0', '2', '144480', '0', '0', 'OO:NN Expel Corruption 144479 on enemy between source and dest'),
 ('1080', '1', 0x2|0x8, '1', '2', '144480', '0', '0', 'OO:NN Expel Corruption 144479 onHit enemy');
+
+--
+UPDATE `creature_template` SET `mindmg` = '210', `maxdmg` = '300', `attackpower` = '1', `ScriptName` = 'npc_norushen_heal_ch_greater_corruption' WHERE `creature_template`.`entry` = 72001;
+UPDATE `creature_template` SET `mindmg` = '11516', `maxdmg` = '27609', `attackpower` = '1', `ScriptName` = 'npc_norushen_heal_ch_melee_combtant' WHERE `creature_template`.`entry` = 71996;
+UPDATE `creature_template` SET `mindmg` = '11516', `maxdmg` = '27609', `attackpower` = '1', `minrangedmg` = '11516', `maxrangedmg` = '27609', `rangedattackpower` = '1', `ScriptName` = 'npc_norushen_heal_ch_caster' WHERE `creature_template`.`entry` = 72000;
+UPDATE `creature_template` SET `mindmg` = '18926', `maxdmg` = '18926', `attackpower` = '1', `ScriptName` = 'npc_norushen_heal_ch_guardian' WHERE `creature_template`.`entry` = 71995;
+
+--
+REPLACE INTO `spell_trigger_dummy` (`spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `comment`) VALUES 
+('146705', '146793', '14', '0', '0', '0', '0', '0', '0', '1', '0', '0', '0', 'OO:NN Heal chap. SPELL_BOTTOMLESS_PIT');
+
+REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `isMoving`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
+('1257', '2', '2', '0', '0', '0', '0', '33425', '5208', 'OO:NN SPELL_BOTTOMLESS_PIT 146793');
+REPLACE INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `chargeRecoveryTime`, `comment`) VALUES 
+('1257', '0', '1', '0', '2', '146703', '0', '0', 'OO:NN SPELL_BOTTOMLESS_PIT 146793 on enemy enter'),
+('1257', '1', 0x2|0x8, '1', '2', '146703', '0', '0', 'OO:NN SPELL_BOTTOMLESS_PIT 146793 leave');
+
+--
+UPDATE creature_difficulty_stat SET dmg_multiplier = 1 WHERE difficulty = 4 AND entry in (72001, 71996, 71995, 72051);
+UPDATE creature_difficulty_stat SET dmg_multiplier = 1.5 WHERE difficulty = 1 AND entry in (72001, 71996, 71995, 72051);
+UPDATE creature_difficulty_stat SET dmg_multiplier = 1.5 WHERE difficulty = 0 AND entry in (72001, 71996, 71995, 72051);
+UPDATE creature_difficulty_stat SET dmg_multiplier = 2.3 WHERE difficulty in (2, 3) AND entry in (72001, 71996, 71995, 72051);
+
+-- 421592
+REPLACE INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(72001, 0, 1.5, 15),
+(72001, 1, 1.5, 15),
+(72001, 2, 2.0, 22.5),
+(72001, 3, 2.0, 22.5),
+(72001, 4, 1, 9.75);
+
+REPLACE INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(71996, 0, 1.5, 1.5),
+(71996, 1, 1.5, 1.5),
+(71996, 2, 2.6, 2),
+(71996, 3, 2.5, 2),
+(71996, 4, 1, 1.12);
+
+-- 18000 - 71995 - 709094
+REPLACE INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`, `Health_mod`) VALUES
+(71995, 0, 1.5, 2),
+(71995, 1, 1.5, 2),
+(71995, 2, 2.6, 2.2),
+(71995, 3, 2.5, 2.2),
+(71995, 4, 1, 1.8); -- 709094 hp
+
+--
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('144521', 'spell_norushen_heal_test_dd');
+
+--
+REPLACE INTO `pet_stats` (`entry`, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, `state`, `energy`, `energy_type`, `armor`, `type`, `damage`, `comment`) VALUES 
+('71996', '0', '1', '0', '1', '127', '0', '0', '0', '0', '0', '0', 'npc_norushen_heal_ch_melee_combtant'),
+('72000', '0', '1', '0', '1', '127', '0', '0', '0', '1', '0', '0', 'npc_norushen_heal_ch_caster'), 
+('71995', '0', '1', '0', '1', '127', '0', '0', '0', '1', '0', '0', 'npc_norushen_heal_ch_guardian');
+
+-- Cell should be in phase too.
+UPDATE  `gameobject` SET `phaseMask` = `phaseMask` | 0x2 WHERE map = 1136 AND id in (223142, 223143, 223144, 223145, 223146, 223147);

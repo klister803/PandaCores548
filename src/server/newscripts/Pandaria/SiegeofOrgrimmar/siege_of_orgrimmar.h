@@ -102,7 +102,9 @@ enum eCreatures
     NPC_GREATER_CORRUPTION              = 72001,
     NPC_PURIFYING_LIGHT                 = 72065,
     NPC_RESIDUAL_CORRUPTION             = 72550, // by spell 145522
-
+    NPC_NN_HEAL_EVENT_PROTECTOR_1       = 71996,
+    NPC_NN_HEAL_EVENT_PROTECTOR_2       = 72000,
+    NPC_NN_HEAL_EVENT_PROTECTOR_3       = 71995,
     //
     NPC_GALAKRAS                    = 72249,
     NPC_IRON_JUGGERNAUT             = 71466,

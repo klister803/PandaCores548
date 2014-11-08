@@ -101,7 +101,8 @@ public:
                 //Sha of pride: SPELL_PRIDE
                 if (player->HasAura(144343))
                     player->RemoveAura(144343);
-            }else if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
+            }
+            if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
             {
                 //Norushen: Coruption
                 if (player->HasAura(144421))
@@ -332,7 +333,11 @@ public:
                         break;
                     case DONE:
                         for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);                
+                            HandleGameObject(*guid, true);
+                        if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
+                            norush->DespawnOrUnsummon();
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->DespawnOrUnsummon();
                         break;
                     }
                 }

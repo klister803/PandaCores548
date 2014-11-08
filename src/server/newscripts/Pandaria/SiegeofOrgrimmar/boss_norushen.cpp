@@ -45,19 +45,6 @@ enum eSpells
     SPELL_BLIND_HATRED_V            = 145226,
     SPELL_BLIND_HATRED_D            = 145227,
 
-    //Titanic Corruption
-    SPELL_BURST_OF_CORRUPTION       = 144654,
-    SPELL_CORRUPTION_TC             = 144639,
-    SPELL_HURL_CORRUPTION           = 144649,
-    SPELL_PIERCING_CORRUPTION       = 144657,
-    SPELL_TITANIC_SMASH             = 144628,
-    SPELL_TC_CLEANSE                = 147657,
-
-    //Greater Corruption
-    SPELL_BOTTOMLESS_PIT            = 146703,
-    SPELL_DISHEARTENING_LAUGH       = 146707,
-    SPELL_LINGERING_CORRUPTION      = 144514,
-
     // Frayed. Manifestation of corruption.
     SPELL_BURST_OF_ANGER            = 147082,
 
@@ -71,6 +58,9 @@ enum eSpells
     //Essence of Corruption
     SPELL_EXPEL_CORRUPTION_AT       = 144548, //Create areatrigger
     SPELL_EXPELLED_CORRUPTION       = 144480,
+
+    // TC
+    SPELL_TC_CLEANSE                = 147657,
 
     /*   C H A L L E N GE*/
     SPELL_PURIFIED_CHALLENGE        = 146022,
@@ -95,6 +85,14 @@ enum eSpells
 
     //Tank
     SPELL_TITANIC_CORRUPTION        = 144848, //Titanic Corruption
+
+    //Healer
+    SPELL_GREATER_CORRUPTION        = 144980, //Greater Corruption
+    SPELL_MELEE_COMBTANT            = 144975, //Melee Combatant
+    SPELL_CASTER                    = 144977,
+    SPELL_SUMMON_GUARDIAN           = 144973, //Summon Guardian
+    SPELL_PROTECTORS_EXHAUSTED      = 148424,
+    SPELL_PROTECTORS_DD             = 144521,
 };
 
 enum sEvents
@@ -129,9 +127,6 @@ enum sData
     //Blind Hatred
     DATA_START_MOVING          = 1,
     DATA_FILL_MOVE_ORDER       = 2,
-
-    //Challenge
-    DATA_CHALLENGE_ENTRY       = 3,
 };
 
 enum sAction
@@ -469,36 +464,16 @@ class boss_amalgam_of_corruption : public CreatureScript
                 }
             }
 
-            void SetData(uint32 type, uint32 data)
-            {
-                if (type == DATA_CHALLENGE_ENTRY)
-                {
-                    switch(data)
-                    {
-                        case NPC_MANIFESTATION_OF_CORRUPTION_C:
-                            DoCast(me, SPELL_SPAWN_VICTORY_ORB_DD_BIG);
-                            break;
-                        case NPC_ESSENCE_OF_CORRUPTION_C:
-                        {
-                            float rand_x, rand_y, rand_z;
-                            me->GetRandomPoint(*me, 50.0f, rand_x, rand_y, rand_z);
-                            me->CastSpell(rand_x, rand_y, rand_z, SPELL_SPAWN_VICTORY_ORB_DD_SML);
-                            break;
-                        }
-                    }
-                }
-            }
-
             void EnterCombat(Unit* who)
             {
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 _EnterCombat();
                 me->AddAura(SPELL_ICY_FEAR, me);
                 ApplyOrRemoveBar(true);
-                //events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
-                //events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);     //18:23:51.000 - 18:24:02.000
-                //events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
-                //events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
+                events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
+                events.ScheduleEvent(EVENT_UNLEASHED_ANGER, 11000);     //18:23:51.000 - 18:24:02.000
+                events.ScheduleEvent(EVENT_QUARANTINE_SAFETY, 420000);
+                events.ScheduleEvent(EVENT_BLIND_HATRED, 12000);
                 me->CastSpell(me, SPELL_SPAWN_AMALGAM, true);
 
                 //Summon Purifying light.
@@ -759,6 +734,7 @@ struct npc_norushenChallengeAI : public ScriptedAI
                 break;
         }
         cleanseSpellID = 0;
+        pCreature->SetPhaseMask(0x2, true);
     }
 
     uint32 cleanseSpellID;
@@ -774,6 +750,8 @@ struct npc_norushenChallengeAI : public ScriptedAI
     {
         if (!instance)
             return;
+
+        me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
 
         if (challenge)
         {
@@ -799,13 +777,25 @@ struct npc_norushenChallengeAI : public ScriptedAI
 
         if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
         {
-            amalgam->AI()->SetData(DATA_CHALLENGE_ENTRY, me->GetEntry());
+            summonInRealWorld(amalgam);
             amalgam->AI()->SetGUID(plr->GetGUID(), -1);
             if (!amalgam->AI()->GetData(plr->GetGUID()))
-            {
                 plr->RemoveAurasDueToSpell(SPELL_TEST_OF_SERENITY);
-                plr->RemoveAurasDueToSpell(SPELL_TEST_OF_RELIANCE);
-                plr->RemoveAurasDueToSpell(SPELL_TEST_OF_CONFIDENCE);
+        }
+        me->DespawnOrUnsummon();
+    }
+
+    void summonInRealWorld(Creature* amalgan)
+    {
+        switch(me->GetEntry())
+        {
+            case NPC_MANIFESTATION_OF_CORRUPTION_C:
+                amalgan->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_SPAWN_VICTORY_ORB_DD_BIG);
+                break;
+            case NPC_ESSENCE_OF_CORRUPTION_C:
+            {
+                amalgan->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_SPAWN_VICTORY_ORB_DD_SML);
+                break;
             }
         }
     }
@@ -816,7 +806,7 @@ struct npc_norushenChallengeAI : public ScriptedAI
         {
             case EVENT_1:
                 if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
-                    amalgam->AI()->SetData(DATA_CHALLENGE_ENTRY, me->GetEntry());
+                    summonInRealWorld(amalgam);
                 me->DespawnOrUnsummon();
                 break;
         }
@@ -1098,7 +1088,17 @@ public:
         npc_titanic_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             instance = (InstanceScript*)pCreature->GetInstanceScript();
+            pCreature->SetPhaseMask(0x2, true);
         }
+
+        enum spells
+        {
+            SPELL_BURST_OF_CORRUPTION       = 144654,
+            SPELL_CORRUPTION_TC             = 144639,
+            SPELL_HURL_CORRUPTION           = 144649,
+            SPELL_PIERCING_CORRUPTION       = 144657,
+            SPELL_TITANIC_SMASH             = 144628,
+        };
 
         InstanceScript* instance;
         EventMap events;
@@ -1113,6 +1113,7 @@ public:
             if (!instance)
                 return;
 
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             events.RescheduleEvent(EVENT_1, 60000);
             me->SetInCombatWithZone();
         }
@@ -1176,17 +1177,34 @@ public:
 };
 
 //72001 for healers
-class npc_greater_corruption : public CreatureScript
+class npc_norushen_heal_ch_greater_corruption : public CreatureScript
 {
 public:
-    npc_greater_corruption() : CreatureScript("npc_greater_corruption") { }
+    npc_norushen_heal_ch_greater_corruption() : CreatureScript("npc_norushen_heal_ch_greater_corruption") { }
 
-    struct npc_greater_corruptionAI : public ScriptedAI
+    struct npc_norushen_heal_ch_greater_corruptionAI : public ScriptedAI
     {
-        npc_greater_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
+        npc_norushen_heal_ch_greater_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            pCreature->SetPhaseMask(0x2, true);
         }
+
+        enum spells
+        {
+            SPELL_BOTTOMLESS_PIT             = 146705,
+            SPELL_DISHEARTENING_LAUGH        = 146707,
+            SPELL_LINGERING_CORRUPTION       = 144514,
+            SPELL_CLEANSE                    = 147657,
+        };
+
+        enum events
+        {
+            EVENT_SPELL_BOTTOMLESS_PIT       = 1,
+            EVENT_SPELL_DISHEARTENING_LAUGH  = 2,
+            EVENT_SPELL_LINGERING_CORRUPTION = 3,
+            EVENT_END                        = 4,
+        };
 
         InstanceScript* pInstance;
         EventMap events;
@@ -1196,25 +1214,258 @@ public:
             events.Reset();
         }
 
-        void EnterCombat(Unit* who){}
+        void IsSummonedBy(Unit* summoner)
+        {
+            me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+        }
 
+        void EnterCombat(Unit* who)
+        {
+            //20:10:05.000
+            events.ScheduleEvent(EVENT_SPELL_BOTTOMLESS_PIT, 17000);         //20:10:22.000
+            events.ScheduleEvent(EVENT_SPELL_DISHEARTENING_LAUGH, 12000);    //20:10:17.000 20:10:29.000
+            events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);   //20:10:19.000
+            if (me->GetPhaseMask() == 0x2) events.ScheduleEvent(EVENT_END, 60000);
+        }
+
+        void JustDied(Unit* killer)
+        {
+            Unit* owner = me->GetAnyOwner();
+            if (!owner)
+                return;
+
+            Player * plr = owner->ToPlayer();
+            if (!plr)
+                return;
+
+            if (me->GetPhaseMask() == 0x1)
+            {
+                me->DespawnOrUnsummon();
+                return;
+            }
+
+            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
+            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
+            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
+
+            plr->CastSpell(plr, SPELL_CLEANSE, false);
+            CheckCorruptionForCleanse(plr);
+            plr->RemoveAurasDueToSpell(SPELL_TEST_OF_RELIANCE);
+            me->DespawnOrUnsummon();
+        }
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
+            UpdateVictim();
             events.Update(diff);
 
-          /*  while (uint32 eventId = events.ExecuteEvent())
-            {                
-            }*/
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch(eventId)
+                {
+                    case EVENT_SPELL_BOTTOMLESS_PIT:
+                        DoCast(me, SPELL_BOTTOMLESS_PIT);
+                        events.ScheduleEvent(EVENT_SPELL_BOTTOMLESS_PIT, 17000);
+                        break;
+                    case EVENT_SPELL_DISHEARTENING_LAUGH:
+                        DoCast(me, SPELL_DISHEARTENING_LAUGH);
+                        events.ScheduleEvent(EVENT_SPELL_DISHEARTENING_LAUGH, 12000);
+                        break;
+                    case EVENT_SPELL_LINGERING_CORRUPTION:
+                        DoCastVictim(SPELL_LINGERING_CORRUPTION);
+                        events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);
+                        break;
+                    case EVENT_END:
+                        me->SetPhaseMask(0x1, true);
+                        me->SetInCombatWithZone();
+                        //me->DespawnOrUnsummon();
+                        break;
+                }
+            }
+            DoMeleeAttackIfReady();
         }
     };
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new npc_greater_corruptionAI(pCreature);
+        return new npc_norushen_heal_ch_greater_corruptionAI(pCreature);
+    }
+};
+
+struct npc_norushen_heal_chAI : public ScriptedAI
+{
+    npc_norushen_heal_chAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        pCreature->SetPhaseMask(0x2, true);
+    }
+
+    EventMap events;
+
+    void Reset()
+    {
+        events.Reset();
+    }
+
+    void DamageTaken(Unit* attacker, uint32 &damage)
+    {
+        if (damage >= me->GetHealth())
+        {
+            if (!me->HasAura(SPELL_PROTECTORS_EXHAUSTED))
+                DoCast(me, SPELL_PROTECTORS_EXHAUSTED);
+            damage = 0;
+        }
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        events.ScheduleEvent(EVENT_1, 60000);
+    }
+
+    void HealReceived(Unit* /*done_by*/, uint32& addhealth)
+    {
+        float newpct = GetHealthPctWithHeal(addhealth);
+        if (newpct > 30.0f && me->HasAura(SPELL_PROTECTORS_EXHAUSTED))
+            me->RemoveAurasDueToSpell(SPELL_PROTECTORS_EXHAUSTED);
+    }
+
+    void IsSummonedBy(Unit* summoner)
+    {
+        me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
+        if (Creature* corruption = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 50.0f, true))
+        {
+            corruption->AddPlayerInPersonnalVisibilityList(me->GetGUID());
+            me->AddPlayerInPersonnalVisibilityList(corruption->GetGUID());
+            AttackStart(corruption);
+        }
+    }
+
+    virtual void DoEvent(uint32 eventId)
+    {
+        if (eventId == EVENT_1)
+            me->DespawnOrUnsummon();
+    }
+
+    void UpdateAI(uint32 diff)
+    {
+        UpdateVictim();
+
+        events.Update(diff);
+
+        while (uint32 eventId = events.ExecuteEvent())
+            DoEvent(eventId);
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+//71996
+class npc_norushen_heal_ch_melee_combtant : public CreatureScript
+{
+public:
+    npc_norushen_heal_ch_melee_combtant() : CreatureScript("npc_norushen_heal_ch_melee_combtant") { }
+
+    struct npc_norushen_heal_ch_melee_combtantAI : public npc_norushen_heal_chAI
+    {
+        npc_norushen_heal_ch_melee_combtantAI(Creature* pCreature) : npc_norushen_heal_chAI(pCreature)
+        {
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            DoCast(me, SPELL_PROTECTORS_DD);
+            npc_norushen_heal_chAI::IsSummonedBy(summoner);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_norushen_heal_ch_melee_combtantAI(pCreature);
+    }
+};
+
+//72000
+class npc_norushen_heal_ch_caster : public CreatureScript
+{
+public:
+    npc_norushen_heal_ch_caster() : CreatureScript("npc_norushen_heal_ch_caster") { }
+
+    struct npc_norushen_heal_ch_casterAI : public npc_norushen_heal_chAI
+    {
+        npc_norushen_heal_ch_casterAI(Creature* pCreature) : npc_norushen_heal_chAI(pCreature)
+        {
+        }
+
+        enum spells
+        {
+            SPELL_FIREBALL      = 144522,
+        };
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            DoCast(me, SPELL_PROTECTORS_DD);
+            npc_norushen_heal_chAI::IsSummonedBy(summoner);
+        }
+
+        void EnterCombat(Unit* who)
+        {
+            npc_norushen_heal_chAI::EnterCombat(who);
+            events.ScheduleEvent(EVENT_2, 1500);
+        }
+
+        void DoEvent(uint32 eventId)
+        {
+            npc_norushen_heal_chAI::DoEvent(eventId);
+            if (eventId == EVENT_2)
+            {
+                DoCastVictim(SPELL_FIREBALL);
+                events.ScheduleEvent(EVENT_2, 1500);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_norushen_heal_ch_casterAI(pCreature);
+    }
+};
+
+//71995
+class npc_norushen_heal_ch_guardian : public CreatureScript
+{
+public:
+    npc_norushen_heal_ch_guardian() : CreatureScript("npc_norushen_heal_ch_guardian") { }
+
+    struct npc_norushen_heal_ch_guardianAI : public npc_norushen_heal_chAI
+    {
+        npc_norushen_heal_ch_guardianAI(Creature* pCreature) : npc_norushen_heal_chAI(pCreature)
+        {
+        }
+
+        enum spells
+        {
+            SPELL_THREATENING_STRIKE            = 144527,//Threatening Strike 20:10:06.000 20:10:12.000
+        };
+
+        void EnterCombat(Unit* who)
+        {
+            npc_norushen_heal_chAI::EnterCombat(who);
+            events.ScheduleEvent(EVENT_2, 1000);
+        }
+
+        void DoEvent(uint32 eventId)
+        {
+            npc_norushen_heal_chAI::DoEvent(eventId);
+            if (eventId == EVENT_2)
+            {
+                DoCastVictim(SPELL_THREATENING_STRIKE);
+                events.ScheduleEvent(EVENT_2, 6000);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_norushen_heal_ch_guardianAI(pCreature);
     }
 };
 
@@ -1471,6 +1722,9 @@ class spell_norushen_challenge : public SpellScriptLoader
                 if (Creature* norush = instance->instance->GetCreature(instance->GetData64(NPC_NORUSHEN)))
                     norush->AI()->ZoneTalk(TEXT_GENERIC_10, target->GetGUID());
 
+                target->SetPhaseMask(0x2, true);
+                target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE);
+
                 switch(GetId())
                 {
                     case SPELL_TEST_OF_SERENITY:    //dd
@@ -1482,6 +1736,10 @@ class spell_norushen_challenge : public SpellScriptLoader
                         break;
                     }
                     case SPELL_TEST_OF_RELIANCE:    //heal
+                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_GREATER_CORRUPTION);
+                        target->CastSpell(789.889f, 958.021f, 356.34f, SPELL_MELEE_COMBTANT);
+                        target->CastSpell(772.854f, 947.467f, 356.34f, SPELL_CASTER);
+                        target->CastSpell(780.8785f, 974.7535f, 356.34f, SPELL_SUMMON_GUARDIAN);
                         break;
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
                         target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_TITANIC_CORRUPTION);
@@ -1508,6 +1766,8 @@ class spell_norushen_challenge : public SpellScriptLoader
                     default:
                         break;                    
                 }
+                target->SetPhaseMask(0x1, true);
+                target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, 0);
             }
 
             void Register()
@@ -1520,6 +1780,49 @@ class spell_norushen_challenge : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_norushen_challenge_AuraScript();
+        }
+};
+
+//144521
+class spell_norushen_heal_test_dd : public SpellScriptLoader
+{
+    public:
+        spell_norushen_heal_test_dd() : SpellScriptLoader("spell_norushen_heal_test_dd") { }
+
+        class spell_norushen_heal_test_dd_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_norushen_heal_test_dd_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                //ToDo: posible it's dinamically damage modificator.
+                if (AuraEffect* aurEff = caster->GetAuraEffect(GetSpellInfo()->Id, EFFECT_2))
+                {
+                    if (aurEff->GetAmount() == 300)
+                        return;
+
+                    if (AuraApplication * aurApp = GetAura()->GetApplicationOfTarget(GetCasterGUID()))
+                    {
+                        aurEff->HandleEffect(aurApp, AURA_EFFECT_HANDLE_REAL, false);
+                        aurEff->SetAmount(300);
+                        aurEff->HandleEffect(aurApp, AURA_EFFECT_HANDLE_REAL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_norushen_heal_test_dd_AuraScript::OnTick, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_norushen_heal_test_dd_AuraScript();
         }
 };
 
@@ -1536,11 +1839,15 @@ void AddSC_boss_norushen()
     new npc_norushen_manifestation_of_corruption_released();
     new npc_essence_of_corruption_released();
     new npc_titanic_corruption();
-    new npc_greater_corruption();
+    new npc_norushen_heal_ch_greater_corruption();
+    new npc_norushen_heal_ch_melee_combtant();
+    new npc_norushen_heal_ch_caster();
+    new npc_norushen_heal_ch_guardian();
     new spell_norushen_blind_hatred();
     new spell_norushen_blind_hatred_prock();
     new spell_unleashed_anger();
     new spell_icy_fear_dmg();
     new spell_norushen_residual_corruption();
     new spell_norushen_challenge();
+    new spell_norushen_heal_test_dd();
 }
