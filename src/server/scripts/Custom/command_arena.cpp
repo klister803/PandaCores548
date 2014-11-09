@@ -302,7 +302,7 @@ public:
 
     static bool HandleCloseSeasonCommand(ChatHandler* handler, const char* args)
     {
-        bool debugOnly = true;
+        bool debugOnly = false;
         if(!debugOnly)
             sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_START);
         sLog->outArena("Окончание сезона Ноябрь 2014");

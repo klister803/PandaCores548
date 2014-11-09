@@ -21968,10 +21968,11 @@ void Unit::SendRemoveFromThreatListOpcode(HostileReference* pHostileReference)
 // baseRage means damage taken when attacker = false
 void Unit::RewardRage(float baseRage, bool attacker)
 {
-    float addRage = baseRage;
+    float addRage = 0.0f;
 
     if (attacker)
     {
+        addRage = baseRage;
         // talent who gave more rage on attack
         AddPct(addRage, GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT));
     }
