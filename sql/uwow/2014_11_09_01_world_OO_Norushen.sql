@@ -65,9 +65,9 @@ UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_cor
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_manifestation_of_corruption_released' WHERE `creature_template`.`entry` = 72264;
 
 --
-INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
-INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `visualId`, `comment`) VALUES 
-('5022', '1', '0', '0', '0', '0', '32875', '0', 'OO:NN spell_norushen_residual_corruption');
+REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('145074', 'spell_norushen_residual_corruption');
+REPLACE INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `comment`) VALUES 
+('5022', '1', '0', '0', '0', '0', '32875', 'OO:NN spell_norushen_residual_corruption');
 UPDATE `creature_template` SET `ScriptName` = 'npc_norushen_residual_corruption' WHERE `creature_template`.`entry` = 72550;
 
 --
@@ -184,3 +184,8 @@ REPLACE INTO `pet_stats` (`entry`, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, 
 
 -- Cell should be in phase too.
 UPDATE  `gameobject` SET `phaseMask` = `phaseMask` | 0x2 WHERE map = 1136 AND id in (223142, 223143, 223144, 223145, 223146, 223147);
+
+-- Enable Sha
+UPDATE `creature` SET `spawnMask` = '16632' WHERE id = 71734;
+-- sha loot
+UPDATE `gameobject_template` SET `data1` = '221739' WHERE `gameobject_template`.`entry` = 221739;

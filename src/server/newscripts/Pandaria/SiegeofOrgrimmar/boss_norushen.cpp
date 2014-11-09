@@ -226,7 +226,7 @@ class boss_norushen : public CreatureScript
 
             void Reset()
             {
-                me->SetUInt32Value(UNIT_NPC_FLAGS, 1);
+                //me->SetUInt32Value(UNIT_NPC_FLAGS, 1);
             }
 
             void DoAction(int32 const action)
@@ -549,7 +549,8 @@ class boss_amalgam_of_corruption : public CreatureScript
                     }
 
                 }
-                DoMeleeAttackIfReady();
+                if (!me->HasUnitState(UNIT_STATE_CASTING))
+                    DoMeleeAttackIfReady();
             }
         };
 
@@ -919,7 +920,8 @@ public:
                 }
                 ActionEvent(eventId);
             }
-            DoMeleeAttackIfReady();
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
+                DoMeleeAttackIfReady();
         }
     };
 
@@ -1002,7 +1004,8 @@ public:
                         break;
                 }
             }
-            DoMeleeAttackIfReady();
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
+                DoMeleeAttackIfReady();
         }
     };
 
@@ -1114,7 +1117,7 @@ public:
                 return;
 
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
-            events.RescheduleEvent(EVENT_1, 60000);
+            me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
         }
 
@@ -1136,9 +1139,6 @@ public:
             { 
                 switch (eventId)
                 {
-                    case EVENT_1:
-                        me->DespawnOrUnsummon();
-                        break;
                     case EVENT_PIERCING_CORRUPTION:
                         if (me->getVictim())
                             DoCast(me->getVictim(), SPELL_PIERCING_CORRUPTION);
@@ -1166,7 +1166,9 @@ public:
                         break;
                 }
             }
-            DoMeleeAttackIfReady();
+
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
+                DoMeleeAttackIfReady();
         }
     };
 
@@ -1282,7 +1284,8 @@ public:
                         break;
                 }
             }
-            DoMeleeAttackIfReady();
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
+                DoMeleeAttackIfReady();
         }
     };
 
