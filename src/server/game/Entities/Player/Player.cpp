@@ -24533,12 +24533,12 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::AddPPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
+void Player::AddRPPMSpellCooldown(uint32 spellid, uint32 itemid, double end_time)
 {
     SpellCooldown sc;
     sc.end = end_time;
     sc.itemid = itemid;
-    m_pppmspellCooldowns[spellid] = sc;
+    m_rppmspellCooldowns[spellid] = sc;
 }
 
 void Player::SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
@@ -30194,4 +30194,50 @@ bool TeleportEvent::Schedule()
 
     m_owner->m_Events.AddEvent(this, m_owner->m_Events.CalculateTime(m_delay));
     return true;
+}
+
+bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto)
+{
+    if (cooldown)
+        return false;
+
+    double preciseTime = getPreciseTime();
+    double averageProcInterval = 60.0f / RPPM;
+    double timeSinceLastSuccessfulProc = preciseTime - GetLastSuccessfulProc(spellProto->Id);
+    double timeSinceLastChanceToProc   = preciseTime - GetLastChanceToProc(spellProto->Id);
+
+    if (timeSinceLastChanceToProc > 10.0)
+        timeSinceLastChanceToProc = 10.0;
+
+    if (timeSinceLastSuccessfulProc > 1000.0)
+        timeSinceLastSuccessfulProc = 1000.0;
+
+    float HasteOrCritMod = 1.0f;
+
+    switch (spellProto->Id)
+    {
+        case 139134: case 139171:
+            HasteOrCritMod += GetFloatValue(PLAYER_CRIT_PERCENTAGE) / 100.0f;
+            break;
+        case 138849: case 138924:
+        case 138968: case 139190:
+        case 137595: case 146316:
+        case 146197: case 146195:
+        case 138367: case 138365:
+        case 118314: case 104428:
+        case 104441:
+            HasteOrCritMod = GetMaxBaseHastRatingPct();
+            break;
+        default:
+            break;
+    }
+
+    float multiplier = std::max(1.0f, 1.0f + (float(timeSinceLastSuccessfulProc / averageProcInterval) - 1.5f) * 3.0f);
+    float chance = multiplier * RPPM * HasteOrCritMod * (timeSinceLastChanceToProc) / 60.0f * 100.0f;
+
+    cooldown = spellProto->procTimeRec / 1000.0;
+
+    SetLastChanceToProc(spellProto->Id, preciseTime);
+
+    return roll_chance_f(chance);
 }

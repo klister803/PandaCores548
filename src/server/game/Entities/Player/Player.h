@@ -198,7 +198,9 @@ struct SpellChargeData
     uint32 timer;
 };
 
-typedef std::map<uint32, SpellCooldown> PPPMSpellCooldowns;
+typedef std::map<uint32, double> RPPMLastSuccessfulProc;
+typedef std::map<uint32, double> RPPMLastChanceToProc;
+typedef std::map<uint32, SpellCooldown> RPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef std::map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
@@ -2172,13 +2174,18 @@ class Player : public Unit, public GridObject<Player>
         }
         double GetPPPMSpellCooldownDelay(uint32 spell_id) const
         {
-            PPPMSpellCooldowns::const_iterator itr = m_pppmspellCooldowns.find(spell_id);
+            RPPMSpellCooldowns::const_iterator itr = m_rppmspellCooldowns.find(spell_id);
             double t = getPreciseTime();
-            return uint32(itr != m_pppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
+            return double(itr != m_rppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
+        double GetLastSuccessfulProc(uint32 spell_id) { return m_rppmLastSuccessfulProc[spell_id]; }
+        double GetLastChanceToProc(uint32 spell_id) { return m_rppmLastChanceToProc[spell_id]; }
+        void SetLastSuccessfulProc(uint32 spell_id, double time) { m_rppmLastSuccessfulProc[spell_id] = time; }
+        void SetLastChanceToProc(uint32 spell_id, double time) { m_rppmLastChanceToProc[spell_id] = time; }
+        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto);
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
-        void AddPPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
+        void AddRPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
@@ -3504,7 +3511,9 @@ class Player : public Unit, public GridObject<Player>
         ReputationMgr  m_reputationMgr;
         BattlePetMgr   m_battlePetMgr;
 
-        PPPMSpellCooldowns m_pppmspellCooldowns;
+        RPPMLastChanceToProc m_rppmLastChanceToProc;
+        RPPMLastSuccessfulProc m_rppmLastSuccessfulProc;
+        RPPMSpellCooldowns m_rppmspellCooldowns;
         SpellCooldowns m_spellCooldowns;
         SpellChargeDataMap m_spellChargeData;
         UCSpellChargeDataMap m_uncategorySpellChargeData;

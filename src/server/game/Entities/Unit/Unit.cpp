@@ -13511,18 +13511,6 @@ float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spe
     return floor((WeaponSpeed * PPM) / 600.0f);   // result is chance in percents (probability = Speed_in_sec * (PPM / 60))
 }
 
-bool Unit::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto)
-{
-    double baseCD = 60.0f / RPPM;
-    if(spellProto->procTimeRec)
-        baseCD = spellProto->procTimeRec / 1000;
-
-    float chance = std::max(1.0f, float(((baseCD - cooldown) / baseCD) * 100.0f));
-    cooldown += baseCD;
-
-    return roll_chance_f(chance);
-}
-
 void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
 {
     if (mount)
@@ -19333,45 +19321,26 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
         if(SpellProcsPerMinuteEntry const* procPPM = sSpellProcsPerMinuteStore.LookupEntry(spellProto->procPerMinId))
         {
             spellPPM = procPPM->ppmRate;
-            if (!isVictim)
+
+            if(Player* player = ToPlayer())
             {
-                if(Player* player = ToPlayer())
+                uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
+                if(std::list<uint32> const* modList = GetSpellProcsPerMinuteModList(spellProto->procPerMinId))
+                    for (std::list<uint32>::const_iterator itr = modList->begin(); itr != modList->end(); ++itr)
+                    {
+                        if(SpellProcsPerMinuteModEntry const* procPPMmod = sSpellProcsPerMinuteModStore.LookupEntry((*itr)))
+                            if(procPPMmod->specId == specId)
+                                spellPPM *= procPPMmod->ppmRateMod + 1;
+                    }
+
+                double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
+                bool procked = player->GetRPPMProcChance(cooldown, spellPPM, spellProto);
+                if(procked)
                 {
-                    uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
-                    if(std::list<uint32> const* modList = GetSpellProcsPerMinuteModList(spellProto->procPerMinId))
-                        for (std::list<uint32>::const_iterator itr = modList->begin(); itr != modList->end(); ++itr)
-                        {
-                            if(SpellProcsPerMinuteModEntry const* procPPMmod = sSpellProcsPerMinuteModStore.LookupEntry((*itr)))
-                                if(procPPMmod->specId == specId)
-                                    spellPPM *= procPPMmod->ppmRateMod + 1;
-                        }
-                    spellPPM *= GetMaxBaseHastRatingPct();
-                    double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
-                    bool procked = GetRPPMProcChance(cooldown, spellPPM, spellProto);
-                    if(procked)
-                        player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
-                    return procked;
+                    player->SetLastSuccessfulProc(spellProto->Id, getPreciseTime());
+                    player->AddRPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
                 }
-            }
-            else
-            {
-                if(Player* player = victim->ToPlayer())
-                {
-                    uint32 specId = player->GetSpecializationId(player->GetActiveSpec());
-                    if(std::list<uint32> const* modList = GetSpellProcsPerMinuteModList(spellProto->procPerMinId))
-                        for (std::list<uint32>::const_iterator itr = modList->begin(); itr != modList->end(); ++itr)
-                        {
-                            if(SpellProcsPerMinuteModEntry const* procPPMmod = sSpellProcsPerMinuteModStore.LookupEntry((*itr)))
-                                if(procPPMmod->specId == specId)
-                                    spellPPM *= procPPMmod->ppmRateMod + 1;
-                        }
-                    spellPPM *= victim->GetMaxBaseHastRatingPct();
-                    double cooldown = player->GetPPPMSpellCooldownDelay(spellProto->Id); //base cap
-                    bool procked = GetRPPMProcChance(cooldown, spellPPM, spellProto);
-                    if(procked)
-                        player->AddPPPMSpellCooldown(spellProto->Id, 0, getPreciseTime() + cooldown);
-                    return procked;
-                }
+                return procked;
             }
         }
         return roll_chance_f(chance);
