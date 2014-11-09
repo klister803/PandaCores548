@@ -2749,8 +2749,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellAuraDummyMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14               15
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `check_spell_id` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2776,6 +2776,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 chance = fields[12].GetInt32();
         int32 group = fields[13].GetInt32();
         int32 procFlags = fields[14].GetInt32();
+        int32 check_spell_id = fields[15].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2807,6 +2808,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.chance = chance;
         temptrigger.group = group;
         temptrigger.procFlags = procFlags;
+        temptrigger.check_spell_id = check_spell_id;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -2863,6 +2865,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.chance = chance;
         temptrigger.group = group;
         temptrigger.procFlags = 0;
+        temptrigger.check_spell_id = 0;
         mSpellTriggeredDummyMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -4041,13 +4044,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
-                case 6544:  // Heroic Leap
-                    spellInfo->Effects[EFFECT_2].Effect = SPELL_EFFECT_APPLY_AURA;
-                    spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_2].TargetA = TARGET_UNIT_CASTER;
-                    spellInfo->Effects[EFFECT_2].TargetB = 0;
-                    spellInfo->Effects[EFFECT_2].BasePoints = 0;
-                    break;
                 case 94339: // Fungal Area
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(18); // 20s
                     break;
@@ -4274,7 +4270,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 131736: // Unstable Affliction (Malefic Grasp)
                 case 132566: // Seed of Corruption (Malefic Grasp)
                 case 131737: // Agony (Malefic Grasp)
-                case 148022: // Icicle
                 case 85288:  // Raging Blow
                 case 114908: // Spirit Shell
                 case 47753:  // Divine Aegis

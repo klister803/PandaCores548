@@ -660,27 +660,6 @@ class spell_warr_heroic_leap : public SpellScriptLoader
         {
             return new spell_warr_heroic_leap_SpellScript();
         }
-
-        class spell_warr_heroic_leap_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warr_heroic_leap_AuraScript);
-
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                    caster->CastSpell(caster, WARRIOR_SPELL_HEROIC_LEAP_DAMAGE, true);
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_warr_heroic_leap_AuraScript::OnRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warr_heroic_leap_AuraScript();
-        }
 };
 
 // Heroic Leap (damage) - 52174
@@ -721,6 +700,13 @@ class spell_warr_shockwave : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_shockwave_SpellScript);
 
+            int32 delay;
+            bool Load()
+            {
+                delay = 0;
+                return true;
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -728,8 +714,25 @@ class spell_warr_shockwave : public SpellScriptLoader
                         _player->CastSpell(target, WARRIOR_SPELL_SHOCKWAVE_STUN, true);
             }
 
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.size() >= GetSpellInfo()->Effects[EFFECT_0].BasePoints)
+                    delay = -GetSpellInfo()->Effects[EFFECT_3].BasePoints * IN_MILLISECONDS;
+            }
+
+
+            void HandleAfterCast()
+            {
+                if(!delay)
+                    return;
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->ModifySpellCooldown(GetSpellInfo()->Id, delay);
+            }
+
             void Register()
             {
+                AfterCast += SpellCastFn(spell_warr_shockwave_SpellScript::HandleAfterCast);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warr_shockwave_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
                 OnHit += SpellHitFn(spell_warr_shockwave_SpellScript::HandleOnHit);
             }
         };
@@ -1199,6 +1202,35 @@ class spell_warr_shield_visual : public SpellScriptLoader
         }
 };
 
+// Slam AOE - 146361
+class spell_war_slam_aoe : public SpellScriptLoader
+{
+    public:
+        spell_war_slam_aoe() : SpellScriptLoader("spell_war_slam_aoe") { }
+
+        class spell_war_slam_aoe_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_war_slam_aoe_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if(Unit* target = _player->GetSelectedUnit())
+                        targets.remove(target);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_slam_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_war_slam_aoe_SpellScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1231,4 +1263,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_t16_dps_2p();
     new spell_warr_raging_blow_remove();
     new spell_warr_shield_visual();
+    new spell_war_slam_aoe();
 }

@@ -855,9 +855,12 @@ class spell_mage_combustion : public SpellScriptLoader
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         int32 combustionBp = 0;
+                        int32 percent = 20;
+                        if(_player->HasAura(56368))
+                            percent += 20;
 
                         if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_MAGE_IGNITE, EFFECT_0))
-                            combustionBp += CalculatePct((aurEff->GetAmount() / 2), 20);
+                            combustionBp += CalculatePct(aurEff->GetAmount(), percent);
 
                         if (combustionBp)
                             _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
@@ -2066,35 +2069,87 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Unit* caster = GetCaster())
-                {                
+                {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->HasAura(SPELL_MAGE_ICY_VEINS))    
-                        {    
+                        int32 _damage = GetHitDamage();
+                        if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
+                        {
+                            if (target != GetExplTargetUnit())
+                            {
+                                _damage = int32(_damage * 0.25f);
+                                SetHitDamage(_damage);
+                            }
+                        }
+                        if (caster->HasAura(SPELL_MAGE_ICY_VEINS))
+                        {
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT)
                             {    
                                 caster->CastSpell(target, 131079, true);
                                 caster->CastSpell(target, 131079, true);
                             }
-                            
+
                             if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
-                            {    
+                            {
                                 caster->CastSpell(target, 131080, true);
                                 caster->CastSpell(target, 131080, true);
                             }
-                            
+
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
-                            {    
+                            {
                                 caster->CastSpell(target, 131081, true);
                                 caster->CastSpell(target, 131081, true);
                             }
-                        }    
+                        }
+                        // Icicle
+                        if (caster->HasAura(148016))
+                        {
+                            if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT || GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
+                            {
+                                int32 visual = 148017;
+                                Aura* icicle2 = caster->GetAura(148012);
+                                Aura* icicle3 = caster->GetAura(148013);
+                                Aura* icicle4 = caster->GetAura(148014);
+                                Aura* icicle5 = caster->GetAura(148015);
+                                Aura* icicle6 = caster->GetAura(148016);
+
+                                if(icicle2 && icicle3 && icicle4 && icicle5 && icicle6)
+                                {
+                                    Aura* icicle = icicle2;
+                                    if(icicle->GetDuration() > icicle3->GetDuration())
+                                    {
+                                        icicle = icicle3;
+                                        visual = 148018;
+                                    }
+                                    if(icicle->GetDuration() > icicle4->GetDuration())
+                                    {
+                                        icicle = icicle4;
+                                        visual = 148019;
+                                    }
+                                    if(icicle->GetDuration() > icicle5->GetDuration())
+                                    {
+                                        icicle = icicle5;
+                                        visual = 148020;
+                                    }
+                                    if(icicle->GetDuration() > icicle6->GetDuration())
+                                    {
+                                        icicle = icicle6;
+                                        visual = 148021;
+                                    }
+
+                                    int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                    caster->CastSpell(target, visual, true);
+                                    caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                    icicle->Remove();
+                                }
+                            }
+                        }
                         if (Unit* owner = caster->GetOwner())
-                        { 
+                        {
                             if (GetSpellInfo()->Id == SPELL_MAGE_WATERBOLT)
-                            {    
+                            {
                                 if (owner->HasAura(SPELL_MAGE_ICY_VEINS))
-                                {    
+                                {
                                     caster->CastSpell(target, 131581, true);
                                     caster->CastSpell(target, 131581, true);
                                 }
@@ -2190,6 +2245,67 @@ class spell_mage_inferno_blast_impact : public SpellScriptLoader
         }
 };
 
+// Icicle - 148022
+class spell_mage_icicle_damage : public SpellScriptLoader
+{
+    public:
+        spell_mage_icicle_damage() : SpellScriptLoader("spell_mage_icicle_damage") { }
+
+        class spell_mage_icicle_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_icicle_damage_SpellScript)
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    if (target != GetExplTargetUnit())
+                        SetHitDamage(int32(GetHitDamage() * 0.5f));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_mage_icicle_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_icicle_damage_SpellScript();
+        }
+};
+
+// Glyph of Icy Veins - 131079, 131080, 131081
+class spell_mage_glyph_of_icy_veins_damage : public SpellScriptLoader
+{
+    public:
+        spell_mage_glyph_of_icy_veins_damage() : SpellScriptLoader("spell_mage_glyph_of_icy_veins_damage") { }
+
+        class spell_mage_glyph_of_icy_veins_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_glyph_of_icy_veins_damage_SpellScript)
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    SetHitDamage(int32(GetHitDamage() * 0.4f));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_mage_glyph_of_icy_veins_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_glyph_of_icy_veins_damage_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2232,4 +2348,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_glyph_of_icy_veins();
     new spell_mage_glyph_of_conjure_familiar();
     new spell_mage_inferno_blast_impact();
+    new spell_mage_icicle_damage();
+    new spell_mage_glyph_of_icy_veins_damage();
 }

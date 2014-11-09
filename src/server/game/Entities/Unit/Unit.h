@@ -1418,6 +1418,7 @@ class Unit : public WorldObject
         void AddUnitState(uint32 f) { m_state |= f; }
         bool HasUnitState(const uint32 f) const { return (m_state & f); }
         void ClearUnitState(uint32 f) { m_state &= ~f; }
+        uint32 GetUnitState() const { return m_state; }
         bool CanFreeMove() const
         {
             return !HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING | UNIT_STATE_IN_FLIGHT |

@@ -2284,7 +2284,7 @@ void FillDisenchantFields(uint32* disenchantID, uint32* requiredDisenchantSkill,
 
             *disenchantID = disenchant->Id;
             *requiredDisenchantSkill = disenchant->RequiredDisenchantSkill;
-            return;
+            //return;
         }
     }
 }

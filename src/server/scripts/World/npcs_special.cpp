@@ -5134,6 +5134,36 @@ class npc_shahram : public CreatureScript
     }
 };
 
+class npc_highwind_albatross : public CreatureScript
+{
+    public:
+        npc_highwind_albatross() : CreatureScript("npc_highwind_albatross") { }
+
+        struct npc_highwind_albatrossAI : Scripted_NoMovementAI
+        {
+            npc_highwind_albatrossAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+            }
+
+            void SpellHit(Unit* source, SpellInfo const* /*spell*/)
+            {
+                if(source)
+                {
+                    Player* player = source->ToPlayer();
+                    if(!player)
+                        return;
+
+                    source->CastSpell(me, 148764, true);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_highwind_albatrossAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -5198,4 +5228,5 @@ void AddSC_npcs_special()
     new npc_transcendence_spirit();
     new npc_past_self();
     new npc_shahram();
+    new npc_highwind_albatross();
 }

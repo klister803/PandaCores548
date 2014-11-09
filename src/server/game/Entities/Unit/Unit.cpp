@@ -7132,7 +7132,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (GetTypeId() != TYPEID_PLAYER)
                         return false;
 
-                    if (!procSpell || procSpell->Id == 76858)
+                    if (!procSpell || procSpell->Id == 1464 || procSpell->Id == 76858 || procSpell->IsAffectingArea())
                         return false;
 
                     triggered_spell_id = 12723;
@@ -7142,7 +7142,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!target)
                         return false;
 
-                    basepoints0 = damage;
+                    basepoints0 = CalculatePct(damage, triggerAmount);
                     break;
                 }
                 // Victorious
@@ -7151,16 +7151,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     RemoveAura(dummySpell->Id);
                     return false;
                 }
-                case 76838: // Mastery: Strikes of Opportunity
-                {
-                    if (effIndex != 0 || !roll_chance_i(triggeredByAura->GetAmount()))
-                        return false;
-
-                    triggered_spell_id = 76858;
-                    break;
-                }
             }
-
             // Retaliation
             if (dummySpell->SpellFamilyFlags[1] & 0x8)
             {
@@ -18152,6 +18143,20 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 else if(!roll_chance_i(itr->chance))
                     continue;
             }
+            if(itr->check_spell_id > 0)
+            {
+                if(!procSpell)
+                    continue;
+                if(procSpell->Id != itr->check_spell_id)
+                    continue;
+            }
+            else if(itr->check_spell_id < 0)
+            {
+                if(!procSpell)
+                    continue;
+                if(procSpell->Id == abs(itr->check_spell_id))
+                    continue;
+            }
 
             if(itr->group != 0 && !groupList.empty())
             {
@@ -18320,13 +18325,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                                 continue;
 
                             int32 delay = itr->bp0;
-                            if (delay > -1 * IN_MILLISECONDS)
-                            {
-                                if (roll_chance_i(50))
-                                    player->ModifySpellCooldown(spellid, -1 * IN_MILLISECONDS);
-                            }
-                            else
-                                player->ModifySpellCooldown(spellid, delay);
+                            player->ModifySpellCooldown(spellid, delay);
                         }
                     }
                     check = true;
@@ -20751,6 +20750,7 @@ void Unit::UpdateObjectVisibility(bool forced)
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)
 {
     AddUnitState(UNIT_STATE_JUMPING);
+    m_TempSpeed = fabs(speedZ * 10.0f);
 
     ObjectGuid guid = GetGUID();
     //! 5.4.1

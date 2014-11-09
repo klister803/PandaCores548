@@ -658,6 +658,7 @@ struct SpellTriggered
     int32 chance;
     int32 group;
     int32 procFlags;
+    int32 check_spell_id;
 };
 
 struct SpellMountList
