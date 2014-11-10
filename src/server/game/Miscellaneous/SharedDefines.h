@@ -1639,16 +1639,22 @@ enum InvisibilityType
 
 enum ServerSideVisibilityType
 {
-    SERVERSIDE_VISIBILITY_GM          = 0,
-    SERVERSIDE_VISIBILITY_GHOST       = 1,
+    SERVERSIDE_VISIBILITY_GM                        = 0,
+    SERVERSIDE_VISIBILITY_GHOST                     = 1,
+    SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES    = 2,
 
-    TOTAL_SERVERSIDE_VISIBILITY_TYPES = 2
+    TOTAL_SERVERSIDE_VISIBILITY_TYPES = 3
 };
 
 enum GhostVisibilityType
 {
     GHOST_VISIBILITY_ALIVE = 0x1,
     GHOST_VISIBILITY_GHOST = 0x2
+};
+
+enum OwneTempCreaturesVisibilityType
+{
+    ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE         = 0x1,
 };
 
 // Spell aura states
