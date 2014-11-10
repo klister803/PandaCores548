@@ -706,8 +706,8 @@ public:
                     break;
                 case EVENT_GRIEVOUS_WOUND:
                     if(Unit* target = me->getVictim())
-                        if (!mtarget->HasAura(SPELL_GRIEVOUS_WOUND))
-                            DoCast(mtarget, SPELL_GRIEVOUS_WOUND);
+                        if (!target->HasAura(SPELL_GRIEVOUS_WOUND))
+                            DoCast(target, SPELL_GRIEVOUS_WOUND);
                     events.ScheduleEvent(EVENT_GRIEVOUS_WOUND, urand(15000, 20000));
                     break;
                 case EVENT_CONSTRICTING_CHAINS:
