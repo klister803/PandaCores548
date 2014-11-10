@@ -29289,7 +29289,7 @@ float Player::GetCollisionHeight(bool mounted)
         CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
         ASSERT(modelData);
 
-        return modelData->CollisionHeight;
+        return modelData->CollisionHeight * 3;
     }
 }
 
