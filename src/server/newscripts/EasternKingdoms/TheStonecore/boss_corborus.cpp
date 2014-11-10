@@ -71,13 +71,14 @@ class boss_corborus : public CreatureScript
             uint8 stage;
             Position barragePos;
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(TSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
+            //WTF?
+            //void InitializeAI()
+            //{
+            //    if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(TSScriptName))
+            //        me->IsAIEnabled = false;
+            //    else if (!me->isDead())
+            //        Reset();
+            //}
 
             void Reset()
             {
