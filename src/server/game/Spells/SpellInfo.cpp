@@ -456,18 +456,8 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
         if (caster)
         {
             int32 level = caster->getLevel();
-            int32 Reqlvl = 0;
-
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA))
                 level = target->getLevel();
-
-            if (m_castItem)                                     
-            {
-                Reqlvl = m_castItem->GetTemplate()->RequiredLevel;
-
-                if (Reqlvl > 1)
-                    level = Reqlvl;
-            }
 
             if(SpellScalingEntry const* _scaling = _spellInfo->GetSpellScaling())
                 if(_scaling->MaxScalingLevel && level > _scaling->MaxScalingLevel)
@@ -489,6 +479,8 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     multiplier *= float(_spellInfo->CastTimeMin + (level - 1) * (_spellInfo->CastTimeMax - _spellInfo->CastTimeMin) / (_spellInfo->CastTimeMaxLevel - 1)) / float(_spellInfo->CastTimeMax);
                 if (_spellInfo->CoefLevelBase > level)
                     multiplier *= (1.0f - _spellInfo->CoefBase) * (float)(level - 1) / (float)(_spellInfo->CoefLevelBase - 1) + _spellInfo->CoefBase;
+                if((_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && m_castItem)
+                    multiplier = GenerateRandPropPoints(m_castItem->GetTemplate(), m_castItem->GetLevel());
 
                 float preciseBasePoints = ScalingMultiplier * multiplier;
 
@@ -498,88 +490,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     preciseBasePoints += frand(-delta, delta);
                 }
 
-                bool isEnchant = false;
-
-                for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
-                    if (Spell* spell = caster->GetCurrentSpell(i))
-                        if (SpellInfo const* _spellinfo = spell->GetSpellInfo())
-                            if (_spellinfo->HasEffect(SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY))
-                                isEnchant = true;
-
-                if (m_castItem && !isEnchant)
-                {
-                    float cof = 0.0f;
-
-                    switch (m_castItem->GetLevel())
-                    {
-                        case 580: cof = 197.482f; break;
-                        case 576: cof = 186.605f; break;
-                        case 574: cof = 181.334f; break;
-                        case 572: cof = 176.140f; break;
-                        case 570: cof = 171.046f; break;
-                        case 567: cof = 163.552f; break;
-                        case 566: cof = 161.094f; break;
-                        case 563: cof = 153.914f; break;
-                        case 561: cof = 149.233f; break;
-                        case 559: cof = 144.611f; break;
-                        case 557: cof = 140.106f; break;
-                        case 553: cof = 131.334f; break;
-                        case 549: cof = 122.863f; break;
-                        case 548: cof = 120.810f; break;
-                        case 545: cof = 114.732f; break;
-                        case 544: cof = 112.746f; break;
-                        case 543: cof = 110.755f; break;
-                        case 541: cof = 106.838f; break;
-                        case 540: cof = 104.971f; break;
-                        case 539: cof = 103.037f; break;
-                        case 536: cof =  97.423f; break;
-                        case 535: cof =  95.610f; break;
-                        case 532: cof =  90.233f; break;
-                        case 530: cof =  86.724f; break;
-                        case 528: cof =  83.270f; break;
-                        case 526: cof =  79.882f; break;
-                        case 522: cof =  73.273f; break;
-                        case 517: cof =  65.426f; break;
-                        case 513: cof =  59.342f; break;
-                        case 510: cof =  54.970f; break;
-                        case 509: cof =  53.495f; break;
-                        case 506: cof =  49.296f; break;
-                        case 504: cof =  46.545f; break;
-                        case 502: cof =  43.858f; break;
-                        case 500: cof =  41.170f; break;
-                        case 498: cof =  38.600f; break;
-                        case 497: cof =  37.338f; break;
-                        case 496: cof =  36.023f; break;
-                        case 493: cof =  32.296f; break;
-                        case 491: cof =  29.809f; break;
-                        case 489: cof =  27.452f; break;
-                        case 487: cof =  25.084f; break;
-                        case 484: cof =  21.641f; break;
-                        case 483: cof =  20.516f; break;
-                        case 480: cof =  17.188f; break;
-                        case 478: cof =  15.034f; break;
-                        case 476: cof =  12.863f; break;
-                        case 474: cof =  10.823f; break;
-                        case 470: cof =   6.730f; break;
-                        default:
-                            break;
-                    }
-
-                    if (cof)
-                        AddPct(preciseBasePoints, cof);
-                }
-
-                if (Reqlvl != 1 || isEnchant)
-                {
-                    basePoints = int32(preciseBasePoints);
-                    float rounding = preciseBasePoints - basePoints;
-
-                    if (rounding >= 0.444445f)
-                        basePoints++;
-
-                    if ((_spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF) && basePoints > BasePoints) 
-                        basePoints = BasePoints;
-                }
+                basePoints = int32(preciseBasePoints);
 
                 if (ComboScalingMultiplier)
                     comboDamage = ComboScalingMultiplier * multiplier;
