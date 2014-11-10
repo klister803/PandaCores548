@@ -12775,8 +12775,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
         case 48503:
         //Lifebloom : Final heal
         case 33778:
-        //Healthstone
-        case 6262:
             return healamount;
     }
 
