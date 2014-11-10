@@ -700,13 +700,14 @@ public:
                 switch (eventId)
                 {
                 case EVENT_OVERHEAD_SMASH:
-                    DoCast(me->getVictim(), SPELL_OVERHEAD_SMASH);
+                    if(Unit* target = me->getVictim())
+                        DoCast(target, SPELL_OVERHEAD_SMASH);
                     events.ScheduleEvent(EVENT_OVERHEAD_SMASH, urand(8000, 10000));
                     break;
                 case EVENT_GRIEVOUS_WOUND:
-                    if (me->getVictim())
-                        if (!me->getVictim()->HasAura(SPELL_GRIEVOUS_WOUND))
-                            DoCast(me->getVictim(), SPELL_GRIEVOUS_WOUND);
+                    if(Unit* target = me->getVictim())
+                        if (!mtarget->HasAura(SPELL_GRIEVOUS_WOUND))
+                            DoCast(mtarget, SPELL_GRIEVOUS_WOUND);
                     events.ScheduleEvent(EVENT_GRIEVOUS_WOUND, urand(15000, 20000));
                     break;
                 case EVENT_CONSTRICTING_CHAINS:
