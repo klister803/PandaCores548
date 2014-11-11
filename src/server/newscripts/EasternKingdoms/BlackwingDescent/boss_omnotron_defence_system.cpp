@@ -313,7 +313,7 @@ class boss_arcanotron : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_arcanotronAI(pCreature);
+            return GetAIForInstance<boss_arcanotronAI>(pCreature, BDScriptName);
         }
 
         struct boss_arcanotronAI : public BossAI
@@ -335,14 +335,6 @@ class boss_arcanotron : public CreatureScript
             }
 
             uint8 stage;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {
@@ -537,7 +529,7 @@ class boss_electron : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_electronAI(pCreature);
+            return GetAIForInstance<boss_electronAI>(pCreature, BDScriptName);
         }
 
         struct boss_electronAI : public BossAI
@@ -560,14 +552,6 @@ class boss_electron : public CreatureScript
             }
 
             uint8 stage;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {
@@ -720,7 +704,7 @@ class boss_magmatron : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_magmatronAI(pCreature);
+            return GetAIForInstance< boss_magmatronAI >(pCreature, BDScriptName);
         }
 
         struct boss_magmatronAI : public BossAI
@@ -743,14 +727,6 @@ class boss_magmatron : public CreatureScript
             }
 
             uint8 stage;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {
@@ -913,7 +889,7 @@ class boss_toxitron : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_toxitronAI(pCreature);
+            return GetAIForInstance< boss_toxitronAI >(pCreature, BDScriptName);
         }
 
         struct boss_toxitronAI : public BossAI
@@ -936,14 +912,6 @@ class boss_toxitron : public CreatureScript
             }
 
             uint8 stage;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

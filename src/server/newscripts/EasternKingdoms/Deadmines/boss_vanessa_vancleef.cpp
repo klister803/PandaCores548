@@ -54,7 +54,7 @@ class boss_vanessa_vancleef : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_vanessa_vancleefAI (pCreature);
+            return GetAIForInstance< boss_vanessa_vancleefAI >(pCreature, DMScriptName);
         }
 
         struct boss_vanessa_vancleefAI : public BossAI
@@ -79,14 +79,6 @@ class boss_vanessa_vancleef : public CreatureScript
             void Reset()
             {
                 _Reset();
-            }
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(DMScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void EnterCombat(Unit* /*who*/) 

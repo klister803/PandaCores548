@@ -110,7 +110,7 @@ class boss_lord_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_lord_rhyolithAI(pCreature);
+            return GetAIForInstance<boss_lord_rhyolithAI>(pCreature, FLScriptName);
         }
 
         struct boss_lord_rhyolithAI : public BossAI
@@ -138,14 +138,6 @@ class boss_lord_rhyolith : public CreatureScript
                 curMove = 0;
                 bAchieve = true;
                 players_count = 0;
-            }
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void Reset()
@@ -534,7 +526,7 @@ class npc_lord_rhyolith_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_rhyolithAI(pCreature);
+            return GetAIForInstance< npc_lord_rhyolith_rhyolithAI>(pCreature, FLScriptName);
         }
 
         struct npc_lord_rhyolith_rhyolithAI : public ScriptedAI
@@ -555,14 +547,6 @@ class npc_lord_rhyolith_rhyolith : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
                 me->setActive(true);
                 pInstance = me->GetInstanceScript();
-            }
-
-            void InitializeAI()
-            {
-                if (!pInstance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void Reset()

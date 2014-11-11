@@ -48,7 +48,7 @@ class boss_altairus : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_altairusAI(pCreature);
+            return GetAIForInstance<boss_altairusAI>(pCreature, VPScriptName);
         }
         struct boss_altairusAI : public BossAI
         {
@@ -71,14 +71,6 @@ class boss_altairus : public CreatureScript
 
             Creature* _aircurrent;
             uint8 _twisternum;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(VPScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

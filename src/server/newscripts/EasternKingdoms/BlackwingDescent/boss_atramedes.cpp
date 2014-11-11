@@ -170,7 +170,7 @@ public:
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new boss_atramedesAI (pCreature);
+        return GetAIForInstance<boss_atramedesAI>(pCreature, BDScriptName);
     }
 
     struct boss_atramedesAI : public BossAI
@@ -195,14 +195,6 @@ public:
         uint8 stage;    //0 - ground, 1 - fly
         uint8 nextspell; // from 0 to 7
         SummonList summons;
-
-        void InitializeAI()
-        {
-            if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                me->IsAIEnabled = false;
-            else if (!me->isDead())
-                Reset();
-        }
 
         void Reset()
         {

@@ -79,7 +79,7 @@ class boss_chimaeron : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_chimaeronAI(pCreature);
+            return GetAIForInstance<boss_chimaeronAI>(pCreature, BDScriptName);
         }
 
         struct boss_chimaeronAI : public BossAI
@@ -105,14 +105,6 @@ class boss_chimaeron : public CreatureScript
             uint8 stage;
             uint8 uiVictims;
             bool bFeud;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

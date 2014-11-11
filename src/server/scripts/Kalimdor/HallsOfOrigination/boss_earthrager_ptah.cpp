@@ -65,7 +65,7 @@ class boss_earthrager_ptah : public CreatureScript
  
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_earthrager_ptahAI(creature);
+            return GetAIForInstance<boss_earthrager_ptahAI>(creature, HOScriptName);
         }
 
         struct boss_earthrager_ptahAI : public BossAI
@@ -88,14 +88,6 @@ class boss_earthrager_ptah : public CreatureScript
 
             uint8 count;
             uint8 phase;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(HOScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

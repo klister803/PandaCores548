@@ -251,7 +251,7 @@ class boss_chogall : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_chogallAI (creature);
+            return GetAIForInstance<boss_chogallAI>(creature, BTScriptName);
         }
 
         struct boss_chogallAI : public BossAI
@@ -276,14 +276,6 @@ class boss_chogall : public CreatureScript
             SummonList summons;
             bool bPhase2;
             uint8 uiOrder; // 0 | 1
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BTScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
             
             void Reset() 
             {

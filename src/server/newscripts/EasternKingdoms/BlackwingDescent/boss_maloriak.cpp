@@ -157,7 +157,7 @@ class boss_maloriak : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_maloriakAI(pCreature);
+            return GetAIForInstance<boss_maloriakAI>(pCreature, BDScriptName);
         }
 
         struct boss_maloriakAI : public BossAI
@@ -180,14 +180,6 @@ class boss_maloriak : public CreatureScript
 
             bool bExecute;
             bool bDark;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

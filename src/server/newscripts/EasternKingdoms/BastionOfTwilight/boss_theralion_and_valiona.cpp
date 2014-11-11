@@ -332,7 +332,7 @@ class boss_theralion : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_theralionAI(pCreature);
+            return GetAIForInstance<boss_theralionAI>(pCreature, BTScriptName);
         }
 
         struct boss_theralionAI : public BossAI
@@ -358,14 +358,6 @@ class boss_theralion : public CreatureScript
             SummonList summons;
             Creature* _stalker1;
             Creature* _stalker2;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BTScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {
@@ -640,7 +632,7 @@ class boss_valiona : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_valionaAI(pCreature);
+            return GetAIForInstance<boss_valionaAI>(pCreature, BTScriptName);
         }
 
         struct boss_valionaAI : public BossAI
@@ -665,14 +657,6 @@ class boss_valiona : public CreatureScript
             SummonList summons;
             uint8 _currside, _currway;
             uint8 _flamescount;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BTScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

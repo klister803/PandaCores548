@@ -64,7 +64,7 @@ class boss_rajh : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_rajhAI(pCreature);
+            return GetAIForInstance<boss_rajhAI>(pCreature, HOScriptName);
         }
 
         struct boss_rajhAI : public BossAI
@@ -87,14 +87,6 @@ class boss_rajh : public CreatureScript
 
             uint8 phase;
             bool achieve;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(HOScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

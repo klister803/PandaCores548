@@ -118,7 +118,7 @@ class boss_echo_of_tyrande : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_echo_of_tyrandeAI(pCreature);
+            return GetAIForInstance< boss_echo_of_tyrandeAI>(pCreature, ETScriptName);
         }
 
         struct boss_echo_of_tyrandeAI : public BossAI
@@ -144,14 +144,6 @@ class boss_echo_of_tyrande : public CreatureScript
                 me->SetUInt32Value(UNIT_FIELD_BYTES_1, 8);
                 me->AddAura(SPELL_IN_SHADOW, me);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-            }
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(ETScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void Reset()

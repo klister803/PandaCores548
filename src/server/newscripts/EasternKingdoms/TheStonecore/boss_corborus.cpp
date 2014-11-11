@@ -45,7 +45,7 @@ class boss_corborus : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_corborusAI (pCreature);
+            return GetStonecoreAI<boss_corborusAI>(pCreature);
         }
 
         struct boss_corborusAI : public BossAI
@@ -70,14 +70,6 @@ class boss_corborus : public CreatureScript
             SummonList summons;
             uint8 stage;
             Position barragePos;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(TSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

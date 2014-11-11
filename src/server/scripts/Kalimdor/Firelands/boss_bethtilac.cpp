@@ -121,7 +121,7 @@ class boss_bethtilac : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_bethtilacAI(pCreature);
+            return GetAIForInstance< boss_bethtilacAI >(pCreature, FLScriptName);
         }
 
         struct boss_bethtilacAI : public BossAI
@@ -146,14 +146,6 @@ class boss_bethtilac : public CreatureScript
             uint8 uiPhase;
             uint8 uiCount;
             uint8 uiSide;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             bool AllowAchieve()
             {

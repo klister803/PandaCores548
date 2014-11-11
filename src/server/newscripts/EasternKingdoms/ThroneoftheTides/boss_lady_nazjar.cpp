@@ -88,7 +88,7 @@ class boss_lady_nazjar : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_lady_nazjarAI (pCreature);
+            return GetAIForInstance< boss_lady_nazjarAI >(pCreature, TotTScriptName);
         }
 
         struct boss_lady_nazjarAI : public BossAI
@@ -111,14 +111,6 @@ class boss_lady_nazjar : public CreatureScript
 
             uint8 uiSpawnCount;
             uint8 uiPhase;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(TotTScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

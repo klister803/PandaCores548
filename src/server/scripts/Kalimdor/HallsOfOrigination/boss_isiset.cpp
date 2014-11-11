@@ -55,7 +55,7 @@ class boss_isiset : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_isisetAI(pCreature);
+            return GetAIForInstance<boss_isisetAI>(pCreature, HOScriptName);
         }
 
         struct boss_isisetAI : public BossAI
@@ -80,14 +80,6 @@ class boss_isiset : public CreatureScript
             bool Phased;
 
             bool AstralRain, VeilOfSky, CelestialCall;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(HOScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

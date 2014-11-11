@@ -141,14 +141,6 @@ class boss_ick : public CreatureScript
                 //ASSERT(_vehicle);
             }
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
-
             void Reset()
             {
                 if(instance->GetBossState(DATA_GARFROST)==NOT_STARTED || instance->GetBossState(DATA_GARFROST)==SPECIAL) {
@@ -297,7 +289,7 @@ class boss_ick : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_ickAI(creature);
+            return GetAIForInstance<boss_ickAI>(creature, PoSScriptName);
         }
 };
 
@@ -310,14 +302,6 @@ class boss_krick : public CreatureScript
         {
             boss_krickAI(Creature* creature) : ScriptedAI(creature), _instanceScript(creature->GetInstanceScript()), _summons(creature)
             {
-            }
-
-            void InitializeAI()
-            {
-                if (!_instanceScript || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void Reset()
@@ -501,7 +485,7 @@ class boss_krick : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_krickAI(creature);
+            return GetAIForInstance<boss_krickAI>(creature, PoSScriptName);
         }
 };
 

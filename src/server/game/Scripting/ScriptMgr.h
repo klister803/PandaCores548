@@ -28,6 +28,7 @@
 #include "SharedDefines.h"
 #include "World.h"
 #include "Weather.h"
+#include "ObjectMgr.h"
 
 class AuctionHouseObject;
 class AuraScript;
@@ -435,6 +436,16 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
         // Called when a CreatureAI object is needed for the creature.
         virtual CreatureAI* GetAI(Creature* /*creature*/) const { return NULL; }
 };
+
+template<class AI>
+CreatureAI* GetAIForInstance(Creature* creature, const char *Name)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId(Name))
+                return new AI(creature);
+    return NULL;
+}
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
 {

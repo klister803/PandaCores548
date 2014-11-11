@@ -111,14 +111,6 @@ class boss_garfrost : public CreatureScript
             {
             }
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
-
             void Reset()
             {
                 events.Reset();
@@ -263,7 +255,7 @@ class boss_garfrost : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_garfrostAI(creature);
+            return GetAIForInstance<boss_garfrostAI>(creature, PoSScriptName);
         }
 };
 

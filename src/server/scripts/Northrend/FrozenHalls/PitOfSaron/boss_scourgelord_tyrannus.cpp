@@ -225,15 +225,6 @@ class boss_tyrannus : public CreatureScript
             {
             }
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (instance->GetBossState(DATA_TYRANNUS) != DONE)
-                    Reset();
-                else
-                    me->DespawnOrUnsummon();
-            }
             bool m_startGAUNTLET;
             bool m_startPhaseIntroTyr;
             uint32 m_uiGauntletTimer;
@@ -263,6 +254,9 @@ class boss_tyrannus : public CreatureScript
                 angle = 0; 
                 homeX = 0; 
                 homeY = 0;
+
+                if (instance->GetBossState(DATA_TYRANNUS) == DONE)
+                    me->DespawnOrUnsummon();
             }
 
             Creature* GetRimefang()
@@ -423,7 +417,7 @@ class boss_tyrannus : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_tyrannusAI(creature);
+            return GetAIForInstance<boss_tyrannusAI>(creature, PoSScriptName);
         }
 };
 
