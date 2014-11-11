@@ -12,6 +12,8 @@
 enum globalSpells
 {
     SPELL_SHA_VORTEX                = 146024,
+    SPELL_TP_ORGRIMMAR_1            = 148032,
+    SPELL_TP_ORGRIMMAR_2            = 148034,
 };
 
 enum eData
@@ -129,6 +131,9 @@ enum eCreatures
 
 enum eGameObjects
 {   
+    GO_SHIP_ALLIANCE                = 223459,
+    GO_SHIP_HORDE                   = 223464,
+
     //Immerseus
     GO_IMMERSEUS_EX_DOOR            = 221663,
 
@@ -192,6 +197,11 @@ enum eGameObjects
 
     //Sha of Pride
     GO_SHA_OF_PRIDE_ENT_DOOR        = 221446,
+};
+
+enum miscData
+{
+    TRANSPORT_PERIOD                = 98995,
 };
 
 static uint8 vehSlotForMeasures(uint32 entry)

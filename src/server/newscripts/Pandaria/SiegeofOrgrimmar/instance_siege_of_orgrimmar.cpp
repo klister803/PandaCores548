@@ -5,6 +5,7 @@
 #include "VMapFactory.h"
 #include "siege_of_orgrimmar.h"
 #include "AccountMgr.h"
+#include "Transport.h"
 
 Position const LorewalkerChoSpawn[4]  = {
     {1448.236f, 312.6528f, 289.2837f, 4.652967f},
@@ -51,6 +52,13 @@ public:
 
         bool onInitEnterState;
 
+        Transport* transport;
+
+        ~instance_siege_of_orgrimmar_InstanceMapScript()
+        {
+            delete transport;
+        }
+
         void Initialize()
         {
             SetBossNumber(DATA_MAX);
@@ -70,6 +78,8 @@ public:
             EventfieldOfSha     = 0;
 
             onInitEnterState = false;
+
+            transport = NULL;
         }
 
         void OnPlayerEnter(Player* player)
@@ -86,6 +96,11 @@ public:
             onInitEnterState = true;
 
             DoSummoneEventCreatures();
+
+            if (!transport)
+                transport = CreateTransport(TeamInInstance == HORDE ? GO_SHIP_HORDE : GO_SHIP_ALLIANCE, TRANSPORT_PERIOD);
+
+            SendTransportInit(player);
         }
 
         //Some auras should not stay after relog. If player out of dung whey remove automatically
@@ -539,7 +554,65 @@ public:
                     }
                 }*/
             }
+
+            Transport* CreateTransport(uint32 goEntry, uint32 period)
+            {
+                Transport* t = new Transport(period, 0);
+
+                GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(goEntry);
+                if (!goinfo)
+                {
+                    sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
+                    delete t;
+                    return NULL;
+                }
+
+                std::set<uint32> mapsUsed;
+                if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
+                    // skip transports with empty waypoints list
+                {
+                    sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathId);
+                    delete t;
+                    return NULL;
+                }
+
+                uint32 mapid = t->m_WayPoints[0].mapid;
+                float x = t->m_WayPoints[0].x;
+                float y = t->m_WayPoints[0].y;
+                float z = t->m_WayPoints[0].z;
+                float o = 1;
+
+                // creates the Gameobject
+                if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT), goEntry, mapid, x, y, z, o, 255, 0))
+                {
+                    delete t;
+                    return NULL;
+                }
+
+                //If we someday decide to use the grid to track transports, here:
+                t->SetMap(instance);
+
+                //for (uint8 i = 0; i < 5; ++i)
+                //    t->AddNPCPassenger(0, (goEntry == GO_HORDE_GUNSHIP ? NPC_HORDE_GUNSHIP_CANNON : NPC_ALLIANCE_GUNSHIP_CANNON), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionX() : allianceGunshipPassengers[i].GetPositionX()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionY() : allianceGunshipPassengers[i].GetPositionY()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionZ() : allianceGunshipPassengers[i].GetPositionZ()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetOrientation() : allianceGunshipPassengers[i].GetOrientation()));
+
+                return t;
+            }
+
+            void SendTransportInit(Player* player)
+            {
+                if (!transport)
+                    return;
+
+                UpdateData transData(player->GetMapId());
+                transport->BuildCreateUpdateBlockForPlayer(&transData, player);
+
+                WorldPacket packet;
+
+                transData.BuildPacket(&packet);
+                player->GetSession()->SendPacket(&packet);
+            }
     };
+
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
