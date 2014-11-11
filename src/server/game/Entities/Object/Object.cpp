@@ -1686,7 +1686,6 @@ m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(NULL
 m_transport(NULL), m_currMap(NULL), m_InstanceId(0),
 m_phaseMask(PHASEMASK_NORMAL)
 {
-    m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, 0);
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 }
@@ -2249,10 +2248,6 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
-
-    //Temp creatures already checked.
-    if (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES) & ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE && obj->ToUnit())
-        return false;
 
     bool corpseVisibility = false;
     if (distanceCheck)
