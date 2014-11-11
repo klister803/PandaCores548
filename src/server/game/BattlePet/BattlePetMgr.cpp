@@ -91,20 +91,24 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 
     for (uint32 i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
     {
+        PetBattleSlot * slot = GetPetBattleSlot(i);
+
         data->WriteBit(!i);                                          // unk bit, related to Int8 (slot ID?)
         data->WriteBit(1);                                           // unk bit, related to Int32 (hasCustomAbility?)
-        data->WriteBit(1);                                           // empty slot, inverse
-        data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(placeholderPet); // pet guid in slot
-        data->WriteBit(1);                                           // locked slot
+        data->WriteBit(slot ? !slot->IsEmpty() : 1);                 // empty slot, inverse
+        data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot ? slot->petGUID : 0);  // pet guid in slot
+        data->WriteBit(slot ? slot->locked : 1);                    // locked slot
     }
 
     data->WriteBit(1);                      // unk
 
-    for (uint32 i = 0; i < 3; ++i)
+    for (uint32 i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
     {
+        PetBattleSlot * slot = GetPetBattleSlot(i);
+
         //if (!bit)
             //*data << uint32(0);
-        data->WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(placeholderPet);
+        data->WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot ? slot->petGUID : 0);
         if (i)
             *data << uint8(i);
     }

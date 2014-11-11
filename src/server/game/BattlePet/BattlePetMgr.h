@@ -67,6 +67,9 @@ struct PetBattleSlot
 
     uint64 petGUID;
     bool locked;
+
+    // helpers
+    bool IsEmpty() { return petGUID == 0; }
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;

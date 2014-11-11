@@ -19165,8 +19165,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
-    // load battle pets journal before spells and other
+    // load battle pets journal ans slots before spells and other
     _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
@@ -20406,6 +20407,30 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
     while (result->NextRow());
 }
 
+void Player::_LoadBattlePetSlots(PreparedQueryResult result)
+{
+    if (!result)
+    {
+        // initial first
+        for (int i = 0; i < 3; ++i)
+            GetBattlePetMgr()->AddPetBattleSlot(0, i);
+        return;
+    }
+
+    do
+    {
+        // SELECT guid, slot, locked FROM character_battle_pet WHERE ownerAccID = ?
+        Field* fields = result->Fetch();
+
+        uint64 guid  = fields[0].GetUInt64();
+        uint8 slotID = fields[1].GetUInt8();
+        uint8 locked = fields[2].GetUInt8();
+
+        GetBattlePetMgr()->AddPetBattleSlot(guid, slotID, locked);
+    }
+    while (result->NextRow());
+}
+
 void Player::_LoadGroup(PreparedQueryResult result)
 {
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
@@ -21246,6 +21271,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
     _SaveBattlePets(trans);
+    //_SaveBattlePetSlots(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -22096,6 +22122,22 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
         stmt->setUInt16(13, pet->second->xp);
         stmt->setUInt16(14, pet->second->flags);
         stmt->setInt16(15, pet->second->breedID);
+
+        trans->Append(stmt);
+    }
+}
+
+void Player::_SaveBattlePetSlots(SQLTransaction& trans)
+{
+    // save slots
+    for (int i = 0; i < 3; ++i)
+    {
+        PetBattleSlot * slot = GetBattlePetMgr()->GetPetBattleSlot(i);
+
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
+        stmt->setUInt64(0, slot->petGUID);
+        stmt->setUInt8(2, i);
+        stmt->setUInt8(3, slot->locked);
 
         trans->Append(stmt);
     }

@@ -875,10 +875,11 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES            = 37,
     PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS             = 38,
-    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 39,
-    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 40,
-    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 41,
-    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 42,
+    PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS        = 39,
+    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 40,
+    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 41,
+    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 42,
+    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 43,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -3226,6 +3227,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadArchaelogy(PreparedQueryResult result);
         void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadBattlePets(PreparedQueryResult result);
+        void _LoadBattlePetSlots(PreparedQueryResult result);
         void _LoadHonor();
 
         /*********************************************************/
@@ -3254,6 +3256,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveBrackets(SQLTransaction& trans);
         void _SaveCUFProfiles(SQLTransaction& trans);
         void _SaveBattlePets(SQLTransaction& trans);
+        void _SaveBattlePetSlots(SQLTransaction& trans);
         void _SaveHonor();
 
         /*********************************************************/
