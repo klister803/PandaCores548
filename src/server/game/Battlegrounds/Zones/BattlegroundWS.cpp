@@ -641,7 +641,6 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-
     uint8 team = source->GetBGTeamId();
 
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
@@ -657,7 +656,11 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* source)
 
     /// Reward flag capture with 2x honorable kills
     RewardHonorToTeam(GetBonusHonorFromKill(2), source->GetBGTeam());
-    RewardReputationToTeam(890, m_ReputationCapture, source->GetBGTeam());
+
+    if (source->GetBGTeam() == ALLIANCE)
+        RewardReputationToTeam(890, m_ReputationCapture, ALLIANCE);
+    else
+        RewardReputationToTeam(889, m_ReputationCapture, HORDE);
 
     AddPoint(team == TEAM_ALLIANCE ? ALLIANCE : HORDE);
 
