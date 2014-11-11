@@ -314,6 +314,33 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
     }
 }
 
+void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
+{
+    uint8 slotID;
+    recvData >> slotID;
+
+    ObjectGuid guid;
+    recvData.ReadGuidMask<3, 6, 2, 1, 0, 5, 7, 4>(guid);
+    recvData.ReadGuidBytes<1, 5, 3, 0, 4, 7, 2, 6>(guid);
+
+    if (slotID >= MAX_PET_BATTLE_SLOT)
+        return;
+
+    // find slot
+    PetBattleSlot * slot = _player->GetBattlePetMgr()->GetPetBattleSlot(slotID);
+
+    if (!slot)
+        return;
+
+    // find pet
+    PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
+
+    if (!pet || pet->deleteMeLater)
+        return;
+
+    slot->SetPet(guid);
+}
+
 void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;

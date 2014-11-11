@@ -70,6 +70,7 @@ struct PetBattleSlot
 
     // helpers
     bool IsEmpty() { return petGUID == 0; }
+    void SetPet(uint64 guid) { petGUID = guid; }
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;

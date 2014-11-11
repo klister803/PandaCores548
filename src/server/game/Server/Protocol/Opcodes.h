@@ -618,6 +618,7 @@ enum Opcodes
     CMSG_BATTLE_PET_RENAME                            = 0x056C, // 5.4.1 17538
     CMSG_BATTLE_PET_NAME_QUERY                        = 0x17C5, // 5.4.1 17538
     CMSG_BATTLE_PET_PUT_IN_CAGE                       = 0x1345, // 5.4.1 17538
+    CMSG_BATTLE_PET_SET_BATTLE_SLOT                   = 0x0D61, // 5.4.1 17538
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538

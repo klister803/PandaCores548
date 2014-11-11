@@ -592,6 +592,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_RENAME,                       STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetRename );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_NAME_QUERY,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetNameQuery );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_PUT_IN_CAGE,                  STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetPutInCage );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_BATTLE_PET_SET_BATTLE_SLOT,              STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE,   &WorldSession::HandleBattlePetSetSlot );
 
 
     //------------                      S M S G                  ------------//

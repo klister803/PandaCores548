@@ -1004,6 +1004,7 @@ class WorldSession
         void HandleBattlePetRename(WorldPacket& recvData);
         void HandleBattlePetNameQuery(WorldPacket& recvData);
         void HandleBattlePetPutInCage(WorldPacket& recvData);
+        void HandleBattlePetSetSlot(WorldPacket& recvData);
 
         // Blizzard Store
         void HandlePurchaseGetProductList(WorldPacket& recvData);
