@@ -2063,58 +2063,6 @@ class spell_warl_corruption : public SpellScriptLoader
         }
 };
 
-// Healthstone - 6262
-class spell_warl_healthstone : public SpellScriptLoader
-{
-    public:
-        spell_warl_healthstone() : SpellScriptLoader("spell_warl_healthstone") { }
-
-        class spell_warl_healthstone_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_healthstone_SpellScript);
-
-            void HandleHeal(SpellEffIndex effIndex)
-            {
-                int32 percent = GetSpellInfo()->Effects[effIndex].BasePoints;
-
-                if (Unit* caster = GetCaster())
-                    SetHitHeal(caster->HasAura(56224) ? 0 : CalculatePct(caster->GetMaxHealth(), percent));
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_healthstone_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
-            }
-        };
-
-        class spell_warl_healthstone_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_healthstone_AuraScript);
-
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()].BasePoints / 10);
-                if (Unit* caster = GetCaster())
-                    amount = CalculatePct(caster->GetMaxHealth(), percent);
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_healthstone_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_healthstone_AuraScript();
-        }
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_healthstone_SpellScript();
-        }
-};
-
 //Imp Swarm - 104316
 class spell_warl_imp_swarm : public SpellScriptLoader
 {
@@ -2196,6 +2144,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_rain_of_fire_damage();
     new spell_warl_metamorphosis();
     new spell_warl_corruption();
-    new spell_warl_healthstone();
     new spell_warl_imp_swarm();
 }

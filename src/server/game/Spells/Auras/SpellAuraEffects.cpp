@@ -1142,6 +1142,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
+                case 6262: // Healthstone
+                {
+                    amount = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56224) ? (m_spellInfo->Effects[EFFECT_1].BasePoints / 10) : 0);
+                    break;
+                }
                 case 73651: // Recuperate
                 {
                     int32 bp = m_spellInfo->Effects[0].BasePoints;

@@ -2474,6 +2474,11 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                         AddPct(addhealth, 25);
                 break;
             }
+            case 6262: // Healthstone
+            {
+                addhealth = CalculatePct(caster->GetMaxHealth(), caster->HasAura(56224) ? 0 : damage);
+                break;
+            }
             case 105708: // Master Healing Potion
             {
                 addhealth = 60000; // dbc missing scaling data
