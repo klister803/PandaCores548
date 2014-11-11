@@ -5153,7 +5153,8 @@ class npc_highwind_albatross : public CreatureScript
                     if(!player)
                         return;
 
-                    source->CastSpell(me, 148764, true);
+                    int32 seatId = 1;
+                    source->CastCustomSpell(me, 148764, &seatId, NULL, NULL, true);
                 }
             }
         };
