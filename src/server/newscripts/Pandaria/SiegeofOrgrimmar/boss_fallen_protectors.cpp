@@ -855,6 +855,7 @@ struct npc_measure : public ScriptedAI
         if (me->GetVehicle())
             return;
 
+        _EnterEvadeMode();
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         summons.DespawnAll();
         me->CastSpell(me, SPELL_DESPAWN_AT, true);

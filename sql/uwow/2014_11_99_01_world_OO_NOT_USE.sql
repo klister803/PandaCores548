@@ -2,6 +2,7 @@
 /*!40101 SET NAMES utf8 */;
 /*!40014 SET FOREIGN_KEY_CHECKS=0 */;
 
+UPDATE `creature_template` SET unit_flags = unit_flags | 0x2 | 0x100 | 0x200 WHERE entry in (71685, 71683, 71695, 71711, 71684, 71686);
 
 REPLACE INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES ('9267', 'at_siege_of_orgrimmar_portal_to_orgrimmar');
 
