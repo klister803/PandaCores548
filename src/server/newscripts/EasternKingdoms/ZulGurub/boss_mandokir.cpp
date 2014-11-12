@@ -113,7 +113,8 @@ class boss_mandokir : public CreatureScript
                 Talk(SAY_KILL);
                 if (Creature* spirit = me->FindNearestCreature(NPC_CHAINED_SPIRIT, 200.0f))
                 {
-                    spirit->AI()->SetGUID(victim->GetGUID(), DATA_RES);
+                    if(spirit->AI() && victim)
+                        spirit->AI()->SetGUID(victim->GetGUID(), DATA_RES);
                 }
             }
 
