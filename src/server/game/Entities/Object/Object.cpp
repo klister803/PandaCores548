@@ -2217,18 +2217,6 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
-    //summoned creature to summoner
-    if (Unit const* thisUnit = ToUnit())
-        if (TempSummon const* sum = thisUnit->ToTempSummon())
-            if (obj->GetGUID() == sum->GetSummonerGUID())
-                return true;
-
-    //summoner to summoned creature
-    if (Unit const* target = obj->ToUnit())
-        if (TempSummon const* sum = target->ToTempSummon())
-            if (GetGUID() == sum->GetSummonerGUID())
-                return true;
-
     if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
     {
         Player const* thisPlayer = ToPlayer();
