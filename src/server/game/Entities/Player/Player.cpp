@@ -20412,7 +20412,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     if (!result)
     {
         // initial first
-        for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+        for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
             GetBattlePetMgr()->AddPetBattleSlot(0, i);
         return;
     }
@@ -20427,7 +20427,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     petGUIDs[2]  = fields[2].GetUInt64();
     uint8 lockedMask = fields[3].GetUInt8();
 
-    for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+    for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
     {
         bool locked = lockedMask & (1 << i);
         GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i, locked);

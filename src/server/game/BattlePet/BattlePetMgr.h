@@ -33,7 +33,7 @@ class PetBattle
 {
 };
 
-#define MAX_PET_BATTLE_SLOT 3
+#define MAX_ACTIVE_PETS 3
 
 struct PetInfo
 {
@@ -128,7 +128,7 @@ public:
         for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
             delete itr->second;
 
-        for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+        for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
             delete m_battleSlots[i];
     }
 
@@ -199,7 +199,7 @@ public:
 private:
     Player* m_player;
     PetJournal m_PetJournal;
-    PetBattleSlot* m_battleSlots[MAX_PET_BATTLE_SLOT];
+    PetBattleSlot* m_battleSlots[MAX_ACTIVE_PETS];
 };
 
 #endif

@@ -45,7 +45,7 @@
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
 {
     m_PetJournal.clear();
-    memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_PET_BATTLE_SLOT);
+    memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_ACTIVE_PETS);
 }
 
 void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, bool update)
@@ -87,9 +87,9 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteBit(1);                        // hasUnk, inverse
     }
 
-    data->WriteBits(MAX_PET_BATTLE_SLOT, 25);     // total battle pet slot count
+    data->WriteBits(MAX_ACTIVE_PETS, 25);
 
-    for (uint32 i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+    for (uint32 i = 0; i < MAX_ACTIVE_PETS; ++i)
     {
         PetBattleSlot * slot = GetPetBattleSlot(i);
 
@@ -102,7 +102,7 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 
     data->WriteBit(1);                      // unk
 
-    for (uint32 i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+    for (uint32 i = 0; i < MAX_ACTIVE_PETS; ++i)
     {
         PetBattleSlot * slot = GetPetBattleSlot(i);
 
@@ -323,7 +323,7 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     recvData.ReadGuidMask<3, 6, 2, 1, 0, 5, 7, 4>(guid);
     recvData.ReadGuidBytes<1, 5, 3, 0, 4, 7, 2, 6>(guid);
 
-    if (slotID >= MAX_PET_BATTLE_SLOT)
+    if (slotID >= MAX_ACTIVE_PETS)
         return;
 
     // find slot
