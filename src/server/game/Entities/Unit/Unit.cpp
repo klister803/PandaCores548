@@ -20665,6 +20665,71 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
         UpdateObjectVisibility();
 }
 
+void Unit::SetPhaseId(uint32 newPhase, bool update)
+{
+    if (newPhase == GetPhaseId())
+        return;
+
+    if (IsInWorld())
+    {
+        // modify hostile references for new phasemask, some special cases deal with hostile references themselves
+        if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->isGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
+        {
+            HostileRefManager& refManager = getHostileRefManager();
+            HostileReference* ref = refManager.getFirst();
+
+            while (ref)
+            {
+                if (Unit* unit = ref->getSource()->getOwner())
+                    if (Creature* creature = unit->ToCreature())
+                        refManager.setOnlineOfflineState(creature, creature->InSamePhaseId(newPhase));
+
+                ref = ref->next();
+            }
+
+            // modify threat lists for new phasemask
+            if (GetTypeId() != TYPEID_PLAYER)
+            {
+                std::list<HostileReference*> threatList = getThreatManager().getThreatList();
+                std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+
+                // merge expects sorted lists
+                threatList.sort();
+                offlineThreatList.sort();
+                threatList.merge(offlineThreatList);
+
+                for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+                    if (Unit* unit = (*itr)->getTarget())
+                        unit->getHostileRefManager().setOnlineOfflineState(ToCreature(), unit->InSamePhaseId(newPhase));
+            }
+        }
+    }
+
+    WorldObject::SetPhaseId(newPhase, false);
+
+    if (!IsInWorld())
+        return;
+
+    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+    {
+        Unit* u = *itr;
+        if (!u)
+            continue;
+
+        if (u->GetTypeId() == TYPEID_UNIT)
+            u->SetPhaseId(newPhase, true);
+    }
+
+    for (uint8 i = 0; i < MAX_SUMMON_SLOT; ++i)
+        if (m_SummonSlot[i])
+            if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
+                summon->SetPhaseId(newPhase, true);
+
+    // Update visibility after phasing pets and summons so they wont despawn
+    if (update)
+        UpdateObjectVisibility();
+}
+
 class Unit::AINotifyTask : public BasicEvent
 {
     Unit& m_owner;
