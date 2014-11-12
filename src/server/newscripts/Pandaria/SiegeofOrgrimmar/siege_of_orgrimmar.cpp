@@ -282,7 +282,7 @@ class at_siege_of_orgrimmar_portal_to_orgrimmar : public AreaTriggerScript
             if (!instance || instance->GetBossState(DATA_SHA_OF_PRIDE) != DONE)
                 return true;
 
-            player->CastSpell(player, SPELL_TP_ORGRIMMAR_2);
+            player->CastSpell(player, player->GetTeam() == ALLIANCE ? SPELL_TP_ORGRIMMAR_2 : SPELL_TP_ORGRIMMAR_1);
             return true;
         }
 };

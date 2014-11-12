@@ -83,6 +83,12 @@ enum eSpells
 };
 
 Position const Sha_of_pride_taranzhu  = {748.1805f, 1058.264f, 356.1557f, 5.566918f };
+Position const Sha_of_pride_finish_jaina  = {765.6154f, 1050.112f, 357.0135f, 1.514341f };
+Position const Sha_of_pride_finish_teron  = {756.955f, 1048.71f, 357.0236f, 1.68638f };
+Position const Sha_of_pride_portal[2]  = {
+    {783.5452f, 1168.182f, 356.1551f, 4.221592f},
+    {691.1077f, 1149.943f, 356.1552f, 5.842754f},
+};
 
 //Manifestation of Pride
 Position const Sha_of_pride_manifestation[2]  = {
@@ -272,6 +278,11 @@ class boss_sha_of_pride : public CreatureScript
             {
                 _JustDied();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
             }
 
             void UpdateAI(uint32 diff)
@@ -549,20 +560,53 @@ public:
         {
             instance = creature->GetInstanceScript();
             group_member = sFormationMgr->CreateCustomFormation(me);
+            end = false;
         }
 
         InstanceScript* instance;
         EventMap events;
         FormationInfo* group_member;
+        bool end;
 
         void Reset()
         {
-            Start(false, true);
+
         }
 
         void DoAction(int32 const action)
         {
-            SetEscortPaused(false);
+            switch(action)
+            {
+                case EVENT_1:
+                    SetEscortPaused(false);
+                    break;
+                case EVENT_2:
+                    end = true;     //19:34:01
+                    uint32 t = 0;
+                    events.ScheduleEvent(EVENT_7, t+= 2000);   //19:34:01
+                    events.ScheduleEvent(EVENT_8, t+= 11000);  //19:34:13.000
+                    events.ScheduleEvent(EVENT_9, t+= 10000);  //19:34:23.000
+                    events.ScheduleEvent(EVENT_10, t+= 4000);  //19:34:27.000
+                    events.ScheduleEvent(EVENT_16, t+= 3000);  //19:34:30.000
+                    events.ScheduleEvent(EVENT_11, t+= 4000);  //19:34:33.000
+                    events.ScheduleEvent(EVENT_12, t+= 9000);  //19:34:42.000
+                    events.ScheduleEvent(EVENT_13, t+= 5000);  //19:34:47.000
+                    events.ScheduleEvent(EVENT_17, t+= 12000);  //19:34:59.000
+                    events.ScheduleEvent(EVENT_14, t+= 5000); //19:35:04.000
+                    events.ScheduleEvent(EVENT_15, t+= 20000); //19:35:24.000
+                    
+                    if (Creature * c = instance->instance->SummonCreature(NPC_SHA_OF_PRIDE_END_LADY_JAINA, Sha_of_pride_finish_jaina))
+                        c->GetMotionMaster()->MovePoint(c->GetGUIDLow(), 756.9792f, 1093.34f, 356.0723f);
+                    if (Creature * c = instance->instance->SummonCreature(NPC_SHA_OF_PRIDE_END_THERON, Sha_of_pride_finish_teron))
+                        c->GetMotionMaster()->MovePoint(c->GetGUIDLow(), 739.9184f, 1129.293f, 356.0723f);
+                    break;
+            }            
+        }
+
+        void MoveInLineOfSight(Unit* who)
+        {
+            if (!end)
+                Start(false, true);
         }
 
         void WaypointReached(uint32 i)
@@ -630,6 +674,77 @@ public:
                             if (CreatureGroup* f = me->GetFormation())
                                 f->AddMember(taran, group_member);
                         SetEscortPaused(false);
+                        break;
+                    case EVENT_7:
+                        ZoneTalk(TEXT_GENERIC_3, 0);
+                        //me->DespawnOrUnsummon(60000);
+                        break;
+                    case EVENT_8:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->AI()->ZoneTalk(TEXT_GENERIC_0, 0);
+                        break;
+                    case EVENT_9:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->GetMotionMaster()->MovePoint(jaina->GetGUIDLow(), 748.8203f, 1130.096f, 356.0723f);
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                            teron->AI()->ZoneTalk(TEXT_GENERIC_0, 0);
+                        break;
+                    case EVENT_10:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->AI()->ZoneTalk(TEXT_GENERIC_1, 0);
+                        break;
+                    case EVENT_11:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->AI()->ZoneTalk(TEXT_GENERIC_2, 0);
+                        break;
+                    case EVENT_12:
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                            teron->AI()->ZoneTalk(TEXT_GENERIC_2, 0);
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->GetMotionMaster()->MovePoint(jaina->GetGUIDLow(), 748.5174f, 1131.481f, 356.0723f);
+                        break;
+                    case EVENT_13:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                            jaina->AI()->ZoneTalk(TEXT_GENERIC_3, 0);
+                        break;
+                    case EVENT_17:
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                            teron->AI()->ZoneTalk(TEXT_GENERIC_3, 0);
+                        break;
+                    case EVENT_14:
+                        for(uint32 i = 0; i < 2; ++i)
+                            if (Creature * c = instance->instance->SummonCreature(NPC_PORTAL_TO_ORGRIMMAR, Sha_of_pride_portal[i]))
+                            {
+                                c->SetInt32Value(UNIT_FIELD_INTERACT_SPELL_ID, 148034);
+                                c->SetDisplayId(51795);
+                            }
+                            
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                        {
+                            jaina->AI()->ZoneTalk(TEXT_GENERIC_4, 0);
+                            jaina->GetMotionMaster()->MovePoint(jaina->GetGUIDLow(), 783.2882f, 1167.352f, 356.0717f);
+                        }
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                        {
+                            teron->GetMotionMaster()->MovePoint(teron->GetGUIDLow(), 692.4531f, 1149.196f, 356.0718f);
+                        }
+                        break;
+                    case EVENT_15:
+                        if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
+                        {
+                            jaina->CastSpell(jaina, 51347, true);
+                            jaina->DespawnOrUnsummon(5000);
+                        }
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                        {
+                            teron->CastSpell(teron, 51347, true);
+                            teron->DespawnOrUnsummon(5000);
+                        }
+                        me->DespawnOrUnsummon(5000);
+                        break;
+                    case EVENT_16:
+                        if (Creature* teron = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_THERON)))
+                            teron->AI()->ZoneTalk(TEXT_GENERIC_1, 0);
                         break;
                 }
             }

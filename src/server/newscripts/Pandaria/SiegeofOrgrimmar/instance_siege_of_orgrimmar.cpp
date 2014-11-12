@@ -7,11 +7,12 @@
 #include "AccountMgr.h"
 #include "Transport.h"
 
-Position const LorewalkerChoSpawn[4]  = {
+Position const LorewalkerChoSpawn[5]  = {
     {1448.236f, 312.6528f, 289.2837f, 4.652967f},
     {1441.406f, 988.1795f, 340.1876f, 1.985304f},   //fallen
     {806.067f,  841.3726f, 371.2589f, 1.791488f},   //norushen
     {805.7786f, 879.8768f, 371.0946f, 1.911932f},   //sha
+    {761.5104f, 1048.512f, 357.2339f, 1.767873f},   //sha finish
 };
 
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
@@ -20,6 +21,7 @@ DoorData const doorData[] =
 {
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
+    {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -163,6 +165,14 @@ public:
                     LorewalkerChoGUIDtmp = c->GetGUID();
                     c->setActive(true);
                 }
+            }else if (GetBossState(DATA_GALAKRAS) != DONE)
+            {
+                if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[4]))
+                {
+                    LorewalkerChoGUIDtmp = c->GetGUID();
+                    c->setActive(true);
+                    c->AI()->DoAction(EVENT_2);
+                }
             }
         }
 
@@ -184,6 +194,8 @@ public:
                 case NPC_EMBODIED_SORROW_OF_ROOK:
                 case NPC_SHA_NORUSHEN:
                 case NPC_SHA_TARAN_ZHU:
+                case NPC_SHA_OF_PRIDE_END_LADY_JAINA:
+                case NPC_SHA_OF_PRIDE_END_THERON:
                 case NPC_NORUSHEN:
                 case NPC_AMALGAM_OF_CORRUPTION:
                 case NPC_B_H_CONTROLLER:

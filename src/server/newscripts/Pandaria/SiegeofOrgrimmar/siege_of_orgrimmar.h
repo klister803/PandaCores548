@@ -12,8 +12,8 @@
 enum globalSpells
 {
     SPELL_SHA_VORTEX                = 146024,
-    SPELL_TP_ORGRIMMAR_1            = 148032,
-    SPELL_TP_ORGRIMMAR_2            = 148034,
+    SPELL_TP_ORGRIMMAR_1            = 148032, //Horde
+    SPELL_TP_ORGRIMMAR_2            = 148034, //Aliance
 };
 
 enum eData
@@ -91,6 +91,9 @@ enum eCreatures
     NPC_MANIFEST_OF_PRIDE           = 71946, //Manifestation of Pride
     NPC_SLG_GENERIC_MOP             = 68553, //SLG Generic MoP
     NPC_RIFT_OF_CORRUPTION          = 72846, //Rift of Corruption
+    NPC_SHA_OF_PRIDE_END_LADY_JAINA = 73598,
+    NPC_SHA_OF_PRIDE_END_THERON     = 73605,
+    NPC_PORTAL_TO_ORGRIMMAR         = 73536,
     //controller 68553?? Sha Vortex triger 146034
 
     //  Norushen
