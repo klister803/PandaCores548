@@ -176,11 +176,6 @@ REPLACE INTO `creature_difficulty_stat` (`entry`, `difficulty`, `dmg_multiplier`
 --
 REPLACE INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES ('144521', 'spell_norushen_heal_test_dd');
 
---
-REPLACE INTO `pet_stats` (`entry`, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, `state`, `energy`, `energy_type`, `armor`, `type`, `damage`, `comment`) VALUES 
-('71996', '0', '1', '0', '1', '127', '0', '0', '0', '0', '0', '0', 'npc_norushen_heal_ch_melee_combtant'),
-('72000', '0', '1', '0', '1', '127', '0', '0', '0', '1', '0', '0', 'npc_norushen_heal_ch_caster'), 
-('71995', '0', '1', '0', '1', '127', '0', '0', '0', '1', '0', '0', 'npc_norushen_heal_ch_guardian');
 
 -- Cell should be in phase too.
 UPDATE  `gameobject` SET `phaseMask` = `phaseMask` | 0x2 WHERE map = 1136 AND id in (223142, 223143, 223144, 223145, 223146, 223147);

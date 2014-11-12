@@ -760,7 +760,7 @@ struct npc_norushenChallengeAI : public ScriptedAI
             if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
                 amalgam->AI()->SetGUID(summoner->GetGUID(), 1);
         }
-        me->SetInCombatWithZone();
+        AttackStart(summoner);
     }
 
     void JustDied(Unit* killer)
@@ -839,7 +839,7 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            events.RescheduleEvent(EVENT_2, 3000);
+            events.RescheduleEvent(EVENT_2, urand(3000, 6000));
             me->CastSpell(me, SPELL_ESSENCE_OF_CORUPTION, false);
             me->CastSpell(me, SPELL_STEALTH_DETECTION, true);
             npc_norushenChallengeAI::IsSummonedBy(summoner);
@@ -1421,7 +1421,7 @@ public:
             if (eventId == EVENT_2)
             {
                 DoCastVictim(SPELL_FIREBALL);
-                events.ScheduleEvent(EVENT_2, 1500);
+                events.ScheduleEvent(EVENT_2, 2500);
             }
         }
     };

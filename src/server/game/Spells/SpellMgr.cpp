@@ -4854,37 +4854,40 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[3].ApplyAuraName = 0;
                     break;
                 //Norushen
-                case 145212: //Unleashed Anger dmg
+                case 144514:    //Lingering Corruption
+                    spellInfo->CustomMaxAffectedTargets = 1; //used if empty on dbc SpellTargetRestrictionsEntry
+                    break;
+                case 145212:    //Unleashed Anger dmg
                     spellInfo->Effects[0].TargetA = 25;
                     break;
-                case 147082: //Burst of Anger
+                case 147082:    //Burst of Anger
                     spellInfo->TargetAuraSpell = 144421;
                     break;
-                case 145214: //Unleashed Anger
+                case 145214:    //Unleashed Anger
                     spellInfo->CasterAuraSpell = 0;
                     spellInfo->Effects[2].TargetA = 25;
                     break;
-                case 145573: //Blind Hatred Dummy
+                case 145573:    //Blind Hatred Dummy
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
                     spellInfo->Effects[0].Amplitude = 500;
                     spellInfo->Effects[0].TriggerSpell = 145227;
                     break;
-                case 145227: //Blind Hatred Dmg
+                case 145227:    //Blind Hatred Dmg
                     spellInfo->Effects[0].TargetB = 15;
                     spellInfo->Effects[1].TargetB = 15;
                     break;
-                case 145735: //Icy Fear Dmg
+                case 145735:    //Icy Fear Dmg
                     spellInfo->TargetAuraSpell = 0;
                     break;
-                case 144421: //Corruption
+                case 144421:    //Corruption
                     spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
                     break;
-                case 144482: //Tear Reality
+                case 144482:    //Tear Reality
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_104;
                     break;
-                case 145073: //Residual Corruption
+                case 145073:    //Residual Corruption
                     spellInfo->TargetAuraSpell = 0;
-                case 144628: //Titanic Smash
+                case 144628:    //Titanic Smash
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
