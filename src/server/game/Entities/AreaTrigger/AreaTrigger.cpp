@@ -99,6 +99,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     }
 
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
+    SetPhaseId(caster->GetPhaseId(), false);
 
     _realEntry = triggerEntry;
     SetEntry(_realEntry);
