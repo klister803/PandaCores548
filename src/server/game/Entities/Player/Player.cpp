@@ -20412,23 +20412,26 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     if (!result)
     {
         // initial first
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
             GetBattlePetMgr()->AddPetBattleSlot(0, i);
         return;
     }
 
-    do
+    // SELECT slot_0, slot_1, slot_2, locked FROM character_battle_pet WHERE ownerAccID = ?
+    Field* fields = result->Fetch();
+
+    uint64 petGUIDs[3] = {0, 0, 0};
+
+    petGUIDs[0]  = fields[0].GetUInt64();
+    petGUIDs[1]  = fields[1].GetUInt64();
+    petGUIDs[2]  = fields[2].GetUInt64();
+    uint8 lockedMask = fields[3].GetUInt8();
+
+    for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
     {
-        // SELECT guid, slot, locked FROM character_battle_pet WHERE ownerAccID = ?
-        Field* fields = result->Fetch();
-
-        uint64 guid  = fields[0].GetUInt64();
-        uint8 slotID = fields[1].GetUInt8();
-        uint8 locked = fields[2].GetUInt8();
-
-        GetBattlePetMgr()->AddPetBattleSlot(guid, slotID, locked);
+        bool locked = lockedMask & (1 << i);
+        GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i, locked);
     }
-    while (result->NextRow());
 }
 
 void Player::_LoadGroup(PreparedQueryResult result)
@@ -21271,7 +21274,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
     _SaveBattlePets(trans);
-    //_SaveBattlePetSlots(trans);
+    _SaveBattlePetSlots(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -22130,17 +22133,18 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
 void Player::_SaveBattlePetSlots(SQLTransaction& trans)
 {
     // save slots
+    uint8 lockedMask = 0;
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_SLOTS);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
     for (int i = 0; i < 3; ++i)
     {
         PetBattleSlot * slot = GetBattlePetMgr()->GetPetBattleSlot(i);
-
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
-        stmt->setUInt64(0, slot->petGUID);
-        stmt->setUInt8(2, i);
-        stmt->setUInt8(3, slot->locked);
-
-        trans->Append(stmt);
+        uint8 locked = slot ? slot->IsLocked() : 1;
+        lockedMask |= locked << i;
+        stmt->setUInt64(i+1, slot ? slot->petGUID : 0);
     }
+    stmt->setUInt8(4, lockedMask);
+    trans->Append(stmt);
 }
 
 // save player stats -- only for external usage

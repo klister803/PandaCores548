@@ -29,6 +29,10 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
+class PetBattle
+{
+};
+
 #define MAX_PET_BATTLE_SLOT 3
 
 struct PetInfo
@@ -71,6 +75,9 @@ struct PetBattleSlot
     // helpers
     bool IsEmpty() { return petGUID == 0; }
     void SetPet(uint64 guid) { petGUID = guid; }
+    uint64 GetPet() { return petGUID; }
+    bool IsLocked() { return locked; }
+    void SetLocked(bool val) { locked = val; }
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
