@@ -1726,7 +1726,7 @@ class spell_norushen_challenge : public SpellScriptLoader
                     norush->AI()->ZoneTalk(TEXT_GENERIC_10, target->GetGUID());
 
                 target->SetPhaseMask(0x2, true);
-                //target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE);
+                target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE);
 
                 switch(GetId())
                 {
@@ -1770,7 +1770,7 @@ class spell_norushen_challenge : public SpellScriptLoader
                         break;                    
                 }
                 target->SetPhaseMask(0x1, true);
-                //target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, 0);
+                target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, 0);
             }
 
             void Register()

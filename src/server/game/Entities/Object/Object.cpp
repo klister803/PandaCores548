@@ -1681,7 +1681,7 @@ void MovementInfo::OutDebug()
         sLog->outInfo(LOG_FILTER_NETWORKIO, "splineElevation: %f", splineElevation);
 }
 
-WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
+WorldObject::WorldObject(bool isWorldObject): WorldLocation(), m_serverSideVisibility(),
 m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(NULL),
 m_transport(NULL), m_currMap(NULL), m_InstanceId(0),
 m_phaseMask(PHASEMASK_NORMAL)
@@ -2248,6 +2248,10 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
+
+    //Temp creatures already checked.
+    if (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES) == ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE && obj->ToUnit())
+        return false;
 
     bool corpseVisibility = false;
     if (distanceCheck)
