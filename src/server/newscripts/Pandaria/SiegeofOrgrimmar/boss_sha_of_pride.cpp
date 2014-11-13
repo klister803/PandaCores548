@@ -209,7 +209,7 @@ class boss_sha_of_pride : public CreatureScript
                 events.SetPhase(PHASE_BATTLE);
                 uint32 t = 0;
                 
-                events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);                 //19:02:02.000
+                if (IsHeroic())events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);                 //19:02:02.000
                 events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);           //19:02:03.000
                 events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);                //19:02:06.000
                 events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);            //19:02:08.000
@@ -756,6 +756,7 @@ enum ACTION_CORUPTED_PRISON
 {
     ACTION_CORUPTED_PRISON_ACTIVATE_KEY     = 1,
     ACTION_CORUPTED_PRISON_DEACTIVATE_KEY   = 2,
+    ACTION_CORUPTED_PRISON_ENABLE           = 3,
 };
 
 class go_sha_of_pride_corupted_prison : public GameObjectScript
@@ -799,11 +800,14 @@ class go_sha_of_pride_corupted_prison : public GameObjectScript
                 _enableKeyCount = 0;
                 _plrPrisonerGUID =guid;
                 go->EnableOrDisableGo(true, false);
-                for(uint8 i = 0; i < 3; ++i)
+                for(uint8 i = 0; i < 2; ++i)
                 {
                     if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[i])))
                         buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
                 }
+                //last one should be activated
+                if (GameObject* buttons = instance->instance->GetGameObject(instance->GetData64(_key[2])))
+                    buttons->AI()->DoAction(ACTION_CORUPTED_PRISON_ENABLE);
             }
 
             void DoAction(const int32 param)
@@ -899,6 +903,15 @@ class go_sha_of_pride_corupted_prison_button : public GameObjectScript
                         break;
                     case ACTION_CORUPTED_PRISON_ACTIVATE_KEY:
                         events.ScheduleEvent(ACTION_CORUPTED_PRISON_DEACTIVATE_KEY, 1000);
+                        break;
+                    case ACTION_CORUPTED_PRISON_ENABLE:
+                        if (go->GetGoState() == GO_STATE_ACTIVE_ALTERNATIVE)
+                        {
+                            go->EnableOrDisableGo(false, false);
+                            if (GameObject* pris = instance->instance->GetGameObject(instance->GetData64(ownerEntry)))
+                                pris->AI()->DoAction(ACTION_CORUPTED_PRISON_ACTIVATE_KEY);
+                            return;
+                        }
                         break;
                 }
 
