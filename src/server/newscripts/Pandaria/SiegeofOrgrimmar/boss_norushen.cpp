@@ -1270,7 +1270,7 @@ public:
         {
             me->SetPhaseId(0, true);
             me->SetInCombatWithZone();
-            SetFullHealth();
+            me->SetFullHealth();
         }
 
         void EnterEvadeMode()

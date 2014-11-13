@@ -417,7 +417,7 @@ public:
             instance = creature->GetInstanceScript();
         }
 
-        std::set<Unit*> _gift;
+        std::set<uint64> _gift;
         InstanceScript* instance;
         EventMap events;
         bool start;
@@ -451,13 +451,12 @@ public:
             if (target->GetTypeId() != TYPEID_PLAYER || spell->Id != SPELL_GIFT_OF_THE_TITANS)
                 return;
 
-            _gift.insert(target);
+            _gift.insert(target->GetGUID());
         }
 
         void SetGUID(uint64 guid, int32 /*id*/ = 0)
         {
-            if (Player* player = ObjectAccessor::FindPlayer(guid))
-                _gift.erase(player->ToUnit());
+            _gift.erase(guid);
         }
 
         void SetData(uint32 id, uint32 value)
@@ -474,13 +473,12 @@ public:
                 me->CastSpell(me, SPELL_GIFT_OF_THE_TITANS, true);
             }else if (id == EVENT_SPELL_GIFT_OF_THE_TITANS)
             {
-                Unit* checker = NULL;
-                Unit* target = NULL;
                 bool good = _gift.size() == value;
-
-                for(std::set<Unit*>::iterator itr = _gift.begin(); itr != _gift.end(); ++itr)
+                for(std::set<uint64>::iterator itr = _gift.begin(); itr != _gift.end(); ++itr)
                 {
-                    target = *itr;
+                    Player* target = ObjectAccessor::FindPlayer(*itr);
+                    if (!target)
+                        continue;
 
                     if (good)
                         target->AddAura(SPELL_POWER_OF_THE_TITANS, target);
