@@ -5234,6 +5234,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 96117: // Toss Stink Bomb Credit
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_PASSENGER_0;
                     break;
+                case 144514: // Lingering Corruption
+                    spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
+                    break;
                 default:
                     break;
             }
