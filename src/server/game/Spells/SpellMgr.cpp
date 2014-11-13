@@ -4856,6 +4856,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 //Norushen
                 case 144514:    //Lingering Corruption
                     spellInfo->CustomMaxAffectedTargets = 1; //used if empty on dbc SpellTargetRestrictionsEntry
+                    spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
                     break;
                 case 145212:    //Unleashed Anger dmg
                     spellInfo->Effects[0].TargetA = 25;
@@ -5233,9 +5234,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 96117: // Toss Stink Bomb Credit
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_PASSENGER_0;
-                    break;
-                case 144514: // Lingering Corruption
-                    spellInfo->SchoolMask |= SPELL_SCHOOL_MASK_NORMAL;
                     break;
                 default:
                     break;
