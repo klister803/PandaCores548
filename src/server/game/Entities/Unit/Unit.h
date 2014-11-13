@@ -2119,7 +2119,6 @@ class Unit : public WorldObject
 
         // common function for visibility checks for player/creatures with detection code
         void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
-        void SetPhaseId(uint32 newPhase, bool update);// overwrite WorldObject::SetPhaseId
         void UpdateObjectVisibility(bool forced = true);
 
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];

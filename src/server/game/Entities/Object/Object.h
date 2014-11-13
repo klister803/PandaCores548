@@ -807,13 +807,6 @@ class WorldObject : public Object, public WorldLocation
         bool InSamePhase(WorldObject const* obj) const { return InSamePhase(obj->GetPhaseMask()); }
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
 
-        virtual void SetPhaseId(uint32 newPhaseId, bool update) { m_phaseId = newPhaseId; };
-        uint32 GetPhaseId() const { return m_phaseId; }
-        bool InSamePhaseId(WorldObject const* obj) const { return IgnorePhaseId() || obj->IgnorePhaseId()|| InSamePhaseId(obj->GetPhaseId()); }
-        bool InSamePhaseId(uint32 phase) const { return m_ignorePhaseIdCheck || (GetPhaseId() == phase); }
-        void setIgnorePhaseIdCheck(bool apply)  { m_ignorePhaseIdCheck = apply; }
-        bool IgnorePhaseId() const { return m_ignorePhaseIdCheck; }
-
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
@@ -879,7 +872,7 @@ class WorldObject : public Object, public WorldLocation
         }
         bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
         {
-            return obj && IsInMap(obj) && InSamePhase(obj) && InSamePhaseId(obj) && _IsWithinDist(obj, dist2compare, is3D);
+            return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D);
         }
         bool IsWithinLOS(float x, float y, float z) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
@@ -1056,14 +1049,12 @@ class WorldObject : public Object, public WorldLocation
         //uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id
         uint32 m_phaseMask;                                 // in area phase state
-        uint32 m_phaseId;                                   // special phase. It's new generation phase, when we should check id.
-        bool m_ignorePhaseIdCheck;                          // like gm mode.
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
 
-        bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj) || !InSamePhaseId(obj); }
+        bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj); }
         virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
         bool CanDetect(WorldObject const* obj, bool ignoreStealth) const;
         bool CanDetectInvisibilityOf(WorldObject const* obj) const;

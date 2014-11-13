@@ -735,6 +735,7 @@ struct npc_norushenChallengeAI : public ScriptedAI
                 break;
         }
         cleanseSpellID = 0;
+        pCreature->SetPhaseMask(0x2, true);
     }
 
     uint32 cleanseSpellID;
@@ -751,7 +752,6 @@ struct npc_norushenChallengeAI : public ScriptedAI
         if (!instance)
             return;
 
-        me->SetPhaseId(summoner->GetGUID(), true);
         me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
 
         if (challenge)
@@ -1091,6 +1091,7 @@ public:
         npc_titanic_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             instance = (InstanceScript*)pCreature->GetInstanceScript();
+            pCreature->SetPhaseMask(0x2, true);
         }
 
         enum spells
@@ -1115,7 +1116,6 @@ public:
             if (!instance)
                 return;
 
-            me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
             me->DespawnOrUnsummon(60000);
             me->SetInCombatWithZone();
@@ -1189,6 +1189,7 @@ public:
         npc_norushen_heal_ch_greater_corruptionAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+            pCreature->SetPhaseMask(0x2, true);
         }
 
         enum spells
@@ -1217,7 +1218,6 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            me->SetPhaseId(summoner->GetGUID(), true);
             me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
         }
 
@@ -1278,7 +1278,7 @@ public:
                         events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);
                         break;
                     case EVENT_END:
-                        me->SetPhaseId(0, true);
+                        me->SetPhaseMask(0x1, true);
                         me->SetInCombatWithZone();
                         //me->DespawnOrUnsummon();
                         break;
@@ -1299,6 +1299,7 @@ struct npc_norushen_heal_chAI : public ScriptedAI
 {
     npc_norushen_heal_chAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
+        pCreature->SetPhaseMask(0x2, true);
     }
 
     EventMap events;
@@ -1332,7 +1333,6 @@ struct npc_norushen_heal_chAI : public ScriptedAI
 
     void IsSummonedBy(Unit* summoner)
     {
-        me->SetPhaseId(summoner->GetGUID(), true);
         me->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
         if (Creature* corruption = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 50.0f, true))
         {
@@ -1725,8 +1725,7 @@ class spell_norushen_challenge : public SpellScriptLoader
                 if (Creature* norush = instance->instance->GetCreature(instance->GetData64(NPC_NORUSHEN)))
                     norush->AI()->ZoneTalk(TEXT_GENERIC_10, target->GetGUID());
 
-                target->SetPhaseId(target->GetGUID(), true);
-
+                target->SetPhaseMask(0x2, true);
                 //target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, ONLY_OWN_TEMP_CREATRES_VISIBILITY_TYPE);
 
                 switch(GetId())
@@ -1770,7 +1769,7 @@ class spell_norushen_challenge : public SpellScriptLoader
                     default:
                         break;                    
                 }
-                target->SetPhaseId(0, true);
+                target->SetPhaseMask(0x1, true);
                 //target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_ONLY_OWN_TEMP_CREATRES, 0);
             }
 

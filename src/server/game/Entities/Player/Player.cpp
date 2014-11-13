@@ -3354,7 +3354,6 @@ void Player::SetInWater(bool apply)
 
 void Player::SetGameMaster(bool on)
 {
-    setIgnorePhaseIdCheck(on);
     if (on)
     {
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;

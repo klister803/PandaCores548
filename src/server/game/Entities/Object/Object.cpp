@@ -1684,7 +1684,7 @@ void MovementInfo::OutDebug()
 WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
 m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(NULL),
 m_transport(NULL), m_currMap(NULL), m_InstanceId(0),
-m_phaseMask(PHASEMASK_NORMAL), m_phaseId(0), m_ignorePhaseIdCheck(false)
+m_phaseMask(PHASEMASK_NORMAL)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
     m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
@@ -2216,6 +2216,18 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 {
     if (this == obj)
         return true;
+
+    //summoned creature to summoner
+    if (Unit const* thisUnit = ToUnit())
+        if (TempSummon const* sum = thisUnit->ToTempSummon())
+            if (obj->GetGUID() == sum->GetSummonerGUID())
+                return true;
+
+    //summoner to summoned creature
+    if (Unit const* target = obj->ToUnit())
+        if (TempSummon const* sum = target->ToTempSummon())
+            if (GetGUID() == sum->GetSummonerGUID())
+                return true;
 
     if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
     {
