@@ -763,6 +763,20 @@ struct npc_norushenChallengeAI : public ScriptedAI
         AttackStart(summoner);
     }
 
+    void EnterEvadeMode()
+    {
+        if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+        {
+            summonInRealWorld(amalgam);
+
+            if (TempSummon const* sum = me->ToTempSummon())
+            {
+                amalgam->AI()->SetGUID(sum->GetSummonerGUID(), -1);
+            }
+        }
+        me->DespawnOrUnsummon();
+    }
+
     void JustDied(Unit* killer)
     {
         if (!challenge)
@@ -1227,7 +1241,7 @@ public:
             events.ScheduleEvent(EVENT_SPELL_BOTTOMLESS_PIT, 17000);         //20:10:22.000
             events.ScheduleEvent(EVENT_SPELL_DISHEARTENING_LAUGH, 12000);    //20:10:17.000 20:10:29.000
             events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);   //20:10:19.000
-            if (me->GetPhaseMask() == 0x2) events.ScheduleEvent(EVENT_END, 60000);
+            if (me->GetPhaseId()) events.ScheduleEvent(EVENT_END, 60000);
         }
 
         void JustDied(Unit* killer)
@@ -1240,20 +1254,29 @@ public:
             if (!plr)
                 return;
 
-            if (me->GetPhaseMask() == 0x1)
+            if (!me->GetPhaseId())
             {
                 me->DespawnOrUnsummon();
                 return;
             }
 
-            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
-            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
-            plr->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
-
             plr->CastSpell(plr, SPELL_CLEANSE, false);
             CheckCorruptionForCleanse(plr);
             plr->RemoveAurasDueToSpell(SPELL_TEST_OF_RELIANCE);
             me->DespawnOrUnsummon();
+        }
+
+        void spawnOnRealWorld()
+        {
+            me->SetPhaseId(0, true);
+            me->SetInCombatWithZone();
+            SetFullHealth();
+        }
+
+        void EnterEvadeMode()
+        {
+            if (me->GetPhaseId())
+                spawnOnRealWorld();
         }
 
         void UpdateAI(uint32 diff)
@@ -1278,8 +1301,7 @@ public:
                         events.ScheduleEvent(EVENT_SPELL_LINGERING_CORRUPTION, 14000);
                         break;
                     case EVENT_END:
-                        me->SetPhaseId(0, true);
-                        me->SetInCombatWithZone();
+                        spawnOnRealWorld();
                         //me->DespawnOrUnsummon();
                         break;
                 }
@@ -1320,7 +1342,7 @@ struct npc_norushen_heal_chAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        events.ScheduleEvent(EVENT_1, 60000);
+
     }
 
     void HealReceived(Unit* /*done_by*/, uint32& addhealth)
@@ -1344,8 +1366,7 @@ struct npc_norushen_heal_chAI : public ScriptedAI
 
     virtual void DoEvent(uint32 eventId)
     {
-        if (eventId == EVENT_1)
-            me->DespawnOrUnsummon();
+
     }
 
     void UpdateAI(uint32 diff)
@@ -1766,6 +1787,11 @@ class spell_norushen_challenge : public SpellScriptLoader
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
                         target->CastSpell(target, SPELL_TC_CLEANSE, true);
                         CheckCorruptionForCleanse(target->ToPlayer());
+                        break;
+                    case SPELL_TEST_OF_RELIANCE:
+                        target->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_1);
+                        target->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_2);
+                        target->RemoveAllMinionsByEntry(NPC_NN_HEAL_EVENT_PROTECTOR_3);
                         break;
                     default:
                         break;                    
