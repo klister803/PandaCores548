@@ -308,6 +308,7 @@ public:
                 case GO_LIGHT_RAY_14:
                 case GO_LIGHT_RAY_15:
                 case GO_LIGHT_RAY_16:
+                    go->setIgnorePhaseIdCheck(true);
                     lightqGUIDs.push_back(go->GetGUID());
                     break;
                 case GO_SHA_ENERGY_WALL:
