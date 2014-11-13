@@ -126,6 +126,8 @@ void EffectMovementGenerator::Finalize(Unit &unit)
     if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
         return;
 
+    unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
+
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
     if (unit.GetTypeId() == TYPEID_PLAYER && unit.IsInWorld())
@@ -187,6 +189,8 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
 {
     if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
         return;
+
+    unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     if (((Creature&)unit).AI())
         ((Creature&)unit).AI()->MovementInform(POINT_MOTION_TYPE, m_Id);

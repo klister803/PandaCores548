@@ -853,11 +853,11 @@ void Player::UpdateManaRegen()
 
     float interruptMod = std::max(float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100)), 1.0f);
     float baseMod = std::max(GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT), 1.0f);
+    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+
     // haste also increase your mana regeneration
     if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN))
-        baseMod *= 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
-
-    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+        AddPct(pctRegenMod, GetRatingBonusValue(CR_HASTE_SPELL));
 
     // out of combar
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod);

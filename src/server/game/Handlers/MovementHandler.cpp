@@ -308,6 +308,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     MovementInfo movementInfo;
     ReadMovementInfo(recvPacket, &movementInfo);
 
+    LiquidData liquidStatus;
+    ZLiquidStatus status = _player->GetBaseMap()->getLiquidStatus(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
+
     // prevent tampered movement data
     if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
     {
@@ -416,7 +419,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (plrMover && plrMover->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING && (movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING) == 0 && (movementInfo.GetMovementFlags() & MOVEMENTFLAG_SWIMMING) == 0 && plrMover && !plrMover->isInFlight())
+    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !status && plrMover && !plrMover->isInFlight())
     {
         // movement anticheat
         plrMover->m_anti_JumpCount = 0;
@@ -449,13 +452,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     bool check_passed = true;
     if(World::GetEnableMvAnticheatDebug())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] flags2[%X] UnitState[%X] opcode[%s] | Player (xyzo): %f, %f, %fo(%f) | mover (xyzo): %f, %f, %fo(%f)",
+        sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] flags2[%X] UnitState[%X] opcode[%s] | mover (xyzo): %f, %f, %fo(%f)",
             plrMover->GetName(), movementInfo.time, movementInfo.fallTime, movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), movementInfo.pos.GetOrientation(),
-            movementInfo.flags, movementInfo.flags2, mover->GetUnitState(), GetOpcodeNameForLogging(opcode).c_str(), plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), plrMover->GetOrientation(),
-            mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
+            movementInfo.flags, movementInfo.flags2, mover->GetUnitState(), GetOpcodeNameForLogging(opcode).c_str(), mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
     }
 
-    if (plrMover && plrMover->GetTypeId() == TYPEID_PLAYER && !plrMover->HasUnitState(UNIT_STATE_LOST_CONTROL) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) &&
+    if (plrMover && plrMover->GetTypeId() == TYPEID_PLAYER && !plrMover->HasUnitState(UNIT_STATE_LOST_CONTROL) &&
         !plrMover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) && 
         mover->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
         !(plrMover->m_transport || plrMover->m_temp_transport) && (plrMover->GetMapId() != 578 || plrMover->GetMapId() != 603))
@@ -589,8 +591,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                         mover->m_anti_FlightTime -= diff;
                 }
 
-                LiquidData liquidStatus;
-                ZLiquidStatus status = _player->GetBaseMap()->getLiquidStatus(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
                 float _vmapHeight = 0.0f;
                 float _Height = 0.0f;
                 //if in fly crash on check VmapHeight
