@@ -485,7 +485,6 @@ class Spell
         void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
-        void SendSpellCreateVisual();
         void SendSpellPendingCast();
         void SendSpellActivationScene();
         void SendSpellCooldown();

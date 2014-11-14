@@ -451,7 +451,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     float comboDamage = PointsPerComboPoint;
 
     // base amount modification based on spell lvl vs caster lvl
-    if (ScalingMultiplier != 0.0f && !(_spellInfo->Attributes & SPELL_ATTR0_TRADESPELL))
+    if (ScalingMultiplier != 0.0f && !(_spellInfo->Attributes & SPELL_ATTR0_TRADESPELL) && !(_spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && _spellInfo->Id != 79638)
     {
         if (caster)
         {
@@ -2225,6 +2225,24 @@ uint32 SpellInfo::GetSimilarEffectsMiscValueMask(SpellEffects effectName, Unit* 
 uint32 SpellInfo::GetExplicitTargetMask() const
 {
     return ExplicitTargetMask;
+}
+
+uint32 SpellInfo::GetSpellTypeMask() const
+{
+    uint32 mask = 0;
+    uint32 range_type = RangeEntry ? RangeEntry->type : 0;
+
+    if(range_type == SPELL_RANGE_MELEE)
+        mask |= SPELL_TYPE_MELEE;
+    if(range_type == SPELL_RANGE_RANGED)
+        mask |= SPELL_TYPE_RANGE;
+    if(IsAutoRepeatRangedSpell())
+        mask |= SPELL_TYPE_AUTOREPEATE;
+    if(IsChanneled())
+        mask |= SPELL_TYPE_CHANELED;
+    if(IsTargetingArea())
+        mask |= SPELL_TYPE_AOE;
+    return mask;
 }
 
 AuraStateType SpellInfo::GetAuraState() const

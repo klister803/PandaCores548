@@ -639,6 +639,7 @@ struct SpellPrcoCheck
     int32 mechanicMask;
     int32 fromlevel;
     int32 perchp;
+    int32 spelltypeMask;
 };
 
 struct SpellTriggered

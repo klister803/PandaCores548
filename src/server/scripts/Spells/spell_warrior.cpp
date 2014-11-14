@@ -1231,6 +1231,109 @@ class spell_war_slam_aoe : public SpellScriptLoader
         }
 };
 
+// Intervene - 3411
+class spell_war_intervene : public SpellScriptLoader
+{
+    public:
+        spell_war_intervene() : SpellScriptLoader("spell_war_intervene") { }
+
+        class spell_war_intervene_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_war_intervene_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.sort(CheckHealthState());
+                if (targets.size() > 1)
+                    targets.resize(1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_intervene_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+
+        private:
+            class CheckHealthState
+            {
+                public:
+                    CheckHealthState() { }
+
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        Unit* unita = a->ToUnit();
+                        Unit* unitb = b->ToUnit();
+                        if(!unita)
+                            return true;
+                        if(!unitb)
+                            return false;
+                        return unita->GetHealthPct() < unitb->GetHealthPct();
+                    }
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_war_intervene_SpellScript();
+        }
+};
+
+// Warrior Charge Drop Fire Periodic - 126661
+class spell_warr_charge_drop_fire : public SpellScriptLoader
+{
+    public:
+        spell_warr_charge_drop_fire() : SpellScriptLoader("spell_warr_charge_drop_fire") { }
+
+        class spell_warr_charge_drop_fire_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_charge_drop_fire_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if(Unit* caster = GetCaster())
+                    caster->SendSpellCreateVisual(GetSpellInfo());
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_charge_drop_fire_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_charge_drop_fire_AuraScript();
+        }
+};
+
+// Bloodbath - 113344
+class spell_warr_bloodbath : public SpellScriptLoader
+{
+    public:
+        spell_warr_bloodbath() : SpellScriptLoader("spell_warr_bloodbath") { }
+
+        class spell_warr_bloodbath_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_bloodbath_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if((amount * 20) > aurEff->GetOldBaseAmount())
+                    amount += aurEff->GetOldBaseAmount();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_bloodbath_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_bloodbath_AuraScript();
+        }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1264,4 +1367,7 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_raging_blow_remove();
     new spell_warr_shield_visual();
     new spell_war_slam_aoe();
+    new spell_war_intervene();
+    new spell_warr_charge_drop_fire();
+    new spell_warr_bloodbath();
 }

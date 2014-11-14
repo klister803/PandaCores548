@@ -22999,7 +22999,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod
 
     // check item type request
     if(SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId))
-        if (!HasItemFitToSpellRequirements(affectSpell))
+        if (mod->op == SPELLMOD_DAMAGE && !HasItemFitToSpellRequirements(affectSpell))
             return false;
 
     return spellInfo->IsAffectedBySpellMod(mod);
@@ -23861,6 +23861,9 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
 
         for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
+            if (iece->IsSeasonCurrencyRequirement(i))
+                continue;
+
             if (iece->RequiredCurrency[i])
                 ModifyCurrency(iece->RequiredCurrency[i], -int32(iece->RequiredCurrencyCount[i]), true, true);
         }
@@ -28748,6 +28751,9 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     {
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
+            if (iece->IsSeasonCurrencyRequirement(i))
+                continue;
+
             data << uint32(iece->RequiredCurrency[i]);
             if (CurrencyTypesEntry const * entry = sCurrencyTypesStore.LookupEntry(iece->RequiredCurrency[i]))
                 data << uint32(iece->RequiredCurrencyCount[i] / entry->GetPrecision());

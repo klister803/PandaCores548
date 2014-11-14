@@ -9606,24 +9606,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 }
                 break;
             }
-            case SPELLFAMILY_WARRIOR:
-            {
-                if (auraSpellInfo->Id == 12292)     // Bloodbath
-                {
-                    trigger_spell_id = 113344;
-        
-                    SpellInfo const* TriggerPS = sSpellMgr->GetSpellInfo(trigger_spell_id);
-                    if (!TriggerPS)
-                        return false;
-        
-                    basepoints0 = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
-                    if(victim)
-                        if (AuraEffect const* aurEff = victim->GetAuraEffect(trigger_spell_id, EFFECT_0))
-                            basepoints0 += aurEff->GetAmount();
-                    break;
-                }
-                break;
-            }
             default:
                  break;
         }
@@ -18920,10 +18902,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 procDmgClass = procSpell ? procSpell->DmgClass : 0;
     uint32 Attributes = procSpell ? procSpell->Attributes : 0;
     uint32 AllEffectsMechanicMask = procSpell ? procSpell->GetAllEffectsMechanicMask() : 0;
+    uint32 SpellTypeMask = procSpell ? procSpell->GetSpellTypeMask() : 1;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i",
-    //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid);
+    //sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i",
+    //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid, SpellTypeMask);
 
     if (std::vector<SpellPrcoCheck> const* spellCheck = sSpellMgr->GetSpellPrcoCheck(spellProto->Id))
     {
@@ -18978,6 +18961,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             break;
                         }
                         if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
                         {
                             procCheck = true;
                             break;
@@ -19074,6 +19062,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
                 if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
                 {
                     procCheck = false;
@@ -19136,6 +19129,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     continue;
                 }
                 if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
                 {
                     procCheck = true;
                     continue;
@@ -22985,3 +22983,87 @@ void DelayCastEvent::Execute(Unit *caster)
 
     caster->CastSpell(target, Spell, false);
 };
+
+void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
+{
+    bool exist = false;
+    uint32 visual = 0;
+    uint16 unk1 = 0;
+    uint16 unk2 = 0;
+    float speed = spellInfo->Speed;
+    float positionX = 0.0f;
+    float positionY = 0.0f;
+    float positionZ = 0.0f;
+    bool position = false;
+    if (const std::vector<SpellVisual> *spell_visual = sSpellMgr->GetSpellVisual(spellInfo->Id))
+    {
+        float chance = 100.0f / spell_visual->size();
+        for (std::vector<SpellVisual>::const_iterator i = spell_visual->begin(); i != spell_visual->end(); ++i)
+        {
+            visual = i->visual;
+            unk1 = i->unk1;
+            unk2 = i->unk2;
+            if(i->speed)
+                speed = i->speed;
+            position = i->position;
+            exist = true;
+            if(roll_chance_f(chance))
+                break;
+        }
+    }
+
+    if(!exist)
+        return;
+
+    if(position)
+    {
+        if (target)
+        {
+            positionX = target->GetPositionX();
+            positionY = target->GetPositionY();
+            positionZ = target->GetPositionZ();
+        }
+        else
+        {
+            positionX = GetPositionX();
+            positionY = GetPositionY();
+            positionZ = GetPositionZ();
+        }
+    }
+
+    ObjectGuid casterGuid = GetObjectGuid();
+    ObjectGuid targetGuid = target ? target->GetGUID() : NULL;
+    WorldPacket data(SMSG_SPELL_CREATE_VISUAL, 50);
+    data.WriteGuidMask<3, 0>(targetGuid);
+    data.WriteGuidMask<2, 0>(casterGuid);
+    data.WriteGuidMask<4>(targetGuid);
+    data.WriteGuidMask<4, 3>(casterGuid);
+    data.WriteGuidMask<7>(targetGuid);
+    data.WriteGuidMask<6>(casterGuid);
+    data.WriteGuidMask<5>(targetGuid);
+    data.WriteBit(position);            // hasPosition
+    data.WriteGuidMask<5>(casterGuid);
+    data.WriteGuidMask<2, 6, 1>(targetGuid);
+    data.WriteGuidMask<7, 1>(casterGuid);
+
+    data.WriteGuidBytes<3, 6>(casterGuid);
+    data.WriteGuidBytes<5>(targetGuid);
+    data.WriteGuidBytes<2>(casterGuid);
+    data.WriteGuidBytes<4>(targetGuid);
+    data << uint16(unk1);               // word10
+    data.WriteGuidBytes<1>(casterGuid);
+    data.WriteGuidBytes<0>(targetGuid);
+    data << uint32(visual);             //Spell Visual dword14
+    data << float(positionZ);           // z
+    data << float(speed);               // speed
+    data.WriteGuidBytes<3, 2>(targetGuid);
+    data << uint16(unk2);               // word34
+    data.WriteGuidBytes<0>(casterGuid);
+    data.WriteGuidBytes<1, 7>(targetGuid);
+    data << float(positionX);           // x
+    data.WriteGuidBytes<6>(targetGuid);
+    data.WriteGuidBytes<7, 4>(casterGuid);
+    data << float(positionY);           // y
+    data.WriteGuidBytes<5>(casterGuid);
+    SendMessageToSet(&data, true);
+}

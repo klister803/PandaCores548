@@ -3682,7 +3682,7 @@ void Spell::cast(bool skipCheck)
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
         TakePower();
 
-    SendSpellCreateVisual();
+    m_caster->SendSpellCreateVisual(m_spellInfo, m_targets.GetUnitTarget());
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
 
@@ -4740,90 +4740,6 @@ void Spell::SendSpellStart()
     data.WriteGuidBytes<7>(itemCasterGuid);
     data.WriteGuidBytes<6, 0, 2>(casterGuid);
 
-    m_caster->SendMessageToSet(&data, true);
-}
-
-void Spell::SendSpellCreateVisual()
-{
-    bool exist = false;
-    uint32 visual = 0;
-    uint16 unk1 = 0;
-    uint16 unk2 = 0;
-    float speed = m_spellInfo->Speed;
-    float positionX = 0.0f;
-    float positionY = 0.0f;
-    float positionZ = 0.0f;
-    bool position = false;
-    if (const std::vector<SpellVisual> *spell_visual = sSpellMgr->GetSpellVisual(m_spellInfo->Id))
-    {
-        float chance = 100.0f / spell_visual->size();
-        for (std::vector<SpellVisual>::const_iterator i = spell_visual->begin(); i != spell_visual->end(); ++i)
-        {
-            visual = i->visual;
-            unk1 = i->unk1;
-            unk2 = i->unk2;
-            if(i->speed)
-                speed = i->speed;
-            position = i->position;
-            exist = true;
-            if(roll_chance_f(chance))
-                break;
-        }
-    }
-
-    if(!exist)
-        return;
-
-    if(position)
-    {
-        if (Unit* target = m_targets.GetUnitTarget())
-        {
-            positionX = target->GetPositionX();
-            positionY = target->GetPositionY();
-            positionZ = target->GetPositionZ();
-        }
-        else
-        {
-            positionX = m_caster->GetPositionX();
-            positionY = m_caster->GetPositionY();
-            positionZ = m_caster->GetPositionZ();
-        }
-    }
-
-    ObjectGuid casterGuid = m_caster->GetObjectGuid();
-    ObjectGuid targetGuid = m_targets.m_objectTargetGUID;
-    WorldPacket data(SMSG_SPELL_CREATE_VISUAL, 50);
-    data.WriteGuidMask<3, 0>(targetGuid);
-    data.WriteGuidMask<2, 0>(casterGuid);
-    data.WriteGuidMask<4>(targetGuid);
-    data.WriteGuidMask<4, 3>(casterGuid);
-    data.WriteGuidMask<7>(targetGuid);
-    data.WriteGuidMask<6>(casterGuid);
-    data.WriteGuidMask<5>(targetGuid);
-    data.WriteBit(position);            // hasPosition
-    data.WriteGuidMask<5>(casterGuid);
-    data.WriteGuidMask<2, 6, 1>(targetGuid);
-    data.WriteGuidMask<7, 1>(casterGuid);
-
-    data.WriteGuidBytes<3, 6>(casterGuid);
-    data.WriteGuidBytes<5>(targetGuid);
-    data.WriteGuidBytes<2>(casterGuid);
-    data.WriteGuidBytes<4>(targetGuid);
-    data << uint16(unk1);               // word10
-    data.WriteGuidBytes<1>(casterGuid);
-    data.WriteGuidBytes<0>(targetGuid);
-    data << uint32(visual);             //Spell Visual dword14
-    data << float(positionZ);           // z
-    data << float(speed);               // speed
-    data.WriteGuidBytes<3, 2>(targetGuid);
-    data << uint16(unk2);               // word34
-    data.WriteGuidBytes<0>(casterGuid);
-    data.WriteGuidBytes<1, 7>(targetGuid);
-    data << float(positionX);           // x
-    data.WriteGuidBytes<6>(targetGuid);
-    data.WriteGuidBytes<7, 4>(casterGuid);
-    data << float(positionY);           // y
-    data.WriteGuidBytes<5>(casterGuid);
     m_caster->SendMessageToSet(&data, true);
 }
 

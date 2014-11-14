@@ -118,11 +118,12 @@ class spell_rog_cheat_death : public SpellScriptLoader
                     if (dmgInfo.GetDamage() < target->GetHealth())
                         return;
 
-                    if (target->ToPlayer()->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE))
+                    if (target->ToPlayer()->HasSpellCooldown(45181))
                         return;
 
+                    target->CastSpell(target, 45181, true);
                     target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, true);
-                    target->ToPlayer()->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_REDUCE_DAMAGE, 0, getPreciseTime() + 90.0);
+                    target->ToPlayer()->AddSpellCooldown(45181, 0, getPreciseTime() + 90.0);
 
                     uint32 health10 = target->CountPctFromMaxHealth(10);
 

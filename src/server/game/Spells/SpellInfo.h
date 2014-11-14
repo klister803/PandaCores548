@@ -199,6 +199,15 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_NEGATIVE                      = SPELL_ATTR0_CU_NEGATIVE_EFF0 | SPELL_ATTR0_CU_NEGATIVE_EFF1 | SPELL_ATTR0_CU_NEGATIVE_EFF2,
 };
 
+enum SpellTypes
+{
+    SPELL_TYPE_MELEE                       = 0x00000001,
+    SPELL_TYPE_RANGE                       = 0x00000002,
+    SPELL_TYPE_AOE                         = 0x00000004,
+    SPELL_TYPE_CHANELED                    = 0x00000008,
+    SPELL_TYPE_AUTOREPEATE                 = 0x00000010,
+};
+
 uint32 GetTargetFlagMask(SpellTargetObjectTypes objType);
 
 class SpellImplicitTargetInfo
@@ -523,6 +532,7 @@ public:
     static uint32 GetDispelMask(DispelType type);
     uint32 GetSimilarEffectsMiscValueMask(SpellEffects effectName, Unit* caster = NULL) const;
     uint32 GetExplicitTargetMask() const;
+    uint32 GetSpellTypeMask() const;
 
     AuraStateType GetAuraState() const;
     SpellSpecificType GetSpellSpecific() const;
