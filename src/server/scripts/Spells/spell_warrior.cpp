@@ -1318,7 +1318,7 @@ class spell_warr_bloodbath : public SpellScriptLoader
 
             void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if((amount * 20) > aurEff->GetOldBaseAmount())
+                if((amount * 36) > aurEff->GetOldBaseAmount())
                     amount += aurEff->GetOldBaseAmount();
             }
 
