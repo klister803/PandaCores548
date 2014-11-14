@@ -4198,7 +4198,10 @@ void Spell::finish(bool ok)
 
     // Stop Attack for some spells
     if (AttributesCustom & SPELL_ATTR0_STOP_ATTACK_TARGET)
+    {
         m_caster->AttackStop();
+        m_caster->CombatStop();
+    }
     
     if (m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
         if (Item* item = m_caster->ToPlayer()->GetItemByGuid(m_castItemGUID))
