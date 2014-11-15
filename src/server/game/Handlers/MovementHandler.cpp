@@ -308,9 +308,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     MovementInfo movementInfo;
     ReadMovementInfo(recvPacket, &movementInfo);
 
-    LiquidData liquidStatus;
-    ZLiquidStatus status = _player->GetBaseMap()->getLiquidStatus(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
-
     // prevent tampered movement data
     if (movementInfo.guid != mover->GetGUID() || !mover->IsInWorld())
     {
@@ -419,7 +416,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !status && plrMover && !plrMover->isInFlight())
+    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR) && plrMover && !plrMover->IsInWater() && !plrMover->isInFlight())
     {
         // movement anticheat
         plrMover->m_anti_JumpCount = 0;
@@ -565,6 +562,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 // end current speed
 
                 // movement distance
+                LiquidData liquidStatus;
+                ZLiquidStatus status = _player->GetBaseMap()->getLiquidStatus(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
                 const float delta_x = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionX() - movementInfo.pos.GetPositionX();
                 const float delta_y = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionY() - movementInfo.pos.GetPositionY();
                 const float delta_z = (plrMover->m_transport || plrMover->m_temp_transport) ? 0 : mover->GetPositionZ() - movementInfo.pos.GetPositionZ();
