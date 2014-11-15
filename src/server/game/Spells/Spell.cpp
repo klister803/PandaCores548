@@ -4200,6 +4200,11 @@ void Spell::finish(bool ok)
     if (AttributesCustom & SPELL_ATTR0_STOP_ATTACK_TARGET)
     {
         m_caster->AttackStop();
+    }
+    
+    // Hack Shadowmeld
+    if (m_spellInfo->Id == 58984)
+    {
         m_caster->CombatStop();
     }
     
