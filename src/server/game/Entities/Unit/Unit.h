@@ -89,7 +89,7 @@ enum SpellAuraInterruptFlags
     AURA_INTERRUPT_FLAG_LANDING             = 0x02000000,   // 25   removed by hitting the ground
     AURA_INTERRUPT_FLAG_UNK26               = 0x04000000,   // 26
     AURA_INTERRUPT_FLAG_TAKE_DAMAGE2        = 0x08000000,   // 27   aura who remove from limit damage by proc (fear, confuse, stun, root, transform)
-    AURA_INTERRUPT_FLAG_ENTER_COMBAT2       = 0x10000000,   // 28
+    AURA_INTERRUPT_FLAG_ENTER_COMBAT        = 0x10000000,   // 28   remove aura on enter combat
     AURA_INTERRUPT_FLAG_UNK29               = 0x20000000,   // 29
     AURA_INTERRUPT_FLAG_UNK30               = 0x40000000,   // 30
     AURA_INTERRUPT_FLAG_UNK31               = 0x80000000,   // 31

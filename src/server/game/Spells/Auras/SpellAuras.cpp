@@ -1499,6 +1499,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         else
                             continue;
                     }
+                    if(itr->target == 3) //get target as caster
+                        _target = caster;
 
                     Unit* _caster = caster;
                     if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
@@ -1515,6 +1517,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         else
                             continue;
                     }
+                    if(itr->caster == 3) //get caster as target
+                        _caster = target;
 
                     if (itr->effect < 0)
                     {

@@ -24459,7 +24459,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     {
         // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
         // prevent 0 cooldowns set by another way
-        if (G3D::fuzzyLe(rec, 0.0) && G3D::fuzzyLe(catrec, 0.0) && (cat == 76 || (spellInfo->IsAutoRepeatRangedSpell() && spellInfo->Id != 75)))
+        if (G3D::fuzzyLe(rec, 0.0) && G3D::fuzzyLe(catrec, 0.0) && (spellInfo->IsAutoRepeatRangedSpell() && spellInfo->Id != 75))
             rec = GetAttackTime(RANGED_ATTACK);
 
         // Now we have cooldown data (if found any), time to apply mods

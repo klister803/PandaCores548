@@ -7881,14 +7881,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (ToPlayer()->GetComboPoints() < 5)
                         return false;
 
-                    if(Aura* dummy = GetAura(115189))
-                    {
-                        dummy->ModStackAmount(damage);
-                        dummy->RefreshDuration();
-                    }
-                    else
-                        SetAuraStack(115189, this, damage);
-
+                    CastSpell(this,115189,true);
                     return false;
                 }
                 // Cut to the Chase
@@ -9950,19 +9943,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         // Combat Potency
         case 35551:
         {
-            if (GetTypeId() != TYPEID_PLAYER)
+            if (GetTypeId() != TYPEID_PLAYER || procSpell)
                 return false;
-
-            if (procSpell && procSpell->Id != 86392)
-                return false;
-
-            if (procSpell && procSpell->Id == 86392)
-                if (!roll_chance_i(20))
-                    return false;
 
             float offHandSpeed = GetAttackTime(OFF_ATTACK) / IN_MILLISECONDS;
 
-            if (!procSpell && (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK))
+            if (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK)
                 if (!roll_chance_f(20.0f * offHandSpeed / 1.4f))
                     return false;
 
@@ -11866,7 +11852,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 // Revealing Strike for direct damage abilities
                 if (spellProto->AttributesEx & SPELL_ATTR1_REQ_COMBO_POINTS1 && damagetype != DOT)
                     if (AuraEffect* aurEff = victim->GetAuraEffect(84617, 2, GetGUID()))
-                        DoneTotalMod *= (100.0f + aurEff->GetAmount()) / 100.0f;
+                        AddPct(DoneTotalMod, aurEff->GetAmount());
                 break;
             }
             case SPELLFAMILY_MAGE:
@@ -13894,6 +13880,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         (*itr)->SetInCombatState(PvP, enemy);
         (*itr)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
     }
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_COMBAT);
 }
 
 void Unit::ClearInCombat()

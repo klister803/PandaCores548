@@ -518,6 +518,7 @@ class Spell
         bool find_target;
         bool canHitTargetInLOS;
         uint32 m_count_dispeling; // Final count dispell auras
+        bool m_interupted;
 
         UsedSpellMods m_appliedMods;
 
@@ -535,6 +536,7 @@ class Spell
         uint32 AttributesCustomEx11;
         uint32 AttributesCustomEx12;
         uint32 AttributesCustomEx13;
+        uint32 AttributesCustomCu;
         void LoadAttrDummy();
 
         int32 GetCastTime() const { return m_casttime; }
@@ -570,10 +572,13 @@ class Spell
 
         void SetSpellValue(SpellValueMod mod, int32 value);
         uint32 GetCountDispel() const { return m_count_dispeling; }
+        bool GetInterupted() const { return m_interupted; }
         void WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID);
 
         void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
+        void SetEffectTargets (std::list<WorldObject*> targets) { m_effect_targets = targets; }
+        std::list<WorldObject*> GetEffectTargets() { return m_effect_targets; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -638,6 +643,7 @@ class Spell
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
         Aura* m_spellAura;
+        std::list<WorldObject*> m_effect_targets;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;

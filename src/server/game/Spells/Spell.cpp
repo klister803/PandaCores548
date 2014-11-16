@@ -408,7 +408,7 @@ m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
 m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE),
-m_absorb(0),m_resist(0),m_blocked(0)
+m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NULL)
 {
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
     m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
@@ -2832,7 +2832,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
 
         // Failed Pickpocket, reveal rogue
-        if (missInfo == SPELL_MISS_RESIST && m_spellInfo->AttributesCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
+        if (missInfo == SPELL_MISS_RESIST && AttributesCustomCu & SPELL_ATTR0_CU_PICKPOCKET && unitTarget->GetTypeId() == TYPEID_UNIT)
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
             if (unitTarget->ToCreature()->IsAIEnabled)
@@ -2854,7 +2854,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     {
         m_caster->CombatStart(unit, !(AttributesCustomEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO));
 
-        if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_AURA_CC)
+        if (AttributesCustomCu & SPELL_ATTR0_CU_AURA_CC)
             if (!unit->IsStandState())
                 unit->SetStandState(UNIT_STAND_STATE_STAND);
     }
@@ -3120,6 +3120,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         }
                     }
                     m_spellAura->_RegisterForTargets();
+                    m_spellAura->SetEffectTargets(GetEffectTargets());
                     if(uint64 dynObjGuid = GetSpellDynamicObject())
                         m_spellAura->SetSpellDynamicObject(dynObjGuid);
                 }
@@ -3160,6 +3161,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
     // this is executed after spell proc spells on target hit
     // spells are triggered for each hit spell target
     // info confirmed with retail sniffs of permafrost and shadow weaving
+
     if (!m_hitTriggerSpells.empty())
     {
         int _duration = 0;
@@ -3375,9 +3377,9 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     SpellCastResult result = CheckCast(true);
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
-        #ifdef WIN32
+        //#ifdef WIN32
         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, result, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
-        #endif
+        //#endif
         // Periodic auras should be interrupted when aura triggers a spell which can't be cast
         // for example bladestorm aura should be removed on disarm as of patch 3.3.5
         // channeled periodic spells should be affected by this (arcane missiles, penance, etc)
@@ -5941,6 +5943,8 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 else
                     continue;
             }
+            if(i->target == 3) //get target as caster
+                _target = m_caster;
 
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
             {
@@ -5956,6 +5960,8 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 else
                     continue;
             }
+            if(i->caster == 3) //get caster as target
+                _caster = m_targets.GetUnitTarget();
 
             if (i->effect < 0)
             {
@@ -6111,7 +6117,7 @@ void Spell::HandleThreatSpells()
 
         threat += threatEntry->flatMod;
     }
-    else if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_NO_INITIAL_THREAT) == 0)
+    else if ((AttributesCustomCu & SPELL_ATTR0_CU_NO_INITIAL_THREAT) == 0)
         threat += m_spellInfo->SpellLevel;
 
     // past this point only multiplicative effects occur
@@ -6467,11 +6473,11 @@ SpellCastResult Spell::CheckCast(bool strict)
         if (target != m_caster)
         {
             // Must be behind the target
-            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET) && target->HasInArc(static_cast<float>(M_PI), m_caster))
+            if ((AttributesCustomCu & SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET) && target->HasInArc(static_cast<float>(M_PI), m_caster))
                 return SPELL_FAILED_NOT_BEHIND;
 
             // Target must be facing you
-            if ((m_spellInfo->AttributesCu & SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER) && !target->HasInArc(static_cast<float>(M_PI), m_caster) && !m_spellInfo->CanNonFacing(m_caster))
+            if ((AttributesCustomCu & SPELL_ATTR0_CU_REQ_TARGET_FACING_CASTER) && !target->HasInArc(static_cast<float>(M_PI), m_caster) && !m_spellInfo->CanNonFacing(m_caster))
                 return SPELL_FAILED_NOT_INFRONT;
 
             if (!IsTriggered())
@@ -8586,7 +8592,7 @@ void Spell::HandleLaunchPhase()
         if (m_applyMultiplierMask & (1 << i))
             multiplier[i] = m_spellInfo->GetEffect(i, m_diffMode).CalcDamageMultiplier(m_originalCaster, this);
 
-    bool usesAmmo = m_spellInfo->AttributesCu & SPELL_ATTR0_CU_DIRECT_DAMAGE;
+    bool usesAmmo = AttributesCustomCu & SPELL_ATTR0_CU_DIRECT_DAMAGE;
 
     for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
@@ -9221,6 +9227,7 @@ void Spell::LoadAttrDummy()
     AttributesCustomEx11 = m_spellInfo->AttributesEx11;
     AttributesCustomEx12 = m_spellInfo->AttributesEx12;
     AttributesCustomEx13 = m_spellInfo->AttributesEx13;
+    AttributesCustomCu = m_spellInfo->AttributesCu;
 
     if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(m_spellInfo->Id))
     {
@@ -9243,6 +9250,12 @@ void Spell::LoadAttrDummy()
 
                         switch (itr->attr)
                         {
+                            case -1:
+                                if(saveAttrValue > 0)
+                                    AttributesCustomCu |= saveAttrValue;
+                                else
+                                    AttributesCustomCu &= ~saveAttrValue;
+                                break;
                             case 0:
                                 if(saveAttrValue > 0)
                                     AttributesCustom |= saveAttrValue;

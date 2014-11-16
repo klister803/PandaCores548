@@ -185,6 +185,8 @@ class Aura
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }
         void RecalculateAmountOfEffects();
         void HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply);
+        void SetEffectTargets (std::list<WorldObject*> targets) { m_effect_targets = targets; }
+        std::list<WorldObject*> GetEffectTargets() { return m_effect_targets; }
 
         // Helpers for targets
         ApplicationMap const & GetApplicationMap() {return m_applications;}
@@ -273,6 +275,7 @@ class Aura
 
         AuraEffect* m_effects[MAX_SPELL_EFFECTS];
         ApplicationMap m_applications;
+        std::list<WorldObject*> m_effect_targets;
 
         bool m_isRemoved:1;
         bool m_isSingleTarget:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
