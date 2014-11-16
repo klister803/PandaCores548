@@ -531,7 +531,7 @@ const float BG_AV_ObjectPos[AV_OPLACE_MAX][4] =
 
 const float BG_AV_DoorPositons[2][4] =
 {
-    {780.487f, -493.024f, 99.9553f, 3.0976f},   //alliance
+    {794.96f, -493.50f, 99.9553f, 2.979f},      //alliance
     {-1375.193f, -538.981f, 55.2824f, 0.72178f} //horde
 };
 
