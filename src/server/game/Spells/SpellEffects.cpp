@@ -6802,13 +6802,16 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
             return;
 
 
-    // Instantly interrupt non melee spells being casted
-    /*if (unitTarget->IsNonMeleeSpellCasted(true) && 
-        (unitTarget->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
-        !unitTarget->HasAuraType(SPELL_AURA_CAST_WHILE_WALKING))
+    // Hack. Instantly interrupt non melee spells being casted
+    if (Spell* spell = unitTarget->GetCurrentSpell(CURRENT_GENERIC_SPELL))    
     {
-            unitTarget->InterruptNonMeleeSpells(true);
-    }*/
+        if (unitTarget->IsNonMeleeSpellCasted(true) && 
+            (spell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
+            !unitTarget->HasAuraType(SPELL_AURA_CAST_WHILE_WALKING))
+            {
+                unitTarget->InterruptNonMeleeSpells(true);
+            }
+    }
 
     float ratio = 0.1f;
     float speedxy = float(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue) * ratio;
