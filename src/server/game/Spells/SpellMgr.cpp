@@ -2893,7 +2893,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 targetaura = fields[5].GetInt32();
         int32 effectmask = fields[6].GetInt32();
         int32 effectDummy = fields[7].GetInt32();
-        int32 aura = fields[7].GetInt32();
+        int32 aura = fields[8].GetInt32();
         int32 chance = fields[9].GetInt32();
         int32 removeAura = fields[10].GetInt32();
         int32 attr = fields[11].GetInt32();
