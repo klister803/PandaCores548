@@ -1581,6 +1581,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
 void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amount)
 {
+    if(!caster)
+        return;
+
     if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(GetId()))
     {
         for (std::vector<SpellAuraDummy>::const_iterator itr = spellAuraDummy->begin(); itr != spellAuraDummy->end(); ++itr)
@@ -1600,6 +1603,9 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                 _targetAura = GetCaster();
             if(itr->targetaura == 2 && target) //get target aura
                 _targetAura = target;
+
+            if(!_targetAura)
+                _targetAura = caster;
 
             switch (itr->option)
             {
