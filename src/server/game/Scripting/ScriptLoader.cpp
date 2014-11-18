@@ -242,7 +242,12 @@ void AddSC_boss_jandice_barov();
 void AddSC_boss_rattlegore();
 void AddSC_boss_lilian_voss();
 void AddSC_boss_darkmaster_gandling();
-void AddSC_shadowfang_keep();                //Shadowfang keep
+void AddSC_boss_baron_ashbury();            //Shadowfang keep
+void AddSC_boss_baron_silverlaine();
+void AddSC_boss_commander_springvale();
+void AddSC_boss_lord_valden();
+void AddSC_boss_lord_godfrey();
+void AddSC_shadowfang_keep();                
 void AddSC_instance_shadowfang_keep();
 void AddSC_boss_magistrate_barthilas();      //Stratholme
 void AddSC_boss_maleki_the_pallid();
@@ -1061,7 +1066,12 @@ void AddEasternKingdomsScripts()
     AddSC_boss_rattlegore();
     AddSC_boss_lilian_voss();
     AddSC_boss_darkmaster_gandling();       
-    AddSC_shadowfang_keep();                //Shadowfang keep
+    AddSC_boss_baron_ashbury();             //Shadowfang keep
+    AddSC_boss_baron_silverlaine();
+    AddSC_boss_commander_springvale();
+    AddSC_boss_lord_valden();
+    AddSC_boss_lord_godfrey();
+    AddSC_shadowfang_keep();                
     AddSC_instance_shadowfang_keep();
     AddSC_boss_magistrate_barthilas();      //Stratholme
     AddSC_boss_maleki_the_pallid();

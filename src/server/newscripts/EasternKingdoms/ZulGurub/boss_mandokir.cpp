@@ -158,8 +158,8 @@ class boss_mandokir : public CreatureScript
                         {
                             Unit* pTarget = NULL;
                             pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
-                            if (!pTarget)
-                                pTarget = pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                            /*if (!pTarget)
+                                pTarget = pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);*/
                             if (pTarget)
                             {
                                 DoCast(pTarget, SPELL_DECAPITATE);
