@@ -23250,7 +23250,7 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
             // remove from list
             spell->m_appliedMods.erase(iterMod);
 
-            if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_EXPIRE))
+            if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_DROP_CHARGERS))
                 itr = m_spellMods[i].begin();
         }
     }
@@ -24507,6 +24507,9 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         ltm->tm_sec = 0;
         recTime = (double)mktime(ltm);
     }
+
+    if (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY)
+        recTime *= GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     // self spell cooldown
     if (G3D::fuzzyGt(recTime, 0.0))

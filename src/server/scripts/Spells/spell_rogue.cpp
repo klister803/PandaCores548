@@ -356,7 +356,7 @@ class spell_rog_nerve_strike : public SpellScriptLoader
             void CalculateMaxDuration(int32& duration)
             {
                 Unit* caster = GetCaster();
-                Unit* target = GetTarget();
+                Unit* target = GetUnitOwner();
                 if(!caster || !target)
                     return;
 
@@ -1204,10 +1204,7 @@ class spell_rog_pick_pocket : public SpellScriptLoader
                 if(Unit* caster = GetCaster())
                     if(Unit* target = GetExplTargetUnit())
                         if(!caster->HasAura(63268))
-                        {
-                            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "spell_rog_pick_pocket 63268");
                             target->CastSpell(caster, 121308, true);
-                        }
             }
 
             void Register()

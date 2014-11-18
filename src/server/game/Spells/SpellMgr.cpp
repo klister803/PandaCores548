@@ -2395,8 +2395,8 @@ void SpellMgr::LoadSpellLinked()
 
     mSpellLinkedMap.clear();    // need for reload case
 
-    //                                                0              1             2      3       4         5          6         7        8       9        10         11
-    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, caster, target, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell FROM spell_linked_spell");
+    //                                                0              1             2      3       4         5          6         7        8       9        10        11           12
+    QueryResult result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type, caster, target, hastalent, hastalent2, chance, cooldown, type2, hitmask, learnspell, removeMask FROM spell_linked_spell");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 linked spells. DB table `spell_linked_spell` is empty.");
@@ -2420,6 +2420,7 @@ void SpellMgr::LoadSpellLinked()
         int32 type2 = fields[9].GetUInt8();
         uint32 hitmask = fields[10].GetUInt32();
         int32 learnspell = fields[11].GetInt32();
+        int32 removeMask = fields[12].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(trigger));
         if (!spellInfo)
@@ -2454,6 +2455,7 @@ void SpellMgr::LoadSpellLinked()
         templink.target = target;
         templink.hitmask = hitmask;
         templink.learnspell = learnspell;
+        templink.removeMask = removeMask;
         mSpellLinkedMap[trigger].push_back(templink);
 
         ++count;
@@ -2751,8 +2753,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellAuraDummyMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14               15
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `check_spell_id` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2778,7 +2780,8 @@ void SpellMgr::LoadSpellTriggered()
         int32 chance = fields[12].GetInt32();
         int32 group = fields[13].GetInt32();
         int32 procFlags = fields[14].GetInt32();
-        int32 check_spell_id = fields[15].GetInt32();
+        int32 procEx = fields[15].GetInt32();
+        int32 check_spell_id = fields[16].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2810,6 +2813,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.chance = chance;
         temptrigger.group = group;
         temptrigger.procFlags = procFlags;
+        temptrigger.procEx = procEx;
         temptrigger.check_spell_id = check_spell_id;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
@@ -4288,10 +4292,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 85222: // Light of Dawn
                     spellInfo->CustomMaxAffectedTargets = 6; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
-                case 8122:  // Psychic Scream
-                    spellInfo->Effects[EFFECT_2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
-                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
-                    break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
@@ -5236,6 +5236,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 66550: // Teleport outside (Isle of Conquest)
                     spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(1);
+                    break;
+                case 146557: // Frozen Thoughts
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 131616;
+                    //spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 8;
+                    //spellInfo->Effects[EFFECT_0].SpellClassMask[3] |= 4096;
                     break;
                 default:
                     break;

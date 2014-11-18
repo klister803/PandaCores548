@@ -405,13 +405,14 @@ enum DamageTypeToSchool
 
 enum AuraRemoveMode
 {
-    AURA_REMOVE_NONE = 0,
-    AURA_REMOVE_BY_DEFAULT = 1,       // scripted remove, remove by stack with aura with different ids and sc aura remove
-    AURA_REMOVE_BY_CANCEL,
-    AURA_REMOVE_BY_ENEMY_SPELL,       // dispel and absorb aura destroy
-    AURA_REMOVE_BY_EXPIRE,            // aura duration has ended
-    AURA_REMOVE_BY_DEATH,
-    AURA_REMOVE_BY_MECHANIC,
+    AURA_REMOVE_NONE                = 0,
+    AURA_REMOVE_BY_DEFAULT          = 1, // scripted remove, remove by stack with aura with different ids and sc aura remove
+    AURA_REMOVE_BY_CANCEL           = 2,
+    AURA_REMOVE_BY_ENEMY_SPELL      = 3, // dispel and absorb aura destroy
+    AURA_REMOVE_BY_EXPIRE           = 4, // aura duration has ended
+    AURA_REMOVE_BY_DEATH            = 5,
+    AURA_REMOVE_BY_MECHANIC         = 6,
+    AURA_REMOVE_BY_DROP_CHARGERS    = 7, // aura remove by drop charges
 };
 
 enum TriggerCastFlags
@@ -2207,7 +2208,7 @@ class Unit : public WorldObject
         uint32 SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, SpellEffIndex effIndex = EFFECT_0, uint32 stack = 1);
         float CalcPvPPower(Unit* target, float amount, bool isHeal = false);
 
-        uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+        uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL, uint32 effectMask = 0);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage,WeaponAttackType attType, SpellInfo const *spellProto = NULL);
 
         void TriggerCCDEffect(bool enable) { _haveCCDEffect = enable; }
@@ -2552,6 +2553,7 @@ class Unit : public WorldObject
     private:
         bool SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect);
         bool SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        void CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spellProto, uint32 mask = 131071) const; //mask for all 16 effect
         bool IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect);
         bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);

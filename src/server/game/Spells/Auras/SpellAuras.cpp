@@ -1611,6 +1611,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             else
                                 continue;
                         }
+                        if(itr->target == 3) //get target as caster
+                            _target = caster;
+                        if(itr->target == 4) //get target select
+                            if (Player* _player = caster->ToPlayer())
+                                if (Unit* _select = _player->GetSelectedUnit())
+                                    _target = _select;
 
                         Unit* _caster = target;
                         if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
@@ -1627,6 +1633,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             else
                                 continue;
                         }
+                        if(itr->caster == 3) //get caster as target
+                            _caster = caster;
+                        if(itr->caster == 4) //get caster select
+                            if (Player* _player = caster->ToPlayer())
+                                if (Unit* _select = _player->GetSelectedUnit())
+                                    _caster = _select;
 
                         if (itr->effect < 0)
                         {
@@ -1640,6 +1652,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         }
                         else if (removeMode != AURA_REMOVE_BY_DEATH)
                         {
+                            if(itr->removeMask && !(itr->removeMask & (1 << removeMode)))
+                                continue;
+
                             if(itr->type2 == 2 && caster)
                             {
                                 if(itr->hastalent > 0 && !caster->HasSpell(itr->hastalent))

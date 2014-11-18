@@ -144,6 +144,12 @@ enum SpellAuraDummyType
     SPELL_DUMMY_ADD_VALUE                       = 2,            // add value to amount
     SPELL_DUMMY_ADD_ATTRIBUTE                   = 3,            // add attribute to spell value
     SPELL_DUMMY_MOD_EFFECT_MASK                 = 4,            // Modify effect mask for add aura
+    SPELL_DUMMY_CRIT_RESET                      = 5,            // reset or not crit chance
+    SPELL_DUMMY_CRIT_ADD_PERC                   = 6,            // add percent to crit
+    SPELL_DUMMY_CRIT_ADD_VALUE                  = 7,            // add value to crit
+    SPELL_DUMMY_ADD_PERC_BP                     = 8,            // add percent(bp / 100) to amount
+    SPELL_DUMMY_DAMAGE_ADD_PERC                 = 9,            // add percent to damage
+    SPELL_DUMMY_DAMAGE_ADD_VALUE                = 10,           // add value to damage
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -613,6 +619,7 @@ struct SpellLinked
     int32 type2;
     uint32 hitmask;
     int32 learnspell;
+    int32 removeMask;
 };
 
 struct SpellTalentLinked
@@ -659,6 +666,7 @@ struct SpellTriggered
     int32 chance;
     int32 group;
     int32 procFlags;
+    int32 procEx;
     int32 check_spell_id;
 };
 

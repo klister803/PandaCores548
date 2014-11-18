@@ -3580,6 +3580,11 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
         if (!IsAffectedBySpellmod(spellInfo, mod, spell))
             continue;
+        SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId);
+        if(!affectSpell)
+            continue;
+        if((affectSpell->Attributes & SPELL_ATTR0_ONLY_STEALTHED) && !HasStealthAura())
+            continue;
 
         if (mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;

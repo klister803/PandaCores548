@@ -453,7 +453,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_MOD_DEFLECT_SPELLS_FROM_FRONT
     &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_LOOT_BONUS
     &AuraEffect::HandleCreateAreaTrigger,                         //395 SPELL_AURA_CREATE_AREATRIGGER
-    &AuraEffect::HandleNULL,                                      //396 SPELL_AURA_PROC_ON_POWER_AMOUNT_2
+    &AuraEffect::HandleNoImmediateEffect,                         //396 SPELL_AURA_PROC_ON_POWER_AMOUNT_2 in Unit::VisualForPower
     &AuraEffect::HandleBattlegroundFlag,                          //397 SPELL_AURA_BATTLEGROUND_FLAG
     &AuraEffect::HandleBattlegroundFlag,                          //398 SPELL_AURA_BATTLEGROUND_FLAG_2
     &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_399
@@ -1374,7 +1374,11 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         uint8 residue = stuck;
 
                         if (stuck >= 10)
+                        {
                             stuck = 10;
+                            if(caster->HasAura(145022)) //Item - Monk T16 Windwalker 4P Bonus
+                                caster->CastSpell(caster, 145024, true);
+                        }
 
                         residue -= stuck;
 
@@ -1389,8 +1393,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                             }
                             else caster->RemoveAura(125195);
                         }
-                        
                         amount *= stuck;
+
+                        if (caster->HasAura(138315)) //Item - Monk T15 Windwalker 4P Bonus
+                            amount += int32(0.5f * stuck);
                     }
 
                     if (m_effIndex == EFFECT_1)
@@ -1682,6 +1688,33 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     }
                     break;
                 }
+                case SPELL_DUMMY_ADD_PERC_BP: //8
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            float bp = float(dummyInfo->Effects[itr->effectDummy].BasePoints / 100.0f);
+                            amount += CalculatePct(amount, bp);
+                            check = true;
+                        }
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            float bp = float(dummyInfo->Effects[itr->effectDummy].BasePoints / 100.0f);
+                            amount -= CalculatePct(amount, bp);
+                            check = true;
+                        }
+                    }
+                    break;
+                }
             }
             if(check && itr->removeAura)
                 _caster->RemoveAurasDueToSpell(itr->removeAura);
@@ -1748,7 +1781,7 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
                 if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                     m_amplitude = int32(m_amplitude * caster->GetFloatValue(UNIT_MOD_CAST_HASTE));
 
-                if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
+                if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY)
                 {
                     int32 _duration = GetBase()->GetMaxDuration() * caster->GetFloatValue(UNIT_MOD_CAST_HASTE);
                     GetBase()->SetMaxDuration(_duration);
@@ -1758,7 +1791,7 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
         }
 
         //! If duration nod defined should we change duration? this remove aura.
-        if (!resetPeriodicTimer && !load && !(m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION) && m_spellInfo->DurationEntry->ID != 21 /* && GetBase()->GetMaxDuration() >= 0*/)
+        if (!resetPeriodicTimer && !load && !(m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME) && !(m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY) && m_spellInfo->DurationEntry->ID != 21 /* && GetBase()->GetMaxDuration() >= 0*/)
         {
             int32 dotduration = GetBase()->GetMaxDuration() + m_periodicTimer;
             GetBase()->SetMaxDuration(dotduration);

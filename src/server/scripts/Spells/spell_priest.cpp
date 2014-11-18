@@ -831,11 +831,10 @@ class spell_pri_rapture : public SpellScriptLoader
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                     if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
                     {
-                        int32 bp = int32(caster->GetStat(STAT_SPIRIT) * 1.5f);
-
+                        int32 bp = GetSpellInfo()->CalcPowerCost(caster, GetSpellInfo()->GetSchoolMask());
                         if (caster->ToPlayer() && !caster->ToPlayer()->HasSpellCooldown(PRIEST_RAPTURE_ENERGIZE))
                         {
-                            caster->EnergizeBySpell(caster, PRIEST_RAPTURE_ENERGIZE, bp, POWER_MANA);
+                            caster->CastCustomSpell(caster, PRIEST_RAPTURE_ENERGIZE, &bp, NULL, NULL, true);
                             caster->ToPlayer()->AddSpellCooldown(PRIEST_RAPTURE_ENERGIZE, 0, getPreciseTime() + 12.0);
                         }
                     }
@@ -2030,10 +2029,8 @@ class spell_priest_renew : public SpellScriptLoader
                     // Empowered Renew
                     if (Aura* empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
-                        uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT);
-                        heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
-
-                        int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
+                        uint32 heal = aurEff->GetAmount();
+                        int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * aurEff->GetTotalTicks() * int32(heal) / 100;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
                     }
                 }
@@ -2615,6 +2612,34 @@ class spell_pri_lightwell_trigger : public SpellScriptLoader
         }
 };
 
+// Echo of Light - 77489
+class spell_pri_echo_of_light : public SpellScriptLoader
+{
+    public:
+        spell_pri_echo_of_light() : SpellScriptLoader("spell_pri_echo_of_light") { }
+
+        class spell_pri_echo_of_light_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_echo_of_light_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if(amount < 130000) // Temp hack
+                    amount += aurEff->GetOldBaseAmount();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_echo_of_light_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_echo_of_light_AuraScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
@@ -2670,4 +2695,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_dispel_magic();
     new spell_pri_t15_healer_4p();
     new spell_pri_lightwell_trigger();
+    new spell_pri_echo_of_light();
 }

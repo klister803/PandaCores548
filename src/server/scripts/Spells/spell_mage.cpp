@@ -225,7 +225,12 @@ class spell_mage_arcane_missile : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Aura* arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
-                        arcaneMissiles->DropCharge();
+                    {
+                        if (_player->HasAura(145257) && roll_chance_i(30)) //Item - Mage T16 4P Bonus
+                            return;
+                        else
+                            arcaneMissiles->DropCharge();
+                    }
             }
 
             void OnTick(AuraEffect const* aurEff)

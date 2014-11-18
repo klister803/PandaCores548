@@ -2097,6 +2097,36 @@ class spell_warl_imp_swarm : public SpellScriptLoader
         }
 };
 
+// 113942 - Demonic Gateway Debuf
+class spell_warl_demonic_gateway : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway() : SpellScriptLoader("spell_warl_demonic_gateway") { }
+
+        class spell_warl_demonic_gateway_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_demonic_gateway_AuraScript);
+
+            void CalculateMaxDuration(int32 & duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if(Unit* owner = ObjectAccessor::GetUnit(*caster, GetCasterGUID()))
+                        if (owner->HasAura(143395))
+                            duration = 45000;
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_warl_demonic_gateway_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_demonic_gateway_AuraScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2145,4 +2175,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_metamorphosis();
     new spell_warl_corruption();
     new spell_warl_imp_swarm();
+    new spell_warl_demonic_gateway();
 }
