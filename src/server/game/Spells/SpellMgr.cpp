@@ -5234,6 +5234,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 96117: // Toss Stink Bomb Credit
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_PASSENGER_0;
                     break;
+                case 66550: // Teleport outside (Isle of Conquest)
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(1);
+                    break;
                 default:
                     break;
             }
