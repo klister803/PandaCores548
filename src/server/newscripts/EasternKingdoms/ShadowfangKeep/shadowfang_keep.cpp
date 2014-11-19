@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "NewScriptPCH.h"
 #include "LFGMgr.h"
 #include "Group.h"
 #include "shadowfang_keep.h"
