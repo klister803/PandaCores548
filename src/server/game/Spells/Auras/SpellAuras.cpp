@@ -1611,9 +1611,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             else
                                 continue;
                         }
-                        if(itr->target == 3) //get target as caster
+                        if(itr->target == 3 && caster) //get target as caster
                             _target = caster;
-                        if(itr->target == 4) //get target select
+                        if(itr->target == 4 && caster) //get target select
                             if (Player* _player = caster->ToPlayer())
                                 if (Unit* _select = _player->GetSelectedUnit())
                                     _target = _select;
@@ -1633,9 +1633,9 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             else
                                 continue;
                         }
-                        if(itr->caster == 3) //get caster as target
+                        if(itr->caster == 3 && caster) //get caster as target
                             _caster = caster;
-                        if(itr->caster == 4) //get caster select
+                        if(itr->caster == 4 && caster) //get caster select
                             if (Player* _player = caster->ToPlayer())
                                 if (Unit* _select = _player->GetSelectedUnit())
                                     _caster = _select;
