@@ -1230,7 +1230,7 @@ enum Opcodes
     SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x0486, // 5.4.1 17538
     //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
-    SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538 real SMSG_PLAY_SPELL_IMPACT
+    SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x103F, // 5.4.1 17538
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
     SMSG_PLAYER_RECIPES                               = 0x0D24, // 5.4.1 17538
     SMSG_PONG                                         = 0x005D, // 5.4.1 17538
@@ -1313,7 +1313,7 @@ enum Opcodes
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
     SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
-    SMSG_SERVER_SCENE_PLAYBACK                        = 0x018E, // 5.4.1 17538
+    SMSG_PLAY_SCENE_DATA                              = 0x018E, // 5.4.1 17538
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0x043E, // 5.4.1 17538
@@ -1478,7 +1478,7 @@ enum Opcodes
     SMSG_SET_MOVEFLAG2_0x1000                         = 0x0386, // 5.4.1 17538
     SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
     SMSG_SPELL_0x00E9                                 = 0x00E9, // 5.4.1 17538
-    SMSG_SPELL_PENDING_TARGET_CAST                    = 0x098D, // 5.4.1 17538
+    SMSG_SPELL_SCRIPT_CAST                            = 0x098D, // 5.4.1 17538
 };
 
 /// Player state

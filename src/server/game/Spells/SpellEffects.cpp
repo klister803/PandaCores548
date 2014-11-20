@@ -8511,7 +8511,7 @@ void Spell::SendScene(SpellEffIndex effIndex)
             ScenePackage = 26;      //Shen-zin Su - Healing Cinematic (CSA)
             break;
     }
-    WorldPacket data(SMSG_SERVER_SCENE_PLAYBACK, 46);
+    WorldPacket data(SMSG_PLAY_SCENE_DATA, 46);
     data.WriteBit(!hasMValue);
     data.WriteBit(!hasUnk);
     data.WriteBit(!ScenePackage);
@@ -8525,15 +8525,15 @@ void Spell::SendScene(SpellEffIndex effIndex)
     data << float(m_caster->GetPositionY());            // Y
 
     if(hasUnk)
-        data << uint32(1);                              // dword32 Unk
+        data << uint32(1);                              // SceneInstanceID
     if(hasMValue)
-        data << uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);                              // Effect198 Miscvalue
+        data << uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);                              // SceneID
     if(hasO)
-        data << float(m_caster->GetOrientation());      // Orientation()
+        data << float(m_caster->GetOrientation());      // Facing
     if(ScenePackage)
-        data << uint32(ScenePackage);                   // Scene Package ID
+        data << uint32(ScenePackage);                   // SceneScriptPackageID
     if(bit28)
-        data << uint32(9);                              // dword28 Unk
+        data << uint32(9);                              // PlaybackFlags
 
     data << float(m_caster->GetPositionX());            // X
     data << float(m_caster->GetPositionZ());            // Z
