@@ -263,7 +263,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
     &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
-    &Spell::EffectUncagePet,                                //192 SPELL_EFFECT_UNCAGE_PET
+    &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
     &Spell::EffectNULL,                                     //195 SPELL_EFFECT_ACTIVATE_SCENE
@@ -272,7 +272,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::SendScene,                                      //198 SPELL_EFFECT_ACTIVATE_SCENE3 send package
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
     &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
-    &Spell::EffectNULL,                                     //201 SPELL_EFFECT_BATTLE_PET
+    &Spell::EffectUnlockPetBattles,                         //201 SPELL_UNLOCK_PET_BATTLES
     &Spell::EffectNULL,                                     //202 SPELL_EFFECT_APPLY_AURA_WITH_VALUE
     &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras. 145052 possible trigger spell.
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_UPGRADE_BATTLE_PET
@@ -8440,7 +8440,7 @@ void Spell::EffectTeleportToDigsite(SpellEffIndex effIndex)
     player->TeleportToDigsiteInMap(player->GetMapId());
 }
 
-void Spell::EffectUncagePet(SpellEffIndex effIndex)
+void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -8484,6 +8484,20 @@ void Spell::EffectUncagePet(SpellEffIndex effIndex)
 
         m_CastItem = NULL;
     }
+}
+
+void Spell::EffectUnlockPetBattles(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    if (!player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
+        player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
 }
 
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
