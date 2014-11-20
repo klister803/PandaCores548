@@ -1,4 +1,4 @@
-#include "NewScriptPCH.h"
+#include "ScriptPCH.h"
 #include "deadmines.h"
 
 //todo: реализовать flame wall
@@ -61,7 +61,7 @@ class boss_glubtok : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance< boss_glubtokAI >(pCreature, DMScriptName);
+            return new boss_glubtokAI (pCreature);
         }
 
         struct boss_glubtokAI : public BossAI
@@ -93,6 +93,14 @@ class boss_glubtok : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
+            void InitializeAI()
+            {
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(DMScriptName))
+                    me->IsAIEnabled = false;
+                else if (!me->isDead())
+                    Reset();
+            }
+
             void EnterCombat(Unit* /*who*/) 
             {
                 stage = 0;
@@ -113,7 +121,7 @@ class boss_glubtok : public CreatureScript
                 Talk(SAY_DEATH);
             }
 
-            void UpdateAI(uint32 diff)
+            void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
