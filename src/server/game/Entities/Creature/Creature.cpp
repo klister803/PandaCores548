@@ -1567,10 +1567,6 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
 
 bool Creature::IsNeverVisible() const
 {
-    //not see befor enter vehicle.
-    if (onVehicleAccessoryInit())
-        return true;
-
     CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
     if (data && data->spawnMask & 256)  // challenge
     {

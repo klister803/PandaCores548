@@ -2248,6 +2248,11 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
             if (thisPlayer->HaveExtraLook(obj->GetGUID()))
                 return true;
 
+            //not see befor enter vehicle.
+            if (Creature const* creature = obj->ToCreature())
+                if (creature->onVehicleAccessoryInit())
+                    return false;
+
             onArena = thisPlayer->InArena();
 
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
