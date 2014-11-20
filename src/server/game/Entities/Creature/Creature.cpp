@@ -1567,10 +1567,11 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
 
 bool Creature::IsNeverVisible() const
 {
+    //At challenge we should see only at start. At start we change spawnMode, so just no see at CHALLENGE_MODE_DIFFICULTY ;)
     CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
     if (data && data->spawnMask & 256)  // challenge
     {
-        if (GetMap()->GetSpawnMode() != HEROIC_DIFFICULTY)
+        if (GetMap()->GetSpawnMode() == CHALLENGE_MODE_DIFFICULTY)
             return true;
     }
     return WorldObject::IsNeverVisible();
