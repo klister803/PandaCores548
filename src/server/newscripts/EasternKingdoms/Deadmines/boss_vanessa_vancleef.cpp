@@ -187,7 +187,7 @@ class boss_vanessa_vancleef : public CreatureScript
 				}
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -301,7 +301,7 @@ class npc_vanessa_vancleef_vanessa_sitting : public CreatureScript
                 events.ScheduleEvent(EVENT_INTRO_1, 1000);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 events.Update(diff);
                 
@@ -380,7 +380,7 @@ class npc_vanessa_vancleef_defias_enforcer : public CreatureScript
                 events.Reset();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;

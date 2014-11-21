@@ -175,7 +175,7 @@ class boss_captain_cookie : public CreatureScript
                     me->SummonCreature(NPC_NOTE_FROM_VANESSA, notePos);
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
@@ -275,7 +275,7 @@ class npc_captain_cookie_good_food : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
@@ -326,7 +326,7 @@ class npc_captain_cookie_bad_food : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void UpdateAI(const uint32 diff)
+            void UpdateAI(uint32 diff)
             {
                 if (!pInstance)
                     return;
