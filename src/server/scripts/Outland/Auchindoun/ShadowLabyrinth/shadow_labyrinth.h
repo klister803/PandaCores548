@@ -54,11 +54,5 @@ enum Misc
     ACTION_AMBASSADOR_HELLMAW_BANISH    = 2,
 };
 
-template<class AI>
-AI* GetShadowLabyrinthAI(Creature* creature)
-{
-    return GetInstanceAI<AI>(creature, SLScriptName);
-}
-
 #endif // SHADOW_LABYRINTH_H_
 
