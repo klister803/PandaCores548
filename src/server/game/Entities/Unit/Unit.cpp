@@ -6085,6 +6085,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
                         
                     triggered_spell_id = 146137;
+                    basepoints0 = damage;
                         
                     if (!procSpell)
                         break;
@@ -6149,7 +6150,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             default:
                                 break;
                         }
-                        basepoints0 = damage;
                     }
                     break;
                 }
@@ -6161,6 +6161,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
                         
                     triggered_spell_id = 146061;
+                    basepoints0 = damage / 3;
                         
                     if (!procSpell)
                         break;
@@ -6225,7 +6226,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             default:
                                 break;
                         }
-                        basepoints0 = damage / 3;
                     }
                     break;
                 }
