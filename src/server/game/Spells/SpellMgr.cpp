@@ -3662,6 +3662,11 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 146025: // Readiness (Prot)
+                case 145955: // Readiness (DD Plate)
+                case 146019: // Readiness (Other DD)
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
+                    break;
                 case 116706: // Disable (Root)
                     spellInfo->StackAmount = 0;
                     spellInfo->ProcFlags = 0;
