@@ -30,6 +30,8 @@ void AddSC_traffic_commandscript();
 void AddSC_custom_reward();
 void AddSC_command_donate();
 void AddSC_command_arena();
+void AddSC_npc_profession();
+void AddSC_npc_beastmaster();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -848,6 +850,8 @@ void AddExampleScripts()
     AddSC_custom_reward();
     AddSC_command_donate();
     AddSC_command_arena();
+    AddSC_npc_profession();
+    AddSC_npc_beastmaster();
 }
 
 void AddSpellScripts()
