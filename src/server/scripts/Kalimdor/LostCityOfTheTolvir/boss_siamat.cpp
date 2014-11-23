@@ -177,7 +177,7 @@ public:
 
             events.Update(diff);
 
-            if (me->HasUnitState(UNIT_STATE_CASTING) && events.GetPhaseMask() != PHASE_WAILING_WINDS_MASK)
+            if (me->HasUnitState(UNIT_STATE_CASTING) && !events.IsInPhase(PHASE_WAILING_WINDS))
                 return;
 
             if (uint32 eventId = events.ExecuteEvent())
@@ -394,7 +394,7 @@ public:
             events.Reset();
             events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 1000);
             TempestStorm = false;
-            //me->AddAura(84550, me);
+            me->AddAura(84550, me);
         }
         
         void JustSummoned(Creature* summoned)

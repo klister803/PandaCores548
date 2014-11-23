@@ -441,7 +441,7 @@ public:
         void HealReceived(Unit* /*healer*/, uint32& heal)
         {
             if (me->GetHealth() + heal >= me->GetMaxHealth())
-                if (events.GetPhaseMask() & PHASE_EGG_MASK)
+                if (events.IsInPhase(PHASE_EGG))
                 {
                     Birth = true;
                     uiBirthTimer = 2500;
@@ -459,7 +459,7 @@ public:
                 damage = 0;
                 me->SetHealth(1);
 
-                if (events.GetPhaseMask() & PHASE_BLAZE_MASK)
+                if (events.IsInPhase(PHASE_BLAZE))
                 {
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetReactState(REACT_PASSIVE);

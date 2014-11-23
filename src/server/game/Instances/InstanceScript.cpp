@@ -428,6 +428,16 @@ void InstanceScript::DoRemoveAurasDueToSpellOnPlayers(uint32 spell)
     }
 }
 
+// Remove aura from stack on all players in instance
+void InstanceScript::DoRemoveAuraFromStackOnPlayers(uint32 spell, uint64 casterGUID, AuraRemoveMode mode, uint32 num)
+{
+    Map::PlayerList const& plrList = instance->GetPlayers();
+    if (!plrList.isEmpty())
+        for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+            if (Player* pPlayer = itr->getSource())
+                pPlayer->RemoveAuraFromStack(spell, casterGUID, mode, num);
+}
+
 void InstanceScript::DoNearTeleportPlayers(const Position pos, bool casting /*=false*/)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
@@ -436,6 +446,17 @@ void InstanceScript::DoNearTeleportPlayers(const Position pos, bool casting /*=f
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if (Player* player = i->getSource())
                 player->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), casting);
+}
+
+void InstanceScript::DoStartMovie(uint32 movieId)
+{
+    Map::PlayerList const &plrList = instance->GetPlayers();
+
+    if (!plrList.isEmpty())
+        for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
+            if (Player* pPlayer = i->getSource())
+                pPlayer->SendMovieStart(movieId);
+
 }
 
 // Cast spell on all players in instance

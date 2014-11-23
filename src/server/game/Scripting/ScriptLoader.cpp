@@ -373,11 +373,17 @@ void AddSC_boss_chrono_lord_deja();
 void AddSC_boss_temporus();
 void AddSC_dark_portal();
 void AddSC_instance_dark_portal();
-void AddSC_boss_morchok();                   //CoT Dragon Soul
-void AddSC_boss_warlord_zonozz();
-void AddSC_boss_yorsahj_unsleeping();
-void AddSC_instance_dragon_soul();
+
+void AddSC_instance_dragon_soul(); // Dragon Soul
 void AddSC_dragon_soul();
+void AddSC_boss_morchok();
+void AddSC_boss_yorsahj_the_unsleeping();
+void AddSC_boss_warlord_zonozz();
+void AddSC_boss_hagara_the_stormbinder();
+void AddSC_boss_ultraxion();
+void AddSC_boss_warmaster_blackhorn();
+void AddSC_spine_of_deathwing();
+void AddSC_madness_of_deathwing();
 
 void AddSC_instance_end_time(); // End Time
 void AddSC_end_time();
@@ -1207,11 +1213,17 @@ void AddKalimdorScripts()
     AddSC_boss_temporus();
     AddSC_dark_portal();
     AddSC_instance_dark_portal();
-    AddSC_boss_morchok();                   //CoT Dragon Soul
-    AddSC_boss_warlord_zonozz();
-    AddSC_boss_yorsahj_unsleeping();
+    
+    AddSC_instance_dragon_soul(); // Dragon Soul
     AddSC_dragon_soul();
-    AddSC_instance_dragon_soul();
+    AddSC_boss_morchok();
+    AddSC_boss_yorsahj_the_unsleeping();
+    AddSC_boss_warlord_zonozz();
+    AddSC_boss_hagara_the_stormbinder();
+    AddSC_boss_ultraxion();
+    AddSC_boss_warmaster_blackhorn();
+    AddSC_spine_of_deathwing();
+    AddSC_madness_of_deathwing();
 
     AddSC_instance_end_time(); // End Time
     AddSC_end_time();
