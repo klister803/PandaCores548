@@ -1222,7 +1222,8 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     //shouldn't be more. Check stats.
     if (basehp > 0x7FFFFFFF)
     {
-        sLog->outError(LOG_FILTER_UNITS, "Creature::GenerateHealth  entry %u too long. Posible error in creature_difficulty_stat for dif %u", GetEntry(), diffStats->Difficulty);
+        if(diffStats)
+            sLog->outError(LOG_FILTER_UNITS, "Creature::GenerateHealth  entry %u too long. Posible error in creature_difficulty_stat for dif %u", GetEntry(), diffStats->Difficulty);
         health = 1;
     }
 
