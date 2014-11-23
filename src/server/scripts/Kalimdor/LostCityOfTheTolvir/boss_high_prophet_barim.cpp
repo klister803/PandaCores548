@@ -39,6 +39,7 @@ enum eSpells
 enum eCreatures
 {
     NPC_BLAZE_OF_THE_HEAVENS_SUMMONER          = 48904,
+    NPC_BLAZE_OF_THE_HEAVENS                   = 48906,
     NPC_REPENTANCE_MIRROR                      = 43817,
     NPC_WAIL_OF_DARKNESS                       = 43926,
     NPC_SOUL_FRAGMENT                          = 43934,
@@ -67,6 +68,8 @@ enum ePhases
     // Blaze
     PHASE_BLAZE                                = 3,
     PHASE_EGG                                  = 4,
+    PHASE_BLAZE_MASK                           = 1 << PHASE_BLAZE,
+    PHASE_EGG_MASK                             = 1 << PHASE_EGG,
 };
 
 enum eEvents
@@ -99,28 +102,17 @@ public:
         return new boss_high_prophet_barimAI (creature);
     }
 
-    struct boss_high_prophet_barimAI : public BossAI
+    struct boss_high_prophet_barimAI : public ScriptedAI
     {
-        boss_high_prophet_barimAI(Creature* creature) : BossAI(creature, DATA_HIGH_PROPHET_BARIM)
+        boss_high_prophet_barimAI(Creature* creature) : ScriptedAI(creature), lSummons(me)
         {
             instance = creature->GetInstanceScript();
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
         }
 
-        void DespawnCreatures(uint32 entry, float distance)
-        {
-            std::list<Creature*> creatures;
-            GetCreatureListWithEntryInGrid(creatures, me, entry, distance);
-
-            if (creatures.empty())
-                return;
-
-            for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
-                (*iter)->DespawnOrUnsummon();
-        }
-
         EventMap events;
+        SummonList lSummons;
         InstanceScript* instance;
         uint8 uiEventPhase;
         bool Repentance;
@@ -128,16 +120,15 @@ public:
         void Reset()
         {
             events.Reset();
-            _Reset();
+            lSummons.DespawnAll();
             uiEventPhase = 0;
             Repentance = false;
             me->SetReactState(REACT_AGGRESSIVE);
-            DespawnCreatures(48904, 300.0f);
-            DespawnCreatures(48906, 300.0f);
-            DespawnCreatures(48907, 300.0f);
 
             if (instance)
             {
+                instance->SetData(DATA_HIGH_PROPHET_BARIM, NOT_STARTED);
+
                 if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
                     blaze->AI()->EnterEvadeMode();
             }
@@ -162,9 +153,9 @@ public:
         {
             if (action == ACTION_REPENTANCE_DONE)
             {
-                summons.DespawnEntry(NPC_SOUL_FRAGMENT);
+                lSummons.DespawnEntry(NPC_SOUL_FRAGMENT);
 
-                for (SummonList::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
+                for (SummonList::const_iterator itr = lSummons.begin(); itr != lSummons.end(); ++itr)
                     if (Creature* pSummon = Unit::GetCreature(*me, (*itr))) 
                         if (pSummon->GetEntry() == NPC_REPENTANCE_MIRROR && pSummon->IsAIEnabled)
                             pSummon->AI()->DoAction(ACTION_REPENTANCE_DONE);
@@ -173,23 +164,31 @@ public:
             }
         }
 
+        void JustSummoned(Creature* summon)
+        {
+            lSummons.Summon(summon);
+        }
+
         void JustDied(Unit* /*killer*/)
         {
-            DespawnCreatures(48904, 300.0f);
-            DespawnCreatures(48906, 300.0f);
-            DespawnCreatures(48907, 300.0f);
-
             DoScriptText(SAY_DEATH, me);
             events.Reset();
+            lSummons.DespawnAll();
 
             if (instance)
-                if (Creature* blaze = Unit::GetCreature(*me, instance->GetData64(DATA_BLAZE)))
+            {    
+                instance->SetData(DATA_HIGH_PROPHET_BARIM, DONE);
+
+                if (Creature* blaze = me->FindNearestCreature(NPC_BLAZE_OF_THE_HEAVENS, 100.0f))
                     blaze->AI()->EnterEvadeMode();
-            _JustDied();
+            }
         }
 
         void EnterCombat(Unit* /*who*/)
         {
+            if (instance)
+                instance->SetData(DATA_HIGH_PROPHET_BARIM, IN_PROGRESS);
+
             if (IsHeroic())
                 events.ScheduleEvent(EVENT_SUMMON_BLAZE_OF_THE_HEAVENS, 3000);
 
@@ -442,7 +441,7 @@ public:
         void HealReceived(Unit* /*healer*/, uint32& heal)
         {
             if (me->GetHealth() + heal >= me->GetMaxHealth())
-                if (events.IsInPhase(PHASE_EGG))
+                if (events.GetPhaseMask() & PHASE_EGG_MASK)
                 {
                     Birth = true;
                     uiBirthTimer = 2500;
@@ -460,7 +459,7 @@ public:
                 damage = 0;
                 me->SetHealth(1);
 
-                if (events.IsInPhase(PHASE_BLAZE))
+                if (events.GetPhaseMask() & PHASE_BLAZE_MASK)
                 {
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetReactState(REACT_PASSIVE);
@@ -559,6 +558,10 @@ public:
             uiBirthPhase = 1;
             Birth = true;
             me->SetVisible(false);
+
+            if (instance)
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                    barim->AI()->JustSummoned(me);
         }
 
         uint32 uiBirthTimer;
@@ -634,7 +637,12 @@ public:
             Birth = true;
 
             if (instance)
+            {
                 instance->SetData64(DATA_HARBINGER, me->GetGUID());
+
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                    barim->AI()->JustSummoned(me);
+            }
         }
 
         InstanceScript* instance;
@@ -765,6 +773,10 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
+
+            if (instance)
+                if (Creature* barim = Unit::GetCreature(*me, instance->GetData64(DATA_HIGH_PROPHET_BARIM)))
+                    barim->AI()->JustSummoned(me);
         }
 
         InstanceScript* instance;

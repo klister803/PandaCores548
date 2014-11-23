@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,25 +18,25 @@
 #ifndef DEF_EYE_OF_ETERNITY_H
 #define DEF_EYE_OF_ETERNITY_H
 
-enum Encounter
-{
-    BOSS_MALYGOS,
-};
-
 enum InstanceData
 {
     DATA_MALYGOS_EVENT,
     MAX_ENCOUNTER,
 
     DATA_VORTEX_HANDLING,
-    DATA_POWER_SPARKS_HANDLING
+    DATA_POWER_SPARKS_HANDLING,
+    DATA_RESPAWN_IRIS
 };
 
 enum InstanceData64
 {
     DATA_TRIGGER,
     DATA_MALYGOS,
-    DATA_PLATFORM
+    DATA_PLATFORM,
+    DATA_ALEXSTRASZA_BUNNY_GUID,
+    DATA_HEART_OF_MAGIC_GUID,
+    DATA_FOCUSING_IRIS_GUID,
+    DATA_GIFT_BOX_BUNNY_GUID
 };
 
 enum InstanceNpcs
@@ -49,18 +49,22 @@ enum InstanceNpcs
     NPC_HOVER_DISK_CASTER   = 30248,
     NPC_ARCANE_OVERLOAD     = 30282,
     NPC_WYRMREST_SKYTALON   = 30161,
-    NPC_ALEXSTRASZA         = 32295
+    NPC_ALEXSTRASZA         = 32295,
+    NPC_ALEXSTRASZA_BUNNY   = 31253,
+    NPC_ALEXSTRASZAS_GIFT   = 32448,
+    NPC_SURGE_OF_POWER      = 30334
 };
 
 enum InstanceGameObjects
 {
     GO_NEXUS_RAID_PLATFORM      = 193070,
     GO_EXIT_PORTAL              = 193908,
-    GO_FOCUSING_IRIS            = 193958,
-    GO_ALEXSTRASZA_S_GIFT       = 193905,
-    GO_ALEXSTRASZA_S_GIFT_2     = 193967,
-    GO_HEART_OF_MAGIC           = 194158,
-    GO_HEART_OF_MAGIC_2         = 194159,
+    GO_FOCUSING_IRIS_10         = 193958,
+    GO_FOCUSING_IRIS_25         = 193960,
+    GO_ALEXSTRASZA_S_GIFT_10    = 193905,
+    GO_ALEXSTRASZA_S_GIFT_25    = 193967,
+    GO_HEART_OF_MAGIC_10        = 194158,
+    GO_HEART_OF_MAGIC_25        = 194159
 };
 
 enum InstanceEvents
@@ -70,18 +74,11 @@ enum InstanceEvents
 
 enum InstanceSpells
 {
-    SPELL_VORTEX_4          = 55853, // damage | used to enter to the vehicle
-    SPELL_VORTEX_5          = 56263, // damage | used to enter to the vehicle
-    SPELL_PORTAL_OPENED     = 61236,
-    SPELL_RIDE_RED_DRAGON   = 56071,
-};
-
-enum Action
-{
-    ACTION_START_MALYGOS     = 5,
-    ACTION_START_PHASE_TWO   = 6,
-    ACTION_START_PHASE_THREE = 7,
-    ACTION_DEATH_SCION       = 8,
+    SPELL_VORTEX_4                        = 55853, // damage | used to enter to the vehicle
+    SPELL_VORTEX_5                        = 56263, // damage | used to enter to the vehicle
+    SPELL_PORTAL_OPENED                   = 61236,
+    SPELL_RIDE_RED_DRAGON_TRIGGERED       = 56072,
+    SPELL_IRIS_OPENED                     = 61012  // visual when starting encounter
 };
 
 #endif

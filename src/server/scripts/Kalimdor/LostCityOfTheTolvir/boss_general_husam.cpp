@@ -115,7 +115,7 @@ public:
             // To do: fix client crash
             //events.ScheduleEvent(EVENT_SUMMON_SHOCKWAVE, urand(12000, 17000));
             events.ScheduleEvent(EVENT_HAMMER_FIST, 5000);
-            events.ScheduleEvent(EVENT_BAD_INTENTIONS, urand(7000, 11000));
+            //events.ScheduleEvent(EVENT_BAD_INTENTIONS, urand(7000, 11000));
 
             if (IsHeroic())
                 events.ScheduleEvent(EVENT_COUNTDOWN_LAND_MINES, 15000);
@@ -138,11 +138,11 @@ public:
             lSummons.Summon(summoned);
         }
 
-		void KilledUnit(Unit* victim)
-		{
-			if (victim->GetTypeId() == TYPEID_PLAYER)
-				DoScriptText(YELL_KILL_PLAYER_1, me);
-		}
+        void KilledUnit(Unit* victim)
+        {
+            if (victim->GetTypeId() == TYPEID_PLAYER)
+                DoScriptText(YELL_KILL_PLAYER_1, me);
+        }
 
         void JustDied(Unit* /*killer*/)
         {
@@ -169,7 +169,7 @@ public:
                 switch (eventId)
                 {
                     case EVENT_COUNTDOWN_LAND_MINES:
-						DoScriptText(YELL_TREAD_LIGHTLY, me);
+                        DoScriptText(YELL_TREAD_LIGHTLY, me);
                         events.ScheduleEvent(EVENT_COUNTDOWN_LAND_MINES, 15000);
                         me->CastSpell(me, SPELL_DETONATE_TRAPS, false);
                         break;
