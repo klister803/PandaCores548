@@ -775,7 +775,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                 {
                     if (Unit* target = caster->m_SpecialTarget)
                     {
-                        int32 bp = dmgInfo.GetAbsorb();
+                        int32 bp = int32(dmgInfo.GetAbsorb() / 6);
 
                         if (bp)
                             caster->CastCustomSpell(target, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);

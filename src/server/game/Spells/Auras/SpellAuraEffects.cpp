@@ -1565,10 +1565,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
         case SPELL_AURA_PERIODIC_DAMAGE:
         {
-            if(m_spellInfo->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL)
+            if(m_spellInfo->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL && GetBase()->GetMaxDuration() != -1)
             {
-                amount += m_aura_amount;
-                m_crit_amount += m_aura_amount;
+                int32 tempAmount = GetTotalTicks() * (amount + m_aura_amount);
+                if(tempAmount <= caster->GetMaxHealth())
+                {
+                    amount += m_aura_amount;
+                    m_crit_amount = amount * 2;
+                }
             }
 
             m_aura_amount = amount;

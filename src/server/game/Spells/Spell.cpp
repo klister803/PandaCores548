@@ -2700,7 +2700,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         {
             case SPELL_DAMAGE_CLASS_MAGIC:
                 if (positive)
+                {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
+                }
                 else
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
             break;
@@ -3706,7 +3709,7 @@ void Spell::cast(bool skipCheck)
     if (!procAttacker)
     {
         uint32 mask = 7;
-        bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && procTarget->CanProc() && CanExecuteTriggersOnHit(mask);
+        bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && procTarget->CanProc() && CanExecuteTriggersOnHit(mask) && !m_spellInfo->IsPassive() && !(m_spellInfo->AttributesEx6 & SPELL_ATTR6_CANT_PROC);
         //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
 
         if(canEffectTrigger)
@@ -3751,9 +3754,7 @@ void Spell::cast(bool skipCheck)
                         procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
                     break;
                 case SPELL_DAMAGE_CLASS_MAGIC:
-                    if (positive)
-                        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
-                    else
+                    if (!positive)
                         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
                 break;
                 case SPELL_DAMAGE_CLASS_NONE:
@@ -3770,7 +3771,10 @@ void Spell::cast(bool skipCheck)
             }
 
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
-            procEx |= PROC_EX_ON_CAST;
+
+            if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS) && !m_CastItem)
+                procEx |= PROC_EX_ON_CAST;
+
             if(infoTarget)
                 procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
 

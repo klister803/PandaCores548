@@ -1400,55 +1400,60 @@ class spell_pri_halo : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_halo_SpellScript);
 
-            void HandleOnHeal(SpellEffIndex effIndex)
+            void HandleHeal(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (!_player->IsFriendlyTo(target))
-                        {
-                            PreventHitHeal();
-                            PreventHitDefaultEffect(effIndex);
-                            return;
-                        }
-                        float Distance = _player->GetDistance(target);
-                        float var1 = pow((((Distance - 25) / 2)), 4);
-                        float var2 = pow(1.01f, (- 1 * var1));
-                        float percentage = 2 * (0.5f * var2 + 0.1f + 0.015f * Distance);
-                        int32 damage = int32(GetHitHeal() * percentage);
-                        SetHitHeal(damage);
+                        int32 _heal = GetHitHeal();
+                        float Distance = caster->GetDistance(target);
+                        float pct = (0.5f * pow((1.01f),(-1 * pow(((Distance - 25.0f) / 2), 4))) + 0.1f + 0.015f*Distance);
+                        _heal = int32(_heal * pct);
+                        SetHitHeal(_heal);
                     }
                 }
             }
 
-            void HandleDamage(SpellEffIndex effIndex)
+            void HandleDamage(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->IsFriendlyTo(target))
-                        {
-                            PreventHitDamage();
-                            PreventHitDefaultEffect(effIndex);
-                            return;
-                        }
-                        int32 damage = GetHitDamage();
-                        damage += int32(_player->GetSpellPowerDamage(GetSpellInfo()->GetSchoolMask()) * 1.95f);
-
-                        float Distance = _player->GetDistance(target);
-                        float pct = Distance / 25.0f;
-                        damage = int32(damage * pct);
-                        SetHitDamage(damage);
+                        int32 _damage = GetHitDamage();
+                        float Distance = caster->GetDistance(target);
+                        float pct = (0.5f * pow((1.01f),(-1 * pow(((Distance - 25.0f) / 2), 4))) + 0.1f + 0.015f*Distance);
+                        _damage = int32(_damage * pct);
+                        SetHitDamage(_damage);
                     }
                 }
+            }
+
+            void FilterTargets(WorldObject*& target)
+            {
+                Unit* unit = target->ToUnit();
+                if(!unit)
+                    target = NULL;
+                if(!GetCaster()->IsFriendlyTo(unit))
+                    target = NULL;
+            }
+
+            void FilterTargets1(WorldObject*& target)
+            {
+                Unit* unit = target->ToUnit();
+                if(!unit)
+                    target = NULL;
+                if(GetCaster()->IsFriendlyTo(unit))
+                    target = NULL;
             }
 
             void Register()
             {
-                OnEffectLaunchTarget += SpellEffectFn(spell_pri_halo_SpellScript::HandleOnHeal, EFFECT_0, SPELL_EFFECT_HEAL);
-                OnEffectLaunchTarget += SpellEffectFn(spell_pri_halo_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_pri_halo_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_TARGET_ANY);
+                OnObjectTargetSelect += SpellObjectTargetSelectFn(spell_pri_halo_SpellScript::FilterTargets1, EFFECT_1, TARGET_UNIT_TARGET_ANY);
+                OnEffectHitTarget += SpellEffectFn(spell_pri_halo_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+                OnEffectHitTarget += SpellEffectFn(spell_pri_halo_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
