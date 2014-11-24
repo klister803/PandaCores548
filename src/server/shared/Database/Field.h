@@ -232,7 +232,18 @@ class Field
                     string = "";
                 return std::string(string, data.length);
             }
-            return std::string((char*)data.value);
+            return std::string((char*)data.value, data.length);
+        }
+
+        std::vector<uint8> GetBinary() const
+        {
+            std::vector<uint8> result;
+            if (!data.value || !data.length)
+                return result;
+
+            result.resize(data.length);
+            memcpy(result.data(), data.value, data.length);
+            return result;
         }
 
         uint32 GetStringLength() const
@@ -263,7 +274,7 @@ class Field
         #endif
 
         void SetByteValue(void const* newValue, size_t const newSize, enum_field_types newType, uint32 length);
-        void SetStructuredValue(char* newValue, enum_field_types newType);
+        void SetStructuredValue(char* newValue, enum_field_types newType, uint32 length, bool isBinary);
 
         void CleanUp()
         {

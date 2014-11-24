@@ -51,14 +51,16 @@ enum PreparedStatementValueType
     TYPE_I64,
     TYPE_FLOAT,
     TYPE_DOUBLE,
-    TYPE_STRING
+    TYPE_STRING,
+    TYPE_BINARY,
+    TYPE_NULL
 };
 
 struct PreparedStatementData
 {
     PreparedStatementDataUnion data;
     PreparedStatementValueType type;
-    std::string str;
+    std::vector<uint8> binary;
 };
 
 //- Forward declare
@@ -87,6 +89,7 @@ class PreparedStatement
         void setFloat(const uint8 index, const float value);
         void setDouble(const uint8 index, const double value);
         void setString(const uint8 index, const std::string& value);
+        void setBinary(const uint8 index, const std::vector<uint8>& value);
 
     protected:
         void BindParameters();
@@ -120,7 +123,7 @@ class MySQLPreparedStatement
         void setInt64(const uint8 index, const int64 value);
         void setFloat(const uint8 index, const float value);
         void setDouble(const uint8 index, const double value);
-        void setString(const uint8 index, const char* value);
+        void setBinary(const uint8 index, const std::vector<uint8>& value, bool isString);
 
     protected:
         MYSQL_STMT* GetSTMT() { return m_Mstmt; }
