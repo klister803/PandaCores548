@@ -167,12 +167,13 @@ public:
 
         void ProcessEvent(WorldObject* /*obj*/, uint32 eventId)
         {
-            if (eventId == EVENT_FOCUSING_IRIS)
+            if (eventId == EVENT_FOCUSING_IRIS && instance)
             {
                 if (Creature* alexstraszaBunny = instance->GetCreature(alexstraszaBunnyGUID))
                 {
                     alexstraszaBunny->CastSpell(alexstraszaBunny, SPELL_IRIS_OPENED);
-                    instance->GetGameObject(irisGUID)->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                    if(GameObject* obj = instance->GetGameObject(irisGUID))
+                        obj->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                 }
 
                 if (Creature* malygos = instance->GetCreature(malygosGUID))
