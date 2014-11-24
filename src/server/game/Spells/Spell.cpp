@@ -3716,6 +3716,7 @@ void Spell::cast(bool skipCheck)
 
             if(infoTarget)
             {
+                procDamage = infoTarget->damage;
                 if (infoTarget->crit)
                     procEx |= PROC_EX_CRITICAL_HIT;
                 else
@@ -3725,10 +3726,20 @@ void Spell::cast(bool skipCheck)
                 procEx |= PROC_EX_NORMAL_HIT;
 
             bool positive = true;
-            if (m_damage > 0)
+            if (procDamage > 0)
                 positive = false;
-            else if (m_damage < 0)
-                procDamage = -m_damage;
+            else if (procDamage < 0)
+                procDamage = -procDamage;
+            else if (!procDamage)
+            {
+                for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
+                    // If at least one effect negative spell is negative hit
+                    if (mask & (1<<i) && !m_spellInfo->IsPositiveEffect(i))
+                    {
+                        positive = false;
+                        break;
+                    }
+            }
 
             switch (m_spellInfo->DmgClass)
             {
