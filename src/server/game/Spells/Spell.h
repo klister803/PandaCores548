@@ -91,6 +91,21 @@ struct SpellDestination
     Position _transportOffset;
 };
 
+// Targets store structures and data
+struct TargetInfo
+{
+    uint64 targetGUID;
+    uint64 timeDelay;
+    SpellMissInfo missCondition:8;
+    SpellMissInfo reflectResult:8;
+    uint32  effectMask:32;
+    bool   processed:1;
+    bool   alive:1;
+    bool   crit:1;
+    bool   scaleAura:1;
+    int32  damage;
+};
+
 enum WeightType
 {
     WEIGHT_KEYSTONE = 0,
@@ -403,7 +418,7 @@ class Spell
 
         typedef std::set<Aura *> UsedSpellMods;
 
-        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false);
+        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false, bool replaced = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -519,6 +534,7 @@ class Spell
         bool canHitTargetInLOS;
         uint32 m_count_dispeling; // Final count dispell auras
         bool m_interupted;
+        bool m_replaced;
 
         UsedSpellMods m_appliedMods;
 
@@ -674,21 +690,8 @@ class Spell
         // *****************************************
         // Spell target subsystem
         // *****************************************
-        // Targets store structures and data
-        struct TargetInfo
-        {
-            uint64 targetGUID;
-            uint64 timeDelay;
-            SpellMissInfo missCondition:8;
-            SpellMissInfo reflectResult:8;
-            uint32  effectMask:32;
-            bool   processed:1;
-            bool   alive:1;
-            bool   crit:1;
-            bool   scaleAura:1;
-            int32  damage;
-        };
         std::list<TargetInfo> m_UniqueTargetInfo;
+        TargetInfo* GetTargetInfo(uint64 targetGUID);
         uint32 m_channelTargetEffectMask;                        // Mask req. alive targets
 
         struct GOTargetInfo
@@ -771,7 +774,7 @@ class Spell
         uint32 m_spellState;
         int32 m_timer;
 
-        TriggerCastFlags _triggeredCastFlags;
+        uint32 _triggeredCastFlags;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras

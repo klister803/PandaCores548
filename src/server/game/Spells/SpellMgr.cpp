@@ -869,34 +869,6 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
 
     */
 
-//     if (procFlags & PROC_FLAG_DONE_PERIODIC)
-//     {
-//         if (procExtra & PROC_EX_INTERNAL_DOT)
-//         {
-//             if (!(EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG))
-//                 return false;
-//         }
-//         else if (procExtra & PROC_EX_INTERNAL_HOT)
-//         {
-//             if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
-//                 return false;
-//         }
-//     }
-// 
-//     if (procFlags & PROC_FLAG_TAKEN_PERIODIC)
-//     {
-//         if (procExtra & PROC_EX_INTERNAL_DOT)
-//         {
-//             if (!(EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG))
-//                 return false;
-//         }
-//         else if (procExtra & PROC_EX_INTERNAL_HOT)
-//         {
-//             if (EventProcFlag & PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG)
-//                 return false;
-//         }
-//     }
-
     if (procFlags & PROC_FLAG_DONE_PERIODIC)
     {
         if (EventProcFlag & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
@@ -964,8 +936,6 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
             }
         }
     }
-
-
 
     // Check for extra req (if none) and hit/crit
     if (procEvent_procEx == PROC_EX_NONE)
@@ -3722,9 +3692,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 53209:  // Chimera Shot
                     spellInfo->Effects[2].BasePoints = 398;
                     break;
-                case 2944:  // Solace and Insanity
-                    spellInfo->Effects[2].BasePoints = 0;
-                    break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(39);
@@ -4147,9 +4114,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 102793:
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
-                    break;
-                case 64904: // Hymn of Hope
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                     break;
                 case 81751: // Atonement
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ALLY;

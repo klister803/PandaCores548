@@ -506,6 +506,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId = 0, glyphIndex = 0, castFlags = 0, flags = 0, flags2 = 0;
     uint8 castCount = 0;
+    bool replaced = false;
     // client provided targets
     SpellCastTargets targets;
     ObjectGuid itemTargetGuid, dstTransportGuid, srcTransportGuid, objectTargetGuid;
@@ -807,6 +808,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             {
                 spellInfo = overrideSpellInfo;
                 spellId = overrideSpellInfo->Id;
+                replaced = true;
             }
             break;
         }
@@ -827,6 +829,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
+                replaced = true;
                 }
                 break;
             }
@@ -849,6 +852,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                     _player->SwapSpellUncategoryCharges(spellId, newInfo->Id);
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
+                    replaced = true;
                 }
                 break;
             }
@@ -904,6 +908,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -916,6 +921,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -928,6 +934,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -940,6 +947,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -952,6 +960,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -964,6 +973,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -976,6 +986,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -988,6 +999,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1000,6 +1012,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1010,6 +1023,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             {
                 spellInfo = newSpellInfo;
                 spellId = newSpellInfo->Id;
+                replaced = true;
             }
             break;
         }
@@ -1036,6 +1050,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1048,6 +1063,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1073,6 +1089,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1085,6 +1102,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
@@ -1097,13 +1115,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newSpellInfo;
                     spellId = newSpellInfo->Id;
+                    replaced = true;
                 }
             }
             break;
         }
     }
 
-    Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
+    Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false, replaced);
     spell->m_cast_count = castCount;                       // set count of casts (5.0.5 disable client crash 132)
     spell->m_glyphIndex = glyphIndex;
     spell->prepare(&targets);

@@ -955,20 +955,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
-                case 124280: // Touch of Karma (Dot)
-                {
-                    uint8 getticks = GetTotalTicks();
-                    uint32 oldBp = 0;
-
-                    oldBp += target->GetRemainingPeriodicAmount(caster->GetGUID(), 124280, SPELL_AURA_PERIODIC_DAMAGE);
-
-                    if (oldBp)
-                        getticks++;
-
-                    amount /= getticks;
-                    amount += oldBp;
-                    break;
-                }
                 case 106830: // Thrash (Cat)
                 case 77758:  // Thrash
                 {
@@ -1578,7 +1564,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         case SPELL_AURA_PERIODIC_LEECH:
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
         case SPELL_AURA_PERIODIC_DAMAGE:
+        {
+            if(m_spellInfo->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL)
+            {
+                amount += m_aura_amount;
+                m_crit_amount += m_aura_amount;
+            }
+
             m_aura_amount = amount;
+            break;
+        }
+        default:
             break;
     }
 
@@ -7828,9 +7824,19 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
         {
             resist += damage;
             damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, GetSpellInfo()->GetSchoolMask()));
+
             if (GetCaster() && GetCaster()->GetTypeId() == TYPEID_UNIT)
                 damage = int32(float(damage) * target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE, GetSpellInfo()->GetSchoolMask()));
-                resist -= damage;
+
+            resist -= damage;
+        }
+        if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+        {
+            int32 auraDamage = int32(damage / GetTotalTicks());
+            if(GetBase()->m_aura_amount > auraDamage)
+                GetBase()->m_aura_amount -= auraDamage;
+            else
+                GetBase()->m_aura_amount = 0;
         }
     }
 
@@ -7925,6 +7931,14 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
 
         int32 gain = caster->HealBySpell(caster, GetSpellInfo(), heal);
         caster->getHostileRefManager().threatAssist(caster, gain * 0.5f, GetSpellInfo());
+    }
+    if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+    {
+        int32 auraDamage = int32(damage / GetTotalTicks());
+        if(GetBase()->m_aura_amount > auraDamage)
+            GetBase()->m_aura_amount -= auraDamage;
+        else
+            GetBase()->m_aura_amount = 0;
     }
 }
 
@@ -8071,6 +8085,15 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
     uint32 heal = uint32(damage);
     caster->CalcHealAbsorb(target, GetSpellInfo(), heal, absorb);
     int32 gain = caster->DealHeal(target, heal, GetSpellInfo());
+
+    if(GetBase()->m_aura_amount && heal && GetBase()->GetMaxDuration() != -1)
+    {
+        int32 auraDamage = int32(heal / GetTotalTicks());
+        if(GetBase()->m_aura_amount > auraDamage)
+            GetBase()->m_aura_amount -= auraDamage;
+        else
+            GetBase()->m_aura_amount = 0;
+    }
 
     DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
     dmgInfoProc.AbsorbDamage(absorb);

@@ -415,6 +415,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_FULL_HP)
         if (unit->IsFullHealth())
             return;
+    if (action.action->targetFlags & AT_TARGET_FLAG_GROUP_OR_RAID)
+        if (!unit->IsInRaidWith(caster))
+            return;
 
     if (action.action->targetFlags & AT_TARGET_FLAT_IN_FRONT)
         if (!HasInArc(static_cast<float>(M_PI), unit))

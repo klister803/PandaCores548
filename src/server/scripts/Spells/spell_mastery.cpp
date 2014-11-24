@@ -56,12 +56,6 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                if (AuraEffect const* aurEff = caster->GetAuraEffect(47753, EFFECT_0)) //Divine Aegis
-                {
-                    if(roll_chance_f(aurEff->GetCritChance()))
-                        amount *= 2;
-                }
-
                 AuraEffect const* aurEff = caster->GetAuraEffect(MASTERY_SPELL_DISCIPLINE_SHIELD, EFFECT_0);
                 if (!aurEff)
                     return;

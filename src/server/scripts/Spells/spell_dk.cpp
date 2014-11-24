@@ -2078,6 +2078,118 @@ class spell_dk_soul_reaper_speed : public SpellScriptLoader
         }
 };
 
+// Called by - 55050, 56815, 47541, 114866, 48721
+// Item - Death Knight T16 Blood 2P Bonus - 144934
+class spell_dk_bone_shield : public SpellScriptLoader
+{
+    public:
+        spell_dk_bone_shield() : SpellScriptLoader("spell_dk_bone_shield") { }
+
+        class spell_dk_bone_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_bone_shield_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Aura* setCast = caster->GetAura(144934))
+                        setCast->SetScriptData(0, 1);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_bone_shield_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_bone_shield_SpellScript();
+        }
+};
+
+// Item - Death Knight T16 Blood 2P Bonus - 144934
+class spell_dk_blood_2p_bonus : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_2p_bonus() : SpellScriptLoader("spell_dk_blood_2p_bonus") { }
+
+        class spell_dk_blood_2p_bonus_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_blood_2p_bonus_AuraScript);
+
+            uint32 castCount;
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                castCount = 0;
+            }
+
+            void SetData(uint32 /*type*/, uint32 count)
+            {
+                castCount += count;
+                if (castCount >= 10)
+                {
+                    castCount -= 10;
+
+                    if (Unit* caster = GetCaster())
+                        caster->CastSpell(caster, 144948, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_dk_blood_2p_bonus_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_blood_2p_bonus_AuraScript();
+        }
+};
+
+// Called by - 49028
+// Item - Death Knight T16 Blood 4P Bonus - 144950
+class spell_dk_dancing_rune_weapon : public SpellScriptLoader
+{
+    public:
+        spell_dk_dancing_rune_weapon() : SpellScriptLoader("spell_dk_dancing_rune_weapon") { }
+
+        class spell_dk_dancing_rune_weapon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_dancing_rune_weapon_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(144950))
+                    {
+                        for (int i = 0; i < MAX_RUNES ; i++)
+                        {
+                            if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                continue;
+
+                            if (_player->GetCurrentRune(i) == RUNE_FROST || _player->GetCurrentRune(i) == RUNE_UNHOLY)
+                                _player->ConvertRune(i, RUNE_DEATH);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_dk_dancing_rune_weapon_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_dancing_rune_weapon_SpellScript();
+        }
+};
+
 void AddSC_deathknight_spell_scripts()
 {
     new spell_dk_might_of_ursoc();
@@ -2125,4 +2237,7 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_unholy_frenzy();
     new spell_dk_corpse_explosion();
     new spell_dk_soul_reaper_speed();
+    new spell_dk_bone_shield();
+    new spell_dk_blood_2p_bonus();
+    new spell_dk_dancing_rune_weapon();
 }

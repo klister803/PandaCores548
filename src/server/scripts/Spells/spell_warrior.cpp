@@ -1308,34 +1308,6 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
         }
 };
 
-// Bloodbath - 113344
-class spell_warr_bloodbath : public SpellScriptLoader
-{
-    public:
-        spell_warr_bloodbath() : SpellScriptLoader("spell_warr_bloodbath") { }
-
-        class spell_warr_bloodbath_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warr_bloodbath_AuraScript);
-
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if((amount * 36) > aurEff->GetOldBaseAmount())
-                    amount += aurEff->GetOldBaseAmount();
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_bloodbath_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warr_bloodbath_AuraScript();
-        }
-};
-
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1371,5 +1343,4 @@ void AddSC_warrior_spell_scripts()
     new spell_war_slam_aoe();
     new spell_war_intervene();
     new spell_warr_charge_drop_fire();
-    new spell_warr_bloodbath();
 }
