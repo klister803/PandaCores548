@@ -18533,13 +18533,18 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 {
                     triggered_spell_id = abs(itr->spell_trigger);
 
-                    if (itr->aura)
+                    if (itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
-                        if (_caster->HasAura(itr->aura))
-                            _caster->CastSpell(target, triggered_spell_id, true);
+                        check = true;
+                        continue;
                     }
-                    else
-                        _caster->CastSpell(target, triggered_spell_id, true);
+                    if (itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    _caster->CastSpell(target, triggered_spell_id, true);
 
                     check = true;
                     break;
