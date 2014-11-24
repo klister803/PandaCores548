@@ -3929,6 +3929,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119072: // Holy Wrath
                 case 102792: // Wild Mushroom: Bloom
                 case 145944: // Sha Smash
+                case 106375: // Unstable Twilight
+                case 107439: // Twilight Barrage
+                case 106401: // Twilight Onslaught
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
@@ -5210,6 +5213,17 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 131616;
                     //spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 8;
                     //spellInfo->Effects[EFFECT_0].SpellClassMask[3] |= 4096;
+                    break;
+                case 106371: // Hour of Twilight
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 103327;
+                    spellInfo->Effects[EFFECT_1].TriggerSpell = 106174;
+                    break;
+                case 108038: // Harpoon
+                    spellInfo->SetRangeIndex(13); // 5000 yards
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 109176: // Unstable Twilight aoe 2
+                    spellInfo->CustomMaxAffectedTargets = 1;
                     break;
                 default:
                     break;

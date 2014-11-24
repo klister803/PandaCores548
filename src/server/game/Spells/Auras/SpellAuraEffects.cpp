@@ -7447,6 +7447,13 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         // Spell exist but require custom code
         switch (auraId)
         {
+            // Hour of Twilight, Ultraxion, Dragon Soul
+            case 106371:
+                if (caster)
+                    if (Creature* pUltraxion = caster->ToCreature())
+                        if (Unit* pTarget = pUltraxion->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0.0f, true))
+                            pUltraxion->CastSpell(pTarget, 105925, true);
+                        return;
             case 113656: // Fists of Fury
             {
                 if (caster->GetTypeId() != TYPEID_PLAYER)
