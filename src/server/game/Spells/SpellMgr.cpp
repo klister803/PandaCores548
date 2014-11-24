@@ -3932,6 +3932,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 106375: // Unstable Twilight
                 case 107439: // Twilight Barrage
                 case 106401: // Twilight Onslaught
+                case 103414: // Stomp
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
@@ -4500,6 +4501,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //
                 case 116000:
+                case 103785: // Black Blood of the Earth dmg
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
                 case 116161:
@@ -4813,6 +4815,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TriggerSpell = 143579;
                     break;
                 case 143579: //Sha Corruption
+                case 103534: // Danger
+                case 103536: // Warning
+                case 103541: // Safe
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors
@@ -5224,6 +5229,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 109176: // Unstable Twilight aoe 2
                     spellInfo->CustomMaxAffectedTargets = 1;
+                    break;
+                case 103821: // Earthen Vortex
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(48); // 60 yard
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    spellInfo->Effects[2].RadiusEntry = sSpellRadiusStore.LookupEntry(48);
+                    break;
+                case 103178: // Earths Vengeance dmg
+                    spellInfo->SetDurationIndex(618);
                     break;
                 default:
                     break;
