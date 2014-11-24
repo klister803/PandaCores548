@@ -3728,16 +3728,16 @@ void Spell::cast(bool skipCheck)
             if (m_damage > 0)
                 positive = false;
             else if (m_damage < 0)
-                m_healing -= m_damage;
+                procDamage = -m_damage;
 
             switch (m_spellInfo->DmgClass)
             {
                 case SPELL_DAMAGE_CLASS_MELEE:
-                    m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
+                    procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
                     if (m_attackType == OFF_ATTACK)
-                        m_procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
+                        procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
                     else
-                        m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
+                        procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
                     break;
                 case SPELL_DAMAGE_CLASS_MAGIC:
                     if (positive)
@@ -3757,8 +3757,6 @@ void Spell::cast(bool skipCheck)
                         procAttacker = PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
                     break;
             }
-            if(positive)
-                procDamage = m_healing;
 
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
             procEx |= PROC_EX_ON_CAST;
