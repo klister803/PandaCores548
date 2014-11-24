@@ -18897,6 +18897,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)
 {
     bool procCheck = false;
+    uint64 casterGUID = GetGUID();
     Unit* _checkTarget = this;
     int32 spellProcId = procSpell ? procSpell->Id : -1;
     uint32 procPowerType = procSpell ? procSpell->PowerType : 0;
@@ -18931,12 +18932,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                 {
                     if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0 || itr->perchp != 0 || itr->fromlevel != 0)
                     {
-                        if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                        if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent, casterGUID))
                         {
                             procCheck = true;
                             break;
                         }
-                        else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                        else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent), casterGUID))
                         {
                             procCheck = true;
                             break;
@@ -19010,7 +19011,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             {
                 if(itr->hastalent != 0)
                 {
-                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent))
+                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent, casterGUID))
                     {
                         if(itr->chance != 0 && !roll_chance_i(itr->chance))
                         {
@@ -19020,7 +19021,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         procCheck = false;
                         continue;
                     }
-                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent)))
+                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent), casterGUID))
                     {
                         if(itr->chance != 0 && !roll_chance_i(itr->chance))
                         {
@@ -19097,12 +19098,12 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             {
                 if(itr->hastalent != 0)
                 {
-                    if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent))
+                    if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent, casterGUID))
                     {
                         procCheck = true;
                         break;
                     }
-                    else if(itr->hastalent < 0 && _checkTarget->HasAura(-(itr->hastalent)))
+                    else if(itr->hastalent < 0 && _checkTarget->HasAura(-(itr->hastalent), casterGUID))
                     {
                         procCheck = true;
                         break;
