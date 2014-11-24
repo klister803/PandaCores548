@@ -29,6 +29,6 @@ INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `targetaura`
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `targetaura`, `effectmask`, `aura`, `comment`) VALUES ('79134', '51637', '2', '2', '115197', 'Venomous Wounds');
 INSERT INTO `spell_trigger` (`spell_id`, `spell_trigger`, `option`, `targetaura`, `effectmask`, `aura`, `comment`) VALUES ('79134', '79136', '20', '2', '2', '115197', 'Venomous Wounds');
 
-INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `hastalent`, `target`, `effectmask`, `comment`) VALUES ('79134', '-703', '1943', '1', '2', 'Venomous Wounds')
+INSERT INTO `spell_proc_check` (`entry`, `checkspell`, `hastalent`, `target`, `effectmask`, `comment`) VALUES ('79134', '-703', '1943', '1', '2', 'Venomous Wounds');
 
 DELETE FROM `spell_script_names` WHERE (`spell_id`='703') AND (`ScriptName`='spell_rog_venomous_wounds');
