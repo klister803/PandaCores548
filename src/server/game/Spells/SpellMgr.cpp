@@ -5297,6 +5297,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 103178: // Earths Vengeance dmg
                     spellInfo->SetDurationIndex(618);
                     break;
+                case 105479: // Searing Plasma
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
+                case 105241: // Absorb Blood
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
+                    break;
                 default:
                     break;
             }

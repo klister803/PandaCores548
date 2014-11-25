@@ -1351,6 +1351,37 @@ public:
     }
 };
 
+class spell_spine_of_deathwing_absorbed_blood_stack : public SpellScriptLoader
+{
+    public:
+        spell_spine_of_deathwing_absorbed_blood_stack() : SpellScriptLoader("spell_spine_of_deathwing_absorbed_blood_stack") { }
+
+        class spell_spine_of_deathwing_absorbed_blood_stack_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_spine_of_deathwing_absorbed_blood_stack_AuraScript);
+
+            void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster)
+                        if (GetStackAmount() == 9)
+                            caster->CastSpell(caster, SPELL_SUPERHEATED_NUCLEUS, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_spine_of_deathwing_absorbed_blood_stack_AuraScript::OnStackChange, EFFECT_2, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_spine_of_deathwing_absorbed_blood_stack_AuraScript();
+        }
+};
+
 void AddSC_spine_of_deathwing()
 {
     new npc_spine_of_deathwing_deathwing();
@@ -1367,4 +1398,5 @@ void AddSC_spine_of_deathwing()
     new spell_spine_of_deathwing_blood_corruption();
     new spell_spine_of_deathwing_roll_control();
     new spell_spine_of_deathwing_blood_corruption_death();
+    new spell_spine_of_deathwing_absorbed_blood_stack();
 }
