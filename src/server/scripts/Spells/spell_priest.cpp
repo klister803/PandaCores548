@@ -852,6 +852,13 @@ class spell_pri_rapture : public SpellScriptLoader
                     if(roll_chance_f(critChance))
                         amount *= 2;
                 }
+                if (Aura* aur = caster->GetAura(55672))// Glyph of Power Word: Shield
+                {
+                    int32 percent = aur->GetEffect(EFFECT_0)->GetAmount();
+                    int32 bp = CalculatePct(amount, percent);
+                    amount -= bp;
+                    caster->CastCustomSpell(caster, 56160, &bp, NULL, NULL,  true);
+                }
             }
 
             void Register()
@@ -867,8 +874,7 @@ class spell_pri_rapture : public SpellScriptLoader
         }
 };
 
-// Called by Smite - 585, Holy Fire - 14914 and Penance - 47666
-// Atonement - 81749
+// Atonement - 81751
 class spell_pri_atonement : public SpellScriptLoader
 {
     public:
@@ -880,31 +886,12 @@ class spell_pri_atonement : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(PRIEST_ATONEMENT_AURA))
-                        {
-                            int32 bp = GetHitDamage();
-                            std::list<Unit*> groupList;
-
-                            _player->GetPartyMembers(groupList);
-
-                            if (groupList.size() > 1)
-                            {
-                                groupList.sort(Trinity::HealthPctOrderPred());
-                                groupList.resize(1);
-                            }
-
-                            for (std::list<Unit*>::const_iterator itr = groupList.begin(); itr != groupList.end(); ++itr)
-                            {
-                                if ((*itr)->GetGUID() == _player->GetGUID())
-                                    bp /= 2;
-
-                                _player->CastCustomSpell(*itr, PRIEST_ATONEMENT_HEAL, &bp, NULL, NULL, true);
-                            }
-                        }
+                        if(caster == target)
+                            SetHitHeal(int32(GetHitHeal() / 2));
                     }
                 }
             }
@@ -1665,6 +1652,11 @@ class spell_pri_void_shift : public SpellScriptLoader
                         caster->CastCustomSpell(caster, 118594, &casterDamage, &casterHeal, NULL, true);
                         caster->CastCustomSpell(target, 118594, &targetDamage, &targetHeal, NULL, true);
                         caster->CastSpell(target, 134977, true);
+                        if(caster->HasAura(147779)) //Glyph of Shifted Appearances
+                        {
+                            caster->CastSpell(target, 147898, true);
+                            target->CastSpell(caster, 147898, true);
+                        }
                     }
                 }
             }

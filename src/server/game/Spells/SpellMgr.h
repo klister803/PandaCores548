@@ -152,6 +152,16 @@ enum SpellAuraDummyType
     SPELL_DUMMY_DAMAGE_ADD_VALUE                = 10,           // add value to damage
 };
 
+enum SpellTargetFilterType
+{
+    SPELL_FILTER_SORT_BY_HEALT                  = 0,            // Sort target by healh
+    SPELL_FILTER_BY_AURA                        = 1,            // Remove target by aura
+    SPELL_FILTER_BY_DISTANCE                    = 2,            // Check distance
+    SPELL_FILTER_TARGET_TYPE                    = 3,            // Check target rype
+    SPELL_FILTER_SORT_BY_DISTANCE               = 4,            // Sort by distance
+    SPELL_FILTER_TARGET_FRIENDLY                = 5,            // Check Friendly
+};
+
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
 {
@@ -163,7 +173,7 @@ enum ProcFlags
     PROC_FLAG_DONE_MELEE_AUTO_ATTACK          = 0x00000004,    // 02 Done melee auto attack(on hit)
     PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK         = 0x00000008,    // 03 Taken melee auto attack(on hit)
 
-    PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS      = 0x00000010,    // 04 Done attack by Spell that has dmg class melee(after cast)
+    PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS      = 0x00000010,    // 04 Done attack by Spell that has dmg class melee(on hit)
     PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS     = 0x00000020,    // 05 Taken attack by Spell that has dmg class melee(on hit)
 
     PROC_FLAG_DONE_RANGED_AUTO_ATTACK         = 0x00000040,    // 06 Done ranged auto attack(on hit)
@@ -178,7 +188,7 @@ enum ProcFlags
     PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG   = 0x00001000,    // 12 Done negative spell that has dmg class none(after cast)
     PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG  = 0x00002000,    // 13 Taken negative spell that has dmg class none
 
-    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS  = 0x00004000,    // 14 Done positive spell that has dmg class magic(after cast)
+    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS  = 0x00004000,    // 14 Done positive spell that has dmg class magic(on hit)
     PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS = 0x00008000,    // 15 Taken positive spell that has dmg class magic
 
     PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG  = 0x00010000,    // 16 Done negative spell that has dmg class magic(after cast)
@@ -713,9 +723,28 @@ struct SpellAuraDummy
     int32 attrValue;
 };
 
+struct SpellTargetFilter
+{
+    int32 spellId;
+    int32 targetId;
+    int32 option;
+    int32 param1;
+    int32 param2;
+    int32 param3;
+    int32 aura;
+    int32 chance;
+    int32 effectMask;
+    int32 resizeType;
+    int32 count;
+    int32 maxcount;
+    int32 addcount;
+    int32 addcaster;
+};
+
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
 typedef std::map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
+typedef std::map<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
 typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
 typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
 typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
@@ -835,6 +864,7 @@ class SpellMgr
         const std::vector<SpellTriggered> *GetSpellTriggered(int32 spell_id) const;
         const std::vector<SpellTriggered> *GetSpellTriggeredDummy(int32 spell_id) const;
         const std::vector<SpellAuraDummy> *GetSpellAuraDummy(int32 spell_id) const;
+        const std::vector<SpellTargetFilter> *GetSpellTargetFilter(int32 spell_id) const;
         const std::vector<SpellVisual> *GetSpellVisual(int32 spell_id) const;
         const std::vector<SpellPendingCast> *GetSpellPendingCast(int32 spell_id) const;
 
@@ -920,6 +950,7 @@ class SpellMgr
         SpellTriggeredMap          mSpellTriggeredMap;
         SpellTriggeredDummyMap     mSpellTriggeredDummyMap;
         SpellAuraDummyMap          mSpellAuraDummyMap;
+        SpellTargetFilterMap       mSpellTargetFilterMap;
         SpellEnchantProcEventMap   mSpellEnchantProcEventMap;
         EnchantCustomAttribute     mEnchantCustomAttr;
         SpellAreaMap               mSpellAreaMap;

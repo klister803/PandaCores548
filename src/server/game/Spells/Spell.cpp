@@ -1046,7 +1046,7 @@ void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTa
 
         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitBetweenTargets coneAngle %f, radius %f, x %f, y %f, Id %u, targets.size %u", coneAngle, radius, center->GetPositionX(), center->GetPositionY(), m_spellInfo->Id, targets.size());
 
-        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex);
+        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
         if (!targets.empty())
         {
@@ -1118,7 +1118,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
         Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
         SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellConeTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius);
 
-        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex);
+        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
         if (!targets.empty())
         {
@@ -1228,7 +1228,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
             break;
     }
 
-    CallScriptObjectAreaTargetSelectHandlers(targets, effIndex);
+    CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
     std::list<Unit*> unitTargets;
     std::list<GameObject*> gObjTargets;
@@ -1803,7 +1803,7 @@ void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTarg
             , m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions, targetType.GetTarget() == TARGET_UNIT_TARGET_CHAINHEAL_ALLY);
 
         // Chain primary target is added earlier
-        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex);
+        CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
         // for backward compability
         std::list<Unit*> unitTargets;
@@ -2256,6 +2256,11 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
     {
         case SPELL_DAMAGE_CLASS_MELEE:
             m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
+            m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
+            if (m_attackType == OFF_ATTACK)
+                m_procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
+            else
+                m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
             // Auto attack
@@ -3746,13 +3751,6 @@ void Spell::cast(bool skipCheck)
 
             switch (m_spellInfo->DmgClass)
             {
-                case SPELL_DAMAGE_CLASS_MELEE:
-                    procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
-                    if (m_attackType == OFF_ATTACK)
-                        procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
-                    else
-                        procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
-                    break;
                 case SPELL_DAMAGE_CLASS_MAGIC:
                     if (!positive)
                         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
@@ -9082,7 +9080,7 @@ void Spell::CallScriptAfterHitHandlers()
     }
 }
 
-void Spell::CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex)
+void Spell::CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, Targets targetId)
 {
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -9093,6 +9091,126 @@ void Spell::CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& ta
                 (*hookItr).Call(*scritr, targets);
 
         (*scritr)->_FinishScriptCall();
+    }
+    CustomTargetSelector(targets, effIndex, targetId);
+}
+
+void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex effIndex, Targets targetId)
+{
+    if (std::vector<SpellTargetFilter> const* spellTargetFilter = sSpellMgr->GetSpellTargetFilter(m_spellInfo->Id))
+    {
+        uint32 targetCount = 0;
+        uint32 resizeType = 0;
+
+        for (std::vector<SpellTargetFilter>::const_iterator itr = spellTargetFilter->begin(); itr != spellTargetFilter->end(); ++itr)
+        {
+            Unit* _caster = m_caster;
+
+            if (!(itr->effectMask & (1<<effIndex)))
+                continue;
+
+            if (itr->targetId != targetId)
+                continue;
+
+            if (targets.empty())
+            {
+                if(itr->addcaster == 2)
+                    targets.push_back(GetCaster());
+                return;
+            }
+
+            if(itr->count)
+                targetCount = itr->count;
+            if(itr->resizeType)
+                resizeType = itr->resizeType;
+            if(itr->chance != 0 && roll_chance_i(itr->chance))
+                targetCount = itr->maxcount;
+
+            if(itr->aura > 0 && _caster->HasAura(itr->aura))
+                targetCount += itr->addcount;
+            if(itr->aura < 0 && !_caster->HasAura(abs(itr->aura)))
+                targetCount -= itr->addcount;
+
+            if(itr->addcaster < 0)
+                targets.remove(GetCaster());
+            if(itr->addcaster == 2)
+                targets.remove(GetCaster());
+
+            switch (itr->option)
+            {
+                case SPELL_FILTER_SORT_BY_HEALT: //0
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.sort(Trinity::UnitHealthState(false));
+                    else
+                        targets.sort(Trinity::UnitHealthState(true));
+                    break;
+                }
+                case SPELL_FILTER_BY_AURA: //1
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitAuraCheck(false, uint32(itr->param2)));
+                    else
+                        targets.remove_if(Trinity::UnitAuraCheck(true, uint32(itr->param2)));
+                    break;
+                }
+                case SPELL_FILTER_BY_DISTANCE: //2
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitDistanceCheck(false, _caster, itr->param2));
+                    else
+                        targets.remove_if(Trinity::UnitDistanceCheck(true, _caster, itr->param2));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_TYPE: //3
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitTypeCheck(true, uint32(itr->param2)));
+                    else
+                        targets.remove_if(Trinity::UnitTypeCheck(false, uint32(itr->param2)));
+                    break;
+                }
+                case SPELL_FILTER_SORT_BY_DISTANCE: //4
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.sort(Trinity::UnitSortDistance(false, _caster));
+                    else
+                        targets.sort(Trinity::UnitSortDistance(true, _caster));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_FRIENDLY: //5
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitFriendlyCheck(true, _caster));
+                    else
+                        targets.remove_if(Trinity::UnitFriendlyCheck(false, _caster));
+                    break;
+                }
+            }
+            switch(itr->addcaster)
+            {
+                case 1:
+                    if (!targets.empty())
+                        targets.remove(GetCaster());
+                    targets.push_back(GetCaster());
+                    break;
+                case 2:
+                    if (targets.empty())
+                        targets.push_back(GetCaster());
+                    break;
+            }
+        }
+        switch(resizeType)
+        {
+            case 1:
+                if (targets.size() > targetCount)
+                    targets.resize(targetCount);
+                break;
+            case 2:
+                if (targets.size() > targetCount)
+                    Trinity::Containers::RandomResizeList(targets, targetCount);
+                break;
+        }
     }
 }
 

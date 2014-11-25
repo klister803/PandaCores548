@@ -2190,6 +2190,61 @@ class spell_dk_dancing_rune_weapon : public SpellScriptLoader
         }
 };
 
+// Death Shroud - 144901
+class spell_dk_death_shroud : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_shroud() : SpellScriptLoader("spell_dk_death_shroud") { }
+
+        class spell_dk_death_shroud_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_death_shroud_AuraScript);
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                Unit* caster = GetCaster();
+                if(!caster)
+                    return;
+
+                if (Player* _player = caster->ToPlayer())
+                {
+                    uint32 mastery = _player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY);
+                    uint32 haste = _player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
+
+                    if(haste < mastery)
+                        amount = 0;
+                }
+            }
+
+            void CalculateAmount1(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                Unit* caster = GetCaster();
+                if(!caster)
+                    return;
+
+                if (Player* _player = caster->ToPlayer())
+                {
+                    uint32 mastery = _player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_MASTERY);
+                    uint32 haste = _player->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
+
+                    if(haste > mastery)
+                        amount = 0;
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_death_shroud_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_RATING);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_death_shroud_AuraScript::CalculateAmount1, EFFECT_1, SPELL_AURA_MOD_RATING);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_death_shroud_AuraScript();
+        }
+};
+
 void AddSC_deathknight_spell_scripts()
 {
     new spell_dk_might_of_ursoc();
@@ -2240,4 +2295,5 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_bone_shield();
     new spell_dk_blood_2p_bonus();
     new spell_dk_dancing_rune_weapon();
+    new spell_dk_death_shroud();
 }
