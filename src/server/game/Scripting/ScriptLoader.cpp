@@ -440,8 +440,11 @@ void AddSC_boss_grand_vizier_ertan();
 void AddSC_boss_altairus();
 void AddSC_boss_asaad();
 
-void AddSC_instance_throne_of_the_four_winds(); // Throne of the Four Winds
-void AddSC_throne_of_the_four_winds();
+void AddSC_throne_of_the_four_winds(); // Throne of Four Winds
+void AddSC_boss_conclave_of_wind();
+void AddSC_boss_alakir();
+void AddSC_instance_throne_of_the_four_winds();
+
 void AddSC_wailing_caverns();                //Wailing caverns
 void AddSC_instance_wailing_caverns();
 void AddSC_zulfarrak();                     //Zul'Farrak generic
@@ -1280,8 +1283,11 @@ void AddKalimdorScripts()
     AddSC_boss_altairus();
     AddSC_boss_asaad();
 
-    AddSC_instance_throne_of_the_four_winds(); // Throne of the Four Winds
-    AddSC_throne_of_the_four_winds();
+    AddSC_throne_of_the_four_winds(); // Throne of Four Winds
+    AddSC_boss_conclave_of_wind();
+    AddSC_boss_alakir();
+    AddSC_instance_throne_of_the_four_winds();
+
     AddSC_wailing_caverns();                //Wailing caverns
     AddSC_instance_wailing_caverns();
     AddSC_zulfarrak();                      //Zul'Farrak generic
