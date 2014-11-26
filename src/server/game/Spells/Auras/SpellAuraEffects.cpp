@@ -771,7 +771,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(146025))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
@@ -784,7 +784,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(145955))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
@@ -801,7 +801,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(146019))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
