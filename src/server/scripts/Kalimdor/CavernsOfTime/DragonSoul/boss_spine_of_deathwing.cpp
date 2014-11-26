@@ -713,7 +713,7 @@ public:
         {
             if (me->GetHealth() <= damage)
             {
-                if (me->GetPower(POWER_ALTERNATE_POWER) == 9)
+                if (me->GetAura(SPELL_SUPERHEATED_NUCLEUS))
                 {
                     damage = 0;
                     if (!isExplode)

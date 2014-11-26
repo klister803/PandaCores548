@@ -4,312 +4,312 @@
 enum ScriptTexts
 {
     // lord victor nefarius
-    SAY_INTRO_1                = 0,
-    SAY_INTRO_2                = 1,
+    SAY_INTRO_1                 = 0,
+    SAY_INTRO_2                 = 1,
 
-    SAY_OMNOTRON_DEATH_2    = 2,
-    SAY_OMNOTRON_INTRO        = 3,
-    SAY_OMNOTRON_SPELL_1    = 4,
-    SAY_OMNOTRON_SPELL_2    = 5,
-    SAY_OMNOTRON_SPELL_3    = 6,
-    SAY_OMNOTRON_SPELL_4    = 7,
-    SAY_OMNOTRON_DEATH_1    = 8,
+    SAY_OMNOTRON_DEATH_2        = 2,
+    SAY_OMNOTRON_INTRO          = 3,
+    SAY_OMNOTRON_SPELL_1        = 4,
+    SAY_OMNOTRON_SPELL_2        = 5,
+    SAY_OMNOTRON_SPELL_3        = 6,
+    SAY_OMNOTRON_SPELL_4        = 7,
+    SAY_OMNOTRON_DEATH_1        = 8,
 
-    SAY_MAGMAW_INTRO        = 9,
-    SAY_MAGMAW_DEATH_1        = 10,
-    SAY_MAGMAW_DEATH_2        = 11,
-    SAY_MAGMAW_LOW_HEALTH    = 12,
-    SAY_MAGMAW_SUMMON        = 13,
+    SAY_MAGMAW_INTRO            = 9,
+    SAY_MAGMAW_DEATH_1          = 10,
+    SAY_MAGMAW_DEATH_2          = 11,
+    SAY_MAGMAW_LOW_HEALTH       = 12,
+    SAY_MAGMAW_SUMMON           = 13,
 
-    SAY_MALORIAK_INTRO        = 14,
-    SAY_MALORIAK_DARK        = 15,
-    SAY_MALORIAK_DEATH_2    = 16,
-    SAY_MALORIAK_DEATH_1    = 17,
+    SAY_MALORIAK_INTRO          = 14,
+    SAY_MALORIAK_DARK           = 15,
+    SAY_MALORIAK_DEATH_2        = 16,
+    SAY_MALORIAK_DEATH_1        = 17,
 
-    SAY_CHIMAERON_DEATH_1    = 23,
-    SAY_CHIMAERON_DEATH_2    = 24,
-    SAY_CHIMAERON_INTRO        = 25,
-    SAY_CHIMAERON_SPELL        = 26,
-    SAY_CHIMAERON_FEUD        = 27,
-    SAY_CHIMAERON_LOW        = 28,
+    SAY_CHIMAERON_DEATH_1       = 23,
+    SAY_CHIMAERON_DEATH_2       = 24,
+    SAY_CHIMAERON_INTRO         = 25,
+    SAY_CHIMAERON_SPELL         = 26,
+    SAY_CHIMAERON_FEUD          = 27,
+    SAY_CHIMAERON_LOW           = 28,
 };
 
 enum Spells
 {
     //golem sentry
-    SPELL_LASER_STRIKE_SUM            = 81063,
-    SPELL_LASER_STRIKE_AURA            = 81066,
-    SPELL_LASER_STRIKE_DUMMY        = 81065,
-    SPELL_FLASH_BOMB_SUM            = 81056,
-    SPELL_FLASH_BOMB_DMG            = 81060,
-    SPELL_FLASH_BOMB_DUMMY            = 81058,
-    SPELL_ELECTRICAL_DISCHARGE        = 81055,
+    SPELL_LASER_STRIKE_SUM              = 81063,
+    SPELL_LASER_STRIKE_AURA             = 81066,
+    SPELL_LASER_STRIKE_DUMMY            = 81065,
+    SPELL_FLASH_BOMB_SUM                = 81056,
+    SPELL_FLASH_BOMB_DMG                = 81060,
+    SPELL_FLASH_BOMB_DUMMY              = 81058,
+    SPELL_ELECTRICAL_DISCHARGE          = 81055,
 
     //drakonid drudge
-    SPELL_DRAKONID_RUSH                = 79630,
-    SPELL_DRUDGE_THUNDERCLAP        = 79604,
-    SPELL_DRUDGE_THUNDERCLAP_25        = 91905,
-    SPELL_VENGEFUL_RAGE                = 80035,
+    SPELL_DRAKONID_RUSH                 = 79630,
+    SPELL_DRUDGE_THUNDERCLAP            = 79604,
+    SPELL_DRUDGE_THUNDERCLAP_25         = 91905,
+    SPELL_VENGEFUL_RAGE                 = 80035,
 
     //drakonid chainwielder
-    SPELL_OVERHEAD_SMASH            = 79580,
-    SPELL_GRIEVOUS_WOUND            = 80051,
-    SPELL_CONSTRICTING_CHAINS        = 79589,
-    SPELL_CONSTRICTING_CHAINS_25    = 91911,
+    SPELL_OVERHEAD_SMASH                = 79580,
+    SPELL_GRIEVOUS_WOUND                = 80051,
+    SPELL_CONSTRICTING_CHAINS           = 79589,
+    SPELL_CONSTRICTING_CHAINS_25        = 91911,
 
     //maimgor
-    SPELL_MAIMGOR_BERSERK            = 80084,
-    SPELL_PIERCING_GRIP                = 80145,
-    SPELL_PIERCING_GRIP_VEHICLE        = 80155,
-    SPELL_SHADOWFLAME                = 79921,
-    SPELL_TAIL_LASH                    = 80130,
+    SPELL_MAIMGOR_BERSERK               = 80084,
+    SPELL_PIERCING_GRIP                 = 80145,
+    SPELL_PIERCING_GRIP_VEHICLE         = 80155,
+    SPELL_SHADOWFLAME                   = 79921,
+    SPELL_TAIL_LASH                     = 80130,
 
     //ivoroc
-    SPELL_CURSE_OF_MENDING            = 80295,
+    SPELL_CURSE_OF_MENDING              = 80295,
 
     //pyreclaw
-    SPELL_FLAME_BUFFET                = 80127,
+    SPELL_FLAME_BUFFET                  = 80127,
 
     //drakonid slayer
-    SPELL_BLAST_WAVE                = 80391,
-    SPELL_CLEAVE                    = 80392,
-    SPELL_MORTAL_STRIKE                = 80390,
+    SPELL_BLAST_WAVE                    = 80391,
+    SPELL_CLEAVE                        = 80392,
+    SPELL_MORTAL_STRIKE                 = 80390,
 
     //drakeadon mongrel
-    SPELL_BROOD_POWER_RED            = 80368,
-    SPELL_BROOD_POWER_GREEN            = 80369,
-    SPELL_BROOD_POWER_BLACK            = 80370,
-    SPELL_BROOD_POWER_BLUE            = 80371,
-    SPELL_BROOD_POWER_BRONZE        = 80372,
-    SPELL_MONGREL_CHARGE            = 79904,
-    SPELL_CORROSIVE_ACID            = 80345,
-    SPELL_IGNITE_FLESH_DUMMY        = 80347,
-    SPELL_IGNITE_FLESH                = 80341,
-    SPELL_IGNITE_FLESH_DMG            = 80342,
-    SPELL_INSENERATE_DUMMY            = 80349,
-    SPELL_INSENERATE                = 80331,
-    SPELL_INSENERATE_SELF            = 80332,
-    SPELL_TIME_LAPSE_DUMMY            = 80348,
-    SPELL_TIME_LAPSE                = 80329,
-    SPELL_TIME_LAPSE_SELF            = 80330,
-    SPELL_FROST_BURN_DUMMY            = 80346,
-    SPELL_FROST_BURN                = 80336,
-    SPELL_FROST_BURN_25                = 91896,
-    SPELL_FROST_BURN_SELF            = 80338,
+    SPELL_BROOD_POWER_RED               = 80368,
+    SPELL_BROOD_POWER_GREEN             = 80369,
+    SPELL_BROOD_POWER_BLACK             = 80370,
+    SPELL_BROOD_POWER_BLUE              = 80371,
+    SPELL_BROOD_POWER_BRONZE            = 80372,
+    SPELL_MONGREL_CHARGE                = 79904,
+    SPELL_CORROSIVE_ACID                = 80345,
+    SPELL_IGNITE_FLESH_DUMMY            = 80347,
+    SPELL_IGNITE_FLESH                  = 80341,
+    SPELL_IGNITE_FLESH_DMG              = 80342,
+    SPELL_INSENERATE_DUMMY              = 80349,
+    SPELL_INSENERATE                    = 80331,
+    SPELL_INSENERATE_SELF               = 80332,
+    SPELL_TIME_LAPSE_DUMMY              = 80348,
+    SPELL_TIME_LAPSE                    = 80329,
+    SPELL_TIME_LAPSE_SELF               = 80330,
+    SPELL_FROST_BURN_DUMMY              = 80346,
+    SPELL_FROST_BURN                    = 80336,
+    SPELL_FROST_BURN_25                 = 91896,
+    SPELL_FROST_BURN_SELF               = 80338,
 
     //spirit of angerforge
-    SPELL_BESTOWAL_OF_ANGERFORGE    = 80878,
-    SPELL_SPIRIT_OF_ANGERFORGE        = 80762,
-    SPELL_STONEBLOOD                = 80655,
+    SPELL_BESTOWAL_OF_ANGERFORGE        = 80878,
+    SPELL_SPIRIT_OF_ANGERFORGE          = 80762,
+    SPELL_STONEBLOOD                    = 80655,
 
     //spirit of thaurissan
-    SPELL_BESTOWAL_OF_THAURISSAN    = 80871,
-    SPELL_SPIRIT_OF_THAURISSAN        = 80766,
-    SPELL_AVATAR                    = 80645,
+    SPELL_BESTOWAL_OF_THAURISSAN        = 80871,
+    SPELL_SPIRIT_OF_THAURISSAN          = 80766,
+    SPELL_AVATAR                        = 80645,
 
     //spirit of ironstar
-    SPELL_BESTOWAL_OF_IRONSTAR        = 80875,
-    SPELL_SPIRIT_OF_IRONSTAR        = 80767,
-    SPELL_EXECUTION_SENTENSE        = 80727,
-    SPELL_SHIELD_OF_LIGHT            = 80747,
+    SPELL_BESTOWAL_OF_IRONSTAR          = 80875,
+    SPELL_SPIRIT_OF_IRONSTAR            = 80767,
+    SPELL_EXECUTION_SENTENSE            = 80727,
+    SPELL_SHIELD_OF_LIGHT               = 80747,
 
     //spirit of burningeye
-    SPELL_BESTOWAL_OF_BURNINGEYE    = 80872,
-    SPELL_SPIRIT_OF_BURNINGEYE        = 80770,
-    SPELL_WHIRLWIND                    = 80652,
+    SPELL_BESTOWAL_OF_BURNINGEYE        = 80872,
+    SPELL_SPIRIT_OF_BURNINGEYE          = 80770,
+    SPELL_WHIRLWIND                     = 80652,
 
     //spirit of corehamer
-    SPELL_BESTOWAL_OF_COREHAMMER    = 80877,
-    SPELL_SPIRIT_OF_COREHAMMER        = 80763,
-    SPELL_BURDEN_OF_THE_CROWN        = 80718,
+    SPELL_BESTOWAL_OF_COREHAMMER        = 80877,
+    SPELL_SPIRIT_OF_COREHAMMER          = 80763,
+    SPELL_BURDEN_OF_THE_CROWN           = 80718,
 
     //spirit of anvilrage
-    SPELL_BESTOWAL_OF_ANVILRAGE        = 80874,
-    SPELL_SPIRIT_OF_ANVILRAGE        = 80768,
-    SPELL_STORMBOLT                    = 80648, //править
-    SPELL_STORMBOLT_25                = 91890,
+    SPELL_BESTOWAL_OF_ANVILRAGE         = 80874,
+    SPELL_SPIRIT_OF_ANVILRAGE           = 80768,
+    SPELL_STORMBOLT                     = 80648, //править
+    SPELL_STORMBOLT_25                  = 91890,
 
     //spirit of moltenfist
-    SPELL_BESTOWAL_OF_MOLTENFIST    = 80876,
-    SPELL_SPIRIT_OF_MOLTENFIST        = 80764,
-    SPELL_DWARVEN_THUNDERCLAP        = 80649,
-        
+    SPELL_BESTOWAL_OF_MOLTENFIST        = 80876,
+    SPELL_SPIRIT_OF_MOLTENFIST          = 80764,
+    SPELL_DWARVEN_THUNDERCLAP           = 80649,
+
     //spirit of shadowforge
-    SPELL_BESTOWAL_OF_SHADOWFORGE    = 80873,
-    SPELL_SPIRIT_OF_SHADOWFORGE        = 80769,
-    SPELL_DWARVEN_CHAIN_LIGHTNING    = 80646, //править
-    SPELL_DWARVEN_CHAIN_LIGHTNING_25= 91891,
+    SPELL_BESTOWAL_OF_SHADOWFORGE       = 80873,
+    SPELL_SPIRIT_OF_SHADOWFORGE         = 80769,
+    SPELL_DWARVEN_CHAIN_LIGHTNING       = 80646, //править
+    SPELL_DWARVEN_CHAIN_LIGHTNING_25    = 91891,
 
     //lord victor nefarius
     //omnotron
-    SPELL_SHADOW_INFUSION                = 92048,
-    SPELL_SHADOW_INFUSION_AURA            = 92050,
-    SPELL_GRIP_OF_DEATH                    = 91849,
-    SPELL_ENCASING_SHADOWS                = 92023,
+    SPELL_SHADOW_INFUSION               = 92048,
+    SPELL_SHADOW_INFUSION_AURA          = 92050,
+    SPELL_GRIP_OF_DEATH                 = 91849,
+    SPELL_ENCASING_SHADOWS              = 92023,
     SPELL_OVERCHARGE                    = 91881,
-    SPELL_SHADOW_CONDUCTOR                = 92053,
-    SPELL_SHADOW_CONDUCTOR_AOE_10H        = 92051,
-    SPELL_SHADOW_CONDUCTOR_AOE_25H        = 92135,
-    SPELL_OVERCHARGED_POWER_GENERATOR    = 91857,
-    SPELL_LIGHTNING_CONDUCTOR            = 79888,
+    SPELL_SHADOW_CONDUCTOR              = 92053,
+    SPELL_SHADOW_CONDUCTOR_AOE_10H      = 92051,
+    SPELL_SHADOW_CONDUCTOR_AOE_25H      = 92135,
+    SPELL_OVERCHARGED_POWER_GENERATOR   = 91857,
+    SPELL_LIGHTNING_CONDUCTOR           = 79888,
     SPELL_LIGHTNING_CONDUCTOR_25        = 91431,
-    SPELL_LIGHTNING_CONDUCTOR_10H        = 91432,
-    SPELL_LIGHTNING_CONDUCTOR_25H        = 91433,                                    
-    SPELL_ACQUIRING_TARGET                = 79501,
-    SPELL_ACQUIRING_TARGET_25            = 92035,
-    SPELL_ACQUIRING_TARGET_10H            = 92036,
-    SPELL_ACQUIRING_TARGET_25H            = 92037,
+    SPELL_LIGHTNING_CONDUCTOR_10H       = 91432,
+    SPELL_LIGHTNING_CONDUCTOR_25H       = 91433,                                    
+    SPELL_ACQUIRING_TARGET              = 79501,
+    SPELL_ACQUIRING_TARGET_25           = 92035,
+    SPELL_ACQUIRING_TARGET_10H          = 92036,
+    SPELL_ACQUIRING_TARGET_25H          = 92037,
     //magmaw
-    SPELL_BLAZING_INFERNO_M                = 92153,
-    SPELL_BLAZING_INFERNO_DMG            = 92154,
+    SPELL_BLAZING_INFERNO_M             = 92153,
+    SPELL_BLAZING_INFERNO_DMG           = 92154,
     SPELL_BLAZING_INFERNO_DMG_25        = 92190,
-    SPELL_BLAZING_INFERNO_DMG_10H        = 92191,
-    SPELL_BLAZING_INFERNO_DMG_25H        = 92192,
-    SPELL_SHADOW_BREATH                    = 92173,
-    SPELL_SHADOW_BREATH_25                = 92193,
-    SPELL_SHADOW_BREATH_10H                = 92194,
-    SPELL_SHADOW_BREATH_25H                = 92195,
-    SPELL_FIERY_SLASH                    = 92144,
+    SPELL_BLAZING_INFERNO_DMG_10H       = 92191,
+    SPELL_BLAZING_INFERNO_DMG_25H       = 92192,
+    SPELL_SHADOW_BREATH                 = 92173,
+    SPELL_SHADOW_BREATH_25              = 92193,
+    SPELL_SHADOW_BREATH_10H             = 92194,
+    SPELL_SHADOW_BREATH_25H             = 92195,
+    SPELL_FIERY_SLASH                   = 92144,
     SPELL_ARMAGEDDON                    = 92177,
-    SPELL_IGNITION                        = 92131,
+    SPELL_IGNITION                      = 92131,
     SPELL_IGNITION_TRIGGER_SPAWN        = 92121,
     SPELL_IGNITION_TRIGGER_M            = 92119,
     //chimaeron
-    SPELL_SHADOW_WHIP                    = 91304,
-    SPELL_MOCKING_SHADOWS                = 91307,
+    SPELL_SHADOW_WHIP                   = 91304,
+    SPELL_MOCKING_SHADOWS               = 91307,
 };
 
 enum CreaturesIds
 {
-    NPC_GOLEM_SENTRY            = 42800,
-    NPC_LASER_STRIKE            = 43362,
-    NPC_FLASH_BOMB                = 43361,
+    NPC_GOLEM_SENTRY                = 42800,
+    NPC_LASER_STRIKE                = 43362,
+    NPC_FLASH_BOMB                  = 43361,
 
-    NPC_DRAKONID_DRUDGE            = 42362,
+    NPC_DRAKONID_DRUDGE             = 42362,
 
-    NPC_DRAKONID_CHAINWIELDER    = 42649,
+    NPC_DRAKONID_CHAINWIELDER       = 42649,
 
-    NPC_MAIMGOR                    = 42768,
-    NPC_PYRECLAW                = 42764,
-    NPC_IVOROC                    = 42767,
+    NPC_MAIMGOR                     = 42768,
+    NPC_PYRECLAW                    = 42764,
+    NPC_IVOROC                      = 42767,
 
-    NPC_DRAKONID_SLAYER            = 42802,
-    NPC_DRAKEADON_MONGREL_1        = 46083,
-    NPC_DRAKEADON_MONGREL_2        = 42803,
+    NPC_DRAKONID_SLAYER             = 42802,
+    NPC_DRAKEADON_MONGREL_1         = 46083,
+    NPC_DRAKEADON_MONGREL_2         = 42803,
 
-    NPC_SPIRIT_OF_ANGERFORGE    = 43119,
-    NPC_SPIRIT_OF_THAURISSAN    = 43126,
-    NPC_SPIRIT_OF_IRONSTAR        = 43127,
-    NPC_SPIRIT_OF_BURNINGEYE    = 43130,
-    NPC_SPIRIT_OF_COREHAMMER    = 43122,
-    NPC_SPIRIT_OF_ANVILRAGE        = 43128,
-    NPC_SPIRIT_OF_MOLTENFIST    = 43125,
-    NPC_SPIRIT_OF_SHADOWFORGE    = 43129,
+    NPC_SPIRIT_OF_ANGERFORGE        = 43119,
+    NPC_SPIRIT_OF_THAURISSAN        = 43126,
+    NPC_SPIRIT_OF_IRONSTAR          = 43127,
+    NPC_SPIRIT_OF_BURNINGEYE        = 43130,
+    NPC_SPIRIT_OF_COREHAMMER        = 43122,
+    NPC_SPIRIT_OF_ANVILRAGE         = 43128,
+    NPC_SPIRIT_OF_MOLTENFIST        = 43125,
+    NPC_SPIRIT_OF_SHADOWFORGE       = 43129,
 
-    NPC_POWER_GENERATOR            = 42733,
-    NPC_CHEMICAL_CLOUD            = 42934,
+    NPC_POWER_GENERATOR             = 42733,
+    NPC_CHEMICAL_CLOUD              = 42934,
 
-    NPC_IGNITION_TRIGGER        = 49447,
-    NPC_BLAZING_BONE_CONSTRUCT    = 49416,
+    NPC_IGNITION_TRIGGER            = 49447,
+    NPC_BLAZING_BONE_CONSTRUCT      = 49416,
 };
 
 enum Events
 {
     //golem sentry
-    EVENT_ELECTRICAL_DISCHARGE    = 1,
-    EVENT_FLASH_BOMB            = 2,
-    EVENT_FLASH_BOMB_DMG        = 3,
-    EVENT_LASER_STRIKE            = 4,
-    EVENT_LASER_STRIKE_DMG        = 5,
+    EVENT_ELECTRICAL_DISCHARGE      = 1,
+    EVENT_FLASH_BOMB                = 2,
+    EVENT_FLASH_BOMB_DMG            = 3,
+    EVENT_LASER_STRIKE              = 4,
+    EVENT_LASER_STRIKE_DMG          = 5,
 
     //drakonid drudge
-    EVENT_DRAKONID_RUSH            = 6,
-    EVENT_THUNDERCLAP            = 7,
+    EVENT_DRAKONID_RUSH             = 6,
+    EVENT_THUNDERCLAP               = 7,
 
     //drakonid chainwielder
-    EVENT_OVERHEAD_SMASH        = 8,
-    EVENT_GRIEVOUS_WOUND        = 9,
-    EVENT_CONSTRICTING_CHAINS    = 10,
+    EVENT_OVERHEAD_SMASH            = 8,
+    EVENT_GRIEVOUS_WOUND            = 9,
+    EVENT_CONSTRICTING_CHAINS       = 10,
 
     //maimgor
-    EVENT_PIERCING_GRIP            = 11,
-    EVENT_SHADOWFLAME            = 12,
-    EVENT_TAIL_LASH                = 13,
-    EVENT_MAIMGOR_BERSERK        = 14,
+    EVENT_PIERCING_GRIP             = 11,
+    EVENT_SHADOWFLAME               = 12,
+    EVENT_TAIL_LASH                 = 13,
+    EVENT_MAIMGOR_BERSERK           = 14,
 
     //ivoroc
-    EVENT_CURSE_OF_MENDING        = 15,
+    EVENT_CURSE_OF_MENDING          = 15,
 
     //pyreclaw
-    EVENT_FLAME_BUFFET            = 16,
+    EVENT_FLAME_BUFFET              = 16,
 
     //drakonid slayer
-    EVENT_BLAST_WAVE            = 17,
-    EVENT_CLEAVE                = 18,
-    EVENT_MORTAL_STRIKE            = 19,
+    EVENT_BLAST_WAVE                = 17,
+    EVENT_CLEAVE                    = 18,
+    EVENT_MORTAL_STRIKE             = 19,
 
     //drakeadon mongrel
-    EVENT_MONGREL_CHARGE        = 20,
-    EVENT_CORROSIVE_ACID        = 21,
-    EVENT_IGNITE_FLESH            = 22,
-    EVENT_INSENERATE            = 23,
-    EVENT_FROST_BURN            = 24,
-    EVENT_TIME_LAPSE            = 25,
+    EVENT_MONGREL_CHARGE            = 20,
+    EVENT_CORROSIVE_ACID            = 21,
+    EVENT_IGNITE_FLESH              = 22,
+    EVENT_INSENERATE                = 23,
+    EVENT_FROST_BURN                = 24,
+    EVENT_TIME_LAPSE                = 25,
 
     //spirit of angerforge
-    EVENT_STONEBLOOD            = 26,
+    EVENT_STONEBLOOD                = 26,
 
     //spirit of thaurissan
-    EVENT_AVATAR                = 27,
+    EVENT_AVATAR                    = 27,
 
     //spirit of ironstar
-    EVENT_EXECUTION_SENTENSE    = 28,
-    EVENT_SHIELD_OF_LIGHT        = 29,
+    EVENT_EXECUTION_SENTENSE        = 28,
+    EVENT_SHIELD_OF_LIGHT           = 29,
 
     //spirit of burningeye
-    EVENT_WHIRLWIND                = 30,
+    EVENT_WHIRLWIND                 = 30,
 
-    EVENT_STORMBOLT                = 31,
+    EVENT_STORMBOLT                 = 31,
 
-    EVENT_BURDEN_OF_THE_CROWN    = 32,
+    EVENT_BURDEN_OF_THE_CROWN       = 32,
 
-    EVENT_CHAIN_LIGHTNING        = 33,
+    EVENT_CHAIN_LIGHTNING           = 33,
 
-    EVENT_DWARVEN_THUNDERCLAP    = 34,
+    EVENT_DWARVEN_THUNDERCLAP       = 34,
 
     //lord victor nefarius
-    EVENT_NEFARIUS_DESPAWN                = 35,
+    EVENT_NEFARIUS_DESPAWN          = 35,
     //omnotron
-    EVENT_SHADOW_INFUSION                = 36,
-    EVENT_JUMP_TO                       = 37,
-    EVENT_GRIP_OF_DEATH                    = 38,
-    EVENT_JUMP_OUT                        = 39,
-    EVENT_OVERCHARGE                    = 40,
-    EVENT_ENCASING_SHADOWS                = 41,
-    EVENT_NEXT_SKILL                    = 42,
-    EVENT_OMNOTRON_INTRO                = 43,
-    EVENT_OMNOTRON_DEATH                = 44,
-    EVENT_OMNOTRON_SPELL_1                = 45,
-    EVENT_OMNOTRON_SPELL_2                = 46,
-    EVENT_OMNOTRON_SPELL_3                = 47,
-    EVENT_OMNOTRON_SPELL_4                = 48,
+    EVENT_SHADOW_INFUSION           = 36,
+    EVENT_JUMP_TO                   = 37,
+    EVENT_GRIP_OF_DEATH             = 38,
+    EVENT_JUMP_OUT                  = 39,
+    EVENT_OVERCHARGE                = 40,
+    EVENT_ENCASING_SHADOWS          = 41,
+    EVENT_NEXT_SKILL                = 42,
+    EVENT_OMNOTRON_INTRO            = 43,
+    EVENT_OMNOTRON_DEATH            = 44,
+    EVENT_OMNOTRON_SPELL_1          = 45,
+    EVENT_OMNOTRON_SPELL_2          = 46,
+    EVENT_OMNOTRON_SPELL_3          = 47,
+    EVENT_OMNOTRON_SPELL_4          = 48,
     //magmaw
-    EVENT_BLAZING_INFERNO                = 49,
-    EVENT_SHADOW_BREATH                    = 50,
-    EVENT_FIERY_SLASH                    = 51,
-    EVENT_MAGMAW_INTRO                    = 52,
-    EVENT_MAGMAW_DEATH                    = 53,
-    EVENT_MAGMAW_SUMMON                    = 54,
-    EVENT_MAGMAW_LOW_HEALTH                = 55,
+    EVENT_BLAZING_INFERNO           = 49,
+    EVENT_SHADOW_BREATH             = 50,
+    EVENT_FIERY_SLASH               = 51,
+    EVENT_MAGMAW_INTRO              = 52,
+    EVENT_MAGMAW_DEATH              = 53,
+    EVENT_MAGMAW_SUMMON             = 54,
+    EVENT_MAGMAW_LOW_HEALTH         = 55,
     //maloriak
-    EVENT_MALORIAK_DARK_MAGIC            = 56,
-    EVENT_MALORIAK_DEATH                = 57,
-    EVENT_MALORIAK_INTRO                = 58,
+    EVENT_MALORIAK_DARK_MAGIC       = 56,
+    EVENT_MALORIAK_DEATH            = 57,
+    EVENT_MALORIAK_INTRO            = 58,
     //chimaeron
-    EVENT_CHIMAERON_INTRO                = 59,
-    EVENT_CHIMAERON_DEATH                = 60,
-    EVENT_CHIMAERON_FEUD                = 61,
-    EVENT_CHIMAERON_LOW                    = 62,
+    EVENT_CHIMAERON_INTRO           = 59,
+    EVENT_CHIMAERON_DEATH           = 60,
+    EVENT_CHIMAERON_FEUD            = 61,
+    EVENT_CHIMAERON_LOW             = 62,
 };
 
 class npc_golem_sentry : public CreatureScript
@@ -397,21 +397,21 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_ELECTRICAL_DISCHARGE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_ELECTRICAL_DISCHARGE);
-                        events.ScheduleEvent(EVENT_ELECTRICAL_DISCHARGE, urand(10000, 15000));
-                        break;
-                    case EVENT_LASER_STRIKE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_LASER_STRIKE_SUM);
-                        events.ScheduleEvent(EVENT_LASER_STRIKE, urand(15000, 20000));
-                        break;
-                    case EVENT_FLASH_BOMB:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_FLASH_BOMB_SUM);
-                        events.ScheduleEvent(EVENT_FLASH_BOMB, urand(15000, 20000));
-                        break;
+                case EVENT_ELECTRICAL_DISCHARGE:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_ELECTRICAL_DISCHARGE);
+                    events.ScheduleEvent(EVENT_ELECTRICAL_DISCHARGE, urand(10000, 15000));
+                    break;
+                case EVENT_LASER_STRIKE:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_LASER_STRIKE_SUM);
+                    events.ScheduleEvent(EVENT_LASER_STRIKE, urand(15000, 20000));
+                    break;
+                case EVENT_FLASH_BOMB:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_FLASH_BOMB_SUM);
+                    events.ScheduleEvent(EVENT_FLASH_BOMB, urand(15000, 20000));
+                    break;
                 }
             }
 
@@ -700,14 +700,13 @@ public:
                 switch (eventId)
                 {
                 case EVENT_OVERHEAD_SMASH:
-                    if(Unit* target = me->getVictim())
-                        DoCast(target, SPELL_OVERHEAD_SMASH);
+                    DoCast(me->getVictim(), SPELL_OVERHEAD_SMASH);
                     events.ScheduleEvent(EVENT_OVERHEAD_SMASH, urand(8000, 10000));
                     break;
                 case EVENT_GRIEVOUS_WOUND:
-                    if(Unit* target = me->getVictim())
-                        if (!target->HasAura(SPELL_GRIEVOUS_WOUND))
-                            DoCast(target, SPELL_GRIEVOUS_WOUND);
+                    if (me->getVictim())
+                        if (!me->getVictim()->HasAura(SPELL_GRIEVOUS_WOUND))
+                            DoCast(me->getVictim(), SPELL_GRIEVOUS_WOUND);
                     events.ScheduleEvent(EVENT_GRIEVOUS_WOUND, urand(15000, 20000));
                     break;
                 case EVENT_CONSTRICTING_CHAINS:
@@ -760,12 +759,11 @@ public:
             events.Reset();
         }
 
-
         void EnterCombat(Unit* who)
         {
             if (!pInstance)
                 return;
-            
+
             events.ScheduleEvent(EVENT_MAIMGOR_BERSERK, urand(5000, 10000));
             events.ScheduleEvent(EVENT_SHADOWFLAME, urand(8000, 12000));
             events.ScheduleEvent(EVENT_PIERCING_GRIP, urand(10000, 15000));
@@ -848,7 +846,6 @@ public:
             events.Reset();
         }
 
-
         void EnterCombat(Unit* who)
         {
             if (!pInstance)
@@ -927,7 +924,6 @@ public:
             events.Reset();
         }
 
-
         void EnterCombat(Unit* who)
         {
             if (!pInstance)
@@ -1005,7 +1001,6 @@ public:
 
             events.Reset();
         }
-
 
         void EnterCombat(Unit* who)
         {
@@ -1088,7 +1083,6 @@ public:
 
             events.Reset();
         }
-
 
         void EnterCombat(Unit* who)
         {
@@ -1193,37 +1187,36 @@ public:
         {
             if (!pInstance)
                 return;
-            
+
             switch (me->GetEntry())
             {
-                case NPC_SPIRIT_OF_ANGERFORGE:
-                    DoCast(me, SPELL_SPIRIT_OF_ANGERFORGE);
-                    break;
-                case NPC_SPIRIT_OF_THAURISSAN:
-                    DoCast(me, SPELL_SPIRIT_OF_THAURISSAN);
-                    break;
-                case NPC_SPIRIT_OF_IRONSTAR:
-                    DoCast(me, SPELL_SPIRIT_OF_IRONSTAR);
-                    break;
-                case NPC_SPIRIT_OF_BURNINGEYE:
-                    DoCast(me, SPELL_SPIRIT_OF_BURNINGEYE);
-                    break;
-                case NPC_SPIRIT_OF_COREHAMMER:
-                    DoCast(me, SPELL_SPIRIT_OF_COREHAMMER);
-                    break;
-                case NPC_SPIRIT_OF_ANVILRAGE:
-                    DoCast(me, SPELL_SPIRIT_OF_ANVILRAGE);
-                    break;
-                case NPC_SPIRIT_OF_MOLTENFIST:
-                    DoCast(me, SPELL_SPIRIT_OF_MOLTENFIST);
-                    break;
-                case NPC_SPIRIT_OF_SHADOWFORGE:
-                    DoCast(me, SPELL_SPIRIT_OF_SHADOWFORGE);
-                    break;
+            case NPC_SPIRIT_OF_ANGERFORGE:
+                DoCast(me, SPELL_SPIRIT_OF_ANGERFORGE);
+                break;
+            case NPC_SPIRIT_OF_THAURISSAN:
+                DoCast(me, SPELL_SPIRIT_OF_THAURISSAN);
+                break;
+            case NPC_SPIRIT_OF_IRONSTAR:
+                DoCast(me, SPELL_SPIRIT_OF_IRONSTAR);
+                break;
+            case NPC_SPIRIT_OF_BURNINGEYE:
+                DoCast(me, SPELL_SPIRIT_OF_BURNINGEYE);
+                break;
+            case NPC_SPIRIT_OF_COREHAMMER:
+                DoCast(me, SPELL_SPIRIT_OF_COREHAMMER);
+                break;
+            case NPC_SPIRIT_OF_ANVILRAGE:
+                DoCast(me, SPELL_SPIRIT_OF_ANVILRAGE);
+                break;
+            case NPC_SPIRIT_OF_MOLTENFIST:
+                DoCast(me, SPELL_SPIRIT_OF_MOLTENFIST);
+                break;
+            case NPC_SPIRIT_OF_SHADOWFORGE:
+                DoCast(me, SPELL_SPIRIT_OF_SHADOWFORGE);
+                break;
             }
             events.Reset();
         }
-
 
         void EnterCombat(Unit* who)
         {
@@ -1232,78 +1225,78 @@ public:
 
             switch (me->GetEntry())
             {
-                case NPC_SPIRIT_OF_ANGERFORGE:
-                    if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
-                        _thaurissan->AI()->AttackStart(who);
-                    if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
-                        _ironstar->AI()->AttackStart(who);
-                    if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
-                        _burningeye->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_STONEBLOOD, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_THAURISSAN:
-                    if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
-                        _angerforge->AI()->AttackStart(who);
-                    if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
-                        _ironstar->AI()->AttackStart(who);
-                    if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
-                        _burningeye->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_AVATAR, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_IRONSTAR:
-                    if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
-                        _thaurissan->AI()->AttackStart(who);
-                    if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
-                        _angerforge->AI()->AttackStart(who);
-                    if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
-                        _burningeye->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(15000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_BURNINGEYE:
-                    if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
-                        _thaurissan->AI()->AttackStart(who);
-                    if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
-                        _angerforge->AI()->AttackStart(who);
-                    if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
-                        _ironstar->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_WHIRLWIND, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_COREHAMMER:
-                    if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
-                        _anvilrage->AI()->AttackStart(who);
-                    if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
-                        _moltenfist->AI()->AttackStart(who);
-                    if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
-                        _shadowforge->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_ANVILRAGE:
-                    if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
-                        _corehammer->AI()->AttackStart(who);
-                    if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
-                        _moltenfist->AI()->AttackStart(who);
-                    if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
-                        _shadowforge->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_STORMBOLT, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_MOLTENFIST:
-                    if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
-                        _corehammer->AI()->AttackStart(who);
-                    if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
-                        _anvilrage->AI()->AttackStart(who);
-                    if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
-                        _shadowforge->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_DWARVEN_THUNDERCLAP, urand(10000, 20000));
-                    break;
-                case NPC_SPIRIT_OF_SHADOWFORGE:
-                    if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
-                        _corehammer->AI()->AttackStart(who);
-                    if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
-                        _anvilrage->AI()->AttackStart(who);
-                    if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
-                        _moltenfist->AI()->AttackStart(who);
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(10000, 20000));
-                    break;
+            case NPC_SPIRIT_OF_ANGERFORGE:
+                if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
+                    _thaurissan->AI()->AttackStart(who);
+                if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
+                    _ironstar->AI()->AttackStart(who);
+                if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
+                    _burningeye->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_STONEBLOOD, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_THAURISSAN:
+                if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
+                    _angerforge->AI()->AttackStart(who);
+                if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
+                    _ironstar->AI()->AttackStart(who);
+                if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
+                    _burningeye->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_AVATAR, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_IRONSTAR:
+                if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
+                    _thaurissan->AI()->AttackStart(who);
+                if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
+                    _angerforge->AI()->AttackStart(who);
+                if (Creature* _burningeye = me->FindNearestCreature(NPC_SPIRIT_OF_BURNINGEYE, 200.0f))
+                    _burningeye->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(15000, 20000));
+                break;
+            case NPC_SPIRIT_OF_BURNINGEYE:
+                if (Creature* _thaurissan = me->FindNearestCreature(NPC_SPIRIT_OF_THAURISSAN, 200.0f))
+                    _thaurissan->AI()->AttackStart(who);
+                if (Creature* _angerforge = me->FindNearestCreature(NPC_SPIRIT_OF_ANGERFORGE, 200.0f))
+                    _angerforge->AI()->AttackStart(who);
+                if (Creature* _ironstar = me->FindNearestCreature(NPC_SPIRIT_OF_IRONSTAR, 200.0f))
+                    _ironstar->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_WHIRLWIND, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_COREHAMMER:
+                if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
+                    _anvilrage->AI()->AttackStart(who);
+                if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
+                    _moltenfist->AI()->AttackStart(who);
+                if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
+                    _shadowforge->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_ANVILRAGE:
+                if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
+                    _corehammer->AI()->AttackStart(who);
+                if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
+                    _moltenfist->AI()->AttackStart(who);
+                if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
+                    _shadowforge->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_STORMBOLT, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_MOLTENFIST:
+                if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
+                    _corehammer->AI()->AttackStart(who);
+                if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
+                    _anvilrage->AI()->AttackStart(who);
+                if (Creature* _shadowforge = me->FindNearestCreature(NPC_SPIRIT_OF_SHADOWFORGE, 200.0f))
+                    _shadowforge->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_DWARVEN_THUNDERCLAP, urand(10000, 20000));
+                break;
+            case NPC_SPIRIT_OF_SHADOWFORGE:
+                if (Creature* _corehammer = me->FindNearestCreature(NPC_SPIRIT_OF_COREHAMMER, 200.0f))
+                    _corehammer->AI()->AttackStart(who);
+                if (Creature* _anvilrage = me->FindNearestCreature(NPC_SPIRIT_OF_ANVILRAGE, 200.0f))
+                    _anvilrage->AI()->AttackStart(who);
+                if (Creature* _moltenfist = me->FindNearestCreature(NPC_SPIRIT_OF_MOLTENFIST, 200.0f))
+                    _moltenfist->AI()->AttackStart(who);
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(10000, 20000));
+                break;
             }
         }
 
@@ -1345,30 +1338,30 @@ public:
         {
             switch (spell->Id)
             {
-                case SPELL_SPIRIT_OF_ANGERFORGE:
-                    events.ScheduleEvent(EVENT_STONEBLOOD, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_THAURISSAN:
-                    events.ScheduleEvent(EVENT_AVATAR, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_IRONSTAR:
-                    events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(15000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_BURNINGEYE:
-                    events.ScheduleEvent(EVENT_WHIRLWIND, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_COREHAMMER:
-                    events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_ANVILRAGE:
-                    events.ScheduleEvent(EVENT_STORMBOLT, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_MOLTENFIST:
-                    events.ScheduleEvent(EVENT_THUNDERCLAP, urand(10000, 20000));
-                    break;
-                case SPELL_SPIRIT_OF_SHADOWFORGE:
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(10000, 20000));
-                    break;
+            case SPELL_SPIRIT_OF_ANGERFORGE:
+                events.ScheduleEvent(EVENT_STONEBLOOD, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_THAURISSAN:
+                events.ScheduleEvent(EVENT_AVATAR, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_IRONSTAR:
+                events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(15000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_BURNINGEYE:
+                events.ScheduleEvent(EVENT_WHIRLWIND, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_COREHAMMER:
+                events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_ANVILRAGE:
+                events.ScheduleEvent(EVENT_STORMBOLT, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_MOLTENFIST:
+                events.ScheduleEvent(EVENT_THUNDERCLAP, urand(10000, 20000));
+                break;
+            case SPELL_SPIRIT_OF_SHADOWFORGE:
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(10000, 20000));
+                break;
             }
         }
 
@@ -1386,40 +1379,40 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_STONEBLOOD:
-                        DoCast(me, SPELL_STONEBLOOD);
-                        events.ScheduleEvent(EVENT_STONEBLOOD, urand(15000, 25000));
-                        break;
-                    case EVENT_AVATAR:
-                        DoCast(me, SPELL_AVATAR);
-                        events.ScheduleEvent(EVENT_AVATAR, urand(25000, 30000));
-                        break;
-                    case EVENT_EXECUTION_SENTENSE:
-                        
-                        events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(25000, 30000));
-                        break;
-                    case EVENT_WHIRLWIND:
-                        DoCast(me, SPELL_WHIRLWIND);
-                        events.ScheduleEvent(EVENT_WHIRLWIND, urand(25000, 30000));
-                        break;
-                    case EVENT_STORMBOLT:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_STORMBOLT);
-                        events.ScheduleEvent(EVENT_STORMBOLT, urand(18000, 23000));
-                        break;
-                    case EVENT_DWARVEN_THUNDERCLAP:
-                        DoCast(me, SPELL_DWARVEN_THUNDERCLAP);
-                        events.ScheduleEvent(EVENT_DWARVEN_THUNDERCLAP, urand(19000, 30000));
-                        break;
-                    case EVENT_CHAIN_LIGHTNING:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_DWARVEN_CHAIN_LIGHTNING);
-                        break;
-                    case EVENT_BURDEN_OF_THE_CROWN:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(target, SPELL_BURDEN_OF_THE_CROWN);
-                        events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(30000, 40000));
-                        break;
+                case EVENT_STONEBLOOD:
+                    DoCast(me, SPELL_STONEBLOOD);
+                    events.ScheduleEvent(EVENT_STONEBLOOD, urand(15000, 25000));
+                    break;
+                case EVENT_AVATAR:
+                    DoCast(me, SPELL_AVATAR);
+                    events.ScheduleEvent(EVENT_AVATAR, urand(25000, 30000));
+                    break;
+                case EVENT_EXECUTION_SENTENSE:
+
+                    events.ScheduleEvent(EVENT_EXECUTION_SENTENSE, urand(25000, 30000));
+                    break;
+                case EVENT_WHIRLWIND:
+                    DoCast(me, SPELL_WHIRLWIND);
+                    events.ScheduleEvent(EVENT_WHIRLWIND, urand(25000, 30000));
+                    break;
+                case EVENT_STORMBOLT:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_STORMBOLT);
+                    events.ScheduleEvent(EVENT_STORMBOLT, urand(18000, 23000));
+                    break;
+                case EVENT_DWARVEN_THUNDERCLAP:
+                    DoCast(me, SPELL_DWARVEN_THUNDERCLAP);
+                    events.ScheduleEvent(EVENT_DWARVEN_THUNDERCLAP, urand(19000, 30000));
+                    break;
+                case EVENT_CHAIN_LIGHTNING:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_DWARVEN_CHAIN_LIGHTNING);
+                    break;
+                case EVENT_BURDEN_OF_THE_CROWN:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(target, SPELL_BURDEN_OF_THE_CROWN);
+                    events.ScheduleEvent(EVENT_BURDEN_OF_THE_CROWN, urand(30000, 40000));
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
@@ -1429,32 +1422,32 @@ public:
 
 class spell_drakonid_chainwielder_grievous_wound : public SpellScriptLoader
 {
-    public:
-        spell_drakonid_chainwielder_grievous_wound() : SpellScriptLoader("spell_drakonid_chainwielder_grievous_wound") { }
- 
-        class spell_drakonid_chainwielder_grievous_wound_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_drakonid_chainwielder_grievous_wound_AuraScript)
+public:
+    spell_drakonid_chainwielder_grievous_wound() : SpellScriptLoader("spell_drakonid_chainwielder_grievous_wound") { }
 
-            void OnPeriodic(AuraEffect const* aurEff)
-            {
-                if (!GetTarget())
-                    return;
+    class spell_drakonid_chainwielder_grievous_wound_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_drakonid_chainwielder_grievous_wound_AuraScript)
 
-                if (GetTarget()->HealthAbovePct(90))
-                    GetTarget()->RemoveAurasDueToSpell(aurEff->GetId());
-            }
- 
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_drakonid_chainwielder_grievous_wound_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
- 
-        AuraScript* GetAuraScript() const
+            void OnPeriodic(AuraEffect const*aurEff)
         {
-            return new spell_drakonid_chainwielder_grievous_wound_AuraScript();
+            if (!GetTarget())
+                return;
+
+            if (GetTarget()->HealthAbovePct(90))
+                GetTarget()->RemoveAurasDueToSpell(aurEff->GetId());
         }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_drakonid_chainwielder_grievous_wound_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_drakonid_chainwielder_grievous_wound_AuraScript();
+    }
 };
 
 class npc_lord_victor_nefarius_heroic : public CreatureScript
@@ -1510,82 +1503,82 @@ public:
         {
             switch (action)
             {
-                case ACTION_OMNOTRON_INTRO:
-                    events.ScheduleEvent(EVENT_OMNOTRON_INTRO, 3000);
-                    break;
-                case ACTION_OMNOTRON_DEATH:
-                    events.ScheduleEvent(EVENT_OMNOTRON_DEATH, 3000);
-                    break;
-                case ACTION_MAGMAW_INTRO:
-                    events.ScheduleEvent(EVENT_MAGMAW_INTRO, 1000);
-                    break;
-                case ACTION_MAGMAW_DEATH:
-                    events.ScheduleEvent(EVENT_MAGMAW_DEATH, 1000);
-                    break;
-                case ACTION_MALORIAK_INTRO:
-                    events.ScheduleEvent(EVENT_MALORIAK_INTRO, 7000);
-                    break;
-                case ACTION_MALORIAK_DEATH:
-                    events.ScheduleEvent(EVENT_MALORIAK_DEATH, 3000);
-                    break;
-                case ACTION_CHIMAERON_INTRO:
-                    events.ScheduleEvent(EVENT_CHIMAERON_INTRO, 1000);
-                    break;
-                case ACTION_CHIMAERON_DEATH:
-                    events.ScheduleEvent(EVENT_CHIMAERON_DEATH, 1000);
-                    break;
+            case ACTION_OMNOTRON_INTRO:
+                events.ScheduleEvent(EVENT_OMNOTRON_INTRO, 3000);
+                break;
+            case ACTION_OMNOTRON_DEATH:
+                events.ScheduleEvent(EVENT_OMNOTRON_DEATH, 3000);
+                break;
+            case ACTION_MAGMAW_INTRO:
+                events.ScheduleEvent(EVENT_MAGMAW_INTRO, 1000);
+                break;
+            case ACTION_MAGMAW_DEATH:
+                events.ScheduleEvent(EVENT_MAGMAW_DEATH, 1000);
+                break;
+            case ACTION_MALORIAK_INTRO:
+                events.ScheduleEvent(EVENT_MALORIAK_INTRO, 7000);
+                break;
+            case ACTION_MALORIAK_DEATH:
+                events.ScheduleEvent(EVENT_MALORIAK_DEATH, 3000);
+                break;
+            case ACTION_CHIMAERON_INTRO:
+                events.ScheduleEvent(EVENT_CHIMAERON_INTRO, 1000);
+                break;
+            case ACTION_CHIMAERON_DEATH:
+                events.ScheduleEvent(EVENT_CHIMAERON_DEATH, 1000);
+                break;
             }
             switch (action)
             {
-                case ACTION_GRIP_OF_DEATH:
-                    if (roll_chance_i(50) && bAllowCast)
-                    {
-                        bAllowCast = false;
-                        events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
-                        events.ScheduleEvent(EVENT_JUMP_TO, 1000);
-                    }
-                    break;
-                case ACTION_SHADOW_INFUSION:
-                    if (roll_chance_i(50) && bAllowCast)
-                    {
-                        bAllowCast = false;
-                        events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
-                        events.ScheduleEvent(EVENT_SHADOW_INFUSION, 1000);
-                    }
-                    break;
-                case ACTION_OVERCHARGE:
-                    if (roll_chance_i(50) && bAllowCast)
-                    {
-                        bAllowCast = false;
-                        events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
-                        events.ScheduleEvent(EVENT_OVERCHARGE, 1000);
-                    }
-                    break;
-                case ACTION_ENCASING_SHADOWS:
-                    if (roll_chance_i(50) && bAllowCast)
-                    {
-                        bAllowCast = false;
-                        events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
-                        events.ScheduleEvent(EVENT_ENCASING_SHADOWS, 1000);
-                    }
-                    break;
-                case ACTION_BLAZING_INFERNO:
-                    events.ScheduleEvent(EVENT_BLAZING_INFERNO, 20000);
-                    break;
-                case ACTION_SHADOW_BREATH:
-                    Talk(SAY_MAGMAW_LOW_HEALTH);
-                    events.CancelEvent(EVENT_BLAZING_INFERNO);
-                    events.ScheduleEvent(EVENT_SHADOW_BREATH, 4000);
-                    break;
-                case ACTION_MALORIAK_DARK_MAGIC:
-                    events.ScheduleEvent(EVENT_MALORIAK_DARK_MAGIC, 1000);
-                    break;
-                case ACTION_CHIMAERON_FEUD:
-                    events.ScheduleEvent(EVENT_CHIMAERON_FEUD, 500);
-                    break;
-                case ACTION_CHIMAERON_LOW:
-                    events.ScheduleEvent(EVENT_CHIMAERON_LOW, 1000);
-                    break;
+            case ACTION_GRIP_OF_DEATH:
+                if (roll_chance_i(50) && bAllowCast)
+                {
+                    bAllowCast = false;
+                    events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
+                    events.ScheduleEvent(EVENT_JUMP_TO, 1000);
+                }
+                break;
+            case ACTION_SHADOW_INFUSION:
+                if (roll_chance_i(50) && bAllowCast)
+                {
+                    bAllowCast = false;
+                    events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
+                    events.ScheduleEvent(EVENT_SHADOW_INFUSION, 1000);
+                }
+                break;
+            case ACTION_OVERCHARGE:
+                if (roll_chance_i(50) && bAllowCast)
+                {
+                    bAllowCast = false;
+                    events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
+                    events.ScheduleEvent(EVENT_OVERCHARGE, 1000);
+                }
+                break;
+            case ACTION_ENCASING_SHADOWS:
+                if (roll_chance_i(50) && bAllowCast)
+                {
+                    bAllowCast = false;
+                    events.ScheduleEvent(EVENT_NEXT_SKILL, 30000);
+                    events.ScheduleEvent(EVENT_ENCASING_SHADOWS, 1000);
+                }
+                break;
+            case ACTION_BLAZING_INFERNO:
+                events.ScheduleEvent(EVENT_BLAZING_INFERNO, 20000);
+                break;
+            case ACTION_SHADOW_BREATH:
+                Talk(SAY_MAGMAW_LOW_HEALTH);
+                events.CancelEvent(EVENT_BLAZING_INFERNO);
+                events.ScheduleEvent(EVENT_SHADOW_BREATH, 4000);
+                break;
+            case ACTION_MALORIAK_DARK_MAGIC:
+                events.ScheduleEvent(EVENT_MALORIAK_DARK_MAGIC, 1000);
+                break;
+            case ACTION_CHIMAERON_FEUD:
+                events.ScheduleEvent(EVENT_CHIMAERON_FEUD, 500);
+                break;
+            case ACTION_CHIMAERON_LOW:
+                events.ScheduleEvent(EVENT_CHIMAERON_LOW, 1000);
+                break;
             }
         }
 
@@ -1598,7 +1591,7 @@ public:
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
-            
+
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
@@ -1796,152 +1789,152 @@ public:
 
 class spell_lord_victor_nefarius_shadow_conductor : public SpellScriptLoader
 {
-    public:
-        spell_lord_victor_nefarius_shadow_conductor() : SpellScriptLoader("spell_lord_victor_nefarius_shadow_conductor") { }
+public:
+    spell_lord_victor_nefarius_shadow_conductor() : SpellScriptLoader("spell_lord_victor_nefarius_shadow_conductor") { }
 
 
-        class spell_lord_victor_nefarius_shadow_conductor_SpellScript : public SpellScript
+    class spell_lord_victor_nefarius_shadow_conductor_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lord_victor_nefarius_shadow_conductor_SpellScript);
+
+
+        void HandleScript()
         {
-            PrepareSpellScript(spell_lord_victor_nefarius_shadow_conductor_SpellScript);
+            PreventHitDamage();
 
+            if (!GetHitUnit())
+                return;
 
-            void HandleScript()
-            {
-                PreventHitDamage();
-
-                if (!GetHitUnit())
-                    return;
-
-                float distance;
-                uint32 damage;
-                distance = GetCaster()->GetDistance2d(GetHitUnit());
-                damage = (int)(5000*(distance/25));
-                if (damage < 5000)
-                    damage = 5000;
-                SetHitDamage(damage);
-            }
-
-            void Register()
-            {
-                BeforeHit += SpellHitFn(spell_lord_victor_nefarius_shadow_conductor_SpellScript::HandleScript/*, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE*/);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_lord_victor_nefarius_shadow_conductor_SpellScript();
+            float distance;
+            uint32 damage;
+            distance = GetCaster()->GetDistance2d(GetHitUnit());
+            damage = (int)(5000*(distance/25));
+            if (damage < 5000)
+                damage = 5000;
+            SetHitDamage(damage);
         }
+
+        void Register()
+        {
+            BeforeHit += SpellHitFn(spell_lord_victor_nefarius_shadow_conductor_SpellScript::HandleScript/*, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE*/);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lord_victor_nefarius_shadow_conductor_SpellScript();
+    }
 };
 
 class spell_lord_victor_nefarius_encasing_shadows : public SpellScriptLoader
 {
-    public:
-        spell_lord_victor_nefarius_encasing_shadows() : SpellScriptLoader("spell_lord_victor_nefarius_encasing_shadows") { }
+public:
+    spell_lord_victor_nefarius_encasing_shadows() : SpellScriptLoader("spell_lord_victor_nefarius_encasing_shadows") { }
 
 
-        class spell_lord_victor_nefarius_encasing_shadows_SpellScript : public SpellScript
+    class spell_lord_victor_nefarius_encasing_shadows_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lord_victor_nefarius_encasing_shadows_SpellScript);
+
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_lord_victor_nefarius_encasing_shadows_SpellScript);
+            if (!GetCaster() || !GetHitUnit())
+                return;
 
+            if (!GetHitUnit()->HasAura(SPELL_LIGHTNING_CONDUCTOR_10H) &&
+                !GetHitUnit()->HasAura(SPELL_LIGHTNING_CONDUCTOR_25H))
+                PreventHitEffect(EFFECT_0);
 
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                if (!GetCaster() || !GetHitUnit())
-                    return;
-                
-                if (!GetHitUnit()->HasAura(SPELL_LIGHTNING_CONDUCTOR_10H) &&
-                    !GetHitUnit()->HasAura(SPELL_LIGHTNING_CONDUCTOR_25H))
-                    PreventHitEffect(EFFECT_0);
-
-                GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR);
-                GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_25);
-                GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_10H);
-                GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_25H);
-                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SHADOW_CONDUCTOR, true);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_encasing_shadows_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_lord_victor_nefarius_encasing_shadows_SpellScript();
+            GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR);
+            GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_25);
+            GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_10H);
+            GetHitUnit()->RemoveAurasDueToSpell(SPELL_LIGHTNING_CONDUCTOR_25H);
+            GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SHADOW_CONDUCTOR, true);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_encasing_shadows_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lord_victor_nefarius_encasing_shadows_SpellScript();
+    }
 };
 
 class spell_lord_victor_nefarius_grip_of_death : public SpellScriptLoader
 {
-    public:
-        spell_lord_victor_nefarius_grip_of_death() : SpellScriptLoader("spell_lord_victor_nefarius_grip_of_death") { }
+public:
+    spell_lord_victor_nefarius_grip_of_death() : SpellScriptLoader("spell_lord_victor_nefarius_grip_of_death") { }
 
 
-        class spell_lord_victor_nefarius_grip_of_death_SpellScript : public SpellScript
+    class spell_lord_victor_nefarius_grip_of_death_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lord_victor_nefarius_grip_of_death_SpellScript);
+
+
+        void HandleScript(SpellEffIndex effIndex)
         {
-            PrepareSpellScript(spell_lord_victor_nefarius_grip_of_death_SpellScript);
+            PreventHitEffect(EFFECT_0);
 
+            if (!GetCaster() || !GetHitUnit())
+                return;
 
-            void HandleScript(SpellEffIndex effIndex)
-            {
-                PreventHitEffect(EFFECT_0);
+            float speedZ = float(GetSpellInfo()->Effects[effIndex].CalcValue() / 10);
+            float speedXY = float(GetSpellInfo()->Effects[effIndex].MiscValue / 10);
 
-                if (!GetCaster() || !GetHitUnit())
-                    return;
-
-                float speedZ = float(GetSpellInfo()->Effects[effIndex].CalcValue() / 10);
-                float speedXY = float(GetSpellInfo()->Effects[effIndex].MiscValue / 10);
-    
-                GetHitUnit()->GetMotionMaster()->MoveJump(
-                    GetCaster()->GetPositionX(),
-                    GetCaster()->GetPositionY(),
-                    GetCaster()->GetPositionZ(),
-                    speedXY, speedZ);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_grip_of_death_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_PULL_TOWARDS_DEST);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_lord_victor_nefarius_grip_of_death_SpellScript();
+            GetHitUnit()->GetMotionMaster()->MoveJump(
+                GetCaster()->GetPositionX(),
+                GetCaster()->GetPositionY(),
+                GetCaster()->GetPositionZ(),
+                speedXY, speedZ);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_grip_of_death_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_PULL_TOWARDS_DEST);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lord_victor_nefarius_grip_of_death_SpellScript();
+    }
 };
 
 class spell_lord_victor_nefarius_overcharge : public SpellScriptLoader
 {
-    public:
-        spell_lord_victor_nefarius_overcharge() : SpellScriptLoader("spell_lord_victor_nefarius_overcharge") { }
+public:
+    spell_lord_victor_nefarius_overcharge() : SpellScriptLoader("spell_lord_victor_nefarius_overcharge") { }
 
 
-        class spell_lord_victor_nefarius_overcharge_SpellScript : public SpellScript
+    class spell_lord_victor_nefarius_overcharge_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_lord_victor_nefarius_overcharge_SpellScript);
+
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_lord_victor_nefarius_overcharge_SpellScript);
+            if (!GetHitUnit())
+                return;
 
-
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                if (!GetHitUnit())
-                    return;
-
-                GetHitUnit()->RemoveAllAuras();
-                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_OVERCHARGED_POWER_GENERATOR, true); 
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_overcharge_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_lord_victor_nefarius_overcharge_SpellScript();
+            GetHitUnit()->RemoveAllAuras();
+            GetHitUnit()->CastSpell(GetHitUnit(), SPELL_OVERCHARGED_POWER_GENERATOR, true); 
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_lord_victor_nefarius_overcharge_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_lord_victor_nefarius_overcharge_SpellScript();
+    }
 };
 
 void AddSC_blackwing_descent()
