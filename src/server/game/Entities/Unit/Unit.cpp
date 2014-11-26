@@ -16657,6 +16657,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_ADD_FLAT_MODIFIER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2] = true;
+    isTriggerAura[SPELL_AURA_MOD_HEALING_RECEIVED] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;

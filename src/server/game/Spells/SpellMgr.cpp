@@ -129,6 +129,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Mesmerize
             else if (spellproto->Id == 115268)
                 return DIMINISHING_FEAR;
+            else if (spellproto->Id == 87204)
+                return DIMINISHING_NONE;
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -4192,7 +4194,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
                     break;
                 case 137573: // Burst of Speed (IMMUNITY)
-                case 96219:  // Diamond Soul
                 case 1160:   // Demoralizing Shout
                 case 1966:   // Feint
                 case 50256:  // Demoralizing Roar

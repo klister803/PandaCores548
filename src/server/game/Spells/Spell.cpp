@@ -2376,6 +2376,9 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     // This is new target calculate data for him
 
+    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
+    SpellNonMeleeDamage damageInfo(caster, target, m_spellInfo->Id, m_spellSchoolMask);
+
     // Get spell hit result on target
     TargetInfo targetInfo;
     targetInfo.targetGUID = targetGUID;                         // Store target GUID
@@ -2385,6 +2388,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.damage     = 0;
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
+    targetInfo.damageInfo  = damageInfo;
+
     if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask && m_caster != target)
     {
         SpellInfo const* auraSpell = sSpellMgr->GetSpellInfo(sSpellMgr->GetFirstSpellInChain(m_spellInfo->Id));
@@ -2726,19 +2731,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do healing and triggers
     if (m_healing > 0)
     {
-        float critChance = 0.0f;
-        bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, BASE_ATTACK, critChance);
-
-        uint32 addhealth = m_healing;
-        if (crit)
-        {
+        if (target->crit)
             procEx |= PROC_EX_CRITICAL_HIT;
-            addhealth = caster->SpellCriticalHealingBonus(m_spellInfo, addhealth, NULL);
-        }
         else
             procEx |= PROC_EX_NORMAL_HIT;
 
-        int32 gain = caster->HealBySpell(unitTarget, m_spellInfo, addhealth, crit);
+        int32 addhealth = m_healing;
+        int32 gain = caster->HealBySpell(unitTarget, m_spellInfo, addhealth, target->crit);
         unitTarget->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
         m_healing = gain;
 
@@ -2752,25 +2751,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do damage and triggers
     else if (m_damage > 0)
     {
-        // Fill base damage struct (unitTarget - is real spell target)
-        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-
-        // Add bonuses and fill damageInfo struct
-        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, mask, m_attackType, target->crit);
-        caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
-
-        m_absorb = damageInfo.absorb;
-
         // Send log damage message to client
-        caster->SendSpellNonMeleeDamageLog(&damageInfo);
+        caster->SendSpellNonMeleeDamageLog(&target->damageInfo);
 
-        procEx |= createProcExtendMask(&damageInfo, missInfo);
+        procEx |= createProcExtendMask(&target->damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(target->damageInfo);
 
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (AttributesCustom & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
@@ -2778,13 +2768,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }
 
-        m_damage = damageInfo.damage;
+        m_damage = target->damageInfo.damage;
 
-        caster->DealSpellDamage(&damageInfo, true);
-        m_final_damage = damageInfo.damage;
-        m_absorb = damageInfo.absorb;
-        m_resist = damageInfo.resist;
-        m_blocked = damageInfo.blocked;
+        caster->DealSpellDamage(&target->damageInfo, true);
+        m_final_damage = target->damageInfo.damage;
+        m_absorb = target->damageInfo.absorb;
+        m_resist = target->damageInfo.resist;
+        m_blocked = target->damageInfo.blocked;
 
         // Hunter's pet special attacks
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
@@ -3724,7 +3714,7 @@ void Spell::cast(bool skipCheck)
 
             if(infoTarget)
             {
-                procDamage = infoTarget->damage;
+                procDamage = infoTarget->damageInfo.damage;
                 if (infoTarget->crit)
                     procEx |= PROC_EX_CRITICAL_HIT;
                 else
@@ -3771,15 +3761,27 @@ void Spell::cast(bool skipCheck)
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
 
             if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS) && !m_CastItem)
-                procEx |= PROC_EX_ON_CAST;
+            {
+                if(procAttacker & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
+                {
+                    if(procDamage)
+                        procEx |= PROC_EX_ON_CAST;
+                }
+                else
+                    procEx |= PROC_EX_ON_CAST;
+            }
 
             if(infoTarget)
-                procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
-
-            //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, procEx %i, procAttacker %i, procDamage %i, positive %i, m_damage %i, m_healing %i", m_spellInfo->Id, procEx, procAttacker, procDamage, positive, m_damage, m_healing);
-
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
-            m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            {
+                procEx |= createProcExtendMask(&infoTarget->damageInfo, infoTarget->missCondition);
+                DamageInfo dmgInfoProc = DamageInfo(infoTarget->damageInfo);
+                m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            }
+            else
+            {
+                DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+                m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+            }
         }
     }
 
@@ -8713,6 +8715,10 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
     if (!unit)
         return;
 
+    float critChance = 0.0f;
+    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
+    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
+
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (targetInfo.effectMask & (1<<i))
@@ -8770,12 +8776,22 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                 m_damage = int32(m_damage * m_damageMultipliers[i]);
                 m_damageMultipliers[i] *= multiplier[i];
             }
+
+            if (m_damage > 0)
+            {
+                // Add bonuses and fill damageInfo struct
+                caster->CalculateSpellDamageTaken(&targetInfo.damageInfo, m_damage, m_spellInfo, targetInfo.effectMask, m_attackType, targetInfo.crit);
+                caster->DealDamageMods(unit, targetInfo.damageInfo.damage, &targetInfo.damageInfo.absorb);
+            }
+            else if (m_damage < 0)
+            {
+                if (targetInfo.crit)
+                    m_healing = caster->SpellCriticalHealingBonus(m_spellInfo, m_healing, NULL);
+            }
+
             targetInfo.damage += m_damage;
         }
     }
-
-    float critChance = 0.0f;
-    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
 }
 
 SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& skillId, int32& reqSkillValue, int32& skillValue)

@@ -165,7 +165,7 @@ class spell_pri_item_s12_4p_heal : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(PRIEST_SPELL_4P_S12_HEAL))
+                        if (_player->HasAura(PRIEST_SPELL_2P_S12_HEAL))
                             _player->CastSpell(target, PRIEST_SPELL_HOLY_SPARK, true);
             }
 
@@ -178,37 +178,6 @@ class spell_pri_item_s12_4p_heal : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_item_s12_4p_heal_SpellScript();
-        }
-};
-
-// Called by Power Word : Shield - 17
-// Item : S12 2P bonus - Heal
-class spell_pri_item_s12_2p_heal : public SpellScriptLoader
-{
-    public:
-        spell_pri_item_s12_2p_heal() : SpellScriptLoader("spell_pri_item_s12_2p_heal") { }
-
-        class spell_pri_item_s12_2p_heal_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_item_s12_2p_heal_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(PRIEST_SPELL_2P_S12_HEAL))
-                            target->CastSpell(target, PRIEST_SPELL_SOUL_OF_DIAMOND, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_pri_item_s12_2p_heal_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_item_s12_2p_heal_SpellScript();
         }
 };
 
@@ -1450,54 +1419,6 @@ class spell_pri_halo : public SpellScriptLoader
         }
 };
 
-// Shadowy Apparition - 87426
-class spell_pri_shadowy_apparition : public SpellScriptLoader
-{
-    public:
-        spell_pri_shadowy_apparition() : SpellScriptLoader("spell_pri_shadowy_apparition") { }
-
-        class spell_pri_shadowy_apparition_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_shadowy_apparition_SpellScript);
-
-            SpellCastResult CheckShadowy()
-            {
-                if (Player* player = GetCaster()->ToPlayer())
-                {
-                    std::list<Creature*> shadowyList;
-                    std::list<Creature*> tempList;
-
-                    player->GetCreatureListWithEntryInGrid(tempList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
-
-                    // Remove other players shadowy apparitions
-                    for (std::list<Creature*>::const_iterator itr = tempList.begin(); itr != tempList.end(); ++itr)
-                    {
-                        Unit* owner = (*itr)->GetOwner();
-                        if (owner && owner == player && (*itr)->isSummon())
-                            shadowyList.push_back(*itr);
-                    }
-
-                    if (shadowyList.size() == 3)
-                        return SPELL_FAILED_DONT_REPORT;
-
-                    return SPELL_CAST_OK;
-                }
-                else
-                    return SPELL_FAILED_DONT_REPORT;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_pri_shadowy_apparition_SpellScript::CheckShadowy);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_shadowy_apparition_SpellScript;
-        }
-};
-
 // Inner Fire - 588 or Inner Will - 73413
 class spell_pri_inner_fire_or_will : public SpellScriptLoader
 {
@@ -2714,11 +2635,49 @@ class spell_pri_mind_blast : public SpellScriptLoader
         }
 };
 
+// Shadowy Apparition - 148859
+class spell_pri_shadowy_apparition : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadowy_apparition() : SpellScriptLoader("spell_pri_shadowy_apparition") { }
+
+        class spell_pri_shadowy_apparition_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_shadowy_apparition_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(138156) && roll_chance_i(65))
+                        {
+                            if (Aura* aura = target->GetAura(34914, caster->GetGUID()))
+                                aura->SetDuration(aura->GetDuration() + 3000);
+                            if (Aura* aura = target->GetAura(589, caster->GetGUID()))
+                                aura->SetDuration(aura->GetDuration() + 3000);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_shadowy_apparition_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadowy_apparition_SpellScript;
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
     new spell_pri_item_s12_4p_heal();
-    new spell_pri_item_s12_2p_heal();
     new spell_pri_item_s12_2p_shadow();
     new spell_pri_divine_insight_shadow();
     new spell_pri_power_word_insanity();
