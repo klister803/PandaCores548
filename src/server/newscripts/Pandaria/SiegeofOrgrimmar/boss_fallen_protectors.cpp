@@ -745,12 +745,6 @@ public:
 
             }
         }
-        
-        void DamageTaken(Unit*, uint32 &damage)
-        {
-            if (damage >= me->GetHealth())
-                damage = 0;
-        }
     };
     
     CreatureAI* GetAI(Creature* creature) const
