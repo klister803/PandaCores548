@@ -32,7 +32,7 @@ class instance_lost_city_of_the_tolvir : public InstanceMapScript
             uint64 uiSiamatGUID;
             uint64 uiSiamatPlatformGUID;
             uint32 uiUpdateTimer;
-            bool BarimIsDone;
+            bool BosesIsDone;
 
             void Initialize()
             {
@@ -48,7 +48,7 @@ class instance_lost_city_of_the_tolvir : public InstanceMapScript
                 uiHarbingerGUID = 0;
                 uiSiamatPlatformGUID = 0;
                 uiUpdateTimer = 7000;
-                BarimIsDone = false;
+                BosesIsDone = false;
             }
 
             void SiamatFree()
@@ -66,11 +66,11 @@ class instance_lost_city_of_the_tolvir : public InstanceMapScript
 
             void Update(uint32 diff)
             {
-                if (BarimIsDone)
+                if (BosesIsDone)
                 {
                     if (uiUpdateTimer <= diff)
                     {
-                        BarimIsDone = false;
+                        BosesIsDone = false;
                         SiamatFree();
 
                         if (Creature* siamat = instance->GetCreature(uiSiamatGUID))
@@ -168,9 +168,9 @@ class instance_lost_city_of_the_tolvir : public InstanceMapScript
             {
                 Encounter[type] = data;
 
-                if (type == DATA_HIGH_PROPHET_BARIM && data == DONE)
+                if (GetData(DATA_GENERAL_HUSAM)==DONE && GetData(DATA_LOCKMAW)==DONE && GetData(DATA_HIGH_PROPHET_BARIM)==DONE)
                     if (Encounter[DATA_SIAMAT] != DONE)
-                        BarimIsDone = true;
+                        BosesIsDone = true;
 
                 if (type == DATA_SIAMAT && data == DONE)
                 {

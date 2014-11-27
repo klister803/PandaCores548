@@ -112,7 +112,7 @@ class boss_shannox : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_shannoxAI(pCreature);
+            return GetAIForInstance<boss_shannoxAI>(pCreature, FLScriptName);
         }
 
         struct boss_shannoxAI : public BossAI
@@ -140,14 +140,6 @@ class boss_shannox : public CreatureScript
             bool bRiplimbDead;
             bool bRagefaceDead;
             bool bFrenzy;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             bool AllowAchieve()
             {

@@ -526,6 +526,7 @@ void BattlegroundSA::TeleportPlayers()
                 player->SpawnCorpseBones();
             }
 
+            player->RemoveAurasWithMechanic(IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK);
             player->ResetAllPowers();
             player->CombatStopWithPets(true);
 

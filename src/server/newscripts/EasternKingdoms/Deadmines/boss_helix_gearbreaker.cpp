@@ -5,12 +5,12 @@
 //todo: реализовать прыжки хеликса, сделать получше бомбы
 enum ScriptTexts
 {
-    SAY_AGGRO    = 5,
-    SAY_KILL     = 1,
     SAY_DEATH    = 0,
+    SAY_KILL     = 1,
+    SAY_OAF_DEAD = 2,
     SAY_SPELL1   = 3,
     SAY_SPELL2   = 4,
-    SAY_OAF_DEAD = 2,
+    SAY_AGGRO    = 5,
 
     SAY_OAF1     = 0,
     SAY_OAF2     = 1,
@@ -80,6 +80,11 @@ const Position helixcrewPos[4] =
     {-285.63f,-504.04f,60.16f, 0.0f}
 };
 
+const Position oafPos[1] = 
+{
+    {-302.361f, -516.346f, 52.0315f, 0.174533f},
+};
+
 class boss_helix_gearbreaker : public CreatureScript
 {
     public:
@@ -107,11 +112,24 @@ class boss_helix_gearbreaker : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
                 me->setActive(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             }
             
             void Reset() 
             {
                 _Reset();
+
+                me->SummonCreature(NPC_LUMBERING_OAF, oafPos[0]);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            }
+
+            void SummonedCreatureDies(Creature* summon, Unit* killer)
+            {
+                if (summon->GetEntry() == NPC_LUMBERING_OAF)
+                {
+                    Talk(SAY_OAF_DEAD);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                }
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -146,7 +164,7 @@ class boss_helix_gearbreaker : public CreatureScript
                 if (!me->GetVehicle())
                     if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                     {
-                        Talk(SAY_OAF_DEAD);
+                        //Talk(SAY_OAF_DEAD);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         return;
                     }

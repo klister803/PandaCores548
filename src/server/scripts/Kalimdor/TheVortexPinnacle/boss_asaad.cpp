@@ -76,7 +76,7 @@ class boss_asaad : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_asaadAI(pCreature);
+            return GetAIForInstance <boss_asaadAI>(pCreature, VPScriptName);
         }
         struct boss_asaadAI : public BossAI
         {
@@ -101,14 +101,6 @@ class boss_asaad : public CreatureScript
             Creature* _field1;
             Creature* _field2;
             Creature* _field3;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(VPScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

@@ -212,6 +212,14 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
             if (reqSpell)
                 break;
         }
+        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell->spell))
+        {
+            if(spellInfo->AttributesEx7 & SPELL_ATTR7_HORDE_ONLY && GetPlayer()->GetTeam() != HORDE)
+                continue;
+            if(spellInfo->AttributesEx7 & SPELL_ATTR7_ALLIANCE_ONLY && GetPlayer()->GetTeam() != ALLIANCE)
+                continue;
+        }
+
         buff << uint32(tSpell->spell);                      // learned spell (or cast-spell in profession case)
         buff << uint32(reqSpell);
         buff << uint32(/*primary_prof_first_rank && can_learn_primary_prof ? 1 : 0*/0);

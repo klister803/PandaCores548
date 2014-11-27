@@ -198,3 +198,30 @@ uint32 GenerateEnchSuffixFactor(ItemTemplate const* itemProto, uint32 level)
     return 0;
 }
 
+uint32 GenerateRandPropPoints(ItemTemplate const* itemProto, uint32 level)
+{
+    if (!itemProto)
+        return 0;
+
+    RandomPropertiesPointsEntry const* randomProperty = sRandomPropertiesPointsStore.LookupEntry(level);
+    if (!randomProperty)
+        return 0;
+
+    // Select rare/epic modifier
+    switch (itemProto->Quality)
+    {
+        case ITEM_QUALITY_UNCOMMON:
+            return randomProperty->EpicPropertiesPoints[2];
+        case ITEM_QUALITY_RARE:
+            return randomProperty->EpicPropertiesPoints[1];
+        case ITEM_QUALITY_LEGENDARY:
+        case ITEM_QUALITY_EPIC:
+            return randomProperty->EpicPropertiesPoints[0];
+        case ITEM_QUALITY_ARTIFACT:
+            return 0;                                       // not have random properties
+        default:
+            break;
+    }
+    return 0;
+}
+

@@ -555,6 +555,9 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     }
                 }
 
+            SendOponentSpecialization(ALLIANCE);
+            SendOponentSpecialization(HORDE);
+
             CheckArenaWinConditions();
         }
         else
@@ -794,6 +797,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     bool guildAwarded = false;
     uint8 aliveWinners = GetAlivePlayersCountByTeam(winner);
+    std::ostringstream info;
     for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
         uint32 team = itr->second.Team;
@@ -805,7 +809,8 @@ void Battleground::EndBattleground(uint32 winner)
             {
                 Bracket* bracket = sBracketMgr->TryGetOrCreateBracket(itr->first, bType);
                 ASSERT(bracket);    //unreal
-                bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
+                uint32 gain = bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
+                info << " >> Plr. Not in game at the end of match. GUID: " << itr->first << " mmr gain: " << gain << " state:" << (team == winner) ? "WINER" : "LOSER";
             }
             continue;
         }
@@ -839,8 +844,8 @@ void Battleground::EndBattleground(uint32 winner)
         // per player calculation
         if (isArena() && isRated() && winner != WINNER_NONE)
         {
-            bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
-
+            uint32 gain = bracket->FinishGame(team == winner, GetMatchmakerRating(team == winner ? GetOtherTeam(winner) : winner));
+            info << " >> Plr: " << player->ToString().c_str() << " mmr gain: " << gain << " state:" << (team == winner) ? "WINER" : "LOSER";
             if (team == winner)
             {
                 // update achievement BEFORE personal rating update.
@@ -925,6 +930,12 @@ void Battleground::EndBattleground(uint32 winner)
         player->GetSession()->SendPacket(&data);
 
         player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND, 1);
+    }
+
+    if (isArena() && isRated() && winner != WINNER_NONE)
+    {
+        sLog->outArena("match Type: %u --- Winner: old rating: %u  --- Loser: old rating: %u| DETAIL: %s", 
+            m_JoinType, GetMatchmakerRating(winner), GetMatchmakerRating(GetOtherTeam(winner)), info.str().c_str());
     }
 
     sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
@@ -1219,44 +1230,17 @@ void Battleground::AddPlayer(Player* player)
         // Set arena faction client-side to display arena unit frame
         player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
 
-        WorldPacket op1(SMSG_ARENA_OPPONENT_UPDATE, 8);             //send opponents info about us
-        op1.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(player->GetObjectGuid());
-        op1.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(player->GetObjectGuid());
+        Pet* pet = player->GetPet();
+        uint64 petGUID = pet ? pet->GetGUID() : 0;
 
-        WorldPacket op2(SMSG_ARENA_OPPONENT_SPECIALIZATIONS, 13);   //send opponents our specID
-        op2.WriteBits(1, 21);
-        op2.WriteGuidMask<7, 1, 2, 3, 5, 4, 6, 0>(player->GetObjectGuid());
-        op2 << uint32(player->GetSpecializationId(player->GetActiveSpec()));
-        op2.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(player->GetObjectGuid());
+        //On MOP SMSG_ARENA_OPPONENT_UPDATE event destroy fraim
+        //WorldPacket op1(SMSG_ARENA_OPPONENT_UPDATE, 8);             //send opponents info about us
+        //op1.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(petGUID);
+        //op1.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(petGUID);
 
-        WorldPacket op3;                                            //send us info about opponents
-
-        uint32 opCoun = 0;
-        ByteBuffer dataBuffer;
-        WorldPacket spec(SMSG_ARENA_OPPONENT_SPECIALIZATIONS, 65);  //send us info about opponents specID
-        spec.WriteBits(opCoun, 21);
-
-        for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-            if (Player* opponent = _GetPlayerForTeam(GetOtherTeam(team), itr, "SendPacketToTeam"))
-            {
-                ++opCoun;
-                opponent->GetSession()->SendPacket(&op1);
-                opponent->GetSession()->SendPacket(&op2);
-
-                spec.WriteGuidMask<7, 1, 2, 3, 5, 4, 6, 0>(opponent->GetObjectGuid());
-                dataBuffer << uint32(opponent->GetSpecializationId(opponent->GetActiveSpec()));
-                dataBuffer.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
-
-                op3.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8);
-                op3.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(opponent->GetObjectGuid());
-                op3.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
-                player->GetSession()->SendPacket(&op3);
-            }
-
-        spec.FlushBits();
-        spec.append(dataBuffer);
-        spec.PutBits<uint32>(0, opCoun, 21);
-        player->GetSession()->SendPacket(&spec);
+        //not shure if we should to it at join.
+        SendOponentSpecialization(team);
+        SendOponentSpecialization(GetOtherTeam(team));
     }
     else
     {
@@ -2106,4 +2090,27 @@ void Battleground::SendFlagsPositionsUpdate(uint32 diff)
     }
 
     SendPacketToAll(&packet);
+}
+
+void Battleground::SendOponentSpecialization(uint32 team)
+{
+    uint32 opCoun = 0;
+    ByteBuffer dataBuffer;
+    WorldPacket spec(SMSG_ARENA_OPPONENT_SPECIALIZATIONS, 65);  //send us info about opponents specID
+    spec.WriteBits(opCoun, 21);
+
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+        if (Player* opponent = _GetPlayerForTeam(team, itr, "SemdOponentSpecialization"))
+        {
+            ++opCoun;
+            spec.WriteGuidMask<7, 1, 2, 3, 5, 4, 6, 0>(opponent->GetObjectGuid());
+            dataBuffer << uint32(opponent->GetSpecializationId(opponent->GetActiveSpec()));
+            dataBuffer.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
+        }
+
+    spec.FlushBits();
+    spec.append(dataBuffer);
+    spec.PutBits<uint32>(0, opCoun, 21);
+
+    SendPacketToTeam(GetOtherTeam(team), &spec);
 }

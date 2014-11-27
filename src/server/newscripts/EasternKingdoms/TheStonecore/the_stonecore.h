@@ -44,4 +44,13 @@ enum GameObjectIds
     GO_TWILIGHT_DOCUMENTS          = 207415,
 };
 
+template<class AI>
+CreatureAI* GetStonecoreAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId(TSScriptName))
+                return new AI(creature);
+    return NULL;
+}
 #endif

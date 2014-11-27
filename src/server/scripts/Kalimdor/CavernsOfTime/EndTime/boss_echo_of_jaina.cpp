@@ -61,7 +61,7 @@ class boss_echo_of_jaina : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_echo_of_jainaAI(pCreature);
+            return GetAIForInstance< boss_echo_of_jainaAI>(pCreature, ETScriptName);
         }
 
         struct boss_echo_of_jainaAI : public BossAI
@@ -91,14 +91,6 @@ class boss_echo_of_jaina : public CreatureScript
             uint32 uiVolleyCount;
             uint8 uiFragments;
             bool bIntro;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(ETScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

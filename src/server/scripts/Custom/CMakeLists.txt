@@ -20,6 +20,7 @@ set(scripts_STAT_SRCS
 	Custom/command_arena.cpp
 	Custom/npc_profession.cpp
 	Custom/command_donate.cpp
+	Custom/npc_beastmaster.cpp
 )
 
 message("  -> Prepared: Custom")

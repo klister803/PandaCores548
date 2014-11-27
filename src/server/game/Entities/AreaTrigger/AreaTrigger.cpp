@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false)
+    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -62,6 +62,14 @@ void AreaTrigger::RemoveFromWorld()
 
 bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/, uint64 targetGuid /*=0*/)
 {
+    m_spellInfo = info;
+
+    if (!info)
+    {
+        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (entry %u) caster %s no spellInfo", triggerEntry, caster->GetString().c_str());
+        return false;
+    }
+
     // Caster not in world, might be spell triggered from aura removal
     if (!caster->IsInWorld())
         return false;
@@ -91,8 +99,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     }
 
     WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
+    SetPhaseId(caster->GetPhaseId(), false);
 
-    SetEntry(triggerEntry);
+    _realEntry = triggerEntry;
+    SetEntry(_realEntry);
     uint32 duration = info->GetDuration();
 
     Player* modOwner = caster->GetSpellModOwner();
@@ -112,7 +122,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             find = true;
         }
 
-    if (!find)
+    if (!find && atInfo.radius)
         _radius = atInfo.radius;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
@@ -122,6 +132,14 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
     SetTargetGuid(targetGuid);
 
+    // culculate destination point
+    if (isMoving())
+    {
+        _startPosition.Relocate(pos);
+        pos.SimplePosXYRelocationByAngle(_destPosition, GetSpellInfo()->GetMaxRange(), 0.0f);
+        _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
+    }
+
     FillCustiomData();
 
     setActive(true);
@@ -130,7 +148,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f", caster->GetString().c_str(), info->Id, _radius);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f", caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), _destPosition.GetPositionX(), _destPosition.GetPositionY(), _destPosition.GetPositionZ());
     #endif
 
     if (atInfo.maxCount)
@@ -156,6 +174,9 @@ void AreaTrigger::FillCustiomData()
     //custom visual case.
     if (GetCustomVisualId())
         SetUInt32Value(AREATRIGGER_SPELLVISUALID, GetCustomVisualId());
+
+    if (GetCustomEntry())
+        SetEntry(GetCustomEntry());
 
     switch(GetSpellId())
     {
@@ -195,8 +216,9 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
                 affectedPlayers.erase(itr);
                 continue;
             }
-
-            if (!unit->IsWithinDistInMap(searcher, GetRadius()))
+            
+            if (!unit->IsWithinDistInMap(searcher, GetRadius()) ||
+                (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !unit->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY())))
             {
                 affectedPlayers.erase(itr);
                 AffectUnit(unit, AT_ACTION_MOMENT_LEAVE);
@@ -212,6 +234,9 @@ void AreaTrigger::UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment acti
         {
             if (!IsUnitAffected((*itr)->GetGUID()))
             {
+                //No 
+                if (isMoving() && _HasActionsWithCharges(AT_ACTION_MOMENT_ON_THE_WAY) && !(*itr)->IsInBetween(this, _destPosition.GetPositionX(), _destPosition.GetPositionY()))
+                    continue;
                 affectedPlayers.push_back((*itr)->GetGUID());
                 AffectUnit(*itr, actionM);
             }
@@ -282,6 +307,7 @@ void AreaTrigger::Update(uint32 p_time)
     }
 
     UpdateActionCharges(p_time);
+    UpdateMovement(p_time);
 
     if (!_activationDelay)
         UpdateAffectedList(p_time, AT_ACTION_MOMENT_ENTER);
@@ -346,18 +372,18 @@ void AreaTrigger::UpdateOnUnit(Unit* unit, uint32 p_time)
     }
 }
 
-bool AreaTrigger::_HasActionsWithCharges()
+bool AreaTrigger::_HasActionsWithCharges(AreaTriggerActionMoment action /*= AT_ACTION_MOMENT_ENTER*/)
 {
     for (ActionInfoMap::iterator itr =_actionInfo.begin(); itr != _actionInfo.end(); ++itr)
     {
         ActionInfo& info = itr->second;
-        if (info.action->moment & AT_ACTION_MOMENT_ENTER)
+        if (info.action->moment & action)
         {
             if (info.charges || !info.action->maxCharges)
-                return false;
+                return true;
         }
     }
-    return true;
+    return false;
 }
 
 void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
@@ -388,6 +414,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_FULL_HP)
         if (unit->IsFullHealth())
+            return;
+    if (action.action->targetFlags & AT_TARGET_FLAG_GROUP_OR_RAID)
+        if (!unit->IsInRaidWith(caster))
             return;
 
     if (action.action->targetFlags & AT_TARGET_FLAT_IN_FRONT)
@@ -434,7 +463,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         }
         case AT_ACTION_TYPE_REMOVE_AURA:
         {
-            unit->RemoveAurasDueToSpell(action.action->spellId);
+            unit->RemoveAura(action.action->spellId);       //only one aura should be removed.
             break;
         }
         case AT_ACTION_TYPE_ADD_STACK:
@@ -457,7 +486,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     {
         --action.charges;
         //unload at next update.
-        if (!action.charges && _HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
+        if (!action.charges && !_HasActionsWithCharges()) //_noActionsWithCharges check any action at enter.
         {
             _on_despawn = true;
             SetDuration(0);
@@ -497,16 +526,6 @@ float AreaTrigger::GetVisualScale(bool max /*=false*/) const
     return atInfo.radius;
 }
 
-float AreaTrigger::GetRadius() const
-{
-    return _radius;
-}
-
-float AreaTrigger::GetCustomVisualId() const
-{
-    return atInfo.visualId;
-}
-
 Unit* AreaTrigger::GetCaster() const
 {
     return ObjectAccessor::GetUnit(*this, GetCasterGUID());
@@ -536,4 +555,41 @@ void AreaTrigger::UnbindFromCaster()
     ASSERT(_caster);
     _caster->_UnregisterAreaObject(this);
     _caster = NULL;
+}
+
+uint32 AreaTrigger::GetObjectMovementParts() const
+{
+    //now only source and destination points send.
+    //ToDo: find interval calculation. On some spels only 2 points send (each 2 times)
+    return 4;
+}
+
+void AreaTrigger::PutObjectUpdateMovement(ByteBuffer* data) const
+{
+    //Source position 2 times.
+    *data << float(GetPositionX());
+    *data << float(GetPositionZ());
+    *data << float(GetPositionY());
+            
+    *data << float(GetPositionX());
+    *data << float(GetPositionZ());
+    *data << float(GetPositionY());
+
+    //Dest position 2 times.
+    *data << float(_destPosition.GetPositionX());
+    *data << float(_destPosition.GetPositionZ());
+    *data << float(_destPosition.GetPositionY());
+
+    *data << float(_destPosition.GetPositionX());
+    *data << float(_destPosition.GetPositionZ());
+    *data << float(_destPosition.GetPositionY());
+}
+
+void AreaTrigger::UpdateMovement(uint32 diff)
+{
+    if (!isMoving())
+        return;
+
+    _moveTime += diff;
+    _startPosition.SimplePosXYRelocationByAngle(*this, getMoveSpeed() * _moveTime, 0.0f);
 }

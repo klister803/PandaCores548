@@ -89,7 +89,7 @@ class boss_majordomo_staghelm : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_majordomo_staghelmAI(creature);
+            return GetAIForInstance<boss_majordomo_staghelmAI>(creature, FLScriptName);
         }
 
         struct boss_majordomo_staghelmAI : public BossAI
@@ -109,14 +109,6 @@ class boss_majordomo_staghelm : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
                 me->setActive(true);
-            }
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             void Reset()

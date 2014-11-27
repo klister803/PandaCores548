@@ -180,6 +180,7 @@ Creature* BattlegroundSSM::UpdateCart(uint32 type)
             cart->Kill(cart);
             DelCreature(type);
             cart = AddCart(type, (m_waysMap[type])[0]);
+            SendMessageToAll(LANG_BG_SSM_SPAWN_CART, CHAT_MSG_BG_SYSTEM_NEUTRAL);
 
             m_waysStep[type] = 1;
         }
@@ -341,15 +342,15 @@ void BattlegroundSSM::UpdatePoints()
             }
         }
 
-        m_cartsCapturePoints[point] -= hordeCount;
-        m_cartsCapturePoints[point] += allianceCount;
+        m_cartsCapturePoints[point] -= (hordeCount * 5);
+        m_cartsCapturePoints[point] += (allianceCount * 5);
 
         if (m_cartsCapturePoints[point] > 100)
             m_cartsCapturePoints[point] = 100;
         else if (m_cartsCapturePoints[point] < 0)
             m_cartsCapturePoints[point] = 0;
 
-        if (m_cartsCapturePoints[point] > 70)
+        if (m_cartsCapturePoints[point] > 50)
         {
             if (m_cartsState[point] != SSM_CONTROL_ALLIANCE)
             {
@@ -364,7 +365,7 @@ void BattlegroundSSM::UpdatePoints()
                 SetCartControl(point, ALLIANCE);
             }
         }
-        else if (m_cartsCapturePoints[point] < 30)
+        else if (m_cartsCapturePoints[point] < 50)
         {
             if (m_cartsState[point] != SSM_CONTROL_HORDE)
             {

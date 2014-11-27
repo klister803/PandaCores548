@@ -40,7 +40,7 @@ class boss_ozruk : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_ozrukAI (pCreature);
+            return GetStonecoreAI<boss_ozrukAI>(pCreature);
         }
 
         struct boss_ozrukAI : public BossAI
@@ -63,14 +63,6 @@ class boss_ozruk : public CreatureScript
 
             EventMap events;
             bool bEnrage;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(TSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

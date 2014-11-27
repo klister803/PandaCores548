@@ -133,7 +133,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_halfus_wyrmbreakerAI(creature);
+            return GetAIForInstance<boss_halfus_wyrmbreakerAI>(creature, BTScriptName);
         }
 
         struct boss_halfus_wyrmbreakerAI : public BossAI
@@ -167,14 +167,6 @@ class boss_halfus_wyrmbreaker : public CreatureScript
             bool bIntro;
             bool bWhelps;
             uint8 whelpcount;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BTScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

@@ -90,7 +90,7 @@ class boss_echo_of_sylvanas : public CreatureScript
 
          CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_echo_of_sylvanasAI(creature);
+            return GetAIForInstance< boss_echo_of_sylvanasAI>(creature, ETScriptName);
         }
 
         struct boss_echo_of_sylvanasAI : public BossAI
@@ -115,14 +115,6 @@ class boss_echo_of_sylvanas : public CreatureScript
 
             uint8 ghouls;
             uint8 deadghouls;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(ETScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

@@ -4160,7 +4160,8 @@ class npc_demonic_gateway : public CreatureScript
                             {
                                 aurastack->GetEffect(EFFECT_0)->ChangeAmount(stacks - 1);
                                 aurastack->SetNeedClientUpdateForTargets();
-                                who->CastSpell(uGate, gate ? 120729 : 113896, true);
+                                //who->CastSpell(uGate, gate ? 120729 : 113896, true);
+                                who->CastCustomSpell(uGate, gate ? 120729 : 113896, NULL, NULL, NULL, true, NULL, NULL, owner->GetGUID());
                                 for(int32 j = 5; j >= 0; --j)
                                 {
                                     if (uGate->HasAura(gwauras[!gate][j]))
@@ -5134,6 +5135,37 @@ class npc_shahram : public CreatureScript
     }
 };
 
+class npc_highwind_albatross : public CreatureScript
+{
+    public:
+        npc_highwind_albatross() : CreatureScript("npc_highwind_albatross") { }
+
+        struct npc_highwind_albatrossAI : Scripted_NoMovementAI
+        {
+            npc_highwind_albatrossAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+            }
+
+            void SpellHit(Unit* source, SpellInfo const* /*spell*/)
+            {
+                if(source)
+                {
+                    Player* player = source->ToPlayer();
+                    if(!player)
+                        return;
+
+                    int32 seatId = 1;
+                    source->CastCustomSpell(me, 148764, &seatId, NULL, NULL, true);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_highwind_albatrossAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -5198,4 +5230,5 @@ void AddSC_npcs_special()
     new npc_transcendence_spirit();
     new npc_past_self();
     new npc_shahram();
+    new npc_highwind_albatross();
 }

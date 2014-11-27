@@ -101,8 +101,8 @@ uint32 LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    //                                                  0     1            2               3         4         5             6
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount FROM %s", GetName());
+    //                                                  0     1            2               3         4         5             6         7
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, lootmode, groupid, mincountOrRef, maxcount, shared FROM %s", GetName());
 
     if (!result)
         return 0;
@@ -121,6 +121,7 @@ uint32 LootStore::LoadLootTable()
         uint8  group               = fields[4].GetUInt8();
         int32  mincountOrRef       = fields[5].GetInt32();
         int32  maxcount            = fields[6].GetUInt32();
+        int8   shared              = fields[7].GetUInt32();
 
         if (type == LOOT_ITEM_TYPE_ITEM && maxcount > std::numeric_limits<uint8>::max())
         {
@@ -128,7 +129,7 @@ uint32 LootStore::LoadLootTable()
             continue;                                   // error already printed to log/console.
         }
 
-        LootStoreItem storeitem = LootStoreItem(item, type, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount);
+        LootStoreItem storeitem = LootStoreItem(item, type, chanceOrQuestChance, lootmode, group, mincountOrRef, maxcount, shared);
 
         if (!storeitem.IsValid(*this, entry))            // Validity checks
             continue;
@@ -1378,6 +1379,7 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
     LootStoreItemList ExplicitPossibleDrops = ExplicitlyChanced;
 
     uint8 uiAttemptCount = 0;
+    bool uiShared = false;
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     const uint8 uiMaxAttempts = ExplicitlyChanced.size() + EqualChanced.size();
 
@@ -1468,6 +1470,24 @@ void LootTemplate::LootGroup::Process(Loot& loot) const
                 }
             else           // otherwise, add the item and exit the function
             {
+                if(item->shared) //shared very low chance to and one item
+                {
+                    if(roll_chance_f(0.5f))
+                        uiShared = true;
+                    else
+                    {
+                        switch (itemSource)
+                        {
+                            case 1: // item came from ExplicitPossibleDrops
+                                ExplicitPossibleDrops.erase(itr);
+                                break;
+                            case 2: // item came from EqualPossibleDrops
+                                EqualPossibleDrops.erase(itr);
+                                break;
+                        }
+                        continue;
+                    }
+                }
                 loot.AddItem(*item);
                 return;
             }
@@ -1483,6 +1503,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot) const
 
     uint8 uiAttemptCount = 0;
     uint8 uiCountAdd = 0;
+    bool uiShared = false;
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
     uint8 uiDropCount = sObjectMgr->GetCountFromSpawn(loot.spawnMode, EqualChanced.size());
     const uint8 uiMaxAttempts = EqualChanced.size();
@@ -1509,7 +1530,7 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot) const
 
         if (item != NULL)   // only add this item if roll succeeds and the mode matches
         {
-            if (!(item->lootmode & diffMask))                          // Do not add if instance mode mismatch
+            if (!(item->lootmode & diffMask) || uiShared)                          // Do not add if instance mode mismatch
             {
                 EqualPossibleDrops.erase(itr);
                 continue;
@@ -1528,6 +1549,16 @@ void LootTemplate::LootGroup::ProcessInst(Loot& loot) const
                         else if (_proto->InventoryType != 0 && _item_counter == 1) // Equippable item are limited to 1 drop
                             duplicate = true;
                     }
+            }
+            if(item->shared) //shared very low chance to and one item
+            {
+                if(roll_chance_f(0.5f))
+                    uiShared = true;
+                else
+                {
+                    EqualPossibleDrops.erase(itr);
+                    continue;
+                }
             }
             if (duplicate) // if item->itemid is a duplicate, remove it
                 EqualPossibleDrops.erase(itr);

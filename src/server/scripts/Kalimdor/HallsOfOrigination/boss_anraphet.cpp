@@ -47,7 +47,7 @@ class boss_anraphet : public CreatureScript
  
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_anraphetAI(pCreature);
+            return GetAIForInstance<boss_anraphetAI>(pCreature, HOScriptName);
         }
 
         struct boss_anraphetAI : public BossAI
@@ -70,14 +70,6 @@ class boss_anraphet : public CreatureScript
             }
 
             uint8 spells;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(HOScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

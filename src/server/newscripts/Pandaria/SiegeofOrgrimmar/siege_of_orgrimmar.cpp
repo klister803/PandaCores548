@@ -271,8 +271,25 @@ class spell_self_absorbed: public SpellScriptLoader
         }
 };
 
+class at_siege_of_orgrimmar_portal_to_orgrimmar : public AreaTriggerScript
+{
+    public:
+        at_siege_of_orgrimmar_portal_to_orgrimmar() : AreaTriggerScript("at_siege_of_orgrimmar_portal_to_orgrimmar") { }
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/, bool /*enter*/)
+        {
+            InstanceScript* instance = player->GetInstanceScript();
+            if (!instance || instance->GetBossState(DATA_SHA_OF_PRIDE) != DONE)
+                return true;
+
+            player->CastSpell(player, player->GetTeam() == ALLIANCE ? SPELL_TP_ORGRIMMAR_2 : SPELL_TP_ORGRIMMAR_1);
+            return true;
+        }
+};
+
 void AddSC_siege_of_orgrimmar()
 {
     new npc_lorewalker_cho();
     new spell_self_absorbed();
+    new at_siege_of_orgrimmar_portal_to_orgrimmar();
 }

@@ -12,6 +12,8 @@
 enum globalSpells
 {
     SPELL_SHA_VORTEX                = 146024,
+    SPELL_TP_ORGRIMMAR_1            = 148032, //Horde
+    SPELL_TP_ORGRIMMAR_2            = 148034, //Aliance
 };
 
 enum eData
@@ -89,18 +91,25 @@ enum eCreatures
     NPC_MANIFEST_OF_PRIDE           = 71946, //Manifestation of Pride
     NPC_SLG_GENERIC_MOP             = 68553, //SLG Generic MoP
     NPC_RIFT_OF_CORRUPTION          = 72846, //Rift of Corruption
+    NPC_SHA_OF_PRIDE_END_LADY_JAINA = 73598,
+    NPC_SHA_OF_PRIDE_END_THERON     = 73605,
+    NPC_PORTAL_TO_ORGRIMMAR         = 73536,
     //controller 68553?? Sha Vortex triger 146034
 
     //  Norushen
-    NPC_NORUSHEN                    = 71967,
-    NPC_AMALGAM_OF_CORRUPTION       = 72276,
-    NPC_ESSENCE_OF_CORRUPTION       = 71976,
-    NPC_MANIFESTATION_OF_CORRUPTION = 72264,
-    NPC_TITANIC_CORRUPTION          = 72051,
-    NPC_GREATER_CORRUPTION          = 72001,
-    NPC_PURIFYING_LIGHT             = 72065,
-    NPC_RESIDUAL_CORRUPTION         = 72550,
-
+    NPC_NORUSHEN                        = 71967,
+    NPC_AMALGAM_OF_CORRUPTION           = 72276,
+    NPC_ESSENCE_OF_CORRUPTION_C         = 71976,
+    NPC_ESSENCE_OF_CORRUPTION           = 72263, //released
+    NPC_MANIFESTATION_OF_CORRUPTION_C   = 71977,
+    NPC_MANIFESTATION_OF_CORRUPTION     = 72264, //FRAYED & release
+    NPC_TITANIC_CORRUPTION              = 72051,
+    NPC_GREATER_CORRUPTION              = 72001,
+    NPC_PURIFYING_LIGHT                 = 72065,
+    NPC_RESIDUAL_CORRUPTION             = 72550, // by spell 145522
+    NPC_NN_HEAL_EVENT_PROTECTOR_1       = 71996,
+    NPC_NN_HEAL_EVENT_PROTECTOR_2       = 72000,
+    NPC_NN_HEAL_EVENT_PROTECTOR_3       = 71995,
     //
     NPC_GALAKRAS                    = 72249,
     NPC_IRON_JUGGERNAUT             = 71466,
@@ -125,6 +134,9 @@ enum eCreatures
 
 enum eGameObjects
 {   
+    GO_SHIP_ALLIANCE                = 223459,
+    GO_SHIP_HORDE                   = 223464,
+
     //Immerseus
     GO_IMMERSEUS_EX_DOOR            = 221663,
 
@@ -188,6 +200,11 @@ enum eGameObjects
 
     //Sha of Pride
     GO_SHA_OF_PRIDE_ENT_DOOR        = 221446,
+};
+
+enum miscData
+{
+    TRANSPORT_PERIOD                = 98995,
 };
 
 static uint8 vehSlotForMeasures(uint32 entry)

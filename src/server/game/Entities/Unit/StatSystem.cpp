@@ -305,8 +305,8 @@ void Player::UpdateArmor()
     float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    value  = GetModifierValue(unitMod, BASE_VALUE);         // base armor (from items)
-    value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
+    value = GetModifierValue(unitMod, BASE_VALUE);                                        // base armor (from items)
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, 1);     // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
     //add dynamic flat mods
@@ -317,7 +317,7 @@ void Player::UpdateArmor()
             value += CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
     }
 
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
 
     SetArmor(int32(value));
 
@@ -502,7 +502,8 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct   = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
+    float total_pct = attType == OFF_ATTACK ? 0.5f : 1.0f;
+    total_pct *= addTotalPct ? GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL) : 1.0f;
 
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
@@ -832,15 +833,32 @@ void Player::UpdateManaRegen()
 
     // manaMod% of base mana every 5 seconds is base for all classes
     float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
-    float auraMp5regen = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
+    float auraMp5regen = 0.0f;
+    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
+    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
+    {
+        if (Powers((*i)->GetMiscValue()) == POWER_MANA)
+        {
+            bool periodic = false;
+            if (Aura* aur = (*i)->GetBase())
+                if (AuraEffect const* aurEff = aur->GetEffect(1))
+                    if(aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
+                    {
+                        periodic = true;
+                        auraMp5regen += aurEff->GetAmount() / 5.0f;
+                    }
+            if(!periodic)
+                auraMp5regen += (*i)->GetAmount() / 5.0f;
+        }
+    }
 
     float interruptMod = std::max(float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100)), 1.0f);
     float baseMod = std::max(GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT), 1.0f);
+    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+
     // haste also increase your mana regeneration
     if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN))
-        baseMod *= 1.0f + GetRatingBonusValue(CR_HASTE_SPELL) / 100.0f;
-
-    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+        AddPct(pctRegenMod, GetRatingBonusValue(CR_HASTE_SPELL));
 
     // out of combar
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod);
@@ -1194,7 +1212,7 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (att_pwr_change * GetAPMultiplier(attType, false) / 14.0f);
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
+    float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
     float dmg_multiplier = GetCreatureTemplate()->dmg_multiplier;
     if(CreatureDifficultyStat const* _stats = GetCreatureDiffStat())
         if(GetMobDifficulty() == 1 || GetMobDifficulty() == 3)
@@ -1375,12 +1393,12 @@ void Guardian::UpdateArmor()
     uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
 
     if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
-        value = m_owner->GetArmor() * pStats->armor;
+        value = m_owner->GetModifierValue(unitMod, BASE_VALUE) * pStats->armor;
     else
-        value = m_owner->GetArmor();
-
-    value *= GetModifierValue(unitMod, BASE_PCT);
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+        value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
+    
+    value += GetModifierValue(unitMod, BASE_PCT);
+    value *= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
     value *= m_owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_ARMOR), GetEntry());
 
     SetArmor(int32(value));
@@ -1398,11 +1416,11 @@ void Guardian::UpdateMaxHealth()
         {
             if(pStats->hp)
                 multiplicator = pStats->hp;
-            else
-            {
-                SetMaxHealth(GetCreateHealth());
-                return;
-            }
+        }
+        else
+        {
+            SetMaxHealth(GetCreateHealth());
+            return;
         }
 
         multiplicator *= owner->GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT);
@@ -1561,7 +1579,7 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (GetTotalAttackPowerValue(attType) * att_speed / APCoefficient);
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct   = GetModifierValue(unitMod, TOTAL_PCT);
+    float total_pct   = GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
 
     float weapon_mindamage = GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);

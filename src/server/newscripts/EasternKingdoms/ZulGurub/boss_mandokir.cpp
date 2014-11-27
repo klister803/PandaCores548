@@ -113,7 +113,8 @@ class boss_mandokir : public CreatureScript
                 Talk(SAY_KILL);
                 if (Creature* spirit = me->FindNearestCreature(NPC_CHAINED_SPIRIT, 200.0f))
                 {
-                    spirit->AI()->SetGUID(victim->GetGUID(), DATA_RES);
+                    if(spirit->AI() && victim)
+                        spirit->AI()->SetGUID(victim->GetGUID(), DATA_RES);
                 }
             }
 
@@ -157,8 +158,8 @@ class boss_mandokir : public CreatureScript
                         {
                             Unit* pTarget = NULL;
                             pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
-                            if (!pTarget)
-                                pTarget = pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                            /*if (!pTarget)
+                                pTarget = pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);*/
                             if (pTarget)
                             {
                                 DoCast(pTarget, SPELL_DECAPITATE);

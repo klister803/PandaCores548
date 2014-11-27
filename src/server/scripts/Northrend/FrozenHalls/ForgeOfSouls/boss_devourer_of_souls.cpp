@@ -129,14 +129,6 @@ class boss_devourer_of_souls : public CreatureScript
             {
             }
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
-
             void Reset()
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -371,7 +363,7 @@ class boss_devourer_of_souls : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_devourer_of_soulsAI(creature);
+            return GetAIForInstance<boss_devourer_of_soulsAI>(creature, FoSScriptName);
         }
 };
 

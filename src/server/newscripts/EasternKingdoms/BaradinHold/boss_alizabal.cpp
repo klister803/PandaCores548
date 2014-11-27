@@ -43,7 +43,7 @@ class boss_alizabal : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_alizabalAI(pCreature);
+            return GetAIForInstance<boss_alizabalAI>(pCreature, BHScriptName);
         }
 
         struct boss_alizabalAI : public BossAI
@@ -67,14 +67,6 @@ class boss_alizabal : public CreatureScript
 
             bool introDone;
             uint8 uiCharges;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BHScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             {

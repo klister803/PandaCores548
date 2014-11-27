@@ -5,12 +5,14 @@
 #include "VMapFactory.h"
 #include "siege_of_orgrimmar.h"
 #include "AccountMgr.h"
+#include "Transport.h"
 
-Position const LorewalkerChoSpawn[4]  = {
+Position const LorewalkerChoSpawn[5]  = {
     {1448.236f, 312.6528f, 289.2837f, 4.652967f},
     {1441.406f, 988.1795f, 340.1876f, 1.985304f},   //fallen
     {806.067f,  841.3726f, 371.2589f, 1.791488f},   //norushen
     {805.7786f, 879.8768f, 371.0946f, 1.911932f},   //sha
+    {761.5104f, 1048.512f, 357.2339f, 1.767873f},   //sha finish
 };
 
 Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108f };
@@ -19,6 +21,7 @@ DoorData const doorData[] =
 {
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
+    {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -51,6 +54,13 @@ public:
 
         bool onInitEnterState;
 
+        Transport* transport;
+
+        ~instance_siege_of_orgrimmar_InstanceMapScript()
+        {
+            delete transport;
+        }
+
         void Initialize()
         {
             SetBossNumber(DATA_MAX);
@@ -70,6 +80,8 @@ public:
             EventfieldOfSha     = 0;
 
             onInitEnterState = false;
+
+            transport = NULL;
         }
 
         void OnPlayerEnter(Player* player)
@@ -86,6 +98,11 @@ public:
             onInitEnterState = true;
 
             DoSummoneEventCreatures();
+
+            if (!transport)
+                transport = CreateTransport(TeamInInstance == HORDE ? GO_SHIP_HORDE : GO_SHIP_ALLIANCE, TRANSPORT_PERIOD);
+
+            SendTransportInit(player);
         }
 
         //Some auras should not stay after relog. If player out of dung whey remove automatically
@@ -101,11 +118,16 @@ public:
                 //Sha of pride: SPELL_PRIDE
                 if (player->HasAura(144343))
                     player->RemoveAura(144343);
-            }else if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
+            }
+            if (GetBossState(DATA_NORUSHEN) != IN_PROGRESS)
             {
                 //Norushen: Coruption
                 if (player->HasAura(144421))
                     player->RemoveAura(144421);
+
+                //Norushen: PURIFIED
+                if (player->HasAura(144452))
+                    player->RemoveAura(144452);
             }
         }
 
@@ -143,12 +165,19 @@ public:
                     LorewalkerChoGUIDtmp = c->GetGUID();
                     c->setActive(true);
                 }
+            }else if (GetBossState(DATA_GALAKRAS) != DONE)
+            {
+                if (Creature * c = instance->SummonCreature(NPC_LOREWALKER_CHO3, LorewalkerChoSpawn[4]))
+                {
+                    LorewalkerChoGUIDtmp = c->GetGUID();
+                    c->setActive(true);
+                    c->AI()->DoAction(EVENT_2);
+                }
             }
         }
 
         void OnCreatureCreate(Creature* creature)
         {
-
             switch (creature->GetEntry())
             {
                 case NPC_IMMERSEUS:
@@ -165,7 +194,10 @@ public:
                 case NPC_EMBODIED_SORROW_OF_ROOK:
                 case NPC_SHA_NORUSHEN:
                 case NPC_SHA_TARAN_ZHU:
+                case NPC_SHA_OF_PRIDE_END_LADY_JAINA:
+                case NPC_SHA_OF_PRIDE_END_THERON:
                 case NPC_NORUSHEN:
+                case NPC_AMALGAM_OF_CORRUPTION:
                 case NPC_B_H_CONTROLLER:
                 case NPC_BLIND_HATRED:
                 case NPC_GALAKRAS:
@@ -276,6 +308,7 @@ public:
                 case GO_LIGHT_RAY_14:
                 case GO_LIGHT_RAY_15:
                 case GO_LIGHT_RAY_16:
+                    go->setIgnorePhaseIdCheck(true);
                     lightqGUIDs.push_back(go->GetGUID());
                     break;
                 case GO_SHA_ENERGY_WALL:
@@ -328,7 +361,11 @@ public:
                         break;
                     case DONE:
                         for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);                
+                            HandleGameObject(*guid, true);
+                        if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
+                            norush->DespawnOrUnsummon();
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->DespawnOrUnsummon();
                         break;
                     }
                 }
@@ -530,7 +567,65 @@ public:
                     }
                 }*/
             }
+
+            Transport* CreateTransport(uint32 goEntry, uint32 period)
+            {
+                Transport* t = new Transport(period, 0);
+
+                GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(goEntry);
+                if (!goinfo)
+                {
+                    sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
+                    delete t;
+                    return NULL;
+                }
+
+                std::set<uint32> mapsUsed;
+                if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
+                    // skip transports with empty waypoints list
+                {
+                    sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathId);
+                    delete t;
+                    return NULL;
+                }
+
+                uint32 mapid = t->m_WayPoints[0].mapid;
+                float x = t->m_WayPoints[0].x;
+                float y = t->m_WayPoints[0].y;
+                float z = t->m_WayPoints[0].z;
+                float o = 1;
+
+                // creates the Gameobject
+                if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT), goEntry, mapid, x, y, z, o, 255, 0))
+                {
+                    delete t;
+                    return NULL;
+                }
+
+                //If we someday decide to use the grid to track transports, here:
+                t->SetMap(instance);
+
+                //for (uint8 i = 0; i < 5; ++i)
+                //    t->AddNPCPassenger(0, (goEntry == GO_HORDE_GUNSHIP ? NPC_HORDE_GUNSHIP_CANNON : NPC_ALLIANCE_GUNSHIP_CANNON), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionX() : allianceGunshipPassengers[i].GetPositionX()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionY() : allianceGunshipPassengers[i].GetPositionY()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetPositionZ() : allianceGunshipPassengers[i].GetPositionZ()), (goEntry == GO_HORDE_GUNSHIP ? hordeGunshipPassengers[i].GetOrientation() : allianceGunshipPassengers[i].GetOrientation()));
+
+                return t;
+            }
+
+            void SendTransportInit(Player* player)
+            {
+                if (!transport)
+                    return;
+
+                UpdateData transData(player->GetMapId());
+                transport->BuildCreateUpdateBlockForPlayer(&transData, player);
+
+                WorldPacket packet;
+
+                transData.BuildPacket(&packet);
+                player->GetSession()->SendPacket(&packet);
+            }
     };
+
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {

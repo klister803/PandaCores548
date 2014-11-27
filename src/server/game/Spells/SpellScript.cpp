@@ -301,6 +301,7 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 eff
         case TARGET_SELECT_CATEGORY_CONE: // AREA
         case TARGET_SELECT_CATEGORY_AREA: // AREA
         case TARGET_SELECT_CATEGORY_BETWEEN: // AREA
+        case TARGET_SELECT_CATEGORY_GOTOMOVE: // AREA
             return area;
         case TARGET_SELECT_CATEGORY_DEFAULT:
             switch (targetInfo.GetObjectType())
@@ -592,6 +593,16 @@ int32 SpellScript::GetFinalHitDamage()
         return 0;
     }
     return m_spell->m_final_damage;
+}
+
+int32 SpellScript::GetAbsorbDamage()
+{
+    if (!IsInTargetHook())
+    {
+        sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetAbsorbDamage was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
+        return 0;
+    }
+    return m_spell->m_absorb;
 }
 
 void SpellScript::SetHitDamage(int32 damage)

@@ -1726,5 +1726,98 @@ namespace Trinity
             std::vector<WorldPacketList> i_data_cache;
                                                             // 0 = default, i => i-1 locale index
     };
+
+    class UnitHealthState
+    {
+        public:
+            UnitHealthState(bool sortlow) : _sortlow(sortlow) {}
+            bool operator()(Unit* unitA, Unit* unitB) const
+            {
+                return (unitA->GetHealthPct() < unitB->GetHealthPct()) == _sortlow;
+            }
+
+            bool operator()(WorldObject* objectA, WorldObject* objectB) const
+            {
+                return objectA->ToUnit() && objectB->ToUnit() && (objectA->ToUnit()->GetHealthPct() < objectB->ToUnit()->GetHealthPct()) == _sortlow;
+            }
+
+        private:
+            bool _sortlow;
+    };
+
+    class UnitDistanceCheck
+    {
+        public:
+            UnitDistanceCheck(bool checkin, Unit* caster, float dist) : _checkin(checkin), _caster(caster), _dist(dist) {}
+            bool operator()(Unit* unit) const
+            {
+                return (_caster->GetExactDist2d(unit) > _dist) == _checkin;
+            }
+
+            bool operator()(WorldObject* object) const
+            {
+                return (_caster->GetExactDist2d(object) > _dist) == _checkin;
+            }
+
+        private:
+            bool _checkin;
+            Unit* _caster;
+            float _dist;
+    };
+
+    class UnitTypeCheck
+    {
+        public:
+            UnitTypeCheck(bool checkin, uint32 typeMask) : _checkin(checkin), _typeMask(typeMask) {}
+            bool operator()(Unit* unit) const
+            {
+                return bool(_typeMask & (1 << unit->GetTypeId())) == _checkin;
+            }
+
+            bool operator()(WorldObject* object) const
+            {
+                return bool(_typeMask & (1 << object->GetTypeId())) == _checkin;
+            }
+
+        private:
+            bool _checkin;
+            uint32 _typeMask;
+    };
+
+    class UnitSortDistance
+    {
+        public:
+            UnitSortDistance(bool sortlow, Unit* caster) : _sortlow(sortlow), _caster(caster) {}
+            bool operator()(Unit* unitA, Unit* unitB) const
+            {
+                return (_caster->GetExactDist2d(unitA) < _caster->GetExactDist2d(unitB)) == _sortlow;
+            }
+
+            bool operator()(WorldObject* objectA, WorldObject* objectB) const
+            {
+                return (_caster->GetExactDist2d(objectA) < _caster->GetExactDist2d(objectB)) == _sortlow;
+            }
+
+        private:
+            bool _sortlow;
+            Unit* _caster;
+    };
+
+    class UnitFriendlyCheck
+    {
+        public:
+            UnitFriendlyCheck(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (Unit* unit)
+            {
+                return unit->IsFriendlyTo(_caster) == _present;
+            }
+            bool operator() (WorldObject* object)
+            {
+                return object->ToUnit() && object->ToUnit()->IsFriendlyTo(_caster) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
 }
 #endif

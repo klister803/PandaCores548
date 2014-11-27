@@ -304,10 +304,10 @@ enum EItemDynamicFields
 
 enum ItemDynamicModifiersOffset
 {
-    ITEM_DYN_MOD_REFORGE                             = 0,
-    ITEM_DYN_MOD_TRANSMOGRIFICATION                  = 1,
-    ITEM_DYN_MOD_UPGRADE_ID                          = 2,
-    ITEM_DYN_MOD_BATTLE_PET                          = 3,
+    ITEM_DYN_MOD_1                                   = 0,
+    ITEM_DYN_MOD_2                                   = 1,
+    ITEM_DYN_MOD_3                                   = 2,
+    ITEM_DYN_MOD_4                                   = 3,
     ITEM_DYN_MOD_END                                 = 4,
 };
 

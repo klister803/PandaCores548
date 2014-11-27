@@ -299,7 +299,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
 
     // known valid are: CLASS_WARRIOR, CLASS_PALADIN, CLASS_ROGUE, CLASS_MAGE
-    SetByteValue(UNIT_FIELD_BYTES_0, 1, uint8(cinfo->unit_class));
+    SetClass(cinfo->unit_class);
 
     // Cancel load if no model defined
     if (!(cinfo->GetFirstValidModelId()))
@@ -318,7 +318,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
 
     SetDisplayId(displayID);
     SetNativeDisplayId(displayID);
-    SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+    SetGender(minfo->gender);
 
     // Load creature equipment
     if (!data || data->equipmentId == 0)                    // use default from the template
@@ -710,7 +710,8 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     i_AI = ai ? ai : FactorySelector::selectAI(this);
     delete oldAI;
     IsAIEnabled = true;
-    i_AI->InitializeAI();
+    if(i_AI)
+        i_AI->InitializeAI();
     // Initialize vehicle
     if (GetVehicleKit() && !m_onVehicleAccessory)
         GetVehicleKit()->Reset();
@@ -814,7 +815,7 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     {
         SetDisplayId(displayID);
         SetNativeDisplayId(displayID);
-        SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+        SetGender(minfo->gender);
     }
 
     LastUsedScriptID = GetCreatureTemplate()->ScriptID;
@@ -1218,6 +1219,14 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     uint32 basehp = stats->GenerateHealth(cinfo, diffStats);
     uint32 health = uint32(basehp * healthmod);
 
+    //shouldn't be more. Check stats.
+    if (basehp > 0x7FFFFFFF)
+    {
+        if(diffStats)
+            sLog->outError(LOG_FILTER_UNITS, "Creature::GenerateHealth  entry %u too long. Posible error in creature_difficulty_stat for dif %u", GetEntry(), diffStats->Difficulty);
+        health = 1;
+    }
+
     SetCreateHealth(health);
     SetMaxHealth(health);
     SetHealth(health);
@@ -1559,14 +1568,11 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
 
 bool Creature::IsNeverVisible() const
 {
-    //not see befor enter vehicle.
-    if (onVehicleAccessoryInit())
-        return true;
-
+    //At challenge we should see only at start. At start we change spawnMode, so just no see at CHALLENGE_MODE_DIFFICULTY ;)
     CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
     if (data && data->spawnMask & 256)  // challenge
     {
-        if (GetMap()->GetSpawnMode() != HEROIC_DIFFICULTY)
+        if (GetMap()->GetSpawnMode() == CHALLENGE_MODE_DIFFICULTY)
             return true;
     }
     return WorldObject::IsNeverVisible();
@@ -1754,7 +1760,7 @@ void Creature::Respawn(bool force)
         {
             SetDisplayId(displayID);
             SetNativeDisplayId(displayID);
-            SetByteValue(UNIT_FIELD_BYTES_0, 3, minfo->gender);
+            SetGender(minfo->gender);
         }
 
         GetMotionMaster()->InitDefault();

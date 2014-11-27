@@ -29,12 +29,15 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
+#define MAX_PET_BATTLE_SLOT 3
+
 struct PetInfo
 {
-    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName) :
+    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, bool _update) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
-        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(-1) {}
+        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), deleteMeLater(false), sendUpdate(_update) {}
 
+    // game vars
     uint32 speciesID;
     uint32 creatureEntry;
     uint32 displayID;
@@ -49,6 +52,9 @@ struct PetInfo
     int16 breedID;
     uint32 summonSpellID;
     std::string customName;
+    // service vars
+    bool deleteMeLater;
+    bool sendUpdate;
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
@@ -57,12 +63,10 @@ struct PetInfo
 
 struct PetBattleSlot
 {
-    //PetBattleSlot():{}
+    PetBattleSlot(uint64 _guid, bool _locked): petGUID(_guid), locked(_locked) {}
 
-    uint8 slotID;
     uint64 petGUID;
     bool locked;
-    bool empty;
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
@@ -86,6 +90,8 @@ enum BattlePetSpeciesFlags
     SPECIES_FLAG_UNOBTAINABLE    = 0x20,
     SPECIES_FLAG_UNIQUE          = 0x40, // (v2->speciesFlags >> 6) & 1)
     SPECIES_FLAG_CANT_BATTLE     = 0x80,
+    SPECIES_FLAG_UNK3            = 0x200,
+    SPECIES_FLAG_ELITE           = 0x400,
 };
 
 enum BattlePetSpeciesSource
@@ -110,14 +116,18 @@ public:
     {
         for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
             delete itr->second;
+
+        for (int i = 0; i < MAX_PET_BATTLE_SLOT; ++i)
+            delete m_battleSlots[i];
     }
 
     void BuildPetJournal(WorldPacket *data);
 
-    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = -1);
+    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, bool update = false);
+    void AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked = true);
 
     void SendClosePetBattle();
-    void SendUpdatePets(uint8 petCount);
+    void SendUpdatePets();
 
     void GiveXP();
 
@@ -131,13 +141,13 @@ public:
         return NULL;
     }
 
-    void DeletePetByGUID(uint64 guid)
+    void DeletePetByPetGUID(uint64 guid)
     {
         PetJournal::const_iterator pet = m_PetJournal.find(guid);
         if (pet == m_PetJournal.end())
             return;
 
-        m_PetJournal.erase(guid);
+        pet->second->deleteMeLater = true;
     }
 
     uint64 GetPetGUIDBySpell(uint32 spell)
@@ -146,7 +156,7 @@ public:
         {
             PetInfo * pi = pet->second;
 
-            if (pi && pi->summonSpellID == spell)
+            if (pi && !pi->deleteMeLater && pi->summonSpellID == spell)
                 return pet->first;
         }
 
@@ -173,12 +183,12 @@ public:
         return NULL;
     }
 
-    PetBattleSlot &GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
+    PetBattleSlot* GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
 
 private:
     Player* m_player;
     PetJournal m_PetJournal;
-    PetBattleSlot m_battleSlots[3];
+    PetBattleSlot* m_battleSlots[MAX_PET_BATTLE_SLOT];
 };
 
 #endif

@@ -152,1171 +152,1162 @@ const Position vileswillPos = {-104.74f, -419.98f, 73.23f, 4.75f};
 
 class boss_maloriak : public CreatureScript
 {
-    public:
-        boss_maloriak() : CreatureScript("boss_maloriak") { }
+public:
+    boss_maloriak() : CreatureScript("boss_maloriak") { }
 
-        CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new boss_maloriakAI(pCreature);
+    }
+
+    struct boss_maloriakAI : public BossAI
+    {
+        boss_maloriakAI(Creature* pCreature) : BossAI(pCreature, DATA_MALORIAK)
         {
-            return new boss_maloriakAI(pCreature);
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
         }
 
-        struct boss_maloriakAI : public BossAI
+        bool bExecute;
+        bool bDark;
+
+        void InitializeAI()
         {
-            boss_maloriakAI(Creature* pCreature) : BossAI(pCreature, DATA_MALORIAK)
+            if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
+                me->IsAIEnabled = false;
+            else if (!me->isDead())
+                Reset();
+        }
+
+        void Reset()
+        {
+            _Reset();
+
+            bExecute = false;
+            bDark = false;
+
+            me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7);
+            me->SetFloatValue(UNIT_FIELD_COMBATREACH, 7);
+
+            me->SetReactState(REACT_AGGRESSIVE);
+            me->SetControlled(false, UNIT_STATE_STUNNED);
+
+            instance->SetData(DATA_MALORIAK_ABERRATIONS, 18);
+        }
+
+        void EnterCombat(Unit* attacker)
+        {
+            instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
+            instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
+
+            if (IsHeroic())
+                events.ScheduleEvent(EVENT_DARK_PHASE, 15000);
+            else
+                events.ScheduleEvent(EVENT_FIRE_PHASE, 15000);
+            events.ScheduleEvent(EVENT_ARCANE_STORM, 10000);
+            events.ScheduleEvent(EVENT_BERSERK, IsHeroic()? 9*MINUTE*IN_MILLISECONDS : 7*MINUTE*IN_MILLISECONDS);
+            Talk(SAY_AGGRO);
+            DoZoneInCombat();
+            if (IsHeroic())
+                if (Creature* pNefarius = me->SummonCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, maloriaknefariusspawnPos))
+                    pNefarius->AI()->DoAction(ACTION_MALORIAK_INTRO);
+            instance->SetBossState(DATA_MALORIAK, IN_PROGRESS);
+        }
+
+        void JustReachedHome()
+        {
+            _JustReachedHome();
+        }
+
+        void KilledUnit(Unit* victim)
+        {
+            Talk(SAY_KILL);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            _JustDied();
+            Talk(SAY_DEATH);
+            if (Creature* pNefarius = me->SummonCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
+                pNefarius->AI()->DoAction(ACTION_MALORIAK_DEATH);
+            if (IsHeroic())
+                DoCast(me, SPELL_MASTER_ADVENTURER_AWARD, true);
+        }
+
+        void MovementInform(uint32 type, uint32 id)
+        {
+            if (type == POINT_MOTION_TYPE)
             {
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                switch (id)
+                {
+                case POINT_FIRE:
+                    Talk(SAY_RED);
+                    DoCast(me, SPELL_DRINK_RED_BOTTLE);
+                    break;
+                case POINT_FROST:
+                    Talk(SAY_BLUE);
+                    DoCast(me, SPELL_DRINK_BLUE_BOTTLE);                            
+                    break;
+                case POINT_GREEN:
+                    Talk(SAY_GREEN);
+                    events.ScheduleEvent(EVENT_JUMP_TO, 1000);
+                    break;
+                case POINT_DARK:
+                    DoCast(me, SPELL_DRINK_BLACK_BOTTLE);
+                    events.ScheduleEvent(EVENT_FIRE_PHASE, 100000);
+                    break;
+                }
             }
-
-            bool bExecute;
-            bool bDark;
-
-            void InitializeAI()
+            if (id == EVENT_JUMP)
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(BDScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
-
-            void Reset()
-            {
-                _Reset();
-
-                bExecute = false;
-                bDark = false;
-
-                me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 7);
-                me->SetFloatValue(UNIT_FIELD_COMBATREACH, 7);
-
-                me->SetReactState(REACT_AGGRESSIVE);
-                me->SetControlled(false, UNIT_STATE_STUNNED);
-
-                instance->SetData(DATA_MALORIAK_ABERRATIONS, 18);
-            }
-
-            void EnterCombat(Unit* attacker)
-            {
-                instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
-                instance->DoResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT, SPELL_CLEAR_ACHIEVEMENT);
-
+                EventGreenSkills(true);
                 if (IsHeroic())
-                    events.ScheduleEvent(EVENT_DARK_PHASE, 15000);
+                    events.ScheduleEvent(EVENT_DARK_PHASE, 41000);
                 else
-                    events.ScheduleEvent(EVENT_FIRE_PHASE, 15000);
-                events.ScheduleEvent(EVENT_ARCANE_STORM, 10000);
-                events.ScheduleEvent(EVENT_BERSERK, IsHeroic()? 9*MINUTE*IN_MILLISECONDS : 7*MINUTE*IN_MILLISECONDS);
-                Talk(SAY_AGGRO);
-                DoZoneInCombat();
-                if (IsHeroic())
-                    if (Creature* pNefarius = me->SummonCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, maloriaknefariusspawnPos))
-                        pNefarius->AI()->DoAction(ACTION_MALORIAK_INTRO);
-                instance->SetBossState(DATA_MALORIAK, IN_PROGRESS);
+                    events.ScheduleEvent(EVENT_FIRE_PHASE, 41000);
+                events.ScheduleEvent(EVENT_CONTINUE, 1000);
+            }
+        }
+
+        void SpellHit(Unit* who, const SpellInfo* spellInfo)
+        {
+            switch (spellInfo->Id)
+            {
+            case SPELL_DRINK_RED_BOTTLE:
+                EventFireSkills(true);
+                events.ScheduleEvent(EVENT_FROST_PHASE, 40000);
+                events.ScheduleEvent(EVENT_CONTINUE, 1000);
+                break;
+            case SPELL_DRINK_BLUE_BOTTLE:
+                EventFrostSkills(true);
+                events.ScheduleEvent(EVENT_GREEN_PHASE, 40000);
+                events.ScheduleEvent(EVENT_CONTINUE, 1000);
+                break;
+            case SPELL_DRINK_BLACK_BOTTLE:
+                EventDarkSkills(true);
+                events.ScheduleEvent(EVENT_FIRE_PHASE, 100000);
+                events.ScheduleEvent(EVENT_CONTINUE, 1000);
+                break;
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (me->HealthBelowPct(25) && !bExecute)
+            {
+                bExecute = true;
+                me->InterruptNonMeleeSpells(false);
+                EventFireSkills(false);
+                EventFrostSkills(false);
+                EventGreenSkills(false);
+                EventDarkSkills(false);
+                events.CancelEvent(EVENT_FIRE_PHASE);
+                events.CancelEvent(EVENT_FROST_PHASE);
+                events.CancelEvent(EVENT_GREEN_PHASE);
+                events.CancelEvent(EVENT_DARK_PHASE);
+                me->RemoveAurasDueToSpell(SPELL_FIRE_IMBUED);
+                me->RemoveAurasDueToSpell(SPELL_FROST_IMBUED);
+                me->RemoveAurasDueToSpell(SPELL_DARK_IMBUED);
+                DoCast(me, SPELL_RELEASE_ALL_MINIONS);
+                EventExecuteSkills();
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->GetMotionMaster()->MoveChase(me->getVictim());
+                return;
             }
 
-            void JustReachedHome()
-            {
-                _JustReachedHome();
-            }
+            events.Update(diff);
 
-            void KilledUnit(Unit* victim)
-            {
-                Talk(SAY_KILL);
-            }
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
 
-            void JustDied(Unit* /*killer*/)
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                _JustDied();
-                Talk(SAY_DEATH);
-                if (Creature* pNefarius = me->SummonCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f))
-                    pNefarius->AI()->DoAction(ACTION_MALORIAK_DEATH);
-                if (IsHeroic())
-                    DoCast(me, SPELL_MASTER_ADVENTURER_AWARD, true);
-            }
-
-            void MovementInform(uint32 type, uint32 id)
-            {
-                if (type == POINT_MOTION_TYPE)
+                switch (eventId)
                 {
-                    switch (id)
-                    {
-                        case POINT_FIRE:
-                            Talk(SAY_RED);
-                            DoCast(me, SPELL_DRINK_RED_BOTTLE);
-                            break;
-                        case POINT_FROST:
-                            Talk(SAY_BLUE);
-                            DoCast(me, SPELL_DRINK_BLUE_BOTTLE);                            
-                            break;
-                        case POINT_GREEN:
-                            Talk(SAY_GREEN);
-                            events.ScheduleEvent(EVENT_JUMP_TO, 1000);
-                            break;
-                        case POINT_DARK:
-                            DoCast(me, SPELL_DRINK_BLACK_BOTTLE);
-                            events.ScheduleEvent(EVENT_FIRE_PHASE, 100000);
-                            break;
-                    }
-                }
-                if (id == EVENT_JUMP)
-                {
-                    EventGreenSkills(true);
-                    if (IsHeroic())
-                        events.ScheduleEvent(EVENT_DARK_PHASE, 41000);
-                    else
-                        events.ScheduleEvent(EVENT_FIRE_PHASE, 41000);
-                    events.ScheduleEvent(EVENT_CONTINUE, 1000);
-                }
-            }
-
-            void SpellHit(Unit* who, const SpellInfo* spellInfo)
-            {
-                switch (spellInfo->Id)
-                {
-                    case SPELL_DRINK_RED_BOTTLE:
-                        EventFireSkills(true);
-                        events.ScheduleEvent(EVENT_FROST_PHASE, 40000);
-                        events.ScheduleEvent(EVENT_CONTINUE, 1000);
-                        break;
-                    case SPELL_DRINK_BLUE_BOTTLE:
-                        EventFrostSkills(true);
-                        events.ScheduleEvent(EVENT_GREEN_PHASE, 40000);
-                        events.ScheduleEvent(EVENT_CONTINUE, 1000);
-                        break;
-                    case SPELL_DRINK_BLACK_BOTTLE:
-                        EventDarkSkills(true);
-                        events.ScheduleEvent(EVENT_FIRE_PHASE, 100000);
-                        events.ScheduleEvent(EVENT_CONTINUE, 1000);
-                        break;
-                }
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HealthBelowPct(25) && !bExecute)
-                {
-                    bExecute = true;
-                    me->InterruptNonMeleeSpells(false);
-                    EventFireSkills(false);
-                    EventFrostSkills(false);
-                    EventGreenSkills(false);
+                case EVENT_FIRE_PHASE:
+                    me->SetReactState(REACT_PASSIVE);
                     EventDarkSkills(false);
-                    events.CancelEvent(EVENT_FIRE_PHASE);
-                    events.CancelEvent(EVENT_FROST_PHASE);
-                    events.CancelEvent(EVENT_GREEN_PHASE);
-                    events.CancelEvent(EVENT_DARK_PHASE);
-                    me->RemoveAurasDueToSpell(SPELL_FIRE_IMBUED);
-                    me->RemoveAurasDueToSpell(SPELL_FROST_IMBUED);
-                    me->RemoveAurasDueToSpell(SPELL_DARK_IMBUED);
-                    DoCast(me, SPELL_RELEASE_ALL_MINIONS);
-                    EventExecuteSkills();
+                    if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
+                        me->CastSpell(pGo, SPELL_THROW_RED_BOTTLE_A, false);
+                    me->GetMotionMaster()->MovePoint(POINT_FIRE, maloriakHomePos);
+                    break;
+                case EVENT_FROST_PHASE:
+                    me->SetReactState(REACT_PASSIVE);
+                    EventFireSkills(false);
+                    if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
+                        me->CastSpell(pGo, SPELL_THROW_BLUE_BOTTLE_A, false);
+                    me->GetMotionMaster()->MovePoint(POINT_FROST, maloriakHomePos);
+                    break;
+                case EVENT_GREEN_PHASE:
+                    me->SetReactState(REACT_PASSIVE);
+                    EventFrostSkills(false);
+                    if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
+                        me->CastSpell(pGo, SPELL_THROW_GREEN_BOTTLE_A, false);
+                    me->GetMotionMaster()->MovePoint(POINT_GREEN, maloriakHomePos);
+                    break;
+                case EVENT_JUMP_TO:
+                    for (SummonList::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)    
+                        if (Creature* summon = Unit::GetCreature(*me, *itr))
+                            summon->RemoveAurasDueToSpell(SPELL_GROWN_CATALYST);
+                    DoCast(me, SPELL_DEBILITATING_SLIME, true);
+                    DoCast(me, SPELL_DEBILITATING_SLIME_1, true);
+                    me->GetMotionMaster()->MoveJump(maloriakGreenPos.GetPositionX(), maloriakGreenPos.GetPositionY(), maloriakGreenPos.GetPositionZ(), 15.0f, 15.0f);
+                    break;
+                case EVENT_DARK_PHASE:
+                    me->SetReactState(REACT_PASSIVE);
+                    if (Creature* pNefarius = me->FindNearestCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, 200.0f))
+                        pNefarius->AI()->DoAction(ACTION_MALORIAK_DARK_MAGIC);
+                    EventGreenSkills(false);
+                    me->GetMotionMaster()->MovePoint(POINT_DARK, maloriakHomePos);
+                    break;
+                case EVENT_ARCANE_STORM:
+                    DoCast(me, SPELL_ARCANE_STORM);
+                    break;
+                case EVENT_REMEDY:
+                    DoCast(me, SPELL_REMEDY);
+                    events.ScheduleEvent(EVENT_REMEDY, urand(30000, 40000));
+                    break;
+                case EVENT_RELEASE_ABERRATIONS:
+                    {
+                        uint32 count = 0;
+                        count = instance->GetData(DATA_MALORIAK_ABERRATIONS);
+                        if (count >= 3)
+                            DoCast(me, SPELL_RELEASE_ABERRATIONS);
+                        break;
+                    }
+                case EVENT_SCORCHING_BLAST:
+                    DoCast(SPELL_SCORCHING_BLAST);
+                    break;
+                case EVENT_CONSUMING_FLAMES:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                        DoCast(target, SPELL_CONSUMING_FLAMES);
+                    break;
+                case EVENT_BITING_CHILL:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                        DoCast(target, SPELL_BITING_CHILL);
+                    break;
+                case EVENT_FLASH_FREEZE:
+                    {
+                        std::list<Unit*> targets;
+                        uint32 minTargets = RAID_MODE<uint32>(3, 8, 3, 8);
+                        SelectTargetList(targets, minTargets, SELECT_TARGET_RANDOM, -20.0f, true);
+                        float minDist = 0.0f;
+                        if (targets.size() >= minTargets)
+                            minDist = -20.0f;
+                        if (Unit* targetflashfreeze = SelectTarget(SELECT_TARGET_RANDOM, 1, minDist, true))
+                            DoCast(targetflashfreeze, SPELL_FLASH_FREEZE);    
+                        break;
+                    }
+                case EVENT_ENGULFING_DARKNESS:
+                    DoCast(me->getVictim(), SPELL_ENGULFING_DARKNESS);
+                    events.ScheduleEvent(EVENT_ENGULFING_DARKNESS, 14000);
+                    break;
+                case EVENT_ABSOLUTE_ZERO:
+                    {
+                        Unit* targetabsolutezero = NULL;
+                        targetabsolutezero = SelectTarget(SELECT_TARGET_RANDOM, 1, -20.0f, true);
+                        if (!targetabsolutezero)
+                            targetabsolutezero = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
+                        if (targetabsolutezero)
+                            DoCast(targetabsolutezero, SPELL_ABSOLUTE_ZERO);
+                        events.ScheduleEvent(EVENT_ABSOLUTE_ZERO, urand(20000, 30000));
+                        break;
+                    }
+                case EVENT_MAGMA_JETS:
+                    me->SetControlled(true, UNIT_STATE_STUNNED);
+                    DoCast(me, SPELL_MAGMA_JETS);
+                    events.ScheduleEvent(EVENT_MAGMA_JETS, 15000);
+                    events.ScheduleEvent(EVENT_CONTINUE_STUNNED, 3000);
+                    break;
+                case EVENT_ACID_NOVA:
+                    DoCast(SPELL_ACID_NOVA);
+                    events.ScheduleEvent(EVENT_ACID_NOVA, urand(15000, 20000));
+                    break;
+                case EVENT_BERSERK:
+                    DoCast(me, SPELL_BERSERK);
+                    break;
+                case EVENT_CONTINUE:
                     me->SetReactState(REACT_AGGRESSIVE);
                     me->GetMotionMaster()->MoveChase(me->getVictim());
-                    return;
+                    break;
+                case EVENT_CONTINUE_STUNNED:
+                    me->SetControlled(false, UNIT_STATE_STUNNED);
+                    break;
                 }
-
-                events.Update(diff);
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_FIRE_PHASE:
-                            me->SetReactState(REACT_PASSIVE);
-                            EventDarkSkills(false);
-                            if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
-                                me->CastSpell(pGo, SPELL_THROW_RED_BOTTLE_A, false);
-                            me->GetMotionMaster()->MovePoint(POINT_FIRE, maloriakHomePos);
-                            break;
-                        case EVENT_FROST_PHASE:
-                            me->SetReactState(REACT_PASSIVE);
-                            EventFireSkills(false);
-                            if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
-                                me->CastSpell(pGo, SPELL_THROW_BLUE_BOTTLE_A, false);
-                            me->GetMotionMaster()->MovePoint(POINT_FROST, maloriakHomePos);
-                            break;
-                        case EVENT_GREEN_PHASE:
-                            me->SetReactState(REACT_PASSIVE);
-                            EventFrostSkills(false);
-                            if (GameObject* pGo = me->FindNearestGameObject(203306, 300.0f))
-                                me->CastSpell(pGo, SPELL_THROW_GREEN_BOTTLE_A, false);
-                            me->GetMotionMaster()->MovePoint(POINT_GREEN, maloriakHomePos);
-                            break;
-                        case EVENT_JUMP_TO:
-                            for (SummonList::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)    
-                                if (Creature* summon = Unit::GetCreature(*me, *itr))
-                                    summon->RemoveAurasDueToSpell(SPELL_GROWN_CATALYST);
-                            DoCast(me, SPELL_DEBILITATING_SLIME, true);
-                            DoCast(me, SPELL_DEBILITATING_SLIME_1, true);
-                            me->GetMotionMaster()->MoveJump(maloriakGreenPos.GetPositionX(), maloriakGreenPos.GetPositionY(), maloriakGreenPos.GetPositionZ(), 15.0f, 15.0f);
-                            break;
-                        case EVENT_DARK_PHASE:
-                            me->SetReactState(REACT_PASSIVE);
-                            if (Creature* pNefarius = me->FindNearestCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, 200.0f))
-                                pNefarius->AI()->DoAction(ACTION_MALORIAK_DARK_MAGIC);
-                            EventGreenSkills(false);
-                            me->GetMotionMaster()->MovePoint(POINT_DARK, maloriakHomePos);
-                            break;
-                        case EVENT_ARCANE_STORM:
-                            DoCast(me, SPELL_ARCANE_STORM);
-                            break;
-                        case EVENT_REMEDY:
-                            DoCast(me, SPELL_REMEDY);
-                            events.ScheduleEvent(EVENT_REMEDY, urand(30000, 40000));
-                            break;
-                        case EVENT_RELEASE_ABERRATIONS:
-                        {
-                                uint32 count = 0;
-                            count = instance->GetData(DATA_MALORIAK_ABERRATIONS);
-                            if (count >= 3)
-                                DoCast(me, SPELL_RELEASE_ABERRATIONS);
-                            break;
-                        }
-                        case EVENT_SCORCHING_BLAST:
-                            DoCast(SPELL_SCORCHING_BLAST);
-                            break;
-                        case EVENT_CONSUMING_FLAMES:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_CONSUMING_FLAMES);
-                            break;
-                        case EVENT_BITING_CHILL:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_BITING_CHILL);
-                            break;
-                        case EVENT_FLASH_FREEZE:
-                        {
-                            std::list<Unit*> targets;
-                            uint32 minTargets = RAID_MODE<uint32>(3, 8, 3, 8);
-                            SelectTargetList(targets, minTargets, SELECT_TARGET_RANDOM, -20.0f, true);
-                            float minDist = 0.0f;
-                            if (targets.size() >= minTargets)
-                                minDist = -20.0f;
-                            if (Unit* targetflashfreeze = SelectTarget(SELECT_TARGET_RANDOM, 1, minDist, true))
-                                DoCast(targetflashfreeze, SPELL_FLASH_FREEZE);    
-                            break;
-                        }
-                        case EVENT_ENGULFING_DARKNESS:
-                            DoCast(me->getVictim(), SPELL_ENGULFING_DARKNESS);
-                            events.ScheduleEvent(EVENT_ENGULFING_DARKNESS, 14000);
-                            break;
-                        case EVENT_ABSOLUTE_ZERO:
-                        {
-                            Unit* targetabsolutezero = NULL;
-                            targetabsolutezero = SelectTarget(SELECT_TARGET_RANDOM, 1, -20.0f, true);
-                            if (!targetabsolutezero)
-                                targetabsolutezero = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
-                            if (targetabsolutezero)
-                                DoCast(targetabsolutezero, SPELL_ABSOLUTE_ZERO);
-                            events.ScheduleEvent(EVENT_ABSOLUTE_ZERO, urand(20000, 30000));
-                            break;
-                        }
-                        case EVENT_MAGMA_JETS:
-                            me->SetControlled(true, UNIT_STATE_STUNNED);
-                            DoCast(me, SPELL_MAGMA_JETS);
-                            events.ScheduleEvent(EVENT_MAGMA_JETS, 15000);
-                            events.ScheduleEvent(EVENT_CONTINUE_STUNNED, 3000);
-                            break;
-                        case EVENT_ACID_NOVA:
-                            DoCast(SPELL_ACID_NOVA);
-                            events.ScheduleEvent(EVENT_ACID_NOVA, urand(15000, 20000));
-                            break;
-                        case EVENT_BERSERK:
-                            DoCast(me, SPELL_BERSERK);
-                            break;
-                        case EVENT_CONTINUE:
-                            me->SetReactState(REACT_AGGRESSIVE);
-                            me->GetMotionMaster()->MoveChase(me->getVictim());
-                            break;
-                        case EVENT_CONTINUE_STUNNED:
-                            me->SetControlled(false, UNIT_STATE_STUNNED);
-                            break;
-                    }
-                }
-                if (!bDark)
-                    DoMeleeAttackIfReady();
             }
-            private:
+            if (!bDark)
+                DoMeleeAttackIfReady();
+        }
+    private:
 
-                void EventFireSkills(bool on)
-                {
-                    if (on)
-                    {
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 10000);
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 30000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 13000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 33000);
-                        events.ScheduleEvent(EVENT_SCORCHING_BLAST, 17000);
-                        events.ScheduleEvent(EVENT_SCORCHING_BLAST, 37000);
-                        events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 7000);
-                        events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 22000);
-                        events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 39000);
-                    }
-                    else
-                    {
-                        events.CancelEvent(EVENT_ARCANE_STORM);
-                        events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
-                        events.CancelEvent(EVENT_CONSUMING_FLAMES);
-                        events.CancelEvent(EVENT_SCORCHING_BLAST);
-                    }
-                }
-                
-                void EventFrostSkills(bool on)
-                {
-                    if (on)
-                    {
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 10000); 
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 30000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 13000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 33000);
-                        events.ScheduleEvent(EVENT_BITING_CHILL, 13000);
-                        events.ScheduleEvent(EVENT_BITING_CHILL, 24000);
-                        events.ScheduleEvent(EVENT_BITING_CHILL, 35000);
-                        events.ScheduleEvent(EVENT_FLASH_FREEZE, 19000);
-                    }
-                    else
-                    {
-                        events.CancelEvent(EVENT_ARCANE_STORM);
-                        events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
-                        events.CancelEvent(EVENT_BITING_CHILL);
-                        events.CancelEvent(EVENT_FLASH_FREEZE);
-                    }
-                }
-                
-                void EventGreenSkills(bool on)
-                {
-                    if (on)
-                    {
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 7000); 
-                        events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 25000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 5000);
-                        events.ScheduleEvent(EVENT_ARCANE_STORM, 19000);
-                    }
-                    else
-                    {
-                        events.CancelEvent(EVENT_ARCANE_STORM);
-                        events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
-                    }
-                }
+        void EventFireSkills(bool on)
+        {
+            if (on)
+            {
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 10000);
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 30000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 13000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 33000);
+                events.ScheduleEvent(EVENT_SCORCHING_BLAST, 17000);
+                events.ScheduleEvent(EVENT_SCORCHING_BLAST, 37000);
+                events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 7000);
+                events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 22000);
+                events.ScheduleEvent(EVENT_CONSUMING_FLAMES, 39000);
+            }
+            else
+            {
+                events.CancelEvent(EVENT_ARCANE_STORM);
+                events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
+                events.CancelEvent(EVENT_CONSUMING_FLAMES);
+                events.CancelEvent(EVENT_SCORCHING_BLAST);
+            }
+        }
 
-                void EventDarkSkills(bool on)
-                {
-                    if (on)
-                    {
-                        bDark = true;
-                        for (uint8 i = 0; i < 5; i++)
-                            me->SummonCreature(NPC_VILE_SWILL, vileswillPos);
-                        events.ScheduleEvent(EVENT_ENGULFING_DARKNESS, 5000);
-                    }
-                    else
-                    {
-                        bDark = false;
-                        events.CancelEvent(EVENT_ENGULFING_DARKNESS);
-                    }
-                }
+        void EventFrostSkills(bool on)
+        {
+            if (on)
+            {
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 10000); 
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 30000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 13000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 33000);
+                events.ScheduleEvent(EVENT_BITING_CHILL, 13000);
+                events.ScheduleEvent(EVENT_BITING_CHILL, 24000);
+                events.ScheduleEvent(EVENT_BITING_CHILL, 35000);
+                events.ScheduleEvent(EVENT_FLASH_FREEZE, 19000);
+            }
+            else
+            {
+                events.CancelEvent(EVENT_ARCANE_STORM);
+                events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
+                events.CancelEvent(EVENT_BITING_CHILL);
+                events.CancelEvent(EVENT_FLASH_FREEZE);
+            }
+        }
 
-                void EventExecuteSkills()
-                {
-                    events.ScheduleEvent(EVENT_ABSOLUTE_ZERO, urand(4000, 5000));
-                    events.ScheduleEvent(EVENT_MAGMA_JETS, 5000);
-                    events.ScheduleEvent(EVENT_ACID_NOVA, urand(7000, 8000));
-                }
-        };
+        void EventGreenSkills(bool on)
+        {
+            if (on)
+            {
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 7000); 
+                events.ScheduleEvent(EVENT_RELEASE_ABERRATIONS, 25000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 5000);
+                events.ScheduleEvent(EVENT_ARCANE_STORM, 19000);
+            }
+            else
+            {
+                events.CancelEvent(EVENT_ARCANE_STORM);
+                events.CancelEvent(EVENT_RELEASE_ABERRATIONS);
+            }
+        }
+
+        void EventDarkSkills(bool on)
+        {
+            if (on)
+            {
+                bDark = true;
+                for (uint8 i = 0; i < 5; i++)
+                    me->SummonCreature(NPC_VILE_SWILL, vileswillPos);
+                events.ScheduleEvent(EVENT_ENGULFING_DARKNESS, 5000);
+            }
+            else
+            {
+                bDark = false;
+                events.CancelEvent(EVENT_ENGULFING_DARKNESS);
+            }
+        }
+
+        void EventExecuteSkills()
+        {
+            events.ScheduleEvent(EVENT_ABSOLUTE_ZERO, urand(4000, 5000));
+            events.ScheduleEvent(EVENT_MAGMA_JETS, 5000);
+            events.ScheduleEvent(EVENT_ACID_NOVA, urand(7000, 8000));
+        }
+    };
 };
 
 class npc_maloriak_flash_freeze : public CreatureScript
 {
-    public:
-        npc_maloriak_flash_freeze() : CreatureScript("npc_maloriak_flash_freeze") { }
+public:
+    npc_maloriak_flash_freeze() : CreatureScript("npc_maloriak_flash_freeze") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_maloriak_flash_freezeAI(creature);
+    }
+
+    struct npc_maloriak_flash_freezeAI : public Scripted_NoMovementAI
+    {
+        npc_maloriak_flash_freezeAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            return new npc_maloriak_flash_freezeAI(creature);
+            trappedPlayer = 0;
         }
 
-        struct npc_maloriak_flash_freezeAI : public Scripted_NoMovementAI
+        uint64 trappedPlayer;
+        uint32 existenceCheckTimer;
+
+        void Reset()
         {
-            npc_maloriak_flash_freezeAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        void SetGUID(uint64 guid, int32 type)
+        {
+            if (type == DATA_TRAPPED_PLAYER)
+            {
+                trappedPlayer = guid;
+                existenceCheckTimer = 1000;
+            }
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer))
             {
                 trappedPlayer = 0;
+                player->RemoveAurasDueToSpell(SPELL_FLASH_FREEZE);
             }
+            DoCast(me, SPELL_SHATTER);
+            me->DespawnOrUnsummon(800);
+        }
 
-            uint64 trappedPlayer;
-            uint32 existenceCheckTimer;
+        void UpdateAI(uint32 diff)
+        {
+            if (!trappedPlayer)
+                return;
 
-            void Reset()
+            if (existenceCheckTimer <= diff)
             {
-                me->SetReactState(REACT_PASSIVE);
-            }
-
-            void SetGUID(uint64 guid, int32 type)
-            {
-                if (type == DATA_TRAPPED_PLAYER)
+                Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer);
+                if (!player || player->isDead() || !player->HasAura(SPELL_FLASH_FREEZE))
                 {
-                    trappedPlayer = guid;
-                    existenceCheckTimer = 1000;
-                }
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                if (Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer))
-                {
-                    trappedPlayer = 0;
-                    player->RemoveAurasDueToSpell(SPELL_FLASH_FREEZE);
-                }
-                DoCast(me, SPELL_SHATTER);
-                me->DespawnOrUnsummon(800);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!trappedPlayer)
+                    JustDied(me);
+                    me->DespawnOrUnsummon();
                     return;
-
-                if (existenceCheckTimer <= diff)
-                {
-                    Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer);
-                    if (!player || player->isDead() || !player->HasAura(SPELL_FLASH_FREEZE))
-                    {
-                        JustDied(me);
-                        me->DespawnOrUnsummon();
-                        return;
-                    }
                 }
-                else
-                    existenceCheckTimer -= diff;
-            }            
-        };
+            }
+            else
+                existenceCheckTimer -= diff;
+        }            
+    };
 };
 
 class npc_absolute_zero : public CreatureScript
 {
-    public:
-        npc_absolute_zero() : CreatureScript("npc_absolute_zero") { }
+public:
+    npc_absolute_zero() : CreatureScript("npc_absolute_zero") { }
 
-        struct npc_absolute_zeroAI : public ScriptedAI
+    struct npc_absolute_zeroAI : public ScriptedAI
+    {
+        npc_absolute_zeroAI(Creature* creature) : ScriptedAI(creature)
         {
-            npc_absolute_zeroAI(Creature* creature) : ScriptedAI(creature)
-            {
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                creature->SetSpeed(MOVE_RUN, 0.5f);
-                creature->SetSpeed(MOVE_WALK, 0.5f);
-            }
-
-            uint32 uiPauseTimer; //чтобы не срабатывало сразу при саммоне возле игрока
-            uint32 uiDespawnTimer;
-            bool bCanExplode; 
-
-            void Reset()
-            {
-                uiPauseTimer = 3000;
-                uiDespawnTimer = 15000;
-                bCanExplode = false;
-            }
-
-            void IsSummonedBy(Unit* owner)
-            {
-                DoCast(SPELL_ABSOLUTE_ZERO_AURA);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if ((uiPauseTimer <= diff) && !bCanExplode)
-                {
-                    bCanExplode = true;
-                    if (Unit* target = me->SelectNearestTarget())
-                        me->GetMotionMaster()->MoveFollow(target, 0.1f, 0.0f);
-                }
-                else
-                    uiPauseTimer -= diff;
-
-                if (uiDespawnTimer <= diff)
-                    me->DespawnOrUnsummon();
-                else
-                    uiDespawnTimer -= diff;
-
-                if (Unit* target = me->SelectNearestTarget())
-                {
-                    if ((me->GetDistance(target) <= 4.0f) && bCanExplode)
-                    {
-                        DoCast(SPELL_ABSOLUTE_ZERO_DMG);
-                        me->DespawnOrUnsummon(800);
-                    }
-                }
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_absolute_zeroAI(creature);
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            creature->SetSpeed(MOVE_RUN, 0.5f);
+            creature->SetSpeed(MOVE_WALK, 0.5f);
         }
+
+        uint32 uiPauseTimer; //чтобы не срабатывало сразу при саммоне возле игрока
+        uint32 uiDespawnTimer;
+        bool bCanExplode; 
+
+        void Reset()
+        {
+            uiPauseTimer = 3000;
+            uiDespawnTimer = 15000;
+            bCanExplode = false;
+        }
+
+        void IsSummonedBy(Unit* owner)
+        {
+            DoCast(SPELL_ABSOLUTE_ZERO_AURA);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if ((uiPauseTimer <= diff) && !bCanExplode)
+            {
+                bCanExplode = true;
+                if (Unit* target = me->SelectNearestTarget())
+                    me->GetMotionMaster()->MoveFollow(target, 0.1f, 0.0f);
+            }
+            else
+                uiPauseTimer -= diff;
+
+            if (uiDespawnTimer <= diff)
+                me->DespawnOrUnsummon();
+            else
+                uiDespawnTimer -= diff;
+
+            if (Unit* target = me->SelectNearestTarget())
+            {
+                if ((me->GetDistance(target) <= 4.0f) && bCanExplode)
+                {
+                    DoCast(SPELL_ABSOLUTE_ZERO_DMG);
+                    me->DespawnOrUnsummon(800);
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_absolute_zeroAI(creature);
+    }
 };
 
 class npc_magma_jet : public CreatureScript
 {
-    public:
-        npc_magma_jet() : CreatureScript("npc_magma_jet") { }
+public:
+    npc_magma_jet() : CreatureScript("npc_magma_jet") { }
 
-        struct npc_magma_jetAI : public Scripted_NoMovementAI
+    struct npc_magma_jetAI : public Scripted_NoMovementAI
+    {
+        npc_magma_jetAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            npc_magma_jetAI(Creature* creature) : Scripted_NoMovementAI(creature)
-            {
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        }
 
-            EventMap events;
-            Unit* creOwner;
-            void IsSummonedBy(Unit* owner)
-            {
-                if (!owner->ToCreature())
-                    return;
-                creOwner = owner->ToCreature();
-                Position pos;
-                me->SetOrientation(creOwner->GetOrientation());
-                owner->GetNearPosition(pos, owner->GetObjectSize()/2.0f, 0.0f);
-                me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-                events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
-            }
+        EventMap events;
+        Unit* creOwner;
+        void IsSummonedBy(Unit* owner)
+        {
+            if (!owner->ToCreature())
+                return;
+            creOwner = owner->ToCreature();
+            Position pos;
+            me->SetOrientation(creOwner->GetOrientation());
+            owner->GetNearPosition(pos, owner->GetObjectSize()/2.0f, 0.0f);
+            me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+            events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
+        }
 
-            void UpdateAI(uint32 diff)
-            {
-                events.Update(diff);
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
 
-                if (events.ExecuteEvent() == EVENT_MAGMA_JETS_T)
+            if (events.ExecuteEvent() == EVENT_MAGMA_JETS_T)
+            {
+                Position newPos;
+                me->GetNearPosition(newPos, 5.5f, 0.0f);
+                me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+                if (creOwner->GetDistance(me) >= 50.0f) // спавнить разломы на расстоянии до 50 от босса
+                    me->DespawnOrUnsummon();
+                else
                 {
-                    Position newPos;
-                    me->GetNearPosition(newPos, 5.5f, 0.0f);
-                    me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-                    if (creOwner->GetDistance(me) >= 50.0f) // спавнить разломы на расстоянии до 50 от босса
-                        me->DespawnOrUnsummon();
-                    else
-                    {
-                        DoCast(SPELL_MAGMA_JETS_SUMMON);
-                        events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
-                    }
+                    DoCast(SPELL_MAGMA_JETS_SUMMON);
+                    events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
                 }
             }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_magma_jetAI(creature);
         }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_magma_jetAI(creature);
+    }
 };
 
 class npc_magma_jet_summon : public CreatureScript
 {
-    public:
-        npc_magma_jet_summon() : CreatureScript("npc_magma_jet_summon") { }
+public:
+    npc_magma_jet_summon() : CreatureScript("npc_magma_jet_summon") { }
 
-        struct npc_magma_jet_summonAI : public Scripted_NoMovementAI
+    struct npc_magma_jet_summonAI : public Scripted_NoMovementAI
+    {
+        npc_magma_jet_summonAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            npc_magma_jet_summonAI(Creature* creature) : Scripted_NoMovementAI(creature)
-            {
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
-            uint32 summonTimer;
-
-            void Reset()
-            {
-                DoCast(SPELL_MAGMA_JETS_DMG);
-                summonTimer = 15000;
-            }
-            
-            void UpdateAI(uint32 diff)
-            {
-                if (summonTimer <= diff)
-                    me->DespawnOrUnsummon();
-                else
-                    summonTimer -= diff;                
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_magma_jet_summonAI(creature);
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
+        uint32 summonTimer;
+
+        void Reset()
+        {
+            DoCast(SPELL_MAGMA_JETS_DMG);
+            summonTimer = 15000;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (summonTimer <= diff)
+                me->DespawnOrUnsummon();
+            else
+                summonTimer -= diff;                
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_magma_jet_summonAI(creature);
+    }
 };
 
 class npc_aberration : public CreatureScript
 {
-    public:
-        npc_aberration() : CreatureScript("npc_aberration") { }
+public:
+    npc_aberration() : CreatureScript("npc_aberration") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_aberrationAI(creature);
+    }
+
+    struct npc_aberrationAI : public ScriptedAI
+    {
+        npc_aberrationAI(Creature* creature) : ScriptedAI(creature) { }
+
+        void UpdateAI(uint32 diff)
         {
-            return new npc_aberrationAI(creature);
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
         }
 
-        struct npc_aberrationAI : public ScriptedAI
+        void Reset()
         {
-            npc_aberrationAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-            
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
-            }
-
-
-            void Reset()
-            {
-                DoCast(SPELL_GROWN_CATALYST);
-            }
-        };
+            DoCast(SPELL_GROWN_CATALYST);
+        }
+    };
 };
 
 class npc_prime_subject : public CreatureScript
 {
-    public:
-        npc_prime_subject() : CreatureScript("npc_prime_subject") { }
+public:
+    npc_prime_subject() : CreatureScript("npc_prime_subject") { }
 
-        struct npc_prime_subjectAI : public ScriptedAI
+    struct npc_prime_subjectAI : public ScriptedAI
+    {
+        npc_prime_subjectAI(Creature* creature) : ScriptedAI(creature) { }
+
+        EventMap events;
+
+        void Reset()
         {
-            npc_prime_subjectAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-            
-            EventMap events;
-
-            void Reset()
-            {
-                DoCast(SPELL_GROWN_CATALYST);
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                //events.ScheduleEvent(EVENT_FIXATE, 5000);
-                events.ScheduleEvent(EVENT_REND, 12000);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_FIXATE:
-                            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
-                            DoCast(me->getVictim(), SPELL_FIXATE);
-                            break;
-                        case EVENT_REND:
-                            DoCast(me->getVictim(), SPELL_REND);
-                            events.ScheduleEvent(EVENT_REND, urand(12000, 16000));
-                            break;
-                    }
-                }
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_prime_subjectAI(creature);
+            DoCast(SPELL_GROWN_CATALYST);
         }
+
+        void EnterCombat(Unit* who)
+        {
+            //events.ScheduleEvent(EVENT_FIXATE, 5000);
+            events.ScheduleEvent(EVENT_REND, 12000);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_FIXATE:
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+                    DoCast(me->getVictim(), SPELL_FIXATE);
+                    break;
+                case EVENT_REND:
+                    DoCast(me->getVictim(), SPELL_REND);
+                    events.ScheduleEvent(EVENT_REND, urand(12000, 16000));
+                    break;
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_prime_subjectAI(creature);
+    }
 };
 
 class npc_vile_swill : public CreatureScript
 {
-    public:
-        npc_vile_swill() : CreatureScript("npc_vile_swill") { }
+public:
+    npc_vile_swill() : CreatureScript("npc_vile_swill") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_vile_swillAI(creature);
+    }
+
+    struct npc_vile_swillAI : public ScriptedAI
+    {
+        npc_vile_swillAI(Creature* creature) : ScriptedAI(creature) { }
+
+        EventMap events;
+
+        void Reset()
         {
-            return new npc_vile_swillAI(creature);
         }
 
-        struct npc_vile_swillAI : public ScriptedAI
+        void EnterCombat(Unit* who)
         {
-            npc_vile_swillAI(Creature* creature) : ScriptedAI(creature)
+            events.ScheduleEvent(EVENT_DARK_SLUDGE, urand(5000, 10000));
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
             {
-            }
-
-            EventMap events;
-
-            void Reset()
-            {
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                events.ScheduleEvent(EVENT_DARK_SLUDGE, urand(5000, 10000));
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
+                switch (eventId)
                 {
-                    switch (eventId)
-                    {
-                    case EVENT_DARK_SLUDGE:
-                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                            DoCast(pTarget, SPELL_DARK_SLUDGE);
-                        events.ScheduleEvent(EVENT_DARK_SLUDGE, urand(15000, 18000));
-                        break;
-                    }
+                case EVENT_DARK_SLUDGE:
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        DoCast(pTarget, SPELL_DARK_SLUDGE);
+                    events.ScheduleEvent(EVENT_DARK_SLUDGE, urand(15000, 18000));
+                    break;
                 }
-
-                DoMeleeAttackIfReady();
             }
-        };
+
+            DoMeleeAttackIfReady();
+        }
+    };
 };
 
 class spell_maloriak_flash_freeze : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_flash_freeze() : SpellScriptLoader("spell_maloriak_flash_freeze") { }
+public:
+    spell_maloriak_flash_freeze() : SpellScriptLoader("spell_maloriak_flash_freeze") { }
 
-        class spell_maloriak_flash_freeze_AuraScript : public AuraScript
+    class spell_maloriak_flash_freeze_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_maloriak_flash_freeze_AuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_maloriak_flash_freeze_AuraScript);
-
-            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                Position pos;
-                aurEff->GetBase()->GetOwner()->GetPosition(&pos);
-                if (!GetCaster())
-                    return;
-                if (TempSummon* summon = GetCaster()->SummonCreature(NPC_FLASH_FREEZE, pos))
-                    summon->AI()->SetGUID(aurEff->GetBase()->GetOwner()->GetGUID(), DATA_TRAPPED_PLAYER);   
-            }
-            
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_maloriak_flash_freeze_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_maloriak_flash_freeze_AuraScript();
+            Position pos;
+            aurEff->GetBase()->GetOwner()->GetPosition(&pos);
+            if (!GetCaster())
+                return;
+            if (TempSummon* summon = GetCaster()->SummonCreature(NPC_FLASH_FREEZE, pos))
+                summon->AI()->SetGUID(aurEff->GetBase()->GetOwner()->GetGUID(), DATA_TRAPPED_PLAYER);   
         }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_maloriak_flash_freeze_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_maloriak_flash_freeze_AuraScript();
+    }
 };
 
 class GoCheck
 {
-    public:
-        GoCheck() {}
-        bool operator()(WorldObject* obj) const
-        {
-            if (!obj->ToGameObject())
-                return true;
-            
-            return (obj->ToGameObject()->GetEntry() != 206704);
-        }
+public:
+    GoCheck() { }
+    bool operator()(WorldObject* obj) const
+    {
+        if (!obj->ToGameObject())
+            return true;
+
+        return (obj->ToGameObject()->GetEntry() != 206704);
+    }
 };
 
 class EntryCheck
 {
-    public:
-        EntryCheck(uint32 entry) {i_entry = entry;}
-        bool operator()(WorldObject* obj) const
-        {
-            if (!obj->ToCreature())
-                return true;
-            
-            return (obj->ToCreature()->GetEntry() != i_entry);
-        }
-    private:
-        uint32 i_entry;
+public:
+    EntryCheck(uint32 entry) {i_entry = entry;}
+    bool operator()(WorldObject* obj) const
+    {
+        if (!obj->ToCreature())
+            return true;
+
+        return (obj->ToCreature()->GetEntry() != i_entry);
+    }
+private:
+    uint32 i_entry;
 };
 
 class spell_maloriak_release_aberrations : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_release_aberrations() : SpellScriptLoader("spell_maloriak_release_aberrations") { }
+public:
+    spell_maloriak_release_aberrations() : SpellScriptLoader("spell_maloriak_release_aberrations") { }
 
 
-        class spell_maloriak_release_aberrations_SpellScript : public SpellScript
+    class spell_maloriak_release_aberrations_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_release_aberrations_SpellScript);
+
+        bool Load()
         {
-            PrepareSpellScript(spell_maloriak_release_aberrations_SpellScript);
-
-
-            bool Load()
-            {
-                _count = 0;
-                return true;
-            }
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty())
-                    return;
-
-                if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
-                {
-                    targets.remove_if(GoCheck());
-                    uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
-                    if (!targets.empty() && count > 0)
-                        Trinity::Containers::RandomResizeList(targets, count > 3? 3: count);
-                    else
-                        targets.clear();
-                }
-            }
-
-            void HandleDummy(SpellEffIndex effIndex)
-            {
-                if (!GetCaster() || !GetHitGObj() || effIndex != EFFECT_0)
-                    return;
-
-                GetHitGObj()->SetGoState(GO_STATE_ACTIVE);
-                GetCaster()->SummonCreature(NPC_ABERRATION, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_DEAD_DESPAWN);
-                _count++;
-            }
-
-            void OnAfterCast()
-            {
-                if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
-                {
-                    uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
-                    pInstance->SetData(DATA_MALORIAK_ABERRATIONS, (_count > count? 0: count - _count));
-                }
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_release_aberrations_SpellScript::FilterTargets, EFFECT_0,TARGET_GAMEOBJECT_SRC_AREA);
-                OnEffectHitTarget += SpellEffectFn(spell_maloriak_release_aberrations_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-                AfterCast += SpellCastFn(spell_maloriak_release_aberrations_SpellScript::OnAfterCast);
-            }
-
-            private:
-                uint32 _count;
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_release_aberrations_SpellScript();
+            _count = 0;
+            return true;
         }
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            if (targets.empty())
+                return;
+
+            if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
+            {
+                targets.remove_if(GoCheck());
+                uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
+                if (!targets.empty() && count > 0)
+                    Trinity::Containers::RandomResizeList(targets, count > 3? 3: count);
+                else
+                    targets.clear();
+            }
+        }
+
+        void HandleDummy(SpellEffIndex effIndex)
+        {
+            if (!GetCaster() || !GetHitGObj() || effIndex != EFFECT_0)
+                return;
+
+            GetHitGObj()->SetGoState(GO_STATE_ACTIVE);
+            GetCaster()->SummonCreature(NPC_ABERRATION, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_DEAD_DESPAWN);
+            _count++;
+        }
+
+        void OnAfterCast()
+        {
+            if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
+            {
+                uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
+                pInstance->SetData(DATA_MALORIAK_ABERRATIONS, (_count > count? 0: count - _count));
+            }
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_release_aberrations_SpellScript::FilterTargets, EFFECT_0,TARGET_GAMEOBJECT_SRC_AREA);
+            OnEffectHitTarget += SpellEffectFn(spell_maloriak_release_aberrations_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            AfterCast += SpellCastFn(spell_maloriak_release_aberrations_SpellScript::OnAfterCast);
+        }
+
+    private:
+        uint32 _count;
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_release_aberrations_SpellScript();
+    }
 };
 
 class spell_maloriak_release_all_minions : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_release_all_minions() : SpellScriptLoader("spell_maloriak_release_all_minions") { }
+public:
+    spell_maloriak_release_all_minions() : SpellScriptLoader("spell_maloriak_release_all_minions") { }
 
 
-        class spell_maloriak_release_all_minions_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_maloriak_release_all_minions_SpellScript);
+    class spell_maloriak_release_all_minions_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_release_all_minions_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
-            { 
-                if (targets.empty())
-                    return;
+        void FilterTargets(std::list<WorldObject*>& targets)
+        { 
+            if (targets.empty())
+                return;
 
-                if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
-                {
-                    std::list<WorldObject*> tempGos;
-                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                        if ((*itr)->GetEntry() == 206705)
-                            tempGos.push_back((*itr));
-
-                    targets.remove_if(GoCheck());
-
-                    uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
-                    if (count > 0)
-                        Trinity::Containers::RandomResizeList(targets, count);
-                    else
-                        targets.clear();
-                    
-                    if (!tempGos.empty())
-                        for (std::list<WorldObject*>::const_iterator itr = tempGos.begin(); itr != tempGos.end(); ++itr)
-                            targets.push_back((*itr));
-                }
-            }
-
-            void HandleDummy(SpellEffIndex effIndex)
+            if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
             {
+                std::list<WorldObject*> tempGos;
+                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    if ((*itr)->GetEntry() == 206705)
+                        tempGos.push_back((*itr));
 
-                if (!GetCaster() || !GetHitGObj() || effIndex != EFFECT_0)
-                    return;
+                targets.remove_if(GoCheck());
 
-                if (GetHitGObj()->GetEntry() == 206704)
-                    GetCaster()->SummonCreature(NPC_ABERRATION, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_CORPSE_DESPAWN);
-                else if (GetHitGObj()->GetEntry() == 206705)
-                    GetCaster()->SummonCreature(NPC_PRIME_SUBJECT, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_CORPSE_DESPAWN); 
+                uint32 count = pInstance->GetData(DATA_MALORIAK_ABERRATIONS);
+                if (count > 0)
+                    Trinity::Containers::RandomResizeList(targets, count);
+                else
+                    targets.clear();
+
+                if (!tempGos.empty())
+                    for (std::list<WorldObject*>::const_iterator itr = tempGos.begin(); itr != tempGos.end(); ++itr)
+                        targets.push_back((*itr));
             }
-
-            void OnAfterCast()
-            {
-                if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
-                    pInstance->SetData(DATA_MALORIAK_ABERRATIONS, 0);
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_release_all_minions_SpellScript::FilterTargets, EFFECT_0,TARGET_GAMEOBJECT_SRC_AREA);
-                OnEffectHitTarget += SpellEffectFn(spell_maloriak_release_all_minions_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-                AfterCast += SpellCastFn(spell_maloriak_release_all_minions_SpellScript::OnAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_release_all_minions_SpellScript();
         }
+
+        void HandleDummy(SpellEffIndex effIndex)
+        {
+
+            if (!GetCaster() || !GetHitGObj() || effIndex != EFFECT_0)
+                return;
+
+            if (GetHitGObj()->GetEntry() == 206704)
+                GetCaster()->SummonCreature(NPC_ABERRATION, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_CORPSE_DESPAWN);
+            else if (GetHitGObj()->GetEntry() == 206705)
+                GetCaster()->SummonCreature(NPC_PRIME_SUBJECT, (GetHitGObj()->GetPositionX() < -100.0f? aberrationPos[0]: aberrationPos[1]), TEMPSUMMON_CORPSE_DESPAWN); 
+        }
+
+        void OnAfterCast()
+        {
+            if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
+                pInstance->SetData(DATA_MALORIAK_ABERRATIONS, 0);
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_release_all_minions_SpellScript::FilterTargets, EFFECT_0,TARGET_GAMEOBJECT_SRC_AREA);
+            OnEffectHitTarget += SpellEffectFn(spell_maloriak_release_all_minions_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            AfterCast += SpellCastFn(spell_maloriak_release_all_minions_SpellScript::OnAfterCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_release_all_minions_SpellScript();
+    }
 };
 
 class spell_maloriak_debilitating_slime : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_debilitating_slime() : SpellScriptLoader("spell_maloriak_debilitating_slime") { }
+public:
+    spell_maloriak_debilitating_slime() : SpellScriptLoader("spell_maloriak_debilitating_slime") { }
 
 
-        class spell_maloriak_debilitating_slime_SpellScript : public SpellScript
+    class spell_maloriak_debilitating_slime_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_debilitating_slime_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
         {
-            PrepareSpellScript(spell_maloriak_debilitating_slime_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                targets.remove_if(EntryCheck(NPC_ABERRATION));
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_debilitating_slime_SpellScript::FilterTargets, EFFECT_2,TARGET_UNIT_SRC_AREA_ENTRY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_debilitating_slime_SpellScript();
+            targets.remove_if(EntryCheck(NPC_ABERRATION));
         }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_debilitating_slime_SpellScript::FilterTargets, EFFECT_2,TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_debilitating_slime_SpellScript();
+    }
 };
 
 class spell_maloriak_shatter : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_shatter() : SpellScriptLoader("spell_maloriak_shatter") { }
+public:
+    spell_maloriak_shatter() : SpellScriptLoader("spell_maloriak_shatter") { }
 
 
-        class spell_maloriak_shatter_SpellScript : public SpellScript
+    class spell_maloriak_shatter_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_shatter_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
         {
-            PrepareSpellScript(spell_maloriak_shatter_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                targets.remove_if(EntryCheck(NPC_FLASH_FREEZE));
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_shatter_SpellScript::FilterTargets, EFFECT_1,TARGET_UNIT_SRC_AREA_ENTRY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_shatter_SpellScript();
+            targets.remove_if(EntryCheck(NPC_FLASH_FREEZE));
         }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_maloriak_shatter_SpellScript::FilterTargets, EFFECT_1,TARGET_UNIT_SRC_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_shatter_SpellScript();
+    }
 };
 
 class spell_maloriak_remedy : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_remedy() : SpellScriptLoader("spell_maloriak_remedy") { }
+public:
+    spell_maloriak_remedy() : SpellScriptLoader("spell_maloriak_remedy") { }
 
-        class spell_maloriak_remedy_AuraScript : public AuraScript
+    class spell_maloriak_remedy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_maloriak_remedy_AuraScript);
+
+        void HandleTick(AuraEffect const* aurEff)
         {
-            PrepareAuraScript(spell_maloriak_remedy_AuraScript);
-
-            void HandleTick(AuraEffect const* aurEff)
-            {
-                int32 baseAmount = aurEff->GetBaseAmount();
-                if (baseAmount > 0)
-                if (AuraEffect* aurEffm = GetAura()->GetEffect(EFFECT_0))
-                    aurEffm->SetAmount(baseAmount * aurEff->GetTickNumber());
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_maloriak_remedy_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-            }
-        };
-
-        AuraScript *GetAuraScript() const
-        {
-            return new spell_maloriak_remedy_AuraScript();
+            int32 baseAmount = aurEff->GetBaseAmount();
+            if (baseAmount > 0)
+                const_cast<AuraEffect*>(aurEff)->SetAmount(baseAmount * aurEff->GetTickNumber());
         }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_maloriak_remedy_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+        }
+    };
+
+    AuraScript *GetAuraScript() const
+    {
+        return new spell_maloriak_remedy_AuraScript();
+    }
 };
 
 class spell_maloriak_throw_bottle : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_throw_bottle() : SpellScriptLoader("spell_maloriak_throw_bottle") { }
+public:
+    spell_maloriak_throw_bottle() : SpellScriptLoader("spell_maloriak_throw_bottle") { }
 
 
-        class spell_maloriak_throw_bottle_SpellScript : public SpellScript
+    class spell_maloriak_throw_bottle_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_throw_bottle_SpellScript);
+
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_maloriak_throw_bottle_SpellScript);
+            if (!GetCaster() || !GetHitGObj())
+                return;
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (!GetCaster() || !GetHitGObj())
-                    return;
-
-                GetCaster()->CastSpell(GetHitGObj(), GetSpellInfo()->Effects[EFFECT_0].BasePoints, true);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_maloriak_throw_bottle_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_throw_bottle_SpellScript();
+            GetCaster()->CastSpell(GetHitGObj(), GetSpellInfo()->Effects[EFFECT_0].BasePoints, true);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_maloriak_throw_bottle_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_throw_bottle_SpellScript();
+    }
 };
 
 class spell_maloriak_drink_bottle : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_drink_bottle() : SpellScriptLoader("spell_maloriak_drink_bottle") { }
+public:
+    spell_maloriak_drink_bottle() : SpellScriptLoader("spell_maloriak_drink_bottle") { }
 
 
-        class spell_maloriak_drink_bottle_SpellScript : public SpellScript
+    class spell_maloriak_drink_bottle_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_maloriak_drink_bottle_SpellScript);
+
+        void HandleDummy(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_maloriak_drink_bottle_SpellScript);
+            if (!GetCaster())
+                return;
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            uint32 spell_id = 0;
+
+            switch (GetSpellInfo()->Id)
             {
-                if (!GetCaster())
-                    return;
-
-                uint32 spell_id = 0;
-
-                switch (GetSpellInfo()->Id)
-                {
-                    case SPELL_DRINK_RED_BOTTLE:
-                        spell_id = SPELL_FIRE_IMBUED;
-                        break;
-                    case SPELL_DRINK_BLUE_BOTTLE:
-                        spell_id = SPELL_FROST_IMBUED;
-                        break;
-                    case SPELL_DRINK_BLACK_BOTTLE:
-                        spell_id = SPELL_DARK_IMBUED;
-                        break;
-                }
-                if (spell_id)
-                    GetCaster()->CastSpell(GetCaster(), spell_id, true);
+            case SPELL_DRINK_RED_BOTTLE:
+                spell_id = SPELL_FIRE_IMBUED;
+                break;
+            case SPELL_DRINK_BLUE_BOTTLE:
+                spell_id = SPELL_FROST_IMBUED;
+                break;
+            case SPELL_DRINK_BLACK_BOTTLE:
+                spell_id = SPELL_DARK_IMBUED;
+                break;
             }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_maloriak_drink_bottle_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_maloriak_drink_bottle_SpellScript();
+            if (spell_id)
+                GetCaster()->CastSpell(GetCaster(), spell_id, true);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_maloriak_drink_bottle_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_maloriak_drink_bottle_SpellScript();
+    }
 };
 
 class spell_lord_victor_nefarius_master_adventurer_award : public SpellScriptLoader
 {
-    public:
-        spell_lord_victor_nefarius_master_adventurer_award() : SpellScriptLoader("spell_lord_victor_nefarius_master_adventurer_award") { }
+public:
+    spell_lord_victor_nefarius_master_adventurer_award() : SpellScriptLoader("spell_lord_victor_nefarius_master_adventurer_award") { }
 
-        class spell_lord_victor_nefarius_master_adventurer_award_AuraScript : public AuraScript
+    class spell_lord_victor_nefarius_master_adventurer_award_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_lord_victor_nefarius_master_adventurer_award_AuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_lord_victor_nefarius_master_adventurer_award_AuraScript);
-
-            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
-                    if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
-                        GetTarget()->ToPlayer()->SetTitle(title);
-            }
-
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
-                    if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
-                        GetTarget()->ToPlayer()->SetTitle(title, true);
-
-            }
-            
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_lord_victor_nefarius_master_adventurer_award_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectApplyFn(spell_lord_victor_nefarius_master_adventurer_award_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_lord_victor_nefarius_master_adventurer_award_AuraScript();
+            if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
+                if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
+                    GetTarget()->ToPlayer()->SetTitle(title);
         }
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetTarget()->GetTypeId() == TYPEID_PLAYER)
+                if (CharTitlesEntry const* title = sCharTitlesStore.LookupEntry(188))
+                    GetTarget()->ToPlayer()->SetTitle(title, true);
+
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_lord_victor_nefarius_master_adventurer_award_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectApplyFn(spell_lord_victor_nefarius_master_adventurer_award_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_lord_victor_nefarius_master_adventurer_award_AuraScript();
+    }
 };
 
 /*class spell_maloriak_consuming_flames : public SpellScriptLoader
 {
-    public:
-        spell_maloriak_consuming_flames() : SpellScriptLoader("spell_maloriak_consuming_flames") { }
+public:
+spell_maloriak_consuming_flames() : SpellScriptLoader("spell_maloriak_consuming_flames") { }
 
-        class spell_maloriak_consuming_flames_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_maloriak_consuming_flames_AuraScript);
+class spell_maloriak_consuming_flames_AuraScript : public AuraScript
+{
+PrepareAuraScript(spell_maloriak_consuming_flames_AuraScript);
 
-            bool Load()
-            {
-                m_custom_data = 0;
-                return true;
-            }
+bool Load()
+{
+m_custom_data = 0;
+return true;
+}
 
-            void HandleTick(AuraEffect const* aurEff)
-            {
-                m_custom_data += aurEff->GetAmount();
-            }
+void HandleTick(AuraEffect const* aurEff)
+{
+m_custom_data += aurEff->GetAmount();
+}
 
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_maloriak_consuming_flames_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
-            }
-        };
+void Register()
+{
+OnEffectPeriodic += AuraEffectPeriodicFn(spell_maloriak_consuming_flames_AuraScript::HandleTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+}
+};
 
-        AuraScript *GetAuraScript() const
-        {
-            return new spell_maloriak_consuming_flames_AuraScript();
-        }
+AuraScript *GetAuraScript() const
+{
+return new spell_maloriak_consuming_flames_AuraScript();
+}
 };*/
 
 void AddSC_boss_maloriak()

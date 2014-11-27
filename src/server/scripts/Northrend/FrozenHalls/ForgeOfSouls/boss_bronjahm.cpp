@@ -78,14 +78,6 @@ class boss_bronjahm : public CreatureScript
             uint8 soulcount;
             bool soulpower;
 
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
-
             void Reset()
             {
                 soulpower = false;
@@ -216,7 +208,7 @@ class boss_bronjahm : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_bronjahmAI(creature);
+            return GetAIForInstance<boss_bronjahmAI>(creature, FoSScriptName);
         }
 };
 

@@ -56,6 +56,8 @@ enum ePhases
     PHASE_DEFLECTING_WINDS           = 1,
     PHASE_WAILING_WINDS              = 2,
     PHASE_SIAMAT                     = 3,
+
+    PHASE_WAILING_WINDS_MASK         = 1 << PHASE_WAILING_WINDS,
 };
 
 enum eEvents

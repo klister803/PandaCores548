@@ -150,6 +150,7 @@ set(scripts_STAT_SRCS
   EasternKingdoms/BlackwingDescent/boss_chimaeron.cpp
   EasternKingdoms/BlackwingDescent/boss_magmaw.cpp
   EasternKingdoms/BlackwingDescent/boss_maloriak.cpp
+  EasternKingdoms/BlackwingDescent/boss_bwd_nefarian.cpp
   EasternKingdoms/BlackwingDescent/boss_omnotron_defence_system.cpp
   EasternKingdoms/BlackwingDescent/instance_blackwing_descent.cpp
   EasternKingdoms/BlackrockCaverns/boss_romogg_bonecrusher.cpp
@@ -208,6 +209,11 @@ set(scripts_STAT_SRCS
   EasternKingdoms/undercity.cpp
   EasternKingdoms/silvermoon_city.cpp
   EasternKingdoms/loch_modan.cpp
+  EasternKingdoms/ShadowfangKeep/boss_baron_ashbury.cpp
+  EasternKingdoms/ShadowfangKeep/boss_baron_silverlaine.cpp
+  EasternKingdoms/ShadowfangKeep/boss_commander_springvale.cpp
+  EasternKingdoms/ShadowfangKeep/boss_lord_valden.cpp
+  EasternKingdoms/ShadowfangKeep/boss_lord_godfrey.cpp
   EasternKingdoms/ShadowfangKeep/shadowfang_keep.cpp
   EasternKingdoms/ShadowfangKeep/instance_shadowfang_keep.cpp
   EasternKingdoms/ShadowfangKeep/shadowfang_keep.h

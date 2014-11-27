@@ -1232,7 +1232,7 @@ void BattlefieldWG::RewardMarkOfHonor(Player *plr, uint32 count)
 
     if (count != 0 && !dest.empty()) // can add some
         if (Item* item = plr->StoreNewItem(dest, WG_MARK_OF_HONOR, true, 0))
-            plr->SendNewItem(item, count, true, false);
+            plr->SendNewItem(item, NULL, count, true, false);
 }
 
 WintergraspCapturePoint::WintergraspCapturePoint(BattlefieldWG* battlefield, TeamId teamInControl) : BfCapturePoint(battlefield)

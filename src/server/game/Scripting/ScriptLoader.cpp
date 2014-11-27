@@ -29,6 +29,9 @@ void AddSC_multi_vendor();
 void AddSC_traffic_commandscript();
 void AddSC_custom_reward();
 void AddSC_command_donate();
+void AddSC_command_arena();
+void AddSC_npc_profession();
+void AddSC_npc_beastmaster();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -167,7 +170,7 @@ void AddSC_boss_atramedes();                 //BlackwingDescent
 void AddSC_boss_chimaeron();
 void AddSC_boss_magmaw();
 void AddSC_boss_maloriak();
-//void AddSC_boss_bd_nefarian();
+void AddSC_boss_bwd_nefarian();
 void AddSC_boss_omnotron_defence_system();
 void AddSC_instance_blackwing_descent();
 void AddSC_blackwing_descent();
@@ -241,7 +244,12 @@ void AddSC_boss_jandice_barov();
 void AddSC_boss_rattlegore();
 void AddSC_boss_lilian_voss();
 void AddSC_boss_darkmaster_gandling();
-void AddSC_shadowfang_keep();                //Shadowfang keep
+void AddSC_boss_baron_ashbury();            //Shadowfang keep
+void AddSC_boss_baron_silverlaine();
+void AddSC_boss_commander_springvale();
+void AddSC_boss_lord_valden();
+void AddSC_boss_lord_godfrey();
+void AddSC_shadowfang_keep();                
 void AddSC_instance_shadowfang_keep();
 void AddSC_boss_magistrate_barthilas();      //Stratholme
 void AddSC_boss_maleki_the_pallid();
@@ -365,11 +373,17 @@ void AddSC_boss_chrono_lord_deja();
 void AddSC_boss_temporus();
 void AddSC_dark_portal();
 void AddSC_instance_dark_portal();
-void AddSC_boss_morchok();                   //CoT Dragon Soul
-void AddSC_boss_warlord_zonozz();
-void AddSC_boss_yorsahj_unsleeping();
-void AddSC_instance_dragon_soul();
+
+void AddSC_instance_dragon_soul(); // Dragon Soul
 void AddSC_dragon_soul();
+void AddSC_boss_morchok();
+void AddSC_boss_yorsahj_the_unsleeping();
+void AddSC_boss_warlord_zonozz();
+void AddSC_boss_hagara_the_stormbinder();
+void AddSC_boss_ultraxion();
+void AddSC_boss_warmaster_blackhorn();
+void AddSC_spine_of_deathwing();
+void AddSC_madness_of_deathwing();
 
 void AddSC_instance_end_time(); // End Time
 void AddSC_end_time();
@@ -394,6 +408,7 @@ void AddSC_boss_celebras_the_cursed();       //Maraudon
 void AddSC_boss_landslide();
 void AddSC_boss_noxxion();
 void AddSC_boss_ptheradras();
+void AddSC_instance_maraudon();
 void AddSC_boss_onyxia();                    //Onyxia's Lair
 void AddSC_instance_onyxias_lair();
 void AddSC_boss_amnennar_the_coldbringer();  //Razorfen Downs
@@ -425,8 +440,11 @@ void AddSC_boss_grand_vizier_ertan();
 void AddSC_boss_altairus();
 void AddSC_boss_asaad();
 
-void AddSC_instance_throne_of_the_four_winds(); // Throne of the Four Winds
-void AddSC_throne_of_the_four_winds();
+void AddSC_throne_of_the_four_winds(); // Throne of Four Winds
+void AddSC_boss_conclave_of_wind();
+void AddSC_boss_alakir();
+void AddSC_instance_throne_of_the_four_winds();
+
 void AddSC_wailing_caverns();                //Wailing caverns
 void AddSC_instance_wailing_caverns();
 void AddSC_zulfarrak();                     //Zul'Farrak generic
@@ -840,6 +858,9 @@ void AddExampleScripts()
 {
     AddSC_custom_reward();
     AddSC_command_donate();
+    AddSC_command_arena();
+    AddSC_npc_profession();
+    AddSC_npc_beastmaster();
 }
 
 void AddSpellScripts()
@@ -985,7 +1006,7 @@ void AddEasternKingdomsScripts()
     AddSC_boss_chimaeron();
     AddSC_boss_magmaw();
     AddSC_boss_maloriak();
-    //AddSC_boss_bd_nefarian();
+    AddSC_boss_bwd_nefarian();
     AddSC_boss_omnotron_defence_system();
     AddSC_instance_blackwing_descent();
     AddSC_blackwing_descent();
@@ -1059,7 +1080,12 @@ void AddEasternKingdomsScripts()
     AddSC_boss_rattlegore();
     AddSC_boss_lilian_voss();
     AddSC_boss_darkmaster_gandling();       
-    AddSC_shadowfang_keep();                //Shadowfang keep
+    AddSC_boss_baron_ashbury();             //Shadowfang keep
+    AddSC_boss_baron_silverlaine();
+    AddSC_boss_commander_springvale();
+    AddSC_boss_lord_valden();
+    AddSC_boss_lord_godfrey();
+    AddSC_shadowfang_keep();                
     AddSC_instance_shadowfang_keep();
     AddSC_boss_magistrate_barthilas();      //Stratholme
     AddSC_boss_maleki_the_pallid();
@@ -1190,11 +1216,17 @@ void AddKalimdorScripts()
     AddSC_boss_temporus();
     AddSC_dark_portal();
     AddSC_instance_dark_portal();
-    AddSC_boss_morchok();                   //CoT Dragon Soul
-    AddSC_boss_warlord_zonozz();
-    AddSC_boss_yorsahj_unsleeping();
+    
+    AddSC_instance_dragon_soul(); // Dragon Soul
     AddSC_dragon_soul();
-    AddSC_instance_dragon_soul();
+    AddSC_boss_morchok();
+    AddSC_boss_yorsahj_the_unsleeping();
+    AddSC_boss_warlord_zonozz();
+    AddSC_boss_hagara_the_stormbinder();
+    AddSC_boss_ultraxion();
+    AddSC_boss_warmaster_blackhorn();
+    AddSC_spine_of_deathwing();
+    AddSC_madness_of_deathwing();
 
     AddSC_instance_end_time(); // End Time
     AddSC_end_time();
@@ -1219,6 +1251,7 @@ void AddKalimdorScripts()
     AddSC_boss_landslide();
     AddSC_boss_noxxion();
     AddSC_boss_ptheradras();
+    AddSC_instance_maraudon();
     AddSC_boss_onyxia();                    //Onyxia's Lair
     AddSC_instance_onyxias_lair();
     AddSC_boss_amnennar_the_coldbringer();  //Razorfen Downs
@@ -1250,8 +1283,11 @@ void AddKalimdorScripts()
     AddSC_boss_altairus();
     AddSC_boss_asaad();
 
-    AddSC_instance_throne_of_the_four_winds(); // Throne of the Four Winds
-    AddSC_throne_of_the_four_winds();
+    AddSC_throne_of_the_four_winds(); // Throne of Four Winds
+    AddSC_boss_conclave_of_wind();
+    AddSC_boss_alakir();
+    AddSC_instance_throne_of_the_four_winds();
+
     AddSC_wailing_caverns();                //Wailing caverns
     AddSC_instance_wailing_caverns();
     AddSC_zulfarrak();                      //Zul'Farrak generic

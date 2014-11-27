@@ -569,7 +569,7 @@ enum SpellAttr5
     SPELL_ATTR5_HIDE_DURATION                    = 0x00000400, // 10 do not send duration to client
     SPELL_ATTR5_ALLOW_TARGET_OF_TARGET_AS_TARGET = 0x00000800, // 11 (NYI) uses target's target as target if original target not valid (intervene for example)
     SPELL_ATTR5_UNK12                            = 0x00001000, // 12 Cleave related?
-    SPELL_ATTR5_HASTE_AFFECT_DURATION            = 0x00002000, // 13 haste effects decrease duration of this
+    SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME   = 0x00002000, // 13 haste effects decrease duration of this, amplitude modify
     SPELL_ATTR5_UNK14                            = 0x00004000, // 14
     SPELL_ATTR5_UNK15                            = 0x00008000, // 15 Inflits on multiple targets?
     SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK         = 0x00010000, // 16 this allows spells with EquippedItemClass to affect spells from other items if the required item is equipped
@@ -609,7 +609,7 @@ enum SpellAttr6
     SPELL_ATTR6_UNK14                            = 0x00004000, // 14
     SPELL_ATTR6_UNK15                            = 0x00008000, // 15 only 54368, 67892
     SPELL_ATTR6_UNK16                            = 0x00010000, // 16
-    SPELL_ATTR6_UNK17                            = 0x00020000, // 17 Mount spell
+    SPELL_ATTR6_CANT_PROC                        = 0x00020000, // 17 Mount spell, Bonus loot, Quest
     SPELL_ATTR6_CAST_BY_CHARMER                  = 0x00040000, // 18 client won't allow to cast these spells when unit is not possessed && charmer of caster will be original caster
     SPELL_ATTR6_UNK19                            = 0x00080000, // 19 only 47488, 50782
     SPELL_ATTR6_ONLY_VISIBLE_TO_CASTER           = 0x00100000, // 20 Auras with this attribute are only visible to their caster (or pet's owner)
@@ -681,7 +681,7 @@ enum SpellAttr8
     SPELL_ATTR8_UNK14                            = 0x00004000, // 14
     SPELL_ATTR8_WATER_MOUNT                      = 0x00008000, // 15 only one River Boat used in Thousand Needles
     SPELL_ATTR8_UNK16                            = 0x00010000, // 16
-    SPELL_ATTR8_UNK17                            = 0x00020000, // 17
+    SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY   = 0x00020000, // 17 Modify duration on haste
     SPELL_ATTR8_REMEMBER_SPELLS                  = 0x00040000, // 18 at some point in time, these auras remember spells and allow to cast them later
     SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET   = 0x00080000, // 19 allows to consume combo points from dead targets
     SPELL_ATTR8_ARMOR_SPECIALIZATION             = 0x00100000, // 20
@@ -723,7 +723,7 @@ enum SpellAttr9
     SPELL_ATTR9_UNK20                            = 0x00100000, // 20
     SPELL_ATTR9_UNK21                            = 0x00200000, // 21
     SPELL_ATTR9_UNK22                            = 0x00400000, // 22
-    SPELL_ATTR9_UNK23                            = 0x00800000, // 23
+    SPELL_ATTR9_UNK23                            = 0x00800000, // 23 Jump or Roll spell
     SPELL_ATTR9_UNK24                            = 0x01000000, // 24
     SPELL_ATTR9_UNK25                            = 0x02000000, // 25
     SPELL_ATTR9_UNK26                            = 0x04000000, // 26
@@ -750,7 +750,7 @@ enum SpellAttr10
     SPELL_ATTR10_HERB_GATHERING_MINING            = 0x00000800, // 11 Only Herb Gathering and Mining
     SPELL_ATTR10_UNK12                            = 0x00001000, // 12
     SPELL_ATTR10_UNK13                            = 0x00002000, // 13
-    SPELL_ATTR10_UNK14                            = 0x00004000, // 14
+    SPELL_ATTR10_STACK_DAMAGE_OR_HEAL             = 0x00004000, // 14 Stack damage(heal) from last damage(heal) by damage(heal) - (damage * tick left(may be time))
     SPELL_ATTR10_UNK15                            = 0x00008000, // 15
     SPELL_ATTR10_UNK16                            = 0x00010000, // 16
     SPELL_ATTR10_UNK17                            = 0x00020000, // 17
@@ -765,7 +765,7 @@ enum SpellAttr10
     SPELL_ATTR10_UNK26                            = 0x04000000, // 26
     SPELL_ATTR10_UNK27                            = 0x08000000, // 27
     SPELL_ATTR10_UNK28                            = 0x10000000, // 28
-    SPELL_ATTR10_UNK29                            = 0x20000000, // 29
+    SPELL_ATTR10_SOME_MOUNT                       = 0x20000000, // 29 some mount spell
     SPELL_ATTR10_UNK30                            = 0x40000000, // 30
     SPELL_ATTR10_UNK31                            = 0x80000000  // 31
 };
@@ -1158,7 +1158,7 @@ enum SpellEffects
     SPELL_EFFECT_OBJECT_WITH_PERSONAL_VISIBILITY    = 171, // Summons gamebject (player farm related)
     SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
-    SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,
+    SPELL_EFFECT_APPLY_AURA_ON_PET_OR_SELF          = 174,
     SPELL_EFFECT_175                                = 175, // random target ? only 125570
     SPELL_EFFECT_SANCTUARY_2                        = 176,
     SPELL_EFFECT_DESPAWN_DYNOBJECT                  = 177, // despawn DynamicObject
@@ -1902,13 +1902,13 @@ enum Targets
     TARGET_UNK_128                     = 128, //not use
     TARGET_UNIT_ENEMY_BETWEEN_DEST     = 129,
     TARGET_UNIT_ENEMY_BETWEEN_DEST2    = 130,
-    TARGET_DEST_RANDOM_CASTER_FRONT2   = 131,
+    TARGET_DEST_RANDOM_CASTER_FRONT    = 131,
     TARGET_DEST_TARGET_FRIEND          = 132,
     TARGET_UNK_133                     = 133, //not use
     TARGET_UNIT_BETWEEN_ENEMY          = 134,
     TARGET_UNK_135                     = 135,
     TARGET_UNK_136                     = 136,
-    TARGET_DEST_RANDOM_CASTER_FRONT    = 137,
+    TARGET_DEST_RANDOM_CASTER_GOTOMOVE = 137,
     TARGET_DEST_TARGET_SELECT          = 138,
     TARGET_UNK_139                     = 139,
     TARGET_UNK_140                     = 140,

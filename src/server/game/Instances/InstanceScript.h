@@ -177,12 +177,17 @@ class InstanceScript : public ZoneScript
         // Remove Auras due to Spell on all players in instance
         void DoRemoveAurasDueToSpellOnPlayers(uint32 spell);
 
+        // Remove aura from stack on all players in instance
+        void DoRemoveAuraFromStackOnPlayers(uint32 spell, uint64 casterGUID = 0, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT, uint32 num = 1);
+
         // Cast spell on all players in instance
         void DoCastSpellOnPlayers(uint32 spell);
 
         void DoSetAlternatePowerOnPlayers(int32 value);
 
         void DoNearTeleportPlayers(const Position pos, bool casting = false);
+        
+        void DoStartMovie(uint32 movieId);
 
         // Add aura on all players in instance
         void DoAddAuraOnPlayers(uint32 spell);

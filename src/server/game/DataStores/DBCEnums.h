@@ -425,7 +425,7 @@ enum Difficulty
     FLEXIBLE_DIFFICULTY          = 14,
 };
 
-#define RAID_DIFFICULTY_MASK_25MAN 1                        // since 25man difficulties are 1 and 3, we can check them like that
+#define RAID_DIFFICULTY_MASK_25MAN 4                        // since 25man difficulties are 4 and 6, we can check them like that
 
 #define MAX_DIFFICULTY             FLEXIBLE_DIFFICULTY+1
 

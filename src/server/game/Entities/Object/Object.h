@@ -521,6 +521,7 @@ struct Position
     float GetDegreesAngel(float x, float y, bool relative = false) const;
 
     Position GetRandPointBetween(const Position &B) const;
+    void SimplePosXYRelocationByAngle(Position &pos, float dist, float angle) const;
 
     bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }
@@ -748,6 +749,7 @@ class WorldObject : public Object, public WorldLocation
             // angle calculated from current orientation
             GetNearPoint(NULL, x, y, z, size, distance2d, GetOrientation() + angle);
         }
+        
         void MovePosition(Position &pos, float dist, float angle);
         void GetNearPosition(Position &pos, float dist, float angle)
         {
@@ -804,6 +806,13 @@ class WorldObject : public Object, public WorldLocation
         uint32 GetPhaseMask() const { return m_phaseMask; }
         bool InSamePhase(WorldObject const* obj) const { return InSamePhase(obj->GetPhaseMask()); }
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
+
+        virtual void SetPhaseId(uint32 newPhaseId, bool update) { m_phaseId = newPhaseId; };
+        uint32 GetPhaseId() const { return m_phaseId; }
+        bool InSamePhaseId(WorldObject const* obj) const { return IgnorePhaseId() || obj->IgnorePhaseId()|| InSamePhaseId(obj->GetPhaseId()); }
+        bool InSamePhaseId(uint32 phase) const { return m_ignorePhaseIdCheck || (GetPhaseId() == phase); }
+        void setIgnorePhaseIdCheck(bool apply)  { m_ignorePhaseIdCheck = apply; }
+        bool IgnorePhaseId() const { return m_ignorePhaseIdCheck; }
 
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
@@ -870,7 +879,7 @@ class WorldObject : public Object, public WorldLocation
         }
         bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
         {
-            return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D);
+            return obj && IsInMap(obj) && InSamePhase(obj) && InSamePhaseId(obj) && _IsWithinDist(obj, dist2compare, is3D);
         }
         bool IsWithinLOS(float x, float y, float z) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
@@ -881,7 +890,7 @@ class WorldObject : public Object, public WorldLocation
         bool isInFront(WorldObject const* target, float arc = M_PI) const;
         bool isInBack(WorldObject const* target, float arc = M_PI) const;
 
-        bool IsInBetween(const WorldObject* obj1, const WorldObject* obj2, float size = 0) const;
+        bool IsInBetween(const Position* obj1, const Position* obj2, float size = 0) const;
         bool IsInBetween(const WorldObject* obj1, float x2, float y2, float size = 0) const;
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true);  // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
@@ -1047,12 +1056,14 @@ class WorldObject : public Object, public WorldLocation
         //uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id
         uint32 m_phaseMask;                                 // in area phase state
+        uint32 m_phaseId;                                   // special phase. It's new generation phase, when we should check id.
+        bool m_ignorePhaseIdCheck;                          // like gm mode.
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
 
-        bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj); }
+        bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj) || !InSamePhaseId(obj); }
         virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
         bool CanDetect(WorldObject const* obj, bool ignoreStealth) const;
         bool CanDetectInvisibilityOf(WorldObject const* obj) const;

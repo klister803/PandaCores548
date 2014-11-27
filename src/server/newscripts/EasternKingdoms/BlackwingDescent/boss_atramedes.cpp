@@ -25,105 +25,105 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `modelid`
 
 enum ScriptTexts
 {
-    SAY_AGGRO    = 0,
-    SAY_KILL    = 1,
-    SAY_DEATH    = 2,
-    SAY_FLAME    = 5,
-    SAY_FLY        = 6,
+    SAY_AGGRO       = 0,
+    SAY_KILL        = 1,
+    SAY_DEATH       = 2,
+    SAY_FLAME       = 5,
+    SAY_FLY         = 6,
 };
 
 enum Spells
 {
-    SPELL_MODULATION            = 77612,
-    SPELL_MODULATION_25            = 92451,
-    SPELL_MODULATION_10H        = 92452,
-    SPELL_MODULATION_25H        = 92453,
-    SPELL_SONAR_PULSE_AURA        = 77674,
-    SPELL_SONAR_PULSE_DMG        = 77675,
-    SPELL_SONAR_PULSE_DMG_25    = 92417,
-    SPELL_SONAR_PULSE_DMG_10H    = 92418,
-    SPELL_SONAR_PULSE_DMG_25H    = 92419,
-    SPELL_TRACKING                = 78092,
-    SPELL_SONIC_BREATH            = 78098,
-    SPELL_SEARING_FLAME_MISSILE    = 77966,
-    SPELL_SEARING_FLAME            = 77840,
-    SPELL_SEARING_FLAME_1        = 77974,
-    SPELL_SEARING_FLAME_DMG        = 77982,
-    SPELL_SEARING_FLAME_DMG_25    = 92421,
-    SPELL_SEARING_FLAME_DMG_10H    = 92422,
-    SPELL_SEARING_FLAME_DMG_25H    = 92423,
-    SPELL_DEVASTATION            = 78875,
-    SPELL_DEVASTATION_DMG        = 78868,
-    SPELL_RESONATING_CLASH        = 77611,
-    SPELL_RESONATING_CLASH_1    = 77709,
-    SPELL_RESONATING_CLASH_2    = 78168,
-    SPELL_VERTIGO                = 77717,
-    SPELL_SONIC_FLAMES            = 78864,
-    SPELL_SONIC_FLAMES_DMG        = 77782,
-    SPELL_SONAR_BOMB            = 92557,
-    SPELL_SONAR_BOMB_DMG        = 92553,
-    SPELL_SONAR_BOMB_DMG_25        = 92554,
-    SPELL_SONAR_BOMB_DMG_10H    = 92555,
-    SPELL_SONAR_BOMB_DMG_25H    = 92556,
-    SPELL_SONAR_FIREBALL_T        = 78030,
-    SPELL_SONAR_FIREBALL        = 78115,
-    SPELL_NOISY                    = 78897,
-    SPELL_ROARING_FLAME            = 78221,
-    SPELL_ROARING_FLAME_DMG        = 78353,
-    SPELL_ROARING_FLAME_DMG_25    = 92445,
-    SPELL_ROARING_FLAME_DMG_10H    = 92446,
-    SPELL_ROARING_FLAME_DMG_25H    = 92447,
-    SPELL_ROARING_FLAME_AURA    = 78018,
-    SPELL_ROARING_FLAME_AURA_DMG        = 78023,
-    SPELL_ROARING_FLAME_AURA_DMG_25        = 92483,
+    SPELL_MODULATION                = 77612,
+    SPELL_MODULATION_25             = 92451,
+    SPELL_MODULATION_10H            = 92452,
+    SPELL_MODULATION_25H            = 92453,
+    SPELL_SONAR_PULSE_AURA          = 77674,
+    SPELL_SONAR_PULSE_DMG           = 77675,
+    SPELL_SONAR_PULSE_DMG_25        = 92417,
+    SPELL_SONAR_PULSE_DMG_10H       = 92418,
+    SPELL_SONAR_PULSE_DMG_25H       = 92419,
+    SPELL_TRACKING                  = 78092,
+    SPELL_SONIC_BREATH              = 78098,
+    SPELL_SEARING_FLAME_MISSILE     = 77966,
+    SPELL_SEARING_FLAME             = 77840,
+    SPELL_SEARING_FLAME_1           = 77974,
+    SPELL_SEARING_FLAME_DMG         = 77982,
+    SPELL_SEARING_FLAME_DMG_25      = 92421,
+    SPELL_SEARING_FLAME_DMG_10H     = 92422,
+    SPELL_SEARING_FLAME_DMG_25H     = 92423,
+    SPELL_DEVASTATION               = 78875,
+    SPELL_DEVASTATION_DMG           = 78868,
+    SPELL_RESONATING_CLASH          = 77611,
+    SPELL_RESONATING_CLASH_1        = 77709,
+    SPELL_RESONATING_CLASH_2        = 78168,
+    SPELL_VERTIGO                   = 77717,
+    SPELL_SONIC_FLAMES              = 78864,
+    SPELL_SONIC_FLAMES_DMG          = 77782,
+    SPELL_SONAR_BOMB                = 92557,
+    SPELL_SONAR_BOMB_DMG            = 92553,
+    SPELL_SONAR_BOMB_DMG_25         = 92554,
+    SPELL_SONAR_BOMB_DMG_10H        = 92555,
+    SPELL_SONAR_BOMB_DMG_25H        = 92556,
+    SPELL_SONAR_FIREBALL_T          = 78030,
+    SPELL_SONAR_FIREBALL            = 78115,
+    SPELL_NOISY                     = 78897,
+    SPELL_ROARING_FLAME             = 78221,
+    SPELL_ROARING_FLAME_DMG         = 78353,
+    SPELL_ROARING_FLAME_DMG_25      = 92445,
+    SPELL_ROARING_FLAME_DMG_10H     = 92446,
+    SPELL_ROARING_FLAME_DMG_25H     = 92447,
+    SPELL_ROARING_FLAME_AURA        = 78018,
+    SPELL_ROARING_FLAME_AURA_DMG    = 78023,
+    SPELL_ROARING_FLAME_AURA_DMG_25 = 92483,
     SPELL_ROARING_FLAME_AURA_DMG_10H    = 92484,
     SPELL_ROARING_FLAME_AURA_DMG_25H    = 92485,
 };
 
 enum Adds
 {
-    NPC_SONAR_PULSE                = 41546,
-    NPC_TRACKING_FLAMES            = 41879,
-    NPC_ROARING_FLAME            = 41807,
-    NPC_ROARING_FLAME_TARGET    = 42121,
-    NPC_ABNOXIOUS_FIEND            = 49740,
-    NPC_LORD_VICTOR_NEFARIUS_A    = 43396, // не уверен
+    NPC_SONAR_PULSE                 = 41546,
+    NPC_TRACKING_FLAMES             = 41879,
+    NPC_ROARING_FLAME               = 41807,
+    NPC_ROARING_FLAME_TARGET        = 42121,
+    NPC_ABNOXIOUS_FIEND             = 49740,
+    NPC_LORD_VICTOR_NEFARIUS_A      = 43396, // не уверен
 
-    NPC_IMP_PORTAL_STALKER  = 49801,
-    NPC_BLIND_DRAGON_TAIL   = 42356,
-    NPC_REFEBRIATING_FLAME  = 42345,
+    NPC_IMP_PORTAL_STALKER          = 49801,
+    NPC_BLIND_DRAGON_TAIL           = 42356,
+    NPC_REFEBRIATING_FLAME          = 42345,
 
-    NPC_ATRAMEDES_WHELP            = 43407,
-    NPC_MALORIAK_1                = 43404,
-    NPC_LORD_VICTOR_NEFARIUS_1    = 49580,
+    NPC_ATRAMEDES_WHELP             = 43407,
+    NPC_MALORIAK_1                  = 43404,
+    NPC_LORD_VICTOR_NEFARIUS_1      = 49580,
 };
 
 enum Actions
 {
-    ACTION_SHIELD            = 1,
-    ACTION_FLAME            = 2,
-    ACTION_SHIELD_KILL        = 3,
-    ACTION_NEFARIUS_SHIELD    = 4,
-    ACTION_ABNOXIOUS_FIEND    = 5,
+    ACTION_SHIELD                   = 1,
+    ACTION_FLAME                    = 2,
+    ACTION_SHIELD_KILL              = 3,
+    ACTION_NEFARIUS_SHIELD          = 4,
+    ACTION_ABNOXIOUS_FIEND          = 5,
 };
 
 enum Events
 {
-    EVENT_MODULATION            = 1,
-    EVENT_GROUND                = 4,
-    EVENT_FLY                    = 5,
-    EVENT_NEXT_SPELL            = 6,
-    EVENT_SONAR_PULSE_MOVE        = 7,
-    EVENT_SONAR_FIREBALL        = 8,
-    EVENT_SONAR_BOMB            = 9,
-    EVENT_ROARING_FLAME            = 10,
-    EVENT_ROARING_FLAME_SPD        = 11,
-    EVENT_DEVASTATION            = 12,
-    EVENT_TRACKING_FLAMES_MOVE    = 13,
-    EVENT_ABNOXIOUS_FIEND        = 14,
-    EVENT_NEFARIUS_SUMMON_1        = 15,
-    EVENT_NEFARIUS_SUMMON_2        = 16,
-    EVENT_NEFARIUS_SHIELD        = 17,
+    EVENT_MODULATION                = 1,
+    EVENT_GROUND                    = 4,
+    EVENT_FLY                       = 5,
+    EVENT_NEXT_SPELL                = 6,
+    EVENT_SONAR_PULSE_MOVE          = 7,
+    EVENT_SONAR_FIREBALL            = 8,
+    EVENT_SONAR_BOMB                = 9,
+    EVENT_ROARING_FLAME             = 10,
+    EVENT_ROARING_FLAME_SPD         = 11,
+    EVENT_DEVASTATION               = 12,
+    EVENT_TRACKING_FLAMES_MOVE      = 13,
+    EVENT_ABNOXIOUS_FIEND           = 14,
+    EVENT_NEFARIUS_SUMMON_1         = 15,
+    EVENT_NEFARIUS_SUMMON_2         = 16,
+    EVENT_NEFARIUS_SHIELD           = 17,
 };
 
 const Position flyPos = {127.94f, -225.10f, 110.45f, 0.0f};
@@ -190,7 +190,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
         }
-        
+
         EventMap events;
         uint8 stage;    //0 - ground, 1 - fly
         uint8 nextspell; // from 0 to 7
@@ -226,21 +226,21 @@ public:
         {
             switch (action)
             {
-                case ACTION_SHIELD:
-                    if (stage == 0)
-                    {
-                        me->RemoveAurasDueToSpell(SPELL_SEARING_FLAME_1);
-                        me->CastStop();
-                        DoCast(me, SPELL_VERTIGO);
-                    }
-                    break;
-                case ACTION_FLAME:
-                    events.ScheduleEvent(EVENT_ROARING_FLAME, 5000);
-                    break;
-                case ACTION_SHIELD_KILL:
-                    if (atramedesShield)
-                        DoCast(atramedesShield, SPELL_SONIC_FLAMES, true);
-                    break;
+            case ACTION_SHIELD:
+                if (stage == 0)
+                {
+                    me->RemoveAurasDueToSpell(SPELL_SEARING_FLAME_1);
+                    me->CastStop();
+                    DoCast(me, SPELL_VERTIGO);
+                }
+                break;
+            case ACTION_FLAME:
+                events.ScheduleEvent(EVENT_ROARING_FLAME, 5000);
+                break;
+            case ACTION_SHIELD_KILL:
+                if (atramedesShield)
+                    DoCast(atramedesShield, SPELL_SONIC_FLAMES, true);
+                break;
             }
         }
 
@@ -374,7 +374,7 @@ public:
                     case 7:
                         for (uint8 i = 0; i < 3; i++)
                             me->SummonCreature(NPC_SONAR_PULSE,
-                                me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f);
+                            me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f);
                         break;
                     case 1:
                     case 3:
@@ -410,8 +410,8 @@ public:
                     {
                         atramedesTarget = target;
                         me->SummonCreature(NPC_ROARING_FLAME_TARGET,
-                            target->GetPositionX() + urand(5,9),
-                            target->GetPositionY() + urand(5,9),
+                            target->GetPositionX() + urand(5, 9),
+                            target->GetPositionY() + urand(5, 9),
                             target->GetPositionZ());
                     }
                     break;
@@ -434,16 +434,14 @@ public:
 
     struct npc_tracking_flamesAI : public ScriptedAI
     {
-        npc_tracking_flamesAI(Creature* creature) : ScriptedAI(creature) 
-        {
-        }
+        npc_tracking_flamesAI(Creature* creature) : ScriptedAI(creature) { }
 
         EventMap events;
 
         void Reset()
         {
         }
-        
+
         void UpdateAI(uint32 diff)
         {
         }
@@ -462,9 +460,7 @@ public:
 
     struct npc_roaring_flameAI : public ScriptedAI
     {
-        npc_roaring_flameAI(Creature* creature) : ScriptedAI(creature) 
-        {        
-        }
+        npc_roaring_flameAI(Creature* creature) : ScriptedAI(creature) { }
 
         EventMap events;
 
@@ -501,7 +497,7 @@ public:
             events.ScheduleEvent(EVENT_SONAR_PULSE_MOVE, 1500);
             DoCast(SPELL_SONAR_PULSE_AURA);
         }
-        
+
         void IsSummonedBy(Unit* owner)
         {
             if (owner)
@@ -530,7 +526,7 @@ public:
             {
                 switch (eventId)
                 {
-                // Через 1сек нпц начинает движение
+                    // Через 1сек нпц начинает движение
                 case EVENT_SONAR_PULSE_MOVE:
                     if (target)
                         me->GetNearPosition(pos, 50.0f, me->GetAngle(target->GetPositionX(), target->GetPositionY()));
@@ -560,7 +556,7 @@ public:
             me->SetSpeed(MOVE_RUN, 0.8f);
             pInstance = creature->GetInstanceScript();
         }
-        
+
         InstanceScript* pInstance;
 
         void Reset()
@@ -575,10 +571,10 @@ public:
                 {
                 case 1:
                     if (Creature* atramedes = me->FindNearestCreature(NPC_ATRAMEDES, 100.0f))
-                         atramedes->AI()->DoAction(ACTION_FLAME);
+                        atramedes->AI()->DoAction(ACTION_FLAME);
                     if (atramedesShield)
                         atramedesShield->DespawnOrUnsummon();
-                     me->DespawnOrUnsummon();
+                    me->DespawnOrUnsummon();
                 }
             }
         }
@@ -590,10 +586,10 @@ public:
 
             if (!me->FindNearestCreature(NPC_ROARING_FLAME, 4.0f))
                 me->SummonCreature(NPC_ROARING_FLAME,
-                    me->GetPositionX(),
-                    me->GetPositionY(),
-                    me->GetPositionZ(),
-                    0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
+                me->GetPositionX(),
+                me->GetPositionY(),
+                me->GetPositionZ(),
+                0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
         }
     };
 };
@@ -610,7 +606,7 @@ public:
             return false;
         if (pInstance->GetBossState(DATA_ATRAMEDES) != IN_PROGRESS)
             return true;
-        if(Creature* atramedes = pCreature->FindNearestCreature(NPC_ATRAMEDES, 200.0f))
+        if (Creature* atramedes = pCreature->FindNearestCreature(NPC_ATRAMEDES, 200.0f))
         {
             pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             atramedesShield = pCreature;
@@ -623,284 +619,284 @@ public:
 
 class npc_abnoxious_fiend : public CreatureScript
 {
-    public:
-        npc_abnoxious_fiend() : CreatureScript("npc_abnoxious_fiend") { }
+public:
+    npc_abnoxious_fiend() : CreatureScript("npc_abnoxious_fiend") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_abnoxious_fiendAI(creature);
+    }
+
+    struct npc_abnoxious_fiendAI : public ScriptedAI
+    {
+        npc_abnoxious_fiendAI(Creature* creature) : ScriptedAI(creature)
         {
-            return new npc_abnoxious_fiendAI(creature);
+            pInstance = creature->GetInstanceScript();
         }
 
-        struct npc_abnoxious_fiendAI : public ScriptedAI
+        InstanceScript* pInstance;
+        void Reset()
         {
-            npc_abnoxious_fiendAI(Creature* creature) : ScriptedAI(creature)
-            {
-                pInstance = creature->GetInstanceScript();
-            }
-            
-            InstanceScript* pInstance;
-            void Reset()
-            {
-            }
+        }
 
-            void UpdateAI(uint32 diff)
-            {
-                if (!pInstance)
-                    return;
+        void UpdateAI(uint32 diff)
+        {
+            if (!pInstance)
+                return;
 
-                if (pInstance->GetData(DATA_ATRAMEDES) != IN_PROGRESS)
-                    me->DespawnOrUnsummon();
+            if (pInstance->GetData(DATA_ATRAMEDES) != IN_PROGRESS)
+                me->DespawnOrUnsummon();
 
-                DoMeleeAttackIfReady();
-            }
-        };
+            DoMeleeAttackIfReady();
+        }
+    };
 };
 
 class spell_atramedes_resonating_clash : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_resonating_clash() : SpellScriptLoader("spell_atramedes_resonating_clash") { }
+public:
+    spell_atramedes_resonating_clash() : SpellScriptLoader("spell_atramedes_resonating_clash") { }
 
-        class spell_atramedes_resonating_clash_SpellScript : public SpellScript
+    class spell_atramedes_resonating_clash_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_resonating_clash_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_resonating_clash_SpellScript);
-
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                if (!GetHitUnit())
-                    return;
-                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_RESONATING_CLASH, true);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_resonating_clash_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_resonating_clash_SpellScript();
+            if (!GetHitUnit())
+                return;
+            GetHitUnit()->CastSpell(GetHitUnit(), SPELL_RESONATING_CLASH, true);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_resonating_clash_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_resonating_clash_SpellScript();
+    }
 };
 
 class spell_atramedes_resonating_clash_1 : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_resonating_clash_1() : SpellScriptLoader("spell_atramedes_resonating_clash_1") { }
+public:
+    spell_atramedes_resonating_clash_1() : SpellScriptLoader("spell_atramedes_resonating_clash_1") { }
 
-        class spell_atramedes_resonating_clash_1_SpellScript : public SpellScript
+    class spell_atramedes_resonating_clash_1_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_resonating_clash_1_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_resonating_clash_1_SpellScript);
-
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                if (!GetHitUnit())
-                    return;
-                GetHitUnit()->RemoveAurasDueToSpell(SPELL_NOISY);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_resonating_clash_1_SpellScript::HandleScript, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_resonating_clash_1_SpellScript();
+            if (!GetHitUnit())
+                return;
+            GetHitUnit()->RemoveAurasDueToSpell(SPELL_NOISY);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_resonating_clash_1_SpellScript::HandleScript, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_resonating_clash_1_SpellScript();
+    }
 };
 
 class spell_atramedes_vertigo : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_vertigo() : SpellScriptLoader("spell_atramedes_vertigo") { }
+public:
+    spell_atramedes_vertigo() : SpellScriptLoader("spell_atramedes_vertigo") { }
 
-        class spell_atramedes_vertigo_AuraScript : public AuraScript
+    class spell_atramedes_vertigo_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_atramedes_vertigo_AuraScript);
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_atramedes_vertigo_AuraScript);
+            if (!GetTarget())
+                return;
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetTarget())
-                    return;
-
-                GetTarget()->ToCreature()->AI()->DoAction(ACTION_SHIELD_KILL);
-            }
-            
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_atramedes_vertigo_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_atramedes_vertigo_AuraScript();
+            GetTarget()->ToCreature()->AI()->DoAction(ACTION_SHIELD_KILL);
         }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_atramedes_vertigo_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_atramedes_vertigo_AuraScript();
+    }
 };
 
 class spell_atramedes_modulation : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_modulation() : SpellScriptLoader("spell_atramedes_modulation") { }
+public:
+    spell_atramedes_modulation() : SpellScriptLoader("spell_atramedes_modulation") { }
 
-        class spell_atramedes_modulation_SpellScript : public SpellScript
+    class spell_atramedes_modulation_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_modulation_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_modulation_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 7);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_modulation_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_modulation_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 7);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_modulation_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_modulation_SpellScript();
+    }
 };
 
 class spell_atramedes_sonar_pulse : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_sonar_pulse() : SpellScriptLoader("spell_atramedes_sonar_pulse") { }
+public:
+    spell_atramedes_sonar_pulse() : SpellScriptLoader("spell_atramedes_sonar_pulse") { }
 
-        class spell_atramedes_sonar_pulse_SpellScript : public SpellScript
+    class spell_atramedes_sonar_pulse_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_sonar_pulse_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_sonar_pulse_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 3);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonar_pulse_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_sonar_pulse_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 3);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonar_pulse_SpellScript::RecalculateDamage, EFFECT_0, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_sonar_pulse_SpellScript();
+    }
 };
 
 class spell_atramedes_roaring_flame : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_roaring_flame() : SpellScriptLoader("spell_atramedes_roaring_flame") { }
+public:
+    spell_atramedes_roaring_flame() : SpellScriptLoader("spell_atramedes_roaring_flame") { }
 
-        class spell_atramedes_roaring_flame_SpellScript : public SpellScript
+    class spell_atramedes_roaring_flame_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_roaring_flame_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_roaring_flame_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 3);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_roaring_flame_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_roaring_flame_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 3);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_roaring_flame_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_roaring_flame_SpellScript();
+    }
 };
 
 class spell_atramedes_roaring_flame_aura : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_roaring_flame_aura() : SpellScriptLoader("spell_atramedes_roaring_flame_aura") { }
+public:
+    spell_atramedes_roaring_flame_aura() : SpellScriptLoader("spell_atramedes_roaring_flame_aura") { }
 
-        class spell_atramedes_roaring_flame_aura_SpellScript : public SpellScript
+    class spell_atramedes_roaring_flame_aura_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_roaring_flame_aura_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_roaring_flame_aura_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 5);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_roaring_flame_aura_SpellScript::RecalculateDamage, EFFECT_2, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_roaring_flame_aura_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 5);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_roaring_flame_aura_SpellScript::RecalculateDamage, EFFECT_2, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_roaring_flame_aura_SpellScript();
+    }
 };
 
 class spell_atramedes_sonar_bomb : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_sonar_bomb() : SpellScriptLoader("spell_atramedes_sonar_bomb") { }
+public:
+    spell_atramedes_sonar_bomb() : SpellScriptLoader("spell_atramedes_sonar_bomb") { }
 
-        class spell_atramedes_sonar_bomb_SpellScript : public SpellScript
+    class spell_atramedes_sonar_bomb_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_sonar_bomb_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_sonar_bomb_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 20);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonar_bomb_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_sonar_bomb_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 20);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonar_bomb_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_sonar_bomb_SpellScript();
+    }
 };
 
 class spell_atramedes_sonic_breath : public SpellScriptLoader
 {
-    public:
-        spell_atramedes_sonic_breath() : SpellScriptLoader("spell_atramedes_sonic_breath") { }
+public:
+    spell_atramedes_sonic_breath() : SpellScriptLoader("spell_atramedes_sonic_breath") { }
 
-        class spell_atramedes_sonic_breath_SpellScript : public SpellScript
+    class spell_atramedes_sonic_breath_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_atramedes_sonic_breath_SpellScript);
+
+        void RecalculateDamage(SpellEffIndex /*effIndex*/)
         {
-            PrepareSpellScript(spell_atramedes_sonic_breath_SpellScript);
-
-            void RecalculateDamage(SpellEffIndex /*effIndex*/)
-            {
-                uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
-                GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 20);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonic_breath_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_atramedes_sonic_breath_SpellScript();
+            uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+            GetHitUnit()->SetPower(POWER_ALTERNATE_POWER, power + 20);
         }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_atramedes_sonic_breath_SpellScript::RecalculateDamage, EFFECT_1, SPELL_EFFECT_ENERGIZE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_atramedes_sonic_breath_SpellScript();
+    }
 };
 
 void AddSC_boss_atramedes()

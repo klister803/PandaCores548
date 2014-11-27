@@ -4,100 +4,100 @@
 
 enum Spells
 {
-    SPELL_BERSERK                    = 26667,
-    SPELL_LAVA_SPEW                    = 77839,
-    SPELL_MAGMA_SPLIT_1                = 78359,
-    SPELL_MAGMA_SPLIT_1_25            = 91916,
-    SPELL_MAGMA_SPLIT_1_10H            = 91925,
-    SPELL_MAGMA_SPLIT_1_25H            = 91926,
-    SPELL_MAGMA_SPLIT_2                = 78068,
-    SPELL_MAGMA_SPLIT_2_25            = 91917,
-    SPELL_MAGMA_SPLIT_2_10H            = 91927,
-    SPELL_MAGMA_SPLIT_2_25H            = 91928,
-    SPELL_MANGLE0                    = 78412,
-    SPELL_MANGLE                    = 89773,
-    SPELL_MANGLE_25                    = 91912,
-    SPELL_MANGLE_10H                = 94616,
-    SPELL_MANGLE_25H                = 94617,
-    SPELL_MOLTEN_TANTRUM            = 78403,
-    SPELL_PILLAR_OF_FLAME_0            = 78017,
-    SPELL_PILLAR_OF_FLAME_1            = 77970,
-    SPELL_SWENTERING_ARMOR            = 78199,
-    SPELL_MANGLED_LIFELESS            = 78362,
-    SPELL_IGNITION_DUMMY            = 92128,
-    SPELL_MASSIVE_CRASH                = 88287,
-    SPELL_MASSIVE_CRASH_DUMMY        = 88253,
+    SPELL_BERSERK                       = 26667,
+    SPELL_LAVA_SPEW                     = 77839,
+    SPELL_MAGMA_SPLIT_1                 = 78359,
+    SPELL_MAGMA_SPLIT_1_25              = 91916,
+    SPELL_MAGMA_SPLIT_1_10H             = 91925,
+    SPELL_MAGMA_SPLIT_1_25H             = 91926,
+    SPELL_MAGMA_SPLIT_2                 = 78068,
+    SPELL_MAGMA_SPLIT_2_25              = 91917,
+    SPELL_MAGMA_SPLIT_2_10H             = 91927,
+    SPELL_MAGMA_SPLIT_2_25H             = 91928,
+    SPELL_MANGLE0                       = 78412,
+    SPELL_MANGLE                        = 89773,
+    SPELL_MANGLE_25                     = 91912,
+    SPELL_MANGLE_10H                    = 94616,
+    SPELL_MANGLE_25H                    = 94617,
+    SPELL_MOLTEN_TANTRUM                = 78403,
+    SPELL_PILLAR_OF_FLAME_0             = 78017,
+    SPELL_PILLAR_OF_FLAME_1             = 77970,
+    SPELL_SWENTERING_ARMOR              = 78199,
+    SPELL_MANGLED_LIFELESS              = 78362,
+    SPELL_IGNITION_DUMMY                = 92128,
+    SPELL_MASSIVE_CRASH                 = 88287,
+    SPELL_MASSIVE_CRASH_DUMMY           = 88253,
 
-    SPELL_PARASITIC_INFECTION        = 78941,
-    SPELL_PARASITIC_INFECTION_DMG    = 78937,
-    SPELL_PARASITIC_INFECTION_0        = 78097,
+    SPELL_PARASITIC_INFECTION           = 78941,
+    SPELL_PARASITIC_INFECTION_DMG       = 78937,
+    SPELL_PARASITIC_INFECTION_0         = 78097,
 
-    SPELL_EMOTE_LAVA_SPLASH            = 79461,
+    SPELL_EMOTE_LAVA_SPLASH             = 79461,
 
-    SPELL_POINT_OF_VULNERABILITY    = 79011,
+    SPELL_POINT_OF_VULNERABILITY        = 79011,
 
-    SPELL_LAUNCH_HOOK_1                = 77917,
-    SPELL_LAUNCH_HOOK_2                = 77941,
+    SPELL_LAUNCH_HOOK_1                 = 77917,
+    SPELL_LAUNCH_HOOK_2                 = 77941,
 
-    SPELL_FIERY_SLASH                = 92144,
-    SPELL_ARMAGEDDON                = 92177,
+    SPELL_FIERY_SLASH                   = 92144,
+    SPELL_ARMAGEDDON                    = 92177,
 };
 
 enum Adds
 {
-    NPC_EXPOSED_HEAD            = 42347,
-    NPC_PILLAR_OF_FLAME            = 41843,
-    NPC_LAVA_PARASITE_1            = 42321,
-    NPC_MAGMAW_PINCER_1            = 41620,
-    NPC_MAGMAW_PINCER_2            = 41789,
-    NPC_MAGMAW_SPIKE_STALKER    = 41767,
-    NPC_IGNITION_TRIGGER        = 49447,
-    NPC_LAVA_PARASITE_2            = 41806,
-    NPC_BLAZING_BONE_CONSTRUCT    = 49416,
-    NPC_MASSIVE_CRASH            = 47330,
-    NPC_ROOM_STALKER            = 47196,
+    NPC_EXPOSED_HEAD                    = 42347,
+    NPC_PILLAR_OF_FLAME                 = 41843,
+    NPC_LAVA_PARASITE_1                 = 42321,
+    NPC_MAGMAW_PINCER_1                 = 41620,
+    NPC_MAGMAW_PINCER_2                 = 41789,
+    NPC_MAGMAW_SPIKE_STALKER            = 41767,
+    NPC_IGNITION_TRIGGER                = 49447,
+    NPC_LAVA_PARASITE_2                 = 41806,
+    NPC_BLAZING_BONE_CONSTRUCT          = 49416,
+    NPC_MASSIVE_CRASH                   = 47330,
+    NPC_ROOM_STALKER                    = 47196,
 };
 
 enum Events
 {
-    EVENT_LAVA_SPEW            = 1,
-    EVENT_MAGMA_SPLIT        = 2,
-    EVENT_MANGLE            = 3,
-    EVENT_PILLAR_OF_FLAME    = 4,
-    EVENT_MELEE_CHECK        = 5,
-    EVENT_BERSERK            = 7,
-    EVENT_HEAD_START        = 8,
-    EVENT_HEAD_END            = 9,
-    EVENT_FIERY_SLASH        = 10,
+    EVENT_LAVA_SPEW             = 1,
+    EVENT_MAGMA_SPLIT           = 2,
+    EVENT_MANGLE                = 3,
+    EVENT_PILLAR_OF_FLAME       = 4,
+    EVENT_MELEE_CHECK           = 5,
+    EVENT_BERSERK               = 7,
+    EVENT_HEAD_START            = 8,
+    EVENT_HEAD_END              = 9,
+    EVENT_FIERY_SLASH           = 10,
 };
 
 enum Actions
 {
-    ACTION_HEAD_START    = 1,
-    ACTION_HEAD_EVENT    = 2,
-    ACTION_HEAD_END        = 3,
-    ACTION_HOOKED        = 4,
+    ACTION_HEAD_START       = 1,
+    ACTION_HEAD_EVENT       = 2,
+    ACTION_HEAD_END         = 3,
+    ACTION_HOOKED           = 4,
 };
 
 enum OtherData
 {
-    DATA_PASSENGERS    = 1,
+    DATA_PASSENGERS         = 1,
 };
 
 Position const magmawmassivecrashPos[2][21] =
 {
     {
-        {-355.258f, -66.156f, 215.363f, 3.32963f},
+        {-355.258f, -66.156f,  215.363f, 3.32963f},
         {-349.104f, -57.5792f, 214.837f, 3.35319f},
         {-355.983f, -79.9935f, 213.749f, 3.91082f},
-        {-348.35f, -71.9141f, 213.26f, 3.96973f},
+        {-348.35f,  -71.9141f, 213.26f,  3.96973f},
         {-341.228f, -63.2021f, 212.833f, 3.96973f},
         {-335.636f, -53.1296f, 212.332f, 5.80755f},
         {-344.959f, -47.9226f, 212.061f, 6.07851f},
-        {-354.565f, -47.2949f, 213.04f, 3.04373f},
-        {-350.721f, -88.5883f, 213.92f, 3.97443f},
+        {-354.565f, -47.2949f, 213.04f,  3.04373f},
+        {-350.721f, -88.5883f, 213.92f,  3.97443f},
         {-342.783f, -80.5202f, 213.868f, 3.93124f},
-        {-335.879f, -72.941f, 212.87f, 4.06083f},
+        {-335.879f, -72.941f,  212.87f,  4.06083f},
         {-330.037f, -64.3112f, 212.393f, 4.14329f},
         {-324.021f, -54.4161f, 211.863f, 4.19434f},
         {-317.603f, -44.6127f, 211.952f, 0.96793f},
@@ -115,22 +115,22 @@ Position const magmawmassivecrashPos[2][21] =
         {-306.833f, -83.4444f, 213.633f, 4.36788f},
         {-302.725f, -74.0836f, 213.345f, 4.69382f},
         {-304.055f, -63.3109f, 212.826f, 4.57601f},
-        {-300.848f, -54.0836f, 212.39f, 4.18332f},
-        {-308.972f, -52.744f, 212.326f, 5.62846f},
+        {-300.848f, -54.0836f, 212.39f,  4.18332f},
+        {-308.972f, -52.744f,  212.326f, 5.62846f},
         {-315.607f, -58.0178f, 212.578f, 1.02995f},
-        {-320.357f, -65.927f, 212.802f, 1.0378f},
-        {-326.56f, -74.2884f, 213.145f, 0.841454f},
-        {-333.371f, -83.2f, 213.706f, 0.566564f},
+        {-320.357f, -65.927f,  212.802f, 1.0378f},
+        {-326.56f,  -74.2884f, 213.145f, 0.841454f},
+        {-333.371f, -83.2f,    213.706f, 0.566564f},
         {-343.042f, -91.8511f, 213.916f, 3.12304f},
         {-334.444f, -92.7097f, 213.903f, 3.06413f},
         {-324.424f, -93.0766f, 213.909f, 2.98166f},
         {-315.574f, -93.3725f, 213.924f, 3.12696f},
         {-304.845f, -93.5295f, 213.919f, 3.10733f},
-        {-296.142f, -88.6009f, 214.03f, 4.72919f},
+        {-296.142f, -88.6009f, 214.03f,  4.72919f},
         {-292.752f, -78.8147f, 213.567f, 4.71348f},
         {-295.368f, -68.4218f, 213.065f, 4.71741f},
         {-293.046f, -56.9843f, 212.531f, 4.62709f},
-        {-295.83f, -46.4565f, 212.04f, 1.27344f}
+        {-295.83f,  -46.4565f, 212.04f,  1.27344f}
     }
 };
 
@@ -203,15 +203,15 @@ public:
             events.ScheduleEvent(EVENT_MAGMA_SPLIT, urand(15000, 20000));
             events.ScheduleEvent(EVENT_MANGLE, 65000);
             //events.ScheduleEvent(EVENT_HEAD_START, 5000);
-            
+
             if (IsHeroic())
                 if (Creature* pNefarius = me->SummonCreature(NPC_LORD_VICTOR_NEFARIUS_HEROIC, magmawnefariusspawnPos))
                 {
                     pNefarius->AI()->DoAction(ACTION_MAGMAW_INTRO);
                     pNefarius->AI()->DoAction(ACTION_BLAZING_INFERNO);
                 }
-            DoZoneInCombat();
-            pInstance->SetBossState(DATA_MAGMAW, IN_PROGRESS);
+                DoZoneInCombat();
+                pInstance->SetBossState(DATA_MAGMAW, IN_PROGRESS);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -228,7 +228,7 @@ public:
                 0.0f))
                 pNefarius->AI()->DoAction(ACTION_MAGMAW_DEATH);
         }
-        
+
         void JustSummoned(Creature* summon)
         {
             summons.Summon(summon);
@@ -268,15 +268,15 @@ public:
             {
                 switch (eventId)
                 {
-                /*case EVENT_HEAD_START:
+                    /*case EVENT_HEAD_START:
                     SetGrounded(true, 0);
                     if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_MAGMAW_HEAD)))
-                        pMagmawhead->AI()->DoAction(ACTION_HEAD_START);
+                    pMagmawhead->AI()->DoAction(ACTION_HEAD_START);
                     events.ScheduleEvent(EVENT_HEAD_END, 20000);
                     break;
-                case EVENT_HEAD_END:
+                    case EVENT_HEAD_END:
                     if (Creature* pMagmawhead = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_MAGMAW_HEAD)))
-                        pMagmawhead->AI()->DoAction(ACTION_HEAD_END);
+                    pMagmawhead->AI()->DoAction(ACTION_HEAD_END);
                     SetGrounded(false, 0);
                     events.ScheduleEvent(EVENT_MELEE_CHECK, 6000);
                     events.ScheduleEvent(EVENT_LAVA_SPEW, urand(3000, 7000));
@@ -328,54 +328,54 @@ public:
                 if (!me->getVictim()->HasAura(SPELL_MANGLE) && !bGrounded)
                     DoMeleeAttackIfReady();
         }
-        private:
+    private:
 
-            void SetGrounded(bool apply, uint32 mode)
+        void SetGrounded(bool apply, uint32 mode)
+        {
+            if (apply)
             {
-                if (apply)
+                bGrounded = true;
+                me->RemoveAllAuras();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetControlled(true, UNIT_STATE_STUNNED);
+                me->AddAura(mode = 0? 45799: 45798, me);
+                //45800
+                //45798
+                //91390
+                //45799
+            }
+            else
+            {
+                bGrounded = false;
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->SetControlled(false, UNIT_STATE_STUNNED);
+                me->RemoveAurasDueToSpell(mode = 0? 45799: 45798);
+            }
+        }
+
+        void _ChangeSpell(const uint8 mode)
+        {
+            if (mode == 1)
+            {
+                if (SpellInfo* spell = GET_SPELL(SPELL_MASSIVE_CRASH_DUMMY))
                 {
-                    bGrounded = true;
-                    me->RemoveAllAuras();
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetControlled(true, UNIT_STATE_STUNNED);
-                    me->AddAura(mode = 0? 45799: 45798, me);
-                    //45800
-                    //45798
-                    //91390
-                    //45799
-                }
-                else
-                {
-                    bGrounded = false;
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->SetControlled(false, UNIT_STATE_STUNNED);
-                    me->RemoveAurasDueToSpell(mode = 0? 45799: 45798);
+                    spell->Effects[0].Effect = 0;
+                    spell->SetDurationIndex(9);
                 }
             }
-
-            void _ChangeSpell(const uint8 mode)
+            else
             {
-                if (mode == 1)
+                if (SpellInfo* spell = GET_SPELL(SPELL_MASSIVE_CRASH_DUMMY))
                 {
-                    if (SpellInfo* spell = GET_SPELL(SPELL_MASSIVE_CRASH_DUMMY))
-                    {
-                        spell->Effects[0].Effect = 0;
-                        spell->SetDurationIndex(9);
-                    }
-                }
-                else
-                {
-                    if (SpellInfo* spell = GET_SPELL(SPELL_MASSIVE_CRASH_DUMMY))
-                    {
-                        spell->Effects[0].Effect = 3;
-                        spell->SetDurationIndex(32);
-                    }
+                    spell->Effects[0].Effect = 3;
+                    spell->SetDurationIndex(32);
                 }
             }
+        }
     };
 };
 
@@ -471,53 +471,53 @@ public:
 
 class npc_lava_parasite : public CreatureScript
 {
-    public:
-        npc_lava_parasite() : CreatureScript("npc_lava_parasite") { }
+public:
+    npc_lava_parasite() : CreatureScript("npc_lava_parasite") { }
 
-        CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_lava_parasiteAI(pCreature);
+    }
+
+    struct npc_lava_parasiteAI : public ScriptedAI
+    {
+        npc_lava_parasiteAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
-            return new npc_lava_parasiteAI(pCreature);
+            me->SetSpeed(MOVE_WALK, 0.3f);
+            me->SetSpeed(MOVE_RUN, 0.3f);
+            pInstance = pCreature->GetInstanceScript();
         }
 
-        struct npc_lava_parasiteAI : public ScriptedAI
+        InstanceScript* pInstance;
+
+        void Reset()
         {
-            npc_lava_parasiteAI(Creature* pCreature) : ScriptedAI(pCreature)
-            {
-                me->SetSpeed(MOVE_WALK, 0.3f);
-                me->SetSpeed(MOVE_RUN, 0.3f);
-                pInstance = pCreature->GetInstanceScript();
-            }
+        }
 
-            InstanceScript* pInstance;
+        void JustDied(Unit* /*killer*/)
+        {
+            me->DespawnOrUnsummon();
+        }
 
-            void Reset()
-            {
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
+        void UpdateAI(uint32 diff)
+        {
+            if (pInstance && pInstance->GetBossState(DATA_MAGMAW) != IN_PROGRESS)
                 me->DespawnOrUnsummon();
-            }
 
-            void UpdateAI(uint32 diff)
+            if (me->getVictim())
             {
-                if (pInstance && pInstance->GetBossState(DATA_MAGMAW) != IN_PROGRESS)
-                    me->DespawnOrUnsummon();
-
-                if (me->getVictim())
+                if ((me->GetDistance(me->getVictim()) <= 4.0f))
                 {
-                    if ((me->GetDistance(me->getVictim()) <= 4.0f))
+                    if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
                     {
-                        if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                        {
-                            me->getVictim()->CastSpell(me->getVictim(), SPELL_PARASITIC_INFECTION, true);
-                            me->DespawnOrUnsummon();
-                        }
+                        me->getVictim()->CastSpell(me->getVictim(), SPELL_PARASITIC_INFECTION, true);
+                        me->DespawnOrUnsummon();
                     }
                 }
-                DoMeleeAttackIfReady();
             }
-        };
+            DoMeleeAttackIfReady();
+        }
+    };
 };
 
 class npc_pillar_of_flame : public CreatureScript
@@ -579,70 +579,70 @@ public:
 
 class spell_magmaw_mangle : public SpellScriptLoader
 {
-    public:
-        spell_magmaw_mangle() : SpellScriptLoader("spell_magmaw_mangle") { }
+public:
+    spell_magmaw_mangle() : SpellScriptLoader("spell_magmaw_mangle") { }
 
-        class spell_magmaw_mangle_AuraScript : public AuraScript
+    class spell_magmaw_mangle_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_magmaw_mangle_AuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_magmaw_mangle_AuraScript);
+            if (!GetTarget() && GetCaster())
+                return;
 
-            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetTarget() && GetCaster())
-                    return;
-
-                GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
-            }
-
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetTarget() && GetCaster())
-                    return;
-
-                GetTarget()->SetControlled(false, UNIT_STATE_STUNNED);
-                GetTarget()->CastSpell(GetTarget() , SPELL_SWENTERING_ARMOR, true);
-            }
-            
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_magmaw_mangle_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_magmaw_mangle_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_magmaw_mangle_AuraScript();
+            GetTarget()->SetControlled(true, UNIT_STATE_STUNNED);
         }
+
+        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            if (!GetTarget() && GetCaster())
+                return;
+
+            GetTarget()->SetControlled(false, UNIT_STATE_STUNNED);
+            GetTarget()->CastSpell(GetTarget() , SPELL_SWENTERING_ARMOR, true);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_magmaw_mangle_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_magmaw_mangle_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_magmaw_mangle_AuraScript();
+    }
 };
 
 class spell_parasitic_infection : public SpellScriptLoader
 {
-    public:
-        spell_parasitic_infection() : SpellScriptLoader("spell_parasitic_infection") { }
+public:
+    spell_parasitic_infection() : SpellScriptLoader("spell_parasitic_infection") { }
 
-        class spell_parasitic_infection_AuraScript : public AuraScript
+    class spell_parasitic_infection_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_parasitic_infection_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            PrepareAuraScript(spell_parasitic_infection_AuraScript);
+            if (!GetTarget())
+                return;
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetTarget())
-                    return;
-
-                GetTarget()->CastSpell(GetTarget(), SPELL_PARASITIC_INFECTION_DMG, true);
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_parasitic_infection_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_parasitic_infection_AuraScript();
+            GetTarget()->CastSpell(GetTarget(), SPELL_PARASITIC_INFECTION_DMG, true);
         }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_parasitic_infection_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_parasitic_infection_AuraScript();
+    }
 };
 
 void AddSC_boss_magmaw()

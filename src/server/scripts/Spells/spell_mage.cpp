@@ -225,7 +225,12 @@ class spell_mage_arcane_missile : public SpellScriptLoader
 
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Aura* arcaneMissiles = _player->GetAura(SPELL_MAGE_ARCANE_MISSILES))
-                        arcaneMissiles->DropCharge();
+                    {
+                        if (_player->HasAura(145257) && roll_chance_i(30)) //Item - Mage T16 4P Bonus
+                            return;
+                        else
+                            arcaneMissiles->DropCharge();
+                    }
             }
 
             void OnTick(AuraEffect const* aurEff)
@@ -385,34 +390,21 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
 
-            void HandleAfterHit()
+            void HandleEffectHit(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        uint8 chargeCount = 0;
-                        int32 bp = 0;
-
-                        if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                        /*if (Aura* arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
                         {
                             chargeCount = arcaneCharge->GetStackAmount();
                             _player->RemoveAura(arcaneCharge);
-                        }
-
-                        if (chargeCount)
+                        }*/
+                        if(_player->GetSelectedUnit() != target)
                         {
-                            bp = GetHitDamage() / 2;
-
-                            std::list<Unit*> targetList;
-
-                            target->GetAttackableUnitListInRange(targetList, 10.0f);
-                            targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
-
-                            Trinity::Containers::RandomResizeList(targetList, chargeCount);
-
-                            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
-                                target->CastCustomSpell(*itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, NULL, _player->GetGUID());
+                            int32 _damage = int32((GetHitDamage() * GetSpellInfo()->Effects[EFFECT_1].BasePoints) / 100);
+                            SetHitDamage(_damage);
                         }
                     }
                 }
@@ -420,7 +412,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleAfterHit);
+                OnEffectHitTarget += SpellEffectFn(spell_mage_arcane_barrage_SpellScript::HandleEffectHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
             }
         };
 
@@ -527,29 +519,6 @@ class spell_mage_slow : public SpellScriptLoader
                 OnHit += SpellHitFn(spell_mage_slow_SpellScript::HandleOnHit);
             }
         };
-
-        class spell_mage_slow_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_mage_slow_AuraScript);
-
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if(Unit* caster = GetCaster())
-                    if(Player* player = caster->ToPlayer())
-                        if (player->GetSelectedPlayer())
-                            amount /= 5;
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_slow_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_HASTE_SPELLS);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_mage_slow_AuraScript();
-        }
 
         SpellScript* GetSpellScript() const
         {
@@ -891,9 +860,12 @@ class spell_mage_combustion : public SpellScriptLoader
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         int32 combustionBp = 0;
+                        int32 percent = 20;
+                        if(_player->HasAura(56368))
+                            percent += 20;
 
                         if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_MAGE_IGNITE, EFFECT_0))
-                            combustionBp += CalculatePct((aurEff->GetAmount() / 2), 20);
+                            combustionBp += CalculatePct(aurEff->GetAmount(), percent);
 
                         if (combustionBp)
                             _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
@@ -1071,34 +1043,6 @@ class spell_mage_arcane_brilliance : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_mage_arcane_brilliance_SpellScript();
-        }
-};
-
-// Replenish Mana - 5405
-class spell_mage_replenish_mana : public SpellScriptLoader
-{
-    public:
-        spell_mage_replenish_mana() : SpellScriptLoader("spell_mage_replenish_mana") { }
-
-        class spell_mage_replenish_mana_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_replenish_mana_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 10052, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_mage_replenish_mana_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_replenish_mana_SpellScript();
         }
 };
 
@@ -1655,7 +1599,21 @@ class spell_mage_greater_invisibility : public SpellScriptLoader
             void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
+                {
+                    int32 count = 0;
+                    Unit::AuraEffectList const mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for (Unit::AuraEffectList::const_iterator iter = mPeriodic.begin(); iter != mPeriodic.end(); ++iter)
+                    {
+                        if (!(*iter)) // prevent crash
+                            continue;
+                        Aura* aura = (*iter)->GetBase();
+                        aura->Remove();
+                        count++;
+                        if(count > 1)
+                            return;
+                    }
                     caster->CastSpell(GetTarget(), 113862, true, NULL, aurEff);
+                }
             }
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -2116,35 +2074,87 @@ class spell_mage_glyph_of_icy_veins : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Unit* caster = GetCaster())
-                {                
+                {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (caster->HasAura(SPELL_MAGE_ICY_VEINS))    
-                        {    
+                        int32 _damage = GetHitDamage();
+                        if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
+                        {
+                            if (target != GetExplTargetUnit())
+                            {
+                                _damage = int32(_damage * 0.25f);
+                                SetHitDamage(_damage);
+                            }
+                        }
+                        if (caster->HasAura(SPELL_MAGE_ICY_VEINS))
+                        {
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT)
                             {    
                                 caster->CastSpell(target, 131079, true);
                                 caster->CastSpell(target, 131079, true);
                             }
-                            
+
                             if (GetSpellInfo()->Id == SPELL_MAGE_ICE_LANCE)
-                            {    
+                            {
                                 caster->CastSpell(target, 131080, true);
                                 caster->CastSpell(target, 131080, true);
                             }
-                            
+
                             if (GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
-                            {    
+                            {
                                 caster->CastSpell(target, 131081, true);
                                 caster->CastSpell(target, 131081, true);
                             }
-                        }    
+                        }
+                        // Icicle
+                        if (caster->HasAura(148016))
+                        {
+                            if (GetSpellInfo()->Id == SPELL_MAGE_FROSTBOLT || GetSpellInfo()->Id == SPELL_MAGE_FROSTFIRE_BOLT)
+                            {
+                                int32 visual = 148017;
+                                Aura* icicle2 = caster->GetAura(148012);
+                                Aura* icicle3 = caster->GetAura(148013);
+                                Aura* icicle4 = caster->GetAura(148014);
+                                Aura* icicle5 = caster->GetAura(148015);
+                                Aura* icicle6 = caster->GetAura(148016);
+
+                                if(icicle2 && icicle3 && icicle4 && icicle5 && icicle6)
+                                {
+                                    Aura* icicle = icicle2;
+                                    if(icicle->GetDuration() > icicle3->GetDuration())
+                                    {
+                                        icicle = icicle3;
+                                        visual = 148018;
+                                    }
+                                    if(icicle->GetDuration() > icicle4->GetDuration())
+                                    {
+                                        icicle = icicle4;
+                                        visual = 148019;
+                                    }
+                                    if(icicle->GetDuration() > icicle5->GetDuration())
+                                    {
+                                        icicle = icicle5;
+                                        visual = 148020;
+                                    }
+                                    if(icicle->GetDuration() > icicle6->GetDuration())
+                                    {
+                                        icicle = icicle6;
+                                        visual = 148021;
+                                    }
+
+                                    int32 tickamount = icicle->GetEffect(EFFECT_0)->GetAmount();
+                                    caster->CastSpell(target, visual, true);
+                                    caster->CastCustomSpell(target, 148022, &tickamount, NULL, NULL, true);
+                                    icicle->Remove();
+                                }
+                            }
+                        }
                         if (Unit* owner = caster->GetOwner())
-                        { 
+                        {
                             if (GetSpellInfo()->Id == SPELL_MAGE_WATERBOLT)
-                            {    
+                            {
                                 if (owner->HasAura(SPELL_MAGE_ICY_VEINS))
-                                {    
+                                {
                                     caster->CastSpell(target, 131581, true);
                                     caster->CastSpell(target, 131581, true);
                                 }
@@ -2205,6 +2215,102 @@ class spell_mage_glyph_of_conjure_familiar : public SpellScriptLoader
         }
 };
 
+// Inferno Blast - 118280
+class spell_mage_inferno_blast_impact : public SpellScriptLoader
+{
+    public:
+        spell_mage_inferno_blast_impact() : SpellScriptLoader("spell_mage_inferno_blast_impact") { }
+
+        class spell_mage_inferno_blast_impact_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_inferno_blast_impact_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                uint32 count = 3;
+                if (Unit* caster = GetCaster())
+                    if (Aura* aura = caster->GetAura(89926))
+                    {
+                        if(aura->GetEffect(EFFECT_0))
+                            count += aura->GetEffect(EFFECT_0)->GetAmount();
+                    }
+                if(targets.size() > count)
+                    Trinity::Containers::RandomResizeList(targets, count);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_inferno_blast_impact_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_inferno_blast_impact_SpellScript();
+        }
+};
+
+// Icicle - 148022
+class spell_mage_icicle_damage : public SpellScriptLoader
+{
+    public:
+        spell_mage_icicle_damage() : SpellScriptLoader("spell_mage_icicle_damage") { }
+
+        class spell_mage_icicle_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_icicle_damage_SpellScript)
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    if (target != GetExplTargetUnit())
+                        SetHitDamage(int32(GetHitDamage() * 0.5f));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_mage_icicle_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_icicle_damage_SpellScript();
+        }
+};
+
+// Glyph of Icy Veins - 131079, 131080, 131081
+class spell_mage_glyph_of_icy_veins_damage : public SpellScriptLoader
+{
+    public:
+        spell_mage_glyph_of_icy_veins_damage() : SpellScriptLoader("spell_mage_glyph_of_icy_veins_damage") { }
+
+        class spell_mage_glyph_of_icy_veins_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_glyph_of_icy_veins_damage_SpellScript)
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    SetHitDamage(int32(GetHitDamage() * 0.4f));
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_mage_glyph_of_icy_veins_damage_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_glyph_of_icy_veins_damage_SpellScript();
+        }
+};
+
 void AddSC_mage_spell_scripts()
 {
     new spell_mage_incanters_ward_cooldown();
@@ -2224,7 +2330,6 @@ void AddSC_mage_spell_scripts()
     new spell_mage_combustion();
     new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();
-    new spell_mage_replenish_mana();
     new spell_mage_conjure_refreshment();
     new spell_mage_conjure_refreshment_table();
     new spell_mage_time_warp();
@@ -2247,4 +2352,7 @@ void AddSC_mage_spell_scripts()
     new spell_mage_flameglow();
     new spell_mage_glyph_of_icy_veins();
     new spell_mage_glyph_of_conjure_familiar();
+    new spell_mage_inferno_blast_impact();
+    new spell_mage_icicle_damage();
+    new spell_mage_glyph_of_icy_veins_damage();
 }

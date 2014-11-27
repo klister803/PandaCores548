@@ -718,6 +718,11 @@ public:
         {
         }
 
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
         {
             if (apply)

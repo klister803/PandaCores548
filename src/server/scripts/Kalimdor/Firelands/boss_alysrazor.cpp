@@ -281,7 +281,7 @@ class boss_alysrazor : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_alysrazorAI(pCreature);
+            return GetAIForInstance< boss_alysrazorAI>(pCreature, FLScriptName);
         }
 
         struct boss_alysrazorAI : public BossAI
@@ -312,14 +312,6 @@ class boss_alysrazor : public CreatureScript
             bool bMolting;
             bool bSpawnCloud;
             bool bVortex;
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
-            }
 
             void Reset()
             { 

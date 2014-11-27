@@ -5,9 +5,9 @@
 //todo: реализовать робота и аддов на героике, включение робота после убийства пары мобов
 enum ScriptTexts
 {
-    SAY_AGGRO    = 0,
-    SAY_DEATH    = 1,
-    SAY_KILL    = 2,
+    SAY_AGGRO     = 0,
+    SAY_DEATH     = 1,
+    SAY_KILL      = 2,
     SAY_SPELL1    = 3,
     SAY_SPELL2    = 4,
     SAY_SPELL3    = 5,
@@ -16,21 +16,21 @@ enum ScriptTexts
 
 enum Spells
 {
-    SPELL_OFF_LINE            = 88348,
+    SPELL_OFF_LINE             = 88348,
     SPELL_REAPER_STRIKE        = 88490,
-    SPELL_REAPER_STRIKE_H    = 91717,
-    SPELL_SAFETY            = 88522,
-    SPELL_SAFETY_H            = 91720,
-    SPELL_HARVEST            = 88495,
-    SPELL_HARVEST_AURA        = 88497,
-    SPELL_HARVEST_DMG        = 88501,
+    SPELL_REAPER_STRIKE_H      = 91717,
+    SPELL_SAFETY               = 88522,
+    SPELL_SAFETY_H             = 91720,
+    SPELL_HARVEST              = 88495,
+    SPELL_HARVEST_AURA         = 88497,
+    SPELL_HARVEST_DMG          = 88501,
     SPELL_HARVEST_DMG_H        = 91719,
     SPELL_HARVEST_SWEEP        = 88521,
-    SPELL_HARVEST_SWEEP_H    = 91718,
+    SPELL_HARVEST_SWEEP_H      = 91718,
     SPELL_OVERDRIVE            = 88481,
     SPELL_OVERDRIVE_DMG        = 88484,
-    SPELL_OVERDRIVE_DMG_H    = 91716,
-    SPELL_TARGET_BUNNY        = 71371, //rocket artillery
+    SPELL_OVERDRIVE_DMG_H      = 91716,
+    SPELL_TARGET_BUNNY         = 71371, //rocket artillery
 };
 
 enum Adds
@@ -43,11 +43,11 @@ enum Adds
 
 enum Events
 {
-    EVENT_OVERDRIVE    = 1,
-    EVENT_OVERDRIVE1    = 2,
-    EVENT_REAPER_STRIKE    = 3,
-    EVENT_HARVEST        = 4,
-    EVENT_HARVEST1        = 5,
+    EVENT_OVERDRIVE         = 1,
+    EVENT_OVERDRIVE1        = 2,
+    EVENT_REAPER_STRIKE     = 3,
+    EVENT_HARVEST           = 4,
+    EVENT_HARVEST1          = 5,
 
 };
 

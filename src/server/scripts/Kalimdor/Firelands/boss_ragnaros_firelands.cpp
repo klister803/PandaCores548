@@ -321,7 +321,7 @@ class boss_ragnaros_firelands : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_ragnaros_firelandsAI(pCreature);
+            return GetAIForInstance<boss_ragnaros_firelandsAI>(pCreature, FLScriptName);
         }
 
         struct boss_ragnaros_firelandsAI : public BossAI
@@ -344,14 +344,6 @@ class boss_ragnaros_firelands : public CreatureScript
                 me->SetDisableGravity(true);
                 me->SetCanFly(true);
                 
-            }
-
-            void InitializeAI()
-            {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FLScriptName))
-                    me->IsAIEnabled = false;
-                else if (!me->isDead())
-                    Reset();
             }
 
             bool AllowAchieve()

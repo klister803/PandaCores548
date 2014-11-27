@@ -637,6 +637,7 @@ class Battleground
         void SetRBG(bool enable) { m_IsRBG = enable; }
 
         void SendFlagsPositionsUpdate(uint32 diff);
+        void SendOponentSpecialization(uint32 team);
 
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground

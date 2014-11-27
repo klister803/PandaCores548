@@ -32,6 +32,8 @@ enum AreaTriggerActionMoment
     AT_ACTION_MOMENT_DESPAWN    = 0x08,                // when areatrigger despawn
     AT_ACTION_MOMENT_SPAWN      = 0x10,                // when areatrigger spawn
     AT_ACTION_MOMENT_REMOVE     = 0x20,                // when areatrigger remove
+    //range should be = distance.
+    AT_ACTION_MOMENT_ON_THE_WAY = 0x40,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
 };
 
 enum AreaTriggerActionType
@@ -56,6 +58,7 @@ enum AreaTriggerTargetFlags
     AT_TARGET_FLAG_ALWAYS_TRIGGER    = 0x100,             // casted always at any action on owner
     AT_TARGET_FLAT_IN_FRONT          = 0x200,             // WARNING! If target come from back he not get cast. ToDo it..
     AT_TARGET_FLAG_NOT_FULL_ENERGY   = 0x400,             // casted on targets if not full enegy
+    AT_TARGET_FLAG_GROUP_OR_RAID     = 0x800,             // casted on targets that in group to areatrigger owner
 
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |
@@ -78,13 +81,15 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 struct AreaTriggerInfo
 {
     AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1){}
+        visualId(1), customEntry(0), isMoving(false){}
 
+    bool isMoving;
     float radius;
     float radius2;
     uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
     uint32 activationDelay;
     uint32 updateDelay;
+    uint32 customEntry;
     uint8 maxCount;
     AreaTriggerActionList actions;
 };
@@ -126,8 +131,10 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void SetDuration(int32 newDuration) { _duration = newDuration; }
         void Delay(int32 delaytime) { SetDuration(GetDuration() - delaytime); }
         float GetVisualScale(bool max = false) const;
-        float GetRadius() const;
-        float GetCustomVisualId() const;
+        float GetRadius() const { return _radius; }
+        float GetCustomVisualId() const { return atInfo.visualId; }
+        uint32 GetCustomEntry() const { return atInfo.customEntry; }
+        uint32 GetRealEntry() const { return _realEntry; }
         bool IsUnitAffected(uint64 guid) const;
         void AffectUnit(Unit* unit, AreaTriggerActionMoment actionM);
         void AffectOwner(AreaTriggerActionMoment actionM);
@@ -139,8 +146,17 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void BindToCaster();
         void UnbindFromCaster();
 
+        SpellInfo const*  GetSpellInfo() { return m_spellInfo; }
+
+        //movement
+        void UpdateMovement(uint32 diff);
+        bool isMoving() const { return atInfo.isMoving; }
+        float getMoveSpeed() const { return _moveSpeed; }
+        uint32 GetObjectMovementParts() const;
+        void PutObjectUpdateMovement(ByteBuffer* data) const;
+
     private:
-        bool _HasActionsWithCharges();
+        bool _HasActionsWithCharges(AreaTriggerActionMoment action = AT_ACTION_MOMENT_ENTER);
         void FillCustiomData();
 
     protected:
@@ -153,8 +169,14 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;
-        
+        Position _destPosition;
+        Position _startPosition;
+        uint32 _realEntry;
+        float _moveSpeed;
+        uint32 _moveTime;
         bool _on_unload;
         bool _on_despawn;
+
+        SpellInfo const* m_spellInfo;
 };
 #endif

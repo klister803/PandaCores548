@@ -89,7 +89,7 @@ enum SpellAuraInterruptFlags
     AURA_INTERRUPT_FLAG_LANDING             = 0x02000000,   // 25   removed by hitting the ground
     AURA_INTERRUPT_FLAG_UNK26               = 0x04000000,   // 26
     AURA_INTERRUPT_FLAG_TAKE_DAMAGE2        = 0x08000000,   // 27   aura who remove from limit damage by proc (fear, confuse, stun, root, transform)
-    AURA_INTERRUPT_FLAG_ENTER_COMBAT2       = 0x10000000,   // 28
+    AURA_INTERRUPT_FLAG_ENTER_COMBAT        = 0x10000000,   // 28   remove aura on enter combat
     AURA_INTERRUPT_FLAG_UNK29               = 0x20000000,   // 29
     AURA_INTERRUPT_FLAG_UNK30               = 0x40000000,   // 30
     AURA_INTERRUPT_FLAG_UNK31               = 0x80000000,   // 31
@@ -405,13 +405,14 @@ enum DamageTypeToSchool
 
 enum AuraRemoveMode
 {
-    AURA_REMOVE_NONE = 0,
-    AURA_REMOVE_BY_DEFAULT = 1,       // scripted remove, remove by stack with aura with different ids and sc aura remove
-    AURA_REMOVE_BY_CANCEL,
-    AURA_REMOVE_BY_ENEMY_SPELL,       // dispel and absorb aura destroy
-    AURA_REMOVE_BY_EXPIRE,            // aura duration has ended
-    AURA_REMOVE_BY_DEATH,
-    AURA_REMOVE_BY_MECHANIC,
+    AURA_REMOVE_NONE                = 0,
+    AURA_REMOVE_BY_DEFAULT          = 1, // scripted remove, remove by stack with aura with different ids and sc aura remove
+    AURA_REMOVE_BY_CANCEL           = 2,
+    AURA_REMOVE_BY_ENEMY_SPELL      = 3, // dispel and absorb aura destroy
+    AURA_REMOVE_BY_EXPIRE           = 4, // aura duration has ended
+    AURA_REMOVE_BY_DEATH            = 5,
+    AURA_REMOVE_BY_MECHANIC         = 6,
+    AURA_REMOVE_BY_DROP_CHARGERS    = 7, // aura remove by drop charges
 };
 
 enum TriggerCastFlags
@@ -1034,7 +1035,7 @@ struct CalcDamageInfo
 
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
 struct SpellNonMeleeDamage{
-    SpellNonMeleeDamage(Unit* _attacker, Unit* _target, uint32 _SpellID, uint32 _schoolMask)
+    SpellNonMeleeDamage(Unit* _attacker = NULL, Unit* _target = NULL, uint32 _SpellID = 0, uint32 _schoolMask = 0)
         : target(_target), attacker(_attacker), SpellID(_SpellID), damage(0), overkill(0), schoolMask(_schoolMask),
         absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0)
     {}
@@ -1418,6 +1419,7 @@ class Unit : public WorldObject
         void AddUnitState(uint32 f) { m_state |= f; }
         bool HasUnitState(const uint32 f) const { return (m_state & f); }
         void ClearUnitState(uint32 f) { m_state &= ~f; }
+        uint32 GetUnitState() const { return m_state; }
         bool CanFreeMove() const
         {
             return !HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING | UNIT_STATE_IN_FLIGHT |
@@ -1625,7 +1627,6 @@ class Unit : public WorldObject
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM, const SpellInfo* spellProto) const;
-        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto);
 
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;
@@ -1922,6 +1923,7 @@ class Unit : public WorldObject
 
         AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
         AuraEffectList GetAuraEffectsByMechanic(uint32 mechanic_mask) const;
+        AuraEffectList GetTotalNotStuckAuraEffectByType(AuraType auratype) const;
 
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
@@ -2047,6 +2049,7 @@ class Unit : public WorldObject
         Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
+        void SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target = NULL);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);
@@ -2118,6 +2121,7 @@ class Unit : public WorldObject
 
         // common function for visibility checks for player/creatures with detection code
         void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
+        void SetPhaseId(uint32 newPhase, bool update);// overwrite WorldObject::SetPhaseId
         void UpdateObjectVisibility(bool forced = true);
 
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
@@ -2204,7 +2208,7 @@ class Unit : public WorldObject
         uint32 SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, SpellEffIndex effIndex = EFFECT_0, uint32 stack = 1);
         float CalcPvPPower(Unit* target, float amount, bool isHeal = false);
 
-        uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+        uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL, uint32 effectMask = 0);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage,WeaponAttackType attType, SpellInfo const *spellProto = NULL);
 
         void TriggerCCDEffect(bool enable) { _haveCCDEffect = enable; }
@@ -2549,6 +2553,7 @@ class Unit : public WorldObject
     private:
         bool SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect);
         bool SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
+        void CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spellProto, uint32 mask = 131071, bool damage = true) const; //mask for all 16 effect
         bool IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect);
         bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);

@@ -775,7 +775,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                 {
                     if (Unit* target = caster->m_SpecialTarget)
                     {
-                        int32 bp = dmgInfo.GetAbsorb();
+                        int32 bp = int32(dmgInfo.GetAbsorb() / 6);
 
                         if (bp)
                             caster->CastCustomSpell(target, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
@@ -3277,13 +3277,15 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove(GetCaster());
-                targets.remove(GetOriginalCaster());
+                //targets.remove(GetOriginalCaster());
                 targets.remove_if(OptionCheck(GetCaster()));
                 if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
                 {
                     targets.sort(CheckHealthState());
                     if (targets.size() > 1)
                         targets.resize(1);
+                    if(targets.size() == 0)
+                        targets.push_back(GetOriginalCaster());
                 }
                 else
                     Trinity::Containers::RandomResizeList(targets, 1);

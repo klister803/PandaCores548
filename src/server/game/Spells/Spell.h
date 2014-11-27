@@ -91,6 +91,22 @@ struct SpellDestination
     Position _transportOffset;
 };
 
+// Targets store structures and data
+struct TargetInfo
+{
+    uint64 targetGUID;
+    uint64 timeDelay;
+    SpellMissInfo missCondition:8;
+    SpellMissInfo reflectResult:8;
+    uint32  effectMask:32;
+    bool   processed:1;
+    bool   alive:1;
+    bool   crit:1;
+    bool   scaleAura:1;
+    int32  damage;
+    SpellNonMeleeDamage damageInfo;
+};
+
 enum WeightType
 {
     WEIGHT_KEYSTONE = 0,
@@ -398,11 +414,12 @@ class Spell
         void EffectSummonRaidMarker(SpellEffIndex effIndex);
         void EffectRandomizeDigsites(SpellEffIndex effIndex);
         void EffectTeleportToDigsite(SpellEffIndex effIndex);
+        void EffectUncagePet(SpellEffIndex effIndex);
         void SendScene(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 
-        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false);
+        Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false, bool replaced = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -414,6 +431,7 @@ class Spell
         void SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
         void SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
         void SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
+        void SelectImplicitGotoMoveTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
         void SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
         void SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
@@ -483,7 +501,6 @@ class Spell
         void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
-        void SendSpellCreateVisual();
         void SendSpellPendingCast();
         void SendSpellActivationScene();
         void SendSpellCooldown();
@@ -502,6 +519,7 @@ class Spell
 
         void HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode);
         void HandleThreatSpells();
+        bool CheckEffFromDummy(Unit* target, uint32 eff);
 
         SpellInfo const* const m_spellInfo;
         Item* m_CastItem;
@@ -516,6 +534,8 @@ class Spell
         bool find_target;
         bool canHitTargetInLOS;
         uint32 m_count_dispeling; // Final count dispell auras
+        bool m_interupted;
+        bool m_replaced;
 
         UsedSpellMods m_appliedMods;
 
@@ -533,6 +553,7 @@ class Spell
         uint32 AttributesCustomEx11;
         uint32 AttributesCustomEx12;
         uint32 AttributesCustomEx13;
+        uint32 AttributesCustomCu;
         void LoadAttrDummy();
 
         int32 GetCastTime() const { return m_casttime; }
@@ -568,10 +589,13 @@ class Spell
 
         void SetSpellValue(SpellValueMod mod, int32 value);
         uint32 GetCountDispel() const { return m_count_dispeling; }
+        bool GetInterupted() const { return m_interupted; }
         void WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID);
 
         void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
+        void SetEffectTargets (std::list<WorldObject*> targets) { m_effect_targets = targets; }
+        std::list<WorldObject*> GetEffectTargets() { return m_effect_targets; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -631,9 +655,12 @@ class Spell
         GameObject* gameObjTarget;
         WorldLocation* destTarget;
         int32 damage;
+        bool damageCalculate[MAX_SPELL_EFFECTS];
+        int32 saveDamageCalculate[MAX_SPELL_EFFECTS];
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
         Aura* m_spellAura;
+        std::list<WorldObject*> m_effect_targets;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;
@@ -664,21 +691,8 @@ class Spell
         // *****************************************
         // Spell target subsystem
         // *****************************************
-        // Targets store structures and data
-        struct TargetInfo
-        {
-            uint64 targetGUID;
-            uint64 timeDelay;
-            SpellMissInfo missCondition:8;
-            SpellMissInfo reflectResult:8;
-            uint32  effectMask:32;
-            bool   processed:1;
-            bool   alive:1;
-            bool   crit:1;
-            bool   scaleAura:1;
-            int32  damage;
-        };
         std::list<TargetInfo> m_UniqueTargetInfo;
+        TargetInfo* GetTargetInfo(uint64 targetGUID);
         uint32 m_channelTargetEffectMask;                        // Mask req. alive targets
 
         struct GOTargetInfo
@@ -734,8 +748,9 @@ class Spell
         void CallScriptBeforeHitHandlers();
         void CallScriptOnHitHandlers();
         void CallScriptAfterHitHandlers();
-        void CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex);
+        void CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, Targets targetId);
         void CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex);
+        void CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex effIndex, Targets targetId);
         std::list<SpellScript*> m_loadedScripts;
 
         struct HitTriggerSpell
@@ -761,7 +776,7 @@ class Spell
         uint32 m_spellState;
         int32 m_timer;
 
-        TriggerCastFlags _triggeredCastFlags;
+        uint32 _triggeredCastFlags;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras

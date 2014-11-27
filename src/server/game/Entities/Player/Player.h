@@ -198,7 +198,9 @@ struct SpellChargeData
     uint32 timer;
 };
 
-typedef std::map<uint32, SpellCooldown> PPPMSpellCooldowns;
+typedef std::map<uint32, double> RPPMLastSuccessfulProc;
+typedef std::map<uint32, double> RPPMLastChanceToProc;
+typedef std::map<uint32, SpellCooldown> RPPMSpellCooldowns;
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 typedef std::map<uint32 /*categoryId*/, SpellChargeData> SpellChargeDataMap;
 typedef std::map<uint32, UncategorySpellChargeData*> UCSpellChargeDataMap;
@@ -1715,7 +1717,7 @@ class Player : public Unit, public GridObject<Player>
 
             return mainItem && ((mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON && !CanTitanGrip()) || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGED || mainItem->GetTemplate()->InventoryType == INVTYPE_THROWN || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGEDRIGHT);
         }
-        void SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast = false);
+        void SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received, bool created, bool broadcast = false);
         bool BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
         bool BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uint32 currency, uint32 count);
         bool _StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int64 price, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore);
@@ -1944,7 +1946,7 @@ class Player : public Unit, public GridObject<Player>
         void SendTalentWipeConfirm(uint64 guid, bool specializaion);
         void CalcRage(uint32 damage, bool attacker);
         void RegenerateAll();
-        void Regenerate(Powers power);
+        void Regenerate(Powers power, uint32 saveTimer);
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
@@ -1982,7 +1984,7 @@ class Player : public Unit, public GridObject<Player>
         Player* GetSelectedPlayer() const;
         void SetSelection(uint64 guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
-        uint8 GetComboPoints() const { return m_comboPoints; }
+        uint8 GetComboPoints() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count, Spell* spell = NULL);
@@ -2151,7 +2153,7 @@ class Player : public Unit, public GridObject<Player>
         void SendSpellMods();
         bool IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
-        void RemoveSpellMods(Spell* spell);
+        void RemoveSpellMods(Spell* spell, bool casting = false);
         void RestoreSpellMods(Spell* spell, uint32 ownerAuraId = 0, Aura* aura = NULL);
         void RestoreAllSpellMods(uint32 ownerAuraId = 0, Aura* aura = NULL);
         void DropModCharge(SpellModifier* mod, Spell* spell);
@@ -2172,13 +2174,18 @@ class Player : public Unit, public GridObject<Player>
         }
         double GetPPPMSpellCooldownDelay(uint32 spell_id) const
         {
-            PPPMSpellCooldowns::const_iterator itr = m_pppmspellCooldowns.find(spell_id);
+            RPPMSpellCooldowns::const_iterator itr = m_rppmspellCooldowns.find(spell_id);
             double t = getPreciseTime();
-            return uint32(itr != m_pppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
+            return double(itr != m_rppmspellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0.0);
         }
+        double GetLastSuccessfulProc(uint32 spell_id) { return m_rppmLastSuccessfulProc[spell_id]; }
+        double GetLastChanceToProc(uint32 spell_id) { return m_rppmLastChanceToProc[spell_id]; }
+        void SetLastSuccessfulProc(uint32 spell_id, double time) { m_rppmLastSuccessfulProc[spell_id] = time; }
+        void SetLastChanceToProc(uint32 spell_id, double time) { m_rppmLastChanceToProc[spell_id] = time; }
+        bool GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* spellProto);
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
-        void AddPPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
+        void AddRPPMSpellCooldown(uint32 spell_id, uint32 itemid, double end_time);
         void SendCooldownEvent(SpellInfo const* spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
@@ -3504,7 +3511,9 @@ class Player : public Unit, public GridObject<Player>
         ReputationMgr  m_reputationMgr;
         BattlePetMgr   m_battlePetMgr;
 
-        PPPMSpellCooldowns m_pppmspellCooldowns;
+        RPPMLastChanceToProc m_rppmLastChanceToProc;
+        RPPMLastSuccessfulProc m_rppmLastSuccessfulProc;
+        RPPMSpellCooldowns m_rppmspellCooldowns;
         SpellCooldowns m_spellCooldowns;
         SpellChargeDataMap m_spellChargeData;
         UCSpellChargeDataMap m_uncategorySpellChargeData;
@@ -3570,6 +3579,11 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             ASSERT(mod->charges == 0);
 
         if (!IsAffectedBySpellmod(spellInfo, mod, spell))
+            continue;
+        SpellInfo const* affectSpell = sSpellMgr->GetSpellInfo(mod->spellId);
+        if(!affectSpell)
+            continue;
+        if((affectSpell->Attributes & SPELL_ATTR0_ONLY_STEALTHED) && !HasStealthAura())
             continue;
 
         if (mod->type == SPELLMOD_FLAT)
