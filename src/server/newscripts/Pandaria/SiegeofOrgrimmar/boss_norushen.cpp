@@ -856,6 +856,7 @@ public:
             events.RescheduleEvent(EVENT_2, urand(3000, 6000));
             me->CastSpell(me, SPELL_ESSENCE_OF_CORUPTION, false);
             me->CastSpell(me, SPELL_STEALTH_DETECTION, true);
+            me->SetReactState(REACT_PASSIVE);
             npc_norushenChallengeAI::IsSummonedBy(summoner);
         }
 
@@ -870,7 +871,8 @@ public:
                 switch (eventId)
                 {
                     case EVENT_2:
-                        DoCastVictim(SPELL_EXPEL_CORRUPTUIN);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 0, 60.0f, true))
+                            me->CastSpell(target, SPELL_EXPEL_CORRUPTUIN);
                         events.RescheduleEvent(EVENT_2, 9*IN_MILLISECONDS);
                         break;
                 }
@@ -1754,17 +1756,17 @@ class spell_norushen_challenge : public SpellScriptLoader
                 {
                     case SPELL_TEST_OF_SERENITY:    //dd
                     {
-                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_SUM_MANIFESTATION_OF_C);
-                        target->CastSpell(761.4254f, 982.592f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C);
-                        target->CastSpell(766.5504f, 960.6927f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C);
-                        target->CastSpell(787.5417f, 987.2986f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C);
+                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_SUM_MANIFESTATION_OF_C, true);
+                        target->CastSpell(761.4254f, 982.592f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                        target->CastSpell(766.5504f, 960.6927f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
+                        target->CastSpell(787.5417f, 987.2986f, 356.3398f, SPELL_SUM_ESSENCE_OF_CORRUPT_C, true);
                         break;
                     }
                     case SPELL_TEST_OF_RELIANCE:    //heal
-                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_GREATER_CORRUPTION);
-                        target->CastSpell(789.889f, 958.021f, 356.34f, SPELL_MELEE_COMBTANT);
-                        target->CastSpell(772.854f, 947.467f, 356.34f, SPELL_CASTER);
-                        target->CastSpell(780.8785f, 974.7535f, 356.34f, SPELL_SUMMON_GUARDIAN);
+                        target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_GREATER_CORRUPTION, true);
+                        target->CastSpell(789.889f, 958.021f, 356.34f, SPELL_MELEE_COMBTANT, true);
+                        target->CastSpell(772.854f, 947.467f, 356.34f, SPELL_CASTER, true);
+                        target->CastSpell(780.8785f, 974.7535f, 356.34f, SPELL_SUMMON_GUARDIAN, true);
                         break;
                     case SPELL_TEST_OF_CONFIDENCE:  //tank
                         target->CastSpell(777.5012f, 974.7348f, 356.3398f, SPELL_TITANIC_CORRUPTION);
@@ -1856,6 +1858,39 @@ class spell_norushen_heal_test_dd : public SpellScriptLoader
         }
 };
 
+class spell_essence_expel_corruption : public SpellScriptLoader
+{
+    public:
+        spell_essence_expel_corruption() : SpellScriptLoader("spell_essence_expel_corruption") { }
+
+        class spell_essence_expel_corruption_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_essence_expel_corruption_SpellScript);
+            
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(Unit* ptarget = GetExplTargetUnit())
+                    {    
+                        caster->SetFacingToObject(ptarget);
+                        caster->AttackStop();
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_essence_expel_corruption_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_essence_expel_corruption_SpellScript();
+        }
+};
+
 void AddSC_boss_norushen()
 {
     new boss_norushen();
@@ -1880,4 +1915,5 @@ void AddSC_boss_norushen()
     new spell_norushen_residual_corruption();
     new spell_norushen_challenge();
     new spell_norushen_heal_test_dd();
+    new spell_essence_expel_corruption();
 }
