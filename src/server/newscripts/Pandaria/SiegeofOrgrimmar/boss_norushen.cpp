@@ -966,6 +966,7 @@ public:
         enum sp
         {
             SPELL_UNLEASHED                              = 146173,
+            SPELL_UNLEASHED_0_EFFECT_PROCK      = 148974,
         };
 
         void Reset()
@@ -986,6 +987,8 @@ public:
         {
             me->CastSpell(me, SPELL_UNLEASHED, false);
             me->SetInCombatWithZone();
+            if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+                me->CastSpell(amalgam, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
         }
 
         void JustDied(Unit* killer)
@@ -1047,6 +1050,7 @@ public:
         enum spell
         {
             SPELL_UNLEASHED                     = 146174,
+            SPELL_UNLEASHED_0_EFFECT_PROCK      = 148974,
             SPELL_STEALTH_DETECTION             = 8279,     //Stealth Detection
             SPELL_EXPEL_CORRUPTION              = 145064,   //145132 on friend | 145134 on enemy
         };
@@ -1065,7 +1069,10 @@ public:
             me->CastSpell(me, SPELL_STEALTH_DETECTION, false);
 
             if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
+            {
+                me->CastSpell(amalgam, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
                 me->SetFacingToObject(amalgam);
+            }
 
             me->CastSpell(me, SPELL_EXPEL_CORRUPTION, true);
             events.RescheduleEvent(EVENT_1, 6*IN_MILLISECONDS);                  //18:38:25.000
