@@ -48,9 +48,9 @@ BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
     memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_ACTIVE_PETS);
 }
 
-void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, bool update)
+void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, uint8 state)
 {
-    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, update);
+    m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, state);
 }
 
 void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked)
@@ -69,7 +69,7 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         // prevent loading deleted pet
-        if (pet->second->deleteMeLater)
+        if (pet->second->internalState == STATE_DELETED)
             continue;
 
         ObjectGuid guid = pet->first;
@@ -77,14 +77,14 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
 
         data->WriteBit(!pet->second->breedID);    // hasBreed, inverse
         data->WriteGuidMask<1, 5, 3>(guid);
-        data->WriteBit(0);                        // has guid
+        data->WriteBit(0);                        // hasOwnerGuidInfo
         data->WriteBit(!pet->second->quality);    // hasQuality, inverse
         data->WriteGuidMask<6, 7>(guid);
-        data->WriteBit(!pet->second->flags);      // has flags, inverse
+        data->WriteBit(!pet->second->flags);      // hasFlags, inverse
         data->WriteGuidMask<0, 4>(guid);
         data->WriteBits(len, 7);                  // custom name length
         data->WriteGuidMask<2>(guid);
-        data->WriteBit(1);                        // hasUnk, inverse
+        data->WriteBit(1);                        // hasUnk (bool noRename?), inverse
     }
 
     data->WriteBits(MAX_ACTIVE_PETS, 25);
@@ -93,14 +93,14 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
     {
         PetBattleSlot * slot = GetPetBattleSlot(i);
 
-        data->WriteBit(!i);                                          // unk bit, related to Int8 (slot ID?)
-        data->WriteBit(1);                                           // unk bit, related to Int32 (hasCustomAbility?)
+        data->WriteBit(!i);                                          // hasSlotIndex
+        data->WriteBit(1);                                           // hasCollarID
         data->WriteBit(slot ? !slot->IsEmpty() : 1);                 // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot ? slot->petGUID : 0);  // pet guid in slot
         data->WriteBit(slot ? slot->locked : 1);                    // locked slot
     }
 
-    data->WriteBit(1);                      // unk
+    data->WriteBit(1);                      // !hasJournalLock
 
     for (uint32 i = 0; i < MAX_ACTIVE_PETS; ++i)
     {
@@ -110,13 +110,13 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
             //*data << uint32(0);
         data->WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot ? slot->petGUID : 0);
         if (i)
-            *data << uint8(i);
+            *data << uint8(i);             // SlotIndex
     }
 
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
         // prevent loading deleted pet
-        if (pet->second->deleteMeLater)
+        if (pet->second->internalState == STATE_DELETED)
             continue;
 
         ObjectGuid guid = pet->first;
@@ -147,11 +147,11 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         count++;
     }
 
-    *data << uint16(0);         // unk
+    *data << uint16(0);         // trapLevel
     data->PutBits<uint8>(bit_pos, count, 19);
 }
 
-void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
+void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<6, 0, 1, 5, 3, 4, 7, 2>(guid);
@@ -160,7 +160,7 @@ void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet || pet->deleteMeLater)
+    if (!pet || pet->internalState == STATE_DELETED)
         return;
 
     uint32 spellId = pet->summonSpellID;
@@ -212,7 +212,7 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
         {
             if (PetInfo* pet = owner->GetBattlePetMgr()->GetPetInfoByPetGUID(battlepetGuid))
             {
-                if (pet->deleteMeLater)
+                if (pet->internalState == STATE_DELETED)
                     return;
 
                 bool hasCustomName = pet->customName == "" ? false : true;
@@ -246,7 +246,7 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
     }
 }
 
-void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
+void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<6, 5, 0, 3, 4, 7, 2, 1>(guid);
@@ -268,7 +268,7 @@ void WorldSession::HandleBattlePetPutInCage(WorldPacket& recvData)
         if (!bp || bp->flags & SPECIES_FLAG_CANT_TRADE)
             return;
 
-        if (pet->deleteMeLater)
+        if (pet->internalState == STATE_DELETED)
             return;
 
         // at first - all operations with check free space
@@ -335,19 +335,19 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet || pet->deleteMeLater)
+    if (!pet || pet->internalState == STATE_DELETED)
         return;
 
     slot->SetPet(guid);
 }
 
-void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
+void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
 {
     float playerX, playerY, playerZ, playerOrient;
     float petAllyX, petEnemyX;
     float petAllyY, petEnemyY;
     float petAllyZ, petEnemyZ;
-    uint32 unkCounter;
+    uint32 locationResult;
 
     recvData >> playerX;
     recvData >> playerZ;
@@ -369,16 +369,16 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
         }
     }
 
-    bool facing = recvData.ReadBit();
-    bool uunk = recvData.ReadBit();
+    bool hasFacing = recvData.ReadBit();
+    bool hasLocationRes = recvData.ReadBit();
 
-    if (!uunk)
-        recvData >> unkCounter;
+    if (!hasLocationRes)
+        recvData >> locationResult;
 
-    if (!facing)
+    if (!hasFacing)
         recvData >> playerOrient;
 
-    WorldPacket data(SMSG_BATTLE_PET_FINALIZE_LOCATION);
+    WorldPacket data(SMSG_PET_BATTLE_FINALIZE_LOCATION);
 
     data << playerY;
 
@@ -405,306 +405,16 @@ void WorldSession::HandleBattlePetOpcode166F(WorldPacket& recvData)
     data.WriteBit(0);
 
     data << _player->GetOrientation();
-    data << uint32(21);
+    data << uint32(locationResult);
     SendPacket(&data);
-
-    // send full update
-    WorldPacket data1(SMSG_BATTLE_PET_FULL_UPDATE);
-    for (uint8 i = 0; i < 3; ++i)
-    {
-        data1.WriteBits(0, 21);
-        data1.WriteBits(0, 21);
-    }
-
-    data1.WriteBit(0);
-    data1.WriteBit(0);
-    data1.WriteBit(0);
-
-    ObjectGuid guid2 = _player->GetSelectedUnit()->GetObjectGuid();
-    ObjectGuid guid3 = 0;
-    ObjectGuid ownerGuid = _player->GetObjectGuid();
-    // important strange GUID...
-    // [0] Guid: Full: 0x1D3B6D0500000007 Type: 259 Low: 7
-    // = player GUID with inverse byte order! WTF???
-    // TEST
-    ObjectGuid guid = ((ownerGuid & 0x00000000000000FF) << 56) | ((ownerGuid & 0x000000000000FF00) << 40) | ((ownerGuid & 0x0000000000FF0000) << 24) | ((ownerGuid & 0x00000000FF000000) <<  8) |
-        ((ownerGuid & 0x000000FF00000000) >>  8) | ((ownerGuid & 0x0000FF0000000000) >> 24) | ((ownerGuid & 0x00FF000000000000) >> 40) | ((ownerGuid & 0xFF00000000000000) >> 56);
-    ObjectGuid guid4 = 0;
-
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        if (i == 0)
-            data1.WriteGuidMask<2>(guid);
-        else
-            data1.WriteGuidMask<2>(guid4);
-
-        data1.WriteBit(1);
-
-        if (i == 0)
-            data1.WriteGuidMask<5, 7, 4>(guid);
-        else
-            data1.WriteGuidMask<5, 7, 4>(guid4);
-
-        data1.WriteBit(0);
-
-        if (i == 0)
-            data1.WriteGuidMask<0>(guid);
-        else
-            data1.WriteGuidMask<0>(guid4);
-
-        data1.WriteBits(1, 2);                              // pet count
-
-        if (i == 0)
-            data1.WriteGuidMask<1>(guid);
-        else
-            data1.WriteGuidMask<1>(guid4);
-
-        //for (uint8 j = 0; j < 1; ++j)
-        //{
-            // TEST, i=0 - player, i=1 - wild pet
-            if (i == 0)
-            {
-                data1.WriteGuidMask<3, 4, 0>(ownerGuid);
-                data1.WriteBit(0);
-                data1.WriteGuidMask<6>(ownerGuid);
-                data1.WriteBits(6, 21);  // state count
-                data1.WriteBits(1, 20);
-                data1.WriteGuidMask<5>(ownerGuid);
-
-                data1.WriteBit(0);
-                data1.WriteGuidMask<2, 1, 7>(ownerGuid);
-                data1.WriteBit(1);
-                data1.WriteBits(0, 7);
-                data1.WriteBits(0, 21);
-
-                //data1.WriteBit(1);
-                //data1.WriteBit(0);
-                //data1.WriteBit(0);
-            }
-            else
-            {
-                data1.WriteGuidMask<3, 4, 0>(guid3);
-                data1.WriteBit(0);
-                data1.WriteGuidMask<6>(guid3);
-                data1.WriteBits(5, 21);   // state count
-                data1.WriteBits(1, 20);
-                data1.WriteGuidMask<5>(guid3);
-
-                data1.WriteBit(0);
-                data1.WriteGuidMask<2, 1, 7>(guid3);
-                data1.WriteBit(1);
-                data1.WriteBits(0, 7);
-                data1.WriteBits(0, 21);
-            }
-        //}
-
-        if (i == 0)
-            data1.WriteGuidMask<6>(guid);
-        else
-            data1.WriteGuidMask<6>(guid4);
-
-        data1.WriteBit(0);
-
-        if (i == 0)
-            data1.WriteGuidMask<3>(guid);
-        else
-            data1.WriteGuidMask<3>(guid4);
-    }
-
-    data1.WriteBit(1);
-    data1.WriteBit(0);
-    data1.WriteBit(1);
-
-    data1.WriteGuidMask<6, 0, 1, 4, 2, 5, 3, 7>(guid2);
-
-    data1.WriteBit(0);
-    data1.WriteBit(1);
-    data1.WriteBit(0);
-
-    for (uint8 i = 0; i < 2; ++i)
-    {
-        for (uint8 j = 0; j < 1; ++j)
-        {
-            // TEST, i=0 - player, i=1 - wild pet
-            if (i == 0)
-            {
-                // 1 ability (for 1)
-                uint32 abilityID = 114;
-                data1 << uint8(0);
-                data1 << uint16(0);
-                data1 << uint8(0);  // slot index
-                data1 << uint16(0);
-                data1 << uint32(abilityID); // ability ID
-            }
-            else
-            {
-                // 1 ability (for 1)
-                uint32 abilityID1 = 484;
-                data1 << uint8(0);
-                data1 << uint16(0);
-                data1 << uint8(0);  // slot index
-                data1 << uint16(0);
-                data1 << uint32(abilityID1); // ability ID
-            }
-
-            data1 << uint16(25);  // experience
-            data1 << uint32(250); // total HP
-
-            if (i == 0)
-                data1.WriteGuidBytes<1>(ownerGuid);
-            else
-                data1.WriteGuidBytes<1>(guid3);
-
-            // States
-            if (i == 0)
-            {
-                data1 << uint32(1600); // some fucking strange value!
-                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
-                data1 << uint32(1800); // some fucking strange value1!
-                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
-                data1 << uint32(1700); // some fucking strange value2!
-                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
-                data1 << uint32(5);    // crit chance % value
-                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
-                data1 << uint32(1);    // enable
-                data1 << uint32(45);   // stateID from BattlePetState.db2 -> Passive_Flying
-                data1 << uint32(50);   // % value
-                data1 << uint32(25);   // stateID from BattlePetState.db2 -> Mod_SpeedPercent
-            }
-            else
-            {
-                data1 << uint32(1900);
-                data1 << uint32(19);   // stateID from BattlePetState.db2 -> Stat_Stamina
-                data1 << uint32(1700);
-                data1 << uint32(18);   // stateID from BattlePetState.db2 -> Stat_Power
-                data1 << uint32(1600);
-                data1 << uint32(20);   // stateID from BattlePetState.db2 -> Stat_Speed
-                data1 << uint32(5);
-                data1 << uint32(40);   // stateID from BattlePetState.db2 -> Stat_CritChance
-                data1 << uint32(1);
-                data1 << uint32(42);   // stateID from BattlePetState.db2 -> Passive_Critter
-            }
-
-            data1 << uint32(0);
-            data1 << uint32(25); // speed
-
-            // aura handle test
-            // 239 - flying creature passive
-            /*if (i == 0)
-            {
-                data1 << uint32(-1); // duration?
-                data1 << uint32(1);
-                data1 << uint8(0);
-                data1 << uint32(239); // auraID = spellID
-            }*/
-
-            if (i == 0)
-                data1.WriteGuidBytes<4>(ownerGuid);
-            else
-                data1.WriteGuidBytes<4>(guid3);
-
-            // Custom Name
-            //data1.WriteString("");
-            // Quality
-            data1 << uint16(3);
-
-            if (i == 0)
-                data1.WriteGuidBytes<0>(ownerGuid);
-            else
-                data1.WriteGuidBytes<0>(guid3);
-
-            // current HP
-            if (i == 0)
-                data1 << uint32(250);
-            else
-                data1 << uint32(250);
-
-            if (i == 0)
-                data1.WriteGuidBytes<3>(ownerGuid);
-            else
-                data1.WriteGuidBytes<3>(guid3);
-
-            // Species ID
-            if (i == 0)
-                data1 << uint32(292);
-            else
-                data1 << uint32(293);
-
-            data1 << uint32(0);
-
-            if (i == 0)
-                data1.WriteGuidBytes<2, 6>(ownerGuid);
-            else
-                data1.WriteGuidBytes<2, 6>(guid3);
-
-            // display ID?
-            if (i == 0)
-                data1 << uint32(36944);
-            else
-                data1 << uint32(1924);
-
-            // Level
-            if (i == 0)
-                data1 << uint16(15);
-            else
-                data1 << uint16(15);
-
-            if (i == 0)
-                data1.WriteGuidBytes<7, 5>(ownerGuid);
-            else
-                data1.WriteGuidBytes<7, 5>(guid3);
-
-            // Attack Power
-            if (i == 0)
-                data1 << uint32(25);
-            else
-                data1 << uint32(25);
-
-            data1 << uint8(0); // pet slot index?
-        }
-
-        data1 << uint32(0);   // trap spell ID, default 427
-
-        if (i == 0)
-            data1.WriteGuidBytes<2, 5>(guid);
-        else
-            data1.WriteGuidBytes<2, 5>(guid4);
-        
-        data1 << uint32(2);
-
-        if (i == 0)
-            data1.WriteGuidBytes<4, 0, 7, 6>(guid);
-        else
-            data1.WriteGuidBytes<4, 0, 7, 6>(guid4);
-
-        data1 << uint8(6);
-        data1 << uint8(0);
-
-        if (i == 0)
-            data1.WriteGuidBytes<1, 3>(guid);
-        else
-            data1.WriteGuidBytes<1, 3>(guid4);
-    }
-
-    data1.WriteGuidBytes<6, 2, 1, 3, 0, 4, 7, 5>(guid2);
-
-    data1 << uint16(30);
-    data1 << uint16(30);
-    data1 << uint8(1);
-    data1 << uint32(0);
-    data1 << uint8(10);
-
-    SendPacket(&data1);
 }
 
-void WorldSession::HandleBattlePetReadyForBattle(WorldPacket& recvData)
+void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
 {
-    uint8 state;
-    recvData >> state;
+    uint8 firstPetID;
+    recvData >> firstPetID;
 
-    if (!state)
-    {
-        WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
+    /*WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
         for (uint8 i = 0; i < 2; ++i)
         {
             data << uint16(0);
@@ -847,23 +557,22 @@ void WorldSession::HandleBattlePetReadyForBattle(WorldPacket& recvData)
                     data << uint8(14);
             }
         }
-        data << uint8(2);*/
-        SendPacket(&data);
-    }
+        data << uint8(2);
+        SendPacket(&data);*/
 }
 
-void WorldSession::HandleBattlePetOpcode1ACF(WorldPacket& recvData)
+void WorldSession::HandlePetBattleRequestUpdate(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<6, 2, 3, 7, 0, 4>(guid);
-    recvData.ReadBit();
+    recvData.ReadBit();                                       // Cancelled
     recvData.ReadGuidMask<5, 1>(guid);
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
 
-    sLog->outError(LOG_FILTER_GENERAL, "GUID from packet 0x1ACF - %u", uint64(guid));
+    // send full update
 }
 
-void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
+void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
 {
     bool bit = recvData.ReadBit();
     bool bit1 = recvData.ReadBit();
@@ -901,7 +610,7 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
         return;
     }
 
-    WorldPacket data(SMSG_BATTLE_PET_ROUND_RESULT);
+    WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
     data.WriteBit(0);
     data.WriteBits(0, 20);
     data.WriteBits(4, 22);
@@ -1137,7 +846,7 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
         if (winner == 2)
             return;
 
-        WorldPacket data1(SMSG_BATTLE_PET_FINAL_ROUND);
+        WorldPacket data1(SMSG_PET_BATTLE_FINAL_ROUND);
         data1.WriteBits(2, 20);
 
         for (uint8 i = 0; i < 2; i++)
@@ -1238,7 +947,7 @@ void WorldSession::HandleBattlePetUseAction(WorldPacket& recvData)
 
 void BattlePetMgr::SendClosePetBattle()
 {
-    WorldPacket data(SMSG_BATTLE_PET_BATTLE_FINISHED);
+    WorldPacket data(SMSG_PET_BATTLE_FINISHED);
     m_player->GetSession()->SendPacket(&data);
 }
 
@@ -1252,7 +961,7 @@ void BattlePetMgr::SendUpdatePets()
     data.WriteBits(0, 19);                              // placeholder, count of update pets
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
-        if (!pet->second->sendUpdate || pet->second->deleteMeLater)
+        if (pet->second->internalState != STATE_UPDATED || pet->second->internalState == STATE_DELETED)
             continue;
 
         ObjectGuid guid = pet->first;
@@ -1275,7 +984,7 @@ void BattlePetMgr::SendUpdatePets()
 
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
     {
-        if (!pet->second->sendUpdate || pet->second->deleteMeLater)
+        if (pet->second->internalState != STATE_UPDATED || pet->second->internalState == STATE_DELETED)
             continue;
 
         ObjectGuid guid = pet->first;
@@ -1312,14 +1021,14 @@ void BattlePetMgr::SendUpdatePets()
         data << uint32(pet->second->power);                  // power
 
         count++;
-        pet->second->sendUpdate = false;
+        pet->second->SetInternalState(STATE_NORMAL);
     }
 
     data.PutBits<uint8>(bit_pos, count, 19);
     m_player->GetSession()->SendPacket(&data);
 }
 
-void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
+void WorldSession::HandleBattlePetModifyName(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<1, 6>(guid);
@@ -1346,33 +1055,33 @@ void WorldSession::HandleBattlePetRename(WorldPacket& recvData)
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet || pet->deleteMeLater)
+    if (!pet || pet->internalState == STATE_DELETED)
         return;
 
     // set custom name
     pet->SetCustomName(customName);
 }
 
-void WorldSession::HandleBattlePetSetData(WorldPacket& recvData)
+void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
 {
     ObjectGuid guid;
     uint32 type;
-    recvData >> type;
+    recvData >> type;                                     // ControlTypes
     recvData.ReadGuidMask<2, 6, 1, 7, 0>(guid);
-    uint32 val = recvData.ReadBits(2);
+    uint32 flags = recvData.ReadBits(2);                  // Flags
     recvData.ReadGuidMask<3, 4, 5>(guid);
     recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 
     // find pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!pet || pet->deleteMeLater)
+    if (!pet || pet->internalState == STATE_DELETED)
         return;
 
     // set data (only for testing)
     // type=1 - flags
     if (type == 1)
-        pet->SetFlags(val);
+        pet->SetFlags(flags);
 }
 
 void BattlePetMgr::GiveXP()
