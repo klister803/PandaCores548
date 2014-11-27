@@ -18,6 +18,8 @@ enum ScriptedTexts
     SAY_INTRO       = 11,
     SAY_LIGHTNING   = 12,
     SAY_KILL        = 13,
+
+    ANN_OVERLOAD    = 0,
 };
 
 enum Spells
@@ -32,7 +34,6 @@ enum Spells
     SPELL_ICE_LANCE_DMG             = 105316,
     SPELL_ICY_TOMB_AOE              = 104448,
     SPELL_ICY_TOMB_DUMMY            = 104449,
-    SPELL_ICY_TRAP                  = 72217,
     SPELL_ICY_TOMB                  = 104451,
     SPELL_SHATTERED_ICE             = 105289,
     SPELL_FOCUSED_ASSAULT           = 107851,
@@ -251,7 +252,7 @@ const Position circlePos[18][5] =
         {13553.019531f, 13605.891602f, 123.483849f, 0.0f},
         {13557.970703f, 13606.589844f, 123.035400f, 0.0f}
     },
-        // 5
+    // 5
     {
         {13536.618164f, 13620.696289f, 124.480095f, 1.472240f},
         {13543.086914f, 13620.056641f, 123.483856f, 0.0f},
@@ -280,7 +281,7 @@ const Position circlePos[18][5] =
         {13574.749023f, 13644.798828f, 123.483849f, 0.0f},
         {13576.141602f, 13639.997070f, 123.194534f, 0.0f}
     },
-        // 9
+    // 9
     {
         {13587.694336f, 13663.437500f, 124.480095f, 6.200338f},
         {13587.156250f, 13656.959961f, 123.483849f, 0.0f},
@@ -315,1815 +316,1822 @@ const Position circlePos[18][5] =
         {13626.873047f, 13620.410156f, 123.483849f, 0.0f},
         {13621.892578f, 13619.960938f, 123.483849f, 0.0f},
         {13616.913086f, 13619.511719f, 123.314667f, 0.0f},
-        },
-        // 14
-        {
-            {13638.371094f, 13604.269531f, 124.480095f, 4.539246f},
-            {13631.968750f, 13605.389648f, 123.483856f, 0.0f},
-            {13627.042969f, 13606.250977f, 123.483849f, 0.0f},
-            {13622.118164f, 13607.112305f, 123.483849f, 0.0f},
-            {13617.192383f, 13607.973633f, 123.031342f, 0.0f}
-        },
-        {
-            {13632.013672f, 13586.010742f, 124.480095f, 4.068014f},
-            {13626.817383f, 13589.915039f, 123.483856f, 0.0f},
-            {13622.819336f, 13592.918945f, 123.483856f, 0.0f},
-            {13618.822266f, 13595.921875f, 123.483849f, 0.0f},
-            {13614.825195f, 13598.925781f, 123.286789f, 0.0f}
-        },
-        {
-            {13621.313477f, 13572.966797f, 124.480095f, 3.734221f},
-            {13617.682617f, 13578.358398f, 123.483849f, 0.0f},
-            {13614.890625f, 13582.505859f, 123.483849f, 0.0f},
-            {13612.097656f, 13586.653320f, 123.483849f, 0.0f},
-            {13609.304688f, 13590.800781f, 123.393356f, 0.0f}
-        },
-        {
-            {13605.115234f, 13563.460938f, 124.480095f, 3.392572f},
-            {13603.500977f, 13569.756836f, 123.483849f, 0.0f},
-            {13602.258789f, 13574.600586f, 123.483849f, 0.0f},
-            {13601.017578f, 13579.444336f, 123.483849f, 0.0f},
-            {13599.775391f, 13584.287109f, 123.296410f, 0.0f}
-        }
+    },
+    // 14
+    {
+        {13638.371094f, 13604.269531f, 124.480095f, 4.539246f},
+        {13631.968750f, 13605.389648f, 123.483856f, 0.0f},
+        {13627.042969f, 13606.250977f, 123.483849f, 0.0f},
+        {13622.118164f, 13607.112305f, 123.483849f, 0.0f},
+        {13617.192383f, 13607.973633f, 123.031342f, 0.0f}
+    },
+    {
+        {13632.013672f, 13586.010742f, 124.480095f, 4.068014f},
+        {13626.817383f, 13589.915039f, 123.483856f, 0.0f},
+        {13622.819336f, 13592.918945f, 123.483856f, 0.0f},
+        {13618.822266f, 13595.921875f, 123.483849f, 0.0f},
+        {13614.825195f, 13598.925781f, 123.286789f, 0.0f}
+    },
+    {
+        {13621.313477f, 13572.966797f, 124.480095f, 3.734221f},
+        {13617.682617f, 13578.358398f, 123.483849f, 0.0f},
+        {13614.890625f, 13582.505859f, 123.483849f, 0.0f},
+        {13612.097656f, 13586.653320f, 123.483849f, 0.0f},
+        {13609.304688f, 13590.800781f, 123.393356f, 0.0f}
+    },
+    {
+        {13605.115234f, 13563.460938f, 124.480095f, 3.392572f},
+        {13603.500977f, 13569.756836f, 123.483849f, 0.0f},
+        {13602.258789f, 13574.600586f, 123.483849f, 0.0f},
+        {13601.017578f, 13579.444336f, 123.483849f, 0.0f},
+        {13599.775391f, 13584.287109f, 123.296410f, 0.0f}
+    }
 };
 class boss_hagara_the_stormbinder: public CreatureScript
 {
-public:
-    boss_hagara_the_stormbinder() : CreatureScript("boss_hagara_the_stormbinder") { }
+    public:
+        boss_hagara_the_stormbinder() : CreatureScript("boss_hagara_the_stormbinder") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_hagara_the_stormbinderAI(pCreature);
-    }
-
-    struct boss_hagara_the_stormbinderAI : public BossAI
-    {
-        boss_hagara_the_stormbinderAI(Creature* pCreature) : BossAI(pCreature, DATA_HAGARA)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            bEvent = false;
-            bEventDone = false;
-            specialPhase = false;
-            phase = 0;
-            summonCount = 0;
-            crystalCount = 0;
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<boss_hagara_the_stormbinderAI>(pCreature);
         }
 
-        void InitializeAI()
+        struct boss_hagara_the_stormbinderAI : public BossAI
         {
-            if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(DSScriptName))
-                me->IsAIEnabled = false;
-            else if (!me->isDead())
-                Reset();
-        }
-
-        void Reset()
-        {
-            _Reset();
-
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-
-            DespawnCreatures(NPC_ICE_WAVE);
-
-            bEvent = false;
-            phase = 0;
-            specialPhase = false;
-            summonCount = 0;
-            crystalCount = 0;
-
-            if (instance->GetData(DATA_HAGARA_EVENT) != DONE)
-            {
+            boss_hagara_the_stormbinderAI(Creature* pCreature) : BossAI(pCreature, DATA_HAGARA)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                bEvent = false;
                 bEventDone = false;
-                me->SetVisible(false);
-                me->SetReactState(REACT_PASSIVE);
-                me->SummonGameObject(GO_THE_FOCUSING_IRIS, centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, WEEK); 
-            }
-            else
-            {
-                bEventDone = true;
-                me->SetVisible(true);
-                me->SetReactState(REACT_DEFENSIVE);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                specialPhase = false;
+                phase = 0;
+                summonCount = 0;
+                crystalCount = 0;
             }
 
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
-        }
-
-        void EnterCombat(Unit* who)
-        {
-            Talk(SAY_AGGRO);
-
-            events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
-            if (urand(0, 1))
+            void Reset()
             {
-                events.ScheduleEvent(EVENT_FROZEN_TEMPEST_1, 32000);
-                DoCast(me, SPELL_HAGARA_FROST_AXES, true);
-            }
-            else
-            {
-                events.ScheduleEvent(EVENT_ELECTRICAL_STORM_1, 32000);
-                DoCast(me, SPELL_HAGARA_LIGHTNING_AXES, true);
-            }
-            events.ScheduleEvent(EVENT_SHATTERED_ICE, urand(10500, 15000));
-            events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 11000);
-            events.ScheduleEvent(EVENT_ICE_LANCE, 10000);
+                _Reset();
 
-            DoZoneInCombat();
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-            instance->SetBossState(DATA_HAGARA, IN_PROGRESS);
-        }
+                DespawnCreatures(NPC_ICE_WAVE);
 
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_START_EVENT && !bEvent && !bEventDone)
-            {
-                bEvent = true;
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                events.ScheduleEvent(EVENT_SUMMON_ADDS_1, 3000);
-            }
-            else if (action == ACTION_CRYSTAL_DIED && crystalCount > 0)
-            {
-                crystalCount--;
-                if (crystalCount == 0)
-                    SpecialPhaseEnd();
-            }
-        }
+                bEvent = false;
+                phase = 0;
+                specialPhase = false;
+                summonCount = 0;
+                crystalCount = 0;
 
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_PHASE)
-                return (uint32)phase;
-            return 0;
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            _JustDied();
-
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-
-            Talk(SAY_DEATH);
-
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ICY_TOMB);
-        }
-
-        void KilledUnit(Unit* victim)
-        {
-            if (victim && victim->GetTypeId() == TYPEID_PLAYER)
-                Talk(SAY_KILL);
-        }
-
-        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
-        {
-            if (!bEvent)
-                return;
-
-            switch (phase)
-            {
-            case 1:
-                if (summonCount <= 1)
+                if (instance->GetData(DATA_HAGARA_EVENT) != DONE)
                 {
-                    summonCount = 0;
-                    summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_4, 3000);
+                    bEventDone = false;
+                    me->SetVisible(false);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SummonGameObject(GO_THE_FOCUSING_IRIS, centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, WEEK); 
                 }
-                else
-                    summonCount--;
-                break;
-            case 2:
-                if (summonCount <= 1)
+                else if (instance->GetData(DATA_HAGARA_EVENT) == DONE)
                 {
-                    summonCount = 0;
-                    summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_5, 3000);
-                }
-                else
-                    summonCount--;
-                break;
-            case 3:
-                if (summonCount <= 1)
-                {
-                    summonCount = 0;
-                    summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_6, 3000);
-                }
-                else
-                    summonCount--;
-                break;
-            case 4:
-                if (summonCount <= 1)
-                {
-                    summonCount = 0;
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_7, 3000);
-                }
-                else
-                    summonCount--;
-                break;
-            case 5:
-                if (summonCount <= 1)
-                {
-                    Talk(SAY_INTRO);
-                    summonCount = 0;
-                    summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_8, 3000);
-                }
-            default:
-                break;
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim() && !bEvent)
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING) && !specialPhase)
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_BERSERK:
-                    DoCast(me, SPELL_BERSERK, true);
-                    break;
-                case EVENT_CHECK_PLAYERS:
-                    if (!me->FindNearestPlayer(60.0f))
-                    {
-                        events.Reset();
-                        Reset();
-                    }
-                    else
-                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                    break;
-                case EVENT_SUMMON_ADDS_1:
-                    Talk(SAY_ADDS_1);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_2, 7000);
-                    break;
-                case EVENT_SUMMON_ADDS_2:
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[1]);
-                    events.ScheduleEvent(EVENT_SUMMON_ADDS_3, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_3:
-                    phase = 1;
-                    summonCount = 4;
-                    me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() + 4.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() + 2.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() - 2.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() - 4.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_4:
-                    Talk(SAY_ADDS_2);
-                    phase = 2;
-                    summonCount = 12;
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[0]);
-                    me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    for (uint8 i = 0; i < 5; ++i)
-                        me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[0].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[0].GetPositionY() + frand(-2.0f, 2.0f), portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[2]);
-                    me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    for (uint8 i = 0; i < 5; ++i)
-                        me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[2].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[2].GetPositionY() + frand(-2.0f, 2.0f), portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_5:
-                    Talk(SAY_ADDS_3);
-                    phase = 3;
-                    summonCount = 6;
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[0]);
-                    me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[0].GetPositionX(), portalPos[0].GetPositionY() + 4.0f, portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[0].GetPositionX(), portalPos[0].GetPositionY() + 2.0f, portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[2]);
-                    me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[2].GetPositionX(), portalPos[2].GetPositionY() - 4.0f, portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[2].GetPositionX(), portalPos[2].GetPositionY() - 2.0f, portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_6:
-                    phase = 4;
-                    summonCount = 10;
-                    me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[1]);
-                    for (uint8 i = 0; i < 10; ++i)
-                        me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[1].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[1].GetPositionY() + frand(-2.0f, 2.0f), portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_7:
-                    Talk(SAY_ADDS_4);
-                    phase = 5;
-                    summonCount = 1;
-                    me->SummonCreature(NPC_LIEUTENANT_SHARA, portalPos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    break;
-                case EVENT_SUMMON_ADDS_8:
-                    phase = 0;
-                    bEvent = false;
                     bEventDone = true;
-                    instance->SetData(DATA_HAGARA_EVENT, DONE);
-                    events.CancelEvent(EVENT_CHECK_PLAYERS);
                     me->SetVisible(true);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->SetReactState(REACT_DEFENSIVE);
-                    break;
-                case EVENT_SHATTERED_ICE:
-                    {
-                        Unit* pTarget = NULL;
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
-                        if (!pTarget)
-                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                }
 
-                        if (pTarget)
-                            DoCast(pTarget, SPELL_SHATTERED_ICE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
+            }
 
-                        events.ScheduleEvent(EVENT_SHATTERED_ICE, 10500);
-                        break;
-                    }
-                case EVENT_FOCUSED_ASSAULT:
-                    DoCastVictim(SPELL_FOCUSED_ASSAULT);
-                    events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 15000);
-                    break;
-                case EVENT_ICY_TOMB:
-                    Talk(SAY_ICY_TOMB);
-                    me->CastCustomSpell(SPELL_ICY_TOMB_AOE, SPELLVALUE_MAX_TARGETS, RAID_MODE(2, 5, 2, 6));
-                    break;
-                case EVENT_ICE_LANCE:
-                    {
-                        UnitList targets;
-                        SelectTargetList(targets, 3, SELECT_TARGET_NEAREST, 0.0f, true);
-                        if (targets.empty())
-                            break;
+            void EnterCombat(Unit* who)
+            {
+                Talk(SAY_AGGRO);
 
-                        Talk(SAY_ICE_LANCE);
+                events.ScheduleEvent(EVENT_BERSERK, 8 * MINUTE * IN_MILLISECONDS);
+                if (urand(0, 1))
+                {
+                    events.ScheduleEvent(EVENT_FROZEN_TEMPEST_1, 32000);
+                    DoCast(me, SPELL_HAGARA_FROST_AXES, true);
+                }
+                else
+                {
+                    events.ScheduleEvent(EVENT_ELECTRICAL_STORM_1, 32000);
+                    DoCast(me, SPELL_HAGARA_LIGHTNING_AXES, true);
+                }
+                events.ScheduleEvent(EVENT_SHATTERED_ICE, urand(10500, 15000));
+                events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 11000);
+                events.ScheduleEvent(EVENT_ICE_LANCE, 10000);
 
-                        uint8 i = 0;
-                        for (UnitList::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                        {
-                            if (Creature* pLance = me->SummonCreature(NPC_ICE_LANCE, icelancePos[i], TEMPSUMMON_TIMED_DESPAWN, 15000))
-                                pLance->AI()->SetGUID((*itr)->GetGUID(), DATA_ICE_LANCE_GUID);
-                            i++;
-                        }
-                        break;
-                    }
-                case EVENT_FROZEN_TEMPEST_1:
-                    events.CancelEvent(EVENT_SHATTERED_ICE);
-                    events.CancelEvent(EVENT_ICY_TOMB);
-                    events.CancelEvent(EVENT_ICE_LANCE);
-                    events.CancelEvent(EVENT_FOCUSED_ASSAULT);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();                            
-                    me->NearTeleportTo(centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), centerPos.GetOrientation());
-                    events.ScheduleEvent(EVENT_FROZEN_TEMPEST_2, 1500);
-                    break;
-                case EVENT_FROZEN_TEMPEST_2:
-                    specialPhase = true;
-                    crystalCount = 4;
-                    phase = 11;
-                    for (uint8 i = 0; i < 4; ++i)
-                        if (Creature* pCrystal = me->SummonCreature(NPC_FROZEN_BINDING_CRYSTAL, frozencrystalPos[i]))
-                            pCrystal->CastSpell(me, SPELL_CRYSTALLINE_TETHER_1);
-                    DoCast(me, SPELL_FROZEN_TEMPEST);
-                    events.ScheduleEvent(EVENT_ICE_WAVE, 6000);
-                    events.ScheduleEvent(EVENT_ICICLE, 2000);
-                    events.ScheduleEvent(EVENT_WATERY_ENTRENCHMENT, 7000);
-                    events.ScheduleEvent(EVENT_END_SPECIAL_PHASE, 305000);
-                    if (IsHeroic())
-                        events.ScheduleEvent(EVENT_FROSTFLAKE, urand(2000, 5000));
-                    break;
-                case EVENT_WATERY_ENTRENCHMENT:
-                    {
-                        Map::PlayerList const& plrList = instance->instance->GetPlayers();
-                        if (!plrList.isEmpty())
-                        {
-                            for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
-                                if (Player* pPlayer = itr->getSource())
-                                {
-                                    if (me->GetDistance(pPlayer) <= 29)
-                                    {
-                                        if (!pPlayer->HasAura(SPELL_WATERY_ENTRENCHMENT))
-                                            pPlayer->CastSpell(pPlayer, SPELL_WATERY_ENTRENCHMENT, true);
-                                    }
-                                    else
-                                        pPlayer->RemoveAurasDueToSpell(SPELL_WATERY_ENTRENCHMENT);
-                                }
-                        }
-                        events.ScheduleEvent(EVENT_WATERY_ENTRENCHMENT, 1000);
-                        break;
-                    }
-                case EVENT_ICE_WAVE:
-                    {
-                        Talk(SAY_ICE_WAVE);
+                DoZoneInCombat();
+                instance->SetBossState(DATA_HAGARA, IN_PROGRESS);
+            }
 
-                        if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                        {
-                            pWave->AI()->SetData(DATA_CIRCLE_POINT, 0);
-                            pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
-                            pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[0][0]);
-                        }
-                        if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                        {
-                            pWave->AI()->SetData(DATA_CIRCLE_POINT, 5);
-                            pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
-                            pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[5][0]);
-                        }
-                        if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                        {
-                            pWave->AI()->SetData(DATA_CIRCLE_POINT, 9);
-                            pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
-                            pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[9][0]);
-                        }
-                        if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                        {
-                            pWave->AI()->SetData(DATA_CIRCLE_POINT, 14);
-                            pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
-                            pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[14][0]);
-                        }
-
-                        events.ScheduleEvent(EVENT_ICE_WAVE_MOVE, 12000);
-                        break;
-                    }
-                case EVENT_ICE_WAVE_MOVE:
-                    {
-                        Talk(SAY_ICE_WAVE);
-                        EntryCheckPredicate pred(NPC_ICE_WAVE);
-                        summons.DoAction(ACTION_ICE_WAVE_MOVE, pred);
-                        break;
-                    }
-                case EVENT_ICICLE:
-                    {
-                        UnitList targets;
-                        SelectTargetList(targets, RAID_MODE(3, 7), SELECT_TARGET_RANDOM, 0.0f, true);
-                        if (!targets.empty())
-                            for (UnitList::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                                (*itr)->CastSpell((*itr), SPELL_ICICLE, true);
-                        //DoCast((*itr), SPELL_ICICLE, true);
-                        events.ScheduleEvent(EVENT_ICICLE, urand(8000, 9000));
-                        break;
-                    }
-                case EVENT_FROSTFLAKE:
-                    DoCastAOE(SPELL_FROSTFLAKE, true);
-                    events.ScheduleEvent(EVENT_FROSTFLAKE, urand(9000, 12000));
-                    break;
-                case EVENT_ELECTRICAL_STORM_1:
-                    events.CancelEvent(EVENT_SHATTERED_ICE);
-                    events.CancelEvent(EVENT_ICY_TOMB);
-                    events.CancelEvent(EVENT_ICE_LANCE);
-                    events.CancelEvent(EVENT_FOCUSED_ASSAULT);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();                            
-                    me->NearTeleportTo(centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), centerPos.GetOrientation());
-                    events.ScheduleEvent(EVENT_ELECTRICAL_STORM_2, 1500);
-                    break;
-                case EVENT_ELECTRICAL_STORM_2:
-                    specialPhase = true;
-                    crystalCount = 4;
-                    phase = 10;
-                    Talk(SAY_LIGHTNING);
-                    switch (GetDifficulty())
-                    {
-                    case MAN10_DIFFICULTY:
-                        for (uint8 i = 0; i < 4; ++i)
-                            if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i + 4]))
-                                pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
-                        break;
-                    case MAN10_HEROIC_DIFFICULTY:
-                        crystalCount += 4;
-                        for (uint8 i = 0; i < 4; ++i)
-                            if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i + 4]))
-                                pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
-                        // no break
-                    case MAN25_DIFFICULTY:
-                    case MAN25_HEROIC_DIFFICULTY:
-                        for (uint8 i = 0; i < 4; ++i)
-                            if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i]))
-                                pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
-                        break;
-                    }
-
-                    me->SummonCreature(NPC_BOUND_LIGHTNING_ELEMENTAL, circlePos[0][3]);
-
-                    DoCast(me, SPELL_WATER_SHIELD);
-
-                    events.ScheduleEvent(EVENT_END_SPECIAL_PHASE, 305000);
-                    if (IsHeroic())
-                        events.ScheduleEvent(EVENT_STORM_PILLARS, 5000);
-                    break;
-                case EVENT_STORM_PILLARS:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                        DoCastAOE(SPELL_STORM_PILLARS, true);
-                    events.ScheduleEvent(EVENT_STORM_PILLARS, urand(5000, 10000));
-                    break;
-                case EVENT_END_SPECIAL_PHASE:
-                    crystalCount = 0;
-                    summons.DespawnEntry(NPC_CRYSTAL_CONDUCTOR);
-                    summons.DespawnEntry(NPC_BOUND_LIGHTNING_ELEMENTAL);
-                    summons.DespawnEntry(NPC_FROZEN_BINDING_CRYSTAL);
-                    SpecialPhaseEnd();
-                    break;
-                default:
-                    break;
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_START_EVENT && !bEvent && !bEventDone)
+                {
+                    bEvent = true;
+                    instance->SetData(DATA_HAGARA_EVENT, IN_PROGRESS);
+                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                    events.ScheduleEvent(EVENT_SUMMON_ADDS_1, 3000);
+                }
+                else if (action == ACTION_CRYSTAL_DIED && crystalCount > 0)
+                {
+                    crystalCount--;
+                    if (crystalCount == 0)
+                        SpecialPhaseEnd();
                 }
             }
 
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        bool bEvent;
-        bool bEventDone;
-        bool specialPhase;
-        uint8 phase;
-        uint8 summonCount;
-        uint8 crystalCount;
-
-        void SpecialPhaseEnd()
-        {
-            specialPhase = false;
-            events.CancelEvent(EVENT_ICICLE);
-            events.CancelEvent(EVENT_WATERY_ENTRENCHMENT);
-            events.CancelEvent(EVENT_STORM_PILLARS);
-            events.CancelEvent(EVENT_FROSTFLAKE);
-            events.CancelEvent(EVENT_END_SPECIAL_PHASE);
-
-            me->RemoveAura(RAID_MODE(SPELL_WATER_SHIELD, SPELL_WATER_SHIELD_25, SPELL_WATER_SHIELD_10H, SPELL_WATER_SHIELD_25H));
-            me->RemoveAura(RAID_MODE(SPELL_FROZEN_TEMPEST, SPELL_FROZEN_TEMPEST_25, SPELL_FROZEN_TEMPEST_10H, SPELL_FROZEN_TEMPEST_25H));
-            instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
-
-            DespawnCreatures(NPC_ICE_WAVE);
-            summons.DespawnEntry(NPC_CRYSTAL_CONDUCTOR);
-            summons.DespawnEntry(NPC_BOUND_LIGHTNING_ELEMENTAL);
-            summons.DespawnEntry(NPC_FROZEN_BINDING_CRYSTAL);
-
-            me->SetReactState(REACT_AGGRESSIVE);
-            AttackStart(me->getVictim());
-
-            DoCast(me, SPELL_FEEDBACK, true);
-
-            events.ScheduleEvent(EVENT_ICE_LANCE, 12000);
-            events.ScheduleEvent(EVENT_ICY_TOMB, 20000);
-            events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 15000);
-            events.ScheduleEvent(EVENT_SHATTERED_ICE, urand(20000, 30500));
-
-            if (phase == 10)
+            uint32 GetData(uint32 type)
             {
-                events.ScheduleEvent(EVENT_FROZEN_TEMPEST_1, 62000);
-                me->RemoveAura(SPELL_HAGARA_LIGHTNING_AXES);
-                DoCast(me, SPELL_HAGARA_FROST_AXES, true);
+                if (type == DATA_PHASE)
+                    return (uint32)phase;
+                return 0;
             }
-            else if (phase == 11)
+
+            void JustDied(Unit* /*killer*/)
             {
-                events.ScheduleEvent(EVENT_ELECTRICAL_STORM_1, 62000);
-                me->RemoveAura(SPELL_HAGARA_FROST_AXES);
-                DoCast(me, SPELL_HAGARA_LIGHTNING_AXES, true);
+                _JustDied();
+
+                Talk(SAY_DEATH);
+
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
             }
-            phase = 0;
-        }
 
-        void DespawnCreatures(uint32 entry)
-        {
-            std::list<Creature*> creatures;
-            GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
+            void KilledUnit(Unit* victim)
+            {
+                if (victim && victim->GetTypeId() == TYPEID_PLAYER)
+                    Talk(SAY_KILL);
+            }
 
-            if (creatures.empty())
-                return;
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+            {
+                if (!bEvent)
+                    return;
 
-            for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
-                (*iter)->DespawnOrUnsummon();
-        }
-    };
+                switch (phase)
+                {
+                    case 1:
+                        if (summonCount <= 1)
+                        {
+                            summonCount = 0;
+                            summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_4, 3000);
+                        }
+                        else
+                            summonCount--;
+                        break;
+                    case 2:
+                        if (summonCount <= 1)
+                        {
+                            summonCount = 0;
+                            summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_5, 3000);
+                        }
+                        else
+                            summonCount--;
+                        break;
+                    case 3:
+                        if (summonCount <= 1)
+                        {
+                            summonCount = 0;
+                            summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_6, 3000);
+                        }
+                        else
+                            summonCount--;
+                        break;
+                    case 4:
+                        if (summonCount <= 1)
+                        {
+                            summonCount = 0;
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_7, 3000);
+                        }
+                        else
+                            summonCount--;
+                        break;
+                    case 5:
+                        if (summonCount <= 1)
+                        {
+                            Talk(SAY_INTRO);
+                            summonCount = 0;
+                            summons.DespawnEntry(NPC_HAGARA_TRASH_TWILIGHT_PORTAL);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_8, 3000);
+                        }
+                    default:
+                        break;
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim() && !bEvent)
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING) && !specialPhase)
+                    return;
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_BERSERK:
+                            DoCast(me, SPELL_BERSERK, true);
+                            break;
+                        case EVENT_CHECK_PLAYERS:
+                            if (!me->FindNearestPlayer(60.0f))
+                            {
+                                events.Reset();
+                                Reset();
+                                instance->SetData(DATA_HAGARA_EVENT, FAIL);
+                            }
+                            else
+                                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                            break;
+                        case EVENT_SUMMON_ADDS_1:
+                            Talk(SAY_ADDS_1);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_2, 7000);
+                            break;
+                        case EVENT_SUMMON_ADDS_2:
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[1]);
+                            events.ScheduleEvent(EVENT_SUMMON_ADDS_3, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_3:
+                            phase = 1;
+                            summonCount = 4;
+                            me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() + 4.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() + 2.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() - 2.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[1].GetPositionX(), portalPos[1].GetPositionY() - 4.0f, portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_4:
+                            Talk(SAY_ADDS_2);
+                            phase = 2;
+                            summonCount = 12;
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[0]);
+                            me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            for (uint8 i = 0; i < 5; ++i)
+                                me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[0].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[0].GetPositionY() + frand(-2.0f, 2.0f), portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[2]);
+                            me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            for (uint8 i = 0; i < 5; ++i)
+                                me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[2].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[2].GetPositionY() + frand(-2.0f, 2.0f), portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_5:
+                            Talk(SAY_ADDS_3);
+                            phase = 3;
+                            summonCount = 6;
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[0]);
+                            me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[0].GetPositionX(), portalPos[0].GetPositionY() + 4.0f, portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[0].GetPositionX(), portalPos[0].GetPositionY() + 2.0f, portalPos[0].GetPositionZ() + 1.0f, portalPos[0].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_STORMBINDER_ADEPT, portalPos[2]);
+                            me->SummonCreature(NPC_TWILIGHT_FROST_EVOKER, portalPos[2].GetPositionX(), portalPos[2].GetPositionY() - 4.0f, portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            me->SummonCreature(NPC_STORMBORN_MYRMIDON, portalPos[2].GetPositionX(), portalPos[2].GetPositionY() - 2.0f, portalPos[2].GetPositionZ() + 1.0f, portalPos[2].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_6:
+                            phase = 4;
+                            summonCount = 10;
+                            me->SummonCreature(NPC_HAGARA_TRASH_TWILIGHT_PORTAL, portalPos[1]);
+                            for (uint8 i = 0; i < 10; ++i)
+                                me->SummonCreature(NPC_CORRUPTED_FRAGMENT, portalPos[1].GetPositionX()+ frand(-2.0f, 2.0f), portalPos[1].GetPositionY() + frand(-2.0f, 2.0f), portalPos[1].GetPositionZ() + 1.0f, portalPos[1].GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_7:
+                            Talk(SAY_ADDS_4);
+                            phase = 5;
+                            summonCount = 1;
+                            me->SummonCreature(NPC_LIEUTENANT_SHARA, portalPos[1], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                            break;
+                        case EVENT_SUMMON_ADDS_8:
+                            phase = 0;
+                            bEvent = false;
+                            bEventDone = true;
+                            instance->SetData(DATA_HAGARA_EVENT, DONE);
+                            events.CancelEvent(EVENT_CHECK_PLAYERS);
+                            me->SetVisible(true);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            me->SetReactState(REACT_DEFENSIVE);
+                            break;
+                        case EVENT_SHATTERED_ICE:
+                        {
+                            Unit* pTarget = NULL;
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true);
+                            if (!pTarget)
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                            
+                            if (pTarget)
+                                DoCast(pTarget, SPELL_SHATTERED_ICE);
+
+                            events.ScheduleEvent(EVENT_SHATTERED_ICE, 10500);
+                            break;
+                        }
+                        case EVENT_FOCUSED_ASSAULT:
+                            DoCastVictim(SPELL_FOCUSED_ASSAULT);
+                            events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 15000);
+                            break;
+                        case EVENT_ICY_TOMB:
+                            Talk(SAY_ICY_TOMB);
+                            me->CastCustomSpell(SPELL_ICY_TOMB_AOE, SPELLVALUE_MAX_TARGETS, RAID_MODE(2, 5, 2, 6));
+                            break;
+                        case EVENT_ICE_LANCE:
+                        {
+                            UnitList targets;
+                            SelectTargetList(targets, 3, SELECT_TARGET_NEAREST, 0.0f, true);
+                            if (targets.empty())
+                                break;
+
+                            Talk(SAY_ICE_LANCE);
+                            
+                            uint8 i = 0;
+                            for (UnitList::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                            {
+                                if (Creature* pLance = me->SummonCreature(NPC_ICE_LANCE, icelancePos[i], TEMPSUMMON_TIMED_DESPAWN, 15000))
+                                    pLance->AI()->SetGUID((*itr)->GetGUID(), DATA_ICE_LANCE_GUID);
+                                i++;
+                            }
+                            break;
+                        }
+                        case EVENT_FROZEN_TEMPEST_1:
+                            events.CancelEvent(EVENT_SHATTERED_ICE);
+                            events.CancelEvent(EVENT_ICY_TOMB);
+                            events.CancelEvent(EVENT_ICE_LANCE);
+                            events.CancelEvent(EVENT_FOCUSED_ASSAULT);
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();                            
+                            me->NearTeleportTo(centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), centerPos.GetOrientation());
+                            events.ScheduleEvent(EVENT_FROZEN_TEMPEST_2, 1500);
+                            break;
+                        case EVENT_FROZEN_TEMPEST_2:
+                            specialPhase = true;
+                            crystalCount = 4;
+                            phase = 11;
+                            for (uint8 i = 0; i < 4; ++i)
+                                if (Creature* pCrystal = me->SummonCreature(NPC_FROZEN_BINDING_CRYSTAL, frozencrystalPos[i]))
+                                    pCrystal->CastSpell(me, SPELL_CRYSTALLINE_TETHER_1);
+                            DoCast(me, SPELL_FROZEN_TEMPEST);
+                            events.ScheduleEvent(EVENT_ICE_WAVE, 6000);
+                            events.ScheduleEvent(EVENT_ICICLE, 2000);
+                            events.ScheduleEvent(EVENT_WATERY_ENTRENCHMENT, 7000);
+                            events.ScheduleEvent(EVENT_END_SPECIAL_PHASE, 305000);
+                            if (IsHeroic())
+                                events.ScheduleEvent(EVENT_FROSTFLAKE, urand(2000, 5000));
+                            break;
+                        case EVENT_WATERY_ENTRENCHMENT:
+                        {
+                            Map::PlayerList const& plrList = instance->instance->GetPlayers();
+                            if (!plrList.isEmpty())
+                            {
+                                for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+                                    if (Player* pPlayer = itr->getSource())
+                                    {
+                                        if (me->GetDistance(pPlayer) <= 23)
+                                        {
+                                            if (!pPlayer->HasAura(SPELL_WATERY_ENTRENCHMENT))
+                                                pPlayer->CastSpell(pPlayer, SPELL_WATERY_ENTRENCHMENT, true);
+                                        }
+                                        else
+                                            pPlayer->RemoveAurasDueToSpell(SPELL_WATERY_ENTRENCHMENT);
+                                    }
+                            }
+                            events.ScheduleEvent(EVENT_WATERY_ENTRENCHMENT, 1000);
+                            break;
+                        }
+                        case EVENT_ICE_WAVE:
+                        {
+                            Talk(SAY_ICE_WAVE);
+
+                            if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+                            {
+                                pWave->AI()->SetData(DATA_CIRCLE_POINT, 0);
+                                pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
+                                pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[0][0]);
+                            }
+                            if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+                            {
+                                pWave->AI()->SetData(DATA_CIRCLE_POINT, 5);
+                                pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
+                                pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[5][0]);
+                            }
+                            if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+                            {
+                                pWave->AI()->SetData(DATA_CIRCLE_POINT, 9);
+                                pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
+                                pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[9][0]);
+                            }
+                            if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+                            {
+                                pWave->AI()->SetData(DATA_CIRCLE_POINT, 14);
+                                pWave->AI()->SetData(DATA_MAIN_WAVE, 1);
+                                pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE, circlePos[14][0]);
+                            }
+
+                            events.ScheduleEvent(EVENT_ICE_WAVE_MOVE, 12000);
+                            break;
+                        }
+                        case EVENT_ICE_WAVE_MOVE:
+                        {
+                            Talk(SAY_ICE_WAVE);
+                            EntryCheckPredicate pred(NPC_ICE_WAVE);
+                            summons.DoAction(ACTION_ICE_WAVE_MOVE, pred);
+                            break;
+                        }
+                        case EVENT_ICICLE:
+                        {
+                            UnitList targets;
+                            SelectTargetList(targets, RAID_MODE(3, 7), SELECT_TARGET_RANDOM, 0.0f, true);
+                            if (!targets.empty())
+                                for (UnitList::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                                    DoCast((*itr), SPELL_ICICLE, true);
+                            events.ScheduleEvent(EVENT_ICICLE, urand(8000, 9000));
+                            break;
+                        }
+                        case EVENT_FROSTFLAKE:
+                            DoCastAOE(SPELL_FROSTFLAKE, true);
+                            events.ScheduleEvent(EVENT_FROSTFLAKE, urand(9000, 12000));
+                            break;
+                        case EVENT_ELECTRICAL_STORM_1:
+                            events.CancelEvent(EVENT_SHATTERED_ICE);
+                            events.CancelEvent(EVENT_ICY_TOMB);
+                            events.CancelEvent(EVENT_ICE_LANCE);
+                            events.CancelEvent(EVENT_FOCUSED_ASSAULT);
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();                            
+                            me->NearTeleportTo(centerPos.GetPositionX(), centerPos.GetPositionY(), centerPos.GetPositionZ(), centerPos.GetOrientation());
+                            events.ScheduleEvent(EVENT_ELECTRICAL_STORM_2, 1500);
+                            break;
+                        case EVENT_ELECTRICAL_STORM_2:
+                            specialPhase = true;
+                            crystalCount = 4;
+                            phase = 10;
+                            Talk(SAY_LIGHTNING);
+                            switch (GetDifficulty())
+                            {
+                                case MAN10_DIFFICULTY:
+                                    for (uint8 i = 0; i < 4; ++i)
+                                        if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i + 4]))
+                                            pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
+                                    break;
+                                case MAN10_HEROIC_DIFFICULTY:
+                                    crystalCount += 4;
+                                    for (uint8 i = 0; i < 4; ++i)
+                                        if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i + 4]))
+                                            pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
+                                // no break
+                                case MAN25_DIFFICULTY:
+                                case MAN25_HEROIC_DIFFICULTY:
+                                    for (uint8 i = 0; i < 4; ++i)
+                                        if (Creature* pCronductor = me->SummonCreature(NPC_CRYSTAL_CONDUCTOR, crystalconductorPos[i]))
+                                            pCronductor->CastSpell(me, SPELL_CRYSTALLINE_TETHER_2);
+                                    break;
+                            }
+                            
+                            me->SummonCreature(NPC_BOUND_LIGHTNING_ELEMENTAL, circlePos[0][3]);
+                            
+                            DoCast(me, SPELL_WATER_SHIELD);
+                            
+                            events.ScheduleEvent(EVENT_END_SPECIAL_PHASE, 305000);
+                            if (IsHeroic())
+                                events.ScheduleEvent(EVENT_STORM_PILLARS, 5000);
+                            break;
+                        case EVENT_STORM_PILLARS:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                DoCastAOE(SPELL_STORM_PILLARS, true);
+                            events.ScheduleEvent(EVENT_STORM_PILLARS, urand(5000, 10000));
+                            break;
+                        case EVENT_END_SPECIAL_PHASE:
+                            crystalCount = 0;
+                            summons.DespawnEntry(NPC_CRYSTAL_CONDUCTOR);
+                            summons.DespawnEntry(NPC_BOUND_LIGHTNING_ELEMENTAL);
+                            summons.DespawnEntry(NPC_FROZEN_BINDING_CRYSTAL);
+                            SpecialPhaseEnd();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            bool bEvent;
+            bool bEventDone;
+            bool specialPhase;
+            uint8 phase;
+            uint8 summonCount;
+            uint8 crystalCount;
+
+            void SpecialPhaseEnd()
+            {
+                specialPhase = false;
+                events.CancelEvent(EVENT_ICICLE);
+                events.CancelEvent(EVENT_WATERY_ENTRENCHMENT);
+                events.CancelEvent(EVENT_STORM_PILLARS);
+                events.CancelEvent(EVENT_FROSTFLAKE);
+                events.CancelEvent(EVENT_END_SPECIAL_PHASE);
+
+                me->RemoveAura(SPELL_CRYSTALLINE_TETHER_1);
+                me->RemoveAura(SPELL_CRYSTALLINE_TETHER_2);
+                me->RemoveAura(RAID_MODE(SPELL_WATER_SHIELD, SPELL_WATER_SHIELD_25, SPELL_WATER_SHIELD_10H, SPELL_WATER_SHIELD_25H));
+                me->RemoveAura(RAID_MODE(SPELL_FROZEN_TEMPEST, SPELL_FROZEN_TEMPEST_25, SPELL_FROZEN_TEMPEST_10H, SPELL_FROZEN_TEMPEST_25H));
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_WATERY_ENTRENCHMENT);
+                        
+                DespawnCreatures(NPC_ICE_WAVE);
+                summons.DespawnEntry(NPC_CRYSTAL_CONDUCTOR);
+                summons.DespawnEntry(NPC_BOUND_LIGHTNING_ELEMENTAL);
+                summons.DespawnEntry(NPC_FROZEN_BINDING_CRYSTAL);
+
+                me->SetReactState(REACT_AGGRESSIVE);
+                AttackStart(me->getVictim());
+
+                DoCast(me, SPELL_FEEDBACK, true);
+
+                events.ScheduleEvent(EVENT_ICE_LANCE, 12000);
+                events.ScheduleEvent(EVENT_ICY_TOMB, 20000);
+                events.ScheduleEvent(EVENT_FOCUSED_ASSAULT, 15000);
+                events.ScheduleEvent(EVENT_SHATTERED_ICE, urand(20000, 30500));
+                
+                if (phase == 10)
+                {
+                    events.ScheduleEvent(EVENT_FROZEN_TEMPEST_1, 62000);
+                    me->RemoveAura(SPELL_HAGARA_LIGHTNING_AXES);
+                    DoCast(me, SPELL_HAGARA_FROST_AXES, true);
+                }
+                else if (phase == 11)
+                {
+                    events.ScheduleEvent(EVENT_ELECTRICAL_STORM_1, 62000);
+                    me->RemoveAura(SPELL_HAGARA_FROST_AXES);
+                    DoCast(me, SPELL_HAGARA_LIGHTNING_AXES, true);
+                }
+                phase = 0;
+            }
+
+            void DespawnCreatures(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
+
+                if (creatures.empty())
+                   return;
+
+                for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
+                     (*iter)->DespawnOrUnsummon();
+            }
+        };
 };
 
 class npc_hagara_the_stormbinder_stormborn_myrmidon : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_stormborn_myrmidon() : CreatureScript("npc_hagara_the_stormbinder_stormborn_myrmidon") { }
+    public:
+        npc_hagara_the_stormbinder_stormborn_myrmidon() : CreatureScript("npc_hagara_the_stormbinder_stormborn_myrmidon") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_stormborn_myrmidonAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_stormborn_myrmidonAI : public ScriptedAI
-    {
-        npc_hagara_the_stormbinder_stormborn_myrmidonAI(Creature* pCreature) : ScriptedAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            return GetInstanceAI<npc_hagara_the_stormbinder_stormborn_myrmidonAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_stormborn_myrmidonAI : public ScriptedAI
         {
-            events.Reset();
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_SPARK, urand(3000, 10000));
-            events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(2000, 10000));
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_stormborn_myrmidonAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                switch (eventId)
-                {
-                case EVENT_SPARK:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                        DoCast(pTarget, SPELL_SPARK);
-                    events.ScheduleEvent(EVENT_SPARK, urand(7000, 9000));
-                    break;
-                case EVENT_CHAIN_LIGHTNING:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                        DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
-                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(5000, 7000));
-                    break;
-                default:
-                    break;
-                }
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void Reset()
+            {
+                events.Reset();
+            }
 
-    private:
-        EventMap events;
-    };
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_SPARK, urand(3000, 10000));
+                events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(2000, 10000));
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+                
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SPARK:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                DoCast(pTarget, SPELL_SPARK);
+                            events.ScheduleEvent(EVENT_SPARK, urand(7000, 9000));
+                            break;
+                        case EVENT_CHAIN_LIGHTNING:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
+                            events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(5000, 7000));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap events;
+        };
 };
 
 class npc_hagara_the_stormbinder_stormbinder_adept : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_stormbinder_adept() : CreatureScript("npc_hagara_the_stormbinder_stormbinder_adept") { }
+    public:
+        npc_hagara_the_stormbinder_stormbinder_adept() : CreatureScript("npc_hagara_the_stormbinder_stormbinder_adept") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_stormbinder_adeptAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_stormbinder_adeptAI : public ScriptedAI
-    {
-        npc_hagara_the_stormbinder_stormbinder_adeptAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            return GetInstanceAI<npc_hagara_the_stormbinder_stormbinder_adeptAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_stormbinder_adeptAI : public ScriptedAI
         {
-            events.Reset();
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_TORNADO, urand(5000, 15000));
-        }
-
-        void JustSummoned(Creature* summon)
-        {
-            if (me->isInCombat())
-                DoZoneInCombat(summon);
-            summons.Summon(summon);
-        }
-
-        void SummonedCreatureDespawn(Creature* summon)
-        {
-            summons.Despawn(summon);
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            summons.DespawnAll();
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_stormbinder_adeptAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
             {
-                DoCast(SPELL_TORNADO);
-                events.ScheduleEvent(EVENT_TORNADO, urand(15000, 20000));
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void Reset()
+            {
+                events.Reset();
+            }
 
-    private:
-        EventMap events;
-        SummonList summons;
-    };
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_TORNADO, urand(5000, 15000));
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                if (me->isInCombat())
+                    DoZoneInCombat(summon);
+                summons.Summon(summon);
+            }
+
+            void SummonedCreatureDespawn(Creature* summon)
+            {
+                summons.Despawn(summon);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                summons.DespawnAll();
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+                
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    DoCast(SPELL_TORNADO);
+                    events.ScheduleEvent(EVENT_TORNADO, urand(15000, 20000));
+                }
+                
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+             EventMap events;
+             SummonList summons;
+        };
 };
 
 class npc_hagara_the_stormbinder_tornado_stalker : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_tornado_stalker() : CreatureScript("npc_hagara_the_stormbinder_tornado_stalker") { }
+    public:
+        npc_hagara_the_stormbinder_tornado_stalker() : CreatureScript("npc_hagara_the_stormbinder_tornado_stalker") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_tornado_stalkerAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_tornado_stalkerAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_tornado_stalkerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->SetReactState(REACT_PASSIVE);
+            return GetInstanceAI<npc_hagara_the_stormbinder_tornado_stalkerAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_hagara_the_stormbinder_tornado_stalkerAI : public Scripted_NoMovementAI
         {
-            events.ScheduleEvent(EVENT_TORNADO, 3000);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_tornado_stalkerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
             {
-                me->StopMoving();
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void IsSummonedBy(Unit* /*owner*/)
+            {
+                events.ScheduleEvent(EVENT_TORNADO, 3000);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+                
+                if (uint32 eventId = events.ExecuteEvent())
                 {
-                    DoCast(pTarget, SPELL_TORNADO_FIXATE, true);
-                    me->GetMotionMaster()->MoveFollow(pTarget, 0.0f, 0.0f);
+                    me->StopMoving();
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                    {
+                        DoCast(pTarget, SPELL_TORNADO_FIXATE, true);
+                        me->GetMotionMaster()->MoveFollow(pTarget, 0.0f, 0.0f);
+                    }
                 }
             }
-        }
 
-    private:
-        EventMap events;
-    };
+        private:
+            EventMap events;
+        };
 };
 
 class npc_hagara_the_stormbinder_twilight_frost_evoker : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_twilight_frost_evoker() : CreatureScript("npc_hagara_the_stormbinder_twilight_frost_evoker") { }
+    public:
+        npc_hagara_the_stormbinder_twilight_frost_evoker() : CreatureScript("npc_hagara_the_stormbinder_twilight_frost_evoker") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_twilight_frost_evokerAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_twilight_frost_evokerAI : public ScriptedAI
-    {
-        npc_hagara_the_stormbinder_twilight_frost_evokerAI(Creature* pCreature) : ScriptedAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            return GetInstanceAI<npc_hagara_the_stormbinder_twilight_frost_evokerAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_twilight_frost_evokerAI : public ScriptedAI
         {
-            events.Reset();
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_FROST_BOLT, 1);
-            events.ScheduleEvent(EVENT_BLIZZARD, urand(5000, 15000));
-            events.ScheduleEvent(EVENT_SHACKLES_OF_ICE, urand(5000, 15000));
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_twilight_frost_evokerAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                switch (eventId)
-                {
-                case EVENT_FROST_BOLT:
-                    DoCastVictim(SPELL_FROST_BOLT);
-                    events.ScheduleEvent(EVENT_FROST_BOLT, 1600);
-                    break;
-                case EVENT_BLIZZARD:
-                    {
-                        Unit* pTarget = NULL;
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -20.0f, true);
-                        if (!pTarget)
-                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -20.0f, true);
-
-                        if (pTarget)
-                            DoCast(pTarget, SPELL_BLIZZARD);
-
-                        events.ScheduleEvent(EVENT_BLIZZARD, urand(16000, 20000));
-                        break;
-                    }
-                case EVENT_SHACKLES_OF_ICE:
-                    {
-                        Unit* pTarget = NULL;
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -109442);
-                        if (!pTarget)
-                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true);
-
-                        if (pTarget)
-                            DoCast(pTarget, SPELL_SHACKLES_OF_ICE);
-
-                        events.ScheduleEvent(EVENT_SHACKLES_OF_ICE, urand(8000, 14000));
-                        break;
-                    }
-                default:
-                    break;
-                }
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void Reset()
+            {
+                events.Reset();
+            }
 
-    private:
-        EventMap events;
-    };
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_FROST_BOLT, 1);
+                events.ScheduleEvent(EVENT_BLIZZARD, urand(5000, 15000));
+                events.ScheduleEvent(EVENT_SHACKLES_OF_ICE, urand(5000, 15000));
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+                
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_FROST_BOLT:
+                            DoCastVictim(SPELL_FROST_BOLT);
+                            events.ScheduleEvent(EVENT_FROST_BOLT, 1600);
+                            break;
+                        case EVENT_BLIZZARD:
+                        {
+                            Unit* pTarget = NULL;
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -20.0f, true);
+                            if (!pTarget)
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -20.0f, true);
+                            
+                            if (pTarget)
+                                DoCast(pTarget, SPELL_BLIZZARD);
+
+                            events.ScheduleEvent(EVENT_BLIZZARD, urand(16000, 20000));
+                            break;
+                        }
+                        case EVENT_SHACKLES_OF_ICE:
+                        {
+                            Unit* pTarget = NULL;
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -109442);
+                            if (!pTarget)
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true);
+                            
+                            if (pTarget)
+                                DoCast(pTarget, SPELL_SHACKLES_OF_ICE);
+
+                            events.ScheduleEvent(EVENT_SHACKLES_OF_ICE, urand(8000, 14000));
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+                
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap events;
+        };
 };
 
 class npc_hagara_the_stormbinder_lieutenant_shara : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_lieutenant_shara() : CreatureScript("npc_hagara_the_stormbinder_lieutenant_shara") { }
+    public:
+        npc_hagara_the_stormbinder_lieutenant_shara() : CreatureScript("npc_hagara_the_stormbinder_lieutenant_shara") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_lieutenant_sharaAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_lieutenant_sharaAI : public ScriptedAI
-    {
-        npc_hagara_the_stormbinder_lieutenant_sharaAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            return GetInstanceAI<npc_hagara_the_stormbinder_lieutenant_sharaAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_lieutenant_sharaAI : public ScriptedAI
         {
-            events.Reset();
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_SHATTER, urand(4000, 6000));
-            events.ScheduleEvent(EVENT_FROST_CORRUPTION, urand(3000, 10000));
-            events.ScheduleEvent(EVENT_FROZEN_GRASP, urand(5000, 10000));
-        }
-
-        void JustSummoned(Creature* summon)
-        {
-            if (me->isInCombat())
-                DoZoneInCombat(summon);
-            summons.Summon(summon);
-        }
-
-        void SummonedCreatureDespawn(Creature* summon)
-        {
-            summons.Despawn(summon);
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            summons.DespawnAll();
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_lieutenant_sharaAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
             {
-                switch (eventId)
-                {
-                case EVENT_SHATTER:
-                    DoCastVictim(SPELL_SHATTER);
-                    events.ScheduleEvent(EVENT_SHATTER, urand(8000, 13000));
-                    break;
-                case EVENT_FROST_CORRUPTION:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
-                        DoCast(pTarget, SPELL_FROST_CORRUPTION);
-                    events.ScheduleEvent(EVENT_FROST_CORRUPTION, urand(10000, 15000));
-                    break;
-                case EVENT_FROZEN_GRASP:
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
-                        DoCast(pTarget, SPELL_FROZEN_GRASP);
-                    events.ScheduleEvent(EVENT_FROZEN_GRASP, 31000);
-                    break;
-                default:
-                    break;
-                }
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void Reset()
+            {
+                events.Reset();
+            }
 
-    private:
-        EventMap events;
-        SummonList summons;
-    };
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_SHATTER, urand(4000, 6000));
+                events.ScheduleEvent(EVENT_FROST_CORRUPTION, urand(3000, 10000));
+                events.ScheduleEvent(EVENT_FROZEN_GRASP, urand(5000, 10000));
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                if (me->isInCombat())
+                    DoZoneInCombat(summon);
+                summons.Summon(summon);
+            }
+
+            void SummonedCreatureDespawn(Creature* summon)
+            {
+                summons.Despawn(summon);
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                summons.DespawnAll();
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+                
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SHATTER:
+                            DoCastVictim(SPELL_SHATTER);
+                            events.ScheduleEvent(EVENT_SHATTER, urand(8000, 13000));
+                            break;
+                        case EVENT_FROST_CORRUPTION:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                                DoCast(pTarget, SPELL_FROST_CORRUPTION);
+                            events.ScheduleEvent(EVENT_FROST_CORRUPTION, urand(10000, 15000));
+                            break;
+                        case EVENT_FROZEN_GRASP:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                                DoCast(pTarget, SPELL_FROZEN_GRASP);
+                            events.ScheduleEvent(EVENT_FROZEN_GRASP, 31000);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap events;
+            SummonList summons;
+        };
 };
 
 class npc_hagara_the_stormbinder_icy_tomb : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_icy_tomb() : CreatureScript("npc_hagara_the_stormbinder_icy_tomb") { }
+    public:
+        npc_hagara_the_stormbinder_icy_tomb() : CreatureScript("npc_hagara_the_stormbinder_icy_tomb") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_icy_tombAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_icy_tombAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_icy_tombAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        CreatureAI* GetAI(Creature* creature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            trappedPlayer = 0;
-            existenceCheckTimer = 1000;
+            return GetInstanceAI<npc_hagara_the_stormbinder_icy_tombAI>(creature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_icy_tombAI : public Scripted_NoMovementAI
         {
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void SetGUID(uint64 guid, int32 type)
-        {
-            if (type == DATA_TRAPPED_PLAYER)
+            npc_hagara_the_stormbinder_icy_tombAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                trappedPlayer = guid;
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                trappedPlayer = 0;
                 existenceCheckTimer = 1000;
             }
-        }
 
-        void JustDied(Unit* /*killer*/)
-        {
-            if (Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer))
+            void Reset()
             {
-                trappedPlayer = 0;
-                player->RemoveAura(SPELL_ICY_TOMB);
+                me->SetReactState(REACT_PASSIVE);
             }
-            me->DespawnOrUnsummon(800);
-        }
 
-        void UpdateAI(uint32 diff)
-        {
-            if (!trappedPlayer)
-                return;
-
-            if (existenceCheckTimer <= diff)
+            void SetGUID(uint64 guid, int32 type)
             {
-                Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer);
-                if (!player || player->isDead() || !player->HasAura(SPELL_ICY_TOMB))
+                if (type == DATA_TRAPPED_PLAYER)
                 {
-                    JustDied(me);
-                    me->DespawnOrUnsummon();
-                    return;
+                    trappedPlayer = guid;
+                    existenceCheckTimer = 1000;
                 }
             }
-            else
-                existenceCheckTimer -= diff;
-        } 
 
-    private:
-        uint64 trappedPlayer;
-        uint32 existenceCheckTimer;
-    };
+            void JustDied(Unit* /*killer*/)
+            {
+                if (Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer))
+                {
+                    trappedPlayer = 0;
+                    player->RemoveAura(SPELL_ICY_TOMB);
+                }
+                me->DespawnOrUnsummon(800);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!trappedPlayer)
+                    return;
+
+                if (existenceCheckTimer <= diff)
+                {
+                    Player* player = ObjectAccessor::GetPlayer(*me, trappedPlayer);
+                    if (!player || player->isDead() || !player->HasAura(SPELL_ICY_TOMB))
+                    {
+                        JustDied(me);
+                        me->DespawnOrUnsummon();
+                        return;
+                    }
+                }
+                else
+                    existenceCheckTimer -= diff;
+            } 
+
+        private:
+            uint64 trappedPlayer;
+            uint32 existenceCheckTimer;
+        };
 };
 
 class npc_hagara_the_stormbinder_ice_lance : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_ice_lance() : CreatureScript("npc_hagara_the_stormbinder_ice_lance") { }
+    public:
+        npc_hagara_the_stormbinder_ice_lance() : CreatureScript("npc_hagara_the_stormbinder_ice_lance") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_ice_lanceAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_ice_lanceAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_ice_lanceAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        CreatureAI* GetAI(Creature* creature) const
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            targetPlayer = 0;
+            return GetInstanceAI<npc_hagara_the_stormbinder_ice_lanceAI>(creature);
         }
 
-        void Reset()
+        struct npc_hagara_the_stormbinder_ice_lanceAI : public Scripted_NoMovementAI
         {
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void SetGUID(uint64 guid, int32 type)
-        {
-            if (type == DATA_ICE_LANCE_GUID)
+            npc_hagara_the_stormbinder_ice_lanceAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                targetPlayer = guid;
-                if (Player* pPlayer = ObjectAccessor::FindPlayer(guid))
-                    DoCast(pPlayer, SPELL_TARGET);
-                else
-                    me->DespawnOrUnsummon();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                targetPlayer = 0;
             }
-        }
 
-        uint64 GetGUID(int32 type)
-        {
-            if (type == DATA_ICE_LANCE_GUID)
-                return targetPlayer;
-            return 0;
-        }
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
 
-    private:
-        uint64 targetPlayer;
-    };
+            void SetGUID(uint64 guid, int32 type)
+            {
+                if (type == DATA_ICE_LANCE_GUID)
+                {
+                    targetPlayer = guid;
+                    if (Player* pPlayer = ObjectAccessor::FindPlayer(guid))
+                        DoCast(pPlayer, SPELL_TARGET);
+                    else
+                        me->DespawnOrUnsummon();
+                }
+            }
+
+            uint64 GetGUID(int32 type)
+            {
+                if (type == DATA_ICE_LANCE_GUID)
+                    return targetPlayer;
+                return 0;
+            }
+
+        private:
+            uint64 targetPlayer;
+        };
 };
 
 class npc_hagara_the_stormbinder_collapsing_icicle : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_collapsing_icicle() : CreatureScript("npc_hagara_the_stormbinder_collapsing_icicle") { }
+    public:
+        npc_hagara_the_stormbinder_collapsing_icicle() : CreatureScript("npc_hagara_the_stormbinder_collapsing_icicle") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_collapsing_icicleAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_collapsing_icicleAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_collapsing_icicleAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        CreatureAI* GetAI(Creature* creature) const
         {
+            return GetInstanceAI<npc_hagara_the_stormbinder_collapsing_icicleAI>(creature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_hagara_the_stormbinder_collapsing_icicleAI : public Scripted_NoMovementAI
         {
-            events.ScheduleEvent(EVENT_ICICLE, 6000);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (events.ExecuteEvent())
+            npc_hagara_the_stormbinder_collapsing_icicleAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                DoCast(me, SPELL_ICICLE_AURA);
             }
-        }
 
-    private:
-        EventMap events;
-    };
+            void IsSummonedBy(Unit* /*owner*/)
+            {
+                events.ScheduleEvent(EVENT_ICICLE, 6000);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                if (events.ExecuteEvent())
+                {
+                    DoCast(me, SPELL_ICICLE_AURA);
+                }
+            }
+
+        private:
+            EventMap events;
+        };
 };
 
 class npc_hagara_the_stormbinder_ice_wave : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_ice_wave() : CreatureScript("npc_hagara_the_stormbinder_ice_wave") { }
+    public:
+        npc_hagara_the_stormbinder_ice_wave() : CreatureScript("npc_hagara_the_stormbinder_ice_wave") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_ice_waveAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_ice_waveAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_ice_waveAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        CreatureAI* GetAI(Creature* creature) const
         {
-            me->SetReactState(REACT_PASSIVE);
-            circlePoint = 0;
-            bDespawn = false;
-            pInstance = me->GetInstanceScript();
-            bMain = false;
+            return GetInstanceAI<npc_hagara_the_stormbinder_ice_waveAI>(creature);
         }
 
-        void MovementInform(uint32 type, uint32 data)
+        struct npc_hagara_the_stormbinder_ice_waveAI : public Scripted_NoMovementAI
         {
-            if (bDespawn)
-                return;
-
-            if (type == POINT_MOTION_TYPE)
+            npc_hagara_the_stormbinder_ice_waveAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                if (data == POINT_ICE_WAVE)
-                {
-                    //
-                }
-                else if (data == POINT_ICE_WAVE_MOVE)
-                {
-                    if (bMain)
-                    {
-                        UpdateNextPoint();
-                        for (uint8 i = 0; i < 4; ++i)
-                        {
+                me->SetReactState(REACT_PASSIVE);
+                circlePoint = 0;
+                bDespawn = false;
+                pInstance = me->GetInstanceScript();
+                bMain = false;
+            }
 
-                            if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, circlePos[circlePoint][i]))
+            void MovementInform(uint32 type, uint32 data)
+            {
+                if (bDespawn)
+                    return;
+
+                if (type == POINT_MOTION_TYPE)
+                {
+                    if (data == POINT_ICE_WAVE)
+                    {
+                        //
+                    }
+                    else if (data == POINT_ICE_WAVE_MOVE)
+                    {
+                        if (bMain)
+                        {
+                            UpdateNextPoint();
+                            for (uint8 i = 0; i < 4; ++i)
                             {
-                                pWave->SetSpeed(MOVE_RUN, (0.8f - 0.1f * i), true);
-                                pWave->AI()->SetData(DATA_CIRCLE_POINT, circlePoint);
-                                pWave->AI()->SetData(DATA_MAIN_WAVE, ((i == 0) ? 1 : 0));
-                                pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE_MOVE, circlePos[(circlePoint < 17 ? circlePoint + 1 : 0)][i]);
+                                
+                                if (Creature* pWave = me->SummonCreature(NPC_ICE_WAVE, circlePos[circlePoint][i]))
+                                {
+                                    float mul = 1.0f;
+                                    pWave->SetSpeed(MOVE_RUN, (0.8f - 0.1f * i) * mul, true);
+                                    pWave->AI()->SetData(DATA_CIRCLE_POINT, circlePoint);
+                                    pWave->AI()->SetData(DATA_MAIN_WAVE, ((i == 0) ? 1 : 0));
+                                    pWave->GetMotionMaster()->MovePoint(POINT_ICE_WAVE_MOVE, circlePos[(circlePoint < 17 ? circlePoint + 1 : 0)][i]);
+                                }
                             }
                         }
+                        me->DespawnOrUnsummon(500);
                     }
-                    me->DespawnOrUnsummon(500);
                 }
             }
-        }
 
-        void JustSummoned(Creature* summon)
-        {
-            if (me->isInCombat())
-                DoZoneInCombat(summon);
-        }
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_CIRCLE_POINT)
-                circlePoint = (uint8)data;
-            else if (type == DATA_MAIN_WAVE)
-                bMain = (bool)data;
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_ICE_WAVE_MOVE)
-            {   
-                me->GetMotionMaster()->MovePoint(POINT_ICE_WAVE_MOVE, circlePos[UpdateNextPoint()][0]); 
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (bDespawn)
-                return;
-
-            if (pInstance->GetBossState(DATA_HAGARA) != IN_PROGRESS)
+            void JustSummoned(Creature* summon)
             {
-                bDespawn = true;
-                me->DespawnOrUnsummon(100);
+                if (me->isInCombat())
+                    DoZoneInCombat(summon);
             }
-        }
 
-    private:
-        bool bDespawn;
-        InstanceScript* pInstance;
-        uint8 circlePoint;
-        bool bMain;
+            void SetData(uint32 type, uint32 data)
+            {
+                if (type == DATA_CIRCLE_POINT)
+                    circlePoint = (uint8)data;
+                else if (type == DATA_MAIN_WAVE)
+                    bMain = (bool)data;
+            }
 
-        uint8 UpdateNextPoint()
-        {
-            circlePoint++;
-            if (circlePoint > 17)
-                circlePoint = 0;
-            return circlePoint;
-        }
-    };
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_ICE_WAVE_MOVE)
+                {   
+                    me->GetMotionMaster()->MovePoint(POINT_ICE_WAVE_MOVE, circlePos[UpdateNextPoint()][0]); 
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (bDespawn)
+                    return;
+
+                if (pInstance->GetBossState(DATA_HAGARA) != IN_PROGRESS)
+                {
+                    bDespawn = true;
+                    me->DespawnOrUnsummon(100);
+                }
+            }
+
+        private:
+            bool bDespawn;
+            InstanceScript* pInstance;
+            uint8 circlePoint;
+            bool bMain;
+
+            uint8 UpdateNextPoint()
+            {
+                circlePoint++;
+                if (circlePoint > 17)
+                    circlePoint = 0;
+                return circlePoint;
+            }
+        };
 };
 
 class npc_hagara_the_stormbinder_frozen_binding_crystal : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_frozen_binding_crystal() : CreatureScript("npc_hagara_the_stormbinder_frozen_binding_crystal") { }
+    public:
+        npc_hagara_the_stormbinder_frozen_binding_crystal() : CreatureScript("npc_hagara_the_stormbinder_frozen_binding_crystal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_frozen_binding_crystalAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_frozen_binding_crystalAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_frozen_binding_crystalAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        CreatureAI* GetAI(Creature* creature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->SetReactState(REACT_PASSIVE);
-            pInstance = me->GetInstanceScript();
+            return GetInstanceAI<npc_hagara_the_stormbinder_frozen_binding_crystalAI>(creature);
         }
 
-        void JustDied(Unit* /*killer*/)
+        struct npc_hagara_the_stormbinder_frozen_binding_crystalAI : public Scripted_NoMovementAI
         {
-            DoCast(me, SPELL_CRYSTALLINE_OVERLOAD_1);
-
-            if (pInstance)
-                if (Creature* pHagara = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_HAGARA)))
-                {
-                    pHagara->RemoveAura(SPELL_CRYSTALLINE_TETHER_1, me->GetGUID());
-                    pHagara->AI()->DoAction(ACTION_CRYSTAL_DIED);
-                }
-
-                me->DespawnOrUnsummon(2000);
-        }
-
-    private:
-        InstanceScript* pInstance;
-    };
-};
-
-class npc_hagara_the_stormbinder_crystal_conductor : public CreatureScript
-{
-public:
-    npc_hagara_the_stormbinder_crystal_conductor() : CreatureScript("npc_hagara_the_stormbinder_crystal_conductor") { }
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_hagara_the_stormbinder_crystal_conductorAI(creature);
-    }
-
-    struct npc_hagara_the_stormbinder_crystal_conductorAI : public Scripted_NoMovementAI
-    {
-        npc_hagara_the_stormbinder_crystal_conductorAI(Creature* creature) : Scripted_NoMovementAI(creature)
-        {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->SetReactState(REACT_PASSIVE);
-            pInstance = me->GetInstanceScript();
-            bOverloaded = false;
-        }
-
-        void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
-        {
-            if ((spellInfo->Id == SPELL_OVERLOAD_2 || spellInfo->Id == SPELL_LIGHTNING_CONDUIT_DUMMY_1) && !bOverloaded)
+            npc_hagara_the_stormbinder_frozen_binding_crystalAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                bOverloaded = true;
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->SetReactState(REACT_PASSIVE);
+                pInstance = me->GetInstanceScript();
+            }
 
-                DoCast(me, SPELL_LIGHTNING_ROD_2, true);
-
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 2000);
+            void JustDied(Unit* /*killer*/)
+            {
+                DoCast(me, SPELL_CRYSTALLINE_OVERLOAD_1);
 
                 if (pInstance)
                     if (Creature* pHagara = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_HAGARA)))
                     {
-                        pHagara->RemoveAura(SPELL_CRYSTALLINE_TETHER_2, me->GetGUID());
+                        pHagara->RemoveAura(SPELL_CRYSTALLINE_TETHER_1, me->GetGUID());
                         pHagara->AI()->DoAction(ACTION_CRYSTAL_DIED);
                     }
+
+                me->DespawnOrUnsummon(2000);
             }
+
+        private:
+            InstanceScript* pInstance;
+        };
+};
+
+class npc_hagara_the_stormbinder_crystal_conductor : public CreatureScript
+{
+    public:
+        npc_hagara_the_stormbinder_crystal_conductor() : CreatureScript("npc_hagara_the_stormbinder_crystal_conductor") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<npc_hagara_the_stormbinder_crystal_conductorAI>(creature);
         }
 
-        uint32 GetData(uint32 type)
+        struct npc_hagara_the_stormbinder_crystal_conductorAI : public Scripted_NoMovementAI
         {
-            if (type == DATA_CRYSTAL_OVERLOADED)
-                return (uint32)bOverloaded;
-            return 0;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_crystal_conductorAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
-                if (Player* pPlayer = me->FindNearestPlayer(10.0f))
-                    DoCast(pPlayer, SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
-
-
-
-
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->SetReactState(REACT_PASSIVE);
+                pInstance = me->GetInstanceScript();
+                bOverloaded = false;
             }
-        }
 
-    private:
-        InstanceScript* pInstance;
-        bool bOverloaded;
-        EventMap events;
+            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            {
+                if ((spellInfo->Id == SPELL_OVERLOAD_2 || spellInfo->Id == SPELL_LIGHTNING_CONDUIT_DUMMY_1) && !bOverloaded)
+                {
+                    bOverloaded = true;
 
-    };
+                    DoCast(me, SPELL_LIGHTNING_ROD_2, true);
+                    Talk(ANN_OVERLOAD);
+
+                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 2000);
+
+                    if (pInstance)
+                        if (Creature* pHagara = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_HAGARA)))
+                        {
+                            pHagara->RemoveAura(SPELL_CRYSTALLINE_TETHER_2, me->GetGUID());
+                            pHagara->AI()->DoAction(ACTION_CRYSTAL_DIED);
+                        }
+                }
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_CRYSTAL_OVERLOADED)
+                    return (uint32)bOverloaded;
+                return 0;
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (Player* pPlayer = me->FindNearestPlayer(10.0f))
+                        DoCast(pPlayer, SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
+
+                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                }
+            }
+
+        private:
+            InstanceScript* pInstance;
+            bool bOverloaded;
+            EventMap events;
+
+        };
 };
 
 class npc_hagara_the_stormbinder_bound_lightning_elemental : public CreatureScript
 {
-public:
-    npc_hagara_the_stormbinder_bound_lightning_elemental() : CreatureScript("npc_hagara_the_stormbinder_bound_lightning_elemental") { }
+    public:
+        npc_hagara_the_stormbinder_bound_lightning_elemental() : CreatureScript("npc_hagara_the_stormbinder_bound_lightning_elemental") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_hagara_the_stormbinder_bound_lightning_elementalAI (pCreature);
-    }
-
-    struct npc_hagara_the_stormbinder_bound_lightning_elementalAI : public ScriptedAI
-    {
-        npc_hagara_the_stormbinder_bound_lightning_elementalAI(Creature* pCreature) : ScriptedAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->SetReactState(REACT_PASSIVE);
+            return GetInstanceAI<npc_hagara_the_stormbinder_bound_lightning_elementalAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_hagara_the_stormbinder_bound_lightning_elementalAI : public ScriptedAI
         {
-            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 2000);
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            if (Creature* pCreature = me->FindNearestCreature(NPC_CRYSTAL_CONDUCTOR, 100.0f))
-                DoCast(pCreature, SPELL_OVERLOAD_2, true);
-            me->DespawnOrUnsummon(3000);                
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            npc_hagara_the_stormbinder_bound_lightning_elementalAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                me->SetReactState(REACT_AGGRESSIVE);
-                AttackStart(me->getVictim());
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->SetReactState(REACT_PASSIVE);
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void IsSummonedBy(Unit* /*owner*/)
+            {
+                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 2000);
+            }
 
-    private:
-        EventMap events;
-    };
+            void JustDied(Unit* /*killer*/)
+            {
+                if (Creature* pCreature = me->FindNearestCreature(NPC_CRYSTAL_CONDUCTOR, 100.0f))
+                    DoCast(pCreature, SPELL_OVERLOAD_2, true);
+                me->DespawnOrUnsummon(3000);                
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    AttackStart(me->getVictim());
+                }
+                
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap events;
+        };
 };
 
 class go_hagara_the_stormbinder_the_focusing_iris : public GameObjectScript
 {
-public:
-    go_hagara_the_stormbinder_the_focusing_iris() : GameObjectScript("go_hagara_the_stormbinder_the_focusing_iris") {}
+    public:
+        go_hagara_the_stormbinder_the_focusing_iris() : GameObjectScript("go_hagara_the_stormbinder_the_focusing_iris") {}
 
-    bool OnGossipHello(Player* pPlayer, GameObject* pGo)
-    {
-        if (InstanceScript* pInstance = pGo->GetInstanceScript())
+        bool OnGossipHello(Player* pPlayer, GameObject* pGo)
         {
-            if (pInstance->GetBossState(DATA_ZONOZZ) != DONE || pInstance->GetBossState(DATA_YORSAHJ) != DONE)
+            if (InstanceScript* pInstance = pGo->GetInstanceScript())
             {
-                pInstance->DoNearTeleportPlayers(teleportPos[0]);
-                return true;
-            }
+                if (pInstance->GetBossState(DATA_ZONOZZ) != DONE || pInstance->GetBossState(DATA_YORSAHJ) != DONE)
+                {
+                    pInstance->DoNearTeleportPlayers(portalsPos[0]);
+                    return true;
+                }
 
-            if (Creature* pHagara = ObjectAccessor::GetCreature(*pGo, pInstance->GetData64(DATA_HAGARA)))
-            {
-                pHagara->AI()->DoAction(ACTION_START_EVENT);
-                pGo->Delete();
+                if (Creature* pHagara = ObjectAccessor::GetCreature(*pGo, pInstance->GetData64(DATA_HAGARA)))
+                {
+                    pHagara->AI()->DoAction(ACTION_START_EVENT);
+                    pGo->Delete();
+                }
             }
+            return true;
         }
-        return true;
-    }
 };
 
 class spell_dragon_soul_lieutenant_shara_frozen_grasp : public SpellScriptLoader
 { 
-public:
-    spell_dragon_soul_lieutenant_shara_frozen_grasp() : SpellScriptLoader("spell_dragon_soul_lieutenant_shara_frozen_grasp") { }
+    public:
+        spell_dragon_soul_lieutenant_shara_frozen_grasp() : SpellScriptLoader("spell_dragon_soul_lieutenant_shara_frozen_grasp") { }
 
-    class spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript);
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
+        class spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript : public SpellScript
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
+            PrepareSpellScript(spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript);
 
-            GetHitUnit()->CastSpell(GetCaster(), SPELL_FROZEN_GRASP_GRIP, true);
-        }
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
 
-        void Register()
+                GetHitUnit()->CastSpell(GetCaster(), SPELL_FROZEN_GRASP_GRIP, true);
+            }
+        
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+       
+        SpellScript* GetSpellScript() const
         {
-            OnEffectHitTarget += SpellEffectFn(spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            return new spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_dragon_soul_lieutenant_shara_frozen_grasp_SpellScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_icy_tomb_aoe : public SpellScriptLoader
 { 
-public:
-    spell_hagara_the_stormbinder_icy_tomb_aoe() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb_aoe") { }
+    public:
+        spell_hagara_the_stormbinder_icy_tomb_aoe() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb_aoe") { }
 
-    class spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript);
 
-            if (!GetCaster()->getVictim())
-                return;
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (!GetCaster())
+                    return;
 
-            if (targets.size() > 1)
-                targets.remove(GetCaster()->getVictim());
-        }
+                if (!GetCaster()->getVictim())
+                    return;
 
-        void HandleScript(SpellEffIndex /*effIndex*/)
+                if (targets.size() > 1)
+                    targets.remove(GetCaster()->getVictim());
+            }
+
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_ICY_TOMB_DUMMY, true);
+            }
+        
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+       
+        SpellScript* GetSpellScript() const
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
-
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_ICY_TOMB_DUMMY, true);
+            return new spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript();
         }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-            OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_hagara_the_stormbinder_icy_tomb_aoe_SpellScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_icy_tomb_dummy : public SpellScriptLoader
 { 
-public:
-    spell_hagara_the_stormbinder_icy_tomb_dummy() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb_dummy") { }
+    public:
+        spell_hagara_the_stormbinder_icy_tomb_dummy() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb_dummy") { }
 
-    class spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript);
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
+        class spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript : public SpellScript
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
+            PrepareSpellScript(spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript);
 
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_ICY_TOMB, true);
-        }
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
 
-        void Register()
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_ICY_TOMB, true);
+            }
+        
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+       
+        SpellScript* GetSpellScript() const
         {
-            OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            return new spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_hagara_the_stormbinder_icy_tomb_dummy_SpellScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_icy_tomb : public SpellScriptLoader
 {
-public:
-    spell_hagara_the_stormbinder_icy_tomb() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb") { }
+    public:
+        spell_hagara_the_stormbinder_icy_tomb() : SpellScriptLoader("spell_hagara_the_stormbinder_icy_tomb") { }
 
-    class spell_hagara_the_stormbinder_icy_tomb_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_hagara_the_stormbinder_icy_tomb_AuraScript);
-
-        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        class spell_hagara_the_stormbinder_icy_tomb_AuraScript : public AuraScript
         {
-            Position pos;
-            aurEff->GetBase()->GetOwner()->GetPosition(&pos);
-            if (!GetCaster())
-                return;
-            if (TempSummon* summon = GetCaster()->SummonCreature(NPC_ICY_TOMB, pos))
-                summon->AI()->SetGUID(aurEff->GetBase()->GetOwner()->GetGUID(), DATA_TRAPPED_PLAYER);   
-        }
+            PrepareAuraScript(spell_hagara_the_stormbinder_icy_tomb_AuraScript);
 
-        void Register()
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Position pos;
+                aurEff->GetBase()->GetOwner()->GetPosition(&pos);
+                if (!GetCaster())
+                    return;
+                if (TempSummon* summon = GetCaster()->SummonCreature(NPC_ICY_TOMB, pos))
+                    summon->AI()->SetGUID(aurEff->GetBase()->GetOwner()->GetGUID(), DATA_TRAPPED_PLAYER);   
+            }
+            
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_hagara_the_stormbinder_icy_tomb_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
         {
-            OnEffectApply += AuraEffectApplyFn(spell_hagara_the_stormbinder_icy_tomb_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            return new spell_hagara_the_stormbinder_icy_tomb_AuraScript();
         }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_hagara_the_stormbinder_icy_tomb_AuraScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_ice_lance_target : public SpellScriptLoader
 { 
-public:
-    spell_hagara_the_stormbinder_ice_lance_target() : SpellScriptLoader("spell_hagara_the_stormbinder_ice_lance_target") { }
+    public:
+        spell_hagara_the_stormbinder_ice_lance_target() : SpellScriptLoader("spell_hagara_the_stormbinder_ice_lance_target") { }
 
-    class spell_hagara_the_stormbinder_ice_lance_target_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_hagara_the_stormbinder_ice_lance_target_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_hagara_the_stormbinder_ice_lance_target_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_hagara_the_stormbinder_ice_lance_target_SpellScript);
 
-            if (targets.size() <= 1)
-                return;
-
-            uint64 guid = 0;
-            if (Creature* pLance = GetCaster()->ToCreature())
-                guid = pLance->AI()->GetGUID(DATA_ICE_LANCE_GUID);
-
-            if (!guid)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
+                if (!GetCaster())
+                    return;
+
+                if (targets.size() <= 1)
+                    return;
+
+                uint64 guid = 0;
+                if (Creature* pLance = GetCaster()->ToCreature())
+                    guid = pLance->AI()->GetGUID(DATA_ICE_LANCE_GUID);
+
+                if (!guid)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                Player* pPlayer = ObjectAccessor::FindPlayer(guid);
+                if (!pPlayer)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                WorldObject* objTarget = NULL;
+                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    if ((*itr)->IsInBetween(GetCaster(), pPlayer, 4.0f))
+                        if (!objTarget || (GetCaster()->GetDistance(objTarget) > GetCaster()->GetDistance((*itr))))
+                            objTarget = (*itr);
+
+                if (!objTarget)
+                    objTarget = pPlayer;
+
                 targets.clear();
-                return;
+                targets.push_back(objTarget);
             }
 
-            Player* pPlayer = ObjectAccessor::FindPlayer(guid);
-            if (!pPlayer)
+            void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                targets.clear();
-                return;
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_ICE_LANCE_MISSILE, true);
             }
-
-            WorldObject* objTarget = NULL;
-            for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                if ((*itr)->IsInBetween(GetCaster(), pPlayer, 4.0f))
-                    if (!objTarget || (GetCaster()->GetDistance(objTarget) > GetCaster()->GetDistance((*itr))))
-                        objTarget = (*itr);
-
-            if (!objTarget)
-                objTarget = pPlayer;
-
-            targets.clear();
-            targets.push_back(objTarget);
-        }
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
+        
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hagara_the_stormbinder_ice_lance_target_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
+                OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_ice_lance_target_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+       
+        SpellScript* GetSpellScript() const
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
-
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_ICE_LANCE_MISSILE, true);
+            return new spell_hagara_the_stormbinder_ice_lance_target_SpellScript();
         }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hagara_the_stormbinder_ice_lance_target_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
-            OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_ice_lance_target_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_hagara_the_stormbinder_ice_lance_target_SpellScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_storm_pillars : public SpellScriptLoader
 {
-public:
-    spell_hagara_the_stormbinder_storm_pillars() : SpellScriptLoader("spell_hagara_the_stormbinder_storm_pillars") { }
+    public:
+        spell_hagara_the_stormbinder_storm_pillars() : SpellScriptLoader("spell_hagara_the_stormbinder_storm_pillars") { }
 
-    class spell_hagara_the_stormbinder_storm_pillars_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_hagara_the_stormbinder_storm_pillars_SpellScript);
-
-        void HandleScript(SpellEffIndex /*effIndex*/)
+        class spell_hagara_the_stormbinder_storm_pillars_SpellScript : public SpellScript
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
+            PrepareSpellScript(spell_hagara_the_stormbinder_storm_pillars_SpellScript);
 
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_STORM_PILLAR, true);
-        }
+            void HandleScript(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
 
-        void Register()
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_STORM_PILLAR, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_storm_pillars_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            OnEffectHitTarget += SpellEffectFn(spell_hagara_the_stormbinder_storm_pillars_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
+            return new spell_hagara_the_stormbinder_storm_pillars_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_hagara_the_stormbinder_storm_pillars_SpellScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_frostflake : public SpellScriptLoader
 {
-public:
-    spell_hagara_the_stormbinder_frostflake() : SpellScriptLoader("spell_hagara_the_stormbinder_frostflake") { }
+    public:
+        spell_hagara_the_stormbinder_frostflake() : SpellScriptLoader("spell_hagara_the_stormbinder_frostflake") { }
 
-    class spell_hagara_the_stormbinder_frostflake_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_hagara_the_stormbinder_frostflake_AuraScript);
-
-        void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+        class spell_hagara_the_stormbinder_frostflake_AuraScript : public AuraScript
         {
-            if (!GetUnitOwner())
-                return;
+            PrepareAuraScript(spell_hagara_the_stormbinder_frostflake_AuraScript);
 
-            if (Aura* aur = GetAura())
-                if (aur->GetStackAmount() < 9)
-                    aur->ModStackAmount(1);
-        }
+            bool Load()
+            {
+                return sSpellStore.LookupEntry(GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+            }
 
-        void HandleDispel(DispelInfo* dispelInfo)
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            {
+                if (!GetUnitOwner())
+                    return;
+
+                if (Aura* aur = GetAura())
+                    if (aur->GetStackAmount() < 9)
+                        aur->ModStackAmount(1);
+            }
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster() || !GetUnitOwner())
+                    return;
+
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_ENEMY_SPELL && GetUnitOwner()->HasAura(SPELL_WATERY_ENTRENCHMENT))
+                    return;
+
+                GetCaster()->CastSpell(GetUnitOwner(), GetSpellInfo()->Effects[EFFECT_1].BasePoints);
+            }
+
+            void OnDispel(DispelInfo* dispelInfo)
+            {
+                if (GetUnitOwner() && GetUnitOwner()->GetAuraCount(SPELL_FROSTFLAKE))
+                    GetUnitOwner()->RemoveAurasDueToSpell(SPELL_FROSTFLAKE);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hagara_the_stormbinder_frostflake_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectRemove += AuraEffectRemoveFn(spell_hagara_the_stormbinder_frostflake_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterDispel += AuraDispelFn(spell_hagara_the_stormbinder_frostflake_AuraScript::OnDispel);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
         {
-            if (GetCaster() && dispelInfo)
-                if(Unit* pTarget = dispelInfo->GetDispeller())
-                {
-                    if(!pTarget->HasAura(SPELL_WATERY_ENTRENCHMENT))
-                        GetCaster()->CastSpell(pTarget, SPELL_ICY_TRAP, true);
-                }
-                Remove(AURA_REMOVE_BY_DEFAULT);
+            return new spell_hagara_the_stormbinder_frostflake_AuraScript();
         }
-
-        void Register()
-        {
-            AfterDispel += AuraDispelFn(spell_hagara_the_stormbinder_frostflake_AuraScript::HandleDispel);
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_hagara_the_stormbinder_frostflake_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_hagara_the_stormbinder_frostflake_AuraScript();
-    }
 };
 
 class spell_hagara_the_stormbinder_lightning_conduit : public SpellScriptLoader
 {
-public:
-    spell_hagara_the_stormbinder_lightning_conduit() : SpellScriptLoader("spell_hagara_the_stormbinder_lightning_conduit") { }
+    public:
+        spell_hagara_the_stormbinder_lightning_conduit() : SpellScriptLoader("spell_hagara_the_stormbinder_lightning_conduit") { }
 
-    class spell_hagara_the_stormbinder_lightning_conduit_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_hagara_the_stormbinder_lightning_conduit_AuraScript);
-
-        void HandlePeriodicTick(AuraEffect const* aurEff)
+        class spell_hagara_the_stormbinder_lightning_conduit_AuraScript : public AuraScript
         {
-            if (!GetCaster() || !GetTarget())
-                return;
+            PrepareAuraScript(spell_hagara_the_stormbinder_lightning_conduit_AuraScript);
 
-            if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
-                return;
-
-            Creature* pHagara = NULL;
-            pHagara = GetCaster()->FindNearestCreature(NPC_HAGARA, 200.0f, true);
-            if (!pHagara)
-                return;
-
-            if (pHagara->AI()->GetData(DATA_PHASE) != 10)
-                return;
-
-            std::list<Player*> players;
-            AnyPlayerOrCrystalCheck check(GetTarget(), 10.0f);
-            Trinity::PlayerListSearcher<AnyPlayerOrCrystalCheck> searcher(GetTarget(), players, check); 
-            GetTarget()->VisitNearbyObject(10.0f, searcher);
-
-            if (!players.empty())
-                for (std::list<Player*>::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                    GetTarget()->CastSpell((*itr), SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
-
-            if (Creature* pCrystal = GetTarget()->FindNearestCreature(NPC_CRYSTAL_CONDUCTOR, 10.0f))
-                GetTarget()->CastSpell(pCrystal, SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
-        }
-
-        void Register()
-        {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_hagara_the_stormbinder_lightning_conduit_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
-        }
-
-    private:
-        class AnyPlayerOrCrystalCheck
-        {
-        public:
-            AnyPlayerOrCrystalCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
-            bool operator()(Player* u)
+            void HandlePeriodicTick(AuraEffect const* aurEff)
             {
-                if (u->GetGUID() == _obj->GetGUID())
-                    return false;
+                if (!GetCaster() || !GetTarget())
+                    return;
 
-                if (u->HasAura(SPELL_LIGHTNING_CONDUIT_DUMMY_1))
-                    return false;
+                if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
+                    return;
 
-                if (!u->isAlive())
-                    return false;
+                Creature* pHagara = NULL;
+                pHagara = GetCaster()->FindNearestCreature(NPC_HAGARA, 200.0f, true);
+                if (!pHagara)
+                    return;
 
-                if (!_obj->IsWithinDistInMap(u, _range))
-                    return false;
+                if (pHagara->AI()->GetData(DATA_PHASE) != 10)
+                    return;
 
-                return true;
+                std::list<Player*> players;
+                AnyPlayerOrCrystalCheck check(GetTarget(), 10.0f);
+                Trinity::PlayerListSearcher<AnyPlayerOrCrystalCheck> searcher(GetTarget(), players, check); 
+                GetTarget()->VisitNearbyObject(10.0f, searcher);
+
+                if (!players.empty())
+                {
+                    uint32 spell_dmg = SPELL_LIGHTNING_CONDUIT_DMG;
+
+                    for (std::list<Player*>::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                    {
+                        GetTarget()->CastSpell((*itr), SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
+                        GetTarget()->CastSpell((*itr), spell_dmg, true);
+                    }
+                }
+
+                if (Creature* pCrystal = GetTarget()->FindNearestCreature(NPC_CRYSTAL_CONDUCTOR, 10.0f))
+                    GetTarget()->CastSpell(pCrystal, SPELL_LIGHTNING_CONDUIT_DUMMY_1, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hagara_the_stormbinder_lightning_conduit_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             }
 
         private:
-            WorldObject const* _obj;
-            float _range;
-        };
-    };
+            class AnyPlayerOrCrystalCheck
+            {
+                public:
+                    AnyPlayerOrCrystalCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
+                    bool operator()(Player* u)
+                    {
+                        if (u->GetGUID() == _obj->GetGUID())
+                            return false;
 
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_hagara_the_stormbinder_lightning_conduit_AuraScript();
-    }
+                        if (u->HasAura(SPELL_LIGHTNING_CONDUIT_DUMMY_1))
+                            return false;
+
+                        if (!u->isAlive())
+                            return false;
+
+                        if (!_obj->IsWithinDistInMap(u, _range))
+                            return false;
+
+                        return true;
+                    }
+
+                private:
+                    WorldObject const* _obj;
+                    float _range;
+            };
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hagara_the_stormbinder_lightning_conduit_AuraScript();
+        }
 };
 
 void AddSC_boss_hagara_the_stormbinder()

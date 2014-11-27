@@ -2007,7 +2007,7 @@ bool Position::HasInArc(float arc, const Position* obj) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool WorldObject::IsInBetween(const WorldObject* obj1, const WorldObject* obj2, float size) const
+bool WorldObject::IsInBetween(const Position* obj1, const Position* obj2, float size) const
 {
     if (!obj1 || !obj2)
         return false;
@@ -2189,6 +2189,10 @@ float WorldObject::GetSightRange(const WorldObject* target) const
         if (ToPlayer())
         {
             if (target && target->isActiveObject() && !target->ToPlayer())
+                return MAX_VISIBILITY_DISTANCE;
+            else if (GetMapId() == 967 && GetAreaId() == 5893) // Dragon Soul - Maelstorm
+                return 500.0f;
+            else if (GetMapId() == 754) // Throne of the Four Winds
                 return MAX_VISIBILITY_DISTANCE;
             else
                 return GetMap()->GetVisibilityRange();

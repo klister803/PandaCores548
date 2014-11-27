@@ -3,8 +3,6 @@
 #include "MoveSplineInit.h"
 #include "boss_warmaster_blackhorn.h"
 
-// ÑËÀÂÀ È ÑÏÐÀÂÅÄËÈÂÎÑÒÜ!
-// Íà÷àòü áîé?
 enum ScriptedTextBlackhorn
 {
     SAY_AGGRO       = 0,
@@ -17,6 +15,12 @@ enum ScriptedTextBlackhorn
     SAY_ROAR        = 7,
     SAY_SHOCKWAVE   = 8,
     SAY_SAPPER_YELL = 9,
+    SAY_SKYFIRE_HP  = 10,
+
+    // goriona
+    ANN_ONSLAUGHT   = 0,
+    ANN_BROADSIDE   = 1,
+    SAY_LOW_HP      = 2,
 };
 
 enum ScriptedTextSwayze
@@ -58,7 +62,7 @@ enum Spells
     SPELL_CONSUMING_SHROUD_DMG          = 110215,
     SPELL_TWILIGHT_FLAMES               = 108051,
     SPELL_TWILIGHT_FLAMES_AURA          = 108053,
-
+    
     // Twilight Assault Drake
     SPELL_TWILIGHT_BARRAGE              = 107286,
     SPELL_TWILIGHT_BARRAGE_DMG_1        = 107439,
@@ -110,6 +114,13 @@ enum Adds
     NPC_SKYFIRE_HARPOON_GUN         = 56681,
     NPC_SKYFIRE_CANNON              = 57260,
     NPC_SKYFIRE_COMMANDO            = 57264,
+
+    NPC_BLADE_RUSH_TARGET           = 300006,
+};
+
+enum Menus
+{
+    GOSSIP_MENU_GUNSHIP = 13252
 };
 
 enum Events
@@ -166,290 +177,308 @@ enum Actions
     ACTION_BLACKHORN_DIED   = 10,
 };
 
+enum Points
+{
+    POINT_SHOCKWAVE     = 1,
+};
+
 class boss_warmaster_blackhorn: public CreatureScript
 {
-public:
-    boss_warmaster_blackhorn() : CreatureScript("boss_warmaster_blackhorn") { }
+    public:
+        boss_warmaster_blackhorn() : CreatureScript("boss_warmaster_blackhorn") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_warmaster_blackhornAI(pCreature);
-    }
-
-    struct boss_warmaster_blackhornAI : public BossAI
-    {
-        boss_warmaster_blackhornAI(Creature* pCreature) : BossAI(pCreature, DATA_BLACKHORN)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            uiWave = 0;
-            drakeDied = 0;
-            phase = 0;
-            deck = true;
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<boss_warmaster_blackhornAI>(pCreature);
         }
 
-        void InitializeAI()
+        struct boss_warmaster_blackhornAI : public BossAI
         {
-            if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(DSScriptName))
-                me->IsAIEnabled = false;
-            else if (!me->isDead())
-                Reset();
-        }
-
-        void Reset()
-        {
-            _Reset();
-
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->SetReactState(REACT_PASSIVE);
-            me->SetVisible(false);
-
-            me->setActive(true);
-
-            uiWave = 0;
-            drakeDied = 0;
-            phase = 0;
-            deck = true;
-        }
-
-        void EnterCombat(Unit* who)
-        {
-            uiWave = 0;
-            drakeDied = 0;
-            phase = 0;
-            deck = true;
-
-            DoZoneInCombat();
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-            instance->SetBossState(DATA_BLACKHORN, IN_PROGRESS);
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_START_BATTLE)
-            {
-                Talk(SAY_AGGRO);
-                DoZoneInCombat();
-                if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
-                {
-                    DoZoneInCombat(pGoriona);
-                    pGoriona->AI()->DoAction(ACTION_GORIONA_MOVE);
-                }
-                if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
-                {
-                    pShip->SetInCombatWith(me);
-                    pShip->AddThreat(me, 0.0f);
-                    me->AddThreat(pShip, 0.0f);
-                }
-
-                events.ScheduleEvent(EVENT_SUMMON_DRAKE, 10000);
-                events.ScheduleEvent(EVENT_HARPOON, 40000);
-                events.ScheduleEvent(EVENT_SUMMON_INFILTRATOR, 58000);
+            boss_warmaster_blackhornAI(Creature* pCreature) : BossAI(pCreature, DATA_BLACKHORN)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                uiWave = 0;
+                drakeDied = 0;
+                phase = 0;
+                deck = true;
+                shockwaveTarget = 0;
+                clearShockwaveTarget = false;
             }
-            else if (action == ACTION_END_BATTLE)
+
+            void Reset()
             {
-                summons.DespawnAll();
-                DespawnCreatures(NPC_TWILIGHT_FLAMES);
-                events.Reset();
-                if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                _Reset();
+
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetVisible(false);
+                
+                me->setActive(true);
+
+                uiWave = 0;
+                drakeDied = 0;
+                phase = 0;
+                deck = true;
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                uiWave = 0;
+                drakeDied = 0;
+                phase = 0;
+                deck = true;
+
+                DoZoneInCombat();
+                instance->SetBossState(DATA_BLACKHORN, IN_PROGRESS);
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_START_BATTLE)
                 {
-                    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, pShip);
-                    pShip->DespawnOrUnsummon();
-                }
-                if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
-                    pGoriona->DespawnOrUnsummon();
-
-                std::list<Creature*> creatures;
-                me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
-                if (creatures.size() == 2)
-                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                        (*itr)->AI()->DoAction(ACTION_END_BATTLE);
-
-                creatures.clear();
-                me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
-                if (!creatures.empty())
-                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                    Talk(SAY_AGGRO);
+                    DoZoneInCombat();
+                    if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
                     {
-                        (*itr)->InterruptNonMeleeSpells(false);
-                        (*itr)->AI()->EnterEvadeMode();
+                        DoZoneInCombat(pGoriona);
+                        pGoriona->AI()->DoAction(ACTION_GORIONA_MOVE);
                     }
+                    if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                    {
+                        pShip->SetInCombatWith(me);
+                        pShip->AddThreat(me, 0.0f);
+                        me->AddThreat(pShip, 0.0f);
+                    }
+
+                    events.ScheduleEvent(EVENT_SUMMON_DRAKE, 10000);
+                    events.ScheduleEvent(EVENT_HARPOON, 40000);
+                    events.ScheduleEvent(EVENT_SUMMON_INFILTRATOR, 58000);
+                }
+                else if (action == ACTION_END_BATTLE)
+                {
+                    summons.DespawnAll();
+                    DespawnCreatures(NPC_TWILIGHT_FLAMES);
+                    events.Reset();
+                    if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                    {
+                        instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, pShip);
+                        pShip->DespawnOrUnsummon();
+                    }
+                    if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
+                        pGoriona->DespawnOrUnsummon();
+
+                    std::list<Creature*> creatures;
+                    me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
+                    if (creatures.size() == 2)
+                        for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                            (*itr)->AI()->DoAction(ACTION_END_BATTLE);
 
                     creatures.clear();
                     me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
                     if (!creatures.empty())
                         for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                        {
-                            (*itr)->InterruptNonMeleeSpells(false);
-                            (*itr)->AI()->EnterEvadeMode();
-                        }
-
-                        instance->SetBossState(DATA_BLACKHORN, NOT_STARTED);
-
-                        me->DespawnOrUnsummon(2000);
-            }
-            else if (action == ACTION_DECK)
-                deck = false;
-        }
-
-        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
-        {
-            if (summon->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_1 ||
-                summon->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_2)
-                drakeDied++;
-
-            if (drakeDied >= 6 && phase == 0)
-            {
-                phase = 1;
-
-                events.CancelEvent(EVENT_HARPOON);
-                events.CancelEvent(EVENT_SUMMON_DRAKE);
-                events.CancelEvent(EVENT_SUMMON_INFILTRATOR);
-
-                std::list<Creature*> creatures;
-                me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
-                if (creatures.size() == 2)
-                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                        (*itr)->AI()->DoAction(ACTION_END_BATTLE);
-
-
-                DoCast(me, SPELL_VENGEANCE, true);
-
-                events.ScheduleEvent(EVENT_SECOND_PHASE_1, 5000);
-            }
-        }
-
-        bool AllowAchieve()
-        {
-            return deck;                
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            Talk(SAY_DEATH);
-
-            _JustDied();
-
-            instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-
-            DespawnCreatures(NPC_TWILIGHT_FLAMES);
-
-            if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
-            {
-                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, pShip);
-                pShip->DespawnOrUnsummon();
-            }
-
-            std::list<Creature*> creatures;
-            me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
-            if (!creatures.empty())
-                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                {
-                    (*itr)->InterruptNonMeleeSpells(false);
-                    (*itr)->AI()->EnterEvadeMode();
-                }
-
-                if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
-                    pSwayze->AI()->DoAction(ACTION_BLACKHORN_DIED);
-        }
-
-        void KilledUnit(Unit* victim)
-        {
-            if (victim && victim->GetTypeId() == TYPEID_PLAYER)
-                Talk(SAY_KILL);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_SUMMON_DRAKE:
-                    if (uiWave < 3)
-                    {
-                        uiWave++;
-                        CallAssaultDrakes(uiWave);
-                        events.ScheduleEvent(EVENT_SUMMON_DRAKE, 60000);
-                    }
-                    break;
-                case EVENT_HARPOON:
-                    {
-                        std::list<Creature*> creatures;
-                        me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
-                        if (creatures.size() == 2)
-                            for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                                (*itr)->AI()->DoAction(ACTION_HARPOON);
-
-                        events.ScheduleEvent(EVENT_HARPOON, 35000);
-                        break;
-                    }
-                case EVENT_SUMMON_INFILTRATOR:
-                    me->SummonCreature(NPC_TWILIGHT_INFILTRATOR, infiltratorPos[0]);
-                    events.ScheduleEvent(EVENT_SUMMON_INFILTRATOR, 40000);
-                    break;
-                case EVENT_SECOND_PHASE_1:
-                    if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
-                        pSwayze->AI()->Talk(SAY_SWAYZE_EVENT_3);
-                    events.ScheduleEvent(EVENT_SECOND_PHASE_2, 3000);
-                    break;
-                case EVENT_SECOND_PHASE_2:
-                    {
-                        if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 200.0f))
-                        {
-                            std::list<Creature*> creatures;
-                            me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
-                            if (!creatures.empty())
-                                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                                {
-                                    (*itr)->SetFacingToObject(pGoriona);
-                                    (*itr)->CastSpell(pGoriona, SPELL_ARTILLERY_BARRAGE);
-                                }
-                        }
-                        events.ScheduleEvent(EVENT_SECOND_PHASE_3, 5000);
-                        break;
-                    }
-                case EVENT_SECOND_PHASE_3:
-                    Talk(SAY_EVENT_1);
-                    if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
-                        pGoriona->AI()->DoAction(ACTION_SECOND_PHASE);
-                    events.ScheduleEvent(EVENT_SECOND_PHASE_4, 3000);
-                    break;
-                case EVENT_SECOND_PHASE_4:
-                    {
-                        me->SetVisible(true);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        me->SetReactState(REACT_AGGRESSIVE);
-
-                        std::list<Creature*> creatures;
-                        me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
-                        if (!creatures.empty())
-                            for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
                             {
                                 (*itr)->InterruptNonMeleeSpells(false);
                                 (*itr)->AI()->EnterEvadeMode();
                             }
 
+                    instance->SetBossState(DATA_BLACKHORN, NOT_STARTED);
+
+                    me->DespawnOrUnsummon(2000);
+                }
+                else if (action == ACTION_DECK)
+                    deck = false;
+            }
+
+            void SetGUID(uint64 guid, int32 data)
+            {
+                shockwaveTarget = guid;
+            }
+
+            void MovementInform(uint32 type, uint32 point)
+            {
+                if (type == POINT_MOTION_TYPE && point == POINT_SHOCKWAVE && shockwaveTarget)
+                {
+                    me->AddUnitState(UNIT_STATE_CANNOT_TURN);
+                    if (Unit* target = ObjectAccessor::GetUnit(*me, shockwaveTarget))
+                    {
+                        me->SetOrientation(me->GetAngle(target));
+                        DoCast(target, SPELL_SHOCKWAVE);
+                        clearShockwaveTarget = true;
+                    }
+                    events.ScheduleEvent(EVENT_CONTINUE, 5000);
+                }
+            }
+
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+            {
+                if (summon->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_1 ||
+                    summon->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_2)
+                    drakeDied++;
+
+                if (drakeDied >= 6 && phase == 0)
+                {
+                    phase = 1;
+
+                    events.CancelEvent(EVENT_HARPOON);
+                    events.CancelEvent(EVENT_SUMMON_DRAKE);
+                    events.CancelEvent(EVENT_SUMMON_INFILTRATOR);
+
+                    std::list<Creature*> creatures;
+                    me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
+                    if (creatures.size() == 2)
+                        for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                            (*itr)->AI()->DoAction(ACTION_END_BATTLE);
+                    
+
+                    DoCast(me, SPELL_VENGEANCE, true);
+
+                    events.ScheduleEvent(EVENT_SECOND_PHASE_1, 5000);
+                }
+            }
+
+            bool AllowAchieve()
+            {
+                return deck;                
+            }
+
+            void JustDied(Unit* killer)
+            {
+                Talk(SAY_DEATH);
+
+                _JustDied();
+
+                DespawnCreatures(NPC_TWILIGHT_FLAMES);
+
+                if (Creature* pShip = me->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                {
+                    instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, pShip);
+                    pShip->DespawnOrUnsummon();
+                }
+
+                std::list<Creature*> creatures;
+                me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
+                if (!creatures.empty())
+                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                        {
+                            (*itr)->InterruptNonMeleeSpells(false);
+                            (*itr)->AI()->EnterEvadeMode();
+                        }
+
+                if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
+                {
+                    pSwayze->AI()->DoAction(ACTION_BLACKHORN_DIED);
+                    pSwayze->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                }
+                        
+                DespawnCreatures(NPC_GORIONA);
+                DespawnCreatures(NPC_TWILIGHT_FLAMES);
+            }
+
+            void KilledUnit(Unit* victim)
+            {
+                if (victim && victim->GetTypeId() == TYPEID_PLAYER)
+                    Talk(SAY_KILL);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                {
+                    if (clearShockwaveTarget && me->GetUInt64Value(UNIT_FIELD_TARGET))
+                    {
+                        me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                        clearShockwaveTarget = false;
+                    }
+                    return;
+                }
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SUMMON_DRAKE:
+                            if (uiWave < 3)
+                            {
+                                uiWave++;
+                                CallAssaultDrakes(uiWave);
+                                events.ScheduleEvent(EVENT_SUMMON_DRAKE, 60000);
+                            }
+                            break;
+                        case EVENT_HARPOON:
+                        {
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_HARPOON_GUN, 200.0f);
+                            if (creatures.size() == 2)
+                                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                                    (*itr)->AI()->DoAction(ACTION_HARPOON);
+
+                            events.ScheduleEvent(EVENT_HARPOON, 35000);
+                            break;
+                        }
+                        case EVENT_SUMMON_INFILTRATOR:
+                            me->SummonCreature(NPC_TWILIGHT_INFILTRATOR, infiltratorPos[0]);
+                            events.ScheduleEvent(EVENT_SUMMON_INFILTRATOR, 40000);
+                            break;
+                        case EVENT_SECOND_PHASE_1:
+                            if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
+                                pSwayze->AI()->Talk(SAY_SWAYZE_EVENT_3);
+                            events.ScheduleEvent(EVENT_SECOND_PHASE_2, 3000);
+                            break;
+                        case EVENT_SECOND_PHASE_2:
+                        {
+                            if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 200.0f))
+                            {
+                                std::list<Creature*> creatures;
+                                me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
+                                if (!creatures.empty())
+                                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                                    {
+                                        (*itr)->SetFacingToObject(pGoriona);
+                                        (*itr)->CastSpell(pGoriona, SPELL_ARTILLERY_BARRAGE);
+                                    }
+                            }
+                            events.ScheduleEvent(EVENT_SECOND_PHASE_3, 5000);
+                            break;
+                        }
+                        case EVENT_SECOND_PHASE_3:
+                            Talk(SAY_EVENT_1);
+                            if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 300.0f))
+                                pGoriona->AI()->DoAction(ACTION_SECOND_PHASE);
+                            events.ScheduleEvent(EVENT_SECOND_PHASE_4, 3000);
+                            break;
+                        case EVENT_SECOND_PHASE_4:
+                        {
+                            me->SetVisible(true);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            me->SetReactState(REACT_AGGRESSIVE);
+
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, NPC_SKYFIRE_CANNON, 200.0f);
+                            if (!creatures.empty())
+                                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                                {
+                                    (*itr)->InterruptNonMeleeSpells(false);
+                                    (*itr)->AI()->EnterEvadeMode();
+                                }
+                            
                             events.ScheduleEvent(EVENT_BERSERK, 4 * MINUTE * IN_MILLISECONDS);
                             events.ScheduleEvent(EVENT_DISRUPTING_ROAR, 10000);
                             events.ScheduleEvent(EVENT_SHOCKWAVE, urand(13000, 16000));
@@ -457,413 +486,363 @@ public:
                             if (IsHeroic())
                                 events.ScheduleEvent(EVENT_SIPHON_VITALITY, 5000);
                             break;
+                        }
+                        case EVENT_BERSERK:
+                            Talk(SAY_EVENT_2);
+                            DoCast(me, SPELL_BERSERK);
+                            break;
+                        case EVENT_DISRUPTING_ROAR:
+                            Talk(SAY_ROAR);
+                            DoCastAOE(SPELL_DISRUPTING_ROAR);
+                            events.ScheduleEvent(EVENT_DISRUPTING_ROAR, urand(18500, 23000));
+                            break;
+                        case EVENT_SHOCKWAVE:
+                            Talk(SAY_SHOCKWAVE);
+
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            
+                            DoCastAOE(SPELL_SHOCKWAVE_AOE);
+
+                            events.ScheduleEvent(EVENT_SHOCKWAVE, 23000);
+                            break;
+                        case EVENT_CONTINUE:
+                            clearShockwaveTarget = false;
+                            me->ClearUnitState(UNIT_STATE_CANNOT_TURN);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                AttackStart(target);
+                            break;
+                        case EVENT_DEVASTATE:
+                            DoCastVictim(SPELL_DEVASTATE);
+                            events.ScheduleEvent(EVENT_DEVASTATE, 8500);
+                            break;
+                        case EVENT_SIPHON_VITALITY:
+                            if (me->HealthBelowPct(60))
+                            {
+                                if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 200.0f))
+                                    if (pGoriona->GetHealthPct() >= 30.0f)
+                                        DoCast(pGoriona, SPELL_SIPHON_VITALITY);
+                            }
+                            events.ScheduleEvent(EVENT_SIPHON_VITALITY, 10000);
+                            break;
+                        default:
+                            break;
                     }
-                case EVENT_BERSERK:
-                    Talk(SAY_EVENT_2);
-                    DoCast(me, SPELL_BERSERK);
-                    break;
-                case EVENT_DISRUPTING_ROAR:
-                    Talk(SAY_ROAR);
-                    DoCastAOE(SPELL_DISRUPTING_ROAR);
-                    events.ScheduleEvent(EVENT_DISRUPTING_ROAR, urand(18500, 23000));
-                    break;
-                case EVENT_SHOCKWAVE:
-                    Talk(SAY_SHOCKWAVE);
-
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    //me->SetControlled(true, UNIT_STATE_STUNNED);
-                    me->AddUnitState(UNIT_STATE_CANNOT_TURN);
-
-                    DoCastAOE(SPELL_SHOCKWAVE_AOE);
-
-                    events.ScheduleEvent(EVENT_CONTINUE, 4000);
-                    events.ScheduleEvent(EVENT_SHOCKWAVE, 23000);
-                    break;
-                case EVENT_CONTINUE:
-                    me->ClearUnitState(UNIT_STATE_CANNOT_TURN);
-                    //me->SetControlled(false, UNIT_STATE_STUNNED);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    break;
-                case EVENT_DEVASTATE:
-                    DoCastVictim(SPELL_DEVASTATE);
-                    events.ScheduleEvent(EVENT_DEVASTATE, 8500);
-                    break;
-                case EVENT_SIPHON_VITALITY:
-                    if (me->HealthBelowPct(60))
-                    {
-                        if (Creature* pGoriona = me->FindNearestCreature(NPC_GORIONA, 200.0f))
-                            if (pGoriona->GetHealthPct() >= 30.0f)
-                                DoCast(pGoriona, SPELL_SIPHON_VITALITY);
-                    }
-                    events.ScheduleEvent(EVENT_SIPHON_VITALITY, 10000);
-                    break;
-                default:
-                    break;
                 }
+
+                DoMeleeAttackIfReady();
             }
 
-            DoMeleeAttackIfReady();
-        }
+        private:
+            uint8 uiWave;
+            uint8 drakeDied;
+            uint8 phase;
+            bool deck;
+            uint64 shockwaveTarget;
+            bool clearShockwaveTarget;
 
-    private:
-        uint8 uiWave;
-        uint8 drakeDied;
-        uint8 phase;
-        bool deck;
+            void DespawnCreatures(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
 
-        void DespawnCreatures(uint32 entry)
-        {
-            std::list<Creature*> creatures;
-            GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
+                if (creatures.empty())
+                   return;
 
-            if (creatures.empty())
-                return;
+                for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
+                     (*iter)->DespawnOrUnsummon();
+            }
 
-            for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
-                (*iter)->DespawnOrUnsummon();
-        }
-
-        void CallAssaultDrakes(uint8 wave)
-        {
-            if (Creature* pCreature = me->SummonCreature(NPC_TWILIGHT_ASSAULT_DRAKE_1, assaultdrakePos[0][0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
-                pCreature->AI()->SetData(DATA_WAVE, wave);
-            if (Creature* pCreature = me->SummonCreature(NPC_TWILIGHT_ASSAULT_DRAKE_2, assaultdrakePos[1][0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
-                pCreature->AI()->SetData(DATA_WAVE, wave);
-        }
-    };
+            void CallAssaultDrakes(uint8 wave)
+            {
+                if (Creature* pCreature = me->SummonCreature(NPC_TWILIGHT_ASSAULT_DRAKE_1, assaultdrakePos[0][0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                    pCreature->AI()->SetData(DATA_WAVE, wave);
+                if (Creature* pCreature = me->SummonCreature(NPC_TWILIGHT_ASSAULT_DRAKE_2, assaultdrakePos[1][0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000))
+                    pCreature->AI()->SetData(DATA_WAVE, wave);
+            }
+        };
 };
 
 class npc_warmaster_blackhorn_goriona: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_goriona() : CreatureScript("npc_warmaster_blackhorn_goriona") { }
+    public:
+        npc_warmaster_blackhorn_goriona() : CreatureScript("npc_warmaster_blackhorn_goriona") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_gorionaAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_gorionaAI : public ScriptedAI
-    {
-        npc_warmaster_blackhorn_gorionaAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
-            phase = 0;
-        }
-
-        void Reset()
-        {           
-            events.Reset();
-            me->SetReactState(REACT_PASSIVE);
-            me->setActive(true);
-            phase = 0;
-        }
-
-        void MovementInform(uint32 type, uint32 data)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            if (type == POINT_MOTION_TYPE)
-                if (data == POINT_LAND)
-                {
-                    me->SetCanFly(false);
-                    me->SetDisableGravity(false);
-                    events.ScheduleEvent(EVENT_CONTINUE, 1000);
-                    events.ScheduleEvent(EVENT_TWILIGHT_BREATH, urand(10000, 20000));
-                }
+            return GetInstanceAI<npc_warmaster_blackhorn_gorionaAI>(pCreature);
         }
 
-        void JustSummoned(Creature* summon)
+        struct npc_warmaster_blackhorn_gorionaAI : public ScriptedAI
         {
-            if (me->isInCombat())
-                DoZoneInCombat(summon);
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_GORIONA_MOVE)
-            {
-                me->SetSpeed(MOVE_RUN, 2.0f, true);
-                me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
-                Movement::MoveSplineInit init(*me);
-                for (uint8 i = 1; i < 6; ++i)
-                {
-                    G3D::Vector3 point;
-                    point.x = gorionaPos[i].GetPositionX();
-                    point.y = gorionaPos[i].GetPositionY();
-                    point.z = gorionaPos[i].GetPositionZ();
-                    init.Path().push_back(point);
-                }
-                init.SetWalk(false);
-                init.Launch();
-
-                events.ScheduleEvent(EVENT_TWILIGHT_ONSLAUGHT, 46000);
-                if (IsHeroic())
-                    events.ScheduleEvent(EVENT_BROADSIDE, 57000);
-            }
-            else if (action == ACTION_SECOND_PHASE)
-            {
-                phase = 1;
-
-                me->InterruptNonMeleeSpells(false);
-
-                events.CancelEvent(EVENT_TWILIGHT_ONSLAUGHT);
-                events.CancelEvent(EVENT_BROADSIDE);
-
-                Movement::MoveSplineInit init(*me);
-                init.MoveTo(gorionaPos[6].GetPositionX(), gorionaPos[6].GetPositionY(), gorionaPos[6].GetPositionZ());
-                init.SetWalk(false);
-                init.Launch();
-
-                events.ScheduleEvent(EVENT_TWILIGHT_FLAMES, 15000);
-                if (IsHeroic())
-                    events.ScheduleEvent(EVENT_CONSUMING_SHROUD, 45000);
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (IsHeroic() && me->HealthBelowPct(90) && phase == 1)
-            {
-                phase = 2;
-
-                me->GetMotionMaster()->MovePoint(POINT_LAND, gorionaPos[7].GetPositionX(), gorionaPos[7].GetPositionY(), gorionaPos[7].GetPositionZ());
-
-                return;
-            }
-            else if (me->HealthBelowPct(20) && phase != 3)
-            {
-                phase = 3;
-
-                events.CancelEvent(EVENT_TWILIGHT_ONSLAUGHT);
-                events.CancelEvent(EVENT_BROADSIDE);
-                events.CancelEvent(EVENT_CONTINUE);
-                events.CancelEvent(EVENT_TWILIGHT_FLAMES);
-                events.CancelEvent(EVENT_TWILIGHT_BREATH);
-                events.CancelEvent(EVENT_CONSUMING_SHROUD);
-
+            npc_warmaster_blackhorn_gorionaAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
                 me->SetReactState(REACT_PASSIVE);
-                me->AttackStop();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->RemoveAllAuras();
-
-                me->SetCanFly(true);
-                me->SetDisableGravity(true);
-
-                Movement::MoveSplineInit init(*me);
-                init.MoveTo(gorionaPos[4].GetPositionX(), gorionaPos[4].GetPositionY(), gorionaPos[4].GetPositionZ());
-                init.SetWalk(false);
-                init.Launch();
-
-                me->DespawnOrUnsummon(4000);
-                return;
+                phase = 0;
             }
 
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_TWILIGHT_ONSLAUGHT:
-                    {
-                        std::list<Creature*> creatures;
-                        me->GetCreatureListWithEntryInGrid(creatures, NPC_ONSLAUGHT_TARGET, 300.0f);
-                        if (!creatures.empty())
-                            if (Unit* pTarget = Trinity::Containers::SelectRandomContainerElement(creatures))
-                            {
-                                pTarget->CastSpell(pTarget, SPELL_TWILIGHT_ONSLAUGHT_DUMMY_1, true);
-                                me->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_TWILIGHT_ONSLAUGHT, false);
-                            }
+            void Reset()
+            {           
+                events.Reset();
+                me->SetReactState(REACT_PASSIVE);
+                me->setActive(true);
+                phase = 0;
+            }
 
+            void MovementInform(uint32 type, uint32 data)
+            {
+                if (type == POINT_MOTION_TYPE)
+                    if (data == POINT_LAND)
+                    {
+                        me->SetCanFly(false);
+                        me->SetDisableGravity(false);
+                        events.ScheduleEvent(EVENT_CONTINUE, 1000);
+                        events.ScheduleEvent(EVENT_TWILIGHT_BREATH, urand(10000, 20000));
+                    }
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                if (me->isInCombat())
+                    DoZoneInCombat(summon);
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_GORIONA_MOVE)
+                {
+                    me->SetSpeed(MOVE_RUN, 2.0f, true);
+                    me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
+                    Movement::MoveSplineInit init(*me);
+                    for (uint8 i = 1; i < 6; ++i)
+                    {
+                        G3D::Vector3 point;
+                        point.x = gorionaPos[i].GetPositionX();
+                        point.y = gorionaPos[i].GetPositionY();
+                        point.z = gorionaPos[i].GetPositionZ();
+                        init.Path().push_back(point);
+                    }
+                    init.SetWalk(false);
+                    init.Launch();
+                    
+                    events.ScheduleEvent(EVENT_TWILIGHT_ONSLAUGHT, 46000);
+                    if (IsHeroic())
+                        events.ScheduleEvent(EVENT_BROADSIDE, 57000);
+                }
+                else if (action == ACTION_SECOND_PHASE)
+                {
+                    phase = 1;
+
+                    me->InterruptNonMeleeSpells(false);
+
+                    events.CancelEvent(EVENT_TWILIGHT_ONSLAUGHT);
+                    events.CancelEvent(EVENT_BROADSIDE);
+
+                    Talk(SAY_GORIONA);
+                    Movement::MoveSplineInit init(*me);
+                    init.MoveTo(gorionaPos[6].GetPositionX(), gorionaPos[6].GetPositionY(), gorionaPos[6].GetPositionZ());
+                    init.SetWalk(false);
+                    init.Launch();
+
+                    events.ScheduleEvent(EVENT_TWILIGHT_FLAMES, 15000);
+                    if (IsHeroic())
+                        events.ScheduleEvent(EVENT_CONSUMING_SHROUD, 45000);
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (IsHeroic() && me->HealthBelowPct(90) && phase == 1)
+                {
+                    phase = 2;
+
+                    me->GetMotionMaster()->MovePoint(POINT_LAND, gorionaPos[7].GetPositionX(), gorionaPos[7].GetPositionY(), gorionaPos[7].GetPositionZ());
+
+                    return;
+                }
+                else if (me->HealthBelowPct(20) && phase != 3)
+                {
+                    phase = 3;
+
+                    events.CancelEvent(EVENT_TWILIGHT_ONSLAUGHT);
+                    events.CancelEvent(EVENT_BROADSIDE);
+                    events.CancelEvent(EVENT_CONTINUE);
+                    events.CancelEvent(EVENT_TWILIGHT_FLAMES);
+                    events.CancelEvent(EVENT_TWILIGHT_BREATH);
+                    events.CancelEvent(EVENT_CONSUMING_SHROUD);
+
+                    Talk(SAY_LOW_HP);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->AttackStop();
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    me->RemoveAllAuras();
+
+                    me->SetCanFly(true);
+                    me->SetDisableGravity(true);
+
+                    Movement::MoveSplineInit init(*me);
+                    init.MoveTo(gorionaPos[4].GetPositionX(), gorionaPos[4].GetPositionY(), gorionaPos[4].GetPositionZ());
+                    init.SetWalk(false);
+                    init.Launch();
+
+                    me->DespawnOrUnsummon(4000);
+                    return;
+                }
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_TWILIGHT_ONSLAUGHT:
+                        {
+                            Talk(ANN_ONSLAUGHT);
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, NPC_ONSLAUGHT_TARGET, 300.0f);
+                            if (!creatures.empty())
+                                if (Unit* pTarget = Trinity::Containers::SelectRandomContainerElement(creatures))
+                                {
+                                    pTarget->CastSpell(pTarget, SPELL_TWILIGHT_ONSLAUGHT_DUMMY_1, true);
+                                    me->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_TWILIGHT_ONSLAUGHT, false);
+                                }
                             events.ScheduleEvent(EVENT_TWILIGHT_ONSLAUGHT, 35000);
                             break;
+                        }
+                        case EVENT_BROADSIDE:
+                            Talk(ANN_BROADSIDE);
+                            DoCastAOE(SPELL_BROADSIDE_AOE);
+                            events.ScheduleEvent(EVENT_BROADSIDE, 90000);
+                            break;
+                        case EVENT_CONTINUE:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            break;
+                        case EVENT_TWILIGHT_BREATH:
+                            DoCastVictim(SPELL_TWILIGHT_BREATH);
+                            events.ScheduleEvent(EVENT_TWILIGHT_BREATH, 20500);
+                            break;
+                        case EVENT_TWILIGHT_FLAMES:
+                        {
+                            Unit* pTarget = NULL;
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, TwilightFlamesSelector());
+                            if (!pTarget)
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                            
+                            if (pTarget)
+                                me->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_TWILIGHT_FLAMES, true);                            
+                            events.ScheduleEvent(EVENT_TWILIGHT_FLAMES, 9000);
+                            break;
+                        }
+                        case EVENT_CONSUMING_SHROUD:
+                            DoCastAOE(SPELL_CONSUMING_SHROUD);
+                            events.ScheduleEvent(EVENT_CONSUMING_SHROUD, 30000);
+                            break;
+                        default:
+                            break;
                     }
-                case EVENT_BROADSIDE:
-                    DoCastAOE(SPELL_BROADSIDE_AOE);
-                    events.ScheduleEvent(EVENT_BROADSIDE, 90000);
-                    break;
-                case EVENT_CONTINUE:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    break;
-                case EVENT_TWILIGHT_BREATH:
-                    DoCastVictim(SPELL_TWILIGHT_BREATH);
-                    events.ScheduleEvent(EVENT_TWILIGHT_BREATH, 20500);
-                    break;
-                case EVENT_TWILIGHT_FLAMES:
-                    {
-                        Unit* pTarget = NULL;
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, TwilightFlamesSelector());
-                        if (!pTarget)
-                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
-
-                        if (pTarget)
-                            me->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_TWILIGHT_FLAMES, true);                            
-                        events.ScheduleEvent(EVENT_TWILIGHT_FLAMES, 9000);
-                        break;
-                    }
-                case EVENT_CONSUMING_SHROUD:
-                    DoCastAOE(SPELL_CONSUMING_SHROUD);
-                    events.ScheduleEvent(EVENT_CONSUMING_SHROUD, 30000);
-                    break;
-                default:
-                    break;
                 }
+
+                DoMeleeAttackIfReady();
             }
+        private:
+            EventMap events;
+            uint8 phase;
 
-            DoMeleeAttackIfReady();
-        }
-    private:
-        EventMap events;
-        uint8 phase;
-
-        struct TwilightFlamesSelector : public std::unary_function<Unit*, bool>
-        {
-        public:
-
-            TwilightFlamesSelector() {}
-
-            bool operator()(Unit const* target) const
+            struct TwilightFlamesSelector : public std::unary_function<Unit*, bool>
             {
-                if (target->GetTypeId() != TYPEID_PLAYER)
-                    return false;
-                if (target->FindNearestCreature(NPC_BLACKHORN, 14.0f))
-                    return false;
-                return true;
-            }
+                public:
+                    
+                    TwilightFlamesSelector() {}
+
+                    bool operator()(Unit const* target) const
+                    {
+                        if (target->GetTypeId() != TYPEID_PLAYER)
+                            return false;
+                        if (target->FindNearestCreature(NPC_BLACKHORN, 14.0f))
+                            return false;
+                        return true;
+                    }
+            };
         };
-    };
 };
 
 class npc_warmaster_blackhorn_twilight_assault_drake: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_twilight_assault_drake() : CreatureScript("npc_warmaster_blackhorn_twilight_assault_drake") { }
+    public:
+        npc_warmaster_blackhorn_twilight_assault_drake() : CreatureScript("npc_warmaster_blackhorn_twilight_assault_drake") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_twilight_assault_drakeAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_twilight_assault_drakeAI : public ScriptedAI
-    {
-        npc_warmaster_blackhorn_twilight_assault_drakeAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
-            side = 0;
-            wave = 0;
-            bReady = false;
-        }
-
-        void Reset()
-        {           
-            me->SetReactState(REACT_PASSIVE);
-            me->setActive(true);
-            side = ((me->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_2) ? 1 : 0);
-            wave = 0;
-        }
-
-        void IsSummonedBy(Unit* /*owner*/)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            events.ScheduleEvent(EVENT_SUMMON_ADDS, 9000);
-            events.ScheduleEvent(EVENT_TWILIGHT_BARRAGE, urand(23000, 28000));
+            return GetInstanceAI<npc_warmaster_blackhorn_twilight_assault_drakeAI>(pCreature);
         }
 
-        void DoAction(const int32 action)
+        struct npc_warmaster_blackhorn_twilight_assault_drakeAI : public ScriptedAI
         {
-            if (action == ACTION_HARPOON_END)
-            {
-                me->InterruptNonMeleeSpells(false);
-                me->RemoveAura(SPELL_HARPOON);
-                Movement::MoveSplineInit init(*me);
-                G3D::Vector3 point;
-                switch (wave)
-                {
-                case 2:
-                    point.x = assaultdrakePos[side][8].GetPositionX();
-                    point.y = assaultdrakePos[side][8].GetPositionY();
-                    point.z = assaultdrakePos[side][8].GetPositionZ();
-                    break;
-                case 3:
-                    point.x = assaultdrakePos[side][9].GetPositionX();
-                    point.y = assaultdrakePos[side][9].GetPositionY();
-                    point.z = assaultdrakePos[side][9].GetPositionZ();
-                    break;
-                default:
-                    point.x = assaultdrakePos[side][7].GetPositionX();
-                    point.y = assaultdrakePos[side][7].GetPositionY();
-                    point.z = assaultdrakePos[side][7].GetPositionZ();
-                    break;
-                }
-                init.MoveTo(point);
-                init.SetWalk(false);
-                init.Launch();
+            npc_warmaster_blackhorn_twilight_assault_drakeAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                me->SetReactState(REACT_PASSIVE);
+                side = 0;
+                wave = 0;
+                bReady = false;
             }
-        }
 
-        bool IsReady()
-        {
-            return bReady;
-        }
-
-        void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
-        {
-            if (spellInfo->Id == SPELL_HARPOON)
-            {
-                me->InterruptNonMeleeSpells(false);
-                Movement::MoveSplineInit init(*me);
-                init.MoveTo(harpoonPos[side].GetPositionX(), harpoonPos[side].GetPositionY(), harpoonPos[side].GetPositionZ());
-                init.SetWalk(false);
-                init.Launch();
+            void Reset()
+            {           
+                me->SetReactState(REACT_PASSIVE);
+                me->setActive(true);
+                side = ((me->GetEntry() == NPC_TWILIGHT_ASSAULT_DRAKE_2) ? 1 : 0);
+                wave = 0;
             }
-        }
 
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_WAVE)
+            void IsSummonedBy(Unit* /*owner*/)
             {
-                wave = data;
-                me->SetSpeed(MOVE_RUN, 2.0f, true);
-                me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
-                Movement::MoveSplineInit init(*me);
-                for (uint8 i = 1; i < 8; ++i)
+                events.ScheduleEvent(EVENT_SUMMON_ADDS, 9000);
+                events.ScheduleEvent(EVENT_TWILIGHT_BARRAGE, urand(23000, 28000));
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_HARPOON_END)
                 {
+                    me->InterruptNonMeleeSpells(false);
+                    me->RemoveAura(SPELL_HARPOON);
+                    Movement::MoveSplineInit init(*me);
                     G3D::Vector3 point;
-                    if (i == 7)
+                    switch (wave)
                     {
-                        switch (wave)
-                        {
                         case 2:
                             point.x = assaultdrakePos[side][8].GetPositionX();
                             point.y = assaultdrakePos[side][8].GetPositionY();
@@ -875,664 +854,698 @@ public:
                             point.z = assaultdrakePos[side][9].GetPositionZ();
                             break;
                         default:
+                            point.x = assaultdrakePos[side][7].GetPositionX();
+                            point.y = assaultdrakePos[side][7].GetPositionY();
+                            point.z = assaultdrakePos[side][7].GetPositionZ();
+                            break;
+                    }
+                    init.MoveTo(point);
+                    init.SetWalk(false);
+                    init.Launch();
+                }
+            }
+
+            bool IsReady()
+            {
+                return bReady;
+            }
+
+            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+            {
+                if (spellInfo->Id == SPELL_HARPOON)
+                {
+                    me->InterruptNonMeleeSpells(false);
+                    Movement::MoveSplineInit init(*me);
+                    init.MoveTo(harpoonPos[side].GetPositionX(), harpoonPos[side].GetPositionY(), harpoonPos[side].GetPositionZ());
+                    init.SetWalk(false);
+                    init.Launch();
+                }
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                if (type == DATA_WAVE)
+                {
+                    wave = data;
+                    me->SetSpeed(MOVE_RUN, 2.0f, true);
+                    me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
+                    Movement::MoveSplineInit init(*me);
+                    for (uint8 i = 1; i < 8; ++i)
+                    {
+                        G3D::Vector3 point;
+                        if (i == 7)
+                        {
+                            switch (wave)
+                            {
+                                case 2:
+                                    point.x = assaultdrakePos[side][8].GetPositionX();
+                                    point.y = assaultdrakePos[side][8].GetPositionY();
+                                    point.z = assaultdrakePos[side][8].GetPositionZ();
+                                    break;
+                                case 3:
+                                    point.x = assaultdrakePos[side][9].GetPositionX();
+                                    point.y = assaultdrakePos[side][9].GetPositionY();
+                                    point.z = assaultdrakePos[side][9].GetPositionZ();
+                                    break;
+                                default:
+                                    point.x = assaultdrakePos[side][i].GetPositionX();
+                                    point.y = assaultdrakePos[side][i].GetPositionY();
+                                    point.z = assaultdrakePos[side][i].GetPositionZ();
+                                    break;
+                            }
+                        }
+                        else
+                        {
                             point.x = assaultdrakePos[side][i].GetPositionX();
                             point.y = assaultdrakePos[side][i].GetPositionY();
                             point.z = assaultdrakePos[side][i].GetPositionZ();
+                        }
+                        init.Path().push_back(point);
+                    }
+                    init.SetWalk(false);
+                    init.Launch();
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SUMMON_ADDS:
+                            if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 200.0f))
+                                pBlackhorn->SummonCreature(((side == 1) ? NPC_TWILIGHT_ELITE_DREADBLADE : NPC_TWILIGHT_ELITE_SLAYER), addsPos[side], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                            break;
+                        case EVENT_TWILIGHT_BARRAGE:
+                        {
+                            bReady = true;
+                            if (!me->isMoving())
+                            {
+                                uint8 i = (uint8)urand(0, 24);
+                                me->CastSpell(damagePos[i].GetPositionX(), damagePos[i].GetPositionY(), damagePos[i].GetPositionZ(), SPELL_TWILIGHT_BARRAGE, false);
+                            }
+                            events.ScheduleEvent(EVENT_TWILIGHT_BARRAGE, urand(10000, 15000));
                             break;
                         }
+                        default:
+                            break;
                     }
-                    else
-                    {
-                        point.x = assaultdrakePos[side][i].GetPositionX();
-                        point.y = assaultdrakePos[side][i].GetPositionY();
-                        point.z = assaultdrakePos[side][i].GetPositionZ();
-                    }
-                    init.Path().push_back(point);
-                }
-                init.SetWalk(false);
-                init.Launch();
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_SUMMON_ADDS:
-                    if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 200.0f))
-                        pBlackhorn->SummonCreature(((side == 1) ? NPC_TWILIGHT_ELITE_DREADBLADE : NPC_TWILIGHT_ELITE_SLAYER), addsPos[side], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
-                    break;
-                case EVENT_TWILIGHT_BARRAGE:
-                    {
-                        bReady = true;
-                        if (!me->isMoving())
-                        {
-                            uint8 i = (uint8)urand(0, 24);
-                            me->CastSpell(damagePos[i].GetPositionX(), damagePos[i].GetPositionY(), damagePos[i].GetPositionZ(), SPELL_TWILIGHT_BARRAGE, false);
-                        }
-                        events.ScheduleEvent(EVENT_TWILIGHT_BARRAGE, urand(10000, 15000));
-                        break;
-                    }
-                default:
-                    break;
                 }
             }
-        }
-    private:
-        EventMap events;
-        uint8 side;
-        uint8 wave;
-        bool bReady;
-    };
+        private:
+            EventMap events;
+            uint8 side;
+            uint8 wave;
+            bool bReady;
+        };
 };
 
 class npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer() : CreatureScript("npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer") { }
+    public:
+        npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer() : CreatureScript("npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI : public ScriptedAI
-    {
-        npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI : public ScriptedAI
         {
-            events.ScheduleEvent(EVENT_CONTINUE, 1500);
-            events.ScheduleEvent(((me->GetEntry() == NPC_TWILIGHT_ELITE_DREADBLADE) ? EVENT_DEGENERATION : EVENT_BRUTAL_STRIKE), urand(8500, 9500));
-        }
-
-        bool IsBladeRushAffected(WorldObject* pTarget)
-        {
-            float dist = pTarget->GetExactDist2d(startPos.GetPositionX(), startPos.GetPositionY());
-            if ((dist * dist) >= startPos.GetExactDist2dSq(endPos.GetPositionX(), endPos.GetPositionY()))
-                return false;
-
-            float size = pTarget->GetObjectSize() / 2;
-            float angle = startPos.GetAngle(&endPos);
-            return (size * size) >= pTarget->GetExactDist2dSq(startPos.GetPositionX() + std::cos(angle) * dist, startPos.GetPositionY() + std::sin(angle) * dist);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_BLADE_RUSH:
-                    me->GetPosition(&startPos);
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, -18.0f, true))
-                    {
-                        pTarget->GetPosition(&endPos);
-                        DoCast(pTarget, SPELL_BLADE_RUSH);
-                    }
-                    break;
-                case EVENT_CONTINUE:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    //me->GetMotionMaster()->MoveChase(me->getVictim());
-                    //me->Attack(me->getVictim(), true);
-                    break;
-                case EVENT_DEGENERATION:
-                    DoCastVictim(SPELL_DEGENERATION);
-                    events.ScheduleEvent(EVENT_DEGENERATION, urand(8500, 9500));
-                    break;
-                case EVENT_BRUTAL_STRIKE:
-                    DoCastVictim(SPELL_BRUTAL_STRIKE);
-                    events.ScheduleEvent(EVENT_BRUTAL_STRIKE, urand(8500, 9500));
-                    break;
-                default:
-                    break;
-                }
+            npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                me->SetReactState(REACT_PASSIVE);
             }
-            DoMeleeAttackIfReady();
-        }
-    private:
-        EventMap events;
-        Position startPos, endPos;
-    };
+
+            void IsSummonedBy(Unit* /*owner*/)
+            {
+                events.ScheduleEvent(EVENT_CONTINUE, 1500);
+                events.ScheduleEvent(((me->GetEntry() == NPC_TWILIGHT_ELITE_DREADBLADE) ? EVENT_DEGENERATION : EVENT_BRUTAL_STRIKE), urand(8500, 9500));
+                events.ScheduleEvent(EVENT_BLADE_RUSH, urand(8500, 9500));
+            }
+
+            bool IsBladeRushAffected(WorldObject* pTarget)
+            {
+                float dist = pTarget->GetExactDist2d(startPos.GetPositionX(), startPos.GetPositionY());
+                if ((dist * dist) >= startPos.GetExactDist2dSq(endPos.GetPositionX(), endPos.GetPositionY()))
+                    return false;
+
+                float size = pTarget->GetObjectSize() / 2;
+                float angle = startPos.GetAngle(&endPos);
+                return (size * size) >= pTarget->GetExactDist2dSq(startPos.GetPositionX() + std::cos(angle) * dist, startPos.GetPositionY() + std::sin(angle) * dist);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_BLADE_RUSH:
+                        {
+                            me->GetPosition(&startPos);
+                            Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(me));
+                            if (!pTarget)
+                                pTarget = me->getVictim();
+                            if (pTarget)
+                            {
+                                pTarget->GetPosition(&endPos);
+                                endPos.SetOrientation(0);
+                                if (Unit* rushTarget = me->SummonCreature(NPC_BLADE_RUSH_TARGET, endPos, TEMPSUMMON_TIMED_DESPAWN, 3000))
+                                {
+                                    me->SetTarget(rushTarget->GetGUID());
+                                    me->SetFacingToObject(rushTarget);
+                                    DoCast(pTarget, SPELL_BLADE_RUSH);
+                                    float angle = rushTarget->GetAngle(me);
+                                    for (float dist = 3; dist < rushTarget->GetExactDist2d(me); dist += 3)
+                                        me->SummonCreature(NPC_BLADE_RUSH_TARGET, endPos.GetPositionX() + cosf(angle) * dist, endPos.GetPositionY() + sinf(angle) * dist, endPos.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 3000);
+                                }
+                            }
+                            events.ScheduleEvent(EVENT_BLADE_RUSH, urand(8500, 9500));
+                            break;
+                        }
+                        case EVENT_CONTINUE:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            //me->GetMotionMaster()->MoveChase(me->getVictim());
+                            //me->Attack(me->getVictim(), true);
+                            break;
+                        case EVENT_DEGENERATION:
+                            DoCastVictim(SPELL_DEGENERATION);
+                            events.ScheduleEvent(EVENT_DEGENERATION, urand(8500, 9500));
+                            break;
+                        case EVENT_BRUTAL_STRIKE:
+                            DoCastVictim(SPELL_BRUTAL_STRIKE);
+                            events.ScheduleEvent(EVENT_BRUTAL_STRIKE, urand(8500, 9500));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        private:
+            EventMap events;
+            Position startPos, endPos;
+        };
 };
 
 class npc_warmaster_blackhorn_skyfire_harpoon_gun: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_skyfire_harpoon_gun() : CreatureScript("npc_warmaster_blackhorn_skyfire_harpoon_gun") { }
+    public:
+        npc_warmaster_blackhorn_skyfire_harpoon_gun() : CreatureScript("npc_warmaster_blackhorn_skyfire_harpoon_gun") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_skyfire_harpoon_gunAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_skyfire_harpoon_gunAI : public  Scripted_NoMovementAI
-    {
-        npc_warmaster_blackhorn_skyfire_harpoon_gunAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
-        {             
-            me->SetReactState(REACT_PASSIVE);
-            drakeEntry = 0;
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_warmaster_blackhorn_skyfire_harpoon_gunAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_warmaster_blackhorn_skyfire_harpoon_gunAI : public  Scripted_NoMovementAI
         {
-            drakeEntry = ((me->GetPositionY() < -12130.f) ? NPC_TWILIGHT_ASSAULT_DRAKE_1 : NPC_TWILIGHT_ASSAULT_DRAKE_2);
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_HARPOON)
-            {
-                if (Creature* drake = FindAssaultDrake(drakeEntry))
-                    DoCast(drake, SPELL_HARPOON);
-
-                events.ScheduleEvent(EVENT_HARPOON_END, (IsHeroic() ? 20000 : 25000));
+            npc_warmaster_blackhorn_skyfire_harpoon_gunAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+            {             
+                me->SetReactState(REACT_PASSIVE);
+                drakeEntry = 0;
             }
-            else if (action == ACTION_END_BATTLE)
+
+            void Reset()
             {
-                me->InterruptNonMeleeSpells(true);
-                events.Reset();
-                EnterEvadeMode();
+                drakeEntry = ((me->GetPositionY() < -12130.f) ? NPC_TWILIGHT_ASSAULT_DRAKE_1 : NPC_TWILIGHT_ASSAULT_DRAKE_2);
             }
-        }
 
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            void DoAction(const int32 action)
             {
-                ReleaseAssaultDrake(drakeEntry);
-                //DoCast(me, SPELL_RELOADING);
+                if (action == ACTION_HARPOON)
+                {
+                    if (Creature* drake = FindAssaultDrake(drakeEntry))
+                        DoCast(drake, SPELL_HARPOON);
+
+                    events.ScheduleEvent(EVENT_HARPOON_END, (IsHeroic() ? 20000 : 25000));
+                }
+                else if (action == ACTION_END_BATTLE)
+                {
+                    me->InterruptNonMeleeSpells(true);
+                    events.Reset();
+                    EnterEvadeMode();
+                }
             }
-        }
 
-    private:
-        EventMap events;
-        uint32 drakeEntry;
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
 
-        Creature* FindAssaultDrake(uint32 entry)
-        {
-            std::list<Creature*> creatures;
-            me->GetCreatureListWithEntryInGrid(creatures, entry, 200.0f);
-            if (!creatures.empty())
-                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                    if (npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI* drakeAI = CAST_AI(npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI, (*itr)->GetAI()))
-                        if (drakeAI->IsReady() && (*itr)->isAlive())
-                            return (*itr);
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    ReleaseAssaultDrake(drakeEntry);
+                    //DoCast(me, SPELL_RELOADING);
+                }
+            }
 
-            return NULL;
-        }
+        private:
+            EventMap events;
+            uint32 drakeEntry;
 
-        void ReleaseAssaultDrake(uint32 entry)
-        {
-            std::list<Creature*> creatures;
-            me->GetCreatureListWithEntryInGrid(creatures, entry, 200.0f);
-            if (!creatures.empty())
-                for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                    if ((*itr)->HasAura(SPELL_HARPOON, me->GetGUID()))
-                        (*itr)->AI()->DoAction(ACTION_HARPOON_END);
-        }
-    };
+            Creature* FindAssaultDrake(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                me->GetCreatureListWithEntryInGrid(creatures, entry, 200.0f);
+                if (!creatures.empty())
+                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                        if (npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI* drakeAI = CAST_AI(npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI, (*itr)->GetAI()))
+                            if (drakeAI->IsReady() && (*itr)->isAlive())
+                                return (*itr);
+
+                return NULL;
+            }
+
+            void ReleaseAssaultDrake(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                me->GetCreatureListWithEntryInGrid(creatures, entry, 200.0f);
+                if (!creatures.empty())
+                    for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
+                        if ((*itr)->HasAura(SPELL_HARPOON, me->GetGUID()))
+                            (*itr)->AI()->DoAction(ACTION_HARPOON_END);
+            }
+        };
 };
 
 class npc_warmaster_blackhorn_twilight_infiltrator: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_twilight_infiltrator() : CreatureScript("npc_warmaster_blackhorn_twilight_infiltrator") { }
+    public:
+        npc_warmaster_blackhorn_twilight_infiltrator() : CreatureScript("npc_warmaster_blackhorn_twilight_infiltrator") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_twilight_infiltratorAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_twilight_infiltratorAI : public ScriptedAI
-    {
-        npc_warmaster_blackhorn_twilight_infiltratorAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_warmaster_blackhorn_twilight_infiltratorAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_warmaster_blackhorn_twilight_infiltratorAI : public ScriptedAI
         {
-            me->SetSpeed(MOVE_RUN, 2.0f, true);
-            me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
-            Movement::MoveSplineInit init(*me);
-            for (uint8 i = 1; i < 12; ++i)
-            {
-                G3D::Vector3 point;
-                point.x = infiltratorPos[i].GetPositionX();
-                point.y = infiltratorPos[i].GetPositionY();
-                point.z = infiltratorPos[i].GetPositionZ();
-                init.Path().push_back(point);
+            npc_warmaster_blackhorn_twilight_infiltratorAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                me->SetReactState(REACT_PASSIVE);
             }
 
-            init.SetWalk(false);
-            init.Launch();
-
-            events.ScheduleEvent(EVENT_SUMMON_SAPPER, 9000);
-            events.ScheduleEvent(EVENT_DESPAWN_INFILTRATOR, 19000);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            void IsSummonedBy(Unit* /*owner*/)
             {
-                switch (eventId)
+                me->SetSpeed(MOVE_RUN, 2.0f, true);
+                me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
+                Movement::MoveSplineInit init(*me);
+                for (uint8 i = 1; i < 12; ++i)
                 {
-                case EVENT_SUMMON_SAPPER:
-                    if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 200.0f))
+                    G3D::Vector3 point;
+                    point.x = infiltratorPos[i].GetPositionX();
+                    point.y = infiltratorPos[i].GetPositionY();
+                    point.z = infiltratorPos[i].GetPositionZ();
+                    init.Path().push_back(point);
+                }
+                
+                init.SetWalk(false);
+                init.Launch();
+
+                events.ScheduleEvent(EVENT_SUMMON_SAPPER, 9000);
+                events.ScheduleEvent(EVENT_DESPAWN_INFILTRATOR, 19000);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
                     {
-                        pBlackhorn->AI()->Talk(SAY_SAPPER_YELL);
-                        pBlackhorn->SummonCreature(NPC_TWILIGHT_SAPPER, sapperPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000);
+                        case EVENT_SUMMON_SAPPER:
+                            if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 200.0f))
+                            {
+                                pBlackhorn->AI()->Talk(SAY_SAPPER_YELL);
+                                pBlackhorn->SummonCreature(NPC_TWILIGHT_SAPPER, sapperPos[0], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 2000);
+                            }
+                            break;
+                        case EVENT_DESPAWN_INFILTRATOR:
+                            me->DespawnOrUnsummon(1000);
+                            break;
+                        default:
+                            break;
                     }
-                    break;
-                case EVENT_DESPAWN_INFILTRATOR:
-                    me->DespawnOrUnsummon(1000);
-                    break;
-                default:
-                    break;
                 }
             }
-        }
-    private:
-        EventMap events;
-    };
+        private:
+            EventMap events;
+        };
 };
 
 class npc_warmaster_blackhorn_twilight_sapper: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_twilight_sapper() : CreatureScript("npc_warmaster_blackhorn_twilight_sapper") { }
+    public:
+        npc_warmaster_blackhorn_twilight_sapper() : CreatureScript("npc_warmaster_blackhorn_twilight_sapper") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_twilight_sapperAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_twilight_sapperAI : public ScriptedAI
-    {
-        npc_warmaster_blackhorn_twilight_sapperAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {             
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_warmaster_blackhorn_twilight_sapperAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*owner*/)
+        struct npc_warmaster_blackhorn_twilight_sapperAI : public ScriptedAI
         {
-            events.ScheduleEvent(EVENT_SMOKE_BOMB, 500);
-            events.ScheduleEvent(EVENT_CONTINUE, 1500);
-        }
+            npc_warmaster_blackhorn_twilight_sapperAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {             
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                me->setActive(true);
+                me->SetReactState(REACT_PASSIVE);
+            }
 
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            void IsSummonedBy(Unit* /*owner*/)
             {
-                switch (eventId)
-                {
-                case EVENT_SMOKE_BOMB:
-                    DoCast(me, SPELL_SMOKE_BOMB);
-                    //DoCast(me, SPELL_EVADE, true);
-                    events.ScheduleEvent(EVENT_SMOKE_BOMB_REMOVE, 2000);
-                    break;
-                case EVENT_SMOKE_BOMB_REMOVE:
-                    me->RemoveAura(SPELL_SMOKE_BOMB);
-                    break;
-                case EVENT_CONTINUE:
-                    {
-                        if (Creature* pTrigger = me->SummonCreature(WORLD_TRIGGER, sapperPos[1], TEMPSUMMON_TIMED_DESPAWN, 30000))
-                            me->GetMotionMaster()->MoveFollow(pTrigger, 0.0f, 0.0f);
+                events.ScheduleEvent(EVENT_SMOKE_BOMB, 500);
+                events.ScheduleEvent(EVENT_CONTINUE, 1500);
+            }
 
-                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                        break;
-                    }
-                case EVENT_CHECK_PLAYERS:
-                    if (me->GetDistance2d(sapperPos[1].GetPositionX(), sapperPos[1].GetPositionY()) <= 4.0f)
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
                     {
-                        DoCastAOE(SPELL_DETONATE);
-                        events.ScheduleEvent(EVENT_KILL, 1000);
+                        case EVENT_SMOKE_BOMB:
+                            DoCast(me, SPELL_SMOKE_BOMB);
+                            //DoCast(me, SPELL_EVADE, true);
+                            events.ScheduleEvent(EVENT_SMOKE_BOMB_REMOVE, 2000);
+                            break;
+                        case EVENT_SMOKE_BOMB_REMOVE:
+                            me->RemoveAura(SPELL_SMOKE_BOMB);
+                            break;
+                        case EVENT_CONTINUE:
+                        {
+                            if (Creature* pTrigger = me->SummonCreature(WORLD_TRIGGER, sapperPos[1], TEMPSUMMON_TIMED_DESPAWN, 30000))
+                                me->GetMotionMaster()->MoveFollow(pTrigger, 0.0f, 0.0f);
+
+                            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                            break;
+                        }
+                        case EVENT_CHECK_PLAYERS:
+                            if (me->GetDistance2d(sapperPos[1].GetPositionX(), sapperPos[1].GetPositionY()) <= 4.0f)
+                            {
+                                DoCastAOE(SPELL_DETONATE);
+                                events.ScheduleEvent(EVENT_KILL, 1000);
+                            }
+                            else
+                                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                            break;
+                        case EVENT_KILL:
+                            if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
+                                pSwayze->AI()->DoAction(ACTION_SAPPER);
+                            me->Kill(me, false);
+                            break;
+                        default:
+                            break;
                     }
-                    else
-                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                    break;
-                case EVENT_KILL:
-                    if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
-                        pSwayze->AI()->DoAction(ACTION_SAPPER);
-                    me->Kill(me, false);
-                    break;
-                default:
-                    break;
                 }
             }
-        }
-    private:
-        EventMap events;
-    };
+        private:
+            EventMap events;
+        };
 };
 
 class npc_warmaster_blackhorn_skyfire: public CreatureScript
 {
-public:
-    npc_warmaster_blackhorn_skyfire() : CreatureScript("npc_warmaster_blackhorn_skyfire") { }
+    public:
+        npc_warmaster_blackhorn_skyfire() : CreatureScript("npc_warmaster_blackhorn_skyfire") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_warmaster_blackhorn_skyfireAI(pCreature);
-    }
-
-    struct npc_warmaster_blackhorn_skyfireAI : public  Scripted_NoMovementAI
-    {
-        npc_warmaster_blackhorn_skyfireAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
-        {             
-            me->SetReactState(REACT_PASSIVE);
-            pInstance = me->GetInstanceScript();
-            bLowHealth = false;
-            me->SetMaxHealth(RAID_MODE(4000000, 10000000, 6000000, 15000000));
-            me->SetHealth(RAID_MODE(4000000, 10000000, 6000000, 15000000));
-        }
-
-        void DamageTaken(Unit* /*owner*/, uint32 &damage)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            if (!bLowHealth)
-                if (me->HealthBelowPctDamaged(30, damage))
-                {
-                    bLowHealth = true;
-                    if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
-                        pSwayze->AI()->Talk(SAY_SWAYZE_EVENT_5);
-                }
+            return GetInstanceAI<npc_warmaster_blackhorn_skyfireAI>(pCreature);
         }
 
-        void JustDied(Unit* /*owner*/)
+        struct npc_warmaster_blackhorn_skyfireAI : public  Scripted_NoMovementAI
         {
-            if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
-                pSwayze->AI()->DoAction(ACTION_END_BATTLE);
+            npc_warmaster_blackhorn_skyfireAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+            {             
+                me->SetReactState(REACT_PASSIVE);
+                pInstance = me->GetInstanceScript();
+                bLowHealth = false;
+                bHealth = false;
+                me->SetMaxHealth(RAID_MODE(4000000, 10000000, 6000000, 15000000));
+                me->SetHealth(RAID_MODE(4000000, 10000000, 6000000, 15000000));
+            }
 
-            if (pInstance)
-                pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-        }
+            void DamageTaken(Unit* /*owner*/, uint32 &damage)
+            {
+                if (!bLowHealth)
+                    if (me->HealthBelowPctDamaged(30, damage))
+                    {
+                        bLowHealth = true;
+                        if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
+                            pSwayze->AI()->Talk(SAY_SWAYZE_EVENT_5);
+                    }
+                if (!bHealth)
+                    if (me->HealthBelowPctDamaged(70, damage))
+                        {
+                            bHealth = true;
+                            if (Creature* pBlackhon = me->FindNearestCreature(NPC_BLACKHORN, 200.0f))
+                                pBlackhon->AI()->Talk(SAY_SKYFIRE_HP);
+                        }
+            }
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            if (pInstance)
-                pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-        }
+            void JustDied(Unit* /*owner*/)
+            {
+                if (Creature* pSwayze = me->FindNearestCreature(NPC_SKY_CAPTAIN_SWAYZE, 200.0f))
+                    pSwayze->AI()->DoAction(ACTION_END_BATTLE);
 
-    private:
-        InstanceScript* pInstance;
-        bool bLowHealth;
-    };
+                if (pInstance)
+                    pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                if (pInstance)
+                    pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+            }
+            
+        private:
+            InstanceScript* pInstance;
+            bool bLowHealth;
+            bool bHealth;
+        };
 };
 
 class npc_dragon_soul_sky_captain_swayze : public CreatureScript
 {
-public:
-    npc_dragon_soul_sky_captain_swayze() : CreatureScript("npc_dragon_soul_sky_captain_swayze") { }
+    public:
+        npc_dragon_soul_sky_captain_swayze() : CreatureScript("npc_dragon_soul_sky_captain_swayze") { }
 
-    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
-    {
-        if (pPlayer->isInCombat())
+        bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+        {
+            if (pPlayer->isInCombat())
+                return true;
+
+            if (InstanceScript* pInstance = pCreature->GetInstanceScript())
+            {
+                if (pInstance->IsEncounterInProgress())
+                    return true;
+
+                if (pInstance->GetBossState(DATA_ULTRAXION) == !DONE)
+                    return true;
+
+                if (pInstance->GetBossState(DATA_ULTRAXION) == DONE)
+                {
+                    if (pCreature->GetPositionZ() > 200.0f)
+                        pPlayer->ADD_GOSSIP_ITEM_DB(GOSSIP_MENU_GUNSHIP, 0, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                    else if (pCreature->GetPositionZ() < 200.0f && pPlayer->GetTeam() == HORDE && pInstance->GetBossState(DATA_BLACKHORN) != DONE)
+                        pPlayer->ADD_GOSSIP_ITEM_DB(GOSSIP_MENU_GUNSHIP, 1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                    else if (pCreature->GetPositionZ() < 200.0f && pPlayer->GetTeam() == ALLIANCE && pInstance->GetBossState(DATA_BLACKHORN) != DONE)
+                        pPlayer->ADD_GOSSIP_ITEM_DB(GOSSIP_MENU_GUNSHIP, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                    else if (pCreature->GetPositionZ() < 200.0f && pInstance->GetBossState(DATA_SPINE) != DONE)
+                        pPlayer->ADD_GOSSIP_ITEM_DB(GOSSIP_MENU_GUNSHIP, 3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+
+                    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+
+                    return true;
+                }
+            }
+
+            pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             return true;
+        }
 
-        if (InstanceScript* pInstance = pCreature->GetInstanceScript())
+        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*sender*/, uint32 action)
         {
-            if (pInstance->IsEncounterInProgress())
+            pPlayer->PlayerTalkClass->SendCloseGossip();
+
+            if (pPlayer->isInCombat())
                 return true;
 
-            if (pInstance->GetBossState(DATA_ULTRAXION) != DONE)
-                return true;
-
-            if (pInstance->GetBossState(DATA_BLACKHORN) != DONE &&
-                !pInstance->GetData64(DATA_BLACKHORN))
+            if (InstanceScript* pInstance = pCreature->GetInstanceScript())
             {
-                if (pCreature->GetPositionZ() > 200.0f)
-                    pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_OPTION_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                else
-                    pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_OPTION_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+                if (pInstance->IsEncounterInProgress())
+                    return true;
 
-                pPlayer->SEND_GOSSIP_MENU(1, pCreature->GetGUID());
-
-                return true;
-            }
-            else if (pInstance->GetBossState(DATA_BLACKHORN) == DONE &&
-                pInstance->GetBossState(DATA_SPINE) != DONE)
-            {
-                if (pCreature->GetPositionZ() > 200.0f)
-                    pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_OPTION_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-                else
-                    pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_OPTION_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-
-                pPlayer->SEND_GOSSIP_MENU(1, pCreature->GetGUID());
-
-                return true;                    
-            }
-        }
-        return false;
-    }
-
-    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*sender*/, uint32 action)
-    {
-        pPlayer->PlayerTalkClass->SendCloseGossip();
-
-        if (pPlayer->isInCombat())
-            return true;
-
-        if (InstanceScript* pInstance = pCreature->GetInstanceScript())
-        {
-
-            if (pInstance->IsEncounterInProgress())
-                return true;
-
-            if (pInstance->GetBossState(DATA_ULTRAXION) != DONE)
-                return true;
-
-            if (pInstance->GetBossState(DATA_BLACKHORN) != DONE &&
-                !pInstance->GetData64(DATA_BLACKHORN))
-            {
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
+                if (pInstance->GetBossState(DATA_ULTRAXION) == DONE)
                 {
-                    Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
-
-                    if (!plrList.isEmpty())
-                        for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
-                            if (Player* pPlayer = i->getSource())
-                                if (pCreature->GetDistance(pPlayer) <= 100.0f)
-                                    pPlayer->NearTeleportTo(skyfirePos.GetPositionX(), skyfirePos.GetPositionY(), skyfirePos.GetPositionZ(), skyfirePos.GetOrientation());
-
-                }
-                else if (action == GOSSIP_ACTION_INFO_DEF + 2)
-                {
-                    pCreature->SummonCreature(NPC_GORIONA, gorionaPos[0]);
-                    pCreature->SummonCreature(NPC_BLACKHORN, blackhornPos);
-                    pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                    pCreature->AI()->DoAction(ACTION_START);
-                }
-            }
-            else if (pInstance->GetBossState(DATA_BLACKHORN) == DONE &&
-                pInstance->GetBossState(DATA_SPINE) != DONE)
-            {
-                if (action == GOSSIP_ACTION_INFO_DEF + 1)
-                {
-                    Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
-
-                    if (!plrList.isEmpty())
-                        for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
-                            if (Player* pPlayer = i->getSource())
-                                if (pCreature->GetDistance(pPlayer) <= 100.0f)
-                                    pPlayer->NearTeleportTo(skyfirePos.GetPositionX(), skyfirePos.GetPositionY(), skyfirePos.GetPositionZ(), skyfirePos.GetOrientation());
-
-                }
-                else if (action == GOSSIP_ACTION_INFO_DEF + 3)
-                {
-                    pInstance->SetBossState(DATA_SPINE, IN_PROGRESS);
-
-                    if (Creature* pDeathwing = pCreature->SummonCreature(NPC_SPINE_OF_DEATHWING, spinedeathwingPos))
-                        pDeathwing->AI()->DoAction(1); // ACTION_START_BATTLE
-
-                    //pInstance->DoStartMovie(74);
-
-                    Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
-                    if (!plrList.isEmpty())
-                        for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
-                            if (Player* pPlayer = i->getSource())
-                                if (pCreature->GetDistance(pPlayer) <= 100.0f)
-                                {
-                                    pPlayer->CastSpell(pPlayer, SPELL_PARACHUTE, true);
-                                    pPlayer->NearTeleportTo(teleportPos[5].GetPositionX() + frand(-2.f, 2.f), teleportPos[5].GetPositionY() + frand(-2.f, 2.f), teleportPos[5].GetPositionZ(), teleportPos[5].GetOrientation());
-                                }
-                }
-            }
-        }
-        return true;
-    }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_dragon_soul_sky_captain_swayzeAI(pCreature);
-    }
-
-    struct npc_dragon_soul_sky_captain_swayzeAI : public ScriptedAI
-    {
-        npc_dragon_soul_sky_captain_swayzeAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
-        {             
-            me->setActive(true);
-            me->SetReactState(REACT_PASSIVE);
-        }
-
-        void Reset()
-        {           
-            events.Reset();
-            me->SetReactState(REACT_PASSIVE);
-            me->setActive(true);
-            bSapper = false;
-        }
-
-        void JustSummoned(Creature* summon)
-        {
-            summons.Summon(summon);
-        }
-
-        void SummonedCreatureDespawn(Creature* summon)
-        {
-            summons.Despawn(summon);
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_START)
-            {
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
-                events.ScheduleEvent(EVENT_INTRO_1, 3000);
-            }
-            else if (action == ACTION_END_BATTLE)
-            {
-                Talk(SAY_SWAYZE_EVENT_6);
-                events.ScheduleEvent(EVENT_END_BATTLE, 5000);
-            }
-            else if (action == ACTION_SAPPER)
-            {
-                if (!bSapper)
-                {
-                    bSapper = true;
-                    Talk(SAY_SWAYZE_EVENT_4);
-                }
-            }
-            else if (action == ACTION_BLACKHORN_DIED)
-            {
-                events.Reset();
-                summons.DespawnEntry(NPC_ENGINE_STALKER);
-                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_END_BATTLE:
-                    if (Creature* pTrigger = me->SummonCreature(NPC_MASSIVE_EXPLOSION, skyfirePos, TEMPSUMMON_TIMED_DESPAWN, 5000))
-                        pTrigger->CastSpell(pTrigger, SPELL_MASSIVE_EXPLOSION);
-                    events.Reset();
-                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                    if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
-                        pBlackhorn->AI()->DoAction(ACTION_END_BATTLE);
-                    summons.DespawnEntry(NPC_ENGINE_STALKER);
-                    summons.DespawnEntry(NPC_SKYFIRE);
-                    bSapper = false;
-                    break;
-                case EVENT_CHECK_PLAYERS:
+                    if (action == GOSSIP_ACTION_INFO_DEF + 1)
                     {
-                        if (!CheckPlayers())
-                        {
+                        Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
+                        if (!plrList.isEmpty())
+                            for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
+                                if (Player* pPlayer = i->getSource())
+                                    if (pCreature->GetDistance(pPlayer) <= 100.0f)
+                                        pPlayer->NearTeleportTo(customPos[0].GetPositionX(), customPos[0].GetPositionY(), customPos[0].GetPositionZ(), customPos[0].GetOrientation());
+                    }
+                    else if (action == GOSSIP_ACTION_INFO_DEF + 2)
+                    {
+                        pCreature->SummonCreature(NPC_GORIONA, gorionaPos[0]);
+                        pCreature->SummonCreature(NPC_BLACKHORN, blackhornPos);
+                        pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        pCreature->AI()->DoAction(ACTION_START);
+                    }
+                    else if (action == GOSSIP_ACTION_INFO_DEF + 3)
+                    {
+                        pInstance->SetBossState(DATA_SPINE, IN_PROGRESS);
+                        if (Creature* pDeathwing = pCreature->SummonCreature(NPC_SPINE_OF_DEATHWING, customPos[3]))
+                            pDeathwing->AI()->DoAction(1); // ACTION_START_BATTLE
+                        pInstance->DoStartMovie(74);
+                        Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
+                        if (!plrList.isEmpty())
+                            for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
+                                if (Player* pPlayer = i->getSource())
+                                    if (pCreature->GetDistance(pPlayer) <= 100.0f)
+                                    {
+                                        pPlayer->CastSpell(pPlayer, SPELL_PARACHUTE, true);
+                                        pPlayer->NearTeleportTo(customPos[3].GetPositionX() + frand(-2.f, 2.f), customPos[3].GetPositionY() + frand(-2.f, 2.f), customPos[3].GetPositionZ(), customPos[3].GetOrientation());
+                                    }
+                    }
+                }
+            }
+            return true;
+        }
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_dragon_soul_sky_captain_swayzeAI>(pCreature);
+        }
+
+        struct npc_dragon_soul_sky_captain_swayzeAI : public ScriptedAI
+        {
+            npc_dragon_soul_sky_captain_swayzeAI(Creature* pCreature) : ScriptedAI(pCreature), summons(me)
+            {             
+                me->setActive(true);
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {           
+                events.Reset();
+                me->SetReactState(REACT_PASSIVE);
+                me->setActive(true);
+                bSapper = false;
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+            }
+
+            void SummonedCreatureDespawn(Creature* summon)
+            {
+                summons.Despawn(summon);
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_START)
+                {
+                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
+                    events.ScheduleEvent(EVENT_INTRO_1, 3000);
+                }
+                else if (action == ACTION_END_BATTLE)
+                {
+                    Talk(SAY_SWAYZE_EVENT_6);
+                    events.ScheduleEvent(EVENT_END_BATTLE, 5000);
+                }
+                else if (action == ACTION_SAPPER)
+                {
+                    if (!bSapper)
+                    {
+                        bSapper = true;
+                        Talk(SAY_SWAYZE_EVENT_4);
+                    }
+                }
+                else if (action == ACTION_BLACKHORN_DIED)
+                {
+                    events.Reset();
+                    summons.DespawnEntry(NPC_ENGINE_STALKER);
+                }
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_END_BATTLE:
+                            if (Creature* pTrigger = me->SummonCreature(NPC_MASSIVE_EXPLOSION, customPos[0], TEMPSUMMON_TIMED_DESPAWN, 5000))
+                                pTrigger->CastSpell(pTrigger, SPELL_MASSIVE_EXPLOSION);
                             events.Reset();
                             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                             if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
@@ -1540,406 +1553,461 @@ public:
                             summons.DespawnEntry(NPC_ENGINE_STALKER);
                             summons.DespawnEntry(NPC_SKYFIRE);
                             bSapper = false;
+                            break;
+                        case EVENT_CHECK_PLAYERS:
+                        {
+                            if (!CheckPlayers())
+                            {
+                                events.Reset();
+                                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                                if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
+                                    pBlackhorn->AI()->DoAction(ACTION_END_BATTLE);
+                                summons.DespawnEntry(NPC_ENGINE_STALKER);
+                                summons.DespawnEntry(NPC_SKYFIRE);
+                                bSapper = false;
+                            }
+                            else
+                                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
+                            break;
                         }
-                        else
-                            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
-                        break;
+                        case EVENT_INTRO_1:
+                            me->SummonCreature(NPC_SKYFIRE, customPos[0]);
+                            Talk(SAY_SWAYZE_EVENT_1);
+                            events.ScheduleEvent(EVENT_INTRO_2, 7000);
+                            break;
+                        case EVENT_INTRO_2:
+                            if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
+                                pBlackhorn->AI()->Talk(SAY_INTRO);
+                            events.ScheduleEvent(EVENT_INTRO_3, 8000);
+                            break;
+                        case EVENT_INTRO_3:
+                            Talk(SAY_SWAYZE_PRE_2);
+                            for (uint8 i = 0; i < 4; ++i)
+                                me->SummonCreature(NPC_ENGINE_STALKER, enginePos[i]);
+                            events.ScheduleEvent(EVENT_INTRO_4, 5000);
+                            break;
+                        case EVENT_INTRO_4:
+                            if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
+                                pBlackhorn->AI()->DoAction(ACTION_START_BATTLE);
+                            events.ScheduleEvent(EVENT_INTRO_5, 7000);
+                            break;
+                        case EVENT_INTRO_5:
+                            Talk(SAY_SWAYZE_EVENT_2);
+                            break;
+                        default:
+                            break;
                     }
-                case EVENT_INTRO_1:
-                    me->SummonCreature(NPC_SKYFIRE, skyfirePos);
-                    Talk(SAY_SWAYZE_EVENT_1);
-                    events.ScheduleEvent(EVENT_INTRO_2, 7000);
-                    break;
-                case EVENT_INTRO_2:
-                    if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
-                        pBlackhorn->AI()->Talk(SAY_INTRO);
-                    events.ScheduleEvent(EVENT_INTRO_3, 8000);
-                    break;
-                case EVENT_INTRO_3:
-                    Talk(SAY_SWAYZE_PRE_2);
-                    for (uint8 i = 0; i < 4; ++i)
-                        me->SummonCreature(NPC_ENGINE_STALKER, enginePos[i]);
-                    events.ScheduleEvent(EVENT_INTRO_4, 5000);
-                    break;
-                case EVENT_INTRO_4:
-                    if (Creature* pBlackhorn = me->FindNearestCreature(NPC_BLACKHORN, 300.0f))
-                        pBlackhorn->AI()->DoAction(ACTION_START_BATTLE);
-                    events.ScheduleEvent(EVENT_INTRO_5, 7000);
-                    break;
-                case EVENT_INTRO_5:
-                    Talk(SAY_SWAYZE_EVENT_2);
-                    break;
-                default:
-                    break;
                 }
             }
-        }
-    private:
-        EventMap events;
-        SummonList summons;
-        bool bSapper;
+        private:
+            EventMap events;
+            SummonList summons;
+            bool bSapper;
 
-        bool CheckPlayers()
-        {
-            Player* player = NULL;
-            AnyLivePlayerNoGmCheck check(me, 200.0f);
-            Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
-            me->VisitNearbyWorldObject(200.0f, searcher);
-            return (player ? true : false);
-        }
-
-        class AnyLivePlayerNoGmCheck
-        {
-        public:
-            AnyLivePlayerNoGmCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
-            bool operator()(Player* u)
+            bool CheckPlayers()
             {
-                if (!u->isAlive())
-                    return false;
-
-                if (!_obj->IsWithinDistInMap(u, _range))
-                    return false;
-
-                if (u->isGameMaster())
-                    return false;
-
-                return true;
+                Player* player = NULL;
+                AnyLivePlayerNoGmCheck check(me, 200.0f);
+                Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
+                me->VisitNearbyWorldObject(200.0f, searcher);
+                return (player ? true : false);
             }
 
-        private:
-            WorldObject const* _obj;
-            float _range;
+            class AnyLivePlayerNoGmCheck
+            {
+                public:
+                    AnyLivePlayerNoGmCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
+                    bool operator()(Player* u)
+                    {
+                        if (!u->isAlive())
+                            return false;
+
+                        if (!_obj->IsWithinDistInMap(u, _range))
+                            return false;
+
+                        if (u->isGameMaster())
+                            return false;
+
+                        return true;
+                    }
+
+                private:
+                    WorldObject const* _obj;
+                    float _range;
+            };
         };
-    };
+};
+
+class npc_blade_rush_target : public CreatureScript
+{
+    public:
+        npc_blade_rush_target() : CreatureScript("npc_blade_rush_target") { }
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_blade_rush_targetAI>(pCreature);
+        }
+
+        struct npc_blade_rush_targetAI : public Scripted_NoMovementAI
+        {
+            npc_blade_rush_targetAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature) { }
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                visualTimer = 0;
+                firstTime = true;
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (visualTimer <= diff)
+                {
+                    me->SendPlaySpellVisualKit(firstTime ? 23400 : 752, 0);
+                    firstTime = false;
+                    visualTimer = 1500;
+                }
+                else
+                    visualTimer -= diff;
+            }
+            
+        private:
+            uint32 visualTimer;
+            bool firstTime;
+        };
 };
 
 class spell_warmaster_blackhorn_twilight_barrage_dmg : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_twilight_barrage_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_twilight_barrage_dmg") { }
+    public:
+        spell_warmaster_blackhorn_twilight_barrage_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_twilight_barrage_dmg") { }
 
-    class spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript);
-
-        void FilterTargetsDamage(std::list<WorldObject*>& targets)
+        class spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript);
 
-            if (targets.empty())
+            void FilterTargetsDamage(std::list<WorldObject*>& targets)
             {
-                if (Creature* pBlackhorn = GetCaster()->FindNearestCreature(NPC_BLACKHORN, 300.0f))
-                    pBlackhorn->AI()->DoAction(ACTION_DECK);
+                if (!GetCaster())
+                    return;
 
-                if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                if (targets.empty())
                 {
-                    if (SpellInfo const* spellInfo = GetSpellInfo())
+                    if (Creature* pBlackhorn = GetCaster()->FindNearestCreature(NPC_BLACKHORN, 300.0f))
+                        pBlackhorn->AI()->DoAction(ACTION_DECK);
+
+                    if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
                     {
-                        int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
-                        bp0 *= 1.5f;
-                        GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_BARRAGE_DMG_2, &bp0, NULL, NULL, true);
+                        if (SpellInfo const* spellInfo = GetSpellInfo())
+                        {
+                            int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                            bp0 *= 1.5f;
+                            GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_BARRAGE_DMG_2, &bp0, NULL, NULL, true);
+                        }
                     }
                 }
             }
-        }
 
-        void Register()
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript::FilterTargetsDamage, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript::FilterTargetsDamage, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            return new spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_twilight_barrage_dmg_SpellScript();
-    }
 };
 
 class spell_warmaster_blackhorn_twilight_onslaught_dmg : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_twilight_onslaught_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_twilight_onslaught_dmg") { }
+    public:
+        spell_warmaster_blackhorn_twilight_onslaught_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_twilight_onslaught_dmg") { }
 
-    class spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript);
-
-        void FilterTargetsDamage(std::list<WorldObject*>& targets)
+        class spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript);
 
-            if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+            void FilterTargetsDamage(std::list<WorldObject*>& targets)
             {
-                int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
-                bp0 /= targets.size() + 1;
-                GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_ONSLAUGHT_DMG_2, &bp0, NULL, NULL, true);
+                if (!GetCaster())
+                    return;
+
+                if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                {
+                    int32 bp0 = GetSpellInfo()->Effects[EFFECT_0].BasePoints;
+                    bp0 /= targets.size() + 1;
+                    GetCaster()->CastCustomSpell(pShip, SPELL_TWILIGHT_ONSLAUGHT_DMG_2, &bp0, NULL, NULL, true);
+                }
             }
-        }
 
-        void Register()
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript::FilterTargetsDamage, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript::FilterTargetsDamage, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            return new spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_twilight_onslaught_dmg_SpellScript();
-    }
 };
 
 class spell_warmaster_blackhorn_blade_rush_dmg : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_blade_rush_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_blade_rush_dmg") { }
+    public:
+        spell_warmaster_blackhorn_blade_rush_dmg() : SpellScriptLoader("spell_warmaster_blackhorn_blade_rush_dmg") { }
 
-    class spell_warmaster_blackhorn_blade_rush_dmg_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_blade_rush_dmg_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_warmaster_blackhorn_blade_rush_dmg_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_blade_rush_dmg_SpellScript);
 
-            if (Creature* pDreadblade = GetCaster()->ToCreature())
-                targets.remove_if(TargetCheck(pDreadblade));
-
-        }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_blade_rush_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-        }
-
-        class TargetCheck
-        {
-        public:
-            TargetCheck(Creature* owner) : _owner(owner) {}
-
-            bool operator()(WorldObject* unit)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (unit->GetTypeId() != TYPEID_PLAYER)
-                    return true;
+                if (!GetCaster())
+                    return;
 
-                if (npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer::npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI* dreadbladeAI = CAST_AI(npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer::npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI, _owner->GetAI()))
-                    if (dreadbladeAI->IsBladeRushAffected(unit))
-                        return false;
+                if (Creature* pDreadblade = GetCaster()->ToCreature())
+                    targets.remove_if(TargetCheck(pDreadblade));
 
-                return true;
             }
 
-        private:
-            Creature* _owner;
-        };
-    };
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_blade_rush_dmg_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
 
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_blade_rush_dmg_SpellScript();
-    }
+            class TargetCheck
+            {
+                public:
+                    TargetCheck(Creature* owner) : _owner(owner) {}
+            
+                    bool operator()(WorldObject* unit)
+                    {
+                        if (unit->GetTypeId() != TYPEID_PLAYER)
+                            return true;
+
+                        if (npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer::npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI* dreadbladeAI = CAST_AI(npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer::npc_warmaster_blackhorn_twilight_elite_dreadblade_slayerAI, _owner->GetAI()))
+                            if (dreadbladeAI->IsBladeRushAffected(unit))
+                                return false;
+
+                        return true;
+                    }
+
+            private:
+                Creature* _owner;
+            };
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warmaster_blackhorn_blade_rush_dmg_SpellScript();
+        }
 };
 
 class spell_warmaster_blackhorn_consuming_shroud : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_consuming_shroud() : SpellScriptLoader("spell_warmaster_blackhorn_consuming_shroud") { }
+    public:
+        spell_warmaster_blackhorn_consuming_shroud() : SpellScriptLoader("spell_warmaster_blackhorn_consuming_shroud") { }
 
-    class spell_warmaster_blackhorn_consuming_shroud_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_consuming_shroud_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_warmaster_blackhorn_consuming_shroud_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_consuming_shroud_SpellScript);
 
-            if (targets.size() > 2)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (Creature* pBlackhorn = GetCaster()->FindNearestCreature(NPC_BLACKHORN, 300.0f))
-                    if (Unit* victim = pBlackhorn->getVictim())
-                        targets.remove(victim);
+                if (!GetCaster())
+                    return;
 
-                if (Creature* pGoriona = GetCaster()->ToCreature())
-                    if (Unit* victim = pGoriona->getVictim())
-                        targets.remove(victim);
+                if (targets.size() > 2)
+                {
+                    if (Creature* pBlackhorn = GetCaster()->FindNearestCreature(NPC_BLACKHORN, 300.0f))
+                        if (Unit* victim = pBlackhorn->getVictim())
+                            targets.remove(victim);
+
+                    if (Creature* pGoriona = GetCaster()->ToCreature())
+                        if (Unit* victim = pGoriona->getVictim())
+                            targets.remove(victim);
+                }
+
+                if (targets.size() > 1)
+                    Trinity::Containers::RandomResizeList(targets, 1);
             }
 
-            if (targets.size() > 1)
-                Trinity::Containers::RandomResizeList(targets, 1);
-        }
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_consuming_shroud_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
 
-        void Register()
+        class spell_warmaster_blackhorn_consuming_shroud_AuraScript : public AuraScript
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_consuming_shroud_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-        }
-    };
+            PrepareAuraScript(spell_warmaster_blackhorn_consuming_shroud_AuraScript);
 
-    class spell_warmaster_blackhorn_consuming_shroud_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_warmaster_blackhorn_consuming_shroud_AuraScript);
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                if (removeMode == AURA_REMOVE_BY_DEATH)
+                    if (GetTarget()) 
+                    {
+                        int32 bp0 = aurEff->GetAmount();
+                        GetTarget()->CastCustomSpell((Unit*)NULL, SPELL_CONSUMING_SHROUD_DMG, &bp0, NULL, NULL, true);
+                    }
+            }
 
-        void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_warmaster_blackhorn_consuming_shroud_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-            if (removeMode == AURA_REMOVE_BY_DEATH)
-                if (GetTarget()) 
-                {
-                    int32 bp0 = aurEff->GetAmount();
-                    GetTarget()->CastCustomSpell((Unit*)NULL, SPELL_CONSUMING_SHROUD_DMG, &bp0, NULL, NULL, true);
-                }
+            return new spell_warmaster_blackhorn_consuming_shroud_SpellScript();
         }
 
-        void Register()
+        AuraScript* GetAuraScript() const
         {
-            AfterEffectRemove += AuraEffectRemoveFn(spell_warmaster_blackhorn_consuming_shroud_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            return new spell_warmaster_blackhorn_consuming_shroud_AuraScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_consuming_shroud_SpellScript();
-    }
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_warmaster_blackhorn_consuming_shroud_AuraScript();
-    }
 };
 
 class spell_warmaster_blackhorn_vengeance : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_vengeance() : SpellScriptLoader("spell_warmaster_blackhorn_vengeance") { }
+    public:
+        spell_warmaster_blackhorn_vengeance() : SpellScriptLoader("spell_warmaster_blackhorn_vengeance") { }
 
-    class spell_warmaster_blackhorn_vengeance_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_warmaster_blackhorn_vengeance_AuraScript);
-
-        void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+        class spell_warmaster_blackhorn_vengeance_AuraScript : public AuraScript
         {
-            if (!GetUnitOwner())
-                return;
+            PrepareAuraScript(spell_warmaster_blackhorn_vengeance_AuraScript);
 
-            uint32 val = int32(100.0f - GetUnitOwner()->GetHealthPct());
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            {
+                if (!GetUnitOwner())
+                    return;
 
-            if (AuraEffect* aurEff = GetAura()->GetEffect(EFFECT_0))
-                aurEff->SetAmount(val);
-        }
+                uint32 val = int32(100.0f - GetUnitOwner()->GetHealthPct());
 
-        void Register()
+                if (AuraEffect* aurEff = GetAura()->GetEffect(EFFECT_0))
+                    aurEff->SetAmount(val);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warmaster_blackhorn_vengeance_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_warmaster_blackhorn_vengeance_AuraScript::HandlePeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            return new spell_warmaster_blackhorn_vengeance_AuraScript();
         }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_warmaster_blackhorn_vengeance_AuraScript();
-    }
 };
 
 class spell_warmaster_blackhorn_shockwave_aoe : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_shockwave_aoe() : SpellScriptLoader("spell_warmaster_blackhorn_shockwave_aoe") { }
+    public:
+        spell_warmaster_blackhorn_shockwave_aoe() : SpellScriptLoader("spell_warmaster_blackhorn_shockwave_aoe") { }
 
-    class spell_warmaster_blackhorn_shockwave_aoe_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_shockwave_aoe_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_warmaster_blackhorn_shockwave_aoe_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_shockwave_aoe_SpellScript);
 
-            std::list<WorldObject*> new_targets;
-            for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                if (GetCaster()->GetDistance((*itr)) >= 15.0f)
-                    new_targets.push_back((*itr));
-
-            if (new_targets.size() >=2)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                targets.clear();
-                targets.push_back(Trinity::Containers::SelectRandomContainerElement(new_targets));
+                if (!GetCaster())
+                    return;
+
+                std::list<WorldObject*> new_targets;
+                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    if (GetCaster()->GetDistance((*itr)) >= 15.0f)
+                        new_targets.push_back((*itr));
+
+                if (new_targets.size() >=2)
+                {
+                    targets.clear();
+                    targets.push_back(Trinity::Containers::SelectRandomContainerElement(new_targets));
+                }
+                else
+                    Trinity::Containers::RandomResizeList(targets, 1);
             }
-            else
-                Trinity::Containers::RandomResizeList(targets, 1);
-        }
 
-        void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                GetCaster()->SetTarget(NULL);
+                GetCaster()->GetAI()->SetGUID(GetHitUnit()->GetGUID());
+                Position pos;
+                GetCaster()->GetNearPosition(pos, 1, GetCaster()->GetRelativeAngle(GetHitUnit()));
+                GetCaster()->GetMotionMaster()->MovePoint(POINT_SHOCKWAVE, pos);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_shockwave_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnEffectHitTarget += SpellEffectFn(spell_warmaster_blackhorn_shockwave_aoe_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
-
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_SHOCKWAVE);
+            return new spell_warmaster_blackhorn_shockwave_aoe_SpellScript();
         }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warmaster_blackhorn_shockwave_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-            OnEffectHitTarget += SpellEffectFn(spell_warmaster_blackhorn_shockwave_aoe_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_shockwave_aoe_SpellScript();
-    }
 };
 
 class spell_warmaster_blackhorn_broadside : public SpellScriptLoader
 {
-public:
-    spell_warmaster_blackhorn_broadside() : SpellScriptLoader("spell_warmaster_blackhorn_broadside") { }
+    public:
+        spell_warmaster_blackhorn_broadside() : SpellScriptLoader("spell_warmaster_blackhorn_broadside") { }
 
-    class spell_warmaster_blackhorn_broadside_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warmaster_blackhorn_broadside_SpellScript);
-
-        void HandleAfterCast()
+        class spell_warmaster_blackhorn_broadside_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_warmaster_blackhorn_broadside_SpellScript);
 
-            if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+            void HandleAfterCast()
             {
-                int32 bp0 = pShip->CountPctFromCurHealth(20);
-                GetCaster()->CastCustomSpell(pShip, SPELL_BROADSIDE_DMG, &bp0, NULL, NULL, true);
+                if (!GetCaster())
+                    return;
+
+                if (Creature* pShip = GetCaster()->FindNearestCreature(NPC_SKYFIRE, 300.0f))
+                {
+                    int32 bp0 = pShip->CountPctFromCurHealth(20);
+                    GetCaster()->CastCustomSpell(pShip, SPELL_BROADSIDE_DMG, &bp0, NULL, NULL, true);
+                }
             }
-        }
 
-        void Register()
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warmaster_blackhorn_broadside_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            AfterCast += SpellCastFn(spell_warmaster_blackhorn_broadside_SpellScript::HandleAfterCast);
+            return new spell_warmaster_blackhorn_broadside_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warmaster_blackhorn_broadside_SpellScript();
-    }
 };
 
 typedef boss_warmaster_blackhorn::boss_warmaster_blackhornAI BlackhornAI;
 
 class achievement_deck_defender : public AchievementCriteriaScript
 {
-public:
-    achievement_deck_defender() : AchievementCriteriaScript("achievement_deck_defender") { }
+    public:
+        achievement_deck_defender() : AchievementCriteriaScript("achievement_deck_defender") { }
 
-    bool OnCheck(Player* source, Unit* target)
-    {
-        if (!target)
+        bool OnCheck(Player* source, Unit* target)
+        {
+            if (!target)
+                return false;
+
+            if (BlackhornAI* blackhornAI = CAST_AI(BlackhornAI, target->GetAI()))
+                return blackhornAI->AllowAchieve();
+
             return false;
-
-        if (BlackhornAI* blackhornAI = CAST_AI(BlackhornAI, target->GetAI()))
-            return blackhornAI->AllowAchieve();
-
-        return false;
-    }
+        }
 };
 
 void AddSC_boss_warmaster_blackhorn()
@@ -1953,6 +2021,7 @@ void AddSC_boss_warmaster_blackhorn()
     new npc_warmaster_blackhorn_twilight_sapper();
     new npc_warmaster_blackhorn_skyfire();
     new npc_dragon_soul_sky_captain_swayze();
+    new npc_blade_rush_target();
     new spell_warmaster_blackhorn_twilight_barrage_dmg();
     new spell_warmaster_blackhorn_twilight_onslaught_dmg();
     new spell_warmaster_blackhorn_blade_rush_dmg();

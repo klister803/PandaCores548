@@ -5304,6 +5304,58 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 105241: // Absorb Blood
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
                     break;
+                case 106444: // Impale
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
+                    break;
+                // Madness of Deathwing
+                case 106663: // Carrying Winds
+                case 106668:
+                case 106670:
+                case 106672:
+                case 106674:
+                case 106676:
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->ExcludeCasterAuraSpell = 0;
+                    spellInfo->SetDurationIndex(36); // 1 second
+                    break;
+                // Aspects auras
+                // Increase duration up to 10 secs
+                case 106028: case 109571: case 109572: case 109573:
+                case 106027: case 109622: case 109623: case 109624:
+                case 106457: case 109640: case 109641: case 109642: case 106464: 
+                case 106029: case 109606: case 109607: case 109608:
+                    spellInfo->SetDurationIndex(1); // 10 secs
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                    break;
+                    case 106040: // Spellweaving
+                spellInfo->ProcChance = 10;
+                spellInfo->SetDurationIndex(1); // 10 secs
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                    break;
+                // Increase amplitude
+                case 105825:
+                case 105823:
+                case 106456:
+                case 106463:
+                case 106026:
+                case 106039:
+                    spellInfo->Effects[0].Amplitude = 7000;
+                    break;
+                case 106527: // Cataclysm screen
+                    spellInfo->SetDurationIndex(1); // 10 secs
+                    break;
+                // Expose Weakness
+                case 106588:
+                case 106600:
+                case 106613:
+                case 106624:
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 107029: // Impale Aspect
+                case 106548:
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+                    break;
                 default:
                     break;
             }

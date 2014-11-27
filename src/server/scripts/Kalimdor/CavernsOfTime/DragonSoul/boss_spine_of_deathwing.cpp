@@ -9,9 +9,10 @@ enum ScriptedTexts
     SAY_DEATHWING_RIGHT_ROLL        = 3,
     SAY_DEATHWING_PLATE             = 4,
     SAY_DEATHWING_TALK              = 5,
+
+    ANN_NUCLEAR_BLAST               = 0,
 };
 
-#define SPELL_BURST				RAID_MODE<uint32>(105219, 109371, 109372, 109373)
 enum Spells
 {
     // Deathwing
@@ -20,12 +21,11 @@ enum Spells
     SPELL_ROLL_CONTROL_FORCE        = 105740, // 
     SPELL_ROLL_CONTROL_AOE_2        = 105777, // triggered by force spell
     SPELL_ROLL_CONTROL_AOE_3        = 105773, // ?
+    SPELL_SUMMON_SLIME_AOE          = 105537, // 
+    SPELL_SUMMON_SLIME              = 104999, // cast on spawner
 
     // Corruption
     SPELL_FIERY_GRIP                = 105490,
-    SPELL_FIERY_GRIP_25             = 109457,
-    SPELL_FIERY_GRIP_10H            = 109458,
-    SPELL_FIERY_GRIP_25H            = 109459,
     SPELL_SEARING_PLASMA_AOE        = 109379,
     SPELL_SEARING_PLASMA            = 105479,
 
@@ -44,12 +44,10 @@ enum Spells
     // Spawner ?
     SPELL_GRASPING_TENDRILS         = 105510,
     SPELL_GRASPING_TENDRILS_10      = 105563,
-    SPELL_GRASPING_TENDRILS_25      = 109454,
-    SPELL_GRASPING_TENDRILS_10H     = 109455,
-    SPELL_GRASPING_TENDRILS_25H     = 109456,
 
     // Corrupted Blood
     SPELL_RESIDUE                   = 105223,
+    SPELL_BURST                     = 105219,
 
     // Burning Tendons
     SPELL_SEAL_ARMOR_BREACH_1       = 105847,
@@ -70,14 +68,14 @@ enum Spells
 
 enum Adds
 {
-    NPC_HIDEOUS_AMALGAMATION        = 53890,
-    NPC_CORRUPTION_1                = 53891,
-    NPC_CORRUPTION_2                = 56161, // ?
-    NPC_CORRUPTION_3                = 56162, // ?
-    NPC_SPAWNER                     = 53888,
-    NPC_CORRUPTED_BLOOD             = 53889,
-    NPC_BURNING_TENDONS_1           = 56341, // left
-    NPC_BURNING_TENDONS_2           = 56575, // right
+    NPC_HIDEOUS_AMALGAMATION    = 53890,
+    NPC_CORRUPTION_1            = 53891,
+    NPC_CORRUPTION_2            = 56161, // ?
+    NPC_CORRUPTION_3            = 56162, // ?
+    NPC_SPAWNER                 = 53888,
+    NPC_CORRUPTED_BLOOD         = 53889,
+    NPC_BURNING_TENDONS_1       = 56341, // left
+    NPC_BURNING_TENDONS_2       = 56575, // right
 };
 
 enum Events
@@ -93,6 +91,8 @@ enum Events
     EVENT_TALK                          = 9,
     EVENT_END_ENCOUNTER                 = 10,
     EVENT_BLOOD_CORRUPTION              = 11,
+    EVENT_SPAWN_LOOT                    = 12,
+    EVENT_CHECK_CASTING                 = 13,
 };
 
 enum Actions
@@ -106,10 +106,10 @@ enum Actions
 
 enum MiscData
 {
-    DATA_POS            = 1,
-    POINT_SPAWNER       = 2,
-    DATA_PLATES         = 3,
-    DATA_BLAST_POS      = 4,
+    DATA_POS        = 1,
+    POINT_SPAWNER   = 2,
+    DATA_PLATES     = 3,
+    DATA_BLAST_POS  = 4,
 };
 
 enum RollStage
@@ -126,1229 +126,1344 @@ enum RollStage
 const Position corruptionPos[8] = 
 {
     {-13868.6f, -13667.3f, 262.836f, 0.0698132f}, // left 1
-    {-13841.1f, -13666.9f, 262.795f, 3.01942f},   // right 1
+    {-13841.1f, -13666.9f, 262.795f, 3.01942f}, // right 1
     {-13868.5f, -13654.1f, 262.946f, 0.0174533f}, // left 2
-    {-13842.8f, -13654.1f, 263.965f, 5.84685f},   // right 2
-    {-13867.1f, -13638.5f, 264.783f, 2.33874f},   // left 3
-    {-13841.2f, -13635.2f, 265.261f, 0.785398f},  // right 3
-    {-13870.5f, -13614.4f, 266.88f,  1.95477f},   // left 4
-    {-13839.3f, -13614.8f, 266.32f,  6.23082f}    // right 4
+    {-13842.8f, -13654.1f, 263.965f, 5.84685f}, // right 2
+    {-13867.1f, -13638.5f, 264.783f, 2.33874f}, // left 3
+    {-13841.2f, -13635.2f, 265.261f, 0.785398f}, // right 3
+    {-13870.5f, -13614.4f, 266.88f, 1.95477f}, // left 4
+    {-13839.3f, -13614.8f, 266.32f, 6.23082f} // right 4
 };
 
 const Position tendonsPos[6] =
 {
-    {-13862.8f, -13645.f,  265.752f, 1.5708f},  // left 1
-    {-13846.8f, -13644.7f, 265.789f, 1.5708f},  // right 1
-    {-13862.6f, -13626.3f, 266.59f,  1.5708f},  // left 2
-    {-13846.6f, -13626.f,  266.638f, 1.5708f},  // right 2
-    {-13862.6f, -13604.9f, 269.227f, 1.5708f},  // left 3
-    {-13846.6f, -13604.7f, 269.174f, 1.5708f}   // right 3
+    {-13862.8f, -13645.f, 265.752f, 1.5708f}, // left 1
+    {-13846.8f, -13644.7f, 265.789f, 1.5708f}, // right 1
+    {-13862.6f, -13626.3f, 266.59f, 1.5708f}, // left 2
+    {-13846.6f, -13626.f, 266.638f, 1.5708f}, // right 2
+    {-13862.6f, -13604.9f, 269.227f, 1.5708f}, // left 3
+    {-13846.6f, -13604.7f, 269.174f, 1.5708f} // right 3
 };
 
 class npc_spine_of_deathwing_deathwing : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_deathwing() : CreatureScript("npc_spine_of_deathwing_deathwing") { }
+    public:
+        npc_spine_of_deathwing_deathwing() : CreatureScript("npc_spine_of_deathwing_deathwing") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_deathwingAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_deathwingAI : public Scripted_NoMovementAI
-    {
-        npc_spine_of_deathwing_deathwingAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->SetReactState(REACT_PASSIVE);
-            me->setActive(true);
-            pInstance = me->GetInstanceScript();
-            rollStage = ROLL_NONE;
-            destroyedPlates = 0;
-            me->SetVisible(false);
+            return GetInstanceAI<npc_spine_of_deathwing_deathwingAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_spine_of_deathwing_deathwingAI : public Scripted_NoMovementAI
         {
-            pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            me->SetVisible(false);
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            pInstance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-        }
-
-        void EnterCombat(Unit* who)
-        {
-            pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-            DoZoneInCombat();
-        }
-
-        void DoAction(const int32 action)
-        {
-            switch (action)
+            npc_spine_of_deathwing_deathwingAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
             {
-            case ACTION_START_BATTLE:
-                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 10000);
-                //ResetBattle(false, false);
-                StartBattle();
-                break;
-            case ACTION_ROLL_LEFT:
-                if (rollStage == ROLL_NONE) 
-                    rollStage = ROLL_PRE_LEFT_1;
-                break;
-            case ACTION_ROLL_RIGHT:
-                if (rollStage == ROLL_NONE) 
-                    rollStage = ROLL_PRE_RIGHT_1;
-                break;
-            case ACTION_ROLL_NONE:
-                rollStage = ROLL_NONE; 
-                break;
+                me->SetReactState(REACT_PASSIVE);
+                me->setActive(true);
+                pInstance = me->GetInstanceScript();
+                rollStage = ROLL_NONE;
+                destroyedPlates = 0;
+                achieve = 0;
             }
-        }
 
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_PLATES)
+            void DoAction(const int32 action)
             {
-                destroyedPlates = (uint8)data;
+                switch (action)
+                {
+                    case ACTION_START_BATTLE:
+                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 10000);
+                        //ResetBattle(false, false);
+                        StartBattle();
+                        break;
+                    case ACTION_ROLL_LEFT:
+                        if (rollStage == ROLL_NONE) 
+                            rollStage = ROLL_PRE_LEFT_1;
+                        break;
+                    case ACTION_ROLL_RIGHT:
+                        if (rollStage == ROLL_NONE) 
+                            rollStage = ROLL_PRE_RIGHT_1;
+                        break;
+                    case ACTION_ROLL_NONE:
+                        rollStage = ROLL_NONE; 
+                        break;
+                }
+            }
+
+            bool AllowAchieve()
+            {
+                return (achieve == 4);
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                if (type == DATA_PLATES)
+                {
+                    destroyedPlates = (uint8)data;
+                    if (pInstance)
+                    {
+                        if (destroyedPlates == 1)
+                        {
+                            Talk(SAY_DEATHWING_PLATE);
+                            pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_1), true);
+                            for (uint8 i = 4; i < 6; ++i)
+                                if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
+                                {
+                                    pCorruption->AI()->SetData(DATA_POS, i);
+                                    DoZoneInCombat(pCorruption);
+                                }
+                        }
+                        else if (destroyedPlates == 2)
+                        {
+                            Talk(SAY_DEATHWING_PLATE);
+                            pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_2), true);
+                            for (uint8 i = 6; i < 8; ++i)
+                                if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
+                                {
+                                    pCorruption->AI()->SetData(DATA_POS, i);
+                                    DoZoneInCombat(pCorruption);
+                                }
+                        }
+                        else if (destroyedPlates == 3)
+                        {
+                            Talk(SAY_DEATHWING_PLATE);
+                            pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_3), true);
+                            events.ScheduleEvent(EVENT_END_ENCOUNTER, 1000);
+                        }
+                    }
+                }
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_PLATES)
+                    return (uint32)destroyedPlates;
+                return 0;
+            }
+
+            void DamageTaken(Unit* /*who*/, uint32 &damage)
+            {
+                if (me->GetHealth() <= damage)
+                    damage = 0;
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_END_ENCOUNTER:
+                            events.Reset();
+                            ResetBattle(true);
+                            DoCastAOE(SPELL_PLAY_MOVIE);
+                            if (pInstance)
+                            {
+                                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SEARING_PLASMA);
+                                pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SEARING_PLASMA_AOE);
+                                switch (GetDifficulty())
+                                {
+                                    case MAN10_DIFFICULTY:
+                                        pInstance->SetData(DATA_SPAWN_GREATER_CHEST, DATA_GREATER_CACHE_10N);
+                                        break;
+                                    case MAN25_DIFFICULTY:
+                                        pInstance->SetData(DATA_SPAWN_GREATER_CHEST, DATA_GREATER_CACHE_25N);
+                                        break;
+                                    case MAN10_HEROIC_DIFFICULTY:
+                                        pInstance->SetData(DATA_SPAWN_GREATER_CHEST, DATA_GREATER_CACHE_10H);
+                                        break;
+                                    case MAN25_HEROIC_DIFFICULTY:
+                                        pInstance->SetData(DATA_SPAWN_GREATER_CHEST, DATA_GREATER_CACHE_25H);
+                                        break;
+                                }
+                                pInstance->DoStartMovie(75);
+                                Map::PlayerList const &plrList = pInstance->instance->GetPlayers();
+                                if (!plrList.isEmpty())
+                                    for (Map::PlayerList::const_iterator i = plrList.begin(); i != plrList.end(); ++i)
+                                        if (Player* pPlayer = i->getSource())
+                                        {
+                                            pPlayer->NearTeleportTo(customPos[4].GetPositionX(), customPos[4].GetPositionY(), customPos[4].GetPositionZ(), customPos[4].GetOrientation());
+                                            if (!pPlayer->isDead())
+                                                pPlayer->CastSpell(pPlayer, SPELL_PARACHUTE, true);
+                                        }
+                            }
+                            break;
+                        case EVENT_SUMMON_CORRUPTED_BLOOD:
+                        {
+                            std::list<Creature*> targets;
+                            me->GetCreatureListWithEntryInGrid(targets, NPC_SPAWNER, 200.0f);
+                            uint32 num = 0;
+                            if (!targets.empty())
+                            {
+                                num = targets.size();
+                                Unit* pSpawner = Trinity::Containers::SelectRandomContainerElement(targets);
+                                if (Creature* pBlood = me->SummonCreature(NPC_CORRUPTED_BLOOD, *pSpawner))
+                                    DoZoneInCombat(pBlood);
+                            }
+                            events.ScheduleEvent(EVENT_SUMMON_CORRUPTED_BLOOD, (IsHeroic() ? (8000 - num * 500) : 8000));
+                            break;
+                        }
+                        case EVENT_TALK:
+                            Talk(SAY_DEATHWING_TALK);
+                            events.ScheduleEvent(EVENT_TALK, urand(35000, 45000));
+                            break;
+                        case EVENT_CHECK_PLAYERS:
+                            if (pInstance)
+                            {
+                                if ((pInstance->GetBossState(DATA_SPINE) != IN_PROGRESS) || !CheckPlayers())
+                                {
+                                    ResetBattle();
+                                }
+                                else
+                                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                            }
+                            break;
+                        case EVENT_CHECK_ROLL:
+                            switch (rollStage)
+                            {
+                                case ROLL_PRE_LEFT_1:
+                                    Talk(SAY_DEATHWING_LEFT_ROLL_PRE);
+                                    rollStage = ROLL_PRE_LEFT_2;
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 5000);
+                                    break;
+                                case ROLL_PRE_LEFT_2:
+                                    Talk(SAY_DEATHWING_LEFT_ROLL);
+                                    rollStage = ROLLING_LEFT;
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 1000);
+                                    break;
+                                case ROLLING_LEFT:
+                                    DoRoll(1);
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 10000);
+                                    rollStage = ROLL_NONE;
+                                    break;
+                                case ROLL_PRE_RIGHT_1:
+                                    Talk(SAY_DEATHWING_RIGHT_ROLL_PRE);
+                                    rollStage = ROLL_PRE_RIGHT_2;
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 5000);
+                                    break;
+                                case ROLL_PRE_RIGHT_2:
+                                    Talk(SAY_DEATHWING_RIGHT_ROLL);
+                                    rollStage = ROLLING_RIGHT;
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 1000);
+                                    break;
+                                case ROLLING_RIGHT:
+                                    DoRoll(2);
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 10000);
+                                    rollStage = ROLL_NONE;
+                                    break;
+                                default:
+                                    events.ScheduleEvent(EVENT_CHECK_ROLL, 2000);
+                                    break;
+                            }
+                            break;
+                    }
+                } 
+            }
+
+        private:
+            EventMap events;
+            InstanceScript* pInstance;
+            RollStage rollStage;
+            uint8 destroyedPlates;
+            int8 achieve;
+
+            void DoRoll(uint8 side /* 1 - left, 2 - right*/)
+            {
+                std::list<Player*> players;
+                AnyLivePlayerNoGmCheck check(me, 200.0f, true);
+                Trinity::PlayerListSearcher<AnyLivePlayerNoGmCheck> searcher(me, players, check);
+                me->VisitNearbyWorldObject(200.0f, searcher);
+                if (!players.empty())
+                    for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++ itr)
+                        if (Player* pPlayer = (*itr))
+                            pPlayer->CastSpell(pPlayer->GetPositionX() + ((side == 2) ? 50 : - 50), pPlayer->GetPositionY() - 100.0f, pPlayer->GetPositionZ() + 30.0f, SPELL_ROLL_CONTROL_AOE_2, true);
+
+                DespawnCreatures(NPC_HIDEOUS_AMALGAMATION);
+
+                if (achieve != -1 && achieve < 4)
+                {
+                    if ((achieve % 2) == (side - 1))
+                        achieve++;
+                    else
+                        achieve = -1;
+                }
+            }
+
+            void ResetBattle(bool done = false, bool despawn = true)
+            {
+                DespawnCreatures(NPC_HIDEOUS_AMALGAMATION);
+                DespawnCreatures(NPC_CORRUPTION_1);
+                DespawnCreatures(NPC_CORRUPTION_2);
+                DespawnCreatures(NPC_CORRUPTION_3);
+                DespawnCreatures(NPC_SPAWNER);
+                DespawnCreatures(NPC_CORRUPTED_BLOOD);
+                DespawnCreatures(NPC_BURNING_TENDONS_1);
+                DespawnCreatures(NPC_BURNING_TENDONS_2);
+
                 if (pInstance)
                 {
-                    if (destroyedPlates == 1)
+                    pInstance->SetBossState(DATA_SPINE, (done ? DONE : NOT_STARTED));
+                    if (!done)
                     {
-                        Talk(SAY_DEATHWING_PLATE);
-                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_1), true);
-                        for (uint8 i = 4; i < 6; ++i)
-                            if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
-                            {
-                                pCorruption->AI()->SetData(DATA_POS, i);
-                                DoZoneInCombat(pCorruption);
-                            }
-                    }
-                    else if (destroyedPlates == 2)
-                    {
-                        Talk(SAY_DEATHWING_PLATE);
-                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_2), true);
-                        for (uint8 i = 6; i < 8; ++i)
-                            if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
-                            {
-                                pCorruption->AI()->SetData(DATA_POS, i);
-                                DoZoneInCombat(pCorruption);
-                            }
-                    }
-                    else if (destroyedPlates == 3)
-                    {
-                        Talk(SAY_DEATHWING_PLATE);
-                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_3), true);
-                        events.ScheduleEvent(EVENT_END_ENCOUNTER, 1000);
+                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_1),  false);
+                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_2),  false);
+                        pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_3),  false);
+
+                        Map::PlayerList const& players = pInstance->instance->GetPlayers();
+                        if (!players.isEmpty())
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                if (Player* players = itr->getSource())
+                                    players->TeleportTo(967, customPos[0].GetPositionX(), customPos[0].GetPositionY(), customPos[0].GetPositionZ(), customPos[0].GetOrientation());
                     }
                 }
-            }
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_PLATES)
-                return (uint32)destroyedPlates;
-            return 0;
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32 &damage)
-        {
-            if (me->GetHealth() <= damage)
-                damage = 0;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_END_ENCOUNTER:
-                    events.Reset();
-                    ResetBattle(true);
-                    DoCastAOE(SPELL_PLAY_MOVIE);
-                    if (pInstance)
-                    {
-                        pInstance->SetBossState(DATA_SPINE, DONE);
-                        switch (GetDifficulty())
-                        {
-                        case MAN10_DIFFICULTY:
-                            pInstance->DoRespawnGameObject(pInstance->GetData64(DATA_GREATER_CACHE_10N), DAY);
-                            break;
-                        case MAN25_DIFFICULTY:
-                            pInstance->DoRespawnGameObject(pInstance->GetData64(DATA_GREATER_CACHE_25N), DAY);
-                            break;
-                        case MAN10_HEROIC_DIFFICULTY:
-                            pInstance->DoRespawnGameObject(pInstance->GetData64(DATA_GREATER_CACHE_10H), DAY);
-                            break;
-                        case MAN25_HEROIC_DIFFICULTY:
-                            pInstance->DoRespawnGameObject(pInstance->GetData64(DATA_GREATER_CACHE_25H), DAY);
-                            break;
-                        }
-                        pInstance->DoStartMovie(75);
-                        pInstance->DoNearTeleportPlayers(madnessdeathwingPos);
-                    }                            
-                    break;
-                case EVENT_SUMMON_CORRUPTED_BLOOD:
-                    {
-                        std::list<Creature*> targets;
-                        me->GetCreatureListWithEntryInGrid(targets, NPC_SPAWNER, 200.0f);
-                        uint32 num = 0;
-                        if (!targets.empty())
-                        {
-                            num = targets.size();
-                            Unit* pSpawner = Trinity::Containers::SelectRandomContainerElement(targets);
-                            if (Creature* pBlood = me->SummonCreature(NPC_CORRUPTED_BLOOD, *pSpawner))
-                                DoZoneInCombat(pBlood);
-                        }
-                        events.ScheduleEvent(EVENT_SUMMON_CORRUPTED_BLOOD, (IsHeroic() ? (9000 - num / 2) : 9000));
-                        break;
-                    }
-                case EVENT_TALK:
-                    Talk(SAY_DEATHWING_TALK);
-                    events.ScheduleEvent(EVENT_TALK, urand(35000, 45000));
-                    break;
-                case EVENT_CHECK_PLAYERS:
-                    if (pInstance)
-                    {
-                        if ((pInstance->GetBossState(DATA_SPINE) != IN_PROGRESS) || !CheckPlayers())
-                        {
-                            ResetBattle();
-                        }
-                        else
-                            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                    }
-                    break;
-                case EVENT_CHECK_ROLL:
-                    switch (rollStage)
-                    {
-                    case ROLL_PRE_LEFT_1:
-                        Talk(SAY_DEATHWING_LEFT_ROLL_PRE);
-                        rollStage = ROLL_PRE_LEFT_2;
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 5000);
-                        break;
-                    case ROLL_PRE_LEFT_2:
-                        Talk(SAY_DEATHWING_LEFT_ROLL);
-                        rollStage = ROLLING_LEFT;
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 1000);
-                        break;
-                    case ROLLING_LEFT:
-                        DoRoll(1);
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 10000);
-                        rollStage = ROLL_NONE;
-                        break;
-                    case ROLL_PRE_RIGHT_1:
-                        Talk(SAY_DEATHWING_RIGHT_ROLL_PRE);
-                        rollStage = ROLL_PRE_RIGHT_2;
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 5000);
-                        break;
-                    case ROLL_PRE_RIGHT_2:
-                        Talk(SAY_DEATHWING_RIGHT_ROLL);
-                        rollStage = ROLLING_RIGHT;
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 1000);
-                        break;
-                    case ROLLING_RIGHT:
-                        DoRoll(2);
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 10000);
-                        rollStage = ROLL_NONE;
-                        break;
-                    default:
-                        events.ScheduleEvent(EVENT_CHECK_ROLL, 2000);
-                        break;
-                    }
-                    break;
-                }
-            } 
-        }
-
-    private:
-        EventMap events;
-        InstanceScript* pInstance;
-        RollStage rollStage;
-        uint8 destroyedPlates;
-
-        void DoRoll(uint8 side /* 1 - left, 2 - right*/)
-        {
-            std::list<Player*> players;
-            AnyLivePlayerNoGmCheck check(me, 200.0f, true);
-            Trinity::PlayerListSearcher<AnyLivePlayerNoGmCheck> searcher(me, players, check);
-            me->VisitNearbyWorldObject(200.0f, searcher);
-            if (!players.empty())
-                for (std::list<Player*>::iterator itr = players.begin(); itr != players.end(); ++ itr)
-                    if (Player* pPlayer = (*itr))
-                        pPlayer->CastSpell(pPlayer->GetPositionX() + ((side == 2) ? 50 : - 50), pPlayer->GetPositionY() - 100.0f, pPlayer->GetPositionZ() + 30.0f, SPELL_ROLL_CONTROL_AOE_2, true);
-
-            DespawnCreatures(NPC_HIDEOUS_AMALGAMATION);
-        }
-
-        void ResetBattle(bool done = false, bool despawn = true)
-        {
-            DespawnCreatures(NPC_HIDEOUS_AMALGAMATION);
-            DespawnCreatures(NPC_CORRUPTION_1);
-            DespawnCreatures(NPC_CORRUPTION_2);
-            DespawnCreatures(NPC_CORRUPTION_3);
-            DespawnCreatures(NPC_SPAWNER);
-            DespawnCreatures(NPC_CORRUPTED_BLOOD);
-            DespawnCreatures(NPC_BURNING_TENDONS_1);
-            DespawnCreatures(NPC_BURNING_TENDONS_2);
-
-            if (pInstance)
-            {
-                pInstance->SetBossState(DATA_SPINE, (done ? DONE : NOT_STARTED));
-                if (!done)
-                {
-                    pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_1),  false);
-                    pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_2),  false);
-                    pInstance->HandleGameObject(pInstance->GetData64(DATA_BACK_PLATE_3),  false);
-                }
+                
+                if (despawn)
+                    me->DespawnOrUnsummon(2000);
             }
 
-            if (despawn)
-                me->DespawnOrUnsummon(2000);
-        }
-
-        void StartBattle()
-        {
-            for (uint8 i = 0; i < 4; ++i)
-                if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
-                {
-                    pCorruption->AI()->SetData(DATA_POS, i);
-                    DoZoneInCombat(pCorruption);
-                }
+            void StartBattle()
+            {
+                for (uint8 i = 0; i < 4; ++i)
+                    if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
+                    {
+                        pCorruption->AI()->SetData(DATA_POS, i);
+                        DoZoneInCombat(pCorruption);
+                    }
 
                 for (uint8 i = 0; i < 6; ++i)
                     if (Creature* pTendons = me->SummonCreature((((i % 2) == 1) ? NPC_BURNING_TENDONS_2 : NPC_BURNING_TENDONS_1), tendonsPos[i]))
+                    {
                         pTendons->AI()->SetData(DATA_POS, i);
+                        DoZoneInCombat(pTendons);
+                    }
 
                 rollStage = ROLL_NONE;
                 events.ScheduleEvent(EVENT_CHECK_ROLL, 3000);
                 events.ScheduleEvent(EVENT_TALK, urand(3000, 5000));
                 events.ScheduleEvent(EVENT_SUMMON_CORRUPTED_BLOOD, 10000);
                 DoCast(me, SPELL_ROLL_CONTROL, true);
-        }
-
-        void DespawnCreatures(uint32 entry)
-        {
-            std::list<Creature*> creatures;
-            GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
-
-            if (creatures.empty())
-                return;
-
-            for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
-                (*iter)->DespawnOrUnsummon();
-        }
-
-        bool CheckPlayers()
-        {
-            Player* player = NULL;
-            AnyLivePlayerNoGmCheck check(me, 200.0f);
-            Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
-            me->VisitNearbyWorldObject(200.0f, searcher);
-            return (player ? true : false);
-        }
-
-        class AnyLivePlayerNoGmCheck
-        {
-        public:
-            AnyLivePlayerNoGmCheck(WorldObject const* obj, float range, bool withAura = false) : _obj(obj), _range(range), _withAura(withAura) {}
-            bool operator()(Player* u)
-            {
-                if (!u->isAlive())
-                    return false;
-
-                if (!_obj->IsWithinDistInMap(u, _range))
-                    return false;
-
-                if (u->isGameMaster())
-                    return false;
-
-                if (_withAura)
-                    if (u->HasAura(SPELL_GRASPING_TENDRILS_10) ||
-                        u->HasAura(SPELL_GRASPING_TENDRILS_10H) ||
-                        u->HasAura(SPELL_GRASPING_TENDRILS_25) ||
-                        u->HasAura(SPELL_GRASPING_TENDRILS_25H))
-                        return false;
-
-                return true;
             }
 
-        private:
-            WorldObject const* _obj;
-            float _range;
-            bool _withAura;
+            void DespawnCreatures(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
+
+                if (creatures.empty())
+                   return;
+
+                for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
+                     (*iter)->DespawnOrUnsummon();
+            }
+
+            bool CheckPlayers()
+            {
+                Player* player = NULL;
+                AnyLivePlayerNoGmCheck check(me, 200.0f);
+                Trinity::PlayerSearcher<AnyLivePlayerNoGmCheck> searcher(me, player, check);
+                me->VisitNearbyWorldObject(200.0f, searcher);
+                return (player ? true : false);
+            }
+
+            class AnyLivePlayerNoGmCheck
+            {
+                public:
+                    AnyLivePlayerNoGmCheck(WorldObject const* obj, float range, bool withAura = false) : _obj(obj), _range(range), _withAura(withAura) {}
+                    bool operator()(Player* u)
+                    {
+                        if (!u->isAlive())
+                            return false;
+
+                        if (!_obj->IsWithinDistInMap(u, _range))
+                            return false;
+
+                        if (u->isGameMaster())
+                            return false;
+
+                        if (_withAura)
+                        {
+                            uint32 spellId1 = SPELL_GRASPING_TENDRILS_10;
+                            uint32 spellId2 = SPELL_FIERY_GRIP;
+
+                            if (u->HasAura(spellId1) || u->HasAura(spellId2))
+                                return false;
+                        }
+
+                        return true;
+                    }
+
+                private:
+                    WorldObject const* _obj;
+                    float _range;
+                    bool _withAura;
+            };
         };
-    };
 };
 
 class npc_spine_of_deathwing_corruption : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_corruption() : CreatureScript("npc_spine_of_deathwing_corruption") { }
+    public:
+        npc_spine_of_deathwing_corruption() : CreatureScript("npc_spine_of_deathwing_corruption") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_corruptionAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_corruptionAI : public Scripted_NoMovementAI
-    {
-        npc_spine_of_deathwing_corruptionAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-
-            me->SetReactState(REACT_PASSIVE);
-            damageCounter = 0;
-            isGrip = false;
-
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            return GetInstanceAI<npc_spine_of_deathwing_corruptionAI>(pCreature);
         }
 
-        void IsSummonedBy(Unit* /*who*/)
+        struct npc_spine_of_deathwing_corruptionAI : public Scripted_NoMovementAI
         {
-            if (Creature* pSpawner = me->FindNearestCreature(NPC_SPAWNER, 5.0f, true))
-                pSpawner->DespawnOrUnsummon();
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_SEARING_PLASMA, urand(1000, 8000));
-            events.ScheduleEvent(EVENT_FIERY_GRIP, urand(31000, 33000));
-            DoZoneInCombat();
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32 &damage)
-        {
-            if (!isGrip)
-                return;
-
-            if (damageCounter <= damage)
+            npc_spine_of_deathwing_corruptionAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
             {
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                
+                me->SetReactState(REACT_PASSIVE);
                 damageCounter = 0;
                 isGrip = false;
-                me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                pInstance = me->GetInstanceScript();
             }
-            else
-                damageCounter -= damage;
-        }
 
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_POS)
-                pos = (uint8)data;
-        }
-
-        void JustDied(Unit* /*who*/)
-        {
-            events.Reset();
-            if (!me->FindNearestCreature(NPC_CORRUPTION_1, 200.0f, true))
+            void IsSummonedBy(Unit* /*who*/)
             {
-                uint8 i = (((pos % 2) == 1) ? pos - 1 : pos + 1);
-                if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
+                if (Creature* pSpawner = me->FindNearestCreature(NPC_SPAWNER, 5.0f, true))
+                    pSpawner->DespawnOrUnsummon();
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                if (!pInstance->GetData(DATA_IS_LFR))
                 {
-                    pCorruption->AI()->SetData(DATA_POS, i);
-                    DoZoneInCombat(pCorruption);
+                    events.ScheduleEvent(EVENT_SEARING_PLASMA, urand(1000, 8000));
+                    events.ScheduleEvent(EVENT_FIERY_GRIP, urand(31000, 33000));
                 }
             }
-            me->SummonCreature(NPC_HIDEOUS_AMALGAMATION, *me);
-            me->SummonCreature(NPC_SPAWNER, *me);
 
-            me->DespawnOrUnsummon(2000);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            void DamageTaken(Unit* /*who*/, uint32 &damage)
             {
-                switch (eventId)
+                if (!isGrip)
+                    return;
+
+                if (damageCounter <= damage)
                 {
-                case EVENT_FIERY_GRIP:
+                    damageCounter = 0;
+                    isGrip = false;
+                    me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                }
+                else
+                    damageCounter -= damage;
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                if (type == DATA_POS)
+                    pos = (uint8)data;
+            }
+
+            void JustDied(Unit* /*who*/)
+            {
+                events.Reset();
+                if (!me->FindNearestCreature(NPC_CORRUPTION_1, 200.0f, true))
+                {
+                    uint8 i = (((pos % 2) == 1) ? pos - 1 : pos + 1);
+                    if (Creature* pCorruption = me->SummonCreature(NPC_CORRUPTION_1, corruptionPos[i]))
                     {
-                        Unit* pTarget = NULL;
-                        pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true, -SPELL_FIERY_GRIP);
-                        if (!pTarget)
-                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true);
-                        if (pTarget)
-                        {
-                            isGrip = true;
-                            damageCounter = me->CountPctFromMaxHealth(20);
-                            DoCast(pTarget, SPELL_FIERY_GRIP);
-                        }
-                        events.ScheduleEvent(EVENT_FIERY_GRIP, urand(31000, 33000));
-                        break;
+                        pCorruption->AI()->SetData(DATA_POS, i);
+                        DoZoneInCombat(pCorruption);
                     }
-                case EVENT_SEARING_PLASMA:
-                    DoCastAOE(SPELL_SEARING_PLASMA_AOE);
-                    events.ScheduleEvent(EVENT_SEARING_PLASMA, urand(15000, 20000));
-                    break;
-                default:
-                    break;
+                }
+                me->SummonCreature(NPC_SPAWNER, *me);
+                    
+                me->DespawnOrUnsummon(2000);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_FIERY_GRIP:
+                        {
+                            Unit* pTarget = NULL;
+                            pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true, -SPELL_FIERY_GRIP);
+                            if (!pTarget)
+                                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true);
+                            if (pTarget)
+                            {
+                                isGrip = true;
+                                damageCounter = me->CountPctFromMaxHealth(20);
+                                me->CastCustomSpell(SPELL_FIERY_GRIP, SPELLVALUE_MAX_TARGETS, RAID_MODE(1, 3), pTarget, false);
+                            }
+                            events.ScheduleEvent(EVENT_FIERY_GRIP, urand(31000, 33000));
+                            break;
+                        }
+                        case EVENT_SEARING_PLASMA:
+                            DoCastAOE(SPELL_SEARING_PLASMA_AOE);
+                            events.ScheduleEvent(EVENT_SEARING_PLASMA, urand(15000, 20000));
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-        }
 
-    private:
-        EventMap events;
-        uint32 damageCounter;
-        bool isGrip;
-        uint8 pos;
-    };
+        private:
+            EventMap events;
+            InstanceScript* pInstance;
+            uint32 damageCounter;
+            bool isGrip;
+            uint8 pos;
+        };
 };
 
 class npc_spine_of_deathwing_hideous_amalgamation : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_hideous_amalgamation() : CreatureScript("npc_spine_of_deathwing_hideous_amalgamation") { }
+    public:
+        npc_spine_of_deathwing_hideous_amalgamation() : CreatureScript("npc_spine_of_deathwing_hideous_amalgamation") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_hideous_amalgamationAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_hideous_amalgamationAI : public ScriptedAI
-    {
-        npc_spine_of_deathwing_hideous_amalgamationAI(Creature* pCreature) : ScriptedAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-
-            isExplode = false;
-
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            return GetInstanceAI<npc_spine_of_deathwing_hideous_amalgamationAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_spine_of_deathwing_hideous_amalgamationAI : public ScriptedAI
         {
-            events.Reset();
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-        }
-
-        void DoAction(const int32 action)
-        {
-            if (action == ACTION_ABSORB_BLOOD)
+            npc_spine_of_deathwing_hideous_amalgamationAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                DoCast(me, SPELL_ABSORBED_BLOOD, true);
-                if (me->GetPower(POWER_ALTERNATE_POWER) < 9)
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                
+                isExplode = false;
+            }
+
+            void Reset()
+            {
+                events.Reset();
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
+                if (!isExplode && me->isAlive())
+                    if (Unit* target = me->SelectNearestTarget(100))
+                        AttackStart(target);
+            }
+
+            void DoAction(const int32 action)
+            {
+                if (action == ACTION_ABSORB_BLOOD)
                 {
-                    me->SetPower(POWER_ALTERNATE_POWER, me->GetPower(POWER_ALTERNATE_POWER) + 1);
-                    if (me->GetPower(POWER_ALTERNATE_POWER) == 9)
-                        DoCast(me, SPELL_SUPERHEATED_NUCLEUS, true);
+                    DoCast(me, SPELL_ABSORBED_BLOOD, true);
+                    /*if (me->GetPower(POWER_ALTERNATE_POWER) < 9)
+                    {
+                        me->SetPower(POWER_ALTERNATE_POWER, me->GetPower(POWER_ALTERNATE_POWER) + 1);
+                        if (me->GetPower(POWER_ALTERNATE_POWER) == 9)
+                            DoCast(me, SPELL_SUPERHEATED_NUCLEUS, true);
+                    }*/
                 }
             }
-        }
 
-        void JustDied(Unit* /*who*/)
-        {
-            if (IsHeroic())
-                DoCastAOE(SPELL_DEGRADATION, true);
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_BLAST_POS)
+            void JustDied(Unit* /*who*/)
             {
-                if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
-                    me->GetPositionY() > -13660.0f && me->GetPositionY() < -13640.0f)
-                    return 1;
-                if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
-                    me->GetPositionY() > -13660.0f && me->GetPositionY() < -13640.0f)
-                    return 2;
-                if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
-                    me->GetPositionY() > -13640.0f && me->GetPositionY() < -13620.0f)
-                    return 3;
-                if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
-                    me->GetPositionY() > -13640.0f && me->GetPositionY() < -13620.0f)
-                    return 4;
-                if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
-                    me->GetPositionY() > -13620.0f && me->GetPositionY() < -13600.0f)
-                    return 5;
-                if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
-                    me->GetPositionY() > -13620.0f && me->GetPositionY() < -13600.0f)
-                    return 6;
-            }
-            return 0;
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            if (IsHeroic())
-                events.ScheduleEvent(EVENT_BLOOD_CORRUPTION, urand(6000, 11000));
-            DoZoneInCombat();
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->GetHealth() <= damage)
-            {
-                if (me->GetAura(SPELL_SUPERHEATED_NUCLEUS))
+                if (IsHeroic())
                 {
-                    damage = 0;
-                    if (!isExplode)
+                    if (InstanceScript* pInstance = me->GetInstanceScript())
                     {
-                        isExplode = true;
-                        DoCastAOE(SPELL_NUCLEAR_BLAST);
+                        Map::PlayerList const& plrList = pInstance->instance->GetPlayers();
+                        if (!plrList.isEmpty())
+                            for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+                                if (Player* pPlayer = itr->getSource())
+                                    if (pPlayer->GetDistance(me) <= 200.0f)
+                                        pPlayer->AddAura(SPELL_DEGRADATION, pPlayer);
+                    }
+                    //DoCastAOE(SPELL_DEGRADATION, true);
+                }
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_BLAST_POS)
+                {
+                    if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
+                        me->GetPositionY() > -13660.0f && me->GetPositionY() < -13640.0f)
+                        return 1;
+                    if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
+                        me->GetPositionY() > -13660.0f && me->GetPositionY() < -13640.0f)
+                        return 2;
+                    if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
+                        me->GetPositionY() > -13640.0f && me->GetPositionY() < -13620.0f)
+                        return 3;
+                    if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
+                        me->GetPositionY() > -13640.0f && me->GetPositionY() < -13620.0f)
+                        return 4;
+                    if (me->GetPositionX() > -13870.0f && me->GetPositionX() <= -13854.787109f &&
+                        me->GetPositionY() > -13620.0f && me->GetPositionY() < -13600.0f)
+                        return 5;
+                    if (me->GetPositionX() >= -13854.787109f && me->GetPositionX() <= -13830.0f &&
+                        me->GetPositionY() > -13620.0f && me->GetPositionY() < -13600.0f)
+                        return 6;
+                }
+                return 0;
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                if (IsHeroic())
+                    events.ScheduleEvent(EVENT_BLOOD_CORRUPTION, urand(6000, 11000));
+            }
+
+            void DamageTaken(Unit* /*who*/, uint32& damage)
+            {
+                if (me->GetHealth() <= damage)
+                {
+                    if (me->GetAura(SPELL_SUPERHEATED_NUCLEUS))
+                    {
+                        damage = 0;
+                        if (!isExplode)
+                        {
+                            isExplode = true;
+                            Talk(ANN_NUCLEAR_BLAST);
+                            DoCastAOE(SPELL_NUCLEAR_BLAST);
+                            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+                        }
                     }
                 }
             }
-        }
 
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            events.Update(diff);
-
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (uint32 eventId = events.ExecuteEvent())
+            void UpdateAI(uint32 diff)
             {
-                if (eventId == EVENT_BLOOD_CORRUPTION)
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if (uint32 eventId = events.ExecuteEvent())
                 {
-                    DoCastAOE(SPELL_BLOOD_CORRUPTION_DEATH);
+                    if (eventId == EVENT_BLOOD_CORRUPTION)
+                    {
+                        DoCastAOE(SPELL_BLOOD_CORRUPTION_DEATH);
+                    }
                 }
+
+                DoMeleeAttackIfReady();
             }
 
-            DoMeleeAttackIfReady();
-        }
-
-    private:
-        bool isExplode;
-        EventMap events;
-    };
+        private:
+            bool isExplode;
+            EventMap events;
+        };
 };
 
 class npc_spine_of_deathwing_spawner : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_spawner() : CreatureScript("npc_spine_of_deathwing_spawner") { }
+    public:
+        npc_spine_of_deathwing_spawner() : CreatureScript("npc_spine_of_deathwing_spawner") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_spawnerAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_spawnerAI : public Scripted_NoMovementAI
-    {
-        npc_spine_of_deathwing_spawnerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->SetReactState(REACT_PASSIVE);
+            return GetInstanceAI<npc_spine_of_deathwing_spawnerAI>(pCreature);
         }
 
-        void Reset()
+        struct npc_spine_of_deathwing_spawnerAI : public Scripted_NoMovementAI
         {
-            DoCast(me, SPELL_GRASPING_TENDRILS, true);
-        }
-    };
+            npc_spine_of_deathwing_spawnerAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                events.Reset();
+                events.ScheduleEvent(EVENT_SUMMON_HIDEOUS_AMALGAMATION, 2000);
+                DoCast(me, SPELL_GRASPING_TENDRILS, true);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                events.Update(diff);
+                switch (events.ExecuteEvent())
+                {
+                    case EVENT_SUMMON_HIDEOUS_AMALGAMATION:
+                        me->SummonCreature(NPC_HIDEOUS_AMALGAMATION, *me);
+                        break;
+                }
+            }
+
+        private:
+            EventMap events;
+        };
 };
 
 class npc_spine_of_deathwing_corrupted_blood : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_corrupted_blood() : CreatureScript("npc_spine_of_deathwing_corrupted_blood") { }
+    public:
+        npc_spine_of_deathwing_corrupted_blood() : CreatureScript("npc_spine_of_deathwing_corrupted_blood") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_corrupted_bloodAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_corrupted_bloodAI : public ScriptedAI
-    {
-        npc_spine_of_deathwing_corrupted_bloodAI(Creature* pCreature) : ScriptedAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-
-            isDead = false;
-
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            return GetInstanceAI<npc_spine_of_deathwing_corrupted_bloodAI>(pCreature);
         }
 
-        void MovementInform(uint32 type, uint32 id)
+        struct npc_spine_of_deathwing_corrupted_bloodAI : public ScriptedAI
         {
-            if (type == POINT_MOTION_TYPE)
-                if (id == POINT_SPAWNER)
-                {
-                    isDead = false;
-                    me->SetSpeed(MOVE_RUN, 1.0f, true);
-                    me->SetSpeed(MOVE_SWIM, 1.0f, true);
-                    me->SetSpeed(MOVE_WALK, 1.0f, true);
-                    me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveAura(SPELL_RESIDUE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+            npc_spine_of_deathwing_corrupted_bloodAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                
+                isDead = false;
+            }
+
+            void Reset()
+            {
+                if (!isDead && me->isAlive())
+                    if (Unit* target = me->SelectNearestTarget(100))
+                        AttackStart(target);
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type == POINT_MOTION_TYPE)
+                    if (id == POINT_SPAWNER)
                     {
-                        me->GetMotionMaster()->MoveChase(pTarget);
-                        me->Attack(pTarget, true);
+                        isDead = false;
+                        me->SetSpeed(MOVE_RUN, 1.0f, true);
+                        me->SetSpeed(MOVE_SWIM, 1.0f, true);
+                        me->SetSpeed(MOVE_WALK, 1.0f, true);
+                        me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->RemoveAura(SPELL_RESIDUE);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                        {
+                            me->GetMotionMaster()->MoveChase(pTarget);
+                            me->Attack(pTarget, true);
+                        }
+                    }
+            }
+
+            void DamageTaken(Unit* /*who*/, uint32 & damage)
+            {
+                if (me->GetHealth() <= damage)
+                {
+                    damage = 0;
+                    if (!isDead)
+                    {
+                        isDead = true;
+                        DoResetThreat();
+                        me->SetReactState(REACT_PASSIVE);
+                        me->AttackStop();
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                        DoCastAOE(SPELL_BURST, true);
+                        DoCast(me, SPELL_RESIDUE, true);
+                        me->SetSpeed(MOVE_RUN, 0.03f, true);
+                        me->SetSpeed(MOVE_SWIM, 0.03f, true);
+                        me->SetSpeed(MOVE_WALK, 0.03f, true);
+                        me->SetSpeed(MOVE_FLIGHT, 0.03f, true);
+                        events.ScheduleEvent(EVENT_MOVE_TO_SPAWNER, 5000);
                     }
                 }
-        }
-
-        void EnterCombat(Unit* /*who*/)
-        {
-            DoZoneInCombat();
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32 & damage)
-        {
-            if (me->GetHealth() < damage)
-            {
-                damage = 0;
-                if (!isDead)
-                {
-                    isDead = true;
-                    DoResetThreat();
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                    DoCastAOE(SPELL_BURST, true);
-                    DoCast(me, SPELL_RESIDUE, true);
-                    me->SetSpeed(MOVE_RUN, 0.03f, true);
-                    me->SetSpeed(MOVE_SWIM, 0.03f, true);
-                    me->SetSpeed(MOVE_WALK, 0.03f, true);
-                    me->SetSpeed(MOVE_FLIGHT, 0.03f, true);
-                    events.ScheduleEvent(EVENT_MOVE_TO_SPAWNER, 5000);
-                }
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                if (eventId == EVENT_MOVE_TO_SPAWNER)
-                {
-                    if (Creature* pSpawner = me->FindNearestCreature(NPC_SPAWNER, 200.0f, true))
-                        me->GetMotionMaster()->MovePoint(POINT_SPAWNER, *pSpawner);
-                }
             }
 
-            DoMeleeAttackIfReady();
-        }
+            void UpdateAI(uint32 diff)
+            {
+                UpdateVictim();
 
-    private:
-        EventMap events;
-        bool isDead;
-    };
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (eventId == EVENT_MOVE_TO_SPAWNER)
+                    {
+                        if (Creature* pSpawner = me->FindNearestCreature(NPC_SPAWNER, 200.0f, true))
+                            me->GetMotionMaster()->MovePoint(POINT_SPAWNER, *pSpawner);
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+             }
+
+        private:
+            EventMap events;
+            bool isDead;
+        };
 };
 
 class npc_spine_of_deathwing_burning_tendons : public CreatureScript
 {
-public:
-    npc_spine_of_deathwing_burning_tendons() : CreatureScript("npc_spine_of_deathwing_burning_tendons") { }
+    public:
+        npc_spine_of_deathwing_burning_tendons() : CreatureScript("npc_spine_of_deathwing_burning_tendons") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_spine_of_deathwing_burning_tendonsAI(pCreature);
-    }
-
-    struct npc_spine_of_deathwing_burning_tendonsAI : public Scripted_NoMovementAI
-    {
-        npc_spine_of_deathwing_burning_tendonsAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+        CreatureAI* GetAI(Creature* pCreature) const
         {
-            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
-
-            me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            isOpened = false;
+            return GetInstanceAI<npc_spine_of_deathwing_burning_tendonsAI>(pCreature);
         }
 
-        void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
+        struct npc_spine_of_deathwing_burning_tendonsAI : public Scripted_NoMovementAI
         {
-            if (spellInfo->Id == SPELL_NUCLEAR_BLAST_SCRIPT && !isOpened)
+            npc_spine_of_deathwing_burning_tendonsAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
             {
-                isOpened = true;
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-                DoCast(me, ((pos % 2) == 1) ? SPELL_BREACH_ARMOR_2 : SPELL_BREACH_ARMOR_1, true);
-                DoCast(me, ((pos % 2) == 1) ? SPELL_SEAL_ARMOR_BREACH_2 : SPELL_SEAL_ARMOR_BREACH_1);
-            }
-            else if ((spellInfo->Id == SPELL_SEAL_ARMOR_BREACH_2 || spellInfo->Id == SPELL_SEAL_ARMOR_BREACH_1) && isOpened)
-            {
-                isOpened = false;
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                
+                me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                isOpened = false;
             }
-        }
 
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (!isOpened)
-                damage = 0;
-        }
-
-        void SetData(uint32 type, uint32 data)
-        {
-            if (type == DATA_POS)
-                pos = (uint8)data;
-        }
-
-        uint32 GetData(uint32 type)
-        {
-            if (type == DATA_POS)
-                return pos;
-            return 0;
-        }
-
-        void EnterEvadeMode()
-        {
-            return;
-        }
-
-        void JustDied(Unit* /*who*/)
-        {
-            DoCast(me, ((pos % 2) == 1) ? SPELL_PLATE_FLY_OFF_RIGHT : SPELL_PLATE_FLY_OFF_LEFT, true);
-            if (Creature* pDeathwing = me->FindNearestCreature(NPC_SPINE_OF_DEATHWING, 300.0f))
+            void SpellHit(Unit* /*who*/, const SpellInfo* spellInfo)
             {
-                pDeathwing->AI()->SetData(DATA_PLATES, pDeathwing->AI()->GetData(DATA_PLATES) + 1);
+                if (spellInfo->Id == SPELL_NUCLEAR_BLAST_SCRIPT && !isOpened)
+                {
+                    isOpened = true;
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    DoCast(me, ((pos % 2) == 1) ? SPELL_BREACH_ARMOR_2 : SPELL_BREACH_ARMOR_1, true);
+                    DoCast(me, ((pos % 2) == 1) ? SPELL_SEAL_ARMOR_BREACH_2 : SPELL_SEAL_ARMOR_BREACH_1);
+                    events.ScheduleEvent(EVENT_CHECK_CASTING, 1000);
+                }
+                else if ((spellInfo->Id == SPELL_SEAL_ARMOR_BREACH_2 || spellInfo->Id == SPELL_SEAL_ARMOR_BREACH_1) && isOpened)
+                {
+                    isOpened = false;
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                    events.Reset();
+                }
             }
-            me->DespawnOrUnsummon(1000);
-        }
 
-        void UpdateAI(uint32 diff) 
-        {
-            return;
-        }
+            void DamageTaken(Unit* /*who*/, uint32& damage)
+            {
+                if (!isOpened)
+                    damage = 0;
+            }
 
-    private:
-        uint8 pos;
-        bool isOpened;
-    };
+            void SetData(uint32 type, uint32 data)
+            {
+                if (type == DATA_POS)
+                    pos = (uint8)data;
+            }
+
+            uint32 GetData(uint32 type)
+            {
+                if (type == DATA_POS)
+                    return pos;
+                return 0;
+            }
+
+            void EnterEvadeMode()
+            {
+                return;
+            }
+
+            void JustDied(Unit* /*who*/)
+            {
+                DoCast(me, ((pos % 2) == 1) ? SPELL_PLATE_FLY_OFF_RIGHT : SPELL_PLATE_FLY_OFF_LEFT, true);
+                if (Creature* pDeathwing = me->FindNearestCreature(NPC_SPINE_OF_DEATHWING, 300.0f))
+                {
+                    pDeathwing->AI()->SetData(DATA_PLATES, pDeathwing->AI()->GetData(DATA_PLATES) + 1);
+                }
+                me->DespawnOrUnsummon(1000);
+            }
+
+            void UpdateAI(uint32 diff) 
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    if (isOpened)
+                    {
+                        if (!me->HasUnitState(UNIT_STATE_CASTING))
+                        {
+                            isOpened = false;
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                        }
+                        events.ScheduleEvent(EVENT_CHECK_CASTING, 1000);
+                    }
+                }
+            }
+
+        private:
+            uint8 pos;
+            bool isOpened;
+            EventMap events;
+        };
 };
 
 class spell_spine_of_deathwing_roll_control_check : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_roll_control_check() : SpellScriptLoader("spell_spine_of_deathwing_roll_control_check") { }
+    public:
+        spell_spine_of_deathwing_roll_control_check() : SpellScriptLoader("spell_spine_of_deathwing_roll_control_check") { }
 
-    class spell_spine_of_deathwing_roll_control_check_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_roll_control_check_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_spine_of_deathwing_roll_control_check_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_roll_control_check_SpellScript);
 
-            if (targets.empty())
-                return;
-
-            uint8 min_diff = (targets.size() > 3) ? 2 : 1;
-            uint8 playersLeft = 0;
-            uint8 playersRight = 0;
-
-            for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if ((*itr)->GetPositionX() >= -13850.3)
-                    playersRight++;
-                else if ((*itr)->GetPositionX() <= -13860)
-                    playersLeft++;
+                if (!GetCaster())
+                    return;
+
+                if (!GetCaster()->GetInstanceScript())
+                    return;
+
+                if (targets.empty())
+                    return;
+
+                uint8 min_diff = 0;
+                uint8 playersLeft = 0;
+                uint8 playersRight = 0;
+
+                switch (GetCaster()->GetInstanceScript()->instance->GetDifficulty())
+                {
+                    case MAN10_DIFFICULTY:
+                    case MAN10_HEROIC_DIFFICULTY:
+                        min_diff = 4;
+                        break;
+                    case MAN25_DIFFICULTY:
+                    case MAN25_HEROIC_DIFFICULTY:
+                        min_diff = 6;
+                        break;
+                }
+                if (targets.size() <= min_diff)
+                    min_diff = targets.size() == 1 ? 1 : targets.size() / 2;
+
+                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                {
+                    if ((*itr)->GetPositionX() >= -13850.3)
+                        playersRight++;
+                    else if ((*itr)->GetPositionX() <= -13860)
+                        playersLeft++;
+                }
+
+                if (Creature* pDeathwing = GetCaster()->ToCreature())
+                {
+                    if (playersLeft > playersRight && (playersLeft - playersRight) >= min_diff)
+                        pDeathwing->AI()->DoAction(ACTION_ROLL_LEFT);
+                    else if (playersRight > playersLeft && (playersRight - playersLeft) >= min_diff)
+                        pDeathwing->AI()->DoAction(ACTION_ROLL_RIGHT);
+                    else
+                        pDeathwing->AI()->DoAction(ACTION_ROLL_NONE);
+                }
             }
 
-            if (Creature* pDeathwing = GetCaster()->ToCreature())
+            void Register()
             {
-                if (playersLeft >= playersRight && playersLeft >= min_diff)
-                    pDeathwing->AI()->DoAction(ACTION_ROLL_LEFT);
-                else if (playersRight >= playersLeft && playersRight >= min_diff)
-                    pDeathwing->AI()->DoAction(ACTION_ROLL_RIGHT);
-                else
-                    pDeathwing->AI()->DoAction(ACTION_ROLL_NONE);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_roll_control_check_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             }
-        }
+        };
 
-        void Register()
+        SpellScript* GetSpellScript() const
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_roll_control_check_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            return new spell_spine_of_deathwing_roll_control_check_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_roll_control_check_SpellScript();
-    }
 };
 
 class spell_spine_of_deathwing_searing_plasma_aoe : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_searing_plasma_aoe() : SpellScriptLoader("spell_spine_of_deathwing_searing_plasma_aoe") { }
+    public:
+        spell_spine_of_deathwing_searing_plasma_aoe() : SpellScriptLoader("spell_spine_of_deathwing_searing_plasma_aoe") { }
 
-    class spell_spine_of_deathwing_searing_plasma_aoe_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_spine_of_deathwing_searing_plasma_aoe_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript);
 
-            if (targets.empty())
-                return;
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (!GetCaster())
+                    return;
 
-            Trinity::Containers::RandomResizeList(targets, 1);
-        }
+                if (targets.empty())
+                    return;
+                
+                Trinity::Containers::RandomResizeList(targets, 1);
+            }
 
-        void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_SEARING_PLASMA, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnEffectHitTarget += SpellEffectFn(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
-
-            GetCaster()->CastSpell(GetHitUnit(), SPELL_SEARING_PLASMA, true);
+            return new spell_spine_of_deathwing_searing_plasma_aoe_SpellScript();
         }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-            OnEffectHitTarget += SpellEffectFn(spell_spine_of_deathwing_searing_plasma_aoe_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_searing_plasma_aoe_SpellScript();
-    }
 };
 
 class spell_spine_of_deathwing_nuclear_blast : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_nuclear_blast() : SpellScriptLoader("spell_spine_of_deathwing_nuclear_blast") { }
+    public:
+        spell_spine_of_deathwing_nuclear_blast() : SpellScriptLoader("spell_spine_of_deathwing_nuclear_blast") { }
 
-    class spell_spine_of_deathwing_nuclear_blast_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_nuclear_blast_SpellScript);
-
-        void HandleAfterCast()
+        class spell_spine_of_deathwing_nuclear_blast_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_nuclear_blast_SpellScript);
 
-            GetCaster()->CastSpell(GetCaster(), SPELL_NUCLEAR_BLAST_SCRIPT, true);
-            GetCaster()->Kill(GetCaster());
-        }
+            void HandleAfterCast()
+            {
+                if (!GetCaster())
+                    return;
 
-        void Register()
+                GetCaster()->CastSpell(GetCaster(), SPELL_NUCLEAR_BLAST_SCRIPT, true);
+                GetCaster()->Kill(GetCaster());
+                //if (Creature* pAmalgamation = GetCaster()->ToCreature())
+                //    pAmalgamation->AI()->JustDied(pAmalgamation);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_spine_of_deathwing_nuclear_blast_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            AfterCast += SpellCastFn(spell_spine_of_deathwing_nuclear_blast_SpellScript::HandleAfterCast);
+            return new spell_spine_of_deathwing_nuclear_blast_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_nuclear_blast_SpellScript();
-    }
 };
 
 class spell_spine_of_deathwing_absorb_blood : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_absorb_blood() : SpellScriptLoader("spell_spine_of_deathwing_absorb_blood") { }
+    public:
+        spell_spine_of_deathwing_absorb_blood() : SpellScriptLoader("spell_spine_of_deathwing_absorb_blood") { }
 
-    class spell_spine_of_deathwing_absorb_blood_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_absorb_blood_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
+        class spell_spine_of_deathwing_absorb_blood_SpellScript : public SpellScript
         {
-            if (!GetCaster() || !GetHitUnit())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_absorb_blood_SpellScript);
 
-            if (Creature* pAmalgamation = GetCaster()->ToCreature())
+            void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Aura* aur = NULL;
-                aur = pAmalgamation->GetAura(SPELL_ABSORBED_BLOOD);
-                if (!aur || aur->GetStackAmount() < 9)
-                    if (Creature* pBlood = GetHitUnit()->ToCreature())
-                    {
-                        pBlood->RemoveAura(SPELL_RESIDUE);
-                        pBlood->DespawnOrUnsummon(1000);
-                        pAmalgamation->AI()->DoAction(ACTION_ABSORB_BLOOD);
-                    }                 
+                if (!GetCaster() || !GetHitUnit())
+                    return;
+
+                if (Creature* pAmalgamation = GetCaster()->ToCreature())
+                {
+                    Aura* aur = NULL;
+                    aur = pAmalgamation->GetAura(SPELL_ABSORBED_BLOOD);
+                    if (!aur || aur->GetStackAmount() < 9)
+                        if (Creature* pBlood = GetHitUnit()->ToCreature())
+                        {
+                            pBlood->RemoveAura(SPELL_RESIDUE);
+                            pBlood->DespawnOrUnsummon(1000);
+                            pAmalgamation->AI()->DoAction(ACTION_ABSORB_BLOOD);
+                        }                 
+                }
             }
-        }
 
-        void Register()
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_spine_of_deathwing_absorb_blood_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            OnEffectHitTarget += SpellEffectFn(spell_spine_of_deathwing_absorb_blood_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            return new spell_spine_of_deathwing_absorb_blood_SpellScript();
         }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_absorb_blood_SpellScript();
-    }
 };
 
 class spell_spine_of_deathwing_nuclear_blast_script : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_nuclear_blast_script() : SpellScriptLoader("spell_spine_of_deathwing_nuclear_blast_script") { }
+    public:
+        spell_spine_of_deathwing_nuclear_blast_script() : SpellScriptLoader("spell_spine_of_deathwing_nuclear_blast_script") { }
 
-    class spell_spine_of_deathwing_nuclear_blast_script_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_nuclear_blast_script_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_spine_of_deathwing_nuclear_blast_script_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_nuclear_blast_script_SpellScript);
 
-            if (targets.empty())
-                return;
-
-            if (Player* pPlayer = GetCaster()->ToPlayer())
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (targets.size() > 1)
+                if (!GetCaster())
+                    return;
+
+                if (targets.empty())
+                    return;
+
+                if (Player* pPlayer = GetCaster()->ToPlayer())
                 {
-                    targets.sort(DistancePred(GetCaster()));
-                    targets.resize(1);
+                    if (targets.size() > 1)
+                    {
+                        targets.sort(DistancePred(GetCaster()));
+                        targets.resize(1);
+                    }
+                    return;
                 }
-                return;
+
+                targets.clear();
+
+                if (Creature* pDeathwing = GetCaster()->FindNearestCreature(NPC_SPINE_OF_DEATHWING, 200.0f, true))
+                {
+                    uint8 cur_plate = pDeathwing->AI()->GetData(DATA_PLATES);
+                    uint8 pos = GetCaster()->ToCreature()->AI()->GetData(DATA_BLAST_POS);
+                    if ((cur_plate == 0 && pos != 1 && pos != 2) ||
+                        (cur_plate == 1 && pos != 3 && pos != 4) ||
+                        (cur_plate == 2 && pos != 5 && pos != 6) ||
+                        (cur_plate >= 3))
+                        return;
+
+                    Creature* pTendons = GetCaster()->FindNearestCreature((((pos % 2) == 0) ? NPC_BURNING_TENDONS_2 : NPC_BURNING_TENDONS_1), 20.0f, true);
+                    if (!pTendons)
+                        return;
+
+                    uint8 tendons_pos = pTendons->AI()->GetData(DATA_POS);
+
+                    if ((pos - 1) != tendons_pos)
+                        return;
+
+                    targets.push_back(pTendons);
+                }
             }
 
-            targets.clear();
-
-            if (Creature* pDeathwing = GetCaster()->FindNearestCreature(NPC_SPINE_OF_DEATHWING, 200.0f, true))
+            void Register()
             {
-                uint8 cur_plate = pDeathwing->AI()->GetData(DATA_PLATES);
-                uint8 pos = GetCaster()->ToCreature()->AI()->GetData(DATA_BLAST_POS);
-                if ((cur_plate == 0 && pos != 1 && pos != 2) ||
-                    (cur_plate == 1 && pos != 3 && pos != 4) ||
-                    (cur_plate == 2 && pos != 5 && pos != 6) ||
-                    (cur_plate >= 3))
-                    return;
-
-                Creature* pTendons = GetCaster()->FindNearestCreature((((pos % 2) == 0) ? NPC_BURNING_TENDONS_2 : NPC_BURNING_TENDONS_1), 20.0f, true);
-                if (!pTendons)
-                    return;
-
-                uint8 tendons_pos = pTendons->AI()->GetData(DATA_POS);
-
-                if ((pos - 1) != tendons_pos)
-                    return;
-
-                targets.push_back(pTendons);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_nuclear_blast_script_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
             }
-        }
 
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_nuclear_blast_script_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-        }
-
-    private:
-        class DistancePred
-        {
-        public:
-            DistancePred(Unit* searcher) :  _searcher(searcher) { }
-            bool operator() (WorldObject* a, WorldObject* b) const
-            {
-                float rA = _searcher->GetDistance(a);
-                float rB = _searcher->GetDistance(b);
-                return rA < rB;
-            }
         private:
-            Unit const* _searcher;
+            class DistancePred
+            {
+                public:
+                    DistancePred(Unit* searcher) :  _searcher(searcher) { }
+                    bool operator() (WorldObject* a, WorldObject* b) const
+                    {
+                        float rA = _searcher->GetDistance(a);
+                        float rB = _searcher->GetDistance(b);
+                        return rA < rB;
+                    }
+                private:
+                    Unit const* _searcher;
+            };
         };
-    };
 
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_nuclear_blast_script_SpellScript();
-    }
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_spine_of_deathwing_nuclear_blast_script_SpellScript();
+        }
 };
 
 class spell_spine_of_deathwing_blood_corruption : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_blood_corruption() : SpellScriptLoader("spell_spine_of_deathwing_blood_corruption") { }
+    public:
+        spell_spine_of_deathwing_blood_corruption() : SpellScriptLoader("spell_spine_of_deathwing_blood_corruption") { }
 
-    class spell_spine_of_deathwing_blood_corruption_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_spine_of_deathwing_blood_corruption_AuraScript);
-
-        void HandleDispel(DispelInfo* dispelInfo)
+        class spell_spine_of_deathwing_blood_corruption_AuraScript : public AuraScript
         {
-            uint32 cur_duration = GetDuration();
-            if (Unit* owner = GetUnitOwner())
-            {
-                Unit* target = NULL;
-                std::list<Player*> players;
-                PlayersCheck check(owner);
-                Trinity::PlayerListSearcher<PlayersCheck> searcher(owner, players, check);
-                owner->VisitNearbyObject(200.0f, searcher);
-                if (!players.empty())
-                    target = Trinity::Containers::SelectRandomContainerElement(players);
-                else
-                    target = owner;
+            PrepareAuraScript(spell_spine_of_deathwing_blood_corruption_AuraScript);
 
-                if (target)
-                    if (Aura* aur = owner->AddAura((roll_chance_i(40) ? SPELL_BLOOD_CORRUPTION_EARTH : SPELL_BLOOD_CORRUPTION_DEATH), target))
-                        aur->SetDuration(cur_duration);
+            void HandleDispel(DispelInfo* dispelInfo)
+            {
+                uint32 cur_duration = GetDuration();
+                if (Unit* owner = GetUnitOwner())
+                {
+                    Unit* target = NULL;
+                    std::list<Player*> players;
+                    PlayersCheck check(owner);
+                    Trinity::PlayerListSearcher<PlayersCheck> searcher(owner, players, check);
+                    owner->VisitNearbyObject(200.0f, searcher);
+                    if (!players.empty())
+                        target = Trinity::Containers::SelectRandomContainerElement(players);
+                    else
+                        target = owner;
+
+                    if (target)
+                    {   
+                        if (Aura* aur = owner->AddAura(GetId() == SPELL_BLOOD_CORRUPTION_EARTH ? SPELL_BLOOD_CORRUPTION_EARTH : (roll_chance_i(GetCharges() * 20) ? SPELL_BLOOD_CORRUPTION_EARTH : SPELL_BLOOD_CORRUPTION_DEATH), target))
+                        {
+                            aur->SetDuration(cur_duration);
+                            aur->SetCharges(GetCharges() + 1);
+                            aur->SetUsingCharges(false);
+                        }
+                    }
+                }
             }
-        }
 
-        void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-        {
-            if (Unit* owner = GetUnitOwner())
+            void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
-                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                if (removeMode == AURA_REMOVE_BY_EXPIRE || removeMode == AURA_REMOVE_BY_DEATH)
-                    owner->CastSpell(owner, (GetId() == SPELL_BLOOD_CORRUPTION_EARTH) ? SPELL_BLOOD_OF_NELTHARION : SPELL_BLOOD_OF_DEATHWING, true);
+                if (Unit* owner = GetUnitOwner())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_EXPIRE || removeMode == AURA_REMOVE_BY_DEATH)
+                        owner->CastSpell(owner, (GetId() == SPELL_BLOOD_CORRUPTION_EARTH) ? SPELL_BLOOD_OF_NELTHARION : SPELL_BLOOD_OF_DEATHWING, true);
+                }
             }
-        }
 
-        void Register()
-        {
-            AfterDispel += AuraDispelFn(spell_spine_of_deathwing_blood_corruption_AuraScript::HandleDispel);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_spine_of_deathwing_blood_corruption_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        }
-
-    private:
-        class PlayersCheck
-        {
-        public:
-            PlayersCheck(WorldObject const* obj) : _obj(obj) { }
-            bool operator()(Player* u)
+            void Register()
             {
-                if (!u->isAlive())
-                    return false;
-
-                if (!_obj->IsWithinDistInMap(u, 200.0f))
-                    return false;
-
-                if (u->HasAura(SPELL_BLOOD_CORRUPTION_DEATH) || u->HasAura(SPELL_BLOOD_CORRUPTION_EARTH))
-                    return false;
-
-                if (_obj->GetGUID() == u->GetGUID())
-                    return false;
-
-                return true;
+                AfterDispel += AuraDispelFn(spell_spine_of_deathwing_blood_corruption_AuraScript::HandleDispel);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_spine_of_deathwing_blood_corruption_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
 
         private:
-            WorldObject const* _obj;
-        };
-    };
+            class PlayersCheck
+            {
+                public:
+                    PlayersCheck(WorldObject const* obj) : _obj(obj) {}
+                    bool operator()(Player* u)
+                    {
+                        if (!u->isAlive())
+                            return false;
 
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_spine_of_deathwing_blood_corruption_AuraScript();
-    }
+                        if (u->isGameMaster())
+                            return false;
+
+                        if (!_obj->IsWithinDistInMap(u, 200.0f))
+                            return false;
+
+                        if (u->HasAura(SPELL_BLOOD_CORRUPTION_DEATH) ||
+                            u->HasAura(SPELL_BLOOD_CORRUPTION_EARTH))
+                            return false;
+
+                        if (_obj->GetGUID() == u->GetGUID())
+                            return false;
+
+                        return true;
+                    }
+
+                private:
+                    WorldObject const* _obj;
+            };
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_spine_of_deathwing_blood_corruption_AuraScript();
+        }
 };
 
 class spell_spine_of_deathwing_roll_control : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_roll_control() : SpellScriptLoader("spell_spine_of_deathwing_roll_control") { }
+    public:
+        spell_spine_of_deathwing_roll_control() : SpellScriptLoader("spell_spine_of_deathwing_roll_control") { }
 
-    class spell_spine_of_deathwing_roll_control_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_spine_of_deathwing_roll_control_AuraScript);
-
-        void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+        class spell_spine_of_deathwing_roll_control_AuraScript : public AuraScript
         {
-            if (Unit* owner = GetUnitOwner())
-                owner->Kill(owner);
-        }
+            PrepareAuraScript(spell_spine_of_deathwing_roll_control_AuraScript);
 
-        void Register()
+            void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+            {
+                if (Unit* owner = GetUnitOwner())
+                    owner->Kill(owner);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_spine_of_deathwing_roll_control_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
         {
-            AfterEffectRemove += AuraEffectRemoveFn(spell_spine_of_deathwing_roll_control_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            return new spell_spine_of_deathwing_roll_control_AuraScript();
         }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_spine_of_deathwing_roll_control_AuraScript();
-    }
 };
 
 class spell_spine_of_deathwing_blood_corruption_death : public SpellScriptLoader
 {
-public:
-    spell_spine_of_deathwing_blood_corruption_death() : SpellScriptLoader("spell_spine_of_deathwing_blood_corruption_death") { }
+    public:
+        spell_spine_of_deathwing_blood_corruption_death() : SpellScriptLoader("spell_spine_of_deathwing_blood_corruption_death") { }
 
-    class spell_spine_of_deathwing_blood_corruption_death_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_spine_of_deathwing_blood_corruption_death_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
+        class spell_spine_of_deathwing_blood_corruption_death_SpellScript : public SpellScript
         {
-            if (!GetCaster())
-                return;
+            PrepareSpellScript(spell_spine_of_deathwing_blood_corruption_death_SpellScript);
 
-            if (targets.empty())
-                return;
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (!GetCaster())
+                    return;
 
-            Trinity::Containers::RandomResizeList(targets, 1);
-        }
+                if (targets.empty())
+                    return;
 
-        void Register()
+                Trinity::Containers::RandomResizeList(targets, 1);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_blood_corruption_death_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
         {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spine_of_deathwing_blood_corruption_death_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            return new spell_spine_of_deathwing_blood_corruption_death_SpellScript();
         }
-    };
+};
 
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_spine_of_deathwing_blood_corruption_death_SpellScript();
-    }
+typedef npc_spine_of_deathwing_deathwing::npc_spine_of_deathwing_deathwingAI SpineAI;
+
+class achievement_maybe_he_ll_get_dizzy : public AchievementCriteriaScript
+{
+    public:
+        achievement_maybe_he_ll_get_dizzy() : AchievementCriteriaScript("achievement_maybe_he_ll_get_dizzy") { }
+
+        bool OnCheck(Player* source, Unit* target)
+        {
+            if (!target)
+                return false;
+
+            if (SpineAI* spineAI = CAST_AI(SpineAI, target->GetAI()))
+                return spineAI->AllowAchieve();
+
+            return false;
+        }
 };
 
 class spell_spine_of_deathwing_absorbed_blood_stack : public SpellScriptLoader
@@ -1399,4 +1514,5 @@ void AddSC_spine_of_deathwing()
     new spell_spine_of_deathwing_roll_control();
     new spell_spine_of_deathwing_blood_corruption_death();
     new spell_spine_of_deathwing_absorbed_blood_stack();
+    new achievement_maybe_he_ll_get_dizzy();
 }

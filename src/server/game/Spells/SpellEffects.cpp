@@ -420,6 +420,13 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)                     // better way to check unknown
                 {
+                    case 105408: // Burning Blood dmg, Madness of Deathwing, Dragon Soul
+                        if (m_triggeredByAuraSpell)
+                        {
+                            if (Aura* const aur = m_caster->GetAura(m_triggeredByAuraSpell->Id))
+                                damage *= aur->GetStackAmount();
+                        }
+                        break;
                     // Resonating Crystal dmg, Morchok, Dragon Soul
                     case 103545:
                         if (!unitTarget)
