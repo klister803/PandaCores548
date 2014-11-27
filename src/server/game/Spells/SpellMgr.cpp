@@ -3023,6 +3023,40 @@ void SpellMgr::LoadPetLevelupSpellMap()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u pet levelup and default spells for %u families in %u ms", count, family_count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask, bool nodamage)
+{
+    for(uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+    {
+        if (EffMask && !(EffMask & (1<<effIndex)))
+            continue;
+
+        if (nodamage)
+        switch(spellInfo->Effects[effIndex].Effect)
+        {
+                case SPELL_EFFECT_HEALTH_LEECH:
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    return false;
+        }
+        switch(spellInfo->Effects[effIndex].ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_CONFUSE:
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_FEAR_2:
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_MOD_SILENCE:
+            case SPELL_AURA_TRANSFORM:
+            case SPELL_AURA_MOD_DISARM:
+            case SPELL_AURA_MOD_POSSESS:
+                if(!spellInfo->IsPositiveEffect(effIndex))
+                    return true;
+                break;
+            default: break;
+        }
+    }
+    return false;
+}
+
 bool LoadPetDefaultSpells_helper(CreatureTemplate const* cInfo, PetDefaultSpellsEntry& petDefSpells)
 {
     // skip empty list;
@@ -5355,6 +5389,25 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 107029: // Impale Aspect
                 case 106548:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+                    break;
+                case 105369: // Lightning Conduit dmg
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->AttributesEx8 |= SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER;
+                    break;
+                case 105367: // Lightning Conduit dummy 1
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                    spellInfo->Effects[EFFECT_1].Amplitude = 1000;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 105371: // Lightning Conduit dummy 2
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
                     break;
                 default:
                     break;

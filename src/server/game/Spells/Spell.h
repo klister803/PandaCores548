@@ -104,7 +104,6 @@ struct TargetInfo
     bool   crit:1;
     bool   scaleAura:1;
     int32  damage;
-    SpellNonMeleeDamage damageInfo;
 };
 
 enum WeightType
@@ -465,8 +464,6 @@ class Spell
 
         SpellCastResult CheckCast(bool strict);
         SpellCastResult CheckPetCast(Unit* target);
-
-        static uint32 GetSpellDelay(SpellInfo const* _spell);
 
         // handlers
         void handle_immediate();

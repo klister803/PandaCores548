@@ -1261,9 +1261,6 @@ class npc_dragon_soul_thrall : public CreatureScript
 
             if (InstanceScript* pInstance = pCreature->GetInstanceScript())
             {
-                if (pInstance->GetData(DATA_IS_LFR) && !pInstance->GetData(DATA_IS_FALL_OF_DEATHWING))
-                    return true;
-
                 if (pInstance->GetBossState(DATA_HAGARA) == !DONE)
                     return true;
 

@@ -7476,6 +7476,29 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     return;
                 break;
             }
+            case 107851: // Focused Assault, Hagara, Dragon Soul
+            {    
+                if (caster)
+                    if (Creature* pHagara = caster->ToCreature())
+                        if (Unit* pTarget = pHagara->getVictim())
+                        {
+                            if (!pHagara->GetMap()->IsHeroic())
+                                if (!pHagara->isInFront(pTarget) || !pHagara->IsWithinMeleeRange(pTarget))
+                                {
+                                    GetBase()->Remove();
+                                    return;
+                                }
+
+                            pHagara->CastSpell(pHagara->getVictim(), 107850, true);
+                        }
+                return;
+            }
+            case 105285: // Target, Hagara, Dragon Soul
+            {    
+                if (caster)
+                    caster->CastSpell(target, triggerSpellId, true);
+                return;
+            }
             // The Biggest Egg Ever: Mechachicken's Rocket Barrage Aura Effect
             case 71416:
                 // prock 71419 with this action.

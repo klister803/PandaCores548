@@ -178,7 +178,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , m_unitTypeMask(UNIT_MASK_NONE)
     , m_HostileRefManager(this)
     , LastCharmerGUID(0)
-    , _haveCCDEffect(0)
     , _delayInterruptFlag(0)
     , m_onMount(false)
     , m_castCounter(0)
@@ -4148,12 +4147,6 @@ uint32 Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
 {
     if (!(m_interruptMask & flag))
         return 0;
-
-    if (_haveCCDEffect && flag & (AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
-    {
-        _delayInterruptFlag = flag;
-        return 0;
-    }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RemoveAurasWithInterruptFlags flag %u except %u, m_interruptMask %u", flag, except, m_interruptMask);
 
@@ -16819,6 +16812,14 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         bool active = dmgInfoProc->GetDamage() || (procExtra & PROC_EX_ON_CAST) || (procExtra & PROC_EX_BLOCK && isVictim) || (procExtra & PROC_EX_ABSORB && !isVictim);
         if (isVictim)
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
+
+        if(triggerData.aura->IsUsingCharges())
+        {
+            if((procFlag & SPELL_PROC_FROM_CAST_MASK) && !(procExtra & PROC_EX_ON_CAST))
+                continue;
+        }
+        else if((procFlag & SPELL_PROC_FROM_CAST_MASK) && (procExtra & PROC_EX_ON_CAST))
+            continue;
 
         // only auras that has triggered spell should proc from fully absorbed damage
         SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();

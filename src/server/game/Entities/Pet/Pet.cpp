@@ -658,7 +658,6 @@ void Creature::Regenerate(Powers power)
         {
             float defaultreg = 0.01f * m_petregenTimer;
             addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate: defaultreg %f m_baseMHastRatingPct %f, addvalue %f", defaultreg, m_baseMHastRatingPct, addvalue);
             break;
         }
         default:
