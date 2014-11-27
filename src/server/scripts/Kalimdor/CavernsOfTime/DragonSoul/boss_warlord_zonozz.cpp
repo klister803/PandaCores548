@@ -63,7 +63,6 @@ enum Spells
 
     SPELL_BLOOD_OF_GORATH_DUMMY             = 103932,
     SPELL_BLACK_BLOOD_OF_GORATH             = 104377, // by tentacles
-    SPELL_BLACK_BLOOD_OF_GORATH_25          = 110306,
     SPELL_BLACK_BLOOD_OF_GORATH_SELF        = 104378, // by boss
 
     SPELL_SLUDGE_SPEW                       = 110297,
@@ -176,7 +175,7 @@ class boss_warlord_zonozz: public CreatureScript
                 bAchieve = false;
                 phaseCount = 0;
 
-                instance->DoRemoveAurasDueToSpellOnPlayers(RAID_MODE(SPELL_BLACK_BLOOD_OF_GORATH, SPELL_BLACK_BLOOD_OF_GORATH_25));
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLACK_BLOOD_OF_GORATH);
             }
 
             void MoveInLineOfSight(Unit* who)
@@ -219,7 +218,7 @@ class boss_warlord_zonozz: public CreatureScript
                 events.ScheduleEvent(EVENT_DISRUPTING_SHADOWS, urand(25000, 30000));
                 events.ScheduleEvent(EVENT_VOID_OF_THE_UNMAKING, 5500);
 
-                instance->DoRemoveAurasDueToSpellOnPlayers(RAID_MODE(SPELL_BLACK_BLOOD_OF_GORATH, SPELL_BLACK_BLOOD_OF_GORATH_25));
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLACK_BLOOD_OF_GORATH);
 
                 instance->SetBossState(DATA_ZONOZZ, IN_PROGRESS);
 
@@ -240,7 +239,7 @@ class boss_warlord_zonozz: public CreatureScript
                 Talk(SAY_DEATH);
                 DoCastAOE(SPELL_ZONOZZ_WHISPER_DEATH, true);
 
-                instance->DoRemoveAurasDueToSpellOnPlayers(RAID_MODE(SPELL_BLACK_BLOOD_OF_GORATH, SPELL_BLACK_BLOOD_OF_GORATH_25));
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLACK_BLOOD_OF_GORATH);
             }
 
             void JustSummoned(Creature* summon)
@@ -277,7 +276,7 @@ class boss_warlord_zonozz: public CreatureScript
                     case NPC_EYE_OF_GORATH:
                     case NPC_CLAW_OF_GORATH:
                     case NPC_FLAIL_OF_GORATH:
-                        instance->DoRemoveAuraFromStackOnPlayers(RAID_MODE(SPELL_BLACK_BLOOD_OF_GORATH, SPELL_BLACK_BLOOD_OF_GORATH_25));
+                        instance->DoRemoveAuraFromStackOnPlayers(SPELL_BLACK_BLOOD_OF_GORATH);
                         break;
                     default:
                         break;                            
