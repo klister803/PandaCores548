@@ -2211,7 +2211,6 @@ class Unit : public WorldObject
         uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL, uint32 effectMask = 0);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage,WeaponAttackType attType, SpellInfo const *spellProto = NULL);
 
-        void TriggerCCDEffect(bool enable) { _haveCCDEffect = enable; }
         void SetDelayIterruptFlag(uint32 flag) { _delayInterruptFlag = flag; }
         uint32 GetDelayIterruptFlag() { return _delayInterruptFlag; }
 
@@ -2617,7 +2616,6 @@ class Unit : public WorldObject
         bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
 
         // ccd system
-        bool _haveCCDEffect;
         uint32 _delayInterruptFlag;
 };
 

@@ -2262,16 +2262,6 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
             else
                 m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
             break;
-        case SPELL_DAMAGE_CLASS_RANGED:
-            // Auto attack
-            if (AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG)
-            {
-                m_procAttacker = PROC_FLAG_DONE_RANGED_AUTO_ATTACK;
-                m_procVictim   = PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK;
-            }
-            else // Ranged spell attack
-                m_procVictim   = PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
-            break;
         default:
             if (m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON &&
                 m_spellInfo->EquippedItemSubClassMask & (1<<ITEM_SUBCLASS_WEAPON_WAND)
@@ -2376,9 +2366,6 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     // This is new target calculate data for him
 
-    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
-    SpellNonMeleeDamage damageInfo(caster, target, m_spellInfo->Id, m_spellSchoolMask);
-
     // Get spell hit result on target
     TargetInfo targetInfo;
     targetInfo.targetGUID = targetGUID;                         // Store target GUID
@@ -2388,7 +2375,6 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.damage     = 0;
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
-    targetInfo.damageInfo  = damageInfo;
 
     if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask && m_caster != target)
     {
@@ -2437,8 +2423,44 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         if (m_delayMoment == 0 || m_delayMoment > targetInfo.timeDelay)
             m_delayMoment = targetInfo.timeDelay;
     }
-    // Removing Death Grip cooldown
-    if (m_spellInfo->Id == 90289)
+    else if((m_caster->GetTypeId() == TYPEID_PLAYER || (m_caster->ToCreature() && m_caster->ToCreature()->isPet())) && m_caster != target)
+    {
+        // TimeDelay for crowd control effects
+        if (IsCCSpell(m_spellInfo, 0, false))
+        {
+            targetInfo.timeDelay = 200LL;
+            m_delayMoment = 200LL;
+        }
+        if (!m_spellInfo->IsPositive() && (!_triggeredCastFlags || m_spellInfo->SpellIconID == 156) && m_spellInfo->ExplicitTargetMask != TARGET_FLAG_DEST_LOCATION)
+        {
+            switch(m_spellInfo->Effects[0].Effect)
+            {
+                case SPELL_EFFECT_INTERRUPT_CAST:
+                    break;
+                case SPELL_EFFECT_APPLY_AURA:
+                case SPELL_EFFECT_DISPEL:
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                case SPELL_EFFECT_POWER_BURN:
+                case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                case SPELL_EFFECT_WEAPON_DAMAGE:
+                case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+                {
+                    targetInfo.timeDelay = 200LL;
+                    m_delayMoment = 200LL;
+                }
+                default:
+                    break;
+            }
+            // Shadowstep
+            if (m_spellInfo->Id == 36563)
+            {
+                targetInfo.timeDelay = 100LL;
+                m_delayMoment = 100LL;
+            }
+        }
+    }
+    else if (m_spellInfo->Id == 90289) // Removing Death Grip cooldown
     {
         targetInfo.timeDelay = 100LL;
         m_delayMoment = 100LL;
@@ -2717,7 +2739,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
                 }
                 else
+                {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
+                }
             break;
             case SPELL_DAMAGE_CLASS_NONE:
                 if (positive)
@@ -2725,6 +2750,19 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 else
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
             break;
+            case SPELL_DAMAGE_CLASS_RANGED:
+                // Auto attack
+                if (AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG)
+                {
+                    procAttacker |= PROC_FLAG_DONE_RANGED_AUTO_ATTACK;
+                    procVictim   |= PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK;
+                }
+                else // Ranged spell attack
+                {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
+                    procVictim   |= PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
+                }
+                break;
         }
     }
     CallScriptOnHitHandlers();
@@ -2733,12 +2771,15 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do healing and triggers
     if (m_healing > 0)
     {
+        uint32 addhealth = m_healing;
         if (target->crit)
+        {
             procEx |= PROC_EX_CRITICAL_HIT;
+            addhealth = caster->SpellCriticalHealingBonus(m_spellInfo, addhealth, NULL);
+        }
         else
             procEx |= PROC_EX_NORMAL_HIT;
 
-        int32 addhealth = m_healing;
         int32 gain = caster->HealBySpell(unitTarget, m_spellInfo, addhealth, target->crit);
         unitTarget->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
         m_healing = gain;
@@ -2753,16 +2794,25 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Do damage and triggers
     else if (m_damage > 0)
     {
-        // Send log damage message to client
-        caster->SendSpellNonMeleeDamageLog(&target->damageInfo);
+        // Fill base damage struct (unitTarget - is real spell target)
+        SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
 
-        procEx |= createProcExtendMask(&target->damageInfo, missInfo);
+        // Add bonuses and fill damageInfo struct
+        caster->CalculateSpellDamageTaken(&damageInfo, m_damage, m_spellInfo, mask, m_attackType, target->crit);
+        caster->DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
+
+        m_absorb = damageInfo.absorb;
+
+        // Send log damage message to client
+        caster->SendSpellNonMeleeDamageLog(&damageInfo);
+
+        procEx |= createProcExtendMask(&damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            DamageInfo dmgInfoProc = DamageInfo(target->damageInfo);
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
 
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
             if (caster->GetTypeId() == TYPEID_PLAYER && (AttributesCustom & SPELL_ATTR0_STOP_ATTACK_TARGET) == 0 &&
@@ -2770,11 +2820,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }
 
-        caster->DealSpellDamage(&target->damageInfo, true);
-        m_final_damage = target->damageInfo.damage;
-        m_absorb = target->damageInfo.absorb;
-        m_resist = target->damageInfo.resist;
-        m_blocked = target->damageInfo.blocked;
+         m_damage = damageInfo.damage;
+
+        caster->DealSpellDamage(&damageInfo, true);
+        m_final_damage = damageInfo.damage;
+        m_absorb = damageInfo.absorb;
+        m_resist = damageInfo.resist;
+        m_blocked = damageInfo.blocked;
 
         // Hunter's pet special attacks
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags[0] & 0x00080000)
@@ -3669,10 +3721,8 @@ void Spell::cast(bool skipCheck)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->RemoveSpellMods(this, true);
 
-    uint32 CCDelay = GetSpellDelay(m_spellInfo);
-
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (((m_spellInfo->Speed > 0.0f || CCDelay > 0) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157) || m_spellInfo->Id == 14157)
+    if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 14157)
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -3685,9 +3735,6 @@ void Spell::cast(bool skipCheck)
 
         if (m_caster->HasUnitState(UNIT_STATE_CASTING) && !m_caster->IsNonMeleeSpellCasted(false, false, true))
             m_caster->ClearUnitState(UNIT_STATE_CASTING);
-
-        if (m_targets.GetUnitTarget() && CCDelay)
-            m_targets.GetUnitTarget()->TriggerCCDEffect(true);
     }
     else
     {
@@ -3714,7 +3761,7 @@ void Spell::cast(bool skipCheck)
 
             if(infoTarget)
             {
-                procDamage = infoTarget->damageInfo.damage;
+                procDamage = infoTarget->damage;
                 if (infoTarget->crit)
                     procEx |= PROC_EX_CRITICAL_HIT;
                 else
@@ -3742,20 +3789,26 @@ void Spell::cast(bool skipCheck)
             switch (m_spellInfo->DmgClass)
             {
                 case SPELL_DAMAGE_CLASS_MAGIC:
+                {
                     if (!positive)
                         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
-                break;
+                    break;
+                }
                 case SPELL_DAMAGE_CLASS_NONE:
+                {
                     if (positive)
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
                     else
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                break;
+                    break;
+                }
                 case SPELL_DAMAGE_CLASS_RANGED:
+                {
                     // Auto attack
                     if (!(AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG))
-                        procAttacker = PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
+                        procAttacker |= PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
                     break;
+                }
             }
 
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
@@ -3771,16 +3824,19 @@ void Spell::cast(bool skipCheck)
                     procEx |= PROC_EX_ON_CAST;
             }
 
-            if(infoTarget)
+            if(procAttacker)
             {
-                procEx |= createProcExtendMask(&infoTarget->damageInfo, infoTarget->missCondition);
-                DamageInfo dmgInfoProc = DamageInfo(infoTarget->damageInfo);
-                m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
-            }
-            else
-            {
-                DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
-                m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                if(infoTarget)
+                {
+                    procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
+                    DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                }
+                else
+                {
+                    DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                }
             }
         }
     }
@@ -3867,19 +3923,6 @@ void Spell::handle_immediate()
 
 uint64 Spell::handle_delayed(uint64 t_offset)
 {
-    if (GetSpellDelay(GetSpellInfo()) && m_targets.GetUnitTarget())
-    {
-        Unit* target = m_targets.GetUnitTarget();
-
-        target->TriggerCCDEffect(false);
-
-        if (uint32 interruptFlag = target->GetDelayIterruptFlag())
-        {
-            target->RemoveAurasWithInterruptFlags(interruptFlag);
-            target->SetDelayIterruptFlag(0);
-        }
-    }
-
     UpdatePointers();
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7420,65 +7463,6 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
     return CheckCast(true);
 }
 
-uint32 Spell::GetSpellDelay(SpellInfo const* _spell)
-{
-    // Some hacky ways
-    if (_spell->IsNeedDelayForSpell())
-        return 200;
-
-    // CCD for spell with auras
-    AuraType auraWithCCD[] = {
-        SPELL_AURA_MOD_STUN,
-        SPELL_AURA_MOD_CONFUSE,
-        SPELL_AURA_MOD_FEAR,
-        SPELL_AURA_MOD_FEAR_2,
-        SPELL_AURA_MOD_SILENCE,
-        SPELL_AURA_MOD_DISARM,
-        SPELL_AURA_MOD_POSSESS,
-		SPELL_AURA_MOD_ROOT
-    };
-    uint8 CCDArraySize = 6;
-
-    const uint32 delayForInstantSpells = 80;
-
-    switch(_spell->SpellFamilyName)
-    {
-        case SPELLFAMILY_HUNTER:
-            // Traps
-            if (_spell->SpellFamilyFlags[0] & 0x8 ||      // Frozen trap
-                _spell->Id == 57879 ||                    // Snake Trap
-                _spell->SpellFamilyFlags[2] & 0x00024000) // Explosive and Immolation Trap
-                return 0;
-
-            if (_spell->SpellIconID == 20 ||              // Entrapment
-                _spell->SpellIconID == 127)               // Silencing Shot
-
-                return 0;
-            break;
-        case SPELLFAMILY_DEATHKNIGHT:
-            // Death Grip
-            if (_spell->Id == 49576)
-                return delayForInstantSpells;
-            break;
-        case SPELLFAMILY_ROGUE:
-            // Blind
-            if (_spell->Id == 2094)
-                return delayForInstantSpells;
-            break;
-        case SPELLFAMILY_MAGE:
-            // Hack Burning Determination
-            if (_spell->Id == 54748)
-                return 350;
-            break;
-    }
-
-    for (uint8 i = 0; i < CCDArraySize; ++i)
-        if (_spell->HasAura(auraWithCCD[i]))
-            return delayForInstantSpells;
-
-    return 0;
-}
-
 SpellCastResult Spell::CheckCasterAuras() const
 {
     // spells totally immuned to caster auras (wsg flag drop, give marks etc)
@@ -8715,10 +8699,6 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
     if (!unit)
         return;
 
-    float critChance = 0.0f;
-    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
-    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
-
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (targetInfo.effectMask & (1<<i))
@@ -8776,26 +8756,12 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
                 m_damage = int32(m_damage * m_damageMultipliers[i]);
                 m_damageMultipliers[i] *= multiplier[i];
             }
-
-            if (m_damage > 0)
-            {
-                // Add bonuses and fill damageInfo struct
-                caster->CalculateSpellDamageTaken(&targetInfo.damageInfo, m_damage, m_spellInfo, targetInfo.effectMask, m_attackType, targetInfo.crit);
-                caster->DealDamageMods(unit, targetInfo.damageInfo.damage, &targetInfo.damageInfo.absorb);
-            }
-            else if (m_damage < 0)
-            {
-                if (targetInfo.crit)
-                {
-                    m_healing = -m_damage;
-                    m_healing = caster->SpellCriticalHealingBonus(m_spellInfo, m_healing, NULL);
-                    m_damage = -m_healing;
-                }
-            }
-
             targetInfo.damage += m_damage;
         }
     }
+
+    float critChance = 0.0f;
+    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
 }
 
 SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& skillId, int32& reqSkillValue, int32& skillValue)

@@ -784,7 +784,7 @@ public:
                     me->SummonCreature(NPC_NEFARIAN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN);
                     Creature* Nefarian_cr = me->FindNearestCreature(NPC_NEFARIAN, 150.0f, true);
                     Creature* Onyxia_cr = me->FindNearestCreature(NPC_ONYXIA, 150.0f, true);
-                    if (!Onyxia_cr->isInCombat())
+                    if (Onyxia_cr && Nefarian_cr && !Onyxia_cr->isInCombat())
                     {
                         Nefarian_cr->GetMotionMaster()->Clear();
                         Nefarian_cr->GetMotionMaster()->MovePoint(177, NefarianPositions[4]);

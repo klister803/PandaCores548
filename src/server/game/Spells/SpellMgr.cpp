@@ -3023,6 +3023,40 @@ void SpellMgr::LoadPetLevelupSpellMap()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u pet levelup and default spells for %u families in %u ms", count, family_count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask, bool nodamage)
+{
+    for(uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+    {
+        if (EffMask && !(EffMask & (1<<effIndex)))
+            continue;
+
+        if (nodamage)
+        switch(spellInfo->Effects[effIndex].Effect)
+        {
+                case SPELL_EFFECT_HEALTH_LEECH:
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    return false;
+        }
+        switch(spellInfo->Effects[effIndex].ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_CONFUSE:
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_FEAR_2:
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_MOD_SILENCE:
+            case SPELL_AURA_TRANSFORM:
+            case SPELL_AURA_MOD_DISARM:
+            case SPELL_AURA_MOD_POSSESS:
+                if(!spellInfo->IsPositiveEffect(effIndex))
+                    return true;
+                break;
+            default: break;
+        }
+    }
+    return false;
+}
+
 bool LoadPetDefaultSpells_helper(CreatureTemplate const* cInfo, PetDefaultSpellsEntry& petDefSpells)
 {
     // skip empty list;
