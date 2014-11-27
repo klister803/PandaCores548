@@ -2582,6 +2582,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // Get mask of effects for target
     uint32 mask = target->effectMask;
 
+    // Reset damage/healing counter
+    m_damage = target->damage;
+    m_healing = -target->damage;
+
     Unit* unit = m_caster->GetGUID() == target->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, target->targetGUID);
     if (!unit)
     {
@@ -2639,8 +2643,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     unitTarget = unit;
 
     // Reset damage/healing counter
-    m_damage = target->damage;
-    m_healing = -target->damage;
     m_absorb = 0;
 
     // Fill base trigger info
@@ -2767,8 +2769,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
                 caster->ToPlayer()->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
         }
-
-        m_damage = target->damageInfo.damage;
 
         caster->DealSpellDamage(&target->damageInfo, true);
         m_final_damage = target->damageInfo.damage;
@@ -8786,7 +8786,11 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
             else if (m_damage < 0)
             {
                 if (targetInfo.crit)
+                {
+                    m_healing = -m_damage;
                     m_healing = caster->SpellCriticalHealingBonus(m_spellInfo, m_healing, NULL);
+                    m_damage = -m_healing;
+                }
             }
 
             targetInfo.damage += m_damage;
