@@ -5356,6 +5356,25 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 106548:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
+                case 105369: // Lightning Conduit dmg
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->AttributesEx8 |= SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER;
+                    break;
+                case 105367: // Lightning Conduit dummy 1
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                    spellInfo->Effects[EFFECT_1].Amplitude = 1000;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 105371: // Lightning Conduit dummy 2
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    break;
                 default:
                     break;
             }

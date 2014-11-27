@@ -988,7 +988,7 @@ public:
             me->CastSpell(me, SPELL_UNLEASHED, false);
             me->SetInCombatWithZone();
             if (Creature* amalgam = pInstance->instance->GetCreature(pInstance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
-                me->CastSpell(amalgam, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
+                amalgam->CastSpell(me, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
         }
 
         void JustDied(Unit* killer)
@@ -1070,7 +1070,7 @@ public:
 
             if (Creature* amalgam = instance->instance->GetCreature(instance->GetData64(NPC_AMALGAM_OF_CORRUPTION)))
             {
-                me->CastSpell(amalgam, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
+                amalgam->CastSpell(me, SPELL_UNLEASHED_0_EFFECT_PROCK, false);
                 me->SetFacingToObject(amalgam);
             }
 
