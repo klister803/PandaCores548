@@ -20413,7 +20413,21 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     {
         // initial first
         for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
-            GetBattlePetMgr()->AddPetBattleSlot(0, i);
+        {
+            bool locked = true;
+
+            // additional checks
+            switch (i)
+            {
+                case 0: locked = !HasSpell(119467); break;
+                case 1: locked = !GetAchievementMgr().HasAchieved(7433); break;
+                case 2: locked = !GetAchievementMgr().HasAchieved(6566); break;
+                default: break;
+            }
+
+            GetBattlePetMgr()->AddPetBattleSlot(0, i, locked);
+        }
+
         return;
     }
 
