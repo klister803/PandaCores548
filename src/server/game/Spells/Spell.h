@@ -415,6 +415,7 @@ class Spell
         void EffectTeleportToDigsite(SpellEffIndex effIndex);
         void EffectUncageBattlePet(SpellEffIndex effIndex);
         void EffectUnlockPetBattles(SpellEffIndex effIndex);
+        void EffectHealBattlePetPct(SpellEffIndex effIndex);
         void SendScene(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;

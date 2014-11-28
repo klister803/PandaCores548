@@ -72,6 +72,12 @@ struct PetInfo
     void SetFlag(uint16 _flag) { if (!HasFlag(_flag)) flags |= _flag; }
     void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
     void SetInternalState(uint8 state) { internalState = state; }
+    uint16 GetXP() { return xp; }
+    uint32 GetHealth() { return health; }
+    void SetHealth(uint32 _health) { health = _health; }
+    uint32 GetMaxHealth() { return maxHealth; }
+    bool IsDead() { return health <= 0; }
+    bool IsHurt() { return !IsDead() && health < maxHealth; }
 };
 
 struct PetBattleSlot

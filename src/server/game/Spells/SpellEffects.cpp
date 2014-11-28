@@ -271,7 +271,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //197 SPELL_EFFECT_ACTIVATE_SCENE6
     &Spell::SendScene,                                      //198 SPELL_EFFECT_ACTIVATE_SCENE3 send package
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
-    &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
+    &Spell::EffectHealBattlePetPct,                         //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectUnlockPetBattles,                         //201 SPELL_UNLOCK_PET_BATTLES
     &Spell::EffectNULL,                                     //202 SPELL_EFFECT_APPLY_AURA_WITH_VALUE
     &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras. 145052 possible trigger spell.
@@ -8498,6 +8498,38 @@ void Spell::EffectUnlockPetBattles(SpellEffIndex effIndex)
 
     if (!player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
+}
+
+void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    PetJournal journal = player->GetBattlePetMgr()->GetPetJournal();
+
+    // healed/revived hurt pets
+    for (PetJournal::const_iterator j = journal.begin(); j != journal.end(); ++j)
+    {
+        PetInfo * pet = j->second;
+
+        if (!pet)
+            continue;
+
+        // calc health restore pct
+        int32 healthPct = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(m_caster);
+        if (pet->IsDead() || pet->IsHurt())
+        {
+            pet->SetHealth(uint32(pet->GetMaxHealth() * healthPct / 100.0f));
+            pet->SetInternalState(STATE_UPDATED);
+        }
+    }
+
+    player->GetBattlePetMgr()->SendUpdatePets();
 }
 
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
