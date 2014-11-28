@@ -2655,32 +2655,40 @@ enum eTrainingDummy
     NPC_TARGET_DUMMY                           = 2673
 };
 
+enum sEvents
+{
+    EVENT_CHECK_PLAYERS                        = 1,
+};
+
 class npc_training_dummy : public CreatureScript
 {
-    public:
-        npc_training_dummy() : CreatureScript("npc_training_dummy") { }
+public:
+    npc_training_dummy() : CreatureScript("npc_training_dummy") { }
 
-        struct npc_training_dummyAI : Scripted_NoMovementAI
+    struct npc_training_dummyAI : Scripted_NoMovementAI
+    {
+        npc_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature){}
+
+        EventMap events;
+
+        void Reset()
         {
-            npc_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature)
-            {
-                entry = creature->GetEntry();
-            }
+            events.Reset();
+            me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
+        }
 
-            uint32 entry;
-            uint32 resetTimer;
-            uint32 despawnTimer;
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
 
-            void Reset()
-            {
-                me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
+        void EnterCombat(Unit* /*who*/)
+        {
+            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1500);
+        }
 
-                resetTimer = 5000;
-                despawnTimer = 15000;
-            }
-            
-            void SpellHit(Unit* source, SpellInfo const* spell)
+        void SpellHit(Unit* source, SpellInfo const* spell)
             {
                 if(source)
                 {
@@ -2704,64 +2712,46 @@ class npc_training_dummy : public CreatureScript
                         }
                         default:
                             break;
-                    }          
-                }
-            }
-            
-            void EnterEvadeMode()
-            {
-                if (!_EnterEvadeMode())
-                    return;
-
-                Reset();
-            }
-
-            void DamageTaken(Unit* doneBy, uint32& damage)
-            {
-                resetTimer = 5000;
-                damage = 0;
-            }
-
-            void EnterCombat(Unit* who)
-            {
-                if (entry != NPC_ADVANCED_TARGET_DUMMY && entry != NPC_TARGET_DUMMY)
-                    return;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (!me->HasUnitState(UNIT_STATE_STUNNED))
-                    me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
-
-                if (entry != NPC_ADVANCED_TARGET_DUMMY && entry != NPC_TARGET_DUMMY)
-                {
-                    if (resetTimer <= diff)
-                    {
-                        EnterEvadeMode();
-                        resetTimer = 5000;
                     }
-                    else
-                        resetTimer -= diff;
-                    return;
-                }
-                else
-                {
-                    if (despawnTimer <= diff)
-                        me->DespawnOrUnsummon();
-                    else
-                        despawnTimer -= diff;
                 }
             }
-            void MoveInLineOfSight(Unit* who){return;}
-        };
 
-        CreatureAI* GetAI(Creature* creature) const
+        void UpdateAI(uint32 const diff)
         {
-            return new npc_training_dummyAI(creature);
+            if (!UpdateVictim())
+                return;
+
+            if (!me->HasUnitState(UNIT_STATE_STUNNED))
+                me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_CHECK_PLAYERS)
+                {
+                    std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+                    if (!threatlist.empty())
+                    {
+                        for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
+                        {
+                            if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                            {
+                                if (me->GetDistance(pl) > 40.0f)
+                                    pl->CombatStop(false);
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1500);
+                }
+            }
         }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_training_dummyAI(creature);
+    }
 };
 
 /*######
