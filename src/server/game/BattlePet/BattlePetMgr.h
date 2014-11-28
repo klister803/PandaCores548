@@ -68,7 +68,9 @@ struct PetInfo
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
-    void SetFlags(uint16 _flags) { flags = _flags; }
+    bool HasFlag(uint16 _flag) { return (flags & _flag) != 0; }
+    void SetFlag(uint16 _flag) { if (!HasFlag(_flag)) flags |= _flag; }
+    void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
     void SetInternalState(uint8 state) { internalState = state; }
 };
 

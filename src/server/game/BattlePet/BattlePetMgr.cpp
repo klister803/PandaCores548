@@ -1065,10 +1065,10 @@ void WorldSession::HandleBattlePetModifyName(WorldPacket& recvData)
 void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
 {
     ObjectGuid guid;
-    uint32 type;
-    recvData >> type;                                     // ControlTypes
+    uint32 flags;
+    recvData >> flags;                                       // Flags
     recvData.ReadGuidMask<2, 6, 1, 7, 0>(guid);
-    uint32 flags = recvData.ReadBits(2);                  // Flags
+    uint32 active = recvData.ReadBits(2);                    // ControlTypes?
     recvData.ReadGuidMask<3, 4, 5>(guid);
     recvData.ReadGuidBytes<3, 5, 2, 1, 0, 6, 7, 4>(guid);
 
@@ -1078,10 +1078,10 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
     if (!pet || pet->internalState == STATE_DELETED)
         return;
 
-    // set data (only for testing)
-    // type=1 - flags
-    if (type == 1)
-        pet->SetFlags(flags);
+    if (!active)
+        pet->RemoveFlag(flags);
+    else
+        pet->SetFlag(flags);
 }
 
 void BattlePetMgr::GiveXP()
