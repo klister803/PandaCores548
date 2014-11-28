@@ -2190,7 +2190,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
         {
             if (target && target->isActiveObject() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
-            else if (GetMapId() == 967 && GetAreaId() == 5893) // Dragon Soul - Maelstorm
+            else if (GetMapId() == 967) // Dragon Soul
                 return 500.0f;
             else if (GetMapId() == 754) // Throne of the Four Winds
                 return MAX_VISIBILITY_DISTANCE;
