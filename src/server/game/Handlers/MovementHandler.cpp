@@ -132,6 +132,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     _player->m_movementInfo.pos.m_positionX = loc.m_positionX;
     _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
     _player->m_movementInfo.pos.m_positionZ = loc.m_positionZ;
+    _player->m_movementInfo.pos.m_orientation = loc.m_orientation;
     WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
     _player->GetSession()->SendPacket(&data);
 
@@ -428,6 +429,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         plrMover->m_anti_JumpBaseZ = 0;
         if(!status)
             plrMover->HandleFall(movementInfo);
+    }
+
+    // fall damage for falling
+    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) && plrMover && !plrMover->isInFlight())
+    {
+        plrMover->SendMovementSetCanFly(true);
+        plrMover->SendMovementSetCanFly(false);
     }
 
     if (plrMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())

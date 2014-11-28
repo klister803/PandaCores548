@@ -2732,8 +2732,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTargetFilterMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16            17
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2761,6 +2761,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 procFlags = fields[14].GetInt32();
         int32 procEx = fields[15].GetInt32();
         int32 check_spell_id = fields[16].GetInt32();
+        int32 addptype = fields[17].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2794,6 +2795,7 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.procFlags = procFlags;
         temptrigger.procEx = procEx;
         temptrigger.check_spell_id = check_spell_id;
+        temptrigger.addptype = addptype;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -5041,13 +5043,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break; 
                 case 88764:// Rolling Thunder
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 0;    
-                    break;
-                case 58423:
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[2] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0;
-                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
                     break;
                 case 111397: // Blood Horror
                 case 115191:

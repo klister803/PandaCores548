@@ -489,6 +489,8 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
     m_absorb = 0;
     m_resist = 0;
     m_blocked = 0;
+    m_addpower = 0;
+    m_addptype = -1;
 }
 
 Spell::~Spell()
@@ -2257,6 +2259,7 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
         case SPELL_DAMAGE_CLASS_MELEE:
             m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
             m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
+            m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
             if (m_attackType == OFF_ATTACK)
                 m_procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
             else
@@ -2674,8 +2677,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
     m_spellAura = NULL; // Set aura to null for every target-make sure that pointer is not used for unit without aura applied
 
-                            //Spells with this flag cannot trigger if effect is casted on self
-    bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && unitTarget->CanProc() && CanExecuteTriggersOnHit(mask);
+    //Check can or not triggered
+    bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && unitTarget->CanProc() && CanExecuteTriggersOnHit(mask) && !m_spellInfo->IsPassive() && !(AttributesCustomEx6 & SPELL_ATTR6_CANT_PROC) && !m_CastItem;
     Unit* spellHitTarget = NULL;
 
     if (missInfo == SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
@@ -2715,9 +2718,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
 
     // Trigger info was not filled in spell::preparedatafortriggersystem - we do it now
+    bool positive = true;
     if (canEffectTrigger && !procAttacker && !procVictim)
     {
-        bool positive = true;
         if (m_damage > 0)
             positive = false;
         else if (!m_healing)
@@ -2735,11 +2738,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             case SPELL_DAMAGE_CLASS_MAGIC:
                 if (positive)
                 {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
                 }
                 else
                 {
+                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
                     procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
                 }
@@ -2788,6 +2793,18 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
             DamageInfo dmgInfoProc = DamageInfo(m_caster, unitTarget, addhealth, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+            caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+        }
+    }
+    else if (m_addpower != 0)
+    {
+        // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
+        if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
+        {
+            procEx |= PROC_EX_NORMAL_HIT;
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+            dmgInfoProc.SetAddPower(m_addpower);
+            dmgInfoProc.SetAddPType(m_addptype);
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
         }
     }
@@ -3751,7 +3768,7 @@ void Spell::cast(bool skipCheck)
     if (!procAttacker)
     {
         uint32 mask = 7;
-        bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && procTarget->CanProc() && CanExecuteTriggersOnHit(mask) && !m_spellInfo->IsPassive() && !(m_spellInfo->AttributesEx6 & SPELL_ATTR6_CANT_PROC);
+        bool canEffectTrigger = !(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC) && procTarget->CanProc() && CanExecuteTriggersOnHit(mask) && !m_spellInfo->IsPassive() && !(AttributesCustomEx6 & SPELL_ATTR6_CANT_PROC) && !m_CastItem;
         //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
 
         if(canEffectTrigger)
@@ -3813,7 +3830,7 @@ void Spell::cast(bool skipCheck)
 
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
 
-            if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS) && !m_CastItem)
+            if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
             {
                 if(procAttacker & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
                 {
@@ -4024,7 +4041,10 @@ void Spell::_handle_immediate_phase()
 
     uint32 procAttacker = m_procAttacker;
     if (!procAttacker)
+    {
         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
+        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
+    }
 
     if (m_UniqueTargetInfo.empty())
     {
@@ -4081,6 +4101,12 @@ void Spell::_handle_finish_phase()
                     if (basepoints0)
                         _player->RemoveAura(115189);
                 }
+            }
+            if(uint8 count = m_caster->m_movedPlayer->GetSaveComboPoints())
+            {
+                if (Unit* target = m_targets.GetUnitTarget())
+                    m_caster->m_movedPlayer->AddComboPoints(target, count, this);
+                m_caster->m_movedPlayer->SaveAddComboPoints(-count);
             }
         }
 

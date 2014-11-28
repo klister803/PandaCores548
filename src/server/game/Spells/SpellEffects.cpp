@@ -1553,18 +1553,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                     {
                         int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                        m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                     }
                     else
                     {
                         int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                        m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                     }
                 }
                 else
                 {
                     int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
                 }
                 return;
             }
@@ -1633,18 +1633,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                 {
                     int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                    m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                 }
                 else
                 {
                     int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                 }
             }
             else
             {
                 int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
             }
             return;
         }
@@ -3111,6 +3111,8 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (unitTarget->GetMaxPower(power) == 0)
         return;
 
+    m_addptype = power;
+    m_addpower = damage;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, damage, power);
 
     // Mad Alchemist's Potion
@@ -3183,6 +3185,8 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
         return;
 
     uint32 gain = CalculatePct(maxPower, damage);
+    m_addptype = power;
+    m_addpower = gain;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, gain, power);
 }
 
@@ -5943,8 +5947,10 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
             }
         }
     }
-
-    m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
+    if(m_spellInfo->Id == 139546)
+        m_caster->m_movedPlayer->SaveAddComboPoints(damage);
+    else
+        m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
 }
 
 void Spell::EffectDuel(SpellEffIndex effIndex)

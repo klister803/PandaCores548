@@ -935,6 +935,8 @@ private:
     uint32 m_resist;
     uint32 m_block;
     uint32 m_cleanDamage;
+    int32 m_addpower;
+    int32 m_addptype;
 public:
     explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
@@ -944,6 +946,8 @@ public:
     void AbsorbDamage(int32 amount);
     void ResistDamage(uint32 amount);
     void BlockDamage(uint32 amount);
+    void SetAddPower(int32 amount) { m_addpower = amount; }
+    void SetAddPType(int32 amount) { m_addptype = amount; }
 
     Unit* GetAttacker() const { return m_attacker; };
     Unit* GetVictim() const { return m_victim; };
@@ -956,6 +960,8 @@ public:
     uint32 GetResist() const { return m_resist; };
     uint32 GetBlock() const { return m_block; };
     uint32 GetCleanDamage() const { return m_cleanDamage; };
+    int32 GetAddPower() const { return m_addpower; };
+    int32 GetAddPType() const { return m_addptype; };
 };
 
 class HealInfo

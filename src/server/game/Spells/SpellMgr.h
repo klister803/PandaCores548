@@ -135,6 +135,9 @@ enum SpellTriggeredType
     SPELL_TRIGGER_COMBOPOINT_BP                 = 29,           // set basepoint to bp * combopoints
     SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP          = 30,           // set basepoint to (damage / max hp) * 100
     SPELL_TRIGGER_SUMM_DAMAGE_PROC              = 31,           // summ damage in amount, proc if damage > bp0(1,2) * SPD(SPDH,AP)
+    SPELL_TRIGGER_ADDPOWER_PCT                  = 32,           // set basepoint to spell add power percent from aura amount
+    SPELL_TRIGGER_ADD_ABSORB_PCT                = 33,           // set basepoint from absorb percent
+    SPELL_TRIGGER_ADD_BLOCK_PCT                 = 34,           // set basepoint from block percent
 };
 
 enum SpellAuraDummyType
@@ -211,7 +214,7 @@ enum ProcFlags
     PROC_FLAG_TEST_PROC1                      = 0x08000000,    // 27 Test proc
 
     PROC_FLAG_TEST_PROC2                      = 0x10000000,    // 28 Test proc
-    PROC_FLAG_TEST_PROC3                      = 0x20000000,    // 29 Test proc
+    PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG    = 0x20000000,    // 29 Alway take charges(or stack) and not amount modify by stack, proc flags 10|14|16
 
     PROC_FLAG_TEST_PROC4                      = 0x40000000,    // 30 Test proc
     PROC_FLAG_TEST_PROC5                      = 0x80000000,    // 31 Test proc
@@ -232,7 +235,8 @@ enum ProcFlags
                                                 | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS | PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS
                                                 | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG
                                                 | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS
-                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG,
+                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG
+                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG,
 
     SPELL_CAST_PROC_FLAG_MASK                  = SPELL_PROC_FLAG_MASK | PROC_FLAG_DONE_TRAP_ACTIVATION | RANGED_PROC_FLAG_MASK,
 
@@ -242,7 +246,8 @@ enum ProcFlags
                                                  | PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS | PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS
                                                  | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG
                                                  | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG
-                                                 | PROC_FLAG_DONE_PERIODIC | PROC_FLAG_DONE_MAINHAND_ATTACK | PROC_FLAG_DONE_OFFHAND_ATTACK,
+                                                 | PROC_FLAG_DONE_PERIODIC | PROC_FLAG_DONE_MAINHAND_ATTACK | PROC_FLAG_DONE_OFFHAND_ATTACK
+                                                 | PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG,
 
     TAKEN_HIT_PROC_FLAG_MASK                   = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK | PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK
                                                  | PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS | PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS
@@ -680,6 +685,7 @@ struct SpellTriggered
     int32 procFlags;
     int32 procEx;
     int32 check_spell_id;
+    int32 addptype;
 };
 
 struct SpellMountList
