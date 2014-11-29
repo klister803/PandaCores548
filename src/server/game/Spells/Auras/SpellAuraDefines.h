@@ -440,7 +440,7 @@ enum AuraType
     SPELL_AURA_380                                          = 380,  // 0 auras
     SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT                = 381,
     SPELL_AURA_MOD_PET_STATS_MODIFIER                       = 382,
-    SPELL_AURA_383                                          = 383,  // aura to ignore some spells cd? (Incarnation, Ascendance, Relentless Grip)
+    SPELL_AURA_IGNORE_CD                                    = 383,  // aura to ignore some spells cd? (Incarnation, Ascendance, Relentless Grip)
     SPELL_AURA_384                                          = 384,  // 0 auras
     SPELL_AURA_STRIKE_SELF                                  = 385,  // Give a chance to misfire attacks and hit self instead
     SPELL_AURA_MOD_REST_GAINED                              = 386,

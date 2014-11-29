@@ -1995,6 +1995,28 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         }
     }
 
+    if (victim && victim->ToPlayer() && victim->getClass() == CLASS_PALADIN)
+    {
+        if (victim->HasAura(498))
+        {
+            if(Aura* aura = victim->GetAura(144580)) //Item - Paladin T16 Protection 2P Bonus
+                aura->GetEffect(0)->SetAmount(aura->GetEffect(0)->GetAmount() + dmgInfo.GetDamage());
+            if(Aura* aura = victim->GetAura(138244))
+            {
+                int32 _damage = dmgInfo.GetDamage();
+                int32 _amount = aura->GetEffect(0)->GetAmount();
+                int32 _hpperc = victim->CountPctFromMaxHealth(20);
+                if((_damage + _amount) >= _hpperc) //Item - Paladin T15 Protection 4P Bonus
+                {
+                    victim->CastSpell(victim, 138248, true);
+                    aura->GetEffect(0)->SetAmount(int32((_damage + _amount) - _hpperc));
+                }
+                else
+                    aura->GetEffect(0)->SetAmount(_amount + _damage);
+            }
+        }
+    }
+
     *resist = dmgInfo.GetResist();
     *absorb = dmgInfo.GetAbsorb();
 }
@@ -8262,6 +8284,25 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 145394:  // Item - Shaman T16 Restoration 4P Heal Trigger
+                {
+                    if(!procSpell || !victim || victim == this || !procSpell->CalcCastTime())
+                        return false;
+
+                    Unit* pPet = NULL;
+                    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr) // Find Spirit Champion
+                        if ((*itr)->GetEntry() == 72473)
+                        {
+                            pPet = *itr;
+                            break;
+                        }
+
+                    if (pPet)
+                        pPet->CastSpell(victim, procSpell->Id, true);
+                    else
+                        return false;
+                    break;
+                }
                 case 51558:  // Ancestral Awakening
                 {
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -8422,6 +8463,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     // apply cooldown before cast to prevent processing itself
                     if (G3D::fuzzyGt(cooldown, 0.0))
                         player->AddSpellCooldown(dummySpell->Id, 0, getPreciseTime() + cooldown);
+
+                    if (HasAura(138141)) //Item - Shaman T15 Enhancement 4P Bonus
+                        player->ModifySpellCooldown(51533, -8000);
 
                     // Attack Twice
                     for (uint32 i = 0; i < 3; ++i)
@@ -10105,6 +10149,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
     // dummy basepoints or other customs
     switch (trigger_spell_id)
     {
+        case 144999: // Всплеск стихий
+        case 145180: // Empowered Shadows
+        {
+            basepoints0 = triggerAmount;
+            break;
+        }
         // Auras which should proc on area aura source (caster in this case):
         // Cast positive spell on enemy target
         case 7099:  // Curse of Mending
@@ -16654,6 +16704,7 @@ bool InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2] = true;
     isTriggerAura[SPELL_AURA_MOD_HEALING_RECEIVED] = true;
+    isTriggerAura[SPELL_AURA_IGNORE_CD] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN] = true;
     isNonTriggerAura[SPELL_AURA_REDUCE_PUSHBACK] = true;
@@ -17040,6 +17091,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                     }
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
+                    case SPELL_AURA_IGNORE_CD:
                     {
                         if (!triggeredByAura->IsAffectingSpell(procSpell) && !triggeredByAura->IsAffectingSpell(procAura))
                             break;
@@ -18073,10 +18125,14 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             if (!(itr->effectmask & (1<<effIndex)))
                 continue;
 
-            if (itr->procFlags && !(itr->procFlags & procFlag))
+            if (itr->procFlags > 0 && !(itr->procFlags & procFlag))
+                continue;
+            else if (itr->procFlags < 0 && (abs(itr->procFlags) & procFlag))
                 continue;
 
-            if (itr->procEx && !(itr->procEx & procEx))
+            if (itr->procEx > 0 && !(itr->procEx & procEx))
+                continue;
+            else if (itr->procEx < 0 && (abs(itr->procEx) & procEx))
                 continue;
 
             if(itr->addptype != -1 && itr->addptype != addpowertype)
@@ -19003,8 +19059,10 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
         if(check)
             return true;
+        else
+            return false;
     }
-    return false;
+    return true;
 }
 
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)

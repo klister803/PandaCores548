@@ -6409,7 +6409,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         {
             if (m_triggeredByAuraSpell)
                 return SPELL_FAILED_DONT_REPORT;
-            else
+            else if(!m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_IGNORE_CD, m_spellInfo))
                 return SPELL_FAILED_NOT_READY;
         }
 
@@ -6428,7 +6428,8 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     // Check global cooldown
     if (strict && !(_triggeredCastFlags & TRIGGERED_IGNORE_GCD) && HasGlobalCooldown())
-        return SPELL_FAILED_NOT_READY;
+        if(!m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_IGNORE_CD, m_spellInfo))
+            return SPELL_FAILED_NOT_READY;
 
     // only triggered spells can be processed an ended battleground
     if (!IsTriggered() && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7484,7 +7485,8 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
     // cooldown
     if (Creature const* creatureCaster = m_caster->ToCreature())
         if (creatureCaster->HasSpellCooldown(m_spellInfo->Id))
-            return SPELL_FAILED_NOT_READY;
+            if(!m_caster->HasAuraTypeWithAffectMask(SPELL_AURA_IGNORE_CD, m_spellInfo))
+                return SPELL_FAILED_NOT_READY;
 
     return CheckCast(true);
 }
@@ -7790,6 +7792,9 @@ SpellCastResult Spell::CheckPower()
         if (powerType == POWER_HOLY_POWER)
             if (Player* player = m_caster->ToPlayer())
                 m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
+
+            if (Player* modOwner = m_caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
     }
     else if (!GetSpellInfo()->NoPower())
     {

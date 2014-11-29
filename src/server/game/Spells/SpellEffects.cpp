@@ -843,6 +843,16 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 break;
             }
             case 51505:  // Lava Burst
+            {
+                if (m_caster->HasAura(138144)) // Item - Shaman T15 Elemental 4P Bonus
+                    if(Player* player = m_caster->ToPlayer())
+                        player->ModifySpellCooldown(114049, -1000);
+
+                if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                        AddPct(m_damage, eff->GetAmount());
+                break;
+            }
             case 77451:  // Lava Burst (Mastery)
             {
                 if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))

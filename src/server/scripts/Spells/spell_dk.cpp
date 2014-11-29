@@ -1854,9 +1854,9 @@ class spell_dk_death_grip_dummy : public SpellScriptLoader
                 if (Unit* target = GetHitUnit())
                 {
                     if(target->IsWithinMeleeRange(caster))
-                        caster->CastSpell(target, 51399, true);
+                        caster->CastSpell(target, 51399, false);
                     else
-                        caster->CastSpell(target, 49560, true);
+                        caster->CastSpell(target, 49560, false);
                 }
             }
 

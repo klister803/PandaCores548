@@ -440,7 +440,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNoImmediateEffect,                         //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT implemented in Guardian::UpdateMaxHealth
     &AuraEffect::HandleAuraModPetStatsModifier,                   //382 SPELL_AURA_MOD_PET_STATS_MODIFIER
-    &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
+    &AuraEffect::HandleNoImmediateEffect,                         //383 SPELL_AURA_IGNORE_CD implemented in Spell::CheckCast
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
     &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_MOD_REST_GAINED

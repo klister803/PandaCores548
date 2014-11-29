@@ -869,8 +869,10 @@ class spell_sha_fulmination : public SpellScriptLoader
                 {
                     int32 basePoints = caster->CalculateSpellDamage(target, spellInfo, 0);
                     int32 damage = int32((usedCharges - 1) * caster->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, EFFECT_0));
+                    if(Aura* aura = caster->GetAura(144998)) // Item - Shaman T16 Elemental 2P Bonus
+                        aura->GetEffect(0)->SetAmount(4 * usedCharges);
 
-                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, true);
+                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, false);
                     lightningShield->SetCharges(lsCharges - usedCharges);
 
                     caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
@@ -1702,6 +1704,42 @@ class spell_sha_maelstrom_weapon : public SpellScriptLoader
         }
 };
 
+// Earth Shield - 379
+class spell_sha_earth_shield : public SpellScriptLoader
+{
+    public:
+        spell_sha_earth_shield() : SpellScriptLoader("spell_sha_earth_shield") { }
+
+        class spell_sha_earth_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_earth_shield_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = GetHitHeal() * 3;
+                        if (caster->HasAura(145378)) //Item - Shaman T16 Restoration 2P Bonus
+                            target->CastCustomSpell(target, 145379, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_earth_shield_SpellScript::HandleOnHit);
+            }
+
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_earth_shield_SpellScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_resurgence();
@@ -1737,4 +1775,5 @@ void AddSC_shaman_spell_scripts()
     new spell_shaman_totemic_projection();
     new spell_sha_ancestral_vigor();
     new spell_sha_maelstrom_weapon();
+    new spell_sha_earth_shield();
 }

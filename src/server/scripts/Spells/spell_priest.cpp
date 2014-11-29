@@ -940,6 +940,9 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                         {
                             int32 currentPower = _player->GetPower(POWER_SHADOW_ORB) + 1; // Don't forget PowerCost
 
+                            if(Aura* aura = _player->GetAura(145179)) // Item - Priest T16 Shadow 4P Bonus
+                                aura->GetEffect(0)->SetAmount(20 * currentPower);
+
                             _player->ModifyPower(POWER_SHADOW_ORB, -currentPower, true);
                             // Shadow Orb visual
                             if (_player->HasAura(77487))
