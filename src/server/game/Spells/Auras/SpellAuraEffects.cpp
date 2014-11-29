@@ -7876,7 +7876,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
             resist -= damage;
         }
-        if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+        if(GetBase()->m_aura_amount && damage && GetTotalTicks())
         {
             int32 auraDamage = int32(damage / GetTotalTicks());
             if(GetBase()->m_aura_amount > auraDamage)
@@ -7978,7 +7978,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
         int32 gain = caster->HealBySpell(caster, GetSpellInfo(), heal);
         caster->getHostileRefManager().threatAssist(caster, gain * 0.5f, GetSpellInfo());
     }
-    if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+    if(GetBase()->m_aura_amount && damage && GetTotalTicks())
     {
         int32 auraDamage = int32(damage / GetTotalTicks());
         if(GetBase()->m_aura_amount > auraDamage)
@@ -8132,7 +8132,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
     caster->CalcHealAbsorb(target, GetSpellInfo(), heal, absorb);
     int32 gain = caster->DealHeal(target, heal, GetSpellInfo());
 
-    if(GetBase()->m_aura_amount && heal && GetBase()->GetMaxDuration() != -1)
+    if(GetBase()->m_aura_amount && heal && GetTotalTicks())
     {
         int32 auraDamage = int32(heal / GetTotalTicks());
         if(GetBase()->m_aura_amount > auraDamage)

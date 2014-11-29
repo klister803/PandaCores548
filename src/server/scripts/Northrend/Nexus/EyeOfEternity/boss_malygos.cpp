@@ -1621,8 +1621,11 @@ public:
                         _events.ScheduleEvent(EVENT_ANNOUNCE_ENERGY, 500);
                         break;
                     case EVENT_ANNOUNCE_ENERGY:
-                        bool ru = _summoner->GetSession()->GetSessionDbLocaleIndex() == LOCALE_ruRU;
-                        _summoner->GetSession()->SendNotification(ru ? "Энергия: %u" : "Energy: %u", me->GetPower(POWER_ENERGY));
+                        if(_summoner && _summoner->GetSession())
+                        {
+                            bool ru = _summoner->GetSession()->GetSessionDbLocaleIndex() == LOCALE_ruRU;
+                            _summoner->GetSession()->SendNotification(ru ? "Энергия: %u" : "Energy: %u", me->GetPower(POWER_ENERGY));
+                        }
                         _events.ScheduleEvent(EVENT_ANNOUNCE_ENERGY, 500);
                         break;
                 }
