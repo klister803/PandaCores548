@@ -4405,7 +4405,19 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                         if (!petguid)
                         {
                             petguid = sObjectMgr->GenerateBattlePetGuid();
-                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
+                            // generate stats
+                            // breedID, quality must be generated!
+                            // level, depends of pet source
+                            uint16 breedID = 5;
+                            uint8 quality = 3;
+                            uint8 level = 11;
+                            BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(petguid, spEntry->ID, breedID);
+                            accumulator->GetQualityMultiplier(quality, level);
+                            uint32 health = accumulator->CalculateHealth();
+                            uint32 power = accumulator->CalculatePower();
+                            uint32 speed = accumulator->CalculateSpeed();
+                            delete accumulator;
+                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, spellInfo->Id, "", breedID);
                         }
                     }
                 }

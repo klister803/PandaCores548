@@ -30,6 +30,11 @@ DB2Storage <ItemCurrencyCostEntry> sItemCurrencyCostStore(ItemCurrencyCostfmt);
 DB2Storage <ItemExtendedCostEntry> sItemExtendedCostStore(ItemExtendedCostEntryfmt);
 DB2Storage <ItemSparseEntry> sItemSparseStore (ItemSparsefmt);
 DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryfmt);
+DB2Storage <BattlePetSpeciesStateEntry> sBattlePetSpeciesStateStore(BattlePetSpeciesStateEntryfmt);
+DB2Storage <BattlePetSpeciesXAbilityEntry> sBattlePetSpeciesXAbilityStore(BattlePetSpeciesXAbilityEntryfmt);
+DB2Storage <BattlePetStateEntry> sBattlePetStateStore(BattlePetStateEntryfmt);
+DB2Storage <BattlePetBreedQualityEntry> sBattlePetBreedQualityStore(BattlePetBreedQualityEntryfmt);
+DB2Storage <BattlePetBreedStateEntry> sBattlePetBreedStateStore(BattlePetBreedStateEntryfmt);
 DB2Storage <QuestPackageItem> sQuestPackageItemStore(QuestPackageItemfmt);
 DB2Storage <SpellReagentsEntry> sSpellReagentsStore(SpellReagentsEntryfmt);
 DB2Storage <ItemUpgradeEntry> sItemUpgradeStore(ItemUpgradeEntryfmt);
@@ -102,6 +107,7 @@ void LoadDB2Stores(const std::string& dataPath)
 
     StoreProblemList1 bad_db2_files;
 
+    Sleep(10000);
     LoadDB2(bad_db2_files, sBattlePetSpeciesStore,  db2Path, "BattlePetSpecies.db2");
     for (uint32 i = 0; i < sBattlePetSpeciesStore.GetNumRows(); ++i)
     {
@@ -115,6 +121,11 @@ void LoadDB2Stores(const std::string& dataPath)
 
         sBattlePetSpeciesBySpellId[entry->CreatureEntry] = entry;
     }
+    LoadDB2(bad_db2_files, sBattlePetSpeciesStateStore,  db2Path, "BattlePetSpeciesState.db2");
+    LoadDB2(bad_db2_files, sBattlePetSpeciesXAbilityStore,  db2Path, "BattlePetSpeciesXAbility.db2");
+    LoadDB2(bad_db2_files, sBattlePetStateStore,  db2Path, "BattlePetState.db2");
+    LoadDB2(bad_db2_files, sBattlePetBreedQualityStore,  db2Path, "BattlePetBreedQuality.db2");
+    LoadDB2(bad_db2_files, sBattlePetBreedStateStore,  db2Path, "BattlePetBreedState.db2");
     LoadDB2(bad_db2_files, sItemStore,              db2Path, "Item.db2");
     LoadDB2(bad_db2_files, sItemCurrencyCostStore,  db2Path, "ItemCurrencyCost.db2");
     LoadDB2(bad_db2_files, sItemSparseStore,        db2Path, "Item-sparse.db2");

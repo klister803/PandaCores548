@@ -162,7 +162,7 @@ struct ItemExtendedCostEntry
     }
 };
 
-struct BattlePetAbility
+struct BattlePetAbilityEntry
 {
     uint32 ID;                  // 0
     uint32 Type;                // 1
@@ -174,7 +174,7 @@ struct BattlePetAbility
     //string description        // 7
 };
 
-struct BattlePetAbilityEffect
+struct BattlePetAbilityEffectEntry
 {
     uint32 ID;                  // 0
     uint32 AbilityID;           // 1
@@ -190,7 +190,7 @@ struct BattlePetAbilityEffect
     //uint32 unk;               // 11
 };
 
-struct BattlePetAbilityState
+struct BattlePetAbilityStateEntry
 {
     uint32 EffectID;            // 0
     uint32 AbilityID;           // 1
@@ -198,12 +198,12 @@ struct BattlePetAbilityState
     //uint32 unk;               // 3
 };
 
-struct BattlePetState
+struct BattlePetStateEntry
 {
     uint32 ID;                  // 0
     //uint32 unk;               // 1
-    //string name;              // 2
-    //uint32 unk;               // 3
+    char* stateName;            // 2
+    uint32 flags;               // 3
 };
 
 struct BattlePetSpeciesEntry
@@ -217,6 +217,38 @@ struct BattlePetSpeciesEntry
     uint32 flags;               // 6
     //string                    // 7
     //string                    // 8
+};
+
+struct BattlePetSpeciesStateEntry
+{
+    uint32 ID;
+    uint32 speciesID;
+    uint32 stateID;
+    int32 stateModifier;
+};
+
+struct BattlePetSpeciesXAbilityEntry
+{
+    uint32 ID;
+    uint32 speciesID;
+    uint32 abilityID;
+    uint32 requiredLevel;
+    uint32 rank;
+};
+
+struct BattlePetBreedQualityEntry
+{
+    uint32 ID;
+    uint32 quality;
+    float qualityModifier;
+};
+
+struct BattlePetBreedStateEntry
+{
+    uint32 ID;
+    uint32 breedID;
+    uint32 stateID;
+    int32 stateModifier;
 };
 
 struct QuestPackageItem

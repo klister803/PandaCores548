@@ -95,6 +95,67 @@ struct PetBattleSlot
     void SetLocked(bool val) { locked = val; }
 };
 
+struct BattlePetStatAccumulator
+{
+    BattlePetStatAccumulator(uint64 _guid, uint32 _healthMod, uint32 _powerMod, uint32 _speedMod): guid(_guid), healthMod(_healthMod), powerMod(_powerMod), speedMod(_speedMod), qualityMultiplier(0.0f) {}
+
+    uint64 guid;
+    int32 healthMod;
+    int32 powerMod;
+    int32 speedMod;
+    float qualityMultiplier;
+
+    int32 CalculateHealth()
+    {
+        // float conversion
+        healthMod /= 10.0f;
+        return int32((5.0f * healthMod * qualityMultiplier) + 100.0f + /*(unkDword16 * qualityMultiplier)*/ 0.5f);
+    }
+    int32 CalculateSpeed()
+    {
+        // float conversion
+        speedMod /= 10.0f;
+        return int32((/*(speed * unkDword32 * 0.01f) +*/ speedMod * qualityMultiplier) + 0.5f);
+    }
+    int32 CalculatePower()
+    {
+        // float conversion
+        powerMod /= 10.0f;
+        return int32((powerMod * qualityMultiplier) + 0.5f);
+    }
+    void GetQualityMultiplier(uint8 quality, uint8 level)    
+    {
+        for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
+        {
+            BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
+
+            if (!qEntry)
+                continue;
+
+            if (qEntry->quality == quality)
+                qualityMultiplier = level * 0.01f * qEntry->qualityModifier;
+        }
+    }
+    void Accumulate(uint32 stateID, int32 value)
+    {
+        BattlePetStateEntry const* state = sBattlePetStateStore.LookupEntry(stateID);
+
+        if (!state)
+            return;
+
+        if (state->flags & 0x4)
+            speedMod += value;
+        /*else if (state->flags & 0x200)
+            unkDword32 += value;*/
+        /*else if (state->flags & 0x10)
+            unkDword16 += value;*/
+        else if (state->flags & 0x20)
+            healthMod += value;
+        else if (state->flags & 0x100)
+            powerMod += value;
+    }
+};
+
 typedef std::map<uint64, PetInfo*> PetJournal;
 
 enum BattlePetFlags
@@ -156,6 +217,10 @@ public:
     void SendUpdatePets();
 
     void GiveXP();
+
+    // generate stat functions (need rewrite in future)
+    BattlePetStatAccumulator* InitStateValuesFromDB(uint64 guid, uint32 speciesID, uint16 breedID);
+    float GetQualityMultiplier(uint8 quality, uint8 level);
 
     Player* GetPlayer() const { return m_player; }
     PetInfo* GetPetInfoByPetGUID(uint64 guid)

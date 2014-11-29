@@ -94,7 +94,7 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         PetBattleSlot * slot = GetPetBattleSlot(i);
 
         data->WriteBit(!i);                                          // hasSlotIndex
-        data->WriteBit(1);                                           // hasCollarID
+        data->WriteBit(1);                                           // hasCollarID, inverse
         data->WriteBit(slot ? !slot->IsEmpty() : 1);                 // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot ? slot->petGUID : 0);  // pet guid in slot
         data->WriteBit(slot ? slot->locked : 1);                    // locked slot
@@ -1082,6 +1082,35 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
         pet->RemoveFlag(flags);
     else
         pet->SetFlag(flags);
+}
+
+BattlePetStatAccumulator* BattlePetMgr::InitStateValuesFromDB(uint64 guid, uint32 speciesID, uint16 breedID)
+{
+    BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(guid, 0, 0, 0);
+
+    for (uint32 i = 334; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesStateEntry const* entry = sBattlePetSpeciesStateStore.LookupEntry(i);
+
+        if (!entry)
+            continue;
+
+        if (entry->speciesID == speciesID)
+            accumulator->Accumulate(entry->stateID, entry->stateModifier);
+    }
+
+    for (uint32 i = 0; i < sBattlePetBreedStateStore.GetNumRows(); ++i)
+    {
+        BattlePetBreedStateEntry const* entry1 = sBattlePetBreedStateStore.LookupEntry(i);
+
+        if (!entry1)
+            continue;
+
+        if (entry1->breedID == breedID)
+            accumulator->Accumulate(entry1->stateID, entry1->stateModifier);
+    }
+
+    return accumulator;
 }
 
 void BattlePetMgr::GiveXP()
