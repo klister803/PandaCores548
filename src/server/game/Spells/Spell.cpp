@@ -7791,10 +7791,11 @@ SpellCastResult Spell::CheckPower()
 
         if (powerType == POWER_HOLY_POWER)
             if (Player* player = m_caster->ToPlayer())
+            {
                 m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
-
-            if (Player* modOwner = m_caster->GetSpellModOwner())
-                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
+                if (Player* modOwner = m_caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
+            }
     }
     else if (!GetSpellInfo()->NoPower())
     {
