@@ -19059,10 +19059,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             ToPlayer()->AddSpellCooldown(cooldown_spell_id, 0, getPreciseTime() + cooldown);
         if(check)
             return true;
-        else
-            return false;
     }
-    return true;
+    return false;
 }
 
 bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect)
