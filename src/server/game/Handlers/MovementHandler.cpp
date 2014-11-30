@@ -431,13 +431,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             plrMover->HandleFall(movementInfo);
     }
 
-    // fall damage for falling
-    if (plrMover && plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) && !movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING) && plrMover && !plrMover->isInFlight())
-    {
-        plrMover->SendMovementSetCanFly(true);
-        plrMover->SendMovementSetCanFly(false);
-    }
-
     if (plrMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())
     {
         // now client not include swimming flag in case jumping under water
