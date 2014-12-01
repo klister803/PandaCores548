@@ -42,7 +42,7 @@
 #include "Item.h"
 #include "BattlePetMgr.h"
 
-BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner)
+BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner), m_petBattleWild(NULL)
 {
     m_PetJournal.clear();
     memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_ACTIVE_PETS);
@@ -468,15 +468,29 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         recvData.read_skip<uint8>();
 
     // skip other action - trap, forfeit, skip turn, etc....
-    if (!abilityID && !bit6)
+    if (!abilityID)
         return;
 
-    // finish
-    if (bit6 && endGame == 4)
-    {
-        _player->GetBattlePetMgr()->SendClosePetBattle();
+    PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild();
+
+    if (!petBattle)
         return;
-    }
+
+    int8 state = -1;
+    if (bit6 && endGame == 4)
+        _player->GetBattlePetMgr()->SendClosePetBattle();
+    else
+        petBattle->CalculateRoundData(state, roundID);
+
+    if (state == -1)
+        return;
+
+    petBattle->RoundResults();
+
+    if (state)
+        petBattle->FinalRound();
+
+    return;
 
     WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
     data.WriteBit(0);
@@ -1202,6 +1216,7 @@ void PetBattleWild::FirstRound()
         for (uint8 j = 0; j < 1; ++j) // 25bits
         {
             data.WriteBit(0);
+            // action number?
             data.WriteBits(3, 3);
         }
 
@@ -1225,4 +1240,139 @@ void PetBattleWild::FirstRound()
     data << uint8(2); // NextPetBattleState?
 
     m_player->GetSession()->SendPacket(&data);
+}
+
+void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
+{
+    PetInfo* allyPet = pets[0];
+    PetInfo* enemyPet = pets[1];
+
+    if (!allyPet || !enemyPet)
+    {
+        state = -1;
+        return;
+    }
+
+    // Player 1 - calc ability damage (random!!)
+    uint32 damage = urand(10, 44);
+    // some level depends
+    damage *= allyPet->level;
+
+    enemyPet->health -= damage;
+
+    // Player 2 - calc ability damage (random!!)
+    damage = urand(10, 44);
+    damage *= enemyPet->level;
+
+    allyPet->health -= damage;
+
+    if (allyPet->health <= 0 || enemyPet->health <= 0)
+        state = 1;
+    else
+        state = 0;
+
+    roundID = _roundID;
+}
+
+void PetBattleWild::RoundResults()
+{
+    // increase round
+    roundID++;
+
+    WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
+    data.WriteBit(0);
+    // cooldowns count
+    data.WriteBits(0, 20);
+    // effects count
+    data.WriteBits(4, 22);
+    // 2 effects - SetHealth and 2 - unk, maybe for scene playback
+    uint8 bit[4] = {0, 0, 1, 1};
+    uint8 bit1[4] = {1, 1, 0, 0};
+    uint8 bit2[4] = {0, 0, 1, 1};
+    uint8 bit3[4] = {0, 0, 1, 1};
+    uint8 bit4[4] = {0, 0, 1, 1};
+    uint8 bit5[4] = {0, 0, 1, 1};
+    uint8 bit6[4] = {0, 0, 1, 1};
+    uint8 bit7[4] = {1, 1, 1, 1};
+    uint8 actNumbers[4] = {6, 6, 3, 3};
+    for (uint8 i = 0; i < 4; ++i)
+    {
+        data.WriteBit(bit[i]);
+        data.WriteBit(bit1[i]);
+        data.WriteBit(bit2[i]);
+        data.WriteBit(bit3[i]);
+        data.WriteBit(bit4[i]);
+        data.WriteBit(bit5[i]);
+
+        // effect target count
+        data.WriteBits(1, 25);
+
+        for (uint8 j = 0; j < 1; ++j)
+        {
+            data.WriteBits(actNumbers[i], 3);
+
+            if (actNumbers[i] == 6)
+                data.WriteBit(0);              // !hasSetHealth
+
+            data.WriteBit(bit6[i]);
+        }
+
+        data.WriteBit(bit7[i]);
+    }
+
+    // unk count
+    data.WriteBits(0, 3);
+
+    // cooldowns
+    //
+
+    for (uint8 i = 0; i < 4; ++i)
+    {
+        if (!bit3[i])
+            data << uint16(!i ? 1 : 2);
+
+        for (uint8 j = 0; j < 1; ++j)
+        {
+            if (!bit6[i])
+                data << uint8(!i ? 3 : 0); // target?
+
+            if (actNumbers[i] == 6)
+                data << uint32(pets[i]->health);  // remainingHealth
+        }
+
+        if (!bit2[i])
+            data << uint16(4096); // Flags
+
+        if (!bit7[i])
+            data << uint16(0);    // unk
+
+        if (!bit[i])
+            data << uint8(!i ? 0 : 3);     // unk
+
+        if (!bit4[i])
+            data << uint8(1);     // unk
+
+        if (!bit5[i])
+            data << uint32(!i ? 281 : 769); // effectID
+
+        if (!bit1[i])
+            data << uint8((i == 2) ? 13 : 14);
+    }
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        data << uint8(0);  // NextTrapStatus
+        data << uint16(0); // RoundTimeSecs
+        data << uint8(2);  // NextInputFlags
+    }
+
+    data << uint32(roundID);
+    data << uint8(2); // NextPetBattleState?
+
+    m_player->GetSession()->SendPacket(&data);
+}
+
+void PetBattleWild::FinalRound()
+{
+    WorldPacket data(SMSG_PET_BATTLE_FINAL_ROUND);
 }

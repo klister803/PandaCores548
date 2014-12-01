@@ -40,7 +40,7 @@ enum PetInternalStates
 
 struct PetInfo
 {
-    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, uint32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, uint8 state) :
+    PetInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, int32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, uint8 state) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
         health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), internalState(state) {}
 
@@ -50,7 +50,7 @@ struct PetInfo
     uint32 displayID;
     uint16 power;
     uint16 speed;
-    uint32 health;
+    int32 health;
     uint32 maxHealth;
     uint8 quality;
     uint16 xp;
@@ -69,8 +69,8 @@ struct PetInfo
     void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
     void SetInternalState(uint8 state) { internalState = state; }
     uint16 GetXP() { return xp; }
-    uint32 GetHealth() { return health; }
-    void SetHealth(uint32 _health) { health = _health; }
+    int32 GetHealth() { return health; }
+    void SetHealth(int32 _health) { health = _health; }
     uint32 GetMaxHealth() { return maxHealth; }
     bool IsDead() { return health <= 0; }
     bool IsHurt() { return !IsDead() && health < maxHealth; }
@@ -197,6 +197,11 @@ public:
     PetBattleWild(Player* owner);
     void Prepare(ObjectGuid creatureGuid);
     void FirstRound();
+    void RoundResults();
+    void FinalRound();
+    void FinishPetBattle();
+
+    void CalculateRoundData(int8 &state, uint32 _roundID);
 
 private:
     Player* m_player;
