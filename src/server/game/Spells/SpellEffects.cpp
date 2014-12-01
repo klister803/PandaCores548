@@ -2977,6 +2977,11 @@ void Spell::EffectCreateRandomItem(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
     Player* player = unitTarget->ToPlayer();
+    
+    uint32 item_id = m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType;
+
+    if (item_id)
+        DoCreateItem(effIndex, item_id);
 
     // create some random items
     player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
