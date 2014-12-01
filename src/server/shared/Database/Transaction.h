@@ -30,6 +30,9 @@ class Transaction
     friend class MySQLConnection;
     friend class DatabaseWokerPool;
 
+    template <typename T>
+    friend class DatabaseWorkerPool;
+
     public:
         Transaction() : _cleanedUp(false) {}
         ~Transaction() { Cleanup(); }

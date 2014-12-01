@@ -251,6 +251,11 @@ class Field
             return data.length;
         }
 
+        bool IsNull() const
+        {
+            return data.value == NULL;
+        }
+
     protected:
         Field();
         ~Field();

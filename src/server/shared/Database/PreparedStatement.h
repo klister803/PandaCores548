@@ -90,6 +90,7 @@ class PreparedStatement
         void setDouble(const uint8 index, const double value);
         void setString(const uint8 index, const std::string& value);
         void setBinary(const uint8 index, const std::vector<uint8>& value);
+        void setNull(const uint8 index);
 
     protected:
         void BindParameters();
@@ -124,6 +125,7 @@ class MySQLPreparedStatement
         void setFloat(const uint8 index, const float value);
         void setDouble(const uint8 index, const double value);
         void setBinary(const uint8 index, const std::vector<uint8>& value, bool isString);
+        void setNull(const uint8 index);
 
     protected:
         MYSQL_STMT* GetSTMT() { return m_Mstmt; }
@@ -131,7 +133,7 @@ class MySQLPreparedStatement
         PreparedStatement* m_stmt;
         void ClearParameters();
         bool CheckValidIndex(uint8 index);
-        std::string getQueryString(const char *query);
+        std::string getQueryString(std::string const &sqlPattern) const;
 
     private:
         void setValue(MYSQL_BIND* param, enum_field_types type, const void* value, uint32 len, bool isUnsigned);
