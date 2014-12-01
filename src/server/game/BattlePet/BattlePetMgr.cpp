@@ -414,6 +414,9 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     data << _player->GetOrientation();
     data << uint32(locationResult);
     SendPacket(&data);
+
+    // send full update and start pet battle
+    _player->GetBattlePetMgr()->InitWildBattle(_player, guid);
 }
 
 void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
@@ -423,164 +426,18 @@ void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
 
     if (PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild())
         petBattle->FirstRound();
-
-    /*WorldPacket data(SMSG_BATTLE_PET_FIRST_ROUND);
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            data << uint16(0);
-            data << uint8(2);
-            data << uint8(0);
-        }
-
-        data << uint32(0);
-        data.WriteBits(0, 3);
-        data.WriteBit(0);
-        data.WriteBits(2, 22);
-
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            data.WriteBit(0);
-            data.WriteBit(1);
-            data.WriteBit(1);
-            data.WriteBits(1, 25);
-
-            data.WriteBit(1);
-
-            // for bits25
-            data.WriteBit(0);
-            data.WriteBits(3, 3);
-            //
-
-            data.WriteBit(1);
-            data.WriteBit(1);
-            data.WriteBit(0);
-        }
-
-        data.WriteBits(0, 20);
-
-        // for
-        data << uint8(0); //0
-        data << uint8(0); //0 0
-        data << uint8(4); //0
-
-        data << uint8(3); //1
-        data << uint8(3); //1 0
-        data << uint8(4); //1
-        //
-        data << uint8(2);
-        /*for (uint8 i = 0; i < 2; ++i)
-        {
-            data << uint16(0);
-            data << uint8(2);
-            data << uint8(0);
-        }
-        data << uint32(0);
-        data.WriteBits(0, 3);
-        data.WriteBit(0);
-        data.WriteBits(4, 22);            // effect count
-        uint32 bit[4] = {1, 1, 0, 0};
-        uint32 bit1[4] = {1, 1, 1, 1};
-        uint32 bit2[4] = {0, 0, 1, 1};
-        uint32 bits25[4] = {1, 1, 1, 1};
-        uint32 bit3[4] = {0, 0, 1, 1};
-        //
-        uint32 bit4[4] = {0, 0, 1, 1};
-        uint32 bit5[4] = {0, 0, 1, 1};
-        uint32 bit6[4] = {0, 0, 1, 1};
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            data.WriteBit(bit[i]);
-            data.WriteBit(bit1[i]);
-            data.WriteBit(bit2[i]);
-            data.WriteBits(bits25[i], 25);
-            data.WriteBit(bit3[i]);
-
-            for (uint8 j = 0; j < 1; ++j)
-            {
-                if (i == 0 || i == 1)
-                    data.WriteBit(0);
-                else
-                    data.WriteBit(1);
-
-                if (i == 0 || i == 1)
-                    data.WriteBits(6, 3);
-                else
-                    data.WriteBits(3, 3);
-
-                if (i == 0 || i == 1)
-                    data.WriteBit(0);
-            }
-
-            data.WriteBit(bit4[i]);
-            data.WriteBit(bit5[i]);
-            data.WriteBit(bit6[i]);
-        }
-
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            if (!bit1[i])
-                data << uint16(0);
-
-            for (uint8 j = 0; j < 1; ++j)
-            {
-                if (i == 0)
-                    data << uint32(58);
-                else if (i == 1)
-                    data << uint32(30);
-
-                if (i == 0)
-                    data << uint8(0);
-                else if (i == 1)
-                    data << uint8(3);
-            }
-
-            if (!bit3[i])
-            {
-                if (i == 0)
-                    data << uint16(1);
-                else if (i == 1)
-                    data << uint16(2);
-            }
-
-            if (!bit2[i])
-                data << uint32(379);
-
-            if (!bit6[i])
-            {
-                if (i == 0)
-                    data << uint8(3);
-                else if (i == 1)
-                    data << uint8(0);
-            }
-
-            if (!bit5[i])
-                data << uint8(1);
-
-            if (!bit4[i])
-                data << uint32(4096);
-
-            if (!bit[i])
-            {
-                if (i == 2)
-                    data << uint8(13);
-                else if (i == 3)
-                    data << uint8(14);
-            }
-        }
-        data << uint8(2);
-        SendPacket(&data);*/
 }
 
 void WorldSession::HandlePetBattleRequestUpdate(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<6, 2, 3, 7, 0, 4>(guid);
-    recvData.ReadBit();                                       // Cancelled
+    recvData.ReadBit();                                       // unk
     recvData.ReadGuidMask<5, 1>(guid);
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
 
-    // send full update
-    _player->GetBattlePetMgr()->InitWildBattle(_player, guid);
+    // send full update? wrong packet?
+    //_player->GetBattlePetMgr()->InitWildBattle(_player, guid);
 }
 
 void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
