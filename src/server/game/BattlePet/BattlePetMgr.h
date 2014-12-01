@@ -29,10 +29,6 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
-class PetBattle
-{
-};
-
 #define MAX_ACTIVE_PETS 3
 
 enum PetInternalStates
@@ -97,9 +93,9 @@ struct PetBattleSlot
 
 struct BattlePetStatAccumulator
 {
-    BattlePetStatAccumulator(uint64 _guid, uint32 _healthMod, uint32 _powerMod, uint32 _speedMod): guid(_guid), healthMod(_healthMod), powerMod(_powerMod), speedMod(_speedMod), qualityMultiplier(0.0f) {}
+    BattlePetStatAccumulator(uint32 _healthMod, uint32 _powerMod, uint32 _speedMod): healthMod(_healthMod), powerMod(_powerMod), speedMod(_speedMod), qualityMultiplier(0.0f) {}
 
-    uint64 guid;
+    //uint64 guid;
     int32 healthMod;
     int32 powerMod;
     int32 speedMod;
@@ -195,6 +191,24 @@ enum BattlePetSpeciesSource
     SOURCE_NOT_AVALIABLE   = 0xFFFFFFFF,
 };
 
+class PetBattleWild
+{
+public:
+    PetBattleWild(Player* owner);
+    void Prepare(ObjectGuid creatureGuid);
+    void FirstRound();
+
+private:
+    Player* m_player;
+
+protected:
+    PetInfo* pets[2];
+    PetBattleSlot* battleslots[2];
+    uint64 guids[2];
+    uint32 roundID;
+
+};
+
 class BattlePetMgr
 {
 public:
@@ -216,10 +230,10 @@ public:
     void SendClosePetBattle();
     void SendUpdatePets();
 
-    void GiveXP();
+    void InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid);
 
     // generate stat functions (need rewrite in future)
-    BattlePetStatAccumulator* InitStateValuesFromDB(uint64 guid, uint32 speciesID, uint16 breedID);
+    BattlePetStatAccumulator* InitStateValuesFromDB(uint32 speciesID, uint16 breedID);
     float GetQualityMultiplier(uint8 quality, uint8 level);
 
     Player* GetPlayer() const { return m_player; }
@@ -279,10 +293,24 @@ public:
 
     PetBattleSlot* GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
 
+    ObjectGuid InverseGuid(ObjectGuid guid)
+    {
+        return ((guid & 0x00000000000000FF) << 56) | ((guid & 0x000000000000FF00) << 40) | ((guid & 0x0000000000FF0000) << 24) | ((guid & 0x00000000FF000000) <<  8) |
+        ((guid & 0x000000FF00000000) >>  8) | ((guid & 0x0000FF0000000000) >> 24) | ((guid & 0x00FF000000000000) >> 40) | ((guid & 0xFF00000000000000) >> 56);
+    }
+
+    PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
+
 private:
     Player* m_player;
     PetJournal m_PetJournal;
     PetBattleSlot* m_battleSlots[MAX_ACTIVE_PETS];
+    PetBattleWild* m_petBattleWild;
 };
+
+/*struct PetBattlePlayerUpdate
+{
+    PetInfo pets[MAX_ACTIVE_PETS];
+};*/
 
 #endif
