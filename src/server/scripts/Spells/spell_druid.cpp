@@ -3214,63 +3214,6 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
         }
 };
 
-//Efflorescence - 81269
-class spell_dru_efflorescence : public SpellScriptLoader
-{
-    public:
-        spell_dru_efflorescence() : SpellScriptLoader("spell_dru_efflorescence") { }
-
-        class spell_dru_efflorescence_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_efflorescence_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty())
-                {
-                    targets.push_back(GetCaster());
-                    return;
-                }
-
-                if (targets.size() > 3)
-                    targets.sort(CheckHealthState());
-
-                if(targets.size() > 3)
-                    targets.resize(3);
-                if (targets.empty())
-                    targets.push_back(GetCaster());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_efflorescence_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
-            }
-        private:
-
-            class CheckHealthState
-            {
-                public:
-                    CheckHealthState() { }
-
-                    bool operator() (WorldObject* a, WorldObject* b) const
-                    {
-                        Unit* unita = a->ToUnit();
-                        Unit* unitb = b->ToUnit();
-                        if(!unita)
-                            return true;
-                        if(!unitb)
-                            return false;
-                        return unita->GetHealthPct() < unitb->GetHealthPct();
-                    }
-            };
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_efflorescence_SpellScript();
-        }
-};
-
 //Genesis - 145518
 class spell_dru_genesis : public SpellScriptLoader
 {
@@ -3488,7 +3431,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_spell_dru_tooth_and_claw_absorb();
     new spell_dru_healing_ouch();
     new spell_dru_wild_mushroom_heal();
-    new spell_dru_efflorescence();
     new spell_dru_genesis();
     new spell_dru_glyph_of_hurricane();
     new spell_dru_efflorescence_dumy();
