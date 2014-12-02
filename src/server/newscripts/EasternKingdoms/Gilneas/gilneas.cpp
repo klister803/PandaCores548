@@ -791,82 +791,6 @@ public:
     };
 };
 
-//Phase 4
-/*######
-## npc_bloodfang_worgen
-######*/
-
-class npc_bloodfang_worgen : public CreatureScript
-{
-public:
-    npc_bloodfang_worgen() : CreatureScript("npc_bloodfang_worgen") {}
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_bloodfang_worgenAI (creature);
-    }
-
-    struct npc_bloodfang_worgenAI : public ScriptedAI
-    {
-        npc_bloodfang_worgenAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 tEnrage, tSeek;
-        bool willCastEnrage;
-
-        void Reset()
-        {
-            tEnrage           = 0;
-            willCastEnrage    = urand(0, 1);
-            tSeek             = 100; // On initial loading, we should find our target rather quickly
-        }
-
-        void DamageTaken(Unit* who, uint32& damage)
-        {
-            if (who->GetTypeId() == TYPEID_PLAYER)
-            {
-                me->getThreatManager().resetAllAggro();
-                who->AddThreat(me, 1.0f);
-                me->AddThreat(who, 1.0f);
-                me->AI()->AttackStart(who);
-            }
-            else if (who->isPet())
-            {
-                me->getThreatManager().resetAllAggro();
-                me->AddThreat(who, 1.0f);
-                me->AI()->AttackStart(who);
-            }
-            else if (me->HealthBelowPct(AI_MIN_HP) && who->GetEntry() == NPC_GILNEAN_ROYAL_GUARD || who->GetEntry() == NPC_SERGEANT_CLEESE || who->GetEntry() == NPC_MYRIAM_SPELLWALKER)
-                damage = 0;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (tSeek <= diff)
-            {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
-                    if (Creature* enemy = me->FindNearestCreature(NPC_SERGEANT_CLEESE || NPC_GILNEAN_ROYAL_GUARD, 10.0f, true))
-                        me->AI()->AttackStart(enemy);
-                tSeek = urand(1000, 2000); //optimize cpu load, seeking only sometime between 1 and 2 seconds
-            }
-            else tSeek -= diff;
-
-            if (!UpdateVictim())
-                return;
-
-            if (tEnrage <= diff && willCastEnrage && me->GetHealthPct() <= 30)
-            {
-                me->MonsterTextEmote(-106, 0);
-                DoCast(me, SPELL_ENRAGE);
-                tEnrage = CD_ENRAGE;
-            }
-            else
-                tEnrage -= diff;
-
-            DoMeleeAttackIfReady();
-        }
-    };
-};
-
 /*######
 ## npc_sergeant_cleese
 ######*/
@@ -3149,7 +3073,6 @@ void AddSC_gilneas()
     new npc_rampaging_worgen2();
     new go_merchant_square_door();
     new npc_sergeant_cleese();
-    new npc_bloodfang_worgen();
     new npc_frightened_citizen();
     new npc_gilnean_royal_guard();
     new npc_mariam_spellwalker();

@@ -322,56 +322,6 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         }
 };
 
-// Pestilence - 50842
-class spell_dk_pestilence : public SpellScriptLoader
-{
-    public:
-        spell_dk_pestilence() : SpellScriptLoader("spell_dk_pestilence") { }
-
-        class spell_dk_pestilence_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_pestilence_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            bool blood = false;
-
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_BLOOD || _player->GetCurrentRune(i) == RUNE_DEATH && blood != true)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    blood = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_dk_pestilence_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_pestilence_SpellScript();
-        }
-};
-
 // Blood Strike - 45902
 class spell_dk_blood_strike : public SpellScriptLoader
 {
@@ -888,34 +838,6 @@ class spell_dk_death_siphon : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dk_death_siphon_SpellScript();
-        }
-};
-
-// Improved Blood Presence - 50371
-class spell_dk_improved_blood_presence : public SpellScriptLoader
-{
-    public:
-        spell_dk_improved_blood_presence() : SpellScriptLoader("spell_dk_improved_blood_presence") { }
-
-        class spell_dk_improved_blood_presence_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_improved_blood_presence_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->UpdateAllRunesRegen();
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_dk_improved_blood_presence_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_improved_blood_presence_SpellScript();
         }
 };
 
@@ -2253,7 +2175,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();
-    new spell_dk_pestilence();
     new spell_dk_blood_strike();
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
@@ -2265,7 +2186,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_blood_charges();
     new spell_dk_blood_tap();
     new spell_dk_death_siphon();
-    new spell_dk_improved_blood_presence();
     new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();

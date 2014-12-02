@@ -1018,41 +1018,6 @@ public:
     };
 };
 
-class spell_nefarian_tail_lash : public SpellScriptLoader
-{
-public:
-    spell_nefarian_tail_lash() : SpellScriptLoader("spell_nefarian_tail_lash") { }
-
-    class spell_nefarian_tail_lash_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_nefarian_tail_lash_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
-        {
-            if (targets.empty())
-                return;
-
-            if (Unit* owner = GetCaster())
-                targets.remove(owner);
-
-            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
-                if (!(*itr)->isInBack(GetCaster(), 2.5f))
-                    targets.remove((*itr));
-        }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_nefarian_tail_lash_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_nefarian_tail_lash_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_CONE_ENEMY_104);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_nefarian_tail_lash_SpellScript();
-    }
-};
-
 class spell_onyxia_lightning_discharge : public SpellScriptLoader
 {
 public:
@@ -1096,7 +1061,6 @@ void AddSC_boss_bwd_nefarian()
     //new npc_shadowflame_flashfire();
     new npc_shadowblaze();
 
-    new spell_nefarian_tail_lash();
     new spell_onyxia_lightning_discharge();
 }
 

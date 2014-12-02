@@ -1669,71 +1669,6 @@ class spell_dru_faerie_swarm : public SpellScriptLoader
         }
 };
 
-// Wild Mushroom - 88747
-class spell_dru_wild_mushroom : public SpellScriptLoader
-{
-    public:
-        spell_dru_wild_mushroom() : SpellScriptLoader("spell_dru_wild_mushroom") { }
-
-        class spell_dru_wild_mushroom_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_wild_mushroom_SpellScript)
-
-            void HandleSummon(SpellEffIndex effIndex)
-            {
-                if (Player* player = GetCaster()->ToPlayer())
-                {
-                    PreventHitDefaultEffect(effIndex);
-
-                    const SpellInfo* spell = GetSpellInfo();
-                    std::list<Creature*> tempList;
-                    std::list<Creature*> mushroomlist;
-
-                    player->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 500.0f);
-
-                    mushroomlist = tempList;
-
-                    // Remove other players mushrooms
-                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                    {
-                        Unit* owner = (*i)->GetOwner();
-                        if (owner && owner == player && (*i)->isSummon())
-                            continue;
-
-                        mushroomlist.remove((*i));
-                    }
-
-                    // 3 mushrooms max
-                    if ((int32)mushroomlist.size() >= spell->Effects[effIndex].BasePoints)
-                        mushroomlist.back()->ToTempSummon()->UnSummon();
-
-                    Position pos;
-                    GetExplTargetDest()->GetPosition(&pos);
-                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
-                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
-                    if (!summon)
-                        return;
-
-                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
-                    summon->setFaction(player->getFaction());
-                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                    summon->SetMaxHealth(5);
-                    summon->CastSpell(summon, DRUID_SPELL_MUSHROOM_BIRTH_VISUAL, true); // Wild Mushroom : Detonate Birth Visual
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_dru_wild_mushroom_SpellScript::HandleSummon, EFFECT_1, SPELL_EFFECT_SUMMON);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_wild_mushroom_SpellScript();
-        }
-};
-
 // Wild Mushroom : Detonate - 88751
 class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 {
@@ -3521,7 +3456,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
-    new spell_dru_wild_mushroom();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();

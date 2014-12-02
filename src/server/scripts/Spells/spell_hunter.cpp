@@ -1348,88 +1348,6 @@ class spell_hun_masters_call : public SpellScriptLoader
         }
 };
 
-// Readiness - 23989
-class spell_hun_readiness : public SpellScriptLoader
-{
-    public:
-        spell_hun_readiness() : SpellScriptLoader("spell_hun_readiness") { }
-
-        class spell_hun_readiness_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_readiness_SpellScript);
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Player* caster = GetCaster()->ToPlayer();
-                // immediately finishes the cooldown on your other Hunter abilities except Bestial Wrath
-                const SpellCooldowns& cm = caster->ToPlayer()->GetSpellCooldownMap();
-                for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-
-                    ///! If spellId in cooldown map isn't valid, the above will return a null pointer.
-                    if (spellInfo &&
-                        spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
-                        spellInfo->Id != HUNTER_SPELL_READINESS &&
-                        spellInfo->GetRecoveryTime() > 0)
-                        caster->RemoveSpellCooldown((itr++)->first, true);
-                    else
-                        ++itr;
-                }
-
-                if (caster->HasSpellCooldown(HUNTER_SPELL_DIRE_BEAST))
-                    caster->RemoveSpellCooldown(HUNTER_SPELL_DIRE_BEAST, true);
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Readiness
-                OnEffectHitTarget += SpellEffectFn(spell_hun_readiness_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_readiness_SpellScript();
-        }
-};
-
-// Scatter Shot - 37506
-class spell_hun_scatter_shot : public SpellScriptLoader
-{
-    public:
-        spell_hun_scatter_shot() : SpellScriptLoader("spell_hun_scatter_shot") { }
-
-        class spell_hun_scatter_shot_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_scatter_shot_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Player* caster = GetCaster()->ToPlayer();
-                // break Auto Shot and autohit
-                caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-                caster->AttackStop();
-                caster->SendAttackSwingResult(ATTACK_SWING_ERROR_CANT_ATTACK);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_hun_scatter_shot_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_scatter_shot_SpellScript();
-        }
-};
-
 // 53302, 53303, 53304 Sniper Training
 enum eSniperTrainingSpells
 {
@@ -2038,44 +1956,6 @@ class spell_hun_t16_2p_bonus : public SpellScriptLoader
         }
 };
 
-// 16827, 17253, 49966 Based pets spells - checking distance target in ROOT state
-class spell_hun_pet_dist_check : public SpellScriptLoader
-{
-    public:
-        spell_hun_pet_dist_check() : SpellScriptLoader("spell_hun_pet_dist_check") { }
-
-        class spell_hun_pet_dist_check_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_pet_dist_check_SpellScript);
-
-            SpellCastResult CheckCastMeet()
-            {                              
-                Unit* caster = GetCaster();
-                Unit* target = caster->getVictim();
-                
-                if (!caster || !target)
-                    return SPELL_CAST_OK;
-                
-                if (!caster->IsWithinDist(target, 5.0f, true) && caster->HasUnitState(UNIT_STATE_ROOT))
-                {
-                    return SPELL_FAILED_DONT_REPORT;
-                }
-                
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_hun_pet_dist_check_SpellScript::CheckCastMeet);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_pet_dist_check_SpellScript();
-        }
-};
-
 class spell_hun_ice_trap : public SpellScriptLoader
 {
     public:
@@ -2138,8 +2018,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_chimera_shot();
     new spell_hun_last_stand_pet();
     new spell_hun_masters_call();
-    new spell_hun_readiness();
-    new spell_hun_scatter_shot();
     new spell_hun_sniper_training();
     new spell_hun_pet_heart_of_the_phoenix();
     new spell_hun_pet_carrion_feeder();
@@ -2153,6 +2031,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
-    new spell_hun_pet_dist_check();
     new spell_hun_ice_trap();
 }

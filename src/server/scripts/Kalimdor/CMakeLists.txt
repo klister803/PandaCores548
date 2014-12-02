@@ -75,7 +75,6 @@ set(scripts_STAT_SRCS
   Kalimdor/CavernsOfTime/EndTime/boss_echo_of_sylvanas.cpp
   Kalimdor/CavernsOfTime/EndTime/boss_echo_of_jaina.cpp
   Kalimdor/CavernsOfTime/EndTime/boss_murozond.cpp
-  Kalimdor/CavernsOfTime/EndTime/end_time_teleport.cpp
   Kalimdor/CavernsOfTime/EndTime/instance_end_time.cpp
   Kalimdor/CavernsOfTime/EndTime/end_time.cpp
   Kalimdor/CavernsOfTime/EndTime/end_time.h
@@ -172,7 +171,6 @@ set(scripts_STAT_SRCS
   Kalimdor/OnyxiasLair/boss_onyxia.cpp
   Kalimdor/OnyxiasLair/onyxias_lair.h
   Kalimdor/OnyxiasLair/instance_onyxias_lair.cpp
-  Kalimdor/southern_barrens.cpp
   Kalimdor/ThroneOfTheFourWinds/instance_throne_of_the_four_winds.cpp
   Kalimdor/ThroneOfTheFourWinds/boss_alakir.cpp
   Kalimdor/ThroneOfTheFourWinds/boss_conclave_of_wind.cpp

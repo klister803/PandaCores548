@@ -1275,69 +1275,6 @@ class npc_living_meteor : public CreatureScript
         }
 };
 
-class npc_ragnarog_lava : public CreatureScript
-{
-public:
-    npc_ragnarog_lava() : CreatureScript("npc_ragnarog_lava") { }
-
-    struct npc_ragnarog_lavaAI : public ScriptedAI
-    {
-        npc_ragnarog_lavaAI(Creature* creature) : ScriptedAI(creature) {}
-
-        void Reset()
-        {
-            me->SetReactState(REACT_PASSIVE);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            events.Reset();
-            me->SetCanFly(true);
-        }
-
-        void MovementInform(uint32 type, uint32 id)
-        {
-            if (type == POINT_MOTION_TYPE)
-            {
-                switch (id)
-                {
-                    case POINT_RAGNAROS_UP:
-                        events.ScheduleEvent(EVENT_LAVA_DOWN, 15000);
-                        break;
-                }
-            }
-        }
-
-        void SpellHit(Unit* Hitter, const SpellInfo* Spell)
-        {
-            if (Spell->Id == 99503)
-            {
-                me->GetMotionMaster()->MovePoint(POINT_RAGNAROS_UP, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+8);
-            }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    case EVENT_LAVA_DOWN:
-                        me->GetMotionMaster()->MovePoint(POINT_RAGNAROS_DOWN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()-8);
-                        break;
-                }
-            }
-        }
-
-        private:
-            EventMap events;
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_ragnarog_lavaAI (creature);
-    }
-};
-
 class spell_splitting_blow : public SpellScriptLoader
 {
 public:
@@ -1479,7 +1416,6 @@ void AddSC_boss_ragnaros_firelands()
     new npc_sulfuras_hammer();
     new npc_son_of_flame();
     new npc_living_meteor();
-    new npc_ragnarog_lava();
     new spell_splitting_blow();
     new spell_boss_molten_inferno();
     new spell_boss_raise_lava();
