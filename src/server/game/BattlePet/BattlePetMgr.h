@@ -103,20 +103,14 @@ struct BattlePetStatAccumulator
 
     int32 CalculateHealth()
     {
-        // float conversion
-        healthMod /= 10.0f;
         return int32((5.0f * healthMod * qualityMultiplier) + 100.0f + /*(unkDword16 * qualityMultiplier)*/ 0.5f);
     }
     int32 CalculateSpeed()
     {
-        // float conversion
-        speedMod /= 10.0f;
         return int32((/*(speed * unkDword32 * 0.01f) +*/ speedMod * qualityMultiplier) + 0.5f);
     }
     int32 CalculatePower()
     {
-        // float conversion
-        powerMod /= 10.0f;
         return int32((powerMod * qualityMultiplier) + 0.5f);
     }
     void GetQualityMultiplier(uint8 quality, uint8 level)    
