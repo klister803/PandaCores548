@@ -200,8 +200,10 @@ public:
     void RoundResults();
     void FinalRound();
     void FinishPetBattle();
+    uint16 RewardXP(bool winner, bool& levelUp);
 
     void CalculateRoundData(int8 &state, uint32 _roundID);
+    PetInfo* GetAllyPet() { return pets[0]; }
 
 private:
     Player* m_player;
@@ -232,7 +234,7 @@ public:
     void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, uint8 state = STATE_NORMAL);
     void AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked = true);
 
-    void SendClosePetBattle();
+    void ClosePetBattle();
     void SendUpdatePets();
 
     void InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid);

@@ -468,7 +468,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         recvData.read_skip<uint8>();
 
     // skip other action - trap, forfeit, skip turn, etc....
-    if (!abilityID)
+    if (!abilityID && endGame != 4)
         return;
 
     PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild();
@@ -477,8 +477,12 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         return;
 
     int8 state = -1;
-    if (bit6 && endGame == 4)
-        _player->GetBattlePetMgr()->SendClosePetBattle();
+    if (endGame == 4)
+    {
+        petBattle->FinishPetBattle();
+        _player->GetBattlePetMgr()->ClosePetBattle();
+        return;
+    }
     else
         petBattle->CalculateRoundData(state, roundID);
 
@@ -489,348 +493,34 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
 
     if (state)
         petBattle->FinalRound();
-
-    return;
-
-    WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
-    data.WriteBit(0);
-    data.WriteBits(0, 20);
-    data.WriteBits(4, 22);
-    // 0
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBits(1, 25);
-    data.WriteBits(6, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    // 1
-    /*data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBits(1, 25);
-    data.WriteBits(0, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(1);*/
-    // 2
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBits(1, 25);
-    data.WriteBits(6, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    // 3
-    /*data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBits(1, 25);
-    data.WriteBits(4, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);*/
-    // 4
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBits(1, 25);
-    data.WriteBits(3, 3);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    // 5
-    /*data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBits(1, 25);
-    data.WriteBits(0, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);*/
-    // 6
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    data.WriteBits(1, 25);
-    data.WriteBits(3, 3);
-    data.WriteBit(1);
-    data.WriteBit(1);
-    // 7
-    /*data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);
-    data.WriteBits(1, 25);
-    data.WriteBits(1, 3);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(1);*/
-
-    data.WriteBits(0, 3);
-
-    uint32 remHp1 = 250;
-    uint32 remHp2 = 250;
-
-    uint32 winner = 2;
-
-    // test calc damage - 2 round battle ended
-    if (roundID == 0)
-    {
-        remHp1 = 250 - urand(50, 95);
-        remHp2 = 250 - urand(50, 95);
-    }
-    else if (roundID == 1)
-    {
-        // roll winner
-        winner = urand(0, 1);
-
-        if (winner)
-        {
-            remHp2 = -2;
-            remHp1 = 34;
-        }
-        else
-        {
-            remHp2 = 35;
-            remHp1 = -1;
-        }
-    }
-
-    // 0
-    uint16 val7 = 1;       // opponent index
-    uint8 val18 = 3;       // target ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    uint32 val9 = 2;       // remaining health
-    uint16 val10 = 4100;   // attack flags
-    uint8 val11 = 0;       // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    uint8 val12 = 1;
-    uint32 val13 = 281;    // effect ID
-    data << uint16(val7);  // opponent index
-    data << uint8(val18);  // target ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    data << int32(remHp1);  // remaining health
-    data << uint16(val10); // attack flags
-    data << uint8(val11);  // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    data << uint8(val12);
-    data << uint32(val13); // effect ID
-    // 1
-    /*uint16 val8 = 1;
-    uint8 val = 0;
-    uint8 val1 = 3;
-    uint8 val2 = 1;
-    uint8 val3 = 2;
-    uint32 val4 = 239;
-    uint32 val5 = 1;
-    uint32 val6 = -1;
-    uint32 val7 = 379;
-    data << uint16(val8);
-    data << uint8(val);
-    data << uint32(val4);
-    data << uint32(val5);
-    data << uint32(val6);
-    data << uint8(val1);
-    data << uint8(val2);
-    data << uint32(val7);
-    data << uint8(val3);*/
-    // 2
-    uint16 val = 2;      // opponent index
-    uint8 val1 = 0;      // target ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    uint32 val2 = 30;    // remaining health
-    uint16 val3 = 4096;  // attack flags
-    uint8 val4 = 3;      // attacker ID (0,1,2 - 1 opponent | 3,4,5 - 2 opponent)
-    uint8 val5 = 1;
-    uint32 val6 = 769;   // effect ID
-    data << uint16(val);
-    data << uint8(val1);
-    data << int32(remHp2);
-    data << uint16(val3);
-    data << uint8(val4);
-    data << uint8(val5);
-    data << uint32(val6);
-    // 3
-    /*data << uint16(1);
-    data << uint32(1);
-    data << uint32(1);
-    data << uint8(0);
-    data << uint8(3);
-    data << uint8(1);
-    data << uint32(1987);
-    data << uint8(6);*/
-    // 4
-    data << uint8(13);
-    // 5
-    /*data << uint8(4);
-    data << uint32(1);
-    data << uint32(239);
-    data << uint32(2);
-    data << uint32(-1);
-    data << uint8(4);
-    data << uint8(3);*/
-    // 6
-    data << uint8(14);
-    // 7
-    /*data << uint16(2);
-    data << uint8(0);
-    data << uint32(10); // speed (some value related to ...)
-    data << uint8(0);
-    data << uint8(1);
-    data << uint8(8);*/
-
-    // for 2
-    data << uint8(0);
-    data << uint16(0);
-    data << uint8(2);
-    // ---
-    data << uint8(0);
-    data << uint16(0);
-    data << uint8(2);
-    //
-
-    roundID++;
-    data << uint32(roundID);     // Round ID
-    data << uint8(2);
-
-    SendPacket(&data);
-
-    // final
-    if (roundID == 2)
-    {
-        if (winner == 2)
-            return;
-
-        WorldPacket data1(SMSG_PET_BATTLE_FINAL_ROUND);
-        data1.WriteBits(2, 20);
-
-        for (uint8 i = 0; i < 2; i++)
-        {
-            data1.WriteBit(0);
-            data1.WriteBit(1);
-
-            if (i == 0)
-                data1.WriteBit(winner ? 1 : 0);
-            else
-                data1.WriteBit(1);
-
-            data1.WriteBit(0);
-            data1.WriteBit(0);
-            data1.WriteBit(0);
-            data1.WriteBit(0);
-        }
-
-        data1.WriteBit(0);
-
-        // winner bit
-        for (uint8 i = 0; i < 2; i++)
-        {
-            if (i == 0)
-                data1.WriteBit(winner ? 0 : 1);
-            else
-                data1.WriteBit(winner ? 1 : 0);
-        }
-
-        // forfeit/abandoned bit
-        data1.WriteBit(0);
-
-        for (uint8 i = 0; i < 2; i++)
-        {
-            // experience
-            if (!winner && i == 0)
-                data1 << uint16(15);
-
-            // pet ID
-            if (i == 0)
-                data1 << uint8(0);
-            else
-                data1 << uint8(3);
-
-            // remaining health
-            if (i == 0)
-            {
-                if (!winner)
-                {
-                    data1 << int32(35);
-                }
-                else
-                {
-                    data1 << int32(-2);
-                }
-            }
-            else
-            {
-                if (!winner)
-                {
-                    data1 << int32(-1);
-                }
-                else
-                {
-                    data1 << int32(34);
-                }
-            }
-
-            // level after battle
-            if (i == 0)
-            {
-                if (!winner)
-                {
-                    data1 << uint16(16);
-                }
-                else
-                {
-                    data1 << uint16(15);
-                }
-            }
-            else
-            {
-                data1 << uint16(15);
-            }
-
-            // total health
-            data1 << uint32(250);
-            // level before battle
-            data1 << uint16(15);
-        }
-
-        data1 << uint32(0);
-        data1 << uint32(0);
-
-        SendPacket(&data1);
-    }
 }
 
-void BattlePetMgr::SendClosePetBattle()
+void BattlePetMgr::ClosePetBattle()
 {
-    WorldPacket data(SMSG_PET_BATTLE_FINISHED);
-    m_player->GetSession()->SendPacket(&data);
+    PetInfo* allyPet = GetPetBattleWild()->GetAllyPet();
+
+    if (allyPet)
+    {
+        uint16 level = allyPet->level;
+        uint32 health = allyPet->health;
+        uint16 xp = allyPet->xp;
+
+        if (PetBattleSlot * slot = GetPetBattleSlot(0))
+        {
+            if (PetInfo * pet = GetPetInfoByPetGUID(slot->GetPet()))
+            {
+                pet->level = level;
+                pet->health = health;
+                pet->xp = xp;
+
+                pet->SetInternalState(STATE_UPDATED);
+                SendUpdatePets();
+            }
+        }
+    }
+
+    delete m_petBattleWild;
+    m_petBattleWild = NULL;
 }
 
 // packet updates pet stats after finish battle and other actions (renaming?)
@@ -1253,18 +943,21 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
         return;
     }
 
-    // Player 1 - calc ability damage (random!!)
+    // Player 1 - calc ability damage (random!!) / player 1 always started
     uint32 damage = urand(10, 44);
     // some level depends
     damage *= allyPet->level;
 
     enemyPet->health -= damage;
 
-    // Player 2 - calc ability damage (random!!)
-    damage = urand(10, 44);
-    damage *= enemyPet->level;
+    if (enemyPet->health > 0)
+    {
+        // Player 2 - calc ability damage (random!!)
+        uint32 damage1 = urand(10, 44);
+        damage1 *= enemyPet->level;
 
-    allyPet->health -= damage;
+        allyPet->health -= damage1;
+    }
 
     if (allyPet->health <= 0 || enemyPet->health <= 0)
         state = 1;
@@ -1286,15 +979,15 @@ void PetBattleWild::RoundResults()
     // effects count
     data.WriteBits(4, 22);
     // 2 effects - SetHealth and 2 - unk, maybe for scene playback
-    uint8 bit[4] = {0, 0, 1, 1};
-    uint8 bit1[4] = {1, 1, 0, 0};
-    uint8 bit2[4] = {0, 0, 1, 1};
-    uint8 bit3[4] = {0, 0, 1, 1};
-    uint8 bit4[4] = {0, 0, 1, 1};
-    uint8 bit5[4] = {0, 0, 1, 1};
-    uint8 bit6[4] = {0, 0, 1, 1};
+    uint8 bit[4] = {0, 1, 0, 1};
+    uint8 bit1[4] = {1, 0, 1, 0};
+    uint8 bit2[4] = {0, 1, 0, 1};
+    uint8 bit3[4] = {0, 1, 0, 1};
+    uint8 bit4[4] = {0, 1, 0, 1};
+    uint8 bit5[4] = {0, 1, 0, 1};
+    uint8 bit6[4] = {0, 1, 0, 1};
     uint8 bit7[4] = {1, 1, 1, 1};
-    uint8 actNumbers[4] = {6, 6, 3, 3};
+    uint8 actNumbers[4] = {6, 3, 6, 3};
     for (uint8 i = 0; i < 4; ++i)
     {
         data.WriteBit(bit[i]);
@@ -1329,7 +1022,7 @@ void PetBattleWild::RoundResults()
     for (uint8 i = 0; i < 4; ++i)
     {
         if (!bit3[i])
-            data << uint16(!i ? 1 : 2);
+            data << uint16(!i ? 1 : 2); // TurnInstanceID
 
         for (uint8 j = 0; j < 1; ++j)
         {
@@ -1337,26 +1030,26 @@ void PetBattleWild::RoundResults()
                 data << uint8(!i ? 3 : 0); // target?
 
             if (actNumbers[i] == 6)
-                data << uint32(pets[i]->health);  // remainingHealth
+                data << uint32(pets[!i ? 1 : 0]->health);  // remainingHealth
         }
 
         if (!bit2[i])
             data << uint16(4096); // Flags
 
         if (!bit7[i])
-            data << uint16(0);    // unk
+            data << uint16(0);    // SourceAuraInstanceID
 
         if (!bit[i])
-            data << uint8(!i ? 0 : 3);     // unk
+            data << uint8(!i ? 0 : 3);     // CasterPBOID
 
         if (!bit4[i])
-            data << uint8(1);     // unk
+            data << uint8(1);     // StackDepth
 
         if (!bit5[i])
-            data << uint32(!i ? 281 : 769); // effectID
+            data << uint32(!i ? 281 : 769); // AbilityEffectID
 
         if (!bit1[i])
-            data << uint8((i == 2) ? 13 : 14);
+            data << uint8((i == 1) ? 13 : 14); // PetBattleEffectType
     }
 
     for (uint8 i = 0; i < 2; ++i)
@@ -1374,5 +1067,102 @@ void PetBattleWild::RoundResults()
 
 void PetBattleWild::FinalRound()
 {
+    int8 winner[2] = {-1, -1};
+    PetInfo* allyPet = pets[0];
+    PetInfo* enemyPet = pets[1];
+
+    if (!allyPet || !enemyPet)
+        return;
+
+    // some calc
+    if (allyPet->health <= 0)
+    {
+        // test hack
+        allyPet->health = 0;
+        winner[0] = 0;
+        winner[1] = 1;
+    }
+    else if (enemyPet->health <= 0)
+    {
+        enemyPet->health = 0;
+        winner[0] = 1;
+        winner[1] = 0;
+    }
+
+    if (winner[0] == -1 || winner[1] == -1)
+        return;
+
+    bool levelUp = false;
+
     WorldPacket data(SMSG_PET_BATTLE_FINAL_ROUND);
+    // pet depends count
+    data.WriteBits(2, 20);
+
+    for (uint8 i = 0; i < 2; i++)
+    {
+        data.WriteBit(0); // unused
+        data.WriteBit(1); // unused
+        data.WriteBit(!i ? 0 : 1); // !hasXp
+        data.WriteBit(0); // unused
+        data.WriteBit(0); // !hasInitialLevel
+        data.WriteBit(0); // !hasLevel
+        data.WriteBit(0); // unused
+    }
+
+    data.WriteBit(0); // !abandoned
+
+    // winners bits
+    for (uint8 i = 0; i < 2; ++i)
+        data.WriteBit(winner[i]);
+
+    for (uint8 i = 0; i < 2; ++i)
+    {
+        if (!i)
+            data << uint16(RewardXP(winner[0], levelUp));
+
+        data << uint8(!i ? 0 : 3); // Pboid
+        data << uint32(pets[i]->health); // RemainingHealth
+        data << uint16(levelUp ? pets[i]->level+1 : pets[i]->level);  // Level
+        data << uint32(pets[i]->maxHealth); // maxHealth
+        data << uint16(pets[i]->level); // InitialLevel
+    }
+
+    for (uint8 i = 0; i < 2; ++i)
+        data << uint32(0); // NpcCreatureID
+
+    m_player->GetSession()->SendPacket(&data);
+}
+
+uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
+{
+    PetInfo* allyPet = pets[0];
+
+    if (!allyPet)
+        return 0;
+
+    if (allyPet->level == 2)
+        return 0;
+
+    // simple calc xp
+    uint16 xp = allyPet->xp;
+
+    if (winner)
+        xp += 10;
+    else
+        xp += 5;
+
+    if (xp > 50)
+    {
+        xp = 0;
+        levelUp = true;
+    }
+
+    allyPet->xp = xp;
+    return winner ? 10 : 5;
+}
+
+void PetBattleWild::FinishPetBattle()
+{
+    WorldPacket data(SMSG_PET_BATTLE_FINISHED);
+    m_player->GetSession()->SendPacket(&data);
 }
