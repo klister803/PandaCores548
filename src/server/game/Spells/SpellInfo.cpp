@@ -1248,7 +1248,8 @@ bool SpellInfo::IsExplicitDiscovery() const
     return ((Effects[0].Effect == SPELL_EFFECT_CREATE_RANDOM_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM
         || Effects[0].Effect == SPELL_EFFECT_CREATE_ITEM_2)
-        && Effects[1].Effect == SPELL_EFFECT_SCRIPT_EFFECT)
+        && Effects[1].Effect == SPELL_EFFECT_SCRIPT_EFFECT
+        && Attributes & SPELL_ATTR0_TRADESPELL))
         || Id == 64323 || Id == 101805;
 }
 
