@@ -1158,7 +1158,7 @@ uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
     }
 
     allyPet->xp = xp;
-    return winner ? 10 : 5;
+    return allyPet->xp;
 }
 
 void PetBattleWild::FinishPetBattle()
