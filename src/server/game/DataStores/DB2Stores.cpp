@@ -107,7 +107,6 @@ void LoadDB2Stores(const std::string& dataPath)
 
     StoreProblemList1 bad_db2_files;
 
-    Sleep(10000);
     LoadDB2(bad_db2_files, sBattlePetSpeciesStore,  db2Path, "BattlePetSpecies.db2");
     for (uint32 i = 0; i < sBattlePetSpeciesStore.GetNumRows(); ++i)
     {
