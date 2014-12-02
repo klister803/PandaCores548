@@ -149,7 +149,7 @@ void LoadSkillDiscoveryTable()
         if (!spellEntry->IsExplicitDiscovery())
             continue;
 
-        if (SkillDiscoveryStore.find(int32(spell_id)) == SkillDiscoveryStore.end())
+        if (SkillDiscoveryStore.find(int32(spell_id)) == SkillDiscoveryStore.end() && spellEntry->Attributes & SPELL_ATTR0_TRADESPELL)
             sLog->outError(LOG_FILTER_SQL, "Spell (ID: %u) is 100%% chance random discovery ability but not have data in `skill_discovery_template` table", spell_id);
     }
 
