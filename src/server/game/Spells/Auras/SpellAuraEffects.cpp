@@ -993,6 +993,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     case 5:
                         amount += int32(ap * 0.744f / 12);
                         break;
+                    case 6:
+                        amount += int32(ap * 0.928f / 14);
+                        break;
                     default:
                         break;
                     }

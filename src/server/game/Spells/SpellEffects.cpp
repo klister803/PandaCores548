@@ -3123,6 +3123,9 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
         return;
 
+    if (power == POWER_RAGE && m_caster->HasAura(138222) && unitTarget->HasAura(5229)) // Item - Druid T15 Guardian 4P Bonus
+        damage *= 1.5;
+
     if (unitTarget->GetMaxPower(power) == 0)
         return;
 
@@ -5962,10 +5965,13 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
             }
         }
     }
-    if(m_spellInfo->Id == 139546)
+
+    if (m_spellInfo->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
         m_caster->m_movedPlayer->SaveAddComboPoints(damage);
     else
         m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectAddComboPoints damage %i, Id %i", damage, m_spellInfo->Id);
 }
 
 void Spell::EffectDuel(SpellEffIndex effIndex)

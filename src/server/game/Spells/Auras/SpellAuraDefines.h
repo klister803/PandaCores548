@@ -434,7 +434,7 @@ enum AuraType
     SPELL_AURA_MOD_FALL_DAMAGE                              = 374,
     SPELL_AURA_375                                          = 375,  // 0 auras
     SPELL_AURA_MOD_CURRENCY_GAIN_FROM_CREATURE              = 376,  // ????
-    SPELL_AURA_377                                          = 377,  // forbids spells?
+    SPELL_AURA_377                                          = 377,  // Casting spell in walking
     SPELL_AURA_378                                          = 378,  // 0 auras
     SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT                  = 379,
     SPELL_AURA_380                                          = 380,  // 0 auras

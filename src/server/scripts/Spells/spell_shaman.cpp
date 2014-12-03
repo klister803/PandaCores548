@@ -1689,6 +1689,35 @@ class spell_sha_earth_shield : public SpellScriptLoader
         }
 };
 
+// 144999 - Elemental Discharge
+class spell_sha_elemental_discharge : public SpellScriptLoader
+{
+    public:
+        spell_sha_elemental_discharge() : SpellScriptLoader("spell_sha_elemental_discharge") { }
+
+        class spell_sha_elemental_discharge_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_elemental_discharge_AuraScript);
+
+            void CalculateMaxDuration(int32 & duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(144998, EFFECT_0))
+                        duration = int32(aurEff->GetAmount() / 2) * 1000;
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_sha_elemental_discharge_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_elemental_discharge_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_prowl();
@@ -1723,4 +1752,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_ancestral_vigor();
     new spell_sha_maelstrom_weapon();
     new spell_sha_earth_shield();
+    new spell_sha_elemental_discharge();
 }

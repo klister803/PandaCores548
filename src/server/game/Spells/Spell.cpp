@@ -3831,15 +3831,7 @@ void Spell::cast(bool skipCheck)
             SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
 
             if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
-            {
-                if(procAttacker & PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG)
-                {
-                    if(procDamage)
-                        procEx |= PROC_EX_ON_CAST;
-                }
-                else
-                    procEx |= PROC_EX_ON_CAST;
-            }
+                procEx |= PROC_EX_ON_CAST;
 
             if(procAttacker)
             {
@@ -9142,12 +9134,18 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 return;
             }
 
-            if(itr->count)
+            if(itr->count && !targetCount && !itr->maxcount)
                 targetCount = itr->count;
+            else if(itr->maxcount && !targetCount)
+            {
+                if(m_caster->GetMap()->Is25ManRaid())
+                    targetCount = itr->maxcount;
+                else
+                    targetCount = itr->count;
+            }
+
             if(itr->resizeType)
                 resizeType = itr->resizeType;
-            if(itr->chance != 0 && roll_chance_i(itr->chance))
-                targetCount = itr->maxcount;
 
             if(itr->aura > 0 && _caster->HasAura(itr->aura))
                 targetCount += itr->addcount;
@@ -9207,6 +9205,22 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                         targets.remove_if(Trinity::UnitFriendlyCheck(true, _caster));
                     else
                         targets.remove_if(Trinity::UnitFriendlyCheck(false, _caster));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_IN_RAID: //6
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitRaidCheck(true, _caster));
+                    else
+                        targets.remove_if(Trinity::UnitRaidCheck(false, _caster));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_IN_PARTY: //7
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitPartyCheck(true, _caster));
+                    else
+                        targets.remove_if(Trinity::UnitPartyCheck(false, _caster));
                     break;
                 }
             }

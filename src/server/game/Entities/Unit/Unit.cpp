@@ -11978,8 +11978,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
         else
         {
-            if (dbccoeff && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC)
-                coeff = dbccoeff;
+            if (dbccoeff/* && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC*/)
+                coeff = dbccoeff; // 77478 use in SCHOOL_MASK_PHYSICAL
 
             if (spellProto->SpellAPBonusMultiplier)
             {
@@ -12671,8 +12671,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     }
     else
     {
-        if (dbccoeff && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC)
-            coeff = dbccoeff;
+        if (dbccoeff/* && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC*/)
+            coeff = dbccoeff; // 77478 use in SCHOOL_MASK_PHYSICAL
 
         if (ApCoeffMod)
         {
@@ -18106,6 +18106,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
     uint64 originalCaster = 0;
     Unit* procSpellCaster = dmgInfoProc->GetAttacker();
     uint64 procSpellCasterGUID = procSpellCaster ? procSpellCaster->GetGUID(): 0;
+    int32 schoolMask = procSpell ? SpellSchoolMask(procSpell->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL;
 
     if (std::vector<SpellTriggered> const* spellTrigger = sSpellMgr->GetSpellTriggered(dummySpell->Id))
     {
@@ -18134,6 +18135,11 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
             if (itr->procEx > 0 && !(itr->procEx & procEx))
                 continue;
             else if (itr->procEx < 0 && (abs(itr->procEx) & procEx))
+                continue;
+
+            if (itr->schoolMask > 0 && !(itr->schoolMask & schoolMask))
+                continue;
+            else if (itr->schoolMask < 0 && (abs(itr->schoolMask) & schoolMask))
                 continue;
 
             if(itr->addptype != -1 && itr->addptype != addpowertype)
@@ -18419,7 +18425,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_NEED_COMBOPOINTS: //7
+                case SPELL_TRIGGER_COMBOPOINTS_TO_CHANCE: //7
                 {
                     if(!procSpell || !procSpell->NeedsComboPoints())
                     {
@@ -19051,6 +19057,29 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_NEED_COMBOPOINTS: //35
+                {
+                    if(!procSpell || !procSpell->NeedsComboPoints())
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastSpell(target, triggered_spell_id, true);
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -19075,6 +19104,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 Attributes = procSpell ? procSpell->Attributes : 0;
     uint32 AllEffectsMechanicMask = procSpell ? procSpell->GetAllEffectsMechanicMask() : 0;
     uint32 SpellTypeMask = procSpell ? procSpell->GetSpellTypeMask() : 1;
+    uint32 NeedsComboPoints = procSpell ? procSpell->NeedsComboPoints() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
 
     //sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i",
@@ -19100,7 +19130,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             {
                 if (-(itr->checkspell) == spellProcId)
                 {
-                    if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0 || itr->perchp != 0 || itr->fromlevel != 0)
+                    if(itr->hastalent != 0 || itr->specId != 0 || itr->spellAttr0 != 0 || itr->targetTypeMask != 0 || itr->perchp != 0 || itr->fromlevel != 0 || itr->mechanicMask != 0 || itr->combopoints != 0)
                     {
                         if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent, casterGUID))
                         {
@@ -19138,6 +19168,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             break;
                         }
                         if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        if(itr->combopoints != 0 && !NeedsComboPoints)
                         {
                             procCheck = true;
                             break;
@@ -19244,6 +19279,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->combopoints != 0 && !NeedsComboPoints)
+                {
+                    procCheck = true;
+                    continue;
+                }
                 if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
                 {
                     procCheck = true;
@@ -19316,6 +19356,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     continue;
                 }
                 if(itr->mechanicMask != 0 && !(AllEffectsMechanicMask & itr->mechanicMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->combopoints != 0 && !NeedsComboPoints)
                 {
                     procCheck = true;
                     continue;

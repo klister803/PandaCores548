@@ -110,7 +110,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_COOLDOWN                      = 4,            // Set cooldown for trigger spell
     SPELL_TRIGGER_UPDATE_DUR                    = 5,            // Update duration for select spell
     SPELL_TRIGGER_GET_DUR_AURA                  = 6,            // Get duration from select aura to cast bp
-    SPELL_TRIGGER_NEED_COMBOPOINTS              = 7,            // Proc from spell that need compopoiunts
+    SPELL_TRIGGER_COMBOPOINTS_TO_CHANCE         = 7,            // Proc from spell that need compopoiunts
     SPELL_TRIGGER_UPDATE_DUR_TO_MAX             = 8,            // Update duration for select spell to max duration
     SPELL_TRIGGER_PERC_FROM_DAMGE               = 9,            // Percent from damage
     SPELL_TRIGGER_PERC_MAX_MANA                 = 10,           // Percent from max mana
@@ -138,6 +138,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_ADDPOWER_PCT                  = 32,           // set basepoint to spell add power percent from aura amount
     SPELL_TRIGGER_ADD_ABSORB_PCT                = 33,           // set basepoint from absorb percent
     SPELL_TRIGGER_ADD_BLOCK_PCT                 = 34,           // set basepoint from block percent
+    SPELL_TRIGGER_NEED_COMBOPOINTS              = 35,           // Proc from spell that need compopoiunts
 };
 
 enum SpellAuraDummyType
@@ -163,6 +164,8 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_TYPE                    = 3,            // Check target rype
     SPELL_FILTER_SORT_BY_DISTANCE               = 4,            // Sort by distance
     SPELL_FILTER_TARGET_FRIENDLY                = 5,            // Check Friendly
+    SPELL_FILTER_TARGET_IN_RAID                 = 6,            // Check Raid
+    SPELL_FILTER_TARGET_IN_PARTY                = 7,            // Check Party
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -664,6 +667,7 @@ struct SpellPrcoCheck
     int32 fromlevel;
     int32 perchp;
     int32 spelltypeMask;
+    int32 combopoints;
 };
 
 struct SpellTriggered
@@ -686,6 +690,7 @@ struct SpellTriggered
     int32 procEx;
     int32 check_spell_id;
     int32 addptype;
+    int32 schoolMask;
 };
 
 struct SpellMountList
