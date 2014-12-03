@@ -84,7 +84,7 @@ public:
         {
             DoZoneInCombat();
             std::list<GameObject*> eggs;
-            GetGameObjectListWithEntryInGrid(eggs, me, GO_EGG, 100);
+            me->GetGameObjectListWithEntryInGrid(eggs, GO_EGG, 100);
             for (std::list<GameObject*>::iterator itr = eggs.begin(); itr != eggs.end(); ++itr)
             {
                 (*itr)->SetGoState(GO_STATE_READY);
@@ -127,7 +127,7 @@ public:
                 //damage = 0;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

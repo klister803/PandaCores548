@@ -57,7 +57,7 @@ public:
             events.ScheduleEvent(EVENT_FLAMEBUFFET, 5000);
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
                 return;

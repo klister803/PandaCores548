@@ -117,7 +117,7 @@ public:
             Talk(SAY_KILLTARGET, victim->GetGUID());
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 

@@ -168,9 +168,13 @@ public:
 
     struct boss_victor_nefariusAI : public BossAI
     {
-        boss_victor_nefariusAI(Creature* creature) : BossAI(creature, BOSS_NEFARIAN) { }
+        boss_victor_nefariusAI(Creature* creature) : BossAI(creature, BOSS_NEFARIAN), summons(me)
+		{ 
+		}
 
-        void Reset()
+        SummonList summons;
+
+		void Reset()
         {
             if (me->GetMapId() == 469)
             {
@@ -184,6 +188,7 @@ public:
                 me->setFaction(35);
                 me->SetStandState(UNIT_STAND_STATE_SIT_HIGH_CHAIR);
                 me->RemoveAura(SPELL_NEFARIANS_BARRIER);
+				summons.DespawnAll();
             }
         }
 
@@ -220,7 +225,10 @@ public:
             }
         }
 
-        void JustSummoned(Creature* /*summon*/) {}
+        void JustSummoned(Creature* summon) 
+		{
+			summons.Summon(summon);
+		}
 
         void SetData(uint32 type, uint32 data)
         {
@@ -236,7 +244,7 @@ public:
             }
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
             {
@@ -467,7 +475,7 @@ public:
             return targets;
         }
 
-        void UpdateAI(uint32 const diff)
+        void UpdateAI(uint32 diff)
         {
             if (canDespawn && DespawnTimer <= diff)
             {
