@@ -6064,6 +6064,9 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 if (!(m_spellMissMask & i->hitmask))
                     continue;
 
+            if(!_target)
+                _target = m_targets.GetUnitTarget();
+
             if(i->target == 1 && m_caster->ToPlayer()) //get target pet
             {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
@@ -6081,6 +6084,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             if(i->target == 3) //get target as caster
                 _target = m_caster;
 
+            _caster = m_caster;
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
             {
                 if (Pet* pet = m_caster->ToPlayer()->GetPet())
