@@ -24511,7 +24511,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     if (rec < 0.0 && catrec < 0.0)
     {
         cat = spellInfo->Category;
-        rec = spellInfo->RecoveryTime ? spellInfo->RecoveryTime : 25.0;
+        rec = spellInfo->RecoveryTime;
         catrec = spellInfo->CategoryRecoveryTime;
     }
 
