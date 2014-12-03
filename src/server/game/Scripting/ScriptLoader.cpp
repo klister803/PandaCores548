@@ -175,14 +175,13 @@ void AddSC_boss_omnotron_defence_system();
 void AddSC_instance_blackwing_descent();
 void AddSC_blackwing_descent();
 void AddSC_boss_razorgore();                 //Blackwing lair
-void AddSC_boss_vael();
+void AddSC_boss_vaelastrasz();
 void AddSC_boss_broodlord();
 void AddSC_boss_firemaw();
 void AddSC_boss_ebonroc();
 void AddSC_boss_flamegor();
 void AddSC_boss_chromaggus();
 void AddSC_boss_nefarian();
-void AddSC_boss_victor_nefarius();
 void AddSC_instance_deadmines(); // Deadmines
 void AddSC_deadmines();
 void AddSC_boss_glubtok();
@@ -1006,14 +1005,13 @@ void AddEasternKingdomsScripts()
     AddSC_instance_blackwing_descent();
     AddSC_blackwing_descent();
     AddSC_boss_razorgore();                 //Blackwing lair
-    AddSC_boss_vael();
+    AddSC_boss_vaelastrasz();
     AddSC_boss_broodlord();
     AddSC_boss_firemaw();
     AddSC_boss_ebonroc();
     AddSC_boss_flamegor();
     AddSC_boss_chromaggus();
     AddSC_boss_nefarian();
-    AddSC_boss_victor_nefarius();
     AddSC_instance_deadmines(); // Deadmines
     AddSC_deadmines();
     AddSC_boss_glubtok();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,91 +16,84 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Ebonroc
-SD%Complete: 50
-SDComment: Shadow of Ebonroc needs core support
-SDCategory: Blackwing Lair
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "blackwing_lair.h"
 
-#define SPELL_SHADOWFLAME           22539
-#define SPELL_WINGBUFFET            18500
-#define SPELL_SHADOWOFEBONROC       23340
-#define SPELL_HEAL                  41386                   //Thea Heal spell of his Shadow
+enum Spells
+{
+    SPELL_SHADOWFLAME           = 22539,
+    SPELL_WINGBUFFET            = 23339,
+    SPELL_SHADOWOFEBONROC       = 23340
+};
+
+enum Events
+{
+    EVENT_SHADOWFLAME           = 1,
+    EVENT_WINGBUFFET            = 2,
+    EVENT_SHADOWOFEBONROC       = 3
+};
 
 class boss_ebonroc : public CreatureScript
 {
 public:
     boss_ebonroc() : CreatureScript("boss_ebonroc") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    struct boss_ebonrocAI : public BossAI
     {
-        return new boss_ebonrocAI (creature);
-    }
-
-    struct boss_ebonrocAI : public ScriptedAI
-    {
-        boss_ebonrocAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 ShadowFlame_Timer;
-        uint32 WingBuffet_Timer;
-        uint32 ShadowOfEbonroc_Timer;
-        uint32 Heal_Timer;
-
-        void Reset()
-        {
-            ShadowFlame_Timer = 15000;                          //These times are probably wrong
-            WingBuffet_Timer = 30000;
-            ShadowOfEbonroc_Timer = 45000;
-            Heal_Timer = 1000;
-        }
+        boss_ebonrocAI(Creature* creature) : BossAI(creature, BOSS_EBONROC) { }
 
         void EnterCombat(Unit* /*who*/)
         {
-            DoZoneInCombat();
+            if (instance->GetBossState(BOSS_BROODLORD) != DONE)
+            {
+                EnterEvadeMode();
+                return;
+            }
+            _EnterCombat();
+
+            events.ScheduleEvent(EVENT_SHADOWFLAME, urand(10000, 20000));
+            events.ScheduleEvent(EVENT_WINGBUFFET, 30000);
+            events.ScheduleEvent(EVENT_SHADOWOFEBONROC, urand(8000, 10000));
         }
 
-        void UpdateAI(uint32 diff)
+        void UpdateAI(uint32 const diff)
         {
             if (!UpdateVictim())
                 return;
 
-            //Shadowflame Timer
-            if (ShadowFlame_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_SHADOWFLAME);
-                ShadowFlame_Timer = urand(12000, 15000);
-            } else ShadowFlame_Timer -= diff;
+            events.Update(diff);
 
-            //Wing Buffet Timer
-            if (WingBuffet_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_WINGBUFFET);
-                WingBuffet_Timer = 25000;
-            } else WingBuffet_Timer -= diff;
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
 
-            //Shadow of Ebonroc Timer
-            if (ShadowOfEbonroc_Timer <= diff)
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                DoCast(me->getVictim(), SPELL_SHADOWOFEBONROC);
-                ShadowOfEbonroc_Timer = urand(25000, 350000);
-            } else ShadowOfEbonroc_Timer -= diff;
-
-            if (me->getVictim()->HasAura(SPELL_SHADOWOFEBONROC))
-            {
-                if (Heal_Timer <= diff)
+                switch (eventId)
                 {
-                    DoCast(me, SPELL_HEAL);
-                    Heal_Timer = urand(1000, 3000);
-                } else Heal_Timer -= diff;
+                    case EVENT_SHADOWFLAME:
+                        DoCastVictim(SPELL_SHADOWFLAME);
+                        events.ScheduleEvent(EVENT_SHADOWFLAME, urand(10000, 20000));
+                        break;
+                    case EVENT_WINGBUFFET:
+                        DoCastVictim(SPELL_WINGBUFFET);
+                        events.ScheduleEvent(EVENT_WINGBUFFET, 30000);
+                        break;
+                    case EVENT_SHADOWOFEBONROC:
+                        DoCastVictim(SPELL_SHADOWOFEBONROC);
+                        events.ScheduleEvent(EVENT_SHADOWOFEBONROC, urand(8000, 10000));
+                        break;
+                }
             }
 
             DoMeleeAttackIfReady();
         }
     };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<boss_ebonrocAI>(creature);
+    }
 };
 
 void AddSC_boss_ebonroc()
