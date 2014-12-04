@@ -198,6 +198,7 @@ public:
 
     void CalculateRoundData(int8 &state, uint32 _roundID);
     PetInfo* GetAllyPet() { return pets[0]; }
+    uint32 GetEffectID(uint32 abilityID, uint8 effectIndex);
 
 private:
     Player* m_player;
@@ -206,6 +207,8 @@ protected:
     PetInfo* pets[2];
     PetBattleSlot* battleslots[2];
     uint64 guids[2];
+    uint32 abilities[2];
+    uint32 effects[2];
     uint32 roundID;
 
 };
@@ -301,6 +304,10 @@ public:
     }
 
     PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
+
+    // test function
+    uint32 GetAbilityID(uint32 speciesID, uint8 abilityIndex);
+    uint32 GetEffectIDByAbilityID(uint32 abilityID);
 
 private:
     Player* m_player;

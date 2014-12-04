@@ -166,10 +166,10 @@ struct BattlePetAbilityEntry
 {
     uint32 ID;                  // 0
     uint32 Type;                // 1
-    //uint32 someFlags;         // 2
-    //uint32 unk;               // 3
-    //uint32 unk;               // 4
-    //uint32 unk;               // 5
+    //uint32 fileDataEntry;     // 2
+    uint32 turnCooldown;        // 3
+    //uint32 auraInstanceID;    // 4
+    //uint32 auraDuration;      // 5
     //string name               // 6
     //string description        // 7
 };
@@ -177,11 +177,11 @@ struct BattlePetAbilityEntry
 struct BattlePetAbilityEffectEntry
 {
     uint32 ID;                  // 0
-    uint32 AbilityID;           // 1
+    uint32 TurnEntryID;         // 1
     //uint32 unk;               // 2
     //uint32 AuraID?;           // 3
     //uint32 unk;               // 4
-    //uint32 effectNumber;      // 5
+    uint32 effectIndex;         // 5
     //uint32 unk;               // 6
     //uint32 hitChance;         // 7
     //uint32 unk;               // 8
@@ -190,11 +190,21 @@ struct BattlePetAbilityEffectEntry
     //uint32 unk;               // 11
 };
 
+struct BattlePetAbilityTurnEntry
+{
+    uint32 ID;                  // 0
+    uint32 AbilityID;           // 1
+    //uint32 stateID;           // 2
+    uint32 turnIndex;           // 3
+    // uint32 unk;              // 4
+    // uint32 procIndex;        // 5
+};
+
 struct BattlePetAbilityStateEntry
 {
-    uint32 EffectID;            // 0
-    uint32 AbilityID;           // 1
-    uint32 stateID;             // 2
+    uint32 ID;                  // 0
+    //uint32 AbilityID;         // 1
+    //uint32 stateID;           // 2
     //uint32 unk;               // 3
 };
 

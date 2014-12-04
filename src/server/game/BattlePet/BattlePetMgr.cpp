@@ -691,6 +691,57 @@ void BattlePetMgr::InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid
     m_petBattleWild->Prepare(wildCreatureGuid);
 }
 
+// test function
+uint32 BattlePetMgr::GetAbilityID(uint32 speciesID, uint8 abilityIndex)
+{
+    for (uint32 i = 0; i < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++i)
+    {
+        BattlePetSpeciesXAbilityEntry const* xEntry = sBattlePetSpeciesXAbilityStore.LookupEntry(i);
+
+        if (!xEntry)
+            continue;
+
+        if (xEntry->speciesID == speciesID && xEntry->rank == abilityIndex)
+        {
+            if (xEntry->requiredLevel > 4)
+                continue;
+            else
+                return xEntry->abilityID;
+        }
+    }        
+
+    return 0;
+}
+
+uint32 BattlePetMgr::GetEffectIDByAbilityID(uint32 abilityID)
+{
+    // get turn data entry
+    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
+
+        if (!tEntry)
+            continue;
+
+        if (tEntry->AbilityID == abilityID && tEntry->turnIndex == 1)
+        {
+            // get effect data
+            for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
+            {
+                BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(j);
+
+                if (!eEntry)
+                    continue;
+
+                if (eEntry->TurnEntryID == tEntry->ID)
+                    return eEntry->ID;
+            }
+        }
+    }  
+
+    return 0;
+}
+
 // wild pet battle class handler
 PetBattleWild::PetBattleWild(Player* owner) : m_player(owner), roundID(0)
 {
@@ -735,6 +786,25 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
 
     pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), 1, t->Modelid1, power, speed, health, health, 2, 0, 0, s->spellId, "", 12, 0);
     battleslots[1] = new PetBattleSlot(0, false);
+
+    if (!pets[1])
+        return;
+
+    if (!battleslots[1])
+        return;
+
+    // some abilities and effects
+    abilities[0] = m_player->GetBattlePetMgr()->GetAbilityID(pets[0]->speciesID, 0);
+    abilities[1] = m_player->GetBattlePetMgr()->GetAbilityID(pets[1]->speciesID, 0);
+
+    effects[0] = m_player->GetBattlePetMgr()->GetEffectIDByAbilityID(abilities[0]);
+    effects[1] = m_player->GetBattlePetMgr()->GetEffectIDByAbilityID(abilities[1]);
+
+    if (!effects[0] || !effects[1])
+        return;
+
+    if (pets[0]->IsDead())
+        return;
 
     WorldPacket data(SMSG_PET_BATTLE_FULL_UPDATE);
     // BITPACK
@@ -813,7 +883,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
             data << uint16(0);
             data << uint8(0);
             data << uint16(0);
-            data << uint32(abilityID[i]);
+            data << uint32(abilities[i] ? abilities[i] : abilityID[i]);
 
             data << uint16(pets[i]->xp);
             data << uint32(pets[i]->maxHealth);
@@ -972,12 +1042,17 @@ void PetBattleWild::RoundResults()
     // increase round
     roundID++;
 
+    // test hack
+    uint32 effectCount = 4;
+    if (pets[1] && pets[1]->IsDead())
+        effectCount = 2;
+
     WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
     data.WriteBit(0);
     // cooldowns count
     data.WriteBits(0, 20);
     // effects count
-    data.WriteBits(4, 22);
+    data.WriteBits(effectCount, 22);
     // 2 effects - SetHealth and 2 - unk, maybe for scene playback
     uint8 bit[4] = {0, 1, 0, 1};
     uint8 bit1[4] = {1, 0, 1, 0};
@@ -988,7 +1063,7 @@ void PetBattleWild::RoundResults()
     uint8 bit6[4] = {0, 1, 0, 1};
     uint8 bit7[4] = {1, 1, 1, 1};
     uint8 actNumbers[4] = {6, 3, 6, 3};
-    for (uint8 i = 0; i < 4; ++i)
+    for (uint8 i = 0; i < effectCount; ++i)
     {
         data.WriteBit(bit[i]);
         data.WriteBit(bit1[i]);
@@ -1019,7 +1094,7 @@ void PetBattleWild::RoundResults()
     // cooldowns
     //
 
-    for (uint8 i = 0; i < 4; ++i)
+    for (uint8 i = 0; i < effectCount; ++i)
     {
         if (!bit3[i])
             data << uint16(!i ? 1 : 2); // TurnInstanceID
@@ -1046,7 +1121,7 @@ void PetBattleWild::RoundResults()
             data << uint8(1);     // StackDepth
 
         if (!bit5[i])
-            data << uint32(!i ? 281 : 769); // AbilityEffectID
+            data << uint32(!i ? effects[0] : effects[1]); // AbilityEffectID
 
         if (!bit1[i])
             data << uint8((i == 1) ? 13 : 14); // PetBattleEffectType
@@ -1115,6 +1190,8 @@ void PetBattleWild::FinalRound()
     for (uint8 i = 0; i < 2; ++i)
         data.WriteBit(winner[i]);
 
+    data.WriteBit(0); // !hasXpReward???
+
     for (uint8 i = 0; i < 2; ++i)
     {
         if (!i)
@@ -1158,11 +1235,16 @@ uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
     }
 
     allyPet->xp = xp;
-    return allyPet->xp;
+    return xp;
 }
 
 void PetBattleWild::FinishPetBattle()
 {
     WorldPacket data(SMSG_PET_BATTLE_FINISHED);
     m_player->GetSession()->SendPacket(&data);
+}
+
+uint32 PetBattleWild::GetEffectID(uint32 abilityID, uint8 effectIndex)
+{
+    return 0;
 }
