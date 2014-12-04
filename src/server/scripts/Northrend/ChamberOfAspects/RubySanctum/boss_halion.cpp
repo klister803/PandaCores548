@@ -1468,8 +1468,11 @@ public:
 
         void UpdateAI(uint32 uiDiff)
         {
-            if (!pInstance) 
+            if (!pInstance)
+            {
                 me->DespawnOrUnsummon();
+                return;
+            }
 
             if (pInstance->GetData(TYPE_HALION) != IN_PROGRESS)
                 me->DespawnOrUnsummon();
