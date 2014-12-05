@@ -171,21 +171,21 @@ public:
 
                 if (sWorld->getBoolConfig(CONFIG_SHARE_ENABLE))
                 {
-                    if(!bonus1 && totaltime >= (1 * HOUR))
+                    if(!bonus1 && totaltime >= (5 * HOUR))
                     {
-                        player->ModifyMoney(500000);
+                        player->ModifyMoney(2000000);
                         update = true;
                         bonus1 = true;
                     }
                     if(!bonus2 && totaltime >= (10 * HOUR))
                     {
-                        player->ModifyMoney(2500000);
+                        player->ModifyMoney(4000000);
                         update = true;
                         bonus2 = true;
                     }
                     if(!bonus3 && totaltime >= (20 * HOUR))
                     {
-                        player->ModifyMoney(5000000);
+                        player->ModifyMoney(8000000);
                         update = true;
                         bonus3 = true;
                     }
