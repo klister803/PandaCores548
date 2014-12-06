@@ -119,6 +119,17 @@ inline void ApplyPercentModFloatVar(float& var, float val, bool apply)
     var *= (apply ? (100.0f + val) / 100.0f : 100.0f / (100.0f + val));
 }
 
+inline int32 RoundingFloatValue(float val)
+{
+    int32 intVal = val;
+    float difference = val - intVal;
+
+    if (difference >= 0.44444445f)
+        intVal++;
+
+    return intVal;
+}
+
 // Percentage calculation
 template <class T, class U>
 inline T CalculatePct(T base, U pct)

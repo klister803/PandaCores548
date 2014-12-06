@@ -413,7 +413,9 @@ class Spell
         void EffectSummonRaidMarker(SpellEffIndex effIndex);
         void EffectRandomizeDigsites(SpellEffIndex effIndex);
         void EffectTeleportToDigsite(SpellEffIndex effIndex);
-        void EffectUncagePet(SpellEffIndex effIndex);
+        void EffectUncageBattlePet(SpellEffIndex effIndex);
+        void EffectUnlockPetBattles(SpellEffIndex effIndex);
+        void EffectHealBattlePetPct(SpellEffIndex effIndex);
         void SendScene(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
@@ -674,6 +676,8 @@ class Spell
         int32 m_absorb;           // Absorb
         int32 m_resist;           // Resist
         int32 m_blocked;          // Blocked
+        int32 m_addpower;         // if spell add power
+        int32 m_addptype;         // if spell add power
 
         // ******************************************
         // Spell trigger system

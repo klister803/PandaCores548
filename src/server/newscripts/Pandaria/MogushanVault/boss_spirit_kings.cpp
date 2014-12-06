@@ -661,61 +661,6 @@ class mob_undying_shadow : public CreatureScript
         }
 };
 
-class spell_volley : public SpellScriptLoader
-{
-    public:
-        spell_volley() : SpellScriptLoader("spell_volley") { }
-
-        class spell_volley_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_volley_SpellScript);
-
-            void HandleDummyLaunch(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-
-                if (!caster)
-                    return;
-
-                float coneAngle = 0.0f;
-
-                switch (GetSpellInfo()->Id)
-                {
-                    case 118094:
-                        coneAngle = M_PI / (1.5f);
-                        break;
-                    case 118105:
-                        coneAngle = M_PI / 4;
-                        break;
-                    case 118106:
-                        coneAngle = M_PI / 6;
-                        break;
-                }
-
-                float startAngle = caster->GetOrientation() - (coneAngle / 2);
-                float maxAngle   = caster->GetOrientation() + (coneAngle / 2);
-
-                for (float actualAngle = startAngle; actualAngle <= maxAngle; actualAngle += 0.1f)
-                {
-                    float x = 0.0f, y = 0.0f;
-                    GetPositionWithDistInOrientation(caster, 100.0f, actualAngle, x, y);
-
-                    caster->CastSpell(x, y, caster->GetPositionZ(), SPELL_VOLLEY_VISUAL, true);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectLaunch += SpellEffectFn(spell_volley_SpellScript::HandleDummyLaunch, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_volley_SpellScript();
-        }
-};
-
 class spell_pinned_down : public SpellScriptLoader
 {
     public:
@@ -746,118 +691,11 @@ class spell_pinned_down : public SpellScriptLoader
         }
 };
 
-class spell_maddening_shout : public SpellScriptLoader
-{
-    public:
-        spell_maddening_shout() : SpellScriptLoader("spell_maddening_shout") { }
-
-        class spell_maddening_shout_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_maddening_shout_AuraScript);
-
-            void OnAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
-            {
-                if (Unit* attacker = dmgInfo.GetAttacker())
-                    if (attacker->GetTypeId() != TYPEID_PLAYER)
-                        absorbAmount = 0;
-            }
-
-            void Register()
-            {
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_maddening_shout_AuraScript::OnAbsorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_maddening_shout_AuraScript();
-        }
-};
-
-class spell_crazed_cowardice : public SpellScriptLoader
-{
-    public:
-        spell_crazed_cowardice() : SpellScriptLoader("spell_crazed_cowardice") { }
-
-        class spell_crazed_cowardice_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_crazed_cowardice_AuraScript);
-
-            void HandlePeriodic(AuraEffect const* /*aurEff*/)
-            {
-                PreventDefaultAction();
-                
-                if (Unit* caster = GetCaster())
-                {
-                    if (Aura* aura = GetAura())
-                    {
-                        if (aura->GetId() == SPELL_CRAZED)
-                            aura->SetStackAmount(aura->GetStackAmount() + 1);
-                        else
-                            aura->SetCharges(aura->GetCharges() + 1);
-
-                        if (aura->GetStackAmount() >= 100 || aura->GetCharges() >= 100)
-                        {
-                            caster->CastSpell(caster, aura->GetId() == SPELL_CRAZED ? SPELL_COWARDICE: SPELL_CRAZED, true);
-                            aura->Remove();
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_crazed_cowardice_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_crazed_cowardice_AuraScript();
-        }
-};
-
-class spell_crazy_tought : public SpellScriptLoader
-{
-    public:
-        spell_crazy_tought() : SpellScriptLoader("spell_crazy_tought") { }
-
-        class spell_crazy_tought_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_crazy_tought_SpellScript);
-
-            void HandleEffect(SpellEffIndex effIndex)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Aura* aura = caster->GetAura(SPELL_CRAZED))
-                        aura->SetStackAmount(aura->GetStackAmount() + 10);
-                    else if (Aura* aura = caster->GetAura(SPELL_COWARDICE))
-                        aura->SetCharges(aura->GetCharges() + 10);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_crazy_tought_SpellScript::HandleEffect, EFFECT_0, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_crazy_tought_SpellScript();
-        }
-};
-
 void AddSC_boss_spirit_kings()
 {
     new boss_spirit_kings_controler();
     new boss_spirit_kings();
     new mob_pinning_arrow();
     new mob_undying_shadow();
-    new spell_volley();
     new spell_pinned_down();
-    new spell_maddening_shout();
-    new spell_crazed_cowardice();
-    new spell_crazy_tought();
 }

@@ -89,57 +89,6 @@ enum ShamanSpells
     SPELL_DRUMS_OF_RAGE                     = 146555,
 };
 
-class spell_sha_resurgence : public SpellScriptLoader
-{
-    public:
-        spell_sha_resurgence() : SpellScriptLoader("spell_sha_resurgence") { }
-
-        class spell_sha_resurgence_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_resurgence_SpellScript);
-
-            void HandleDummy(SpellEffIndex eff)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    uint32 bp = GetEffectValue();
-                    for (uint8 i = 0; i < CURRENT_MAX_SPELL; ++i)
-                    {
-                        if (Spell* spell = caster->GetCurrentSpell(i))
-                        {
-                            SpellInfo const* currentSpellInfo = spell->GetSpellInfo();
-
-                            switch (currentSpellInfo->Id)
-                            {
-                                case 8004:  // Healing Surge
-                                case 61295: // Riptide
-                                case 73685: // Unleash life
-                                    bp *= 0.6f;
-                                    break;
-                                case 1064: // Chain Heal
-                                    bp *= 0.33f;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    SetEffectValue(bp);
-                }
-            }
-
-            void Register()
-            {
-                 OnEffectHitTarget += SpellEffectFn(spell_sha_resurgence_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_ENERGIZE);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_resurgence_SpellScript();
-        }
-};
-
 // Prowl - 113289
 class spell_sha_prowl : public SpellScriptLoader
 {
@@ -869,8 +818,10 @@ class spell_sha_fulmination : public SpellScriptLoader
                 {
                     int32 basePoints = caster->CalculateSpellDamage(target, spellInfo, 0);
                     int32 damage = int32((usedCharges - 1) * caster->SpellDamageBonusDone(target, spellInfo, basePoints, SPELL_DIRECT_DAMAGE, EFFECT_0));
+                    if(Aura* aura = caster->GetAura(144998)) // Item - Shaman T16 Elemental 2P Bonus
+                        aura->GetEffect(0)->SetAmount(4 * usedCharges);
 
-                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, true);
+                    caster->CastCustomSpell(target, SPELL_SHA_FULMINATION_TRIGGERED, &damage, NULL, NULL, false);
                     lightningShield->SetCharges(lsCharges - usedCharges);
 
                     caster->RemoveAura(SPELL_SHA_FULMINATION_INFO);
@@ -1702,9 +1653,73 @@ class spell_sha_maelstrom_weapon : public SpellScriptLoader
         }
 };
 
+// Earth Shield - 379
+class spell_sha_earth_shield : public SpellScriptLoader
+{
+    public:
+        spell_sha_earth_shield() : SpellScriptLoader("spell_sha_earth_shield") { }
+
+        class spell_sha_earth_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_earth_shield_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = GetHitHeal() * 3;
+                        if (caster->HasAura(145378)) //Item - Shaman T16 Restoration 2P Bonus
+                            target->CastCustomSpell(target, 145379, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_earth_shield_SpellScript::HandleOnHit);
+            }
+
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_earth_shield_SpellScript();
+        }
+};
+
+// 144999 - Elemental Discharge
+class spell_sha_elemental_discharge : public SpellScriptLoader
+{
+    public:
+        spell_sha_elemental_discharge() : SpellScriptLoader("spell_sha_elemental_discharge") { }
+
+        class spell_sha_elemental_discharge_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_elemental_discharge_AuraScript);
+
+            void CalculateMaxDuration(int32 & duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(144998, EFFECT_0))
+                        duration = int32(aurEff->GetAmount() / 2) * 1000;
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_sha_elemental_discharge_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_elemental_discharge_AuraScript();
+        }
+};
+
 void AddSC_shaman_spell_scripts()
 {
-    new spell_sha_resurgence();
     new spell_sha_prowl();
     new spell_sha_solar_beam();
     new spell_sha_glyph_of_shamanistic_rage();
@@ -1734,7 +1749,8 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_chain_heal();
     new spell_shaman_primal_strike();
     new spell_shaman_healing_tide();
-    new spell_shaman_totemic_projection();
     new spell_sha_ancestral_vigor();
     new spell_sha_maelstrom_weapon();
+    new spell_sha_earth_shield();
+    new spell_sha_elemental_discharge();
 }

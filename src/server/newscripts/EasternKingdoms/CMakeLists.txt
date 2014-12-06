@@ -12,8 +12,6 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   EasternKingdoms/ghostlands.cpp
   EasternKingdoms/eversong_woods.cpp
-  EasternKingdoms/elwynn_forest.cpp
-  EasternKingdoms/dun_morogh.cpp
   EasternKingdoms/AlteracValley/boss_galvangar.cpp
   EasternKingdoms/AlteracValley/boss_balinda.cpp
   EasternKingdoms/AlteracValley/boss_drekthar.cpp
@@ -227,7 +225,7 @@ set(scripts_STAT_SRCS
   EasternKingdoms/BlackwingLair/boss_vaelastrasz.cpp
   EasternKingdoms/BlackwingLair/boss_nefarian.cpp
   EasternKingdoms/BlackwingLair/boss_flamegor.cpp
-  EasternKingdoms/BlackwingLair/boss_victor_nefarius.cpp
+  EasternKingdoms/BlackwingLair/blackwing_lair.h
   EasternKingdoms/stormwind_city.cpp
   EasternKingdoms/ZulAman/boss_halazzi.cpp
   EasternKingdoms/ZulAman/boss_hexlord.cpp

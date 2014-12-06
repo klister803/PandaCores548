@@ -1819,5 +1819,39 @@ namespace Trinity
             bool _present;
             Unit* _caster;
     };
+
+    class UnitRaidCheck
+    {
+        public:
+            UnitRaidCheck(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (Unit* unit)
+            {
+                return unit->IsInRaidWith(_caster) == _present;
+            }
+            bool operator() (WorldObject* object)
+            {
+                return object->ToUnit() && object->ToUnit()->IsInRaidWith(_caster) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
+
+    class UnitPartyCheck
+    {
+        public:
+            UnitPartyCheck(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (Unit* unit)
+            {
+                return unit->IsInPartyWith(_caster) == _present;
+            }
+            bool operator() (WorldObject* object)
+            {
+                return object->ToUnit() && object->ToUnit()->IsInPartyWith(_caster) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
 }
 #endif

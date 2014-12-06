@@ -132,6 +132,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     _player->m_movementInfo.pos.m_positionX = loc.m_positionX;
     _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
     _player->m_movementInfo.pos.m_positionZ = loc.m_positionZ;
+    _player->m_movementInfo.pos.m_orientation = loc.m_orientation;
     WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
     _player->GetSession()->SendPacket(&data);
 

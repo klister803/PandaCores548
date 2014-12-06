@@ -263,45 +263,8 @@ class npc_rock_borer : public CreatureScript
         };
 };
 
-class npc_crystal_shard : public CreatureScript
-{
-    public:
-        npc_crystal_shard() : CreatureScript("npc_crystal_shard") { }
-
-        CreatureAI* GetAI(Creature* pCreature) const
-        {
-            return new npc_crystal_shardAI(pCreature);
-        }
-
-        struct npc_crystal_shardAI : public ScriptedAI
-        {
-            npc_crystal_shardAI(Creature *c) : ScriptedAI(c)
-            {
-            }
-
-            void Reset()
-            {
-                me->SetSpeed(MOVE_WALK, 0.5f);
-                me->SetSpeed(MOVE_RUN, 0.5f);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (Unit* target = me->SelectNearestTarget(3.0f))
-                {
-                    DoCast(target, SPELL_CRYSTAL_SHARD_DMG);
-                    me->DespawnOrUnsummon();
-                }
-            }
-        };
-};
-
 void AddSC_boss_corborus()
 {
     new boss_corborus();
     new npc_rock_borer();
-    new npc_crystal_shard();
 }

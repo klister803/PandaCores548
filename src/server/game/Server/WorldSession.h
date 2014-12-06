@@ -347,9 +347,6 @@ class WorldSession
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
-        // Battle pet
-        void HandleSummonBattlePet(WorldPacket& recvData);
-
         // Account Data
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
         void SetAccountData(AccountDataType type, time_t tm, std::string data);
@@ -996,14 +993,16 @@ class WorldSession
         void HandleUpgradeItem(WorldPacket& recvData);
 
         // Battle Pets
-        void HandleBattlePetOpcode166F(WorldPacket& recvData);
-        void HandleBattlePetOpcode1ACF(WorldPacket& recvData);
-        void HandleBattlePetReadyForBattle(WorldPacket& recvData);
-        void HandleBattlePetUseAction(WorldPacket& recvData);
-        void HandleBattlePetSetData(WorldPacket& recvData);
-        void HandleBattlePetRename(WorldPacket& recvData);
+        void HandleBattlePetSetFlags(WorldPacket& recvData);
+        void HandleBattlePetModifyName(WorldPacket& recvData);
         void HandleBattlePetNameQuery(WorldPacket& recvData);
-        void HandleBattlePetPutInCage(WorldPacket& recvData);
+        void HandleCageBattlePet(WorldPacket& recvData);
+        void HandleBattlePetSetSlot(WorldPacket& recvData);
+        void HandleBattlePetSummon(WorldPacket& recvData);
+        void HandlePetBattleRequestWild(WorldPacket& recvData);
+        void HandlePetBattleRequestUpdate(WorldPacket& recvData);
+        void HandlePetBattleInputFirstPet(WorldPacket& recvData);
+        void HandlePetBattleInput(WorldPacket& recvData);
 
         // Blizzard Store
         void HandlePurchaseGetProductList(WorldPacket& recvData);

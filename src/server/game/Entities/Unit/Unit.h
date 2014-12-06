@@ -935,6 +935,8 @@ private:
     uint32 m_resist;
     uint32 m_block;
     uint32 m_cleanDamage;
+    int32 m_addpower;
+    int32 m_addptype;
 public:
     explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
@@ -944,6 +946,8 @@ public:
     void AbsorbDamage(int32 amount);
     void ResistDamage(uint32 amount);
     void BlockDamage(uint32 amount);
+    void SetAddPower(int32 amount) { m_addpower = amount; }
+    void SetAddPType(int32 amount) { m_addptype = amount; }
 
     Unit* GetAttacker() const { return m_attacker; };
     Unit* GetVictim() const { return m_victim; };
@@ -956,6 +960,8 @@ public:
     uint32 GetResist() const { return m_resist; };
     uint32 GetBlock() const { return m_block; };
     uint32 GetCleanDamage() const { return m_cleanDamage; };
+    int32 GetAddPower() const { return m_addpower; };
+    int32 GetAddPType() const { return m_addptype; };
 };
 
 class HealInfo
@@ -1508,8 +1514,12 @@ class Unit : public WorldObject
            return (uint32)f_BaseAttackTime;
         }
 
-        void SetAttackTime(WeaponAttackType att, uint32 val) { SetFloatValue(UNIT_FIELD_BASEATTACKTIME+att, val*m_modAttackSpeedPct[att]); }
-        void ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply);
+        void SetAttackTime(WeaponAttackType att, uint32 val)
+        {
+            float amount = val*m_modAttackSpeedPct[att];
+            SetFloatValue(UNIT_FIELD_BASEATTACKTIME+att, amount); 
+        }
+        void CalcAttackTimePercentMod(WeaponAttackType att, float val);
 
         SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_BYTES_2, 0)); }
         virtual void SetSheath(SheathState sheathed) { SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed); }
@@ -1965,6 +1975,7 @@ class Unit : public WorldObject
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
         int32 GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const;
+        float GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const;
         float GetTotalAuraMultiplier(AuraType auratype) const;
         int32 GetMaxPositiveAuraModifier(AuraType auratype);
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;

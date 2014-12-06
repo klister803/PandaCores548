@@ -1990,90 +1990,6 @@ public:
     }
 };
 
-enum eCollidusTheWarpWatcherSpells
-{
-    SPELL_BLINK				= 38932,
-    SPELL_FOCUSED_BURSTS    = 36414,
-    SPELL_PSYCHIC_SCREAM    = 34322,
-};
-
-enum eCollidusTheWarpWatcherEvents
-{
-    EVENT_BLINK			    = 1,
-    EVENT_FOCUSED_BURSTS    = 2,
-    EVENT_PSYCHIC_SCREAM    = 3,
-};
-
-class mob_collidus_the_warp_watcher : public CreatureScript
-{
-    public:
-        mob_collidus_the_warp_watcher() : CreatureScript("mob_collidus_the_warp_watcher")
-		{ 
-		}
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new mob_collidus_the_warp_watcherAI(creature);
-        }
-
-        struct mob_collidus_the_warp_watcherAI : public ScriptedAI
-        {
-            mob_collidus_the_warp_watcherAI(Creature* creature) : ScriptedAI(creature)
-            {
-            }
-
-            EventMap events;
-
-            void Reset()
-            {
-                events.Reset();
-                
-                events.ScheduleEvent(EVENT_BLINK,			 10000);
-                events.ScheduleEvent(EVENT_FOCUSED_BURSTS,   25000);
-                events.ScheduleEvent(EVENT_PSYCHIC_SCREAM,   10000);
-			}
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                events.Update(diff);
-                
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                    switch (eventId)
-                    {
-                        case EVENT_BLINK:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                                me->CastSpell(target, SPELL_BLINK, false);
-                            events.ScheduleEvent(EVENT_BLINK,      10000);
-                            break;
-                        case EVENT_FOCUSED_BURSTS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                                me->CastSpell(target, SPELL_FOCUSED_BURSTS, false);
-                            events.ScheduleEvent(EVENT_FOCUSED_BURSTS,      25000);
-                            break;
-                        case EVENT_PSYCHIC_SCREAM:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                me->CastSpell(target, SPELL_PSYCHIC_SCREAM, false);
-                            events.ScheduleEvent(EVENT_PSYCHIC_SCREAM,       7000);
-                            break;
-							
-                        default:
-                            break;
-                    }
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-};
-
 void AddSC_shadowmoon_valley()
 {
     new mob_mature_netherwing_drake();
@@ -2093,5 +2009,4 @@ void AddSC_shadowmoon_valley()
     new npc_enraged_spirit();
     new spell_unlocking_zuluheds_chains();
     new npc_shadowmoon_tuber_node();
-	new mob_collidus_the_warp_watcher();
 }

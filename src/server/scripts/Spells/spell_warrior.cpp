@@ -49,7 +49,6 @@ enum WarriorSpells
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
     WARRIOR_SPELL_COLOSSUS_SMASH                = 86346,
     WARRIOR_SPELL_MORTAL_STRIKE_AURA            = 12294,
-    WARRIOR_SPELL_SECOND_WIND_REGEN             = 16491,
     WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK        = 118895,
     WARRIOR_SPELL_MEAT_CLEAVER_PROC             = 85739,
     WARRIOR_SPELL_PHYSICAL_VULNERABILITY        = 81326,
@@ -354,56 +353,6 @@ class spell_warr_staggering_shout : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_staggering_shout_SpellScript();
-        }
-};
-
-// Second Wind - 29838
-class spell_warr_second_wind : public SpellScriptLoader
-{
-    public:
-        spell_warr_second_wind() : SpellScriptLoader("spell_warr_second_wind") { }
-
-        class spell_warr_second_wind_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_second_wind_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, WARRIOR_SPELL_SECOND_WIND_REGEN, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_second_wind_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_second_wind_SpellScript();
-        }
-
-        class spell_warr_second_wind_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warr_second_wind_AuraScript);
-
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                    if (caster->HasAura(WARRIOR_SPELL_SECOND_WIND_REGEN))
-                        caster->RemoveAura(WARRIOR_SPELL_SECOND_WIND_REGEN);
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_warr_second_wind_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warr_second_wind_AuraScript();
         }
 };
 
@@ -1318,7 +1267,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_meat_cleaver();
     new spell_warr_dragon_roar();
     new spell_warr_staggering_shout();
-    new spell_warr_second_wind();
     new spell_warr_sudden_death();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();

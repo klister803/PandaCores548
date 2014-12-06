@@ -915,8 +915,14 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     if (petType == HUNTER_PET)
     {
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel)*PET_XP_FACTOR));
-        if (m_owner->ToPlayer())
-            ApplyAttackTimePercentMod(BASE_ATTACK, m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_RANGED), true);
+        if (Player * plr = m_owner->ToPlayer())
+        {
+            float ratingBonusVal = plr->GetRatingBonusValue(CR_HASTE_RANGED);
+            float val = 1.0f;
+
+            ApplyPercentModFloatVar(val, ratingBonusVal, false);
+            CalcAttackTimePercentMod(BASE_ATTACK, val);
+        }
     }
     else
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);

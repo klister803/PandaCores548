@@ -175,14 +175,14 @@ void AddSC_boss_omnotron_defence_system();
 void AddSC_instance_blackwing_descent();
 void AddSC_blackwing_descent();
 void AddSC_boss_razorgore();                 //Blackwing lair
-void AddSC_boss_vael();
+void AddSC_boss_vaelastrasz();
 void AddSC_boss_broodlord();
 void AddSC_boss_firemaw();
 void AddSC_boss_ebonroc();
 void AddSC_boss_flamegor();
 void AddSC_boss_chromaggus();
 void AddSC_boss_nefarian();
-void AddSC_boss_victor_nefarius();
+void AddSC_instance_blackwing_lair();
 void AddSC_instance_deadmines(); // Deadmines
 void AddSC_deadmines();
 void AddSC_boss_glubtok();
@@ -330,8 +330,6 @@ void AddSC_burning_steppes();
 void AddSC_duskwood();
 void AddSC_eastern_plaguelands();
 void AddSC_eversong_woods();
-void AddSC_elwyn_forest();
-void AddSC_dun_morogh();
 void AddSC_ghostlands();
 void AddSC_hinterlands();
 void AddSC_ironforge();
@@ -387,7 +385,6 @@ void AddSC_madness_of_deathwing();
 
 void AddSC_instance_end_time(); // End Time
 void AddSC_end_time();
-void AddSC_end_time_teleport();
 void AddSC_boss_echo_of_tyrande();
 void AddSC_boss_echo_of_sylvanas();
 void AddSC_boss_echo_of_baine();
@@ -474,7 +471,6 @@ void AddSC_moonglade();
 void AddSC_mulgore();
 void AddSC_orgrimmar();
 void AddSC_silithus();
-void AddSC_southern_barrens();
 void AddSC_stonetalon_mountains();
 void AddSC_tanaris();
 void AddSC_teldrassil();
@@ -818,7 +814,6 @@ void AddSC_boss_garrosh_hellscream();
 
 void AddSC_valley_of_the_four_winds();
 void AddSC_krasarang_wilds();
-void AddSC_vale_of_eternal_blossoms();
 void AddSC_kun_lai_summit();
 
 void AddSC_WanderingIsland();
@@ -1011,14 +1006,14 @@ void AddEasternKingdomsScripts()
     AddSC_instance_blackwing_descent();
     AddSC_blackwing_descent();
     AddSC_boss_razorgore();                 //Blackwing lair
-    AddSC_boss_vael();
+    AddSC_boss_vaelastrasz();
     AddSC_boss_broodlord();
     AddSC_boss_firemaw();
     AddSC_boss_ebonroc();
     AddSC_boss_flamegor();
     AddSC_boss_chromaggus();
     AddSC_boss_nefarian();
-    AddSC_boss_victor_nefarius();
+	AddSC_instance_blackwing_lair();
     AddSC_instance_deadmines(); // Deadmines
     AddSC_deadmines();
     AddSC_boss_glubtok();
@@ -1169,8 +1164,6 @@ void AddEasternKingdomsScripts()
     AddSC_duskwood();
     AddSC_eastern_plaguelands();
     AddSC_eversong_woods();
-    AddSC_elwyn_forest();
-    AddSC_dun_morogh();
     AddSC_ghostlands();
     AddSC_hinterlands();
     AddSC_ironforge();
@@ -1230,7 +1223,6 @@ void AddKalimdorScripts()
 
     AddSC_instance_end_time(); // End Time
     AddSC_end_time();
-    AddSC_end_time_teleport();
     AddSC_boss_echo_of_tyrande();
     AddSC_boss_echo_of_sylvanas();
     AddSC_boss_echo_of_baine();
@@ -1317,7 +1309,6 @@ void AddKalimdorScripts()
     AddSC_mulgore();
     AddSC_orgrimmar();
     AddSC_silithus();
-    AddSC_southern_barrens();
     AddSC_stonetalon_mountains();
     AddSC_tanaris();
     AddSC_teldrassil();
@@ -1674,7 +1665,6 @@ void AddPandarieScripts()
 	AddSC_valley_of_the_four_winds();
 	AddSC_krasarang_wilds();
     AddSC_kun_lai_summit();
-    AddSC_vale_of_eternal_blossoms();
 
     AddSC_WanderingIsland();
 #endif

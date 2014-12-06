@@ -263,7 +263,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
     &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
-    &Spell::EffectUncagePet,                                //192 SPELL_EFFECT_UNCAGE_PET
+    &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
     &Spell::EffectNULL,                                     //195 SPELL_EFFECT_ACTIVATE_SCENE
@@ -271,8 +271,8 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //197 SPELL_EFFECT_ACTIVATE_SCENE6
     &Spell::SendScene,                                      //198 SPELL_EFFECT_ACTIVATE_SCENE3 send package
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
-    &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
-    &Spell::EffectNULL,                                     //201 SPELL_EFFECT_BATTLE_PET
+    &Spell::EffectHealBattlePetPct,                         //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
+    &Spell::EffectUnlockPetBattles,                         //201 SPELL_UNLOCK_PET_BATTLES
     &Spell::EffectNULL,                                     //202 SPELL_EFFECT_APPLY_AURA_WITH_VALUE
     &Spell::EffectRemoveAura,                               //203 SPELL_EFFECT_REMOVE_AURA_2 Based on 144863 -> This spell remove auras. 145052 possible trigger spell.
     &Spell::EffectNULL,                                     //204 SPELL_EFFECT_UPGRADE_BATTLE_PET
@@ -848,6 +848,16 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 break;
             }
             case 51505:  // Lava Burst
+            {
+                if (m_caster->HasAura(138144)) // Item - Shaman T15 Elemental 4P Bonus
+                    if(Player* player = m_caster->ToPlayer())
+                        player->ModifySpellCooldown(114049, -1000);
+
+                if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))
+                    if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                        AddPct(m_damage, eff->GetAmount());
+                break;
+            }
             case 77451:  // Lava Burst (Mastery)
             {
                 if (Aura* aura = unitTarget->GetAura(8050, m_caster->GetGUID()))
@@ -1558,18 +1568,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                     {
                         int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                        m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                     }
                     else
                     {
                         int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                        m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                     }
                 }
                 else
                 {
                     int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
                 }
                 return;
             }
@@ -1638,18 +1648,18 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 if(unitTarget != m_caster && m_caster->HasAura(63333) && unitTarget->GetCreatureType() != CREATURE_TYPE_UNDEAD) // Glyph of Death Coil
                 {
                     int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                    m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 115635, &bp, NULL, NULL, false);
                 }
                 else
                 {
                     int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
-                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, false);
                 }
             }
             else
             {
                 int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
-                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, false);
             }
             return;
         }
@@ -2972,6 +2982,11 @@ void Spell::EffectCreateRandomItem(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
     Player* player = unitTarget->ToPlayer();
+    
+    uint32 item_id = m_spellInfo->GetEffect(effIndex, m_diffMode).ItemType;
+
+    if (item_id)
+        DoCreateItem(effIndex, item_id);
 
     // create some random items
     player->AutoStoreLoot(m_spellInfo->Id, LootTemplates_Spell);
@@ -3113,9 +3128,14 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
         return;
 
+    if (power == POWER_RAGE && m_caster->HasAura(138222) && unitTarget->HasAura(5229)) // Item - Druid T15 Guardian 4P Bonus
+        damage *= 1.5;
+
     if (unitTarget->GetMaxPower(power) == 0)
         return;
 
+    m_addptype = power;
+    m_addpower = damage;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, damage, power);
 
     // Mad Alchemist's Potion
@@ -3188,6 +3208,8 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
         return;
 
     uint32 gain = CalculatePct(maxPower, damage);
+    m_addptype = power;
+    m_addpower = gain;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, gain, power);
 }
 
@@ -5949,7 +5971,12 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
         }
     }
 
-    m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
+    if (m_spellInfo->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
+        m_caster->m_movedPlayer->SaveAddComboPoints(damage);
+    else
+        m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectAddComboPoints damage %i, Id %i", damage, m_spellInfo->Id);
 }
 
 void Spell::EffectDuel(SpellEffIndex effIndex)
@@ -8424,7 +8451,7 @@ void Spell::EffectTeleportToDigsite(SpellEffIndex effIndex)
     player->TeleportToDigsiteInMap(player->GetMapId());
 }
 
-void Spell::EffectUncagePet(SpellEffIndex effIndex)
+void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -8453,7 +8480,7 @@ void Spell::EffectUncagePet(SpellEffIndex effIndex)
         uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
         // add pet
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
-            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, true);
+            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
         // update
         player->GetBattlePetMgr()->SendUpdatePets();
         // learn pet spell, hack, TODO: fix it
@@ -8468,6 +8495,52 @@ void Spell::EffectUncagePet(SpellEffIndex effIndex)
 
         m_CastItem = NULL;
     }
+}
+
+void Spell::EffectUnlockPetBattles(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    if (!player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
+        player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
+}
+
+void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    Player* player = m_caster->ToPlayer();
+
+    if (!player)
+        return;
+
+    PetJournal journal = player->GetBattlePetMgr()->GetPetJournal();
+
+    // healed/revived hurt pets
+    for (PetJournal::const_iterator j = journal.begin(); j != journal.end(); ++j)
+    {
+        PetInfo * pet = j->second;
+
+        if (!pet)
+            continue;
+
+        // calc health restore pct
+        int32 healthPct = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(m_caster);
+        if (pet->IsDead() || pet->IsHurt())
+        {
+            pet->SetHealth(uint32(pet->GetMaxHealth() * healthPct / 100.0f));
+            pet->SetInternalState(STATE_UPDATED);
+        }
+    }
+
+    player->GetBattlePetMgr()->SendUpdatePets();
 }
 
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
@@ -8495,7 +8568,7 @@ void Spell::SendScene(SpellEffIndex effIndex)
             ScenePackage = 26;      //Shen-zin Su - Healing Cinematic (CSA)
             break;
     }
-    WorldPacket data(SMSG_SERVER_SCENE_PLAYBACK, 46);
+    WorldPacket data(SMSG_PLAY_SCENE_DATA, 46);
     data.WriteBit(!hasMValue);
     data.WriteBit(!hasUnk);
     data.WriteBit(!ScenePackage);
@@ -8509,15 +8582,15 @@ void Spell::SendScene(SpellEffIndex effIndex)
     data << float(m_caster->GetPositionY());            // Y
 
     if(hasUnk)
-        data << uint32(1);                              // dword32 Unk
+        data << uint32(1);                              // SceneInstanceID
     if(hasMValue)
-        data << uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);                              // Effect198 Miscvalue
+        data << uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);                              // SceneID
     if(hasO)
-        data << float(m_caster->GetOrientation());      // Orientation()
+        data << float(m_caster->GetOrientation());      // Facing
     if(ScenePackage)
-        data << uint32(ScenePackage);                   // Scene Package ID
+        data << uint32(ScenePackage);                   // SceneScriptPackageID
     if(bit28)
-        data << uint32(9);                              // dword28 Unk
+        data << uint32(9);                              // PlaybackFlags
 
     data << float(m_caster->GetPositionX());            // X
     data << float(m_caster->GetPositionZ());            // Z

@@ -2656,8 +2656,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16           17
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask, combopoints FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2686,6 +2686,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 fromlevel = fields[14].GetInt32();
         int32 perchp = fields[15].GetInt32();
         int32 spelltypeMask = fields[16].GetInt32();
+        int32 combopoints = fields[17].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2710,6 +2711,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.fromlevel = fromlevel;
         templink.perchp = perchp;
         templink.spelltypeMask = spelltypeMask;
+        templink.combopoints = combopoints;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);
@@ -2732,8 +2734,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTargetFilterMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16            17           18
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype`, `schoolMask` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2761,6 +2763,8 @@ void SpellMgr::LoadSpellTriggered()
         int32 procFlags = fields[14].GetInt32();
         int32 procEx = fields[15].GetInt32();
         int32 check_spell_id = fields[16].GetInt32();
+        int32 addptype = fields[17].GetInt32();
+        int32 schoolMask = fields[18].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2794,6 +2798,8 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.procFlags = procFlags;
         temptrigger.procEx = procEx;
         temptrigger.check_spell_id = check_spell_id;
+        temptrigger.addptype = addptype;
+        temptrigger.schoolMask = schoolMask;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -4593,6 +4599,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //
                 case 116000:
+                case 105284:
                 case 103785: // Black Blood of the Earth dmg
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
@@ -5042,13 +5049,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 88764:// Rolling Thunder
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 0;    
                     break;
-                case 58423:
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[2] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0;
-                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
-                    break;
                 case 111397: // Blood Horror
                 case 115191:
                     spellInfo->AuraInterruptFlags = 0;
@@ -5408,6 +5408,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->SetDurationIndex(39); // 1 secs
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    break;
+                case 58423: // Relentless Strikes
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] |= 8;
                     break;
                 default:
                     break;

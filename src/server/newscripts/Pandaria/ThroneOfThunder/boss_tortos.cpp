@@ -329,41 +329,10 @@ class spell_quake_stomp : public SpellScriptLoader
         }
 };
 
-class spell_drain_the_weak : public SpellScriptLoader
-{
-    public:
-        spell_drain_the_weak() : SpellScriptLoader("spell_drain_the_weak") { }
-
-        class spell_drain_the_weak_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_drain_the_weak_SpellScript);
-
-            void CalcHeal()
-            {
-                if (GetCaster() && GetHitUnit())
-                {
-                    int32 modheal = (GetHitDamage()*50);
-                    GetCaster()->SetHealth(GetCaster()->GetHealth()+ uint32(modheal));
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_drain_the_weak_SpellScript::CalcHeal);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_drain_the_weak_SpellScript();
-        }
-};
-
 void AddSC_boss_tortos()
 {
     new boss_tortos();
     new npc_whirl_turtle();
     new npc_vampiric_cave_bat();
     new spell_quake_stomp();
-    new spell_drain_the_weak();
 }

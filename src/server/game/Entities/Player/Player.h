@@ -875,10 +875,11 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES            = 37,
     PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS             = 38,
-    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 39,
-    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 40,
-    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 41,
-    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 42,
+    PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS        = 39,
+    PLAYER_LOGIN_QUERY_LOADARCHAELOGY               = 40,
+    PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 41,
+    PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 42,
+    PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 43,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1986,6 +1987,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint8 GetComboPoints() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
+        void SaveAddComboPoints(int8 count) { m_comboSavePoints += count; }
+        uint8 GetSaveComboPoints() const { return m_comboSavePoints; }
 
         void AddComboPoints(Unit* target, int8 count, Spell* spell = NULL);
         void GainSpellComboPoints(int8 count);
@@ -3224,6 +3227,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadArchaelogy(PreparedQueryResult result);
         void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadBattlePets(PreparedQueryResult result);
+        void _LoadBattlePetSlots(PreparedQueryResult result);
         void _LoadHonor();
 
         /*********************************************************/
@@ -3252,6 +3256,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveBrackets(SQLTransaction& trans);
         void _SaveCUFProfiles(SQLTransaction& trans);
         void _SaveBattlePets(SQLTransaction& trans);
+        void _SaveBattlePetSlots(SQLTransaction& trans);
         void _SaveHonor();
 
         /*********************************************************/
@@ -3299,6 +3304,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
+        int8 m_comboSavePoints;
 
         QuestStatusMap m_QuestStatus;
         QuestStatusSaveMap m_QuestStatusSave;

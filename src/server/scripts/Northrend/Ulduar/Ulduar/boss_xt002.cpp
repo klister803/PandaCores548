@@ -934,72 +934,6 @@ class spell_xt002_gravity_bomb_damage : public SpellScriptLoader
         }
 };
 
-class spell_xt002_heart_overload_periodic : public SpellScriptLoader
-{
-    public:
-        spell_xt002_heart_overload_periodic() : SpellScriptLoader("spell_xt002_heart_overload_periodic") { }
-
-        class spell_xt002_heart_overload_periodic_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_xt002_heart_overload_periodic_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_ENERGY_ORB))
-                    return false;
-
-                if (!sSpellMgr->GetSpellInfo(SPELL_RECHARGE_BOOMBOT))
-                    return false;
-
-                if (!sSpellMgr->GetSpellInfo(SPELL_RECHARGE_PUMMELER))
-                    return false;
-
-                if (!sSpellMgr->GetSpellInfo(SPELL_RECHARGE_SCRAPBOT))
-                    return false;
-
-                return true;
-            }
-
-            void HandleScript(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (InstanceScript* instance = caster->GetInstanceScript())
-                    {
-                        if (Unit* toyPile = ObjectAccessor::GetUnit(*caster, instance->GetData64(DATA_TOY_PILE_0 + urand(0, 3))))
-                        {
-                            caster->CastSpell(toyPile, SPELL_ENERGY_ORB, true);
-
-                            // This should probably be incorporated in a dummy effect handler, but I've had trouble getting the correct target
-                            // Weighed randomization (approximation)
-                            uint32 const spells[] = { SPELL_RECHARGE_SCRAPBOT, SPELL_RECHARGE_SCRAPBOT, SPELL_RECHARGE_SCRAPBOT,
-                                SPELL_RECHARGE_PUMMELER, SPELL_RECHARGE_BOOMBOT };
-
-                            for (uint8 i = 0; i < 5; ++i)
-                            {
-                                uint8 a = urand(0, 4);
-                                uint32 spellId = spells[a];
-                                toyPile->CastSpell(toyPile, spellId, true, NULL, NULL, instance->GetData64(BOSS_XT002));
-                            }
-                        }
-                    }
-
-                    DoScriptText(SAY_SUMMON, caster->GetVehicleBase());
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_xt002_heart_overload_periodic_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_xt002_heart_overload_periodic_SpellScript();
-        }
-};
-
 class spell_xt002_tympanic_tantrum : public SpellScriptLoader
 {
     public:
@@ -1131,7 +1065,6 @@ void AddSC_boss_xt002()
     new spell_xt002_searing_light_spawn_life_spark();
     new spell_xt002_gravity_bomb_aura();
     new spell_xt002_gravity_bomb_damage();
-    new spell_xt002_heart_overload_periodic();
     new spell_xt002_tympanic_tantrum();
     new spell_xt002_submerged();
     new spell_xt002_stand();;

@@ -166,42 +166,6 @@ class spell_throw_torch2 : public SpellScriptLoader
         }
 };
 
-class boss_ahune : public CreatureScript
-{
-    public:
-
-        boss_ahune()
-            : CreatureScript("boss_ahune")
-        {
-        }
-
-        struct boss_ahuneAI : public ScriptedAI
-        {
-
-            boss_ahuneAI(Creature* pCreature) : ScriptedAI(pCreature) { }
-
-            void Reset() { }
-
-            void JustDied(Unit* /*pKiller*/)
-            {
-                if (GameObject* pChest = me->FindNearestGameObject(187892, 50))
-                    pChest->SetRespawnTime(pChest->GetRespawnDelay());
-            }
-
-            void UpdateAI(uint32 uiDiff)
-            {
-                if (!UpdateVictim())
-                    return;
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new boss_ahuneAI(creature);
-        }
-};
-
 // spell 45693 - даем ачивку
 class spell_hawka : public SpellScriptLoader
 {
@@ -270,97 +234,6 @@ class spell_hawka : public SpellScriptLoader
         {
             return new spell_hawkaAuraScript();
         }
-};
-
-/*######
-* npc_for_event
-######*/
-// UPDATE `creature_template` SET `ScriptName`='npc_for_event',AIName='' WHERE `entry`=23119;
-
-class npc_for_event : public CreatureScript
-{
-public:
-    npc_for_event(): CreatureScript("npc_for_event"){}
-        
-    struct npc_for_eventAI : ScriptedAI
-    {
-        npc_for_eventAI(Creature *pCreature) : ScriptedAI(pCreature)
-        {
-        }
-
-        void Reset()
-        {
-        }
-
-        void EnterEvadeMode()
-        {
-            if (!_EnterEvadeMode())
-                return;
-            Reset();
-        }
-
-        void SpellHit(Unit* caster,const SpellEntry* spell)
-        {
-                if(Player * pPlayer = caster->ToPlayer())
-                    switch (spell->Id)
-                    {
-                        case 40160:
-                            pPlayer->KilledMonsterCredit(23118,0);
-                            me->DespawnOrUnsummon(3000);
-                            return;
-                    }
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-        }
-    };
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_for_eventAI(pCreature);
-    }
-
-};
-
-class rabbits_loving : public CreatureScript
-{
-public:
-    rabbits_loving() : CreatureScript("rabbits_loving") { }
-
-    struct rabbits_lovingtAI : public ScriptedAI
-    {
-        rabbits_lovingtAI(Creature* pCreature) : ScriptedAI(pCreature)
-        {}
-
-        uint32 uiStartTimer;
-        Player* pPlayer;
-
-        void Reset()
-        {
-            uiStartTimer = 120000;
-        }
-
-        void UpdateAI(uint32 uiDiff)
-        {
-            if (uiStartTimer <= uiDiff)
-            {
-                if (me->GetCharmerOrOwner())
-                {
-                    pPlayer = me->GetCharmerOrOwner()->ToPlayer();
-                    if(pPlayer)
-                        pPlayer->CastSpell(pPlayer, 61875, true);
-                }
-
-                uiStartTimer = 120000;
-            } else uiStartTimer -= uiDiff;
-        }
-    };
-
-    CreatureAI *GetAI(Creature *creature) const
-    {
-        return new rabbits_lovingtAI(creature);
-    }
 };
 
 // spell 62014 - даем ачивку
@@ -464,15 +337,12 @@ class spell_achiev_snow : public SpellScriptLoader
 
 void AddSC_midsummer_fire_festival()
 {
-    new boss_ahune;
     new spell_fire_dancing;
     new spell_torches_caught;
     new spell_throw_torch;
     new spell_throw_torch2;
     new item_juggling_torch;
     new spell_hawka;
-    new npc_for_event;
-    new rabbits_loving();
     new spell_turkey_tracker();
     new spell_pass_the_turkey();
     new spell_achiev_snow();

@@ -856,39 +856,6 @@ public:
 
 };
 
-
-class spell_pool_of_tar : public CreatureScript
-{
-public:
-    spell_pool_of_tar() : CreatureScript("spell_pool_of_tar") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new spell_pool_of_tarAI (pCreature);
-    }
-
-    struct spell_pool_of_tarAI : public PassiveAI
-    {
-        spell_pool_of_tarAI(Creature* pCreature) : PassiveAI(pCreature)
-        {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->AddAura(SPELL_TAR_PASSIVE, me);
-        }
-
-        void DamageTaken(Unit * /*who*/, uint32 &damage)
-        {
-            damage = 0;
-        }
-
-        void SpellHit(Unit* /*caster*/, const SpellInfo* pSpell)
-        {
-            if (pSpell->SchoolMask & SPELL_SCHOOL_MASK_FIRE && !me->HasAura(SPELL_BLAZE))
-                me->CastSpell(me, SPELL_BLAZE, true);
-        }
-    };
-
-};
-
 class npc_colossus : public CreatureScript
 {
 public:
@@ -1468,7 +1435,6 @@ void AddSC_boss_flame_leviathan()
     new boss_flame_leviathan_overload_device();
     new boss_flame_leviathan_safety_container();
     new npc_mechanolift();
-    new spell_pool_of_tar();
     new npc_colossus();
     new npc_thorims_hammer();
     new npc_mimirons_inferno();

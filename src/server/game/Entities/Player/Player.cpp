@@ -740,6 +740,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_comboTarget = 0;
     m_comboPoints = 0;
+    m_comboSavePoints = 0;
 
     m_regenTimer = 0;
     m_regenTimerCount = 0;
@@ -4404,7 +4405,19 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                         if (!petguid)
                         {
                             petguid = sObjectMgr->GenerateBattlePetGuid();
-                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, 1, creature->Modelid1, 10, 5, 100, 100, 2, 0, 0, spellInfo->Id);
+                            // generate stats
+                            // breedID, quality must be generated!
+                            // level, depends of pet source
+                            uint16 breedID = 5;
+                            uint8 quality = 3;
+                            uint8 level = 1;
+                            BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(spEntry->ID, breedID);
+                            accumulator->GetQualityMultiplier(quality, level);
+                            uint32 health = accumulator->CalculateHealth();
+                            uint32 power = accumulator->CalculatePower();
+                            uint32 speed = accumulator->CalculateSpeed();
+                            delete accumulator;
+                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, spellInfo->Id, "", breedID);
                         }
                     }
                 }
@@ -6992,27 +7005,6 @@ float Player::OCTRegenMPPerSpirit()
 void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
 {
     m_baseRatingValue[cr] +=(apply ? value : -value);
-
-    // explicit affected values
-    switch (cr)
-    {
-        case CR_HASTE_MELEE:
-        {
-            float RatingChange = value * GetRatingMultiplier(cr);
-            ApplyAttackTimePercentMod(BASE_ATTACK, RatingChange, apply);
-            ApplyAttackTimePercentMod(OFF_ATTACK, RatingChange, apply);
-            if (getClass() == CLASS_DEATH_KNIGHT)
-                UpdateAllRunesRegen();
-            break;
-        }
-        case CR_HASTE_RANGED:
-        {
-            ApplyAttackTimePercentMod(RANGED_ATTACK, value * GetRatingMultiplier(cr), apply);
-            break;
-        }
-        default:
-            break;
-    }
 
     UpdateRating(cr);
 }
@@ -19164,8 +19156,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
-    // load battle pets journal before spells and other
+    // load battle pets journal ans slots before spells and other
     _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
@@ -20405,6 +20398,47 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
     while (result->NextRow());
 }
 
+void Player::_LoadBattlePetSlots(PreparedQueryResult result)
+{
+    if (!result)
+    {
+        // initial first
+        for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
+        {
+            bool locked = true;
+
+            // additional checks
+            switch (i)
+            {
+                case 0: locked = !HasSpell(119467); break;
+                case 1: locked = !GetAchievementMgr().HasAchieved(7433); break;
+                case 2: locked = !GetAchievementMgr().HasAchieved(6566); break;
+                default: break;
+            }
+
+            GetBattlePetMgr()->AddPetBattleSlot(0, i, locked);
+        }
+
+        return;
+    }
+
+    // SELECT slot_0, slot_1, slot_2, locked FROM character_battle_pet WHERE ownerAccID = ?
+    Field* fields = result->Fetch();
+
+    uint64 petGUIDs[3] = {0, 0, 0};
+
+    petGUIDs[0]  = fields[0].GetUInt64();
+    petGUIDs[1]  = fields[1].GetUInt64();
+    petGUIDs[2]  = fields[2].GetUInt64();
+    uint8 lockedMask = fields[3].GetUInt8();
+
+    for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
+    {
+        bool locked = lockedMask & (1 << i);
+        GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i, locked);
+    }
+}
+
 void Player::_LoadGroup(PreparedQueryResult result)
 {
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM group_member WHERE memberGuid=%u", GetGUIDLow());
@@ -21245,6 +21279,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveCUFProfiles(trans);
     _SaveArchaeology(trans);
     _SaveBattlePets(trans);
+    _SaveBattlePetSlots(trans);
     _SaveHonor();
 
     // check if stats should only be saved on logout
@@ -22069,7 +22104,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     // save journal
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
-        if (pet->second->deleteMeLater)
+        if (pet->second->internalState == STATE_DELETED)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
             stmt->setUInt64(0, pet->first);
@@ -22098,6 +22133,23 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
 
         trans->Append(stmt);
     }
+}
+
+void Player::_SaveBattlePetSlots(SQLTransaction& trans)
+{
+    // save slots
+    uint8 lockedMask = 0;
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_SLOTS);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
+    for (int i = 0; i < 3; ++i)
+    {
+        PetBattleSlot * slot = GetBattlePetMgr()->GetPetBattleSlot(i);
+        uint8 locked = slot ? slot->IsLocked() : 1;
+        lockedMask |= locked << i;
+        stmt->setUInt64(i+1, slot ? slot->petGUID : 0);
+    }
+    stmt->setUInt8(4, lockedMask);
+    trans->Append(stmt);
 }
 
 // save player stats -- only for external usage
@@ -24438,7 +24490,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     if (rec < 0.0 && catrec < 0.0)
     {
         cat = spellInfo->Category;
-        rec = spellInfo->RecoveryTime ? spellInfo->RecoveryTime : 25.0;
+        rec = spellInfo->RecoveryTime;
         catrec = spellInfo->CategoryRecoveryTime;
     }
 
