@@ -4902,6 +4902,32 @@ int32 Unit::GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const
     return modifier;
 }
 
+float Unit::GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const
+{
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
+    float multiplier = 1.0f;
+
+    AuraEffectList mTotalAuraList;
+    for (std::list<AuraType>::iterator auratype = auratypelist->begin(); auratype!= auratypelist->end(); ++auratype)
+    {
+        AuraEffectList const& swaps = GetAuraEffectsByType(*auratype);
+        if (!swaps.empty())
+            mTotalAuraList.insert(mTotalAuraList.end(), swaps.begin(), swaps.end());
+    }
+
+    if (!mTotalAuraList.empty())
+    {
+        for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                AddPct(multiplier, (*i)->GetAmount());
+
+        for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+            AddPct(multiplier, itr->second);
+    }
+
+    return multiplier;
+}
+
 float Unit::GetTotalAuraMultiplier(AuraType auratype) const
 {
     std::map<SpellGroup, int32> SameEffectSpellGroup;
@@ -17814,19 +17840,13 @@ Unit* Unit::GetNearbyVictim(Unit* exclude, float dist, bool IsInFront, bool IsNe
     return Nearby;
 }
 
-void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
+void Unit::CalcAttackTimePercentMod(WeaponAttackType att, float val)
 {
-    float remainingTimePct = (float)m_attackTimer[att] / (GetAttackTime(att) * m_modAttackSpeedPct[att]);
-    if (val > 0)
-    {
-        ApplyPercentModFloatVar(m_modAttackSpeedPct[att], val, !apply);
-        ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, val, !apply);
-    }
-    else
-    {
-        ApplyPercentModFloatVar(m_modAttackSpeedPct[att], -val, apply);
-        ApplyPercentModFloatValue(UNIT_FIELD_BASEATTACKTIME+att, -val, apply);
-    }
+    uint32 attackTime = GetAttackTime(att);
+    float remainingTimePct = (float)m_attackTimer[att] / (attackTime * m_modAttackSpeedPct[att]);
+    
+    m_modAttackSpeedPct[att] = val;
+    SetAttackTime(att, attackTime);
 
     if (val && isPet())
         UpdateDamagePhysical(att);

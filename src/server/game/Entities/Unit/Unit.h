@@ -1514,8 +1514,12 @@ class Unit : public WorldObject
            return (uint32)f_BaseAttackTime;
         }
 
-        void SetAttackTime(WeaponAttackType att, uint32 val) { SetFloatValue(UNIT_FIELD_BASEATTACKTIME+att, val*m_modAttackSpeedPct[att]); }
-        void ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply);
+        void SetAttackTime(WeaponAttackType att, uint32 val)
+        {
+            float amount = val*m_modAttackSpeedPct[att];
+            SetFloatValue(UNIT_FIELD_BASEATTACKTIME+att, amount); 
+        }
+        void CalcAttackTimePercentMod(WeaponAttackType att, float val);
 
         SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_BYTES_2, 0)); }
         virtual void SetSheath(SheathState sheathed) { SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed); }
@@ -1971,6 +1975,7 @@ class Unit : public WorldObject
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
         int32 GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const;
+        float GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const;
         float GetTotalAuraMultiplier(AuraType auratype) const;
         int32 GetMaxPositiveAuraModifier(AuraType auratype);
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;

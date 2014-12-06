@@ -927,11 +927,11 @@ void Player::_RemoveAllStatBonuses()
 void Unit::UpdateMeleeHastMod()
 {
     Player* player = ToPlayer();
-    float amount = 0.0f;
+    float amount = 100.0f;
     if(player)
-        amount = player->GetRatingBonusValue(CR_HASTE_MELEE);
+        amount += player->GetRatingBonusValue(CR_HASTE_MELEE);
 
-    m_baseMHastRatingPct = amount / 100.0f + 1.0f;
+    m_baseMHastRatingPct = amount / 100.0f;
 
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
@@ -941,7 +941,8 @@ void Unit::UpdateMeleeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
 
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
 
@@ -962,6 +963,9 @@ void Unit::UpdateMeleeHastMod()
         ApplyPercentModFloatVar(value, -amount, true);
     SetFloatValue(UNIT_MOD_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+
+    for (uint8 i = BASE_ATTACK; i < RANGED_ATTACK; ++i)
+        CalcAttackTimePercentMod(WeaponAttackType(i), value);
 
     Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE);
     for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
@@ -984,16 +988,20 @@ void Unit::UpdateMeleeHastMod()
 void Unit::UpdateHastMod()
 {
     Player* player = ToPlayer();
-    float amount = 0.0f;
+    float amount = 100.0f;
     if(player)
-        amount = player->GetRatingBonusValue(CR_HASTE_SPELL);
+        amount += player->GetRatingBonusValue(CR_HASTE_SPELL);
 
-    m_baseHastRatingPct = amount / 100.0f + 1.0f;
+    m_baseHastRatingPct = amount / 100.0f;
 
-    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
-    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CASTING_SPEED);
-    amount += GetTotalAuraModifier(SPELL_AURA_HASTE_SPELLS);
-    amount += GetTotalAuraModifier(SPELL_AURA_MELEE_SLOW);
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED);
+    auratypelist.push_back(SPELL_AURA_HASTE_SPELLS);
+    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
+
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
 
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
 
@@ -1018,10 +1026,10 @@ void Unit::UpdateHastMod()
 void Unit::UpdateRangeHastMod()
 {
     Player* player = ToPlayer();
-    float amount = 0.0f;
+    float amount = 100.0f;
     if(player)
-        amount = player->GetRatingBonusValue(CR_HASTE_RANGED);
-    m_baseRHastRatingPct = amount / 100.0f + 1.0f;
+        amount += player->GetRatingBonusValue(CR_HASTE_RANGED);
+    m_baseRHastRatingPct = amount / 100.0f;
 
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
@@ -1030,7 +1038,8 @@ void Unit::UpdateRangeHastMod()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
 
     //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
 
@@ -1046,6 +1055,8 @@ void Unit::UpdateRangeHastMod()
     else
         ApplyPercentModFloatVar(value, -amount, true);
     SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, value);
+
+    CalcAttackTimePercentMod(RANGED_ATTACK, value);
 
     if (GetPower(POWER_FOCUS))
         UpdateFocusRegen();

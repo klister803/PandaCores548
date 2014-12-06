@@ -5547,10 +5547,6 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK, (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
-
     target->UpdateMeleeHastMod();
     target->UpdateRangeHastMod();
 }
@@ -5561,10 +5557,6 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
         return;
 
     Unit* target = aurApp->GetTarget();
-
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK, float(GetAmount()), apply);
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, float(GetAmount()), apply);
     
     target->UpdateHastMod();
     target->UpdateMeleeHastMod();
@@ -5577,8 +5569,10 @@ void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode,
         return;
 
     Unit* target = aurApp->GetTarget();
+    float hastMod = target->GetFloatValue(UNIT_MOD_HASTE);
+    ApplyPercentModFloatVar(hastMod, (float)GetAmount(), !apply);
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, (float)GetAmount(), apply);
+    target->CalcAttackTimePercentMod(BASE_ATTACK, hastMod);
     target->UpdateDamagePhysical(BASE_ATTACK);
 }
 
@@ -5592,9 +5586,6 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
 
     int32 value = GetAmount();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
-
     target->UpdateMeleeHastMod();
 }
 
@@ -5606,7 +5597,6 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
     target->UpdateRangeHastMod();
 }
 
@@ -5626,19 +5616,7 @@ void AuraEffect::HandleModRating(AuraApplication const* aurApp, uint8 mode, bool
 
     for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
         if (GetMiscValue() & (1 << rating))
-        {
-            switch (rating)
-            {
-                case CR_HASTE_MELEE:
-                case CR_HASTE_RANGED:
-                case CR_HASTE_SPELL:
-                    target->ToPlayer()->ApplyRatingMod(CombatRating(rating), GetAmount(), apply);
-                    break;
-                default:
-                    target->ToPlayer()->UpdateRating(CombatRating(rating));
-                    break;
-            }
-        }
+            target->ToPlayer()->UpdateRating(CombatRating(rating));
 }
 
 void AuraEffect::HandleModRatingFromStat(AuraApplication const* aurApp, uint8 mode, bool apply) const
