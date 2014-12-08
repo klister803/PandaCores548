@@ -1,18 +1,21 @@
-#include "NewScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 #include "baradin_hold.h"
 
 enum Spells
 {
-    SPELL_FEL_FIRESTORM       = 88972,
-    SPELL_CONSUMING_DARKNESS  = 88954,
-    SPELL_METEOR_SLASH        = 88942,
-    SPELL_BERSERK             = 47008,
+    SPELL_METEOR_SLASH          = 88942,
+    SPELL_CONSUMING_DARKNESS    = 88954,
+    SPELL_FEL_FIRESTORM         = 88972,
+    SPELL_BERSERK               = 47008
 };
 
-enum ePhases
+enum Events
 {
-    PHASE_1,
-    PHASE_2,
+    EVENT_METEOR_SLASH          = 1,
+    EVENT_CONSUMING_DARKNESS    = 2,
+    EVENT_BERSERK               = 3
 };
 
 class boss_argaloth : public CreatureScript
@@ -20,55 +23,39 @@ class boss_argaloth : public CreatureScript
     public:
         boss_argaloth() : CreatureScript("boss_argaloth") { }
 
-        CreatureAI* GetAI(Creature* pCreature) const
-        {
-            return new boss_argalothAI(pCreature);
-        }
-
         struct boss_argalothAI : public BossAI
         {
-            boss_argalothAI(Creature* pCreature) : BossAI(pCreature, DATA_ARGALOTH) 
+            boss_argalothAI(Creature* creature) : BossAI(creature, DATA_ARGALOTH) { }
+
+            void EnterCombat(Unit* /*who*/)
             {
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-				me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
-				me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                _EnterCombat();
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+                events.ScheduleEvent(EVENT_METEOR_SLASH, urand(10 * IN_MILLISECONDS, 20 * IN_MILLISECONDS));
+                events.ScheduleEvent(EVENT_CONSUMING_DARKNESS, urand(20 * IN_MILLISECONDS, 25 * IN_MILLISECONDS));
+                events.ScheduleEvent(EVENT_BERSERK, 5 * MINUTE * IN_MILLISECONDS);
             }
 
-            uint8 Phase, PhaseCount;
-
-            uint32 SlashTimer;
-            uint32 ConsumingDarknessTimer;
-            uint32 BerserkTimer;
-            uint32 ResetPhaseTimer;
-
-            void Reset()
+            void EnterEvadeMode()
             {
-                _Reset();
-
-                PhaseCount = 0;
-                SlashTimer = 10000;
-                ConsumingDarknessTimer = 15000;
-                BerserkTimer = 360000;
-                Phase = PHASE_1;
+                me->GetMotionMaster()->MoveTargetedHome();
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                BossAI::EnterEvadeMode();
             }
 
-            void EnterCombat(Unit* attacker)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
-                instance->SetBossState(DATA_ARGALOTH, IN_PROGRESS);
+                if (me->HealthBelowPctDamaged(33, damage) ||
+                    me->HealthBelowPctDamaged(66, damage))
+                {
+                    DoCastAOE(SPELL_FEL_FIRESTORM);
+                }
             }
 
-            void JustDied(Unit* killer)
+            void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
 
             void UpdateAI(uint32 diff)
@@ -76,60 +63,116 @@ class boss_argaloth : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if(SlashTimer <= diff && Phase == PHASE_1)
-                {
-                    DoCastVictim(SPELL_METEOR_SLASH);
-                    SlashTimer = 15000;
-                } else SlashTimer -= diff;
+                events.Update(diff);
 
-                if(ConsumingDarknessTimer <= diff && Phase == PHASE_1)
-                {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        DoCast(target, SPELL_CONSUMING_DARKNESS, true);
-                    ConsumingDarknessTimer = 15000;
-                } else ConsumingDarknessTimer -= diff;
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
-                if(BerserkTimer <= diff && Phase == PHASE_1)
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    DoCast(me, SPELL_BERSERK);
-                    BerserkTimer = 360000;
-                } else BerserkTimer -= diff;
-
-                if (HealthBelowPct(67) && Phase == PHASE_1 && PhaseCount == 0)
-                {
-                    PhaseCount++;
-                    Phase = PHASE_2;
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    DoCastAOE(SPELL_FEL_FIRESTORM);
-                    ResetPhaseTimer = 16500;
+                    switch (eventId)
+                    {
+                        case EVENT_METEOR_SLASH:
+                            DoCastAOE(SPELL_METEOR_SLASH);
+                            events.ScheduleEvent(EVENT_METEOR_SLASH, urand(15 * IN_MILLISECONDS, 20 * IN_MILLISECONDS));
+                            break;
+                        case EVENT_CONSUMING_DARKNESS:
+                            DoCastAOE(SPELL_CONSUMING_DARKNESS, true);
+                            events.ScheduleEvent(EVENT_CONSUMING_DARKNESS, urand(20 * IN_MILLISECONDS, 25 * IN_MILLISECONDS));
+                            break;
+                        case EVENT_BERSERK:
+                            DoCast(me, SPELL_BERSERK, true);
+                            break;
+                        default:
+                            break;
+                    }
                 }
-
-                if (HealthBelowPct(34) && Phase == PHASE_1 && PhaseCount == 1)
-                {
-                    PhaseCount++;
-                    Phase = PHASE_2;
-                    me->SetReactState(REACT_PASSIVE);
-                    me->AttackStop();
-                    DoCastAOE(SPELL_FEL_FIRESTORM);
-                    ResetPhaseTimer = 16500;
-                }
-
-                if(ResetPhaseTimer <= diff)
-                {
-                    Phase = PHASE_1;
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    SlashTimer = 10000;
-                    ConsumingDarknessTimer = 15000;
-                    ResetPhaseTimer = 360000;
-                } else ResetPhaseTimer -= diff;
 
                 DoMeleeAttackIfReady();
             }
         };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<boss_argalothAI>(creature);
+        }
+};
+
+// 88954 / 95173 - Consuming Darkness
+class spell_argaloth_consuming_darkness : public SpellScriptLoader
+{
+    public:
+        spell_argaloth_consuming_darkness() : SpellScriptLoader("spell_argaloth_consuming_darkness") { }
+
+        class spell_argaloth_consuming_darkness_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_argaloth_consuming_darkness_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                Trinity::Containers::RandomResizeList(targets, GetCaster()->GetMap()->Is25ManRaid() ? 8 : 3);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_argaloth_consuming_darkness_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_argaloth_consuming_darkness_SpellScript();
+        }
+};
+
+// 88942 / 95172 - Meteor Slash
+class spell_argaloth_meteor_slash : public SpellScriptLoader
+{
+    public:
+        spell_argaloth_meteor_slash() : SpellScriptLoader("spell_argaloth_meteor_slash") { }
+
+        class spell_argaloth_meteor_slash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_argaloth_meteor_slash_SpellScript);
+
+            bool Load()
+            {
+                _targetCount = 0;
+                return true;
+            }
+
+            void CountTargets(std::list<WorldObject*>& targets)
+            {
+                _targetCount = targets.size();
+            }
+
+            void SplitDamage()
+            {
+                if (!_targetCount)
+                    return;
+
+                SetHitDamage(GetHitDamage() / _targetCount);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_argaloth_meteor_slash_SpellScript::CountTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
+                OnHit += SpellHitFn(spell_argaloth_meteor_slash_SpellScript::SplitDamage);
+            }
+
+        private:
+            uint32 _targetCount;
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_argaloth_meteor_slash_SpellScript();
+        }
 };
 
 void AddSC_boss_argaloth()
 {
     new boss_argaloth();
+    new spell_argaloth_consuming_darkness();
+    new spell_argaloth_meteor_slash();
 }

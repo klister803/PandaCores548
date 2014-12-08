@@ -3,8 +3,6 @@
 
 #define MAX_ENCOUNTER 3
 
-#define BHScriptName "instance_baradin_hold"
-
 enum Creatures
 {
     NPC_ARGALOTH            = 47120,
@@ -25,5 +23,15 @@ enum Data
     DATA_OCCUTHAR   = 1,
     DATA_ALIZABAL   = 2,   
 };
+
+template<class AI>
+CreatureAI* GetInstanceAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId("instance_baradin_hold"))
+                return new AI(creature);
+    return NULL;
+}
 
 #endif
