@@ -2868,6 +2868,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
     AddToMap(summon->ToCreature());
     summon->InitSummon();
+    summon->CastPetAuras(true);
 
     //ObjectAccessor::UpdateObjectVisibility(summon);
 
@@ -2937,7 +2938,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, bool stampeded)
+Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, uint32 spellId, bool stampeded)
 {
     bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
     if (getClass() != CLASS_HUNTER)
@@ -2998,6 +2999,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
 
     switch (petType)
     {
@@ -3037,6 +3039,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (duration > 0)
         pet->SetDuration(duration);
 
+    pet->CastPetAuras(true);
     return pet;
 }
 

@@ -361,6 +361,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && (getPetType() == SUMMON_PET || getPetType() == HUNTER_PET))
         owner->ToPlayer()->SetLastPetNumber(pet_number);
 
+    CastPetAuras(true);
     m_loading = false;
     return true;
 }
@@ -1726,6 +1727,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    uint32 createdSpellId = GetUInt32Value(UNIT_CREATED_BY_SPELL);
+
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(GetEntry()))
     {
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)
@@ -1761,6 +1764,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                 continue;
             if(spellId != 0 && spellId != abs(itr->aura))
                 continue;
+            if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
+                continue;
 
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
@@ -1786,6 +1791,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
+                    case 3: //cast spell not triggered
+                        _caster->CastSpell(_target, itr->spellId, false);
+                        break;
                 }
             }
             else
@@ -1805,6 +1813,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                    case 3: //cast spell not triggered
+                        _caster->CastSpell(_target, abs(itr->spellId), false);
                         break;
                 }
             }
@@ -1850,6 +1861,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                 continue;
             if(spellId != 0 && spellId != abs(itr->aura))
                 continue;
+            if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
+                continue;
 
             int32 bp0 = int32(itr->bp0);
             int32 bp1 = int32(itr->bp1);
@@ -1875,6 +1888,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                     case 2: //add aura
                         _caster->AddAura(itr->spellId, _target);
                         break;
+                    case 3: //cast spell not triggered
+                        _caster->CastSpell(_target, itr->spellId, false);
+                        break;
                 }
             }
             else
@@ -1894,6 +1910,9 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                         break;
                     case 2: //add aura
                         _caster->AddAura(abs(itr->spellId), _target);
+                        break;
+                    case 3: //cast spell not triggered
+                        _caster->CastSpell(_target, abs(itr->spellId), false);
                         break;
                 }
             }

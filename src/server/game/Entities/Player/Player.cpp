@@ -20106,8 +20106,8 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
     //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, status, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, mobcount5, mobcount6, mobcount7, mobcount8, mobcount9, mobcount10,
     //                                                14          15          16           17         18          19          20          21          22          23
     //                                                itemcount1, itemcount2, itemcount3, itemcount4, itemcount5, itemcount6, itemcount7, itemcount8, itemcount9, itemcount10,
-    //                                                24
-    //                                                playercount FROM character_queststatus WHERE guid = '%u'", GetGUIDLow());
+    //                                                24            25
+    //                                                playercount, guid FROM character_queststatus WHERE account = '%u'", GetSession()->GetAccountId());
 
     if (result)
     {
@@ -20116,10 +20116,17 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
             Field* fields = result->Fetch();
 
             uint32 quest_id = fields[0].GetUInt32();
+            uint32 guid = fields[25].GetUInt32();
+
+            if (m_QuestStatus.find(quest_id) != m_QuestStatus.end())
+                continue;
                                                             // used to be new, no delete?
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (quest)
             {
+                if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
+                    continue;
+
                 // find or create
                 QuestStatusData& questStatusData = m_QuestStatus[quest_id];
 
@@ -20188,7 +20195,7 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 
 void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
 {
-    // SELECT quest FROM character_queststatus_rewarded WHERE guid = ?
+    // SELECT quest, guid FROM character_queststatus_rewarded WHERE account = ?
 
     if (result)
     {
@@ -20197,10 +20204,17 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
             Field* fields = result->Fetch();
 
             uint32 quest_id = fields[0].GetUInt32();
+            uint32 guid = fields[1].GetUInt32();
+
+            if (m_RewardedQuests.find(quest_id) != m_RewardedQuests.end())
+                continue;
                                                             // used to be new, no delete?
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (quest)
             {
+                if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
+                    continue;
+
                 // learn rewarded spell if unknown
                 learnQuestRewardedSpells(quest);
 
@@ -20225,33 +20239,35 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 {
     m_DFQuests.clear();
 
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, time FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT quest, time, guid FROM character_queststatus_daily WHERE account = '%u'", GetSession()->GetAccountId());
 
     if (result)
     {
         do
         {
             Field* fields = result->Fetch();
-            if (Quest const* qQuest = sObjectMgr->GetQuestTemplate(fields[0].GetUInt32()))
-            {
-                if (qQuest->IsDFQuest())
-                {
-                    m_DFQuests.insert(qQuest->GetQuestId());
-                    m_lastDailyQuestTime = time_t(fields[1].GetUInt32());
-                    continue;
-                }
-            }
-
             uint32 quest_id = fields[0].GetUInt32();
-
-            // save _any_ from daily quest times (it must be after last reset anyway)
-            m_lastDailyQuestTime = time_t(fields[1].GetUInt32());
+            uint32 guid = fields[2].GetUInt32();
 
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
                 continue;
 
-            m_dailyquests.insert(quest_id);
+            if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
+                continue;
+
+            if (quest->IsDFQuest())
+            {
+                m_DFQuests.insert(quest->GetQuestId());
+                m_lastDailyQuestTime = time_t(fields[1].GetUInt32());
+                continue;
+            }
+
+            // save _any_ from daily quest times (it must be after last reset anyway)
+            m_lastDailyQuestTime = time_t(fields[1].GetUInt32());
+
+            if (m_dailyquests.find(quest_id) == m_dailyquests.end())
+                m_dailyquests.insert(quest_id);
 
             sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Daily quest (%u) cooldown for player (GUID: %u)", quest_id, GetGUIDLow());
         }
@@ -20271,8 +20287,16 @@ void Player::_LoadWeeklyQuestStatus(PreparedQueryResult result)
         {
             Field* fields = result->Fetch();
             uint32 quest_id = fields[0].GetUInt32();
+            uint32 guid = fields[1].GetUInt32();
+
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
+                continue;
+
+            if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
+                continue;
+
+            if (m_weeklyquests.find(quest_id) != m_weeklyquests.end())
                 continue;
 
             m_weeklyquests.insert(quest_id);
@@ -20295,8 +20319,16 @@ void Player::_LoadSeasonalQuestStatus(PreparedQueryResult result)
             Field* fields = result->Fetch();
             uint32 quest_id = fields[0].GetUInt32();
             uint32 event_id = fields[1].GetUInt32();
+            uint32 guid = fields[2].GetUInt32();
+
             Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
             if (!quest)
+                continue;
+
+            if(quest->GetType() != QUEST_TYPE_ACCOUNT && guid != GetGUIDLow()) //check account quest
+                continue;
+
+            if (m_seasonalquests.find(quest_id) != m_seasonalquests.end())
                 continue;
 
             m_seasonalquests[event_id].insert(quest_id);
@@ -21801,12 +21833,18 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
         if (saveItr->second)
         {
             statusItr = m_QuestStatus.find(saveItr->first);
+
+            uint32 guid = GetGUIDLow();
+            Quest const* quest = sObjectMgr->GetQuestTemplate(saveItr->first);
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+                guid = 0;
+
             if (statusItr != m_QuestStatus.end() && (keepAbandoned || statusItr->second.Status != QUEST_STATUS_NONE))
             {
                 uint8 index = 0;
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_CHAR_QUESTSTATUS);
 
-                stmt->setUInt32(index++, GetGUIDLow());
+                stmt->setUInt32(index++, guid);
                 stmt->setUInt32(index++, statusItr->first);
                 stmt->setUInt8(index++, uint8(statusItr->second.Status));
                 stmt->setBool(index++, statusItr->second.Explored);
@@ -21818,16 +21856,28 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
                 for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
                     stmt->setUInt16(index++, statusItr->second.ItemCount[i]);
 
-                stmt->setUInt16(index, statusItr->second.PlayerCount);
+                stmt->setUInt16(index++, statusItr->second.PlayerCount);
+                stmt->setUInt32(index, GetSession()->GetAccountId());
                 trans->Append(stmt);
             }
         }
         else
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_BY_QUEST);
-            stmt->setUInt32(0, GetGUIDLow());
-            stmt->setUInt32(1, saveItr->first);
-            trans->Append(stmt);
+            Quest const* quest = sObjectMgr->GetQuestTemplate(saveItr->first);
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_QUESTSTATUS_BY_QUEST);
+                stmt->setUInt32(0, GetSession()->GetAccountId());
+                stmt->setUInt32(1, saveItr->first);
+                trans->Append(stmt);
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_BY_QUEST);
+                stmt->setUInt32(0, GetGUIDLow());
+                stmt->setUInt32(1, saveItr->first);
+                trans->Append(stmt);
+            }
         }
     }
 
@@ -21840,15 +21890,27 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_QUESTSTATUS);
             stmt->setUInt32(0, GetGUIDLow());
             stmt->setUInt32(1, saveItr->first);
+            stmt->setUInt32(2, GetSession()->GetAccountId());
             trans->Append(stmt);
 
         }
         else if (!keepAbandoned)
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST);
-            stmt->setUInt32(0, GetGUIDLow());
-            stmt->setUInt32(1, saveItr->first);
-            trans->Append(stmt);
+            Quest const* quest = sObjectMgr->GetQuestTemplate(saveItr->first);
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_QUESTSTATUS_REWARDED_BY_QUEST);
+                stmt->setUInt32(0, GetSession()->GetAccountId());
+                stmt->setUInt32(1, saveItr->first);
+                trans->Append(stmt);
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST);
+                stmt->setUInt32(0, GetGUIDLow());
+                stmt->setUInt32(1, saveItr->first);
+                trans->Append(stmt);
+            }
         }
     }
 
@@ -21871,13 +21933,22 @@ void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_DAILY_CHAR);
     stmt->setUInt32(0, GetGUIDLow());
     trans->Append(stmt);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_DAILY_ACC);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
+    trans->Append(stmt);
 
     for (QuestSet::iterator itr = m_dailyquests.begin(); itr != m_dailyquests.end(); ++itr)
     {
+        uint32 guid = GetGUIDLow();
+        Quest const* quest = sObjectMgr->GetQuestTemplate((*itr));
+        if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+            guid = 0;
+
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_DAILYQUESTSTATUS);
-        stmt->setUInt32(0, GetGUIDLow());
+        stmt->setUInt32(0, guid);
         stmt->setUInt32(1, *itr);
         stmt->setUInt64(2, uint64(m_lastDailyQuestTime));
+        stmt->setUInt32(3, GetSession()->GetAccountId());
         trans->Append(stmt);
     }
 
@@ -21885,10 +21956,16 @@ void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
     {
         for (DFQuestsDoneList::iterator itr = m_DFQuests.begin(); itr != m_DFQuests.end(); ++itr)
         {
+            uint32 guid = GetGUIDLow();
+            Quest const* quest = sObjectMgr->GetQuestTemplate((*itr));
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+                guid = 0;
+
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_DAILYQUESTSTATUS);
-            stmt->setUInt32(0, GetGUIDLow());
+            stmt->setUInt32(0, guid);
             stmt->setUInt32(1, (*itr));
             stmt->setUInt64(2, uint64(m_lastDailyQuestTime));
+            stmt->setUInt32(3, GetSession()->GetAccountId());
             trans->Append(stmt);
         }
     }
@@ -21903,14 +21980,22 @@ void Player::_SaveWeeklyQuestStatus(SQLTransaction& trans)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_WEEKLY_CHAR);
     stmt->setUInt32(0, GetGUIDLow());
     trans->Append(stmt);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_WEEKLY_ACC);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
+    trans->Append(stmt);
 
     for (QuestSet::const_iterator iter = m_weeklyquests.begin(); iter != m_weeklyquests.end(); ++iter)
     {
         uint32 quest_id  = *iter;
+        uint32 guid = GetGUIDLow();
+        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+        if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+            guid = 0;
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_WEEKLYQUESTSTATUS);
-        stmt->setUInt32(0, GetGUIDLow());
+        stmt->setUInt32(0, guid);
         stmt->setUInt32(1, quest_id);
+        stmt->setUInt32(2, GetSession()->GetAccountId());
         trans->Append(stmt);
     }
 
@@ -21926,6 +22011,9 @@ void Player::_SaveSeasonalQuestStatus(SQLTransaction& trans)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_SEASONAL_CHAR);
     stmt->setUInt32(0, GetGUIDLow());
     trans->Append(stmt);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_QUEST_STATUS_SEASONAL_CHAR);
+    stmt->setUInt32(0, GetSession()->GetAccountId());
+    trans->Append(stmt);
 
     for (SeasonalEventQuestMap::const_iterator iter = m_seasonalquests.begin(); iter != m_seasonalquests.end(); ++iter)
     {
@@ -21933,11 +22021,16 @@ void Player::_SaveSeasonalQuestStatus(SQLTransaction& trans)
         for (SeasonalQuestSet::const_iterator itr = iter->second.begin(); itr != iter->second.end(); ++itr)
         {
             uint32 quest_id = (*itr);
+            uint32 guid = GetGUIDLow();
+            Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+                guid = 0;
 
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_SEASONALQUESTSTATUS);
-            stmt->setUInt32(0, GetGUIDLow());
+            stmt->setUInt32(0, guid);
             stmt->setUInt32(1, quest_id);
             stmt->setUInt32(2, event_id);
+            stmt->setUInt32(3, GetSession()->GetAccountId());
             trans->Append(stmt);
         }
     }
@@ -27994,6 +28087,7 @@ void Player::UnsummonPetTemporaryIfAny()
         m_oldpetspell = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
     }
 
+    pet->CastPetAuras(false);
     RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 }
 

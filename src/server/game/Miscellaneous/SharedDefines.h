@@ -3548,8 +3548,8 @@ enum QuestTypes
     QUEST_TYPE_HEROIC              = 85,
     QUEST_TYPE_RAID_10             = 88,
     QUEST_TYPE_RAID_25             = 89,
-    QUEST_TYPE_SCENARIO            = 98, // New on MoP 5.0.5
-    QUEST_TYPE_ACCOUNT             = 102 // New on MoP 5.0.5
+    QUEST_TYPE_SCENARIO            = 98,
+    QUEST_TYPE_ACCOUNT             = 102
 };
 
 // values based at QuestSort.dbc

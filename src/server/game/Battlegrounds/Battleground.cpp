@@ -1197,7 +1197,6 @@ void Battleground::AddPlayer(Player* player)
             pet->SetHealth(pet->GetMaxHealth());
 
             pet->RemoveAllAuras();
-            pet->CastPetAuras(true);
         }
 
         player->RemoveArenaEnchantments(TEMP_ENCHANTMENT_SLOT);
