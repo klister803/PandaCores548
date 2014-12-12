@@ -51,6 +51,7 @@ enum DumpTableType
 
     DTT_PET,            //    -> pet guids collection       // character_pet
     DTT_PET_TABLE,      // <- pet guids                     // pet_aura, pet_spell, pet_spell_cooldown
+    DTT_QUEST_TABLE,    // <- guids and account             // character_queststatus, character_queststatus_rewarded
 };
 
 enum DumpReturn
