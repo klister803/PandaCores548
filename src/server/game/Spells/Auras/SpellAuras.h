@@ -185,8 +185,8 @@ class Aura
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }
         void RecalculateAmountOfEffects();
         void HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply);
-        void SetEffectTargets (std::list<WorldObject*> targets) { m_effect_targets = targets; }
-        std::list<WorldObject*> GetEffectTargets() { return m_effect_targets; }
+        void SetEffectTargets (std::list<uint64> targets) { m_effect_targets = targets; }
+        std::list<uint64> GetEffectTargets() { return m_effect_targets; }
 
         // Helpers for targets
         ApplicationMap const & GetApplicationMap() {return m_applications;}
