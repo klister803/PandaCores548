@@ -593,8 +593,8 @@ class Spell
 
         void SetSpellDynamicObject(uint64 dynObj) { m_spellDynObjGuid = dynObj;}
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
-        void SetEffectTargets (std::list<WorldObject*> targets) { m_effect_targets = targets; }
-        std::list<WorldObject*> GetEffectTargets() { return m_effect_targets; }
+        void SetEffectTargets (std::list<uint64> targets) { m_effect_targets = targets; }
+        std::list<uint64> GetEffectTargets() { return m_effect_targets; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -659,7 +659,7 @@ class Spell
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
         Aura* m_spellAura;
-        std::list<WorldObject*> m_effect_targets;
+        std::list<uint64> m_effect_targets;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;

@@ -275,7 +275,7 @@ class Aura
 
         AuraEffect* m_effects[MAX_SPELL_EFFECTS];
         ApplicationMap m_applications;
-        std::list<WorldObject*> m_effect_targets;
+        std::list<uint64> m_effect_targets;
 
         bool m_isRemoved:1;
         bool m_isSingleTarget:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
