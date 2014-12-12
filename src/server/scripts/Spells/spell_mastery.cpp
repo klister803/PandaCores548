@@ -101,7 +101,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mastery_elemental_overload_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421) || !sSpellMgr->GetSpellInfo(51505) || !sSpellMgr->GetSpellInfo(117014))
                     return false;

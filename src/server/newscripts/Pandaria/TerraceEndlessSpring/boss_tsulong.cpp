@@ -131,7 +131,7 @@ class boss_tsulong : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_DREAD_SHADOWS);
             }
             
-            void RegeneratePower(Powers power, int32 &value)
+            void RegeneratePower(Powers power, float &value)
             {
                 if (phase == PHASE_NIGHT)
                     value = 2;

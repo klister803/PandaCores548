@@ -88,7 +88,7 @@ class boss_baron_ashbury : public CreatureScript
                 DoZoneInCombat();
             }
 
-            void SpellHit(Unit* caster, SpellEntry const* spell)
+            void SpellHit(Unit* caster, SpellInfo const* spell)
             {
             }
 

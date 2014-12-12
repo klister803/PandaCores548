@@ -392,7 +392,7 @@ public:
             me->RemoveAllAuras();
         }
 
-        void SpellHit(Unit* /*caster*/, const SpellEntry* pSpell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* pSpell)
         {
             if (pSpell->Id == SPELL_START_THE_ENGINE)
                 vehicle->InstallAllAccessories(false);
@@ -774,7 +774,7 @@ public:
         {
         }
 
-        void JustDied()
+        void JustDied(Unit* /*killer*/)
         {
             float x,y,z;
             me->GetPosition(x,y,z);
@@ -1298,7 +1298,7 @@ class go_ulduar_tower : public GameObjectScript
     public:
         go_ulduar_tower() : GameObjectScript("go_ulduar_tower") { }
 
-        void OnDestroyed(GameObject* go, Player* /*player*/,  uint32 /*value*/)
+        void OnDestroyed(GameObject* go, Player* /*player*/)
         {
             InstanceScript* instance = go->GetInstanceScript();
             if (!instance)

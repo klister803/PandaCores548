@@ -1347,7 +1347,7 @@ public:
     {
         PrepareSpellScript(spell_splitting_blow_SpellScript);
 
-        bool Validate(SpellInfo const* spellEntry)
+        bool Validate(SpellInfo const* SpellInfo)
         {
             if (!sSpellMgr->GetSpellInfo(99056))
                 return false;

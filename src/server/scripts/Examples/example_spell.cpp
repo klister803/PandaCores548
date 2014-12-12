@@ -49,7 +49,7 @@ enum Spells
 
             // function called on server startup
             // checks if script has data required for it to work
-            bool Validate(SpellInfo const* /*spellEntry*//*)
+            bool Validate(SpellInfo const* /*SpellInfo*//*)
             {
                 // check if spellid 70522 exists in dbc, we will trigger it later
                 if (!sSpellMgr->GetSpellInfo(SPELL_TRIGGERED))
@@ -207,7 +207,7 @@ class spell_ex_66244 : public SpellScriptLoader
             PrepareAuraScript(spell_ex_66244AuraScript);
             // function called on server startup
             // checks if script has data required for it to work
-            bool Validate(SpellInfo const* /*spellEntry*//*)
+            bool Validate(SpellInfo const* /*SpellInfo*//*)
             {
                 // check if spellid exists in dbc, we will trigger it later
                 if (!sSpellMgr->GetSpellInfo(SPELL_TRIGGERED))
@@ -439,7 +439,7 @@ class spell_ex : public SpellScriptLoader
         {
             PrepareSpellScript(spell_ex_SpellScript);
 
-            //bool Validate(SpellInfo const* spellEntry){return true;}
+            //bool Validate(SpellInfo const* SpellInfo){return true;}
             //bool Load(){return true;}
             //void Unload(){}
 
@@ -466,7 +466,7 @@ class spell_ex : public SpellScriptLoader
         class spell_ex_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_ex)
-            //bool Validate(SpellInfo const* spellEntry){return true;}
+            //bool Validate(SpellInfo const* SpellInfo){return true;}
             //bool Load(){return true;}
             //void Unload(){}
 

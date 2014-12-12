@@ -613,7 +613,7 @@ public:
             me->CombatStop(true);
         }
 
-        void DoAction()
+        void DoAction(int32 const /*param*/)
         {
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -685,7 +685,7 @@ public:
         {
             case 90909090:
                 player->CLOSE_GOSSIP_MENU();
-                ((npc_valiantAI*)creature->AI())->DoAction();
+                ((npc_valiantAI*)creature->AI())->DoAction(action);
                 break;
             default:
                 return false;                                   // nothing defined      -> trinity core handling

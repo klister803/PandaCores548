@@ -110,7 +110,7 @@ class instance_shadow_labyrinth : public InstanceMapScript
                 }
             }
 
-            uint32 GetData(uint32 type) const
+            uint32 GetData(uint32 type)
             {
                 switch (type)
                 {
@@ -122,7 +122,7 @@ class instance_shadow_labyrinth : public InstanceMapScript
                 return 0;
             }
 
-            uint64 GetData64(uint32 type) const
+            uint64 GetData64(uint32 type)
             {
                 switch (type)
                 {

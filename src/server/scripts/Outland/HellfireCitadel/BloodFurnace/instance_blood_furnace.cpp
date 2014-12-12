@@ -153,7 +153,7 @@ class instance_blood_furnace : public InstanceMapScript
                 }
             }
 
-            uint64 GetData64(uint32 type) const
+            uint64 GetData64(uint32 type)
             {
                 switch (type)
                 {

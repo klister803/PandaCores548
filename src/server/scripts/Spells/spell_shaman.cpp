@@ -499,7 +499,7 @@ class spell_sha_frozen_power : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_frozen_power_SpellScript);
 
-            bool Validate(SpellEntry const * spellEntry)
+            bool Validate(SpellInfo const * SpellInfo)
             {
                 if (!sSpellMgr->GetSpellInfo(8056))
                     return false;
@@ -636,7 +636,7 @@ class spell_sha_fire_nova : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_fire_nova_SpellScript);
 
-            bool Validate(SpellInfo const* spellEntry)
+            bool Validate(SpellInfo const* SpellInfo)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FIRE_NOVA))
                     return false;
@@ -673,7 +673,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_unleash_elements_SpellScript);
 
-            bool Validate(SpellEntry const * spellEntry)
+            bool Validate(SpellInfo const * SpellInfo)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_UNLEASH_ELEMENTS))
                     return false;
@@ -781,7 +781,7 @@ class spell_sha_rolling_thunder : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
 
-            bool Validate(SpellEntry const * /*spellEntry*/)
+            bool Validate(SpellInfo const * /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
                     return false;
@@ -1159,7 +1159,7 @@ class spell_sha_ascendance : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_ascendance_SpellScript);
 
-            bool Validate(SpellInfo const* spellEntry)
+            bool Validate(SpellInfo const* SpellInfo)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ASCENDANCE))
                     return false;
@@ -1245,7 +1245,7 @@ class spell_sha_bloodlust : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_bloodlust_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SHAMAN_SPELL_SATED))
                     return false;
@@ -1290,7 +1290,7 @@ class spell_sha_heroism : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_heroism_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SHAMAN_SPELL_EXHAUSTION))
                     return false;
@@ -1340,7 +1340,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_ancestral_awakening_proc_SpellScript);
 
-            bool Validate(SpellInfo const* /*SpellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_ANCESTRAL_AWAKENING_PROC))
                     return false;

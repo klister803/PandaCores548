@@ -54,7 +54,7 @@ public:
             phaseone = true;
         }
         
-        void RegeneratePower(Powers power, int32 &value)
+        void RegeneratePower(Powers power, float &value)
         {
             if (!me->isInCombat())
             {

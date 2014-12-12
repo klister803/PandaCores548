@@ -159,7 +159,7 @@ public:
     virtual void StartingEventCloseDoors();
     virtual void StartingEventOpenDoors();
 
-    void UpdatePlayerScore(Player* player, ScoreUpdateType type, int32 addvalue);
+    void UpdatePlayerScore(Player* player, uint32 type, uint32 addvalue, bool doAddHonor);
 
     WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 

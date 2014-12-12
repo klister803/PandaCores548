@@ -121,7 +121,7 @@ class boss_empress_shekzeer : public CreatureScript
                 sdiedval = 0;
             }
 
-            void RegeneratePower(Powers power, int32 &value)
+            void RegeneratePower(Powers power, float &value)
             {
                 if (!me->isInCombat() || phase == PHASE_ONE)
                     value = 0;

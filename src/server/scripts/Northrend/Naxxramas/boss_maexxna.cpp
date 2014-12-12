@@ -175,7 +175,7 @@ public:
 
         uint64 victimGUID;
 
-        void SetGUID(uint64 &guid, int32 /*param*/)
+        void SetGUID(uint64 guid, int32 /*param*/)
         {
             victimGUID = guid;
             if (me->m_spells[0] && victimGUID)

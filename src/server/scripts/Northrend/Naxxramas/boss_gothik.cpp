@@ -359,7 +359,7 @@ public:
                 damage = 0;
         }
 
-        void SpellHit(Unit * /*caster*/, const SpellEntry* spell)
+        void SpellHit(Unit * /*caster*/, const SpellInfo* spell)
         {
             if (!phaseTwo)
             {
@@ -381,7 +381,7 @@ public:
             }
         }
 
-        void SpellHitTarget(Unit *pTarget, const SpellEntry* spell)
+        void SpellHitTarget(Unit *pTarget, const SpellInfo* spell)
         {
             if (!me->isInCombat())
                 return;

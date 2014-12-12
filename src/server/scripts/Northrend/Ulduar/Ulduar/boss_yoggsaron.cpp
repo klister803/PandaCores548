@@ -1677,7 +1677,7 @@ class npc_immortal_guardian : public CreatureScript
             }
         }
         
-        void SpellHit(Unit *caster, const SpellEntry *spell)
+        void SpellHit(Unit *caster, const SpellInfo *spell)
         {
             // Thorim kills weakened immortal creatures
             if (spell->Id == SPELL_TITANIC_STORM_EFFECT)
@@ -2088,7 +2088,7 @@ class spell_hodir_protective_gaze : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hodir_protective_gaze_AuraScript);
 
-            bool Validate(SpellEntry const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellStore.LookupEntry(64174))
                     return false;

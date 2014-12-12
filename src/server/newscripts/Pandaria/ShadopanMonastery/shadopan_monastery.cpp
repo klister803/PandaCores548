@@ -413,7 +413,7 @@ class areatrigger_at_shadopan_archery : public AreaTriggerScript
 
         areatrigger_at_shadopan_archery() : AreaTriggerScript("areatrigger_at_shadopan_archery") {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool /*apply*/)
         {
             InstanceScript* pInstance = player->GetInstanceScript();
 

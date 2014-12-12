@@ -275,7 +275,7 @@ class AreaTrigger_at_gu_intro : public AreaTriggerScript
     public:
         AreaTrigger_at_gu_intro() : AreaTriggerScript("at_gu_intro") {}
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool apply)
         {
             if (InstanceScript* pInstance = player->GetInstanceScript())
                 if (Creature* gu = pInstance->instance->GetCreature(pInstance->GetData64(NPC_GU_CLOUDSTRIKE)))

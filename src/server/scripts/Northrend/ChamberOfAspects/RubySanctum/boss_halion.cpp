@@ -1790,7 +1790,7 @@ class spell_halion_fiery_combustion : public SpellScriptLoader
                 SPELL_COMBUSTION_EXPLODE = 74607
             };
 
-            bool Validate(SpellEntry const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellStore.LookupEntry(SPELL_MARK_OF_COMBUSTION))
                     return false;
@@ -1926,7 +1926,7 @@ class spell_halion_soul_consumption : public SpellScriptLoader
                 SPELL_CONSUMPTION_EXPLODE = 74799
             };
 
-            bool Validate(SpellEntry const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellStore.LookupEntry(SPELL_MARK_OF_CONSUMPTION))
                     return false;

@@ -1159,9 +1159,10 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
 
             uint8 comboPoints;
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spellEntry*/)
             {
                 comboPoints = 0;
+                return true;
             }
 
             void HandleBeforeCast()
@@ -1248,9 +1249,10 @@ class spell_dru_rip : public SpellScriptLoader
 
             uint8 comboPoints;
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spellEntry*/)
             {
                 comboPoints = 0;
+                return true;
             }
 
             void HandleBeforeCast()
@@ -2311,7 +2313,7 @@ class spell_dru_prowl : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_prowl_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            bool Validate(SpellInfo const* /*SpellInfo*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_DRUID_PROWL))
                     return false;

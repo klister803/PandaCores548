@@ -299,7 +299,7 @@ public:
             Reset();
         }
 
-        void SpellHit(Unit* caster,const SpellEntry* spell)
+        void SpellHit(Unit* caster,const SpellInfo* spell)
         {
                 if(Player * pPlayer = caster->ToPlayer())
                     switch (spell->Id)
