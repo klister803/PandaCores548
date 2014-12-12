@@ -11373,13 +11373,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto
             bp = (victim->GetMaxHealth() * 0.1f);
 
         // Ancestral Vigor - 105284
-        if (AuraEffect* aurEff = victim->GetAuraEffect(105284, EFFECT_0))
-        {
-            aurEff->SetAmount(aurEff->GetAmount() + bp);
-            aurEff->RecalculateAmount();
-        }
-        else
-            unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
+        victim->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
 
     if (Player* player = unit->ToPlayer())
