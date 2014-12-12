@@ -4594,6 +4594,25 @@ class npc_past_self : public CreatureScript
         }
 };
 
+class npc_guild_battle_standard : public CreatureScript
+{
+    public:
+        npc_guild_battle_standard() : CreatureScript("npc_guild_battle_standard") { }
+
+        struct npc_guild_battle_standardAI : public Scripted_NoMovementAI
+        {
+            npc_guild_battle_standardAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                creature->SetReactState(REACT_PASSIVE);
+            }
+		};
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_guild_battle_standardAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -4648,4 +4667,5 @@ void AddSC_npcs_special()
     new npc_spectral_guise();
     new npc_bloodworm();
     new npc_past_self();
+	new npc_guild_battle_standard();
 }
