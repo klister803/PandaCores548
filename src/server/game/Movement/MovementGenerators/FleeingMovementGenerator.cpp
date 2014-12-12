@@ -373,7 +373,7 @@ void FleeingMovementGenerator<Creature>::DoFinalize(Creature &owner)
 template<class T>
 void FleeingMovementGenerator<T>::DoReset(T &owner)
 {
-    Initialize(owner);
+    DoInitialize(owner);
 }
 
 template<class T>

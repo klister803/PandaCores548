@@ -325,7 +325,7 @@ void ChaseMovementGenerator<T>::DoFinalize(T &owner)
 template<class T>
 void ChaseMovementGenerator<T>::DoReset(T &owner)
 {
-    Initialize(owner);
+    DoInitialize(owner);
 }
 
 template<class T>
@@ -368,7 +368,7 @@ template<class T>
 void FetchMovementGenerator<T>::DoReset(T &owner)
 {
     //sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator Reset i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
-    Initialize(owner);
+    DoInitialize(owner);
 }
 
 template<class T>
@@ -465,7 +465,7 @@ void FollowMovementGenerator<T>::DoFinalize(T &owner)
 template<class T>
 void FollowMovementGenerator<T>::DoReset(T &owner)
 {
-    Initialize(owner);
+    DoInitialize(owner);
 }
 
 template<class T>
