@@ -3528,48 +3528,6 @@ class npc_generic_harpoon_cannon : public CreatureScript
 };
 
 /*######
-## npc_capacitor_totem
-######*/
-
-class npc_capacitor_totem : public CreatureScript
-{
-    public:
-        npc_capacitor_totem() : CreatureScript("npc_capacitor_totem") { }
-
-    struct npc_capacitor_totemAI : public ScriptedAI
-    {
-        uint32 CastTimer;
-
-        npc_capacitor_totemAI(Creature* creature) : ScriptedAI(creature)
-        {
-            CastTimer = 5000;
-
-            if(Unit* owner = creature->GetOwner())
-                if (owner->HasAura(55442))
-                    CastTimer = 3000;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (CastTimer <= diff)
-            {
-                if (me->GetEntry() == 61245)
-                    me->CastSpell(me, 118905, true);
-                CastTimer = 99999;
-            }
-            else
-                CastTimer -= diff;
-
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_capacitor_totemAI(creature);
-    }
-};
-
-/*######
 ## npc_feral_spirit
 ######*/
 
@@ -4051,37 +4009,6 @@ class npc_wild_imp : public CreatureScript
         {
             return new npc_wild_impAI(creature);
         }
-};
-
-/*######
-## npc_earthgrab_totem
-######*/
-
-#define EARTHGRAB       116943
-
-class npc_earthgrab_totem : public CreatureScript
-{
-    public:
-        npc_earthgrab_totem() : CreatureScript("npc_earthgrab_totem") { }
-
-    struct npc_earthgrab_totemAI : public ScriptedAI
-    {
-        npc_earthgrab_totemAI(Creature* creature) : ScriptedAI(creature)
-        {
-            creature->CastSpell(creature, EARTHGRAB, true);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!me->HasAura(EARTHGRAB))
-                me->CastSpell(me, EARTHGRAB, true);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_earthgrab_totemAI(creature);
-    }
 };
 
 /*######
@@ -4667,6 +4594,25 @@ class npc_past_self : public CreatureScript
         }
 };
 
+class npc_guild_battle_standard : public CreatureScript
+{
+    public:
+        npc_guild_battle_standard() : CreatureScript("npc_guild_battle_standard") { }
+
+        struct npc_guild_battle_standardAI : public Scripted_NoMovementAI
+        {
+            npc_guild_battle_standardAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                creature->SetReactState(REACT_PASSIVE);
+            }
+		};
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_guild_battle_standardAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -4700,7 +4646,6 @@ void AddSC_npcs_special()
     new npc_firework();
     new npc_spring_rabbit();
     new npc_generic_harpoon_cannon();
-    new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();
     new npc_frozen_orb();
@@ -4708,7 +4653,6 @@ void AddSC_npcs_special()
     new npc_demonic_gateway();
     new npc_dire_beast();
     new npc_wild_imp();
-    new npc_earthgrab_totem();
     new npc_windwalk_totem();
     new npc_ring_of_frost();
     new npc_wild_mushroom();
@@ -4723,4 +4667,5 @@ void AddSC_npcs_special()
     new npc_spectral_guise();
     new npc_bloodworm();
     new npc_past_self();
+	new npc_guild_battle_standard();
 }

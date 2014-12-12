@@ -3186,6 +3186,14 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                                 model_id = 23948;
                         }
 
+                    // Polymorph (Hex)
+                    if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && GetSpellInfo()->SpellIconID == 3058 && GetSpellInfo()->SpellVisual[0] == 12780)
+                        if (Unit* caster = GetCaster())
+                        {
+                            if (caster->HasAura(147785))         // Glyph of the Compy
+                                model_id = 47428;
+                        }
+
                     target->SetDisplayId(model_id);
 
                     // Dragonmaw Illusion (set mount model also)
@@ -7034,7 +7042,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 118694: // Spirit Bond
                 {
-                    if (caster->GetOwner() && (!caster->IsFullHealth() || !caster->GetOwner()->IsFullHealth()))
+                    if (caster->GetOwner() && caster == target && (!caster->IsFullHealth() || !caster->GetOwner()->IsFullHealth()))
                         trigger_spell_id = 149254;
                     break;
                 }

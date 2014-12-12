@@ -160,7 +160,7 @@ public:
                 voidDance = false;
         }
 
-        uint32 GetData(uint32 type) const
+        uint32 GetData(uint32 type)
         {
             if (type == DATA_VOID_DANCE)
                 return voidDance ? 1 : 0;

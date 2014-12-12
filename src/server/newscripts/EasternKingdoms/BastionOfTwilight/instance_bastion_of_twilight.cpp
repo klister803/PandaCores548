@@ -260,7 +260,7 @@ public:
             }
         }
 
-        bool CheckRequiredBosses(uint32 bossId, Player const* player = NULL) const
+        bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const
         {
             if (player && player->isGameMaster())
                 return true;

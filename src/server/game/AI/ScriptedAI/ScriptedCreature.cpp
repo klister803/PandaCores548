@@ -463,6 +463,14 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
     return true;
 }
 
+void ScriptedAI::InitializeAI()
+{
+    if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+        me->SetReactState(ReactStates(pStats->state));
+
+    CreatureAI::InitializeAI();
+}
+
 void Scripted_NoMovementAI::AttackStart(Unit* target)
 {
     if (!target)

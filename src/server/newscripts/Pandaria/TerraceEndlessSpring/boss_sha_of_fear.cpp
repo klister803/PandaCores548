@@ -102,7 +102,7 @@ class boss_sha_of_fear : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
             }
 
-            void RegeneratePower(Powers power, int32 &value)
+            void RegeneratePower(Powers power, float &value)
             {
                 if (!me->isInCombat())
                     value = 0;

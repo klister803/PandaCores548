@@ -1394,7 +1394,7 @@ class spell_monk_tigers_lust : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_tigers_lust_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spellEntry*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
                     return false;

@@ -367,8 +367,6 @@ void AnyPetAI::InitializeAI()
             if(Unit* victim = me->GetTargetUnit())
                 me->Attack(victim, !me->GetCasterPet());
         }
-    if (TempSummon* summon = me->ToTempSummon())
-        summon->CastPetAuras(true);
 
     // Update speed as needed to prevent dropping too far behind and despawning
     me->UpdateSpeed(MOVE_RUN, true);

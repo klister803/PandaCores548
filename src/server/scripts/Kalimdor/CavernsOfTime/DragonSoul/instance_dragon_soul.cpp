@@ -952,12 +952,14 @@ class instance_dragon_soul : public InstanceMapScript
 
                     if (fromEnd)
                     {
-                        assaultPos->RelocateOffset({ 0, -10, 10 });
+                        Position offset = { 0.0f, -10.0f, 10.0f };
+                        assaultPos->RelocateOffset(offset);
                         assaultPos->SetOrientation(M_PI/2);
                     }
                     else
                     {
-                        assaultPos->RelocateOffset({ 0, 10, 10 });
+                        Position offset = { 0.0f, 10.0f, 10.0f };
+                        assaultPos->RelocateOffset(offset);
                         assaultPos->SetOrientation(M_PI*2 - M_PI/2);
                     }
 
@@ -997,12 +999,14 @@ class instance_dragon_soul : public InstanceMapScript
 
                     if (fromEnd)
                     {
-                        assaultPos->RelocateOffset({ -10, 0, 10 });
+                        Position offset = { -10.0f, 0.0f, 10.0f };
+                        assaultPos->RelocateOffset(offset);
                         assaultPos->SetOrientation(0);
                     }
                     else
                     {
-                        assaultPos->RelocateOffset({ 10, 0, 10 });
+                        Position offset = { 10.0f, 0.0f, 10.0f };
+                        assaultPos->RelocateOffset(offset);
                         assaultPos->SetOrientation(M_PI);
                     }
 

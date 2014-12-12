@@ -64,7 +64,6 @@ enum isle_spells
     SPELL_REMOTE_CONTROL_FIREWORKS               = 71170, // Remote Control Fireworks
     SPELL_CC_FIREWORKS_VISUAL                    = 74177, // Cluster Cluck: Remote Control Fireworks Visual
     SPELL_PERMAMENT_DEATH                        = 29266,
-    SPELL_BIGGEST_EGG_FOUNTAIN                   = 71608, // The Biggest Egg Ever: Egg Fountain
     SPELL_FROST_NOWA                             = 11831,
     SPELL_FROSTBALL                              = 9672,
     SPELL_SUMMON_HATCHLONG1                      = 71919,
@@ -1561,48 +1560,6 @@ class npc_hobart_grapplehammer : public CreatureScript
     }
 };
 
-//ELM General Purpose Bunny
-class npc_elm_bunny : public CreatureScript
-{
-    public:
-        npc_elm_bunny() : CreatureScript("npc_elm_bunny") { }
-
-    struct npc_elm_bunnyAI : public ScriptedAI
-    {
-        npc_elm_bunnyAI(Creature* creature) : ScriptedAI(creature){}
-        EventMap events;
-
-        void Reset()
-        {
-            events.Reset();
-        }
-
-        void SetData(uint32 id, uint32 value)
-        {
-            if (value)
-                events.ScheduleEvent(EVENT_COOOKING_1, 1000);
-            else
-                events.Reset();
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                me->CastSpell(me, SPELL_BIGGEST_EGG_FOUNTAIN, true);
-                events.ScheduleEvent(EVENT_COOOKING_1, 1000);
-            }
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_elm_bunnyAI(creature);
-    }
-};
-
 class npc_vashjelan_siren : public CreatureScript
 {
     public:
@@ -2582,7 +2539,6 @@ void AddSC_lost_isle()
     new npc_wild_clucker();
     new npc_wild_clucker_egg();
     new npc_hobart_grapplehammer();
-    new npc_elm_bunny();
     new npc_vashjelan_siren();
     new npc_naga_hatchling();
     new npc_faceless_of_the_deep();

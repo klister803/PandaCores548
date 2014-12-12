@@ -2269,7 +2269,7 @@ class mob_master_shang_xi_temple : public CreatureScript
         }
     };
 
-    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/)
     {
         switch(quest->GetQuestId())
         {

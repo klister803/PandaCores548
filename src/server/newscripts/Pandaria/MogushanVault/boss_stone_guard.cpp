@@ -459,7 +459,7 @@ class boss_generic_guardian : public CreatureScript
                 }
             }
             
-            void RegeneratePower(Powers power, int32 &value)
+            void RegeneratePower(Powers power, float &value)
             {
                 if (!me->isInCombat())
                 {

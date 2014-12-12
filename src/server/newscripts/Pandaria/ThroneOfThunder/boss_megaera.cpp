@@ -287,7 +287,7 @@ public:
             despawn = 60000;
         }
 
-        void EnterCombat(){}
+        void EnterCombat(Unit* /*victim*/){}
 
         void EnterEvadeMode() {}
 

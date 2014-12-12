@@ -1786,9 +1786,9 @@ class npc_gunship_cannon : public CreatureScript
                 DoCast(me, SPELL_HEAT_DRAIN, true);
             }
 
-            void SpellHit(Unit* /*caster*/, SpellInfo const* spellEntry)
+            void SpellHit(Unit* /*caster*/, SpellInfo const* SpellInfo)
             {
-                if (spellEntry->Id == SPELL_BELOW_ZERO)
+                if (SpellInfo->Id == SPELL_BELOW_ZERO)
                     me->GetVehicleKit()->RemoveAllPassengers();
             }
 

@@ -275,7 +275,7 @@ void BattlefieldTB::OnPlayerLeaveZone(Player* player)
     player->RemoveAurasDueToSpell(SPELL_TB_VETERAN);
 }
 
-void BattlefieldTB::AddPlayerToResurrectQueue(ObjectGuid npc_guid, ObjectGuid player_guid)
+void BattlefieldTB::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid)
 {
     Battlefield::AddPlayerToResurrectQueue(npc_guid, player_guid);
 
@@ -674,7 +674,7 @@ void BattlefieldTB::OnDamaged()
                     plr->CastSpell(plr, SPELL_TB_TOL_BARAD_TOWER_DAMAGED, true);
 }
 
-void BattlefieldTB::ProcessEvent(GameObject *obj, uint32 eventId)
+void BattlefieldTB::ProcessEvent(WorldObject *obj, uint32 eventId)
 {
     if (!obj || !IsWarTime())
         return;

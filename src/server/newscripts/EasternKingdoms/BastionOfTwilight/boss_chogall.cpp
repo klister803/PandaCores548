@@ -928,7 +928,7 @@ class npc_chogall_malformation : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
+                if (pInstance && pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                 {
                     if (Unit* pPlayer = me->GetVehicleBase())
                     {
@@ -1142,7 +1142,7 @@ class npc_chogall_blood_of_the_old_god : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
+                if (pInstance && pInstance->GetBossState(DATA_CHOGALL) != IN_PROGRESS)
                     me->DespawnOrUnsummon();
 
                 if (!UpdateVictim())

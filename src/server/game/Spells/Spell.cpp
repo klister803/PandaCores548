@@ -1328,21 +1328,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         ++itr;
                 }
                 break;
-            case SPELLFAMILY_SHAMAN:
-            {
-                switch (m_spellInfo->Id)
-                {
-                    case 52042: // Healing Stream Totem
-                    {
-                        maxSize = 1;
-                        power = POWER_HEALTH;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-                break;
-            }
             case SPELLFAMILY_PALADIN:
                 // Holy Wrath
                 if (m_spellInfo->Id == 119072 && effIndex == EFFECT_0)
@@ -2183,7 +2168,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
         searchRadius *= chainTargets;
 
     std::list<WorldObject*> tempTargets;
-    SearchAreaTargets(tempTargets, searchRadius, target, m_caster, objectType, selectType, condList);
+    SearchAreaTargets(tempTargets, searchRadius, m_caster, m_caster, objectType, selectType, condList);
     tempTargets.remove(target);
 
     // remove targets which are always invalid for chain spells
@@ -6094,6 +6079,9 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             if(i->caster == 3) //get caster as target
                 _caster = m_targets.GetUnitTarget();
 
+            if(!_caster)
+                continue;
+
             if (i->effect < 0)
             {
                 if(i->learnspell)
@@ -6328,6 +6316,17 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
             Unit* _targetAura = m_caster;
             bool check = false;
 
+            if(itr->targetaura == 1 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _targetAura = (Unit*)pet;
+            }
+            if(itr->targetaura == 2) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _targetAura = owner;
+            }
+
             switch (itr->option)
             {
                 case SPELL_DUMMY_MOD_EFFECT_MASK: //4
@@ -6337,13 +6336,13 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
                     if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                         continue;
 
-                    if(itr->spellDummyId > 0 && !_caster->HasAura(itr->spellDummyId))
+                    if(itr->spellDummyId > 0 && !_targetAura->HasAura(itr->spellDummyId))
                     {
                         if(itr->effectmask & (1 << eff))
                             prevent = true;
                         check = true;
                     }
-                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    if(itr->spellDummyId < 0 && _targetAura->HasAura(abs(itr->spellDummyId)))
                     {
                         if(itr->effectmask & (1 << eff))
                             prevent = true;
@@ -6631,7 +6630,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         float x, y, z;
         m_targets.GetDstPos()->GetPosition(x, y, z);
 
-        if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOS(x, y, z))
+        if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOS(x, y, z))
             return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
@@ -9119,7 +9118,10 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
 
         for (std::vector<SpellTargetFilter>::const_iterator itr = spellTargetFilter->begin(); itr != spellTargetFilter->end(); ++itr)
         {
-            Unit* _caster = m_caster;
+            Unit* _caster = m_originalCaster ? m_originalCaster : m_caster;
+            if(_caster->isTotem())
+                if (Unit* owner = _caster->GetOwner())
+                    _caster = owner;
 
             if (!(itr->effectMask & (1<<effIndex)))
                 continue;
@@ -9144,7 +9146,7 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                     targetCount = itr->count;
             }
 
-            if(itr->resizeType)
+            if(itr->resizeType && !resizeType)
                 resizeType = itr->resizeType;
 
             if(itr->aura > 0 && _caster->HasAura(itr->aura))

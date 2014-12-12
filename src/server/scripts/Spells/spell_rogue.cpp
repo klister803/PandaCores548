@@ -1003,7 +1003,7 @@ class spell_rog_eviscerate : public SpellScriptLoader
         {
             PrepareSpellScript(spell_rog_eviscerate_SpellScript)
 
-            bool Validate(SpellEntry const * /*spellEntry*/)
+            bool Validate(SpellInfo const * /*SpellInfo*/)
             {
                 return true;
             }
@@ -1218,7 +1218,11 @@ class spell_rog_killing_spree : public SpellScriptLoader
                     }
                 }
 
-                GetSpell()->SetEffectTargets(targetTemp);
+                std::list<uint64> targetList;
+                for (std::list<WorldObject*>::iterator itr = targetTemp.begin(); itr != targetTemp.end(); ++itr)
+                    targetList.push_back((*itr)->GetGUID());
+
+                GetSpell()->SetEffectTargets(targetList);
             }
 
             void Register()
@@ -1243,13 +1247,14 @@ class spell_rog_killing_spree : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     Unit* target = GetTarget();
-                    std::list<WorldObject*> targets = GetAura()->GetEffectTargets();
+                    std::list<uint64> targets = GetAura()->GetEffectTargets();
 
                     if(!targets.empty())
                     {
-                        WorldObject* effectTarget = Trinity::Containers::SelectRandomContainerElement(targets);
-                        if(effectTarget && effectTarget->IsInWorld() && effectTarget->ToUnit())
-                            target = effectTarget->ToUnit();
+                        uint64 targetGuid = Trinity::Containers::SelectRandomContainerElement(targets);
+                        if(Unit* effectTarget = ObjectAccessor::GetUnit(*caster, targetGuid))
+                            if(effectTarget && effectTarget->IsInWorld() && effectTarget->ToUnit())
+                                target = effectTarget->ToUnit();
                     }
                     if(target)
                     {

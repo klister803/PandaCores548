@@ -534,6 +534,7 @@ struct PetAura
     float bp2;
     int32 aura;
     int32 casteraura;
+    int32 createdspell;
 };
 
 typedef UNORDERED_MAP<int32, std::vector<PetAura> > SpellPetAuraMap;

@@ -62,14 +62,13 @@ void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)
         sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript: HandleGameObject failed");
 }
 
-bool InstanceScript::IsEncounterInProgress()
+bool InstanceScript::IsEncounterInProgress() const
 {
     for (std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
         if (itr->state == IN_PROGRESS)
             return true;
 
-    ResurectCount = 0;
-
+    const_cast<InstanceScript*>(this)->ResurectCount = 0;
     return false;
 }
 

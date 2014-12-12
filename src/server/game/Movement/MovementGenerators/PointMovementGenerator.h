@@ -31,10 +31,10 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _generatePath, float _speed = 0.0f) : id(_id),
             i_x(_x), i_y(_y), i_z(_z), m_generatePath(_generatePath), speed(_speed) {}
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void Reset(T &);
-        bool Update(T &, const uint32 &);
+        void DoInitialize(T &);
+        void DoFinalize(T &);
+        void DoReset(T &);
+        bool DoUpdate(T &, const uint32 &);
 
         void MovementInform(T &);
 
@@ -58,7 +58,7 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
             PointMovementGenerator<Creature>(0, _x, _y, _z, true) {}
 
         MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_MOTION_TYPE; }
-        void Finalize(Unit &);
+        void DoFinalize(Unit &);
 };
 
 // Does almost nothing - just doesn't allows previous movegen interrupt current effect.
@@ -68,10 +68,10 @@ class EffectMovementGenerator : public MovementGenerator
         explicit EffectMovementGenerator(uint32 Id, float _x, float _y, float _z, DelayCastEvent *e = NULL) : m_Id(Id),
         i_x(_x), i_y(_y), i_z(_z), m_event(e)        {}
 
-        void Initialize(Unit &) {}
-        void Finalize(Unit &unit);
-        void Reset(Unit &) {}
-        bool Update(Unit &u, const uint32&);
+        void Initialize(Unit &) override {}
+        void Finalize(Unit &unit) override;
+        void Reset(Unit &) override {}
+        bool Update(Unit &u, const uint32&) override;
         MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
     private:
         uint32 m_Id;
@@ -86,10 +86,10 @@ class ChargeMovementGenerator : public MovementGenerator
         explicit ChargeMovementGenerator(uint32 Id, float _x, float _y, float _z, float _speed = 0.0f, uint32 _triggerspellId = 0, PathFinderMovementGenerator* _path = NULL) : m_Id(Id),
         i_x(_x), i_y(_y), i_z(_z), speed(_speed), triggerspellId(_triggerspellId), i_path(_path)        {}
 
-        void Initialize(Unit &);
-        void Finalize(Unit &unit);
-        void Reset(Unit &) {}
-        bool Update(Unit &u, const uint32&);
+        void Initialize(Unit &) override;
+        void Finalize(Unit &unit) override;
+        void Reset(Unit &) override {}
+        bool Update(Unit &u, const uint32&) override;
         MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
         bool GetDestination(float& x, float& y, float& z) const { x=i_x; y=i_y; z=i_z; return true; }
         bool IsReachable() const { return (i_path) ? (i_path->getPathType() & PATHFIND_NORMAL) : true; }

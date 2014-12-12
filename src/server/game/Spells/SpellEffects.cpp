@@ -958,6 +958,13 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             if(itr->target == 1) //get target caster
                 triggerTarget = triggerCaster;
 
+            if(itr->caster == 1) //get target caster
+            {
+                 if(!unitTarget || unitTarget == triggerCaster)
+                    continue;
+                triggerCaster = unitTarget;
+            }
+
             if(itr->target == 2 && triggerCaster->ToPlayer()) //set caster to pet from owner caster
                 if (Pet* pet = triggerCaster->ToPlayer()->GetPet())
                     triggerCaster = (Unit*)pet;
@@ -4526,7 +4533,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
 
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
-    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot));
+    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot), m_spellInfo->Id);
     if (!pet)
         return;
 
@@ -4537,8 +4544,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         else
             pet->SetReactState(REACT_DEFENSIVE);
     }
-
-    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
     if (m_caster->GetTypeId() == TYPEID_UNIT)
     {
@@ -7774,7 +7779,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         {
             float x, y, z;
             caster->GetClosePoint(x, y, z, caster->GetObjectSize());
-            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, true))
+            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, m_spellInfo->Id, true))
             {
                 pet->SetReactState(REACT_AGGRESSIVE);
                 if (Unit * target = player->GetSelectedUnit())

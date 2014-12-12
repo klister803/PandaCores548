@@ -2235,8 +2235,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     mSpellPetAuraMap.clear();                                  // need for reload case
 
-    //                                                    0          1         2         3            4         5      6     7        8         9
-    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura` FROM `spell_pet_auras`");
+    //                                                    0          1         2         3            4         5      6     7        8         9              10
+    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura`, `createdspell` FROM `spell_pet_auras`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell pet auras. DB table `spell_pet_auras` is empty.");
@@ -2258,6 +2258,7 @@ void SpellMgr::LoadSpellPetAuras()
         float bp2 = fields[7].GetFloat();
         int32 aura = fields[8].GetInt32();
         int32 casteraura = fields[9].GetInt32();
+        int32 createdspell = fields[10].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
         if (!spellInfo)
@@ -2277,6 +2278,7 @@ void SpellMgr::LoadSpellPetAuras()
         tempPetAura.bp2 = bp2;
         tempPetAura.aura = aura;
         tempPetAura.casteraura = casteraura;
+        tempPetAura.createdspell = createdspell;
         mSpellPetAuraMap[petEntry].push_back(tempPetAura);
 
         ++count;
@@ -3873,11 +3875,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[3] &= ~16384;
                     spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 64;
                     break;
-                case 52042: // Healing Stream Totem
-                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
-                    spellInfo->ScalingClass = 11;
-                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 0.029f;
-                    break;
                 case 379: // Earth Shield
                     spellInfo->ScalingClass = 11;
                     spellInfo->Effects[EFFECT_0].ScalingMultiplier = 1.862f;
@@ -4599,7 +4596,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //
                 case 116000:
-                case 105284:
                 case 103785: // Black Blood of the Earth dmg
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
@@ -5199,10 +5195,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 774: // Rejuvenation
                     spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[0].ApplyAuraName = 0;
-                    break;
-                case 73920: // Healing Rain
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
-                    spellInfo->Effects[1].BasePoints = 0;
                     break;
                 case 3411: // Intervene
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_RAID;

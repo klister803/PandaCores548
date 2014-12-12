@@ -71,7 +71,7 @@ void BattlegroundDG::StartingEventOpenDoors()
         DoorOpen(i);
 }
 
-void BattlegroundDG::UpdatePlayerScore(Player *player, ScoreUpdateType type, int32 addvalue)
+void BattlegroundDG::UpdatePlayerScore(Player *player, uint32 type, uint32 addvalue, bool addHonor)
 {
     if (!player)
         return;
@@ -148,7 +148,7 @@ void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
 
     for (uint8 i = 0; i < 2; ++i)
         if (m_carts[i]->TakePlayerWhoDroppedFlag() == player->GetGUID())
-            UpdatePlayerScore(killer, SCORE_UPDATE_CARTS_DEFENDED, 1);
+            UpdatePlayerScore(killer, SCORE_UPDATE_CARTS_DEFENDED, 1, false);
 
     if(player)
         EventPlayerDroppedFlag(player);
@@ -464,7 +464,7 @@ void BattlegroundDG::Point::PointClicked(Player *player)
     if (newState == m_state || newState + 2 == m_state)
         return;
 
-    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_POINTS_CAPTURED, 1);
+    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_POINTS_CAPTURED, 1, false);
 
     UpdateState((PointStates)newState);
 }
@@ -717,7 +717,7 @@ Player *BattlegroundDG::Cart::ControlledBy()
 void BattlegroundDG::Cart::CartDelivered()
 {
     Player* player = ControlledBy();
-    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_CARTS_CAPTURED, 1);
+    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_CARTS_CAPTURED, 1, false);
     GetBg()->ModGold(player->GetBGTeamId(), m_stolenGold);
     m_stolenGold = 0;
     UnbindCartFromPlayer();

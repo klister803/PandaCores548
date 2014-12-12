@@ -783,9 +783,9 @@ class npc_sinestra_twilight_flames : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void SpellHit(Unit* caster, const SpellInfo* spellEntry)
+            void SpellHit(Unit* caster, const SpellInfo* SpellInfo)
             {
-                if (spellEntry->Id == SPELL_CALL_FLAMES)
+                if (SpellInfo->Id == SPELL_CALL_FLAMES)
                     DoCast(me, SPELL_TWILIGHT_FLAMES, true);
             }
         };
