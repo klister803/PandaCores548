@@ -660,11 +660,11 @@ class custum_trainer : public CreatureScript
                     break;
                 case 2521: //Ahn Qiraj Hall             
                     player->CLOSE_GOSSIP_MENU();
-                    player->TeleportTo(1, -8516.652344f, 2016.7146f, 104.748749, 3.557f);
+                    player->TeleportTo(1, -8516.652344f, 2016.7146f, 104.748749f, 3.557f);
                     break;
                 case 2522: //Old Ironforge Map                   
                     player->CLOSE_GOSSIP_MENU();
-                    player->TeleportTo(0, -4817.906738f, -973.383911, 464.709106f, 3.821704f);
+                    player->TeleportTo(0, -4817.906738f, -973.383911f, 464.709106f, 3.821704f);
                     break;
                 case 2523: //Tanaris Islands                  
                     player->CLOSE_GOSSIP_MENU();
