@@ -110,7 +110,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_COOLDOWN                      = 4,            // Set cooldown for trigger spell
     SPELL_TRIGGER_UPDATE_DUR                    = 5,            // Update duration for select spell
     SPELL_TRIGGER_GET_DUR_AURA                  = 6,            // Get duration from select aura to cast bp
-    SPELL_TRIGGER_NEED_COMBOPOINTS              = 7,            // Proc from spell that need compopoiunts
+    SPELL_TRIGGER_COMBOPOINTS_TO_CHANCE         = 7,            // Proc from spell that need compopoiunts
     SPELL_TRIGGER_UPDATE_DUR_TO_MAX             = 8,            // Update duration for select spell to max duration
     SPELL_TRIGGER_PERC_FROM_DAMGE               = 9,            // Percent from damage
     SPELL_TRIGGER_PERC_MAX_MANA                 = 10,           // Percent from max mana
@@ -135,6 +135,10 @@ enum SpellTriggeredType
     SPELL_TRIGGER_COMBOPOINT_BP                 = 29,           // set basepoint to bp * combopoints
     SPELL_TRIGGER_DAM_PERC_FROM_MAX_HP          = 30,           // set basepoint to (damage / max hp) * 100
     SPELL_TRIGGER_SUMM_DAMAGE_PROC              = 31,           // summ damage in amount, proc if damage > bp0(1,2) * SPD(SPDH,AP)
+    SPELL_TRIGGER_ADDPOWER_PCT                  = 32,           // set basepoint to spell add power percent from aura amount
+    SPELL_TRIGGER_ADD_ABSORB_PCT                = 33,           // set basepoint from absorb percent
+    SPELL_TRIGGER_ADD_BLOCK_PCT                 = 34,           // set basepoint from block percent
+    SPELL_TRIGGER_NEED_COMBOPOINTS              = 35,           // Proc from spell that need compopoiunts
 };
 
 enum SpellAuraDummyType
@@ -160,6 +164,8 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_TYPE                    = 3,            // Check target rype
     SPELL_FILTER_SORT_BY_DISTANCE               = 4,            // Sort by distance
     SPELL_FILTER_TARGET_FRIENDLY                = 5,            // Check Friendly
+    SPELL_FILTER_TARGET_IN_RAID                 = 6,            // Check Raid
+    SPELL_FILTER_TARGET_IN_PARTY                = 7,            // Check Party
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -179,7 +185,7 @@ enum ProcFlags
     PROC_FLAG_DONE_RANGED_AUTO_ATTACK         = 0x00000040,    // 06 Done ranged auto attack(on hit)
     PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK        = 0x00000080,    // 07 Taken ranged auto attack(on hit)
 
-    PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS     = 0x00000100,    // 08 Done attack by Spell that has dmg class ranged(after cast)
+    PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS     = 0x00000100,    // 08 Done attack by Spell that has dmg class ranged(after cast if charges and hit of not)
     PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS    = 0x00000200,    // 09 Taken attack by Spell that has dmg class ranged(on hit)
 
     PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS   = 0x00000400,    // 10 Done positive spell that has dmg class none(after cast)
@@ -188,10 +194,10 @@ enum ProcFlags
     PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG   = 0x00001000,    // 12 Done negative spell that has dmg class none(after cast)
     PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG  = 0x00002000,    // 13 Taken negative spell that has dmg class none
 
-    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS  = 0x00004000,    // 14 Done positive spell that has dmg class magic(on hit)
+    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS  = 0x00004000,    // 14 Done positive spell that has dmg class magic(after cast if charges and hit of not)
     PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS = 0x00008000,    // 15 Taken positive spell that has dmg class magic
 
-    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG  = 0x00010000,    // 16 Done negative spell that has dmg class magic(after cast)
+    PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG  = 0x00010000,    // 16 Done negative spell that has dmg class magic(after cast if charges and hit of not)
     PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG = 0x00020000,    // 17 Taken negative spell that has dmg class magic
 
     PROC_FLAG_DONE_PERIODIC                   = 0x00040000,    // 18 Successful do periodic (damage / healing)
@@ -211,7 +217,7 @@ enum ProcFlags
     PROC_FLAG_TEST_PROC1                      = 0x08000000,    // 27 Test proc
 
     PROC_FLAG_TEST_PROC2                      = 0x10000000,    // 28 Test proc
-    PROC_FLAG_TEST_PROC3                      = 0x20000000,    // 29 Test proc
+    PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG    = 0x20000000,    // 29 Alway take charges(or stack) and not amount modify by stack, proc flags 10|14|16
 
     PROC_FLAG_TEST_PROC4                      = 0x40000000,    // 30 Test proc
     PROC_FLAG_TEST_PROC5                      = 0x80000000,    // 31 Test proc
@@ -232,7 +238,8 @@ enum ProcFlags
                                                 | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS | PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS
                                                 | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG
                                                 | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS
-                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG,
+                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG
+                                                | PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG,
 
     SPELL_CAST_PROC_FLAG_MASK                  = SPELL_PROC_FLAG_MASK | PROC_FLAG_DONE_TRAP_ACTIVATION | RANGED_PROC_FLAG_MASK,
 
@@ -242,7 +249,8 @@ enum ProcFlags
                                                  | PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS | PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS
                                                  | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG
                                                  | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG
-                                                 | PROC_FLAG_DONE_PERIODIC | PROC_FLAG_DONE_MAINHAND_ATTACK | PROC_FLAG_DONE_OFFHAND_ATTACK,
+                                                 | PROC_FLAG_DONE_PERIODIC | PROC_FLAG_DONE_MAINHAND_ATTACK | PROC_FLAG_DONE_OFFHAND_ATTACK
+                                                 | PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG,
 
     TAKEN_HIT_PROC_FLAG_MASK                   = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK | PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK
                                                  | PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS | PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS
@@ -251,6 +259,8 @@ enum ProcFlags
                                                  | PROC_FLAG_TAKEN_PERIODIC | PROC_FLAG_TAKEN_DAMAGE,
 
     REQ_SPELL_PHASE_PROC_FLAG_MASK             = SPELL_PROC_FLAG_MASK & DONE_HIT_PROC_FLAG_MASK,
+
+    SPELL_PROC_FROM_CAST_MASK                  = PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS,
 };
 
 #define MELEE_BASED_TRIGGER_MASK (PROC_FLAG_DONE_MELEE_AUTO_ATTACK      | \
@@ -524,6 +534,7 @@ struct PetAura
     float bp2;
     int32 aura;
     int32 casteraura;
+    int32 createdspell;
 };
 
 typedef UNORDERED_MAP<int32, std::vector<PetAura> > SpellPetAuraMap;
@@ -657,6 +668,7 @@ struct SpellPrcoCheck
     int32 fromlevel;
     int32 perchp;
     int32 spelltypeMask;
+    int32 combopoints;
 };
 
 struct SpellTriggered
@@ -678,6 +690,8 @@ struct SpellTriggered
     int32 procFlags;
     int32 procEx;
     int32 check_spell_id;
+    int32 addptype;
+    int32 schoolMask;
 };
 
 struct SpellMountList
@@ -772,6 +786,8 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group);
 int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto);
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
+
+bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask= 0, bool nodamage = false);
 
 typedef std::vector<std::set<uint32> > SpellClassList;
 typedef std::map<uint32, std::list<uint32> > SpellOverrideInfo;

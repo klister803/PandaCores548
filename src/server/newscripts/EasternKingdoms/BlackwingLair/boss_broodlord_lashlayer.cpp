@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,20 +16,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Broodlord_Lashlayer
-SD%Complete: 100
-SDComment:
-SDCategory: Blackwing Lair
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "blackwing_lair.h"
 
 enum Say
 {
-    SAY_AGGRO               = -1469000,
-    SAY_LEASH               = -1469001
+    SAY_AGGRO               = 0,
+    SAY_LEASH               = 1
 };
 
 enum Spells
@@ -40,37 +34,40 @@ enum Spells
     SPELL_KNOCKBACK         = 25778
 };
 
+enum Events
+{
+    EVENT_CLEAVE            = 1,
+    EVENT_BLASTWAVE         = 2,
+    EVENT_MORTALSTRIKE      = 3,
+    EVENT_KNOCKBACK         = 4,
+    EVENT_CHECK             = 5
+};
+
 class boss_broodlord : public CreatureScript
 {
 public:
     boss_broodlord() : CreatureScript("boss_broodlord") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    struct boss_broodlordAI : public BossAI
     {
-        return new boss_broodlordAI (creature);
-    }
-
-    struct boss_broodlordAI : public ScriptedAI
-    {
-        boss_broodlordAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 Cleave_Timer;
-        uint32 BlastWave_Timer;
-        uint32 MortalStrike_Timer;
-        uint32 KnockBack_Timer;
-
-        void Reset()
-        {
-            Cleave_Timer = 8000;                                // These times are probably wrong
-            BlastWave_Timer = 12000;
-            MortalStrike_Timer = 20000;
-            KnockBack_Timer = 30000;
-        }
+        boss_broodlordAI(Creature* creature) : BossAI(creature, BOSS_BROODLORD) { }
 
         void EnterCombat(Unit* /*who*/)
         {
-            DoScriptText(SAY_AGGRO, me);
-            DoZoneInCombat();
+            if (instance->GetBossState(BOSS_VAELASTRAZ) != DONE)
+            {
+                EnterEvadeMode();
+                return;
+            }
+
+            _EnterCombat();
+            Talk(SAY_AGGRO);
+
+            events.ScheduleEvent(EVENT_CLEAVE, 8000);
+            events.ScheduleEvent(EVENT_BLASTWAVE, 12000);
+            events.ScheduleEvent(EVENT_MORTALSTRIKE, 20000);
+            events.ScheduleEvent(EVENT_KNOCKBACK, 30000);
+            events.ScheduleEvent(EVENT_CHECK, 1000);
         }
 
         void UpdateAI(uint32 diff)
@@ -78,43 +75,49 @@ public:
             if (!UpdateVictim())
                 return;
 
-            //Cleave_Timer
-            if (Cleave_Timer <= diff)
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
             {
-                DoCast(me->getVictim(), SPELL_CLEAVE);
-                Cleave_Timer = 7000;
-            } else Cleave_Timer -= diff;
-
-            // BlastWave
-            if (BlastWave_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_BLASTWAVE);
-                BlastWave_Timer = urand(8000, 16000);
-            } else BlastWave_Timer -= diff;
-
-            //MortalStrike_Timer
-            if (MortalStrike_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_MORTALSTRIKE);
-                MortalStrike_Timer = urand(25000, 35000);
-            } else MortalStrike_Timer -= diff;
-
-            if (KnockBack_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_KNOCKBACK);
-                //Drop 50% aggro
-                if (DoGetThreat(me->getVictim()))
-                    DoModifyThreatPercent(me->getVictim(), -50);
-
-                KnockBack_Timer = urand(15000, 30000);
-            } else KnockBack_Timer -= diff;
-
-            if (EnterEvadeIfOutOfCombatArea(diff))
-                DoScriptText(SAY_LEASH, me);
+                switch (eventId)
+                {
+                    case EVENT_CLEAVE:
+                        DoCastVictim(SPELL_CLEAVE);
+                        events.ScheduleEvent(EVENT_CLEAVE, 7000);
+                        break;
+                    case EVENT_BLASTWAVE:
+                        DoCastVictim(SPELL_BLASTWAVE);
+                        events.ScheduleEvent(EVENT_BLASTWAVE, urand(8000, 16000));
+                        break;
+                    case EVENT_MORTALSTRIKE:
+                        DoCastVictim(SPELL_MORTALSTRIKE);
+                        events.ScheduleEvent(EVENT_MORTALSTRIKE, urand(25000, 35000));
+                        break;
+                    case EVENT_KNOCKBACK:
+                        DoCastVictim(SPELL_KNOCKBACK);
+                        if (DoGetThreat(me->getVictim()))
+                            DoModifyThreatPercent(me->getVictim(), -50);
+                        events.ScheduleEvent(EVENT_KNOCKBACK, urand(15000, 30000));
+                        break;
+                    case EVENT_CHECK:
+                        if (me->GetDistance(me->GetHomePosition()) > 150.0f)
+                        {
+                            Talk(SAY_LEASH);
+                            EnterEvadeMode();
+                        }
+                        events.ScheduleEvent(EVENT_CHECK, 1000);
+                        break;
+                }
+            }
 
             DoMeleeAttackIfReady();
         }
     };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<boss_broodlordAI>(creature);
+    }
 };
 
 void AddSC_boss_broodlord()

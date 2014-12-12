@@ -26,9 +26,9 @@ class boss_nalak : public CreatureScript
 public:
     boss_nalak() : CreatureScript("boss_nalak") { }
 
-    struct boss_nalakAI : public CreatureAI
+    struct boss_nalakAI : public ScriptedAI
     {
-        boss_nalakAI(Creature* creature) : CreatureAI(creature)
+        boss_nalakAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
@@ -53,15 +53,15 @@ public:
           //events.ScheduleEvent(EVENT_LIGHTNING_TETHER, 35000); not work
             events.ScheduleEvent(EVENT_STORMCLOUD,       24000);
         }
-        
+
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (me->getVictim() && attack_ready)
+            /*if (me->getVictim() && attack_ready)
                 if (!me->IsWithinMeleeRange(me->getVictim()))
-                    me->GetMotionMaster()->MoveCharge(me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ() + 18.0f, 15.0f);
+                    me->GetMotionMaster()->MoveCharge(me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ() + 18.0f, 15.0f);*/
 
             events.Update(diff);
 

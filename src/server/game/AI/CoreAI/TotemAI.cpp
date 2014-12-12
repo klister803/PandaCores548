@@ -51,8 +51,6 @@ void TotemAI::InitializeAI()
             if(Unit* victim = me->GetTargetUnit())
                 me->Attack(victim, !me->GetCasterPet());
         }
-    if (TempSummon* summon = me->ToTempSummon())
-        summon->CastPetAuras(true);
 }
 
 void TotemAI::MoveInLineOfSight(Unit* /*who*/)

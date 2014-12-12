@@ -126,6 +126,9 @@ class spell_pal_shield_of_the_righteous : public SpellScriptLoader
                         else
                             _player->CastSpell(_player, PALADIN_SPELL_SHIELD_OF_THE_RIGHTEOUS_PROC, true);
                         _player->CastSpell(_player, PALADIN_SPELL_BASTION_OF_GLORY, true);
+                        if (Aura* aura = _player->GetAura(PALADIN_SPELL_BASTION_OF_GLORY)) //Item - Paladin T16 Protection 4P Bonus
+                            if(aura->GetStackAmount() >= 3)
+                                _player->CastSpell(_player, 144569, true);
                     }
                 }
             }
@@ -1299,6 +1302,43 @@ class spell_pal_holy_wrath : public SpellScriptLoader
         }
 };
 
+// Divine Protection - 498
+class spell_pal_divine_protection : public SpellScriptLoader
+{
+    public:
+        spell_pal_divine_protection() : SpellScriptLoader("spell_pal_divine_protection") { }
+
+        class spell_pal_divine_protection_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_divine_protection_AuraScript);
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(Aura* aura = caster->GetAura(144580))
+                    {
+                        int32 _heal = int32((aura->GetEffect(0)->GetAmount() * 0.75) / 10);
+                        if(_heal)
+                            caster->CastCustomSpell(caster, 144581, &_heal, NULL, NULL, true, NULL, aurEff);
+                    }
+                    if(Aura* aura = caster->GetAura(138244))
+                        aura->GetEffect(0)->SetAmount(0);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_pal_divine_protection_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_divine_protection_AuraScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1329,4 +1369,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_execution_sentence_damage();
     new spell_pal_devotion_aura();
     new spell_pal_holy_wrath();
+    new spell_pal_divine_protection();
 }

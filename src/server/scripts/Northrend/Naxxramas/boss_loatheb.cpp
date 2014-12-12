@@ -139,67 +139,7 @@ public:
 
 };
 
-class mob_loatheb_spore : public CreatureScript
-{
-public:
-    mob_loatheb_spore() : CreatureScript("mob_loatheb_spore") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new mob_loatheb_sporeAI (pCreature);
-    }
-
-    struct mob_loatheb_sporeAI : public ScriptedAI
-    {
-        mob_loatheb_sporeAI(Creature *c) : ScriptedAI(c) 
-        {
-            deathTimer = 1000;
-            dying = false;
-        }
-
-        uint32 deathTimer;
-        bool dying;
-
-        void DamageTaken(Unit* /*attacker*/, uint32& damage)
-        {
-            if (damage < me->GetHealth())
-                return;
-
-            DoCast(SPELL_FUNGAL_CREEP);
-            me->SetHealth(10);
-            damage = 0;
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
-            me->SetReactState(REACT_PASSIVE);
-            dying = true;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (dying)
-                deathTimer -= diff;
-
-            if (deathTimer <= diff)
-               me->Kill(me);
-
-            if (!UpdateVictim())
-                return;
-
-            DoMeleeAttackIfReady();
-        }
-
-        void JustDied(Unit* /*killer*/)
-        {
-            if (InstanceScript* pInstance = me->GetInstanceScript())
-                if (Creature* pLoatheb = Creature::GetCreature(*me, pInstance->GetData64(DATA_LOATHEB)))
-                    if (pLoatheb->isAlive())
-                        pLoatheb->AI()->DoAction(0);
-        }
-    };
-
-};
-
 void AddSC_boss_loatheb()
 {
     new boss_loatheb();
-    new mob_loatheb_spore();
 }

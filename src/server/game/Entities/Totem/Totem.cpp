@@ -76,6 +76,9 @@ void Totem::InitStats(uint32 duration)
                     continue;
                 else
                 {
+                    if(m_owner->m_SummonSlot[i])
+                        if(Creature* oldSummon = GetMap()->GetCreature(m_owner->m_SummonSlot[i]))
+                            continue;
                     switch (i)
                     {
                         case 1:

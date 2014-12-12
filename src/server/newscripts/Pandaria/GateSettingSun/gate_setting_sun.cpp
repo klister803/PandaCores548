@@ -15,50 +15,6 @@ enum spells
     SPELL_BOMB_AURA                     = 106875,
 };
 
-class mob_serpent_spine_defender : public CreatureScript
-{
-public:
-    mob_serpent_spine_defender() : CreatureScript("mob_serpent_spine_defender") { }
-
-    struct mob_serpent_spine_defenderAI : public ScriptedAI
-    {
-        mob_serpent_spine_defenderAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 attackTimer;
-
-        void Reset()
-        {
-            attackTimer = urand(1000, 5000);
-        }
-
-        void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType /*damageType*/)
-        {
-            damage = 0;
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!me->isInCombat())
-            {
-                if (attackTimer <= diff)
-                {
-                    if (Unit* target = me->SelectNearestTarget(5.0f))
-                        if (!target->IsFriendlyTo(me))
-                            AttackStart(target);
-                }
-                else
-                    attackTimer -= diff;
-            }
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mob_serpent_spine_defenderAI(creature);
-    }
-};
 
 class npc_krikthik_bombarder : public CreatureScript
 {
@@ -161,70 +117,10 @@ public:
     }
 };
 
-class vehicle_artillery_to_wall : public VehicleScript
-{
-    public:
-        vehicle_artillery_to_wall() : VehicleScript("vehicle_artillery_to_wall") {}
-
-        void OnAddPassenger(Vehicle* veh, Unit* /*passenger*/, int8 /*seatId*/)
-        {
-            if (veh->GetBase())
-                if (veh->GetBase()->ToCreature())
-                    if (veh->GetBase()->ToCreature()->AI())
-                        veh->GetBase()->ToCreature()->AI()->DoAction(0);
-        }
-
-        struct vehicle_artillery_to_wallAI : public ScriptedAI
-        {
-            vehicle_artillery_to_wallAI(Creature* creature) : ScriptedAI(creature)
-            {}
-
-            uint32 launchEventTimer;
-
-            void Reset()
-            {
-                launchEventTimer = 0;
-            }
-
-            void DoAction(int32 const action)
-            {
-                launchEventTimer = 2500;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!launchEventTimer)
-                    return;
-
-                if (launchEventTimer <= diff)
-                {
-                    if (me->GetVehicleKit())
-                    {
-                        if (Unit* passenger = me->GetVehicleKit()->GetPassenger(0))
-                        {
-                            passenger->ExitVehicle();
-                            passenger->GetMotionMaster()->MoveJump(1100.90f, 2304.58f, 381.23f, 30.0f, 50.0f);
-                        }
-                    }
-
-                    launchEventTimer = 0;
-                }
-                else launchEventTimer -= diff;
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new vehicle_artillery_to_wallAI(creature);
-        }
-};
-
 void AddSC_gate_setting_sun()
 {
-    new mob_serpent_spine_defender();
     new npc_krikthik_bombarder();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
     new go_setting_sun_temp_portal();
-    new vehicle_artillery_to_wall();
 }

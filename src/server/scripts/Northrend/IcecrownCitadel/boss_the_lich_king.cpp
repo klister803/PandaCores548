@@ -3444,7 +3444,7 @@ public:
                             if (!curVictim || curVictim->GetEntry() == NPC_TERENAS_MENETHIL_FROSTMOURNE_H)
                                 curVictim = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
 
-                            if(curVictim || curVictim->GetEntry() != NPC_TERENAS_MENETHIL_FROSTMOURNE_H)
+                            if(curVictim && curVictim->GetEntry() != NPC_TERENAS_MENETHIL_FROSTMOURNE_H)
                                 AttackStart(curVictim);
                             else
                             {

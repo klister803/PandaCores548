@@ -444,10 +444,6 @@ Aura* Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMa
         if (foundAura->IsRemoved())
             return NULL;
 
-        // Earthgrab Totem : Don't refresh root
-        if (foundAura->GetId() == 64695)
-            return NULL;
-
         if (refresh)
             *refresh = true;
         return foundAura;
@@ -560,6 +556,25 @@ uint32 Aura::CalculateEffMaskFromDummy(Unit* caster, WorldObject* target, uint32
             Unit* _targetAura = caster;
             bool check = false;
 
+            if(!_caster)
+                return effMask;
+
+            if(itr->targetaura == 1 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _targetAura = (Unit*)pet;
+            }
+            if(itr->targetaura == 2) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _targetAura = owner;
+            }
+            if(itr->targetaura == 3 && target->ToUnit()) //get target
+                _targetAura = target->ToUnit();
+
+            if(!_targetAura)
+                _targetAura = _caster;
+
             switch (itr->option)
             {
                 case SPELL_DUMMY_MOD_EFFECT_MASK: //4
@@ -569,12 +584,12 @@ uint32 Aura::CalculateEffMaskFromDummy(Unit* caster, WorldObject* target, uint32
                     if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
                         continue;
 
-                    if(itr->spellDummyId > 0 && !_caster->HasAura(itr->spellDummyId))
+                    if(itr->spellDummyId > 0 && !_targetAura->HasAura(itr->spellDummyId))
                     {
                         effMask &= ~itr->effectmask;
                         check = true;
                     }
-                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    if(itr->spellDummyId < 0 && _targetAura->HasAura(abs(itr->spellDummyId)))
                     {
                         effMask &= ~itr->effectmask;
                         check = true;
@@ -1086,7 +1101,7 @@ uint8 Aura::CalcMaxCharges(Unit* caster, bool add) const
 
 bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
 {
-    if (IsUsingCharges())
+    if (IsUsingCharges() || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)))
     {
         //if aura not modify and have stack and have charges aura use stack for drop stack visual
         if(m_spellInfo->StackAmount > 1 && GetId() != 114637 && GetId() != 128863)
@@ -1096,7 +1111,7 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
                 if (AuraEffect* aurEff = GetEffect(i))
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                         _useStack = false;
-            if(_useStack)
+            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)))
             {
                 ModStackAmount(num);
                 return false;

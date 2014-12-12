@@ -585,48 +585,9 @@ public:
 
 };
 
-class spell_Thadius_polarity_charge : public SpellScriptLoader
-{
-public:
-    spell_Thadius_polarity_charge() : SpellScriptLoader("spell_Thadius_polarity_charge") { }
-
-    class spell_Thadius_polarity_charge_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_Thadius_polarity_charge_SpellScript)
-        void HandleAfterHit()
-        {
-            if (Unit * pCaster = GetCaster())
-               if (InstanceScript* pInstance = pCaster->GetInstanceScript())
-                    if (Creature* pThadius = CAST_CRE(Unit::GetUnit(*pCaster, pInstance->GetData64(DATA_THADDIUS))))
-                       if (boss_thaddius::boss_thaddiusAI* pThadiusAI = CAST_AI(boss_thaddius::boss_thaddiusAI, pThadius->AI()))
-                            if (Unit* target = GetHitUnit())
-                            {
-                               if (GetSpellInfo()->Id == 28062 || GetSpellInfo()->Id == 39090)
-                                    if (target->HasAura(39091) || target->HasAura(28084))
-                                        pThadiusAI->DoAction(ACTION_SHOCKED);
-
-                                if (GetSpellInfo()->Id == 28085 || GetSpellInfo()->Id == 39093)
-                                    if (target->HasAura(39088) || target->HasAura(28059))
-                                        pThadiusAI->DoAction(ACTION_SHOCKED);
-                            }
-        }
-
-        void Register()
-        {
-            AfterHit += SpellHitFn(spell_Thadius_polarity_charge_SpellScript::HandleAfterHit);
-        }
-    };
-
-    SpellScript *GetSpellScript() const
-    {
-        return new spell_Thadius_polarity_charge_SpellScript();
-    }
-};
-
 void AddSC_boss_thaddius()
 {
     new boss_thaddius();
     new mob_stalagg();
     new mob_feugen();
-    new spell_Thadius_polarity_charge();
 }

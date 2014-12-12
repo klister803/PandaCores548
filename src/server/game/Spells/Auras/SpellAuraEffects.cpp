@@ -440,7 +440,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
     &AuraEffect::HandleNoImmediateEffect,                         //381 SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT implemented in Guardian::UpdateMaxHealth
     &AuraEffect::HandleAuraModPetStatsModifier,                   //382 SPELL_AURA_MOD_PET_STATS_MODIFIER
-    &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
+    &AuraEffect::HandleNoImmediateEffect,                         //383 SPELL_AURA_IGNORE_CD implemented in Spell::CheckCast
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
     &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_MOD_REST_GAINED
@@ -576,7 +576,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
 
     float DoneActualBenefit = 0.0f;
-    bool CalcStack = bool(m_spellInfo->StackAmount);
+    bool CalcStack = bool(m_spellInfo->StackAmount) && !(m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG));
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
@@ -771,7 +771,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(146025))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
@@ -784,7 +784,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(145955))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
@@ -801,7 +801,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     if (Aura * aura = caster->GetAura(146019))
                     {
                         if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                            amount = -(eff->GetAmount());
+                            amount = 100.0f / float((eff->GetAmount() + 100.0f) / 100.0f) - 100.0f;
                     }
                     break;
                 }
@@ -992,6 +992,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         break;
                     case 5:
                         amount += int32(ap * 0.744f / 12);
+                        break;
+                    case 6:
+                        amount += int32(ap * 0.928f / 14);
                         break;
                     default:
                         break;
@@ -3181,6 +3184,14 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                                 model_id = 29963;
                             else if (caster->HasAura(58136))         // Glyph of a polar bear
                                 model_id = 23948;
+                        }
+
+                    // Polymorph (Hex)
+                    if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_SHAMAN && GetSpellInfo()->SpellIconID == 3058 && GetSpellInfo()->SpellVisual[0] == 12780)
+                        if (Unit* caster = GetCaster())
+                        {
+                            if (caster->HasAura(147785))         // Glyph of the Compy
+                                model_id = 47428;
                         }
 
                     target->SetDisplayId(model_id);
@@ -5544,10 +5555,6 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK, (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
-
     target->UpdateMeleeHastMod();
     target->UpdateRangeHastMod();
 }
@@ -5558,10 +5565,6 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
         return;
 
     Unit* target = aurApp->GetTarget();
-
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, float(GetAmount()), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK, float(GetAmount()), apply);
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, float(GetAmount()), apply);
     
     target->UpdateHastMod();
     target->UpdateMeleeHastMod();
@@ -5574,8 +5577,10 @@ void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode,
         return;
 
     Unit* target = aurApp->GetTarget();
+    float hastMod = target->GetFloatValue(UNIT_MOD_HASTE);
+    ApplyPercentModFloatVar(hastMod, (float)GetAmount(), !apply);
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK, (float)GetAmount(), apply);
+    target->CalcAttackTimePercentMod(BASE_ATTACK, hastMod);
     target->UpdateDamagePhysical(BASE_ATTACK);
 }
 
@@ -5589,9 +5594,6 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
 
     int32 value = GetAmount();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
-
     target->UpdateMeleeHastMod();
 }
 
@@ -5603,7 +5605,6 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(RANGED_ATTACK, (float)GetAmount(), apply);
     target->UpdateRangeHastMod();
 }
 
@@ -5623,19 +5624,7 @@ void AuraEffect::HandleModRating(AuraApplication const* aurApp, uint8 mode, bool
 
     for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
         if (GetMiscValue() & (1 << rating))
-        {
-            switch (rating)
-            {
-                case CR_HASTE_MELEE:
-                case CR_HASTE_RANGED:
-                case CR_HASTE_SPELL:
-                    target->ToPlayer()->ApplyRatingMod(CombatRating(rating), GetAmount(), apply);
-                    break;
-                default:
-                    target->ToPlayer()->UpdateRating(CombatRating(rating));
-                    break;
-            }
-        }
+            target->ToPlayer()->UpdateRating(CombatRating(rating));
 }
 
 void AuraEffect::HandleModRatingFromStat(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7053,7 +7042,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 }
                 case 118694: // Spirit Bond
                 {
-                    if (caster->GetOwner() && (!caster->IsFullHealth() || !caster->GetOwner()->IsFullHealth()))
+                    if (caster->GetOwner() && caster == target && (!caster->IsFullHealth() || !caster->GetOwner()->IsFullHealth()))
                         trigger_spell_id = 149254;
                     break;
                 }
@@ -7476,6 +7465,29 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     return;
                 break;
             }
+            case 107851: // Focused Assault, Hagara, Dragon Soul
+            {    
+                if (caster)
+                    if (Creature* pHagara = caster->ToCreature())
+                        if (Unit* pTarget = pHagara->getVictim())
+                        {
+                            if (!pHagara->GetMap()->IsHeroic())
+                                if (!pHagara->isInFront(pTarget) || !pHagara->IsWithinMeleeRange(pTarget))
+                                {
+                                    GetBase()->Remove();
+                                    return;
+                                }
+
+                            pHagara->CastSpell(pHagara->getVictim(), 107850, true);
+                        }
+                return;
+            }
+            case 105285: // Target, Hagara, Dragon Soul
+            {    
+                if (caster)
+                    caster->CastSpell(target, triggerSpellId, true);
+                return;
+            }
             // The Biggest Egg Ever: Mechachicken's Rocket Barrage Aura Effect
             case 71416:
                 // prock 71419 with this action.
@@ -7853,7 +7865,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
             resist -= damage;
         }
-        if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+        if(GetBase()->m_aura_amount && damage && GetTotalTicks())
         {
             int32 auraDamage = int32(damage / GetTotalTicks());
             if(GetBase()->m_aura_amount > auraDamage)
@@ -7955,7 +7967,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
         int32 gain = caster->HealBySpell(caster, GetSpellInfo(), heal);
         caster->getHostileRefManager().threatAssist(caster, gain * 0.5f, GetSpellInfo());
     }
-    if(GetBase()->m_aura_amount && damage && GetBase()->GetMaxDuration() != -1)
+    if(GetBase()->m_aura_amount && damage && GetTotalTicks())
     {
         int32 auraDamage = int32(damage / GetTotalTicks());
         if(GetBase()->m_aura_amount > auraDamage)
@@ -8017,11 +8029,6 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
     // ignore negative values (can be result apply spellmods to aura damage
     int32 damage = std::max(m_amount, 0);
 
-    // Fix Second Wind only in AURA_STATE_HEALTHLESS_35_PERCENT
-    if (m_spellInfo->Id == 16491)
-        if (caster->GetHealthPct() > 35.0f)
-            return;
-
     bool crit = roll_chance_f(GetCritChance());
     if (crit)
         damage = GetCritAmount();
@@ -8043,6 +8050,10 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
         float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
         if (maxval)
             AddPct(TakenTotalMod, maxval);
+
+        if (Map* m_map = caster->GetMap())
+            if (!m_map->IsDungeon())
+                TakenTotalMod = caster->CalcPvPPower(target, TakenTotalMod, true);
 
         TakenTotalMod = std::max(TakenTotalMod, 0.0f);
 
@@ -8109,7 +8120,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
     caster->CalcHealAbsorb(target, GetSpellInfo(), heal, absorb);
     int32 gain = caster->DealHeal(target, heal, GetSpellInfo());
 
-    if(GetBase()->m_aura_amount && heal && GetBase()->GetMaxDuration() != -1)
+    if(GetBase()->m_aura_amount && heal && GetTotalTicks())
     {
         int32 auraDamage = int32(heal / GetTotalTicks());
         if(GetBase()->m_aura_amount > auraDamage)

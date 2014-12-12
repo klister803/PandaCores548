@@ -503,7 +503,7 @@ enum SpellAttr3
     SPELL_ATTR3_CANT_TRIGGER_PROC                = 0x00010000, // 16 confirmed with many patchnotes
     SPELL_ATTR3_NO_INITIAL_AGGRO                 = 0x00020000, // 17 Soothe Animal, 39758, Mind Soothe
     SPELL_ATTR3_IGNORE_HIT_RESULT                = 0x00040000, // 18 Spell should always hit its target
-    SPELL_ATTR3_DISABLE_PROC                     = 0x00080000, // 19 during aura proc no spells can trigger (20178, 20375)
+    SPELL_ATTR3_DISABLE_PROC                     = 0x00080000, // 19 during aura proc no spells can trigger(неверно определенный атрибут к примеру 5.4.1 спелл 144899 должен прокать от 51124, который тригерится из 51128 с этим атрибутом)
     SPELL_ATTR3_DEATH_PERSISTENT                 = 0x00100000, // 20 Death persistent spells
     SPELL_ATTR3_UNK21                            = 0x00200000, // 21 unused
     SPELL_ATTR3_REQ_WAND                         = 0x00400000, // 22 Req wand
@@ -3548,8 +3548,8 @@ enum QuestTypes
     QUEST_TYPE_HEROIC              = 85,
     QUEST_TYPE_RAID_10             = 88,
     QUEST_TYPE_RAID_25             = 89,
-    QUEST_TYPE_SCENARIO            = 98, // New on MoP 5.0.5
-    QUEST_TYPE_ACCOUNT             = 102 // New on MoP 5.0.5
+    QUEST_TYPE_SCENARIO            = 98,
+    QUEST_TYPE_ACCOUNT             = 102
 };
 
 // values based at QuestSort.dbc

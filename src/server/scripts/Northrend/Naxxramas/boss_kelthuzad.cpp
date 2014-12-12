@@ -742,67 +742,9 @@ public:
 
 };
 
-enum AbomintaionSpells
-{
-    SPELL_MORTAL_WOUND        = 28467,
-    SPELL_FRENZY                = 28468
-};
-
-class npc_unstoppable_abomination : public CreatureScript
-{
-public:
-    npc_unstoppable_abomination() : CreatureScript("npc_unstoppable_abomination") { }
-
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_unstoppable_abominationAI (pCreature);
-    }
-    struct npc_unstoppable_abominationAI : public ScriptedAI
-    {
-        npc_unstoppable_abominationAI(Creature* pCreature) : ScriptedAI(pCreature) {}
-
-        uint32 uiMortalWoundTimer;
-        bool bFrenzy;
-
-        void Reset()
-        {
-            uiMortalWoundTimer = RAND(900, 2200);
-            bFrenzy = false;
-        }
-
-        void JustDied(Unit *killer)
-        {
-            if (InstanceScript* pInstance = me->GetInstanceScript())
-                if (Creature* pKelthuzad = Creature::GetCreature(*me, pInstance->GetData64(DATA_KELTHUZAD)))
-                    pKelthuzad->AI()->DoAction(0);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            if (uiMortalWoundTimer <= diff)
-            {
-                DoCastVictim(SPELL_MORTAL_WOUND);
-                uiMortalWoundTimer = RAND(8000, 13000);
-            } else uiMortalWoundTimer -= diff;
-
-            if (HealthBelowPct(25) && !bFrenzy)
-            {
-                DoCast(SPELL_FRENZY);
-                bFrenzy = true;
-            }
-
-            DoMeleeAttackIfReady();
-        }
-    };
-};
-
 
 void AddSC_boss_kelthuzad()
 {
     new boss_kelthuzad();
     new at_kelthuzad_center();
-    new npc_unstoppable_abomination();
 }

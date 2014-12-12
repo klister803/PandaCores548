@@ -54,9 +54,6 @@ void PetAI::InitializeAI()
     if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
         me->SetReactState(ReactStates(pStats->state));
 
-    if (TempSummon* summon = me->ToTempSummon())
-        summon->CastPetAuras(true);
-
     CreatureAI::InitializeAI();
 
     // Update speed as needed to prevent dropping too far behind and despawning

@@ -189,53 +189,6 @@ public:
     };
 };
 
-enum iEmun
-{
-    SAY_ILLIDAN_AGRO        = -2000211,
-};
-
-class boss_illidan_woe : public CreatureScript
-{
-    public:
-        boss_illidan_woe() : CreatureScript("boss_illidan_woe") { }
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new boss_illidan_woeAI(creature);
-        }
-
-        struct boss_illidan_woeAI : public npc_escortAI
-        {
-            boss_illidan_woeAI(Creature* c) : npc_escortAI(c) {}
-
-            void Reset()
-            {
-                Start(true, true, 0, 0);
-            }
-
-            void WaypointReached(uint32 uiPointId)
-            {
-                /*switch (uiPointId)
-                {
-                }*/
-            }
-
-            void JustSummoned(Creature* summoned)
-            {
-            }
-
-            void EnterCombat(Unit* /*who*/)
-            {
-                DoScriptText(SAY_ILLIDAN_AGRO, me);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                npc_escortAI::UpdateAI(diff);
-            }
-        };
-};
-
 class spell_boss_perotharn_drain_sssence : public SpellScriptLoader
 {
     public:
@@ -267,6 +220,5 @@ class spell_boss_perotharn_drain_sssence : public SpellScriptLoader
 void AddSC_boss_perotharn()
 {
     new boss_perotharn();
-    new boss_illidan_woe();
     new spell_boss_perotharn_drain_sssence();
 }

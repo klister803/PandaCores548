@@ -108,7 +108,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                 return true;
             }
 
-            void HandleOnHit()
+            void HandleAfterCast()
             {
                 SpellInfo const* procSpell = GetSpellInfo();
                 if (!procSpell)
@@ -118,7 +118,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                 if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
                     return;
 
-                Unit* unitTarget = GetHitUnit();
+                Unit* unitTarget = GetExplTargetUnit();
                 if (!unitTarget)
                     return;
 
@@ -154,7 +154,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mastery_elemental_overload_SpellScript::HandleOnHit);
+                AfterCast += SpellCastFn(spell_mastery_elemental_overload_SpellScript::HandleAfterCast);
             }
         };
 

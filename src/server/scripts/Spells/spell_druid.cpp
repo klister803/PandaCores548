@@ -603,8 +603,8 @@ class spell_dru_incarnation_tree_of_life : public SpellScriptLoader
 
             void Register()
             {
-                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_tree_of_life_AuraScript::OnApply, EFFECT_0, SPELL_AURA_383, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_tree_of_life_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_383, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectApply += AuraEffectApplyFn(spell_dru_incarnation_tree_of_life_AuraScript::OnApply, EFFECT_0, SPELL_AURA_IGNORE_CD, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_incarnation_tree_of_life_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_IGNORE_CD, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1671,71 +1671,6 @@ class spell_dru_faerie_swarm : public SpellScriptLoader
         }
 };
 
-// Wild Mushroom - 88747
-class spell_dru_wild_mushroom : public SpellScriptLoader
-{
-    public:
-        spell_dru_wild_mushroom() : SpellScriptLoader("spell_dru_wild_mushroom") { }
-
-        class spell_dru_wild_mushroom_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_wild_mushroom_SpellScript)
-
-            void HandleSummon(SpellEffIndex effIndex)
-            {
-                if (Player* player = GetCaster()->ToPlayer())
-                {
-                    PreventHitDefaultEffect(effIndex);
-
-                    const SpellInfo* spell = GetSpellInfo();
-                    std::list<Creature*> tempList;
-                    std::list<Creature*> mushroomlist;
-
-                    player->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 500.0f);
-
-                    mushroomlist = tempList;
-
-                    // Remove other players mushrooms
-                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                    {
-                        Unit* owner = (*i)->GetOwner();
-                        if (owner && owner == player && (*i)->isSummon())
-                            continue;
-
-                        mushroomlist.remove((*i));
-                    }
-
-                    // 3 mushrooms max
-                    if ((int32)mushroomlist.size() >= spell->Effects[effIndex].BasePoints)
-                        mushroomlist.back()->ToTempSummon()->UnSummon();
-
-                    Position pos;
-                    GetExplTargetDest()->GetPosition(&pos);
-                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
-                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
-                    if (!summon)
-                        return;
-
-                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
-                    summon->setFaction(player->getFaction());
-                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                    summon->SetMaxHealth(5);
-                    summon->CastSpell(summon, DRUID_SPELL_MUSHROOM_BIRTH_VISUAL, true); // Wild Mushroom : Detonate Birth Visual
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_dru_wild_mushroom_SpellScript::HandleSummon, EFFECT_1, SPELL_EFFECT_SUMMON);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_wild_mushroom_SpellScript();
-        }
-};
-
 // Wild Mushroom : Detonate - 88751
 class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 {
@@ -2685,7 +2620,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
             PrepareAuraScript(spell_druid_rejuvenation_AuraScript);
 
 
-            void HandleTick(AuraEffect const* aurEff, int32& amount, Unit* target)
+            void HandleTick(AuraEffect const* /*aurEff*/, int32& amount, Unit* target)
             {
                 Unit* caster = GetCaster();
                 if(!caster || !target)
@@ -2715,6 +2650,12 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                         else
                             summon->CastCustomSpell(summon, 138616, &scale, &health, NULL, true);
                     }
+                }
+                if (AuraEffect const* aurEffset = caster->GetAuraEffect(138286, EFFECT_0)) // Item - Druid T15 Restoration 4P Bonus
+                {
+                    float percent = (aurEffset->GetAmount() / 100.0f) + 1.0f;
+                    if (AuraEffect* aurEff = GetAura()->GetEffect(2))
+                        aurEff->SetAmount(int32(aurEff->GetAmount() * percent));
                 }
             }
 
@@ -3281,63 +3222,6 @@ class spell_dru_wild_mushroom_heal : public SpellScriptLoader
         }
 };
 
-//Efflorescence - 81269
-class spell_dru_efflorescence : public SpellScriptLoader
-{
-    public:
-        spell_dru_efflorescence() : SpellScriptLoader("spell_dru_efflorescence") { }
-
-        class spell_dru_efflorescence_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_efflorescence_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty())
-                {
-                    targets.push_back(GetCaster());
-                    return;
-                }
-
-                if (targets.size() > 3)
-                    targets.sort(CheckHealthState());
-
-                if(targets.size() > 3)
-                    targets.resize(3);
-                if (targets.empty())
-                    targets.push_back(GetCaster());
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_efflorescence_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
-            }
-        private:
-
-            class CheckHealthState
-            {
-                public:
-                    CheckHealthState() { }
-
-                    bool operator() (WorldObject* a, WorldObject* b) const
-                    {
-                        Unit* unita = a->ToUnit();
-                        Unit* unitb = b->ToUnit();
-                        if(!unita)
-                            return true;
-                        if(!unitb)
-                            return false;
-                        return unita->GetHealthPct() < unitb->GetHealthPct();
-                    }
-            };
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_efflorescence_SpellScript();
-        }
-};
-
 //Genesis - 145518
 class spell_dru_genesis : public SpellScriptLoader
 {
@@ -3493,6 +3377,83 @@ class spell_druid_dream_of_cenarius: public SpellScriptLoader
         }
 };
 
+// Frenzied Regeneration - 122307
+class spell_dru_frenzied_regeneration_t16 : public SpellScriptLoader
+{
+    public:
+        spell_dru_frenzied_regeneration_t16() : SpellScriptLoader("spell_dru_frenzied_regeneration_t16") { }
+
+        class spell_dru_frenzied_regeneration_t16_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_frenzied_regeneration_t16_SpellScript);
+
+            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraEffect const* aurEff = _player->GetAuraEffect(144879, EFFECT_0)) //Item - Druid T16 Guardian 2P Bonus
+                    {
+                        int32 rageused = aurEff->GetAmount() * 10;
+                        int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
+                        int32 agility = _player->GetStat(STAT_AGILITY) * 2;
+                        int32 stamina = int32(_player->GetStat(STAT_STAMINA));
+                        int32 a = (AP - agility) * GetSpellInfo()->Effects[1].BasePoints / 100;
+                        int32 b = stamina * GetSpellInfo()->Effects[2].BasePoints / 100;
+
+                        int32 healAmount = int32(std::max(a, b));
+                        healAmount = rageused * healAmount / 600;
+
+                        SetEffectValue(healAmount);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectLaunchTarget += SpellEffectFn(spell_dru_frenzied_regeneration_t16_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_frenzied_regeneration_t16_SpellScript();
+        }
+};
+
+// 144888 - Ursoc's Vigor
+class spell_dru_ursocs_vigor : public SpellScriptLoader
+{
+    public:
+        spell_dru_ursocs_vigor() : SpellScriptLoader("spell_dru_ursocs_vigor") { }
+
+        class spell_dru_ursocs_vigor_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_ursocs_vigor_AuraScript);
+
+            bool Load()
+            {
+                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(144887, EFFECT_0)) // Item - Druid T16 Guardian 4P Bonus
+                        amount = int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * float(aurEff->GetAmount() / 100.0f));
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_ursocs_vigor_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_ursocs_vigor_AuraScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3523,7 +3484,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
-    new spell_dru_wild_mushroom();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
@@ -3556,9 +3516,10 @@ void AddSC_druid_spell_scripts()
     new spell_dru_spell_dru_tooth_and_claw_absorb();
     new spell_dru_healing_ouch();
     new spell_dru_wild_mushroom_heal();
-    new spell_dru_efflorescence();
     new spell_dru_genesis();
     new spell_dru_glyph_of_hurricane();
     new spell_dru_efflorescence_dumy();
     new spell_druid_dream_of_cenarius();
+    new spell_dru_frenzied_regeneration_t16();
+    new spell_dru_ursocs_vigor();
 }

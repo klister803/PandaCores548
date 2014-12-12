@@ -618,50 +618,6 @@ public:
     }
 };
 
-class spell_gadok_strafing : public SpellScriptLoader
-{
-    public:
-        spell_gadok_strafing() :  SpellScriptLoader("spell_gadok_strafing") { }
-
-        class spell_gadok_strafing_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_gadok_strafing_SpellScript);
-            
-            void HandleBeforeCast()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (InstanceScript* instance = caster->GetInstanceScript())
-                    {
-                        uint8 actualStrafPhase = instance->GetData(DATA_GADOK);
-
-                        if (actualStrafPhase == PHASE_MAIN)
-                            return;
-
-                        uint32 stalkerEntry = actualStrafPhase == PHASE_NORTH_SOUTH ? NPC_STALKER_NORTH_SOUTH: NPC_STALKER_WEST_EAST;
-
-                        std::list<Creature*> stalkerList;
-                        GetCreatureListWithEntryInGrid(stalkerList, caster, stalkerEntry, 10.0f);
-
-						for (std::list<Creature*>::iterator itr = stalkerList.begin(); itr != stalkerList.end(); ++itr)
-                            if (!(*itr)->HasAura(SPELL_STRAFIND_RUN_DMG))
-                                (*itr)->CastSpell((*itr), SPELL_STRAFIND_RUN_DMG, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_gadok_strafing_SpellScript::HandleBeforeCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_gadok_strafing_SpellScript();
-        }
-};
-
 class spell_prey_time : public SpellScriptLoader
 {
     public:
@@ -705,6 +661,5 @@ void AddSC_boss_striker_gadok()
     new npc_krikthik_striker();
     new npc_krikthik_disruptor();
     new npc_flak_cannon();
-    new spell_gadok_strafing();
     new spell_prey_time();
 }

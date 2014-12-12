@@ -419,58 +419,6 @@ class spell_warl_archimondes_vengance : public SpellScriptLoader
         }
 };
 
-// Archimonde's Vengeance (5% passive) - 116403
-class spell_warl_archimondes_vengance_passive : public SpellScriptLoader
-{
-    public:
-        spell_warl_archimondes_vengance_passive() : SpellScriptLoader("spell_warl_archimondes_vengance_passive") { }
-
-        class spell_warl_archimondes_vengance_passive_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_archimondes_vengance_passive_AuraScript);
-
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-            {
-                PreventDefaultAction();
-
-                if (!GetCaster())
-                    return;
-
-                if (eventInfo.GetActor()->GetGUID() == GetTarget()->GetGUID())
-                    return;
-
-                if (!eventInfo.GetDamageInfo()->GetDamage())
-                    return;
-
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (_player->HasSpellCooldown(WARLOCK_ARCHIMONDES_VENGEANCE_PASSIVE))
-                        return;
-
-                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
-                    {
-                        int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() / 20);
-
-                        if (!bp)
-                            return;
-
-                        _player->CastCustomSpell(eventInfo.GetActor(), WARLOCK_ARCHIMONDES_VENGEANCE_DAMAGE, &bp, NULL, NULL, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectProc += AuraEffectProcFn(spell_warl_archimondes_vengance_passive_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_archimondes_vengance_passive_AuraScript();
-        }
-};
-
 // Called by Shadowflame - 47960
 // Molten Core - 122351
 class spell_warl_molten_core_dot : public SpellScriptLoader
@@ -2134,7 +2082,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_flames_of_xoroth();
     new spell_warl_archimondes_vengeance_cooldown();
     new spell_warl_archimondes_vengance();
-    new spell_warl_archimondes_vengance_passive();
     new spell_warl_molten_core_dot();
     new spell_warl_demonic_call();
     new spell_warl_void_ray();

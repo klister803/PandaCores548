@@ -87,6 +87,7 @@ struct ScriptedAI : public CreatureAI
     //CreatureAI Functions
     // *************
 
+    void InitializeAI();
     void AttackStartNoMove(Unit* target);
     void AttackStart(Unit* who);
 

@@ -1,6 +1,3 @@
-
-#define GOSSIP_OPTION_1 "Let's go!"
-#define GOSSIP_OPTION_2 "Bring us closer."
 #define DATA_WAVE 1
 #define POINT_LAND 1
 

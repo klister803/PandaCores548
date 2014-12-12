@@ -2235,8 +2235,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     mSpellPetAuraMap.clear();                                  // need for reload case
 
-    //                                                    0          1         2         3            4         5      6     7        8         9
-    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura` FROM `spell_pet_auras`");
+    //                                                    0          1         2         3            4         5      6     7        8         9              10
+    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura`, `createdspell` FROM `spell_pet_auras`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell pet auras. DB table `spell_pet_auras` is empty.");
@@ -2258,6 +2258,7 @@ void SpellMgr::LoadSpellPetAuras()
         float bp2 = fields[7].GetFloat();
         int32 aura = fields[8].GetInt32();
         int32 casteraura = fields[9].GetInt32();
+        int32 createdspell = fields[10].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
         if (!spellInfo)
@@ -2277,6 +2278,7 @@ void SpellMgr::LoadSpellPetAuras()
         tempPetAura.bp2 = bp2;
         tempPetAura.aura = aura;
         tempPetAura.casteraura = casteraura;
+        tempPetAura.createdspell = createdspell;
         mSpellPetAuraMap[petEntry].push_back(tempPetAura);
 
         ++count;
@@ -2656,8 +2658,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16           17
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask, combopoints FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2686,6 +2688,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 fromlevel = fields[14].GetInt32();
         int32 perchp = fields[15].GetInt32();
         int32 spelltypeMask = fields[16].GetInt32();
+        int32 combopoints = fields[17].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2710,6 +2713,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.fromlevel = fromlevel;
         templink.perchp = perchp;
         templink.spelltypeMask = spelltypeMask;
+        templink.combopoints = combopoints;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);
@@ -2732,8 +2736,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTargetFilterMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16            17           18
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype`, `schoolMask` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2761,6 +2765,8 @@ void SpellMgr::LoadSpellTriggered()
         int32 procFlags = fields[14].GetInt32();
         int32 procEx = fields[15].GetInt32();
         int32 check_spell_id = fields[16].GetInt32();
+        int32 addptype = fields[17].GetInt32();
+        int32 schoolMask = fields[18].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
@@ -2794,6 +2800,8 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.procFlags = procFlags;
         temptrigger.procEx = procEx;
         temptrigger.check_spell_id = check_spell_id;
+        temptrigger.addptype = addptype;
+        temptrigger.schoolMask = schoolMask;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -3021,6 +3029,40 @@ void SpellMgr::LoadPetLevelupSpellMap()
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u pet levelup and default spells for %u families in %u ms", count, family_count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask, bool nodamage)
+{
+    for(uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
+    {
+        if (EffMask && !(EffMask & (1<<effIndex)))
+            continue;
+
+        if (nodamage)
+        switch(spellInfo->Effects[effIndex].Effect)
+        {
+                case SPELL_EFFECT_HEALTH_LEECH:
+                case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    return false;
+        }
+        switch(spellInfo->Effects[effIndex].ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_CONFUSE:
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_FEAR_2:
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_MOD_SILENCE:
+            case SPELL_AURA_TRANSFORM:
+            case SPELL_AURA_MOD_DISARM:
+            case SPELL_AURA_MOD_POSSESS:
+                if(!spellInfo->IsPositiveEffect(effIndex))
+                    return true;
+                break;
+            default: break;
+        }
+    }
+    return false;
 }
 
 bool LoadPetDefaultSpells_helper(CreatureTemplate const* cInfo, PetDefaultSpellsEntry& petDefSpells)
@@ -3832,11 +3874,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] &= ~8192;
                     spellInfo->Effects[EFFECT_0].SpellClassMask[3] &= ~16384;
                     spellInfo->Effects[EFFECT_0].SpellClassMask[2] |= 64;
-                    break;
-                case 52042: // Healing Stream Totem
-                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
-                    spellInfo->ScalingClass = 11;
-                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 0.029f;
                     break;
                 case 379: // Earth Shield
                     spellInfo->ScalingClass = 11;
@@ -5008,13 +5045,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 88764:// Rolling Thunder
                     spellInfo->Effects[EFFECT_0].TriggerSpell = 0;    
                     break;
-                case 58423:
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[2] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] = 0;
-                    spellInfo->Effects[EFFECT_0].SpellClassMask[0] = 0;
-                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
-                    break;
                 case 111397: // Blood Horror
                 case 115191:
                     spellInfo->AuraInterruptFlags = 0;
@@ -5166,10 +5196,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].Effect = 0;
                     spellInfo->Effects[0].ApplyAuraName = 0;
                     break;
-                case 73920: // Healing Rain
-                    spellInfo->Effects[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
-                    spellInfo->Effects[1].BasePoints = 0;
-                    break;
                 case 3411: // Intervene
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_RAID;
                     break;
@@ -5303,6 +5329,80 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 105241: // Absorb Blood
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
+                    break;
+                case 106444: // Impale
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
+                    break;
+                // Madness of Deathwing
+                case 106663: // Carrying Winds
+                case 106668:
+                case 106670:
+                case 106672:
+                case 106674:
+                case 106676:
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DEST;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->ExcludeCasterAuraSpell = 0;
+                    spellInfo->SetDurationIndex(36); // 1 second
+                    break;
+                // Aspects auras
+                // Increase duration up to 10 secs
+                case 106028: case 109571: case 109572: case 109573:
+                case 106027: case 109622: case 109623: case 109624:
+                case 106457: case 109640: case 109641: case 109642: case 106464: 
+                case 106029: case 109606: case 109607: case 109608:
+                    spellInfo->SetDurationIndex(1); // 10 secs
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                    break;
+                    case 106040: // Spellweaving
+                spellInfo->ProcChance = 10;
+                spellInfo->SetDurationIndex(1); // 10 secs
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                    break;
+                // Increase amplitude
+                case 105825:
+                case 105823:
+                case 106456:
+                case 106463:
+                case 106026:
+                case 106039:
+                    spellInfo->Effects[0].Amplitude = 7000;
+                    break;
+                case 106527: // Cataclysm screen
+                    spellInfo->SetDurationIndex(1); // 10 secs
+                    break;
+                // Expose Weakness
+                case 106588:
+                case 106600:
+                case 106613:
+                case 106624:
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 107029: // Impale Aspect
+                case 106548:
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+                    break;
+                case 105369: // Lightning Conduit dmg
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->AttributesEx8 |= SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER;
+                    break;
+                case 105367: // Lightning Conduit dummy 1
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_PERIODIC_DUMMY;
+                    spellInfo->Effects[EFFECT_1].Amplitude = 1000;
+                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
+                case 105371: // Lightning Conduit dummy 2
+                    spellInfo->SetDurationIndex(39); // 1 secs
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    break;
+                case 58423: // Relentless Strikes
+                    spellInfo->Effects[EFFECT_0].SpellClassMask[1] |= 8;
                     break;
                 default:
                     break;

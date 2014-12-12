@@ -61,8 +61,6 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
     SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
-    SPELL_MONK_TIGEREYE_BREW                    = 116740,
-    SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
     SPELL_MONK_CHI_BURST_DAMAGE                 = 130651,
     SPELL_MONK_CHI_BURST_HEAL                   = 130654,
@@ -996,70 +994,6 @@ class spell_monk_thunder_focus_tea : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_thunder_focus_tea_SpellScript();
-        }
-};
-
-// Summon Jade Serpent Statue - 115313
-class spell_monk_jade_serpent_statue : public SpellScriptLoader
-{
-    public:
-        spell_monk_jade_serpent_statue() : SpellScriptLoader("spell_monk_jade_serpent_statue") { }
-
-        class spell_monk_jade_serpent_statue_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_jade_serpent_statue_SpellScript)
-
-            void HandleSummon(SpellEffIndex effIndex)
-            {
-                if (Player* player = GetCaster()->ToPlayer())
-                {
-                    PreventHitDefaultEffect(effIndex);
-
-                    const SpellInfo* spell = GetSpellInfo();
-                    std::list<Creature*> tempList;
-                    std::list<Creature*> jadeSerpentlist;
-
-                    player->GetCreatureListWithEntryInGrid(tempList, MONK_NPC_JADE_SERPENT_STATUE, 500.0f);
-                    player->GetCreatureListWithEntryInGrid(jadeSerpentlist, MONK_NPC_JADE_SERPENT_STATUE, 500.0f);
-
-                    // Remove other players jade statue
-                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
-                    {
-                        Unit* owner = (*i)->GetOwner();
-                        if (owner && owner == player && (*i)->isSummon())
-                            continue;
-
-                        jadeSerpentlist.remove((*i));
-                    }
-
-                    // 1 statue max
-                    if ((int32)jadeSerpentlist.size() >= spell->Effects[effIndex].BasePoints)
-                        jadeSerpentlist.back()->ToTempSummon()->UnSummon();
-
-                    Position pos;
-                    GetExplTargetDest()->GetPosition(&pos);
-                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
-                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
-                    if (!summon)
-                        return;
-
-                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
-                    summon->setFaction(player->getFaction());
-                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
-                    summon->SetMaxHealth(player->CountPctFromMaxHealth(50));
-                    summon->SetHealth(summon->GetMaxHealth());
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHit += SpellEffectFn(spell_monk_jade_serpent_statue_SpellScript::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_jade_serpent_statue_SpellScript();
         }
 };
 
@@ -2122,47 +2056,6 @@ class spell_monk_roll : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_roll_SpellScript();
-        }
-};
-
-// Brewing : Tigereye Brew - 123980
-class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
-{
-    public:
-        spell_monk_tigereye_brew_stacks() : SpellScriptLoader("spell_monk_tigereye_brew_stacks") { }
-
-        class spell_monk_tigereye_brew_stacks_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_monk_tigereye_brew_stacks_AuraScript);
-
-            uint32 chiConsumed;
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                chiConsumed = 0;
-            }
-
-            void SetData(uint32 type, uint32 cost)
-            {
-                chiConsumed += cost;
-                if (chiConsumed >= 4)
-                {
-                    chiConsumed -= 4;
-
-                    if (Unit* caster = GetCaster())
-                        caster->CastSpell(caster, SPELL_MONK_TIGEREYE_BREW_STACKS, true);
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_monk_tigereye_brew_stacks_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_monk_tigereye_brew_stacks_AuraScript();
         }
 };
 
@@ -3448,7 +3341,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_spinning_fire_blossom();
     new spell_monk_path_of_blossom();
     new spell_monk_thunder_focus_tea();
-    new spell_monk_jade_serpent_statue();
     new spell_monk_teachings_of_the_monastery();
     new spell_monk_mana_tea();
     new spell_monk_mana_tea_stacks();
@@ -3472,7 +3364,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fortifying_brew();
     new spell_monk_provoke();
     new spell_monk_roll();
-    new spell_monk_tigereye_brew_stacks();
     new spell_mastery_bottled_fury();
     new spell_monk_remove_zen_flight();
     new spell_monk_spinning_crane_kick();

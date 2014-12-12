@@ -1,13 +1,13 @@
 #include "NewScriptPCH.h"
 #include "baradin_hold.h"
 
-/*DoorData const doorData[] =
+DoorData const doorData[] =
 {
     {GO_TOLBARAD_DOOR_2,    DATA_ARGALOTH,  DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     {GO_CELL_DOOR,          DATA_OCCUTHAR,  DOOR_TYPE_ROOM,       BOUNDARY_NONE},
-    {GO_TOLBARAD_DOOR_2,    DATA_ALIZABAL,  DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+    {GO_TOLBARAD_DOOR_1,    DATA_ALIZABAL,  DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     {0,                     0,              DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
-};*/
+};
 
 class instance_baradin_hold : public InstanceMapScript
 {
@@ -24,7 +24,7 @@ class instance_baradin_hold : public InstanceMapScript
             instance_baradin_hold_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
-                //LoadDoorData(doorData);
+                LoadDoorData(doorData);
             }
             
             bool SetBossState(uint32 type, EncounterState state)
@@ -37,9 +37,6 @@ class instance_baradin_hold : public InstanceMapScript
 
             void OnGameObjectCreate(GameObject* pGo)
             {
-                if(sObjectMgr->GetCreatureAIInstaceGoData(pGo->GetEntry()))
-                    AddDoor(pGo, true);
-
                 switch (pGo->GetEntry())
                 {
                     case GO_TOLBARAD_DOOR_2:
@@ -48,12 +45,6 @@ class instance_baradin_hold : public InstanceMapScript
                         AddDoor(pGo, true);
                         break;
                 }
-            }
-
-            void OnGameObjectRemove(GameObject* pGo)
-            {
-                if(sObjectMgr->GetCreatureAIInstaceGoData(pGo->GetEntry()))
-                    AddDoor(pGo, false);
             }
 
             std::string GetSaveData()

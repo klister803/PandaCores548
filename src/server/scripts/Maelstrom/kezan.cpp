@@ -953,35 +953,6 @@ class npc_steamwheedle_shark : public CreatureScript
     }
 };
 
-// this can be moved to SAI.
-// npc_fourth_and_goal_target - http://www.wowhead.com/npc=37203/fourth-and-goal-target
-class npc_fourth_and_goal_target : public CreatureScript
-{
-public:
-    npc_fourth_and_goal_target() : CreatureScript("npc_fourth_and_goal_target") { }
-
-    struct npc_fourth_and_goal_targetAI : public ScriptedAI
-    {
-        npc_fourth_and_goal_targetAI(Creature* creature) : ScriptedAI(creature) {}
-
-        void Reset() {}
-
-        void UpdateAI(uint32 diff)
-        {
-            Unit* target = NULL;
-            target = me->SelectNearestTarget(5.0f);
-            if (target && target->GetTypeId() == TYPEID_PLAYER)
-                if (target->ToPlayer()->GetQuestStatus(28414) == QUEST_STATUS_INCOMPLETE)
-                    target->ToPlayer()->KilledMonsterCredit(37203, 0);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_fourth_and_goal_targetAI(creature);
-    }
-};
-
 class spell_gen_stop_playing_current_music : public SpellScriptLoader
 {
 public:
@@ -1330,7 +1301,6 @@ public:
 
 void AddSC_kezan()
 {
-    new npc_fourth_and_goal_target;
     new npc_defiant_troll;
     new npc_hot_rod();
     new npc_roling_friends();

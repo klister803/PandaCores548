@@ -770,7 +770,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
                 {
                     // convert from float to uint32 and send
-                    *data << uint32(m_floatValues[index] < 0 ? 0 : m_floatValues[index]);
+                    *data << uint32(m_floatValues[index] < 0 ? 0 : (RoundingFloatValue(m_floatValues[index] / 10) * 10));
                 }
                 // there are some float values which may be negative or can't get negative due to other checks
                 else if ((index >= UNIT_FIELD_NEGSTAT0 && index <= UNIT_FIELD_NEGSTAT0+4) ||
@@ -2007,7 +2007,7 @@ bool Position::HasInArc(float arc, const Position* obj) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool WorldObject::IsInBetween(const WorldObject* obj1, const WorldObject* obj2, float size) const
+bool WorldObject::IsInBetween(const Position* obj1, const Position* obj2, float size) const
 {
     if (!obj1 || !obj2)
         return false;
@@ -2189,6 +2189,10 @@ float WorldObject::GetSightRange(const WorldObject* target) const
         if (ToPlayer())
         {
             if (target && target->isActiveObject() && !target->ToPlayer())
+                return MAX_VISIBILITY_DISTANCE;
+            else if (GetMapId() == 967) // Dragon Soul
+                return 500.0f;
+            else if (GetMapId() == 754) // Throne of the Four Winds
                 return MAX_VISIBILITY_DISTANCE;
             else
                 return GetMap()->GetVisibilityRange();
@@ -2864,6 +2868,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
     AddToMap(summon->ToCreature());
     summon->InitSummon();
+    summon->CastPetAuras(true);
 
     //ObjectAccessor::UpdateObjectVisibility(summon);
 
@@ -2933,7 +2938,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, bool stampeded)
+Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, uint32 spellId, bool stampeded)
 {
     bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
     if (getClass() != CLASS_HUNTER)
@@ -2994,6 +2999,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
 
     switch (petType)
     {
@@ -3033,6 +3039,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (duration > 0)
         pet->SetDuration(duration);
 
+    pet->CastPetAuras(true);
     return pet;
 }
 
