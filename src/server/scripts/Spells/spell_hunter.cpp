@@ -2003,6 +2003,36 @@ class spell_hun_ice_trap : public SpellScriptLoader
         }
 };
 
+// Scatter Shot - 19503
+class spell_hun_scatter_shot : public SpellScriptLoader
+{
+    public:
+        spell_hun_scatter_shot() : SpellScriptLoader("spell_hun_scatter_shot") { }
+
+        class spell_hun_scatter_shot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_scatter_shot_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+					caster->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_hun_scatter_shot_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_scatter_shot_SpellScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2043,4 +2073,5 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
     new spell_hun_ice_trap();
+	new spell_hun_scatter_shot();
 }
