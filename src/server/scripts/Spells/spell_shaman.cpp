@@ -1897,4 +1897,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_astral_recall();
     new spell_sha_elemental_familiars();
     new spell_sha_grounding_totem();
+    new spell_shaman_totemic_projection();
 }
