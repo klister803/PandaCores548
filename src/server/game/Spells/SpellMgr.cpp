@@ -4276,6 +4276,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
                 case 131116: // Raging Blow!
+				case 136050: // Malformed Blood
                     spellInfo->ProcCharges = 0;
                     break;
                 case 109259: // Powershot
