@@ -1158,7 +1158,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 case 59548:  // Mage        - Gift of the Naaru
                 case 121093: // Monk        - Gift of the Naaru
                 {
-                    amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
+                    if(GetTotalTicks())
+                        amount = CalculatePct(caster->GetMaxHealth(), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
                     break;
                 }
                 default:
