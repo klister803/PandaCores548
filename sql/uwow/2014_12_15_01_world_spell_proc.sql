@@ -1,0 +1,1 @@
+INSERT INTO `spell_proc` (`spellId`, `schoolMask`, `spellFamilyName`, `spellFamilyMask0`, `spellFamilyMask1`, `spellFamilyMask2`, `spellFamilyMask3`, `typeMask`, `spellTypeMask`, `spellPhaseMask`, `hitMask`, `attributesMask`, `ratePerMinute`, `chance`, `cooldown`, `charges`, `modcharges`) VALUES (136050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);

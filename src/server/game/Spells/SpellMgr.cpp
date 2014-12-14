@@ -4034,6 +4034,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 107439: // Twilight Barrage
                 case 106401: // Twilight Onslaught
                 case 103414: // Stomp
+				case 136216: // Caustic Gas
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
