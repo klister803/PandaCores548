@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -88,7 +88,7 @@ namespace VMAP
                 }
                 else if (entry->second.flags & MOD_WORLDSPAWN) // WMO maps and terrain maps use different origin, so we need to adapt :/
                 {
-                    // TODO: remove extractor hack and uncomment below line:
+                    /// @todo remove extractor hack and uncomment below line:
                     //entry->second.iPos += Vector3(533.33333f*32, 533.33333f*32, 0.f);
                     entry->second.iBound = entry->second.iBound + Vector3(533.33333f*32, 533.33333f*32, 0.f);
                 }
@@ -98,7 +98,16 @@ namespace VMAP
 
             printf("Creating map tree for map %u...\n", map_iter->first);
             BIH pTree;
-            pTree.build(mapSpawns, BoundsTrait<ModelSpawn*>::getBounds);
+
+            try
+            {
+                pTree.build(mapSpawns, BoundsTrait<ModelSpawn*>::getBounds);
+            }
+            catch (std::exception& e)
+            {
+                printf("Exception ""%s"" when calling pTree.build", e.what());
+                return false;
+            }
 
             // ===> possibly move this code to StaticMapTree class
             std::map<uint32, uint32> modelNodeIdx;
@@ -107,7 +116,7 @@ namespace VMAP
 
             // write map tree file
             std::stringstream mapfilename;
-            mapfilename << iDestDir << '/' << std::setfill('0') << std::setw(4) << map_iter->first << ".vmtree";
+            mapfilename << iDestDir << '/' << std::setfill('0') << std::setw(3) << map_iter->first << ".vmtree";
             FILE* mapfile = fopen(mapfilename.str().c_str(), "wb");
             if (!mapfile)
             {
@@ -148,7 +157,7 @@ namespace VMAP
                 uint32 nSpawns = tileEntries.count(tile->first);
                 std::stringstream tilefilename;
                 tilefilename.fill('0');
-                tilefilename << iDestDir << '/' << std::setw(4) << map_iter->first << '_';
+                tilefilename << iDestDir << '/' << std::setw(3) << map_iter->first << '_';
                 uint32 x, y;
                 StaticMapTree::unpackTileID(tile->first, x, y);
                 tilefilename << std::setw(2) << x << '_' << std::setw(2) << y << ".vmtile";
@@ -227,7 +236,7 @@ namespace VMAP
             MapData::iterator map_iter = mapData.find(mapID);
             if (map_iter == mapData.end())
             {
-                printf("spawning Map %d\n", mapID);
+                printf("spawning Map %u\n", mapID);
                 mapData[mapID] = current = new MapSpawns();
             }
             else current = (*map_iter).second;
@@ -347,10 +356,13 @@ namespace VMAP
 
         uint32 name_length, displayId;
         char buff[500];
-        while (!feof(model_list))
+        while (true)
         {
-            if (fread(&displayId, sizeof(uint32), 1, model_list) != 1
-                || fread(&name_length, sizeof(uint32), 1, model_list) != 1
+            if (fread(&displayId, sizeof(uint32), 1, model_list) != 1)
+                if (feof(model_list))   // EOF flag is only set after failed reading attempt
+                    break;
+
+            if (fread(&name_length, sizeof(uint32), 1, model_list) != 1
                 || name_length >= sizeof(buff)
                 || fread(&buff, sizeof(char), name_length, model_list) != name_length)
             {
@@ -361,7 +373,7 @@ namespace VMAP
             std::string model_name(buff, name_length);
 
             WorldModel_Raw raw_model;
-            if ( !raw_model.Read((iSrcDir + "/" + model_name).c_str()) )
+            if (!raw_model.Read((iSrcDir + "/" + model_name).c_str()) )
                 continue;
 
             spawnedModelFiles.insert(model_name);
@@ -382,23 +394,24 @@ namespace VMAP
                 }
             }
 
-            fwrite(&displayId,sizeof(uint32),1,model_list_copy);
-            fwrite(&name_length,sizeof(uint32),1,model_list_copy);
-            fwrite(&buff,sizeof(char),name_length,model_list_copy);
-            fwrite(&bounds.low(),sizeof(Vector3),1,model_list_copy);
-            fwrite(&bounds.high(),sizeof(Vector3),1,model_list_copy);
+            fwrite(&displayId, sizeof(uint32), 1, model_list_copy);
+            fwrite(&name_length, sizeof(uint32), 1, model_list_copy);
+            fwrite(&buff, sizeof(char), name_length, model_list_copy);
+            fwrite(&bounds.low(), sizeof(Vector3), 1, model_list_copy);
+            fwrite(&bounds.high(), sizeof(Vector3), 1, model_list_copy);
         }
 
         fclose(model_list);
         fclose(model_list_copy);
     }
-        // temporary use defines to simplify read/check code (close file and return at fail)
-        #define READ_OR_RETURN(V, S) if (fread((V), (S), 1, rf) != 1) { \
-                                        fclose(rf); printf("readfail, op = %i\n", readOperation); return(false); }
-        #define READ_OR_RETURN_WITH_DELETE(V, S) if (fread((V), (S), 1, rf) != 1) { \
-                                        fclose(rf); printf("readfail, op = %i\n", readOperation); delete[] V; return(false); };
-        #define CMP_OR_RETURN(V, S)  if (strcmp((V), (S)) != 0)        { \
-                                        fclose(rf); printf("cmpfail, %s!=%s\n", V, S);return(false); }
+
+// temporary use defines to simplify read/check code (close file and return at fail)
+#define READ_OR_RETURN(V, S) if (fread((V), (S), 1, rf) != 1) { \
+                                fclose(rf); printf("readfail, op = %i\n", readOperation); return(false); }
+#define READ_OR_RETURN_WITH_DELETE(V, S) if (fread((V), (S), 1, rf) != 1) { \
+                                fclose(rf); printf("readfail, op = %i\n", readOperation); delete[] V; return(false); };
+#define CMP_OR_RETURN(V, S)  if (strcmp((V), (S)) != 0)        { \
+                                fclose(rf); printf("cmpfail, %s!=%s\n", V, S);return(false); }
 
     bool GroupModel_Raw::Read(FILE* rf)
     {
@@ -499,7 +512,8 @@ namespace VMAP
             return false;
         }
 
-        char ident[8];
+        char ident[9];
+        ident[8] = '\0';
         int readOperation = 0;
 
         READ_OR_RETURN(&ident, 8);
