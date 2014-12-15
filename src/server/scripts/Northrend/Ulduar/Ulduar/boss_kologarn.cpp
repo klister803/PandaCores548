@@ -72,8 +72,8 @@ enum Actions
 
 enum Npcs
 {
-    NPC_EYEBEAM_STALKER                         = 40111,
-    NPC_EYEBEAM_STALKER_2                       = 40112,
+    NPC_EYEBEAM_STALKER                         = 33001,
+    NPC_EYEBEAM_STALKER_2                       = 33002, 
     NPC_EYEBEAM_1                               = 33632,
     NPC_EYEBEAM_2                               = 33802,
     NPC_RUBBLE                                  = 33768,

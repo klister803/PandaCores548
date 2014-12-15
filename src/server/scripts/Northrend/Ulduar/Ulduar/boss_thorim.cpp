@@ -953,10 +953,9 @@ public:
             if (!UpdateVictim()) //|| me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if(me->ToTempSummon())
             if (Unit * Thorim = me->ToTempSummon()->GetSummoner())
                 if (Thorim && !Thorim->isAlive())
-                    me->DespawnOrUnsummon(1000);
+                    me->DespawnOrUnsummon();
             
             if (FrostTimer <= diff)
             {

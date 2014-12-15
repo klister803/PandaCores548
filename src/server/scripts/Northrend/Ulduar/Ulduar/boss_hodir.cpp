@@ -245,7 +245,7 @@ public:
                         continue;
                     
                     if (pTarget->GetAura(SPELL_STORM_POWER_HELPER) && pTarget->GetAura(62821) && pTarget->GetAura(62807))
-                            pTarget->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, ACHIEVEMENT_STAYING_BUFFED_ALL_WINTER);
+                            pTarget->ToPlayer()->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, ACHIEVEMENT_STAYING_BUFFED_ALL_WINTER);
                     
                     if (bMoreThanTwoIntenseCold)
                     {

@@ -446,7 +446,7 @@ class boss_sara : public CreatureScript
                     if (pPlayer->HasAura(SPELL_INSANE))
                         me->Kill(pPlayer, true);                
                 }
-                for (int32 n = 0; n < RAID_MODE(1, 3); n++)
+                for (uint32 n = 0; n < RAID_MODE(1, 3); n++)
                     PsTarget[n] = 0;
             }
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NON_ATTACKABLE);
@@ -785,6 +785,9 @@ class boss_yoggsaron : public CreatureScript
                     if (pCreature->HasAura(SPELL_KEEPER_ACTIVE))
                         keepersval++;
             }
+
+            /*if (Is25ManRaid() && !keepersval) 
+                me->AddLootMode(LOOT_MODE_HARD_MODE_2); //Drop Maunt(Mimirons's Head)*/
         }
 
         uint32 getkeepersval()
@@ -883,8 +886,7 @@ class boss_yoggsaron : public CreatureScript
                             {
                                 Map::PlayerList const &players = pInstance->instance->GetPlayers();
                                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());
-                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
+                                    DoScriptText(EMOTE_EMPOWERING, me, itr->getSource());                                me->AddAura(SPELL_SHADOW_BEACON, pImmortal);
                             }
                             events.ScheduleEvent(EVENT_SHADOW_BEACON, 45000, 0, PHASE_3);
                             break;
@@ -959,7 +961,7 @@ class boss_yoggsaron : public CreatureScript
                         {
                             pBrain->AI()->Reset();
                             pBrain->AI()->DoAction(ACTION_CHAMBER_ILLUSION);
-                            for (int32 i = 0; i < RAID_MODE(4, 10); ++i)
+                            for (uint32 i = 0; i < RAID_MODE(4, 10); ++i)
                                 me->SummonCreature(NPC_PORTAL_CHAMBER, PortalPos[i], TEMPSUMMON_TIMED_DESPAWN, 10000);
                         }
                         break;
@@ -968,7 +970,7 @@ class boss_yoggsaron : public CreatureScript
                         {
                             pBrain->AI()->Reset();
                             pBrain->AI()->DoAction(ACTION_ICECROWN_ILLUSION);
-                            for (int32 i = 0; i < RAID_MODE(4, 10); ++i)
+                            for (uint32 i = 0; i < RAID_MODE(4, 10); ++i)
                                 me->SummonCreature(NPC_PORTAL_ICECROWN, PortalPos[i], TEMPSUMMON_TIMED_DESPAWN, 10000);
 
                         }
@@ -978,7 +980,7 @@ class boss_yoggsaron : public CreatureScript
                         {
                             pBrain->AI()->Reset();
                             pBrain->AI()->DoAction(ACTION_STORMWIND_ILLUSION);
-                            for (int32 i = 0; i < RAID_MODE(4, 10); ++i)
+                            for (uint32 i = 0; i < RAID_MODE(4, 10); ++i)
                                 me->SummonCreature(NPC_PORTAL_STORMWIND, PortalPos[i], TEMPSUMMON_TIMED_DESPAWN, 10000);
                         }
                         break;
@@ -1273,13 +1275,6 @@ class npc_guardian_yoggsaron : public CreatureScript
                 pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, 33136);
                 pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33136, 0, me);
                 DoCast(me, RAID_MODE(SPELL_SHADOW_NOVA_10, SPELL_SHADOW_NOVA_25), true);
-                if (Creature* Sara = me->FindNearestCreature(33134, 20.0f, true)) //Only for Cata
-                {
-                    if (Is25ManRaid())
-                        me->DealDamage(Sara, 25000);
-                    else
-                        me->DealDamage(Sara, 20000);
-                }
                 me->DespawnOrUnsummon(3000);
             }
         }
@@ -2112,7 +2107,7 @@ class spell_hodir_protective_gaze : public SpellScriptLoader
                     return;
 
                 target->CastSpell(target, 64175, true);
-                target->AddSpellCooldown(64174, 0, getPreciseTime() + (double)urand(20,25));
+                target->AddSpellCooldown(64174, 0, time(NULL) + urand(20,25));
 
                 uint32 health10 = target->CountPctFromMaxHealth(10);
 

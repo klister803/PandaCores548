@@ -124,6 +124,7 @@ public:
         void Reset()
         {
             _Reset();
+            //me->ResetLootMode();
             smellsaronite = false;
             VaporsCount = 0;
             HardMode = true;
@@ -247,16 +248,13 @@ public:
                                 if(Unit *pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
                                 {
                                     if (me->GetDistance(pTarget) > 15.0f && pTarget->GetTypeId() == TYPEID_PLAYER)
-                                    {
                                         if (me->getVictim())
                                             if (pTarget->GetGUID() != me->getVictim()->GetGUID())
                                             {
                                                 DoCast(pTarget, SPELL_MARK_OF_THE_FACELESS);
                                                 break;
                                             }
-                                    }
                                 }
-                                
                             }
                             events.ScheduleEvent(EVENT_MARK, urand(35000, 40000));
                             break;
@@ -273,6 +271,7 @@ public:
                             me->MonsterTextEmote(EMOTE_BARRIER, 0, true);
                             DoCast(SPELL_SARONITE_BARRIER);
                             DoCast(SPELL_SUMMON_SARONITE_ANIMUS);
+                            //me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                             DespawnCreatures(NPC_SARONITE_VAPORS, 100);
                             events.CancelEvent(EVENT_SARONITE_VAPORS);
                             events.CancelEvent(EVENT_SEARING_FLAMES);
