@@ -12296,12 +12296,12 @@ int32 Unit::GetSpellPowerDamage(SpellSchoolMask schoolMask)
     {
         for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
         {
-            if ((1 << i) & schoolMask)
-            {
-                int32 val = plr->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i);
-                if (SPD > val || !SPD)
-                    SPD = val;
-            }
+            int32 val = plr->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i);
+            if (SPD > val || !SPD)
+                SPD = val;
+
+            if ((1 << i) & schoolMask && schoolMask != SPELL_SCHOOL_MASK_NORMAL)
+                return val;
         }
     }
 
