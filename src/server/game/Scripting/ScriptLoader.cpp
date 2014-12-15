@@ -447,15 +447,16 @@ void AddSC_instance_wailing_caverns();
 void AddSC_zulfarrak();                     //Zul'Farrak generic
 void AddSC_instance_zulfarrak();            //Zul'Farrak instance script
 void AddSC_gilneas();
-void AddSC_instance_firelands();             //Firelands
-void AddSC_boss_shannox();
+
+void AddSC_instance_firelands(); // Firelands
 void AddSC_firelands();
+void AddSC_boss_shannox();
 void AddSC_boss_bethtilac();
-void AddSC_boss_majordomus();
-void AddSC_boss_ragnaros_firelands();
-void AddSC_boss_baleroc();
-void AddSC_boss_lord_rhyolith();
 void AddSC_boss_alysrazor();
+void AddSC_boss_lord_rhyolith();
+void AddSC_boss_baleroc();
+void AddSC_boss_majordomo_staghelm();
+void AddSC_boss_ragnaros_firelands();
 
 void AddSC_ashenvale();
 void AddSC_azshara();
@@ -1269,13 +1270,13 @@ void AddKalimdorScripts()
     AddSC_mob_anubisath_sentinel();
     AddSC_instance_temple_of_ahnqiraj();
 
-    AddSC_instance_the_vortex_pinnacle(); // The Vortex Pinnacle
+    AddSC_instance_the_vortex_pinnacle(); 	// The Vortex Pinnacle
     AddSC_the_vortex_pinnacle();
     AddSC_boss_grand_vizier_ertan();
     AddSC_boss_altairus();
     AddSC_boss_asaad();
 
-    AddSC_throne_of_the_four_winds(); // Throne of Four Winds
+    AddSC_throne_of_the_four_winds(); 		// Throne of Four Winds
     AddSC_boss_conclave_of_wind();
     AddSC_boss_alakir();
     AddSC_instance_throne_of_the_four_winds();
@@ -1285,15 +1286,16 @@ void AddKalimdorScripts()
     AddSC_zulfarrak();                      //Zul'Farrak generic
     AddSC_instance_zulfarrak();             //Zul'Farrak instance script
     AddSC_gilneas();
-    AddSC_instance_firelands();             //Firelands
-    AddSC_boss_shannox();
+
+	AddSC_instance_firelands(); 			// Firelands
     AddSC_firelands();
+    AddSC_boss_shannox();
     AddSC_boss_bethtilac();
-    AddSC_boss_majordomus();
-    AddSC_boss_ragnaros_firelands();
-    AddSC_boss_baleroc();
-    AddSC_boss_lord_rhyolith();
     AddSC_boss_alysrazor();
+    AddSC_boss_lord_rhyolith();
+    AddSC_boss_baleroc();
+    AddSC_boss_majordomo_staghelm();
+    AddSC_boss_ragnaros_firelands();
 
     AddSC_ashenvale();
     AddSC_azshara();

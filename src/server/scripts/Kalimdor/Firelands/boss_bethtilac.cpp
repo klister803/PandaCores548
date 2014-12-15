@@ -121,7 +121,7 @@ class boss_bethtilac : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance< boss_bethtilacAI >(pCreature, FLScriptName);
+            return GetInstanceAI<boss_bethtilacAI>(pCreature);
         }
 
         struct boss_bethtilacAI : public BossAI
@@ -154,6 +154,10 @@ class boss_bethtilac : public CreatureScript
 
             void Reset()
             {
+                _Reset();
+                DespawnCreatures(NPC_CINDERWEB_SPINNER);
+                DespawnCreatures(NPC_SPIDERWEB_FILAMENT);
+
                 DoCast(me, SPELL_ZERO_POWER, true);
                 me->SetReactState(REACT_PASSIVE);
                 //me->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
@@ -163,7 +167,6 @@ class boss_bethtilac : public CreatureScript
                 uiSide = 0;
                 me->SetMaxPower(POWER_MANA, 9000);
                 me->SetPower(POWER_MANA, 9000);
-                _Reset();
             }
 
             void EnterCombat(Unit* attacker)
@@ -175,7 +178,6 @@ class boss_bethtilac : public CreatureScript
                 me->GetMotionMaster()->MovePoint(POINT_HIGH, highPos);
                 DoZoneInCombat();
                 me->RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
-                GoDown();
             }
 
             void MovementInform(uint32 type, uint32 id)
@@ -207,18 +209,10 @@ class boss_bethtilac : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
-            }
+                DespawnCreatures(NPC_CINDERWEB_SPINNER);
+                DespawnCreatures(NPC_SPIDERWEB_FILAMENT);
 
-            void GoDown()
-            {
-                Map::PlayerList const &PlayerList = instance->instance->GetPlayers();
-                if (!PlayerList.isEmpty())
-                {
-                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        if (Player* player = i->getSource())
-                            if (player->GetPositionZ() > 88.0f)
-                                player->NearTeleportTo(addsPos[5].GetPositionX(), addsPos[5].GetPositionY(), addsPos[5].GetPositionZ(), 0.0f);
-                }
+                AddSmoulderingAura(me);
             }
             
             void UpdateAI(uint32 diff)
@@ -341,7 +335,14 @@ class boss_bethtilac : public CreatureScript
                             me->GetMotionMaster()->MoveJump(addsPos[5].GetPositionX(), addsPos[5].GetPositionY(), addsPos[5].GetPositionZ(), 40.0f, 40.0f);
                             events.ScheduleEvent(EVENT_FRENZY, 10000);
                             events.ScheduleEvent(EVENT_THE_WIDOW_KISS, 32000);
-                            GoDown();
+                            Map::PlayerList const &PlayerList = instance->instance->GetPlayers();
+                            if (!PlayerList.isEmpty())
+                            {
+                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                    if (Player* player = i->getSource())
+                                        if (player->GetPositionZ() > 100.0f)
+                                            player->NearTeleportTo(addsPos[5].GetPositionX(), addsPos[5].GetPositionY(), addsPos[5].GetPositionZ(), 0.0f);
+                            }
                             break;
                         }
                         case EVENT_FRENZY:
@@ -358,6 +359,19 @@ class boss_bethtilac : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         private:
+
+            void DespawnCreatures(uint32 entry)
+            {
+                std::list<Creature*> creatures;
+                GetCreatureListWithEntryInGrid(creatures, me, entry, 1000.0f);
+
+                if (creatures.empty())
+                   return;
+
+                for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
+                     (*iter)->DespawnOrUnsummon();
+            }
+
             class PlayerPositionCheck
             {
                 public:
@@ -381,7 +395,7 @@ class npc_bethtilac_spiderweb_filament : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_bethtilac_spiderweb_filamentAI(pCreature);
+            return GetInstanceAI<npc_bethtilac_spiderweb_filamentAI>(pCreature);
         }
 
         struct npc_bethtilac_spiderweb_filamentAI : public Scripted_NoMovementAI
@@ -420,15 +434,16 @@ class npc_bethtilac_spiderweb_filament : public CreatureScript
 
                 if (owner->GetEntry() == NPC_BETHTILAC)
                 {
-                    if (Creature* pSpinner = owner->SummonCreature(NPC_CINDERWEB_SPINNER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
+                    if (Creature* pSpinner = me->SummonCreature(NPC_CINDERWEB_SPINNER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
                     {
                         pSpinner->SetCanFly(true);
                         DoCast(pSpinner, SPELL_SPIDERWEB_FILAMENT_ANY, true);
+						DoCast(pSpinner, SPELL_SPIDERWEB_FILAMENT_UP, true);
                         //pSpinner->CastSpell(pSpinner, SPELL_CREEPER, true);
                         pSpinner->CastSpell(pSpinner, SPELL_TEMPERAMENT, true);
                         //float z = pSpinner->GetMap()->GetHeight(pSpinner->GetPositionX(), pSpinner->GetPositionY(), pSpinner->GetPositionZ(), true);
                         float z = GROUND_HEIGHT;
-                        pSpinner->GetMotionMaster()->MovePoint(0, pSpinner->GetPositionX(), pSpinner->GetPositionY(), z + 5.0f); 
+                        pSpinner->GetMotionMaster()->MovePoint(0, pSpinner->GetPositionX(), pSpinner->GetPositionY(), z + 5.0f);
                     }
                 }
                 else if (owner->GetEntry() == NPC_CINDERWEB_SPINNER)
@@ -462,7 +477,7 @@ class npc_bethtilac_cinderweb_spinner : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_bethtilac_cinderweb_spinnerAI(pCreature);
+            return GetInstanceAI<npc_bethtilac_cinderweb_spinnerAI>(pCreature);
         }
 
         struct npc_bethtilac_cinderweb_spinnerAI : public ScriptedAI
@@ -524,7 +539,7 @@ class npc_bethtilac_cinderweb_spinner : public CreatureScript
                 {
                     bTaunted = true;
                     me->SetReactState(REACT_AGGRESSIVE);
-                    if (owner && owner->GetEntry() == NPC_BETHTILAC)
+                    if (owner && owner->GetEntry() == NPC_SPIDERWEB_FILAMENT)
                         if (Creature* pFilament = me->SummonCreature(NPC_SPIDERWEB_FILAMENT, owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 15000))
                         {
                             pFilament->SetCanFly(true);
@@ -581,7 +596,7 @@ class npc_bethtilac_cinderweb_drone : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_bethtilac_cinderweb_droneAI(pCreature);
+            return GetInstanceAI<npc_bethtilac_cinderweb_droneAI>(pCreature);
         }
 
         struct npc_bethtilac_cinderweb_droneAI : public ScriptedAI
@@ -621,6 +636,12 @@ class npc_bethtilac_cinderweb_drone : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_SPIDERLING, 3000);
                 if (IsHeroic())
                     events.ScheduleEvent(EVENT_FIXATE, urand(12000, 15000));
+            }
+
+            void JustDied(Unit* /*who*/)
+            {
+                for (uint8 i = 0; i < 3; ++i)
+                    DoCast(me, SPELL_CREATE_CHITINOUS_FRAGMENT, true);
             }
 
             void UpdateAI(uint32 diff)
@@ -691,7 +712,7 @@ class npc_bethtilac_cinderweb_spiderling : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_bethtilac_cinderweb_spiderlingAI(pCreature);
+            return GetInstanceAI<npc_bethtilac_cinderweb_spiderlingAI>(pCreature);
         }
 
         struct npc_bethtilac_cinderweb_spiderlingAI : public ScriptedAI
@@ -754,7 +775,7 @@ class npc_bethtilac_engorged_broodling : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_bethtilac_engorged_broodlingAI(pCreature);
+            return GetInstanceAI<npc_bethtilac_engorged_broodlingAI>(pCreature);
         }
 
         struct npc_bethtilac_engorged_broodlingAI : public ScriptedAI
@@ -791,6 +812,9 @@ class npc_bethtilac_engorged_broodling : public CreatureScript
                 if (!bBurst && me->SelectNearestPlayer(3.0f))
                 {
                     bBurst = true;
+                    me->StopMoving();
+                    me->GetMotionMaster()->MovementExpired(false);
+                    me->SetReactState(REACT_PASSIVE);
                     DoCastAOE(SPELL_VOLATILE_BURST);
                     DoCast(me, SPELL_VOLATILE_POISON, true);
                     me->DespawnOrUnsummon(30000);
@@ -847,13 +871,32 @@ class spell_bethtilac_smoldering_devastation : public SpellScriptLoader
                 targets.remove_if(PositionCheck(false));
             }
 
+            void HandleAfterCast()
+            {
+                if (!GetCaster())
+                    return;
+
+                std::list<Creature*> creatureList;
+                GetCaster()->GetCreatureListWithEntryInGrid(creatureList, NPC_DULL_CHITINOUS_FOCUS, 100.0f);
+                if (!creatureList.empty())
+                {
+                    for (std::list<Creature*>::const_iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
+                    {
+                        if (Creature* pFocus = (*itr)->ToCreature())
+                        {
+                            pFocus->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                            pFocus->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                            pFocus->CastSpell(pFocus, SPELL_TRANSFORM_CHARGED_CHITINOUS_FOCUS, true);
+                        }
+                    }
+                }
+            }
+
             void Register()
             {
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_bethtilac_smoldering_devastation_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                AfterCast += SpellCastFn(spell_bethtilac_smoldering_devastation_SpellScript::HandleAfterCast);
             }
-
-            private:
-
         };
 
         SpellScript* GetSpellScript() const

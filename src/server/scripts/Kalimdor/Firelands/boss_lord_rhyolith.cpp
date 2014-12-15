@@ -110,7 +110,7 @@ class boss_lord_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance<boss_lord_rhyolithAI>(pCreature, FLScriptName);
+            return GetInstanceAI<boss_lord_rhyolithAI>(pCreature);
         }
 
         struct boss_lord_rhyolithAI : public BossAI
@@ -206,7 +206,7 @@ class boss_lord_rhyolith : public CreatureScript
                 events.ScheduleEvent(EVENT_CONCLUSIVE_STOMP, 10000);
                 events.ScheduleEvent(EVENT_ACTIVATE_VOLCANO, urand(25000, 30000));
                 events.ScheduleEvent(EVENT_FRAGMENT, urand(25000, 30000));
-                events.ScheduleEvent(EVENT_SUPERHEATED, (IsHeroic() ? 300000 : 360000));
+                events.ScheduleEvent(EVENT_SUPERHEATED, (IsHeroic() ? 5 * MINUTE * IN_MILLISECONDS : 6 * MINUTE * IN_MILLISECONDS));
 
                 DoCastAOE(SPELL_BALANCE_BAR, true);
 
@@ -334,7 +334,7 @@ class boss_lord_rhyolith : public CreatureScript
                                     return;
                                 }
                             }
-                            if (pController && pLeftFoot && pRightFoot && pLeftFoot->AI() && pRightFoot->AI())
+                            if (pController && pLeftFoot && pRightFoot)
                             {
                                 int32 l_dmg = pLeftFoot->AI()->GetData(DATA_HITS);
                                 int32 r_dmg = pRightFoot->AI()->GetData(DATA_HITS);
@@ -413,7 +413,6 @@ class boss_lord_rhyolith : public CreatureScript
                         {
                             uint32 i = urand(0, _MAX_VOLCANO - 1);
                             me->CastSpell(volcanoPos[i].GetPositionX(), volcanoPos[i].GetPositionY(), volcanoPos[i].GetPositionZ(), SPELL_SUMMON_SPARK_OF_RHYOLITH, true);
-                            me->CastSpell(volcanoPos[i].GetPositionX(), volcanoPos[i].GetPositionY(), volcanoPos[i].GetPositionZ(), SPELL_SUMMON_SPARK_OF_RHYOLITH_SUM, true);
                             events.ScheduleEvent(EVENT_FRAGMENT, 30000);
                             break;
                         }
@@ -431,10 +430,7 @@ class boss_lord_rhyolith : public CreatureScript
                             }
 
                             for (std::set<uint8>::const_iterator itr = posList.begin(); itr != posList.end(); ++itr)
-                            {
                                 me->CastSpell(volcanoPos[(*itr)].GetPositionX(), volcanoPos[(*itr)].GetPositionY(), volcanoPos[(*itr)].GetPositionZ(), SPELL_SUMMON_FRAGMENT_OF_RHYOLITH, true);
-                                me->CastSpell(volcanoPos[(*itr)].GetPositionX(), volcanoPos[(*itr)].GetPositionY(), volcanoPos[(*itr)].GetPositionZ(), SPELL_SUMMON_FRAGMENT_OF_RHYOLITH_SUM, true);
-                            }
                             
                             events.ScheduleEvent(EVENT_SPARK, 30000);
                             break;
@@ -526,7 +522,7 @@ class npc_lord_rhyolith_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance< npc_lord_rhyolith_rhyolithAI>(pCreature, FLScriptName);
+            return GetInstanceAI<npc_lord_rhyolith_rhyolithAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_rhyolithAI : public ScriptedAI
@@ -582,7 +578,7 @@ class npc_lord_rhyolith_rhyolith : public CreatureScript
                 if (pInstance)
                 {
                     if (Creature* pRhyolith = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_RHYOLITH)))
-                        killer->Kill(pRhyolith);
+                        pRhyolith->Kill(pRhyolith);
                     pInstance->SetBossState(DATA_RHYOLITH, DONE);
                     pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BALANCE_BAR);
                 }
@@ -637,7 +633,7 @@ class npc_lord_rhyolith_right_foot : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_right_footAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_right_footAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_right_footAI : public Scripted_NoMovementAI
@@ -738,7 +734,7 @@ class npc_lord_rhyolith_left_foot : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_left_footAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_left_footAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_left_footAI : public Scripted_NoMovementAI
@@ -839,7 +835,7 @@ class npc_lord_rhyolith_volcano : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_volcanoAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_volcanoAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_volcanoAI : public Scripted_NoMovementAI
@@ -937,7 +933,7 @@ class npc_lord_rhyolith_crater : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_craterAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_craterAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_craterAI : public Scripted_NoMovementAI
@@ -998,7 +994,7 @@ class npc_lord_rhyolith_liquid_obsidian : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_liquid_obsidianAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_liquid_obsidianAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_liquid_obsidianAI : public ScriptedAI
@@ -1040,13 +1036,7 @@ class npc_lord_rhyolith_liquid_obsidian : public CreatureScript
                             break;
                         case EVENT_CHECK_RHYOLITH:
                             if (Creature* pRhyolith = me->FindNearestCreature(NPC_RHYOLITH, 0.5f, true))
-                            {
-                                pRhyolith->CastSpell(pRhyolith, SPELL_OBSIDIAN_ARMOR, true);
-                                if (Creature* pRightFoot = me->FindNearestCreature(NPC_RIGHT_FOOT, 100.0f))
-                                    pRightFoot->CastSpell(pRightFoot, SPELL_OBSIDIAN_ARMOR, true);
-                                if (Creature* pLeftFoot = me->FindNearestCreature(NPC_LEFT_FOOT, 100.0f))
-                                    pLeftFoot->CastSpell(pLeftFoot, SPELL_OBSIDIAN_ARMOR, true);
-                            }
+                                me->CastSpell(pRhyolith, SPELL_FUSE, true);
                             else
                                 events.ScheduleEvent(EVENT_CHECK_RHYOLITH, 1000);
                             break;
@@ -1065,7 +1055,7 @@ class npc_lord_rhyolith_spark_of_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_spark_of_rhyolithAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_spark_of_rhyolithAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_spark_of_rhyolithAI : public ScriptedAI
@@ -1121,7 +1111,7 @@ class npc_lord_rhyolith_fragment_of_rhyolith : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_lord_rhyolith_fragment_of_rhyolithAI(pCreature);
+            return GetInstanceAI<npc_lord_rhyolith_fragment_of_rhyolithAI>(pCreature);
         }
 
         struct npc_lord_rhyolith_fragment_of_rhyolithAI : public ScriptedAI
