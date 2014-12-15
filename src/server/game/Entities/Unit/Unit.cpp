@@ -12049,8 +12049,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
         else
         {
-            if (dbccoeff/* && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC*/)
-                coeff = dbccoeff; // 77478 use in SCHOOL_MASK_PHYSICAL
+            if (dbccoeff && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+                coeff = dbccoeff;
 
             if (spellProto->SpellAPBonusMultiplier)
             {
