@@ -460,7 +460,7 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
 
     if (info->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
         _triggeredCastFlags = TRIGGERED_FULL_MASK;
-    if(m_replaced) //If spell casted as replaced, enable proc from him
+    if(m_replaced || AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG) //If spell casted as replaced, enable proc from him
         _triggeredCastFlags &= ~TRIGGERED_DISALLOW_PROC_EVENTS;
 
     //Auto Shot & Shoot (wand)
@@ -629,8 +629,6 @@ void Spell::SelectSpellTargets()
     uint32 processedAreaEffectsMask = 0;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (m_spellMissMask)
-            break;
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
         if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
@@ -656,20 +654,8 @@ void Spell::SelectSpellTargets()
         if (m_targets.HasDst())
             AddDestTarget(*m_targets.GetDst(), i);
         
-        bool hastarget = false;
         for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-        {
-            if (ihit->missCondition == SPELL_MISS_NONE)
-            {
-                hastarget = true;
-                m_spellMissMask = 0;
-                continue;
-            }
-
-            if (!hastarget)
-                for (int32 i = 0; i < ihit->missCondition; ++i)
-                    m_spellMissMask = i < 1 ? 1: m_spellMissMask * 2;
-        }
+            m_spellMissMask |= (1 << ihit->missCondition);
 
         if (m_spellInfo->IsChanneled())
         {
@@ -3291,8 +3277,12 @@ bool Spell::UpdateChanneledTargetList()
     uint32 channelTargetEffectMask = m_channelTargetEffectMask;
     uint32 channelAuraMask = 0;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
         if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_APPLY_AURA)
             channelAuraMask |= 1<<i;
+        if (m_spellInfo->GetEffect(i, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+            return true;
+    }
 
     channelAuraMask &= channelTargetEffectMask;
 
@@ -3862,32 +3852,6 @@ void Spell::cast(bool skipCheck)
 
 void Spell::handle_immediate()
 {
-    // start channeling if applicable
-    if (m_spellInfo->IsChanneled())
-    {
-        int32 duration = m_spellInfo->GetDuration();
-        if (duration)
-        {
-            // First mod_duration then haste - see Missile Barrage
-            // Apply duration mod
-            if (Player* modOwner = m_caster->GetSpellModOwner())
-                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
-            // Apply haste mods
-            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
-                m_caster->ModSpellCastTime(m_spellInfo, duration, this);
-
-            m_spellState = SPELL_STATE_CASTING;
-            m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
-            SendChannelStart(duration);
-        }
-        else if (duration == -1)
-        {
-            m_spellState = SPELL_STATE_CASTING;
-            m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
-            SendChannelStart(duration);
-        }
-    }
-
     PrepareTargetProcessing();
 
     // process immediate effects (items, ground, etc.) also initialize some variables
@@ -4005,6 +3969,32 @@ void Spell::_handle_immediate_phase()
 
         // call effect handlers to handle destination hit
         HandleEffects(NULL, NULL, NULL, j, SPELL_EFFECT_HANDLE_HIT);
+    }
+
+    // start channeling if applicable
+    if (m_spellInfo->IsChanneled())
+    {
+        int32 duration = m_spellInfo->GetDuration();
+        if (duration)
+        {
+            // First mod_duration then haste - see Missile Barrage
+            // Apply duration mod
+            if (Player* modOwner = m_caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+            // Apply haste mods
+            if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
+                m_caster->ModSpellCastTime(m_spellInfo, duration, this);
+
+            m_spellState = SPELL_STATE_CASTING;
+            m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
+            SendChannelStart(duration);
+        }
+        else if (duration == -1)
+        {
+            m_spellState = SPELL_STATE_CASTING;
+            m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
+            SendChannelStart(duration);
+        }
     }
 
     // process items
@@ -4580,7 +4570,7 @@ void Spell::SendSpellStart()
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
-        (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
+        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->isPet() || m_caster->ToCreature()->IsVehicle())))
         && !GetSpellInfo()->HasPower(POWER_HEALTH))
         castFlags |= CAST_FLAG_POWER_LEFT_SELF;
 
@@ -4975,7 +4965,7 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
-        (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isPet()))
+        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->isPet() || m_caster->ToCreature()->IsVehicle())))
         && !GetSpellInfo()->HasPower(POWER_HEALTH))
         castFlags |= CAST_FLAG_POWER_LEFT_SELF; // should only be sent to self, but the current messaging doesn't make that possible
 
@@ -6037,7 +6027,7 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
     {
         for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
-            if (m_spellMissMask)
+            if (i->hitmask)
                 if (!(m_spellMissMask & i->hitmask))
                     continue;
 
@@ -9223,6 +9213,17 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                         targets.remove_if(Trinity::UnitPartyCheck(true, _caster));
                     else
                         targets.remove_if(Trinity::UnitPartyCheck(false, _caster));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_EXPL_TARGET: //8
+                {
+                    targets.clear();
+                    targets.push_back(m_targets.GetUnitTarget());
+                    break;
+                }
+                case SPELL_FILTER_TARGET_EXPL_TARGET_REMOVE: //9
+                {
+                    targets.remove(m_targets.GetUnitTarget());
                     break;
                 }
             }

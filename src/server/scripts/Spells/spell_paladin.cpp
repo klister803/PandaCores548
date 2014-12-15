@@ -317,6 +317,8 @@ class spell_pal_blinding_light : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+
                         if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT))
                             _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_STUN, true);
                         else
@@ -523,8 +525,12 @@ class spell_pal_holy_prism_heal : public SpellScriptLoader
             void HandleDamage(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* target = GetHitUnit())
+                {
+                    target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+
                     if (unitTarget)
                         unitTarget->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
+                }
             }
 
             void HandleHeal(SpellEffIndex /*effIndex*/)
@@ -538,10 +544,10 @@ class spell_pal_holy_prism_heal : public SpellScriptLoader
                 {
                     for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end();)
                     {
-                        if (caster->IsValidAttackTarget((*itr)->ToUnit()))
-                            ++itr;
-                        else
+                        if (caster->IsFriendlyTo((*itr)->ToUnit()))
                             unitList.erase(itr++);
+                        else
+                            ++itr;
                     }
                 }
 
@@ -603,10 +609,10 @@ class spell_pal_holy_prism_damage : public SpellScriptLoader
                 {
                     for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end();)
                     {
-                        if (caster->IsValidAttackTarget((*itr)->ToUnit()))
-                            unitList.erase(itr++);
-                        else
+                        if (caster->IsFriendlyTo((*itr)->ToUnit()))
                             ++itr;
+                        else
+                            unitList.erase(itr++);
                     }
                 }
 

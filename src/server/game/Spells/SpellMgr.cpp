@@ -4162,10 +4162,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
-                case 19574: // Bestial Wrath
-                    spellInfo->Effects[3].Effect = 0;
-                    spellInfo->Effects[3].ApplyAuraName = 0;
-                    break;
                 case 87935: // Serpent Spread
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4278,9 +4274,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 131116: // Raging Blow!
 				case 136050: // Malformed Blood
                     spellInfo->ProcCharges = 0;
-                    break;
-                case 109259: // Powershot
-                    spellInfo->Effects[EFFECT_1].BasePoints = 60;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
@@ -5269,9 +5262,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 53260: // Cobra Strikes trigger
                     spellInfo->Effects[0].TriggerSpell = 0;
-                    break;
-                case 51755: // Camouflage taken damage
-                    spellInfo->Effects[3].BasePoints = -10;
                     break;
                 case 91107: // Unholy Might. Hot Fix 5.4.x
                     spellInfo->Effects[0].BasePoints = 35;

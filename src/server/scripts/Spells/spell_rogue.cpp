@@ -1253,8 +1253,7 @@ class spell_rog_killing_spree : public SpellScriptLoader
                     {
                         uint64 targetGuid = Trinity::Containers::SelectRandomContainerElement(targets);
                         if(Unit* effectTarget = ObjectAccessor::GetUnit(*caster, targetGuid))
-                            if(effectTarget && effectTarget->IsInWorld() && effectTarget->ToUnit())
-                                target = effectTarget->ToUnit();
+                            target = effectTarget;
                     }
                     if(target)
                     {

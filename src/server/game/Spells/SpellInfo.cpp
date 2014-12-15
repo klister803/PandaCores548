@@ -326,7 +326,7 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 117
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_AREA,    TARGET_CHECK_RAID,     TARGET_DIR_NONE},        // 118 TARGET_UNIT_FRIEND_OR_RAID
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_AREA,    TARGET_CHECK_RAID,     TARGET_DIR_NONE},        // 119 TARGET_MASS_RESSURECTION
-    {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_TARGET, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 120 TARGET_UNIT_TARGET_SELECT
+    {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_CASTER, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 120 TARGET_UNIT_TARGET_SELF
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 121 TARGET_UNIT_RESURRECT
     {TARGET_OBJECT_TYPE_UNIT, TARGET_REFERENCE_TYPE_TARGET, TARGET_SELECT_CATEGORY_DEFAULT, TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 122 TARGET_UNIT_TARGET_SELECT2
     {TARGET_OBJECT_TYPE_NONE, TARGET_REFERENCE_TYPE_NONE,   TARGET_SELECT_CATEGORY_NYI,     TARGET_CHECK_DEFAULT,  TARGET_DIR_NONE},        // 123 TARGET_UNIT_TARGET_PLAYER
@@ -1513,8 +1513,7 @@ bool SpellInfo::IsBreakingStealth() const
 
 bool SpellInfo::IsRangedWeaponSpell() const
 {
-    return (SpellFamilyName == SPELLFAMILY_HUNTER && !(SpellFamilyFlags[1] & 0x10000000)) // for 53352, cannot find better way
-        || (EquippedItemSubClassMask != -1 && (EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED));
+    return (EquippedItemSubClassMask != -1 && (EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED));
 }
 
 bool SpellInfo::IsAutoRepeatRangedSpell() const
@@ -2236,7 +2235,7 @@ uint32 SpellInfo::GetSpellTypeMask() const
 
     if(range_type == SPELL_RANGE_MELEE)
         mask |= SPELL_TYPE_MELEE;
-    if(range_type == SPELL_RANGE_RANGED)
+    if(range_type == SPELL_RANGE_RANGED || IsRangedWeaponSpell())
         mask |= SPELL_TYPE_RANGE;
     if(IsAutoRepeatRangedSpell())
         mask |= SPELL_TYPE_AUTOREPEATE;
@@ -3295,6 +3294,7 @@ bool SpellInfo::IsBreakingCamouflage() const
     switch (Id)
     {
         case 136:   // Mend Pet
+        case 781:   // Disengage
         case 982:   // Revive Pet
         case 1130:  // Hunter's Mark
         case 1462:  // Beast Lore

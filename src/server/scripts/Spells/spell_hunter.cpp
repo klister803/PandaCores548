@@ -188,6 +188,8 @@ class spell_hun_stampede : public SpellScriptLoader
                 {
                     Unit* target = GetHitUnit();
                     WorldLocation * loc = GetHitDest();
+                    Pet* curentPet = _player->GetPet();
+
                     //if (target)
                     {
                         uint32 count = 0;
@@ -201,6 +203,9 @@ class spell_hun_stampede : public SpellScriptLoader
                             else if (_player->getPetIdBySlot(i))
                                 slot = PetSlot(i);
                             else
+                                continue;
+
+                            if(curentPet && curentPet->GetSlot() == slot)
                                 continue;
 
                             //The pets will appear directly on the hunter's target, to avoid loss of damage.
@@ -761,10 +766,9 @@ class spell_hun_barrage : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (!target->HasAura(120360))
-                            SetHitDamage(GetHitDamage() / 2);
+                if (Unit* target = GetHitUnit())
+                    if (!target->HasAura(120360))
+                        SetHitDamage(GetHitDamage() / 2);
             }
 
             void Register()
@@ -1851,54 +1855,6 @@ class spell_hun_glyph_of_direction : public SpellScriptLoader
         }
 };
 
-// Glyph of Explosive Trap - 119403, spell trap - 13812
-class spell_hun_glyph_of_explosive_trap : public SpellScriptLoader
-{
-    public:
-        spell_hun_glyph_of_explosive_trap() : SpellScriptLoader("spell_hun_glyph_of_explosive_trap") { }
-
-        class spell_hun_glyph_of_explosive_trap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_glyph_of_explosive_trap_SpellScript);
- 
-            void HandleTriggerEffect(SpellEffIndex effIndex)
-            {                
-                if (Unit* owner = GetCaster()->GetOwner())
-                {  
-                    if (!owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
-                        PreventHitDefaultEffect(EFFECT_2);
-                }
-            }
-            void handlNull(SpellEffIndex effIndex)
-            {
-                PreventHitDefaultEffect(effIndex);
-            }
-            void HandleDamageEffect(SpellEffIndex effIndex)
-            {                
-                if (Unit* owner = GetCaster()->GetOwner())
-                {  
-                    if (owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
-                    {
-                        PreventHitDefaultEffect(EFFECT_0);
-                        PreventHitDefaultEffect(EFFECT_1); 
-                    }
-                }
-            }
-            
-            void Register()
-            {
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleTriggerEffect, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_1, SPELL_EFFECT_PERSISTENT_AREA_AURA);
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-        
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_glyph_of_explosive_trap_SpellScript();
-        }
-};
-
 // Thrill of the Hunt - 109306, spell: 
 //! Arcane Shot - 3044, Multi-Shot - 2643
 class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
@@ -2033,6 +1989,44 @@ class spell_hun_scatter_shot : public SpellScriptLoader
         }
 };
 
+// Bestial Wrath - 19574
+class spell_hun_bestial_wrath  : public SpellScriptLoader
+{
+    public:
+        spell_hun_bestial_wrath() : SpellScriptLoader("spell_hun_bestial_wrath") { }
+
+        class spell_hun_bestial_wrath_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_bestial_wrath_AuraScript);
+
+            void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (dmgInfo.GetDamage() >= target->GetHealth())
+                    {
+                        if(target->GetHealth() > 1)
+                            absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + 1;
+                        else
+                            absorbAmount = dmgInfo.GetDamage();
+                        return;
+                    }
+                }
+                absorbAmount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_hun_bestial_wrath_AuraScript::Absorb, EFFECT_3);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_bestial_wrath_AuraScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2069,9 +2063,9 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_fetch();
     new spell_hun_fireworks();
     new spell_hun_glyph_of_direction();
-    new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
     new spell_hun_ice_trap();
-	new spell_hun_scatter_shot();
+    new spell_hun_scatter_shot();
+    new spell_hun_bestial_wrath();
 }

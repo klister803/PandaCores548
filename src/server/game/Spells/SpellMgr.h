@@ -166,6 +166,8 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_FRIENDLY                = 5,            // Check Friendly
     SPELL_FILTER_TARGET_IN_RAID                 = 6,            // Check Raid
     SPELL_FILTER_TARGET_IN_PARTY                = 7,            // Check Party
+    SPELL_FILTER_TARGET_EXPL_TARGET             = 8,            // Select explicit target
+    SPELL_FILTER_TARGET_EXPL_TARGET_REMOVE      = 9,            // Select explicit target remove
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

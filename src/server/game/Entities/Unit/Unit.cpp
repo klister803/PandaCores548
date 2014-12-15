@@ -7974,12 +7974,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!roll_chance_i(triggerAmount))
                         return false;
 
-                    Player* plr = ToPlayer();
-
-                    // check item type request
-                    if (!plr || !plr->HasItemFitToSpellRequirements(procSpell))
-                        return false;
-
                     triggered_spell_id = 76663;
                     break;
                 }
@@ -19762,8 +19756,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
 
     // Aura added by spell can`t trigger from self (prevent drop charges/do triggers)
     // But except periodic and kill triggers (can triggered from self)
-    if (procSpell && procSpell->Id == spellProto->Id
-        && !(spellProto->ProcFlags&(PROC_FLAG_KILL)))
+    if (procSpell && procSpell->Id == spellProto->Id && !(spellProto->ProcFlags & (PROC_FLAG_KILL)))
         return false;
 
     // Check spellProcEvent data requirements
