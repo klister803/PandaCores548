@@ -321,7 +321,7 @@ struct GameObjectsEntry
     char* name;                 // 16
 };
 
-#define MAX_ITEM_UPDGRADES 3
+#define MAX_ITEM_UPDGRADES 5
 
 struct ItemUpgradeData
 {
