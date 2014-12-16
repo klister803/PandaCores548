@@ -114,7 +114,7 @@ dtPolyRef PathFinderMovementGenerator::getPathPolyByPosition(const dtPolyRef *po
     for (uint32 i = 0; i < polyPathSize; ++i)
     {
         float closestPoint[VERTEX_SIZE];
-        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(polyPath[i], point, closestPoint, NULL))
+        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(polyPath[i], point, closestPoint))
             continue;
 
         float d = dtVdist2DSqr(point, closestPoint);
@@ -228,7 +228,7 @@ void PathFinderMovementGenerator::BuildPolyPath(const Vector3 &startPos, const V
         {
             float closestPoint[VERTEX_SIZE];
             // we may want to use closestPointOnPolyBoundary instead
-            if (DT_SUCCESS == m_navMeshQuery->closestPointOnPoly(endPoly, endPoint, closestPoint, NULL))
+            if (DT_SUCCESS == m_navMeshQuery->closestPointOnPoly(endPoly, endPoint, closestPoint))
             {
                 dtVcopy(endPoint, closestPoint);
                 setActualEndPosition(Vector3(endPoint[2],endPoint[0],endPoint[1]));
@@ -318,13 +318,13 @@ void PathFinderMovementGenerator::BuildPolyPath(const Vector3 &startPos, const V
 
         // we need any point on our suffix start poly to generate poly-path, so we need last poly in prefix data
         float suffixEndPoint[VERTEX_SIZE];
-        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint, NULL))
+        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint))
         {
             // we can hit offmesh connection as last poly - closestPointOnPoly() don't like that
             // try to recover by using prev polyref
             --prefixPolyLength;
             suffixStartPoly = m_pathPolyRefs[prefixPolyLength-1];
-            if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint, NULL))
+            if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint))
             {
                 // suffixStartPoly is still invalid, error state
                 BuildShortcut();
@@ -553,7 +553,7 @@ bool PathFinderMovementGenerator::HaveTile(const Vector3 &p) const
     float point[VERTEX_SIZE] = {p.y, p.z, p.x};
 
     m_navMesh->calcTileLoc(point, &tx, &ty);
-    return (m_navMesh->getTileAt(tx, ty, 0) != NULL);
+    return (m_navMesh->getTileAt(tx, ty) != NULL);
 }
 
 uint32 PathFinderMovementGenerator::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath,

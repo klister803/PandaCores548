@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -21,12 +21,18 @@
 #include "VMapManager2.h"
 #include "VMapDefinitions.h"
 #include "Log.h"
-#include "Errors.h"
+#include "Util.h"
 
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <limits>
+
+#ifndef NO_CORE_FUNCS
+    #include "Errors.h"
+#else
+    #define ASSERT(x)
+#endif
 
 using G3D::Vector3;
 
@@ -36,7 +42,7 @@ namespace VMAP
     class MapRayCallback
     {
         public:
-            MapRayCallback(ModelInstance* val): prims(val), hit(false) { }
+            MapRayCallback(ModelInstance* val): prims(val), hit(false) {}
             bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool pStopAtFirstHit=true)
             {
                 bool result = prims[entry].intersectRay(ray, distance, pStopAtFirstHit);
@@ -53,7 +59,7 @@ namespace VMAP
     class AreaInfoCallback
     {
         public:
-            AreaInfoCallback(ModelInstance* val): prims(val) { }
+            AreaInfoCallback(ModelInstance* val): prims(val) {}
             void operator()(const Vector3& point, uint32 entry)
             {
 #ifdef VMAP_DEBUG
@@ -69,7 +75,7 @@ namespace VMAP
     class LocationInfoCallback
     {
         public:
-            LocationInfoCallback(ModelInstance* val, LocationInfo &info): prims(val), locInfo(info), result(false) { }
+            LocationInfoCallback(ModelInstance* val, LocationInfo &info): prims(val), locInfo(info), result(false) {}
             void operator()(const Vector3& point, uint32 entry)
             {
 #ifdef VMAP_DEBUG
@@ -119,9 +125,8 @@ namespace VMAP
         return intersectionCallBack.result;
     }
 
-    StaticMapTree::StaticMapTree(uint32 mapID, const std::string &basePath) :
-        iMapID(mapID), iIsTiled(false), iTreeValues(NULL),
-        iNTreeValues(0), iBasePath(basePath)
+    StaticMapTree::StaticMapTree(uint32 mapID, const std::string &basePath)
+        : iMapID(mapID), iIsTiled(false), iTreeValues(0), iBasePath(basePath)
     {
         if (iBasePath.length() > 0 && iBasePath[iBasePath.length()-1] != '/' && iBasePath[iBasePath.length()-1] != '\\')
         {
@@ -156,12 +161,10 @@ namespace VMAP
     bool StaticMapTree::isInLineOfSight(const Vector3& pos1, const Vector3& pos2) const
     {
         float maxDist = (pos2 - pos1).magnitude();
-        // return false if distance is over max float, in case of cheater teleporting to the end of the universe
-        if (maxDist == std::numeric_limits<float>::max() || !std::isfinite(maxDist))
-            return false;
-
         // valid map coords should *never ever* produce float overflow, but this would produce NaNs too
-        ASSERT(maxDist < std::numeric_limits<float>::max());
+        //ASSERT(maxDist < std::numeric_limits<float>::max());
+        if(maxDist > std::numeric_limits<float>::max() || isNanOrInf<float>(maxDist))
+            return false;
         // prevent NaN values which can cause BIH intersection to enter infinite loop
         if (maxDist < 1e-10f)
             return true;
@@ -183,7 +186,10 @@ namespace VMAP
         bool result=false;
         float maxDist = (pPos2 - pPos1).magnitude();
         // valid map coords should *never ever* produce float overflow, but this would produce NaNs too
-        ASSERT(maxDist < std::numeric_limits<float>::max());
+        //ASSERT(maxDist < std::numeric_limits<float>::max());
+        // isNanOrInf additional check with maxDist < 1e-10f
+        if(maxDist > std::numeric_limits<float>::max() || isNanOrInf<float>(maxDist))
+            return false;
         // prevent NaN values which can cause BIH intersection to enter infinite loop
         if (maxDist < 1e-10f)
         {
@@ -225,7 +231,7 @@ namespace VMAP
 
     float StaticMapTree::getHeight(const Vector3& pPos, float maxSearchDist) const
     {
-        float height = G3D::finf();
+        float height = G3D::inf();
         Vector3 dir = Vector3(0, 0, -1);
         G3D::Ray ray(pPos, dir);   // direction with length of 1
         float maxDist = maxSearchDist;
@@ -248,7 +254,7 @@ namespace VMAP
         FILE* rf = fopen(fullname.c_str(), "rb");
         if (!rf)
             return false;
-        /// @todo check magic number when implemented...
+        // TODO: check magic number when implemented...
         char tiled;
         char chunk[8];
         if (!readChunk(rf, chunk, VMAP_MAGIC, 8) || fread(&tiled, sizeof(char), 1, rf) != 1)
@@ -295,13 +301,13 @@ namespace VMAP
             success = readChunk(rf, chunk, "GOBJ", 4);
         }
 
-        iIsTiled = tiled != '\0';
+        iIsTiled = bool(tiled);
 
         // global model spawns
         // only non-tiled maps have them, and if so exactly one (so far at least...)
         ModelSpawn spawn;
 #ifdef VMAP_DEBUG
-        sLog->outDebug(LOG_FILTER_MAPS, "StaticMapTree::InitMap() : map isTiled: %u", static_cast<uint32>(iIsTiled));
+            sLog->outDebug(LOG_FILTER_MAPS, "StaticMapTree::InitMap() : map isTiled: %u", static_cast<uint32>(iIsTiled));
 #endif
         if (!iIsTiled && ModelSpawn::readFromFile(rf, spawn))
         {
@@ -316,7 +322,7 @@ namespace VMAP
             else
             {
                 success = false;
-                sLog->outError(LOG_FILTER_GENERAL, "StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
+                sLog->outDebug(LOG_FILTER_MAPS, "StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
             }
         }
 
@@ -475,4 +481,5 @@ namespace VMAP
         }
         iLoadedTiles.erase(tile);
     }
+
 }

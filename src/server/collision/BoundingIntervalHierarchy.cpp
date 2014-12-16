@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,12 +17,6 @@
  */
 
 #include "BoundingIntervalHierarchy.h"
-
-#ifdef _MSC_VER
-  #define isnan _isnan
-#else
-  #define isnan std::isnan
-#endif
 
 void BIH::buildHierarchy(std::vector<uint32> &tempTree, buildData &dat, BuildStats &stats)
 {
@@ -57,7 +51,7 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
         prevAxis = axis;
         prevSplit = split;
         // perform quick consistency checks
-        G3D::Vector3 d( gridBox.hi - gridBox.lo );
+        Vector3 d( gridBox.hi - gridBox.lo );
         if (d.x < 0 || d.y < 0 || d.z < 0)
             throw std::logic_error("negative node extents");
         for (int i = 0; i < 3; i++)
@@ -72,11 +66,11 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
         axis = d.primaryAxis();
         split = 0.5f * (gridBox.lo[axis] + gridBox.hi[axis]);
         // partition L/R subsets
-        clipL = -G3D::finf();
-        clipR = G3D::finf();
+        clipL = -G3D::inf();
+        clipR = G3D::inf();
         rightOrig = right; // save this for later
-        float nodeL = G3D::finf();
-        float nodeR = -G3D::finf();
+        float nodeL = G3D::inf();
+        float nodeR = -G3D::inf();
         for (int i = left; i <= right;)
         {
             int obj = dat.indices[i];
@@ -187,13 +181,13 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
                     stats.updateInner();
                     tempTree[nodeIndex + 0] = (prevAxis << 30) | nextIndex;
                     tempTree[nodeIndex + 1] = floatToRawIntBits(prevClip);
-                    tempTree[nodeIndex + 2] = floatToRawIntBits(G3D::finf());
+                    tempTree[nodeIndex + 2] = floatToRawIntBits(G3D::inf());
                 } else {
                     // create a node with a right child
                     // write leaf node
                     stats.updateInner();
                     tempTree[nodeIndex + 0] = (prevAxis << 30) | (nextIndex - 3);
-                    tempTree[nodeIndex + 1] = floatToRawIntBits(-G3D::finf());
+                    tempTree[nodeIndex + 1] = floatToRawIntBits(-G3D::inf());
                     tempTree[nodeIndex + 2] = floatToRawIntBits(prevClip);
                 }
                 // count stats for the unused leaf
@@ -247,7 +241,7 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
 bool BIH::writeToFile(FILE* wf) const
 {
     uint32 treeSize = tree.size();
-    uint32 check=0, count;
+    uint32 check=0, count=0;
     check += fwrite(&bounds.low(), sizeof(float), 3, wf);
     check += fwrite(&bounds.high(), sizeof(float), 3, wf);
     check += fwrite(&treeSize, sizeof(uint32), 1, wf);
@@ -261,18 +255,18 @@ bool BIH::writeToFile(FILE* wf) const
 bool BIH::readFromFile(FILE* rf)
 {
     uint32 treeSize;
-    G3D::Vector3 lo, hi;
+    Vector3 lo, hi;
     uint32 check=0, count=0;
     check += fread(&lo, sizeof(float), 3, rf);
     check += fread(&hi, sizeof(float), 3, rf);
-    bounds = G3D::AABox(lo, hi);
+    bounds = AABox(lo, hi);
     check += fread(&treeSize, sizeof(uint32), 1, rf);
     tree.resize(treeSize);
     check += fread(&tree[0], sizeof(uint32), treeSize, rf);
     check += fread(&count, sizeof(uint32), 1, rf);
     objects.resize(count); // = new uint32[nObjects];
     check += fread(&objects[0], sizeof(uint32), count, rf);
-    return uint64(check) == uint64(3 + 3 + 1 + 1 + uint64(treeSize) + uint64(count));
+    return check == (3 + 3 + 2 + treeSize + count);
 }
 
 void BIH::BuildStats::updateLeaf(int depth, int n)
