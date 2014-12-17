@@ -16524,7 +16524,10 @@ bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates new
         switch (spellInfo->Effects[j].Effect)
         {
             case SPELL_EFFECT_SUMMON:
-                return false;
+            {
+                if (spellInfo->Id == 75111)
+                    return false;
+            }
         }
     }
 

@@ -6819,6 +6819,17 @@ void Spell::EffectChargeDest(SpellEffIndex effIndex)
         float angle = m_caster->GetRelativeAngle(pos.GetPositionX(), pos.GetPositionY());
         float dist = m_caster->GetDistance(pos);
         m_caster->GetFirstCollisionPosition(pos, dist, angle);
+        
+        // Racer Slam Hit Destination
+        if (m_spellInfo->Id == 49302)
+        {
+            if (urand(0, 100) < 80)
+            {
+                m_caster->CastSpell(m_caster, 49336, false);
+                m_caster->CastSpell((Unit*)NULL, 49444, false); // achievement counter
+            }
+        }
+        
         uint32 triggered_spell_id = m_spellInfo->GetEffect(effIndex, m_diffMode).TriggerSpell;
 
         if(!m_caster->GetMotionMaster()->SpellMoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, SPEED_CHARGE, EVENT_CHARGE, triggered_spell_id))
