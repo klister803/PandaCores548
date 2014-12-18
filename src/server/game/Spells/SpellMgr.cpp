@@ -4285,9 +4285,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 7384: // Overpower
                     spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
                     break;
-                case 114695:// Pursuit of Justice
-                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
-                    break;
                 case 90259: // Glyph of Frost Pillar (Root Aura)
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     spellInfo->Effects[EFFECT_0].MiscValueB = 0;
@@ -4295,9 +4292,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 49821: // Mind Sear
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    break;
-                case 10326: // Turn Evil
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     break;
                 case 117418:// Fists of Fury (damage)
                 case 114083:// Ascendance
@@ -4618,7 +4612,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                     break;
                 case 127802: // Touch of the Grave
-                case 117050:
                     spellInfo->Speed = 25.f;
                     break;
 

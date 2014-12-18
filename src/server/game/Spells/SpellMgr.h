@@ -168,6 +168,9 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_IN_PARTY                = 7,            // Check Party
     SPELL_FILTER_TARGET_EXPL_TARGET             = 8,            // Select explicit target
     SPELL_FILTER_TARGET_EXPL_TARGET_REMOVE      = 9,            // Select explicit target remove
+    SPELL_FILTER_TARGET_IN_LOS                  = 10,           // Select target in los
+    SPELL_FILTER_TARGET_IS_IN_BETWEEN           = 11,           // Select target is in between
+    SPELL_FILTER_TARGET_IS_IN_BETWEEN_SHIFT     = 12,           // Select target is in between and shift
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)

@@ -186,6 +186,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_isTempWorldObject = false;
     bossid = 0;
     difficulty = 0;
+    m_Stampeded = false;
 }
 
 Creature::~Creature()

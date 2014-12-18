@@ -1513,6 +1513,11 @@ bool SpellInfo::IsBreakingStealth() const
 
 bool SpellInfo::IsRangedWeaponSpell() const
 {
+    return SpellFamilyName == SPELLFAMILY_HUNTER || (EquippedItemSubClassMask != -1 && (EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED));
+}
+
+bool SpellInfo::IsRangedSpell() const
+{
     return (EquippedItemSubClassMask != -1 && (EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED));
 }
 
@@ -2235,7 +2240,7 @@ uint32 SpellInfo::GetSpellTypeMask() const
 
     if(range_type == SPELL_RANGE_MELEE)
         mask |= SPELL_TYPE_MELEE;
-    if(range_type == SPELL_RANGE_RANGED || IsRangedWeaponSpell())
+    if(range_type == SPELL_RANGE_RANGED || IsRangedSpell())
         mask |= SPELL_TYPE_RANGE;
     if(IsAutoRepeatRangedSpell())
         mask |= SPELL_TYPE_AUTOREPEATE;
@@ -2968,6 +2973,9 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                     return false;
                 case SPELL_AURA_MOD_ROOT:
                 case SPELL_AURA_MOD_SILENCE:
+                case SPELL_AURA_MOD_DISARM:
+                case SPELL_AURA_MOD_DISARM_RANGED:
+                case SPELL_AURA_MOD_DISARM_OFFHAND:
                 case SPELL_AURA_GHOST:
                 case SPELL_AURA_PERIODIC_LEECH:
                 case SPELL_AURA_MOD_STALKED:

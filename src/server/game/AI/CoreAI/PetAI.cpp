@@ -147,7 +147,7 @@ void PetAI::UpdateAI(uint32 diff)
     else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW)) // no charm info and no victim
         me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
 
-    if (!me->GetCharmInfo())
+    if (!me->GetCharmInfo() || me->m_Stampeded)
         return;
 
     // Autocast (casted only in combat or persistent spells in any state)

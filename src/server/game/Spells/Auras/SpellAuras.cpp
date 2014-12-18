@@ -1298,6 +1298,7 @@ bool Aura::CanBeSaved() const
         case 124458:
         case 130324:
         case 126119:
+        case 114695:
             return false;
         default:
             break;

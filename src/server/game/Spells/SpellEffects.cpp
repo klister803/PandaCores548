@@ -413,7 +413,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             damage /= count;                    // divide to all targets
         }
 
-        bool apply_direct_bonus = true;
         switch (m_spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
@@ -684,6 +683,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
+                    case 83381: //Kill Command
+                    {
+                        if (Unit* hunter = m_caster->GetOwner())
+                            damage = int32(hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.6f);
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -827,7 +832,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
         }
 
-        if (m_originalCaster && damage > 0 && apply_direct_bonus)
+        if (m_originalCaster && damage > 0)
         {
             damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
             damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);

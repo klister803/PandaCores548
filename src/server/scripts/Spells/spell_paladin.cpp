@@ -317,8 +317,6 @@ class spell_pal_blinding_light : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-
                         if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT))
                             _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_STUN, true);
                         else
@@ -526,8 +524,6 @@ class spell_pal_holy_prism_heal : public SpellScriptLoader
             {
                 if (Unit* target = GetHitUnit())
                 {
-                    target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-
                     if (unitTarget)
                         unitTarget->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
                 }
@@ -697,15 +693,15 @@ class spell_pal_holy_prism : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->IsValidAttackTarget(target))
-                        {
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL, true);
-                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
-                        }
-                        else
+                        if (_player->IsFriendlyTo(target))
                         {
                             _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL, true);
                             _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
+                        }
+                        else
+                        {
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL, true);
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
                         }
                     }
                 }
@@ -1345,6 +1341,76 @@ class spell_pal_divine_protection : public SpellScriptLoader
         }
 };
 
+// Pursuit of Justice - 114694
+class spell_pal_pursuit_of_justice : public SpellScriptLoader
+{
+    public:
+        spell_pal_pursuit_of_justice() : SpellScriptLoader("spell_pal_pursuit_of_justice") { }
+
+        class spell_pal_pursuit_of_justice_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_pursuit_of_justice_SpellScript);
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    caster->RemoveAurasDueToSpell(114695);
+                    int32 increment = 5;
+                    int32 amount = 15;
+                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(26023))
+                        increment = spellInfo->Effects[EFFECT_7].BasePoints;
+
+                    if(AuraEffect const* triggerBy = GetSpell()->GetTriggeredAuraEff())
+                    {
+                        amount += increment * triggerBy->GetAmount();
+
+                        if(amount > 15)
+                            caster->CastCustomSpell(caster, 114695, &amount, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pal_pursuit_of_justice_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_pursuit_of_justice_SpellScript();
+        }
+};
+
+// Seal of Insight - 20167
+class spell_pal_seal_of_insight : public SpellScriptLoader
+{
+    public:
+        spell_pal_seal_of_insight() : SpellScriptLoader("spell_pal_seal_of_insight") { }
+
+        class spell_pal_seal_of_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_seal_of_insight_SpellScript);
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (GetHitUnit() != GetCaster())
+                    SetHitHeal(int32(GetHitHeal() * 0.3f));
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pal_seal_of_insight_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_seal_of_insight_SpellScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1376,4 +1442,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_devotion_aura();
     new spell_pal_holy_wrath();
     new spell_pal_divine_protection();
+    new spell_pal_pursuit_of_justice();
+    new spell_pal_seal_of_insight();
 }

@@ -2010,7 +2010,11 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
 
         // found an uncompleted criteria, but DONT return false yet - there might be a completed criteria with ACHIEVEMENT_CRITERIA_COMPLETE_FLAG_ALL
         if (completed)
+        {
             ++count;
+            if (entry->flags & ACHIEVEMENT_FLAG_BAR) //achievement complete if completed one criteria
+                return true;
+        }
         else
             completed_all = false;
 

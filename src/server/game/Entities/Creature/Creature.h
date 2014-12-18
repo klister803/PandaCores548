@@ -811,6 +811,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 m_LOSCheckTimer;
         bool m_LOSCheck_creature;
         bool m_LOSCheck_player;
+        bool m_Stampeded;
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }

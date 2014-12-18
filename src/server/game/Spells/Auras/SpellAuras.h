@@ -116,6 +116,8 @@ class Aura
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
         void SetSpellAreaTrigger(uint64 areaTr) { m_spellAreaTrGuid = areaTr;}
         uint64 GetSpellAreaTrigger() const { return m_spellAreaTrGuid; }
+        void SetTriggeredAuraEff(AuraEffect const* trigger) { m_triggeredByAura = trigger;}
+        AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
 
         AuraObjectType GetType() const;
 
@@ -261,6 +263,7 @@ class Aura
         WorldObject* m_owner;
         uint64 m_spellDynObjGuid;
         uint64 m_spellAreaTrGuid;
+        AuraEffect const* m_triggeredByAura;
 
         int32 m_maxDuration;                                // Max aura duration
         int32 m_duration;                                   // Current time

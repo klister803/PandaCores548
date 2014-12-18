@@ -1853,5 +1853,52 @@ namespace Trinity
             bool _present;
             Unit* _caster;
     };
+
+    class UnitCheckInLos
+    {
+        public:
+            UnitCheckInLos(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (WorldObject* object)
+            {
+                return object->IsWithinLOSInMap(_caster) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
+
+    class UnitCheckInBetween
+    {
+        public:
+            UnitCheckInBetween(bool present, Unit* caster, Unit* target, float size) : _present(present), _caster(caster), _target(target), _size(size) {}
+            bool operator() (WorldObject* object)
+            {
+                return object->IsInBetween(_caster, _target, _size) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+            Unit* _target;
+            float _size;
+    };
+
+    class UnitCheckInBetweenShift
+    {
+        public:
+            UnitCheckInBetweenShift(bool present, Unit* caster, Unit* target, float size, float shift, float angleShift)
+            : _present(present), _caster(caster), _target(target), _size(size), _shift(shift), _angleShift(angleShift) {}
+
+            bool operator() (WorldObject* object)
+            {
+                return object->IsInBetweenShift(_caster, _target, _size, _shift, _angleShift) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+            Unit* _target;
+            float _size;
+            float _shift;
+            float _angleShift;
+    };
 }
 #endif

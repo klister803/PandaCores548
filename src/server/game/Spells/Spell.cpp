@@ -408,7 +408,7 @@ m_comboPointGain(0), m_delayStart(0), m_delayAtDamageCount(0), m_count_dispeling
 m_CastItem(NULL), m_castItemGUID(0), unitTarget(NULL), m_originalTarget(NULL), itemTarget(NULL), gameObjTarget(NULL), focusObject(NULL),
 m_cast_count(0), m_glyphIndex(0), m_preCastSpell(0), m_triggeredByAuraSpell(NULL), m_spellAura(NULL), find_target(false), m_spellState(SPELL_STATE_NULL),
 m_runesState(0), m_powerCost(0), m_casttime(0), m_timer(0), m_channelTargetEffectMask(0), _triggeredCastFlags(triggerFlags), m_spellValue(NULL), m_currentExecutedEffect(SPELL_EFFECT_NONE),
-m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NULL), m_replaced(replaced)
+m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NULL), m_replaced(replaced), m_triggeredByAura(NULL)
 {
     m_diffMode = m_caster->GetMap() ? m_caster->GetMap()->GetSpawnMode() : 0;
     m_spellValue = new SpellValue(m_spellInfo, m_diffMode);
@@ -1193,29 +1193,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         return;
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
 
-    // Custom entries
-    // TODO: remove those
-    switch (m_spellInfo->Id)
-    {
-        case 121414:
-        case 120761:
-        {
-            m_targets.SetUnitTarget(m_caster->ToPlayer()->GetSelectedUnit());
-            for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
-            {
-                WorldObject* obj = *itr;
-                if (obj->IsInBetween(m_caster, m_caster->ToPlayer()->GetSelectedUnit(), 5) || m_caster->ToPlayer()->GetSelectedUnit() == obj)
-                    itr++;
-                else
-                    targets.erase(itr++);
-            }
-            break;
-        }
-
-        default:
-            break;
-    }
-
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
     std::list<Unit*> unitTargets;
@@ -1786,6 +1763,16 @@ void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTarg
 
         for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end(); ++itr)
             AddUnitTarget(*itr, effMask, false);
+    }
+    switch (m_spellInfo->Id)
+    {
+        case 120755: // Glave Toss for visual back(off-like)
+        case 120756: // Glave Toss for visual back(off-like)
+        case 31935: // Avenger's Shield
+            AddTargetVisualHit(m_caster);
+            break;
+        default:
+            break;
     }
 }
 
@@ -2468,6 +2455,25 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     m_UniqueTargetInfo.push_back(targetInfo);
 }
 
+void Spell::AddTargetVisualHit(Unit* target)
+{
+    if(!m_spellInfo)
+        return;
+
+    // Get spell hit result on target
+    TargetInfo targetInfo;
+    targetInfo.targetGUID = target->GetGUID();                         // Store target GUID
+    targetInfo.effectMask = 7;                         // Store all effects not immune
+    targetInfo.processed  = false;                              // Effects not apply on target
+    targetInfo.alive      = target->isAlive();
+    targetInfo.damage     = 0;
+    targetInfo.crit       = false;
+    targetInfo.scaleAura  = false;
+
+    // Add target to list
+    m_VisualHitTargetInfo.push_back(targetInfo);
+}
+
 void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
 {
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
@@ -3138,6 +3144,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                     }
                     m_spellAura->_RegisterForTargets();
                     m_spellAura->SetEffectTargets(GetEffectTargets());
+                    m_spellAura->SetTriggeredAuraEff(m_triggeredByAura);
                     if(uint64 dynObjGuid = GetSpellDynamicObject())
                         m_spellAura->SetSpellDynamicObject(dynObjGuid);
                 }
@@ -3167,6 +3174,8 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             return;
         // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
         if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
+            return;
+        if (m_spellInfo->Id == 117050 && m_preCastSpell == 117050)
             return;
 
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
@@ -3336,6 +3345,12 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     else
         m_castItemGUID = 0;
 
+    if (triggeredByAura)
+    {
+        m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
+        m_triggeredByAura = triggeredByAura;
+    }
+
     InitExplicitTargets(*targets);
 
     // Fill aura scaling information
@@ -3360,9 +3375,6 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     }
 
     m_spellState = SPELL_STATE_PREPARING;
-
-    if (triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
 
     // create and add update event for this spell
     SpellEvent* Event = new SpellEvent(this);
@@ -5042,6 +5054,8 @@ void Spell::SendSpellGo()
         else
             ++miss;
     }
+    for (std::list<TargetInfo>::iterator ihit = m_VisualHitTargetInfo.begin(); ihit != m_VisualHitTargetInfo.end() && hit <= 255; ++ihit)
+        ++hit;
 
     // Reset m_needAliveTargetMask for non channeled spell
     if (!m_spellInfo->IsChanneled())
@@ -5163,6 +5177,11 @@ void Spell::SendSpellGo()
             ++counter;
         }
     }
+    for (std::list<TargetInfo>::iterator ihit = m_VisualHitTargetInfo.begin(); ihit != m_VisualHitTargetInfo.end() && hit <= 255; ++ihit)
+    {
+        data.WriteGuidMask<2, 3, 7, 1, 5, 4, 6, 0>(ihit->targetGUID);
+        ++counter;
+    }
     for (std::list<GOTargetInfo>::const_iterator ighit = m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end() && counter <= 255; ++ighit)
     {
         data.WriteGuidMask<2, 3, 7, 1, 5, 4, 6, 0>(ighit->targetGUID);
@@ -5202,6 +5221,11 @@ void Spell::SendSpellGo()
             data.WriteGuidBytes<6, 5, 0, 3, 2, 1, 4, 7>(ihit->targetGUID);
             ++counter;
         }
+    }
+    for (std::list<TargetInfo>::iterator ihit = m_VisualHitTargetInfo.begin(); ihit != m_VisualHitTargetInfo.end() && hit <= 255; ++ihit)
+    {
+        data.WriteGuidBytes<6, 5, 0, 3, 2, 1, 4, 7>(ihit->targetGUID);
+        ++counter;
     }
     for (std::list<GOTargetInfo>::const_iterator ighit = m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end() && counter <= 255; ++ighit)
     {
@@ -6067,10 +6091,69 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     continue;
             }
             if(i->caster == 3) //get caster as target
-                _caster = m_targets.GetUnitTarget();
+                _caster = _target;
 
             if(!_caster)
                 continue;
+
+            if (i->type2 == 4 && _target)
+            {
+                if (i->hastalent != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent),  _caster->GetGUID()))
+                    continue;
+                if (i->hastalent2 != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent2), _caster->GetGUID()))
+                    continue;
+            }
+            else if (i->type2 == 3)
+            {
+                if (Unit* owner = _caster->GetOwner())
+                {
+                    if(i->hastalent > 0 && !owner->HasAura(i->hastalent))
+                        continue;
+                    else if(i->hastalent < 0 && owner->HasAura(abs(i->hastalent)))
+                        continue;
+                    if(i->hastalent2 > 0 && !owner->HasAura(i->hastalent2))
+                        continue;
+                    else if(i->hastalent2 < 0 && owner->HasAura(abs(i->hastalent2)))
+                        continue;
+                }
+                else continue;
+            }
+            else if(i->type2 == 2)
+            {
+                if(i->hastalent > 0 && !_caster->HasSpell(i->hastalent))
+                    continue;
+                else if(i->hastalent < 0 && _caster->HasSpell(abs(i->hastalent)))
+                    continue;
+                if(i->hastalent2 > 0 && !_caster->HasSpell(i->hastalent2))
+                    continue;
+                else if(i->hastalent2 < 0 && _caster->HasSpell(abs(i->hastalent2)))
+                    continue;
+            }
+            else if(i->type2 == 1 && _target)
+            {
+                if (i->hastalent > 0 && !_target->HasAura(i->hastalent))
+                    continue;
+                else if(i->hastalent < 0 && _target->HasAura(abs(i->hastalent)))
+                    continue;
+                if (i->hastalent2 > 0 && !_target->HasAura(i->hastalent2))
+                    continue;
+                else if(i->hastalent2 < 0 && _target->HasAura(abs(i->hastalent2)))
+                    continue;
+            }
+            else
+            {
+                if(i->hastalent > 0 && !_caster->HasAura(i->hastalent))
+                    continue;
+                else if(i->hastalent < 0 && _caster->HasAura(abs(i->hastalent)))
+                    continue;
+                if (i->type2 != 5)
+                {
+                    if(i->hastalent2 > 0 && !_caster->HasAura(i->hastalent2))
+                        continue;
+                    else if(i->hastalent2 < 0 && _caster->HasAura(abs(i->hastalent2)))
+                        continue;
+                }
+            }
 
             if (i->effect < 0)
             {
@@ -6079,66 +6162,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     if(Player* _lplayer = _caster->ToPlayer())
                         _lplayer->removeSpell(-(i->effect));
                 }
+                else if (i->type2 == 5 && _target)
+                    _target->RemoveAurasByType(AuraType(i->hastalent2));
                 else
                     _caster->RemoveAurasDueToSpell(-(i->effect));
             }
             else
             {
-                if (i->type2 == 4 && _target)
-                {
-                    if (i->hastalent != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent),  _caster->GetGUID()))
-                        continue;
-                    if (i->hastalent2 != 0 && !_target->HasAuraTypeWithCaster(AuraType(i->hastalent2), _caster->GetGUID()))
-                        continue;
-                }
-                else if (i->type2 == 3)
-                {
-                    if (Unit* owner = _caster->GetOwner())
-                    {
-                        if(i->hastalent > 0 && !owner->HasAura(i->hastalent))
-                            continue;
-                        else if(i->hastalent < 0 && owner->HasAura(abs(i->hastalent)))
-                            continue;
-                        if(i->hastalent2 > 0 && !owner->HasAura(i->hastalent2))
-                            continue;
-                        else if(i->hastalent2 < 0 && owner->HasAura(abs(i->hastalent2)))
-                            continue;
-                    }
-                    else continue;
-                }
-                else if(i->type2 == 2)
-                {
-                    if(i->hastalent > 0 && !_caster->HasSpell(i->hastalent))
-                        continue;
-                    else if(i->hastalent < 0 && _caster->HasSpell(abs(i->hastalent)))
-                        continue;
-                    if(i->hastalent2 > 0 && !_caster->HasSpell(i->hastalent2))
-                        continue;
-                    else if(i->hastalent2 < 0 && _caster->HasSpell(abs(i->hastalent2)))
-                        continue;
-                }
-                else if(i->type2 && _target)
-                {
-                    if (i->hastalent > 0 && !_target->HasAura(i->hastalent))
-                        continue;
-                    else if(i->hastalent < 0 && _target->HasAura(abs(i->hastalent)))
-                        continue;
-                    if (i->hastalent2 > 0 && !_target->HasAura(i->hastalent2))
-                        continue;
-                    else if(i->hastalent2 < 0 && _target->HasAura(abs(i->hastalent2)))
-                        continue;
-                }
-                else
-                {
-                    if(i->hastalent > 0 && !_caster->HasAura(i->hastalent))
-                        continue;
-                    else if(i->hastalent < 0 && _caster->HasAura(abs(i->hastalent)))
-                        continue;
-                    if(i->hastalent2 > 0 && !_caster->HasAura(i->hastalent2))
-                        continue;
-                    else if(i->hastalent2 < 0 && _caster->HasAura(abs(i->hastalent2)))
-                        continue;
-                }
                 if(i->chance != 0 && !roll_chance_i(i->chance))
                     continue;
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER && _caster->ToPlayer()->HasSpellCooldown(i->effect))
@@ -7669,6 +7699,9 @@ bool Spell::CanAutoCast(Unit* target)
             if (ihit->targetGUID == targetguid)
                 return true;
     }
+    if(m_spellInfo->Id == 128997) //Don't have target in spell
+        return true;
+
     return false;                                           //target invalid
 }
 
@@ -9105,14 +9138,17 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
     {
         uint32 targetCount = 0;
         uint32 resizeType = 0;
+        Unit* _caster = m_originalCaster ? m_originalCaster : m_caster;
+        if(_caster->isTotem())
+            if (Unit* owner = _caster->GetOwner())
+                _caster = owner;
+
+        Unit* _target = m_targets.GetUnitTarget();
+        if(!_target && m_caster->ToPlayer())
+            _target = m_caster->ToPlayer()->GetSelectedUnit();
 
         for (std::vector<SpellTargetFilter>::const_iterator itr = spellTargetFilter->begin(); itr != spellTargetFilter->end(); ++itr)
         {
-            Unit* _caster = m_originalCaster ? m_originalCaster : m_caster;
-            if(_caster->isTotem())
-                if (Unit* owner = _caster->GetOwner())
-                    _caster = owner;
-
             if (!(itr->effectMask & (1<<effIndex)))
                 continue;
 
@@ -9218,12 +9254,34 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 case SPELL_FILTER_TARGET_EXPL_TARGET: //8
                 {
                     targets.clear();
-                    targets.push_back(m_targets.GetUnitTarget());
+                    if(_target)
+                        targets.push_back(_target);
                     break;
                 }
                 case SPELL_FILTER_TARGET_EXPL_TARGET_REMOVE: //9
                 {
-                    targets.remove(m_targets.GetUnitTarget());
+                    if(_target)
+                        targets.remove(_target);
+                    break;
+                }
+                case SPELL_FILTER_TARGET_IN_LOS: //10
+                {
+                    if(itr->param1 < 0.0f)
+                        targets.remove_if(Trinity::UnitCheckInLos(true, _caster));
+                    else
+                        targets.remove_if(Trinity::UnitCheckInLos(false, _caster));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_IS_IN_BETWEEN: //11
+                {
+                    if(_target)
+                        targets.remove_if(Trinity::UnitCheckInBetween(false, _caster, _target, itr->param1));
+                    break;
+                }
+                case SPELL_FILTER_TARGET_IS_IN_BETWEEN_SHIFT: //12
+                {
+                    if(_target)
+                        targets.remove_if(Trinity::UnitCheckInBetweenShift(false, _caster, _target, itr->param1, itr->param2, itr->param3));
                     break;
                 }
             }
