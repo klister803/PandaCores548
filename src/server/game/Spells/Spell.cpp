@@ -5177,7 +5177,7 @@ void Spell::SendSpellGo()
             ++counter;
         }
     }
-    for (std::list<TargetInfo>::iterator ihit = m_VisualHitTargetInfo.begin(); ihit != m_VisualHitTargetInfo.end() && hit <= 255; ++ihit)
+    for (std::list<TargetInfo>::iterator ihit = m_VisualHitTargetInfo.begin(); ihit != m_VisualHitTargetInfo.end() && counter <= 255; ++ihit)
     {
         data.WriteGuidMask<2, 3, 7, 1, 5, 4, 6, 0>(ihit->targetGUID);
         ++counter;
