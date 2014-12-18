@@ -502,6 +502,7 @@ public:
     bool NeedsComboPoints() const;
     bool IsBreakingStealth() const;
     bool IsRangedWeaponSpell() const;
+    bool IsRangedSpell() const;
     bool IsAutoRepeatRangedSpell() const;
 
     bool IsAffectedBySpellMods() const;

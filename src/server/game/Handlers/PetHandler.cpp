@@ -645,14 +645,13 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
 {
     sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetRename. CMSG_PET_RENAME");
 
-    uint32 data;
+    uint32 petnumber;
     uint8 isdeclined;
 
     std::string name;
     DeclinedName declinedname;
 
-    recvData >> data;
-    uint32 petnumber = data >> 8;
+    recvData >> petnumber;
 
     bool namepart = !recvData.ReadBit();
     isdeclined  = recvData.ReadBit();
@@ -661,6 +660,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
     if (!pet)
     {
         recvData.rfinish();
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetRename pet not found");
         return;
     }
                                                             // check it!
@@ -669,12 +669,14 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
         pet->GetOwnerGUID() != _player->GetGUID() || !pet->GetCharmInfo())
     {
         recvData.rfinish();
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetRename error pet");
         return;
     }
 
     if (pet->GetCharmInfo()->GetPetNumber() != petnumber)
     {
         recvData.rfinish();
+        sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetRename petnumber not correct");
         return;
     }
 
@@ -698,6 +700,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
         {
             SendPetNameInvalid(res, name, NULL);
             recvData.rfinish();
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "HandlePetRename CheckPetName res %i", res);
             return;
         }
 
@@ -1181,7 +1184,10 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
-    Spell* spell = new Spell(caster, spellInfo, triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE);
+    uint32 triggeredCastFlags = triggered ? TRIGGERED_FULL_MASK : TRIGGERED_NONE;
+    triggeredCastFlags &= ~TRIGGERED_IGNORE_POWER_AND_REAGENT_COST;
+
+    Spell* spell = new Spell(caster, spellInfo, TriggerCastFlags(triggeredCastFlags));
     spell->m_cast_count = castCount;                    // probably pending spell cast
     spell->m_targets = targets;
 

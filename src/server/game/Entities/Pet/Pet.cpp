@@ -1823,7 +1823,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
     }
 
     //for all hunters pets
-    if(!isMinion())
+    if(createdSpellId == 13481 || createdSpellId == 83245 || createdSpellId == 83244 || createdSpellId == 83243 || createdSpellId == 83242 || createdSpellId == 883)
     if (std::vector<PetAura> const* petSpell = sSpellMgr->GetPetAura(-1))
     {
         for (std::vector<PetAura>::const_iterator itr = petSpell->begin(); itr != petSpell->end(); ++itr)

@@ -186,29 +186,52 @@ class spell_hun_stampede : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    Unit* target = GetHitUnit();
-                    WorldLocation * loc = GetHitDest();
-                    //if (target)
+                    Unit* target = GetExplTargetUnit();
+                    WorldLocation* loc = GetHitDest();
+                    Pet* curentPet = _player->GetPet();
+
+                    if (target)
                     {
+                        float x, y, z, o;
+                        target->GetPosition(x, y, z);
                         uint32 count = 0;
-                        PetSlot slot = PET_SLOT_HUNTER_FIRST;
-                        bool gliph = _player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE);
                         PetSlot currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
+                        PetSlot slot = PET_SLOT_HUNTER_FIRST;
+                        if(curentPet)
+                            count++;
+                        else
+                        {
+                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
+                            {
+                                if (_player->getPetIdBySlot(i))
+                                {
+                                    currentSlot = slot;
+                                    break;
+                                }
+                            }
+                        }
+
+                        bool gliph = _player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE);
+
                         for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
                         {
                             if (gliph)
                                 slot = currentSlot;
                             else if (_player->getPetIdBySlot(i))
                                 slot = PetSlot(i);
+                            else if (count < STAMPED_COUNT)
+                                slot = currentSlot;
                             else
                                 continue;
 
-                            //The pets will appear directly on the hunter's target, to avoid loss of damage.
-                            float x, y, z;
-                            _player->GetRandomPoint(*loc, 5.0f, x, y, z);
+                            if(curentPet && curentPet->GetSlot() == slot && !gliph && _player->getPetIdBySlot(i))
+                                continue;
 
-                            if(Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, GetSpellInfo()->Id, true))
+                            o =_player->GetOrientation() + (M_PI/5) * count;
+
+                            if(Pet* pet = _player->SummonPet(0, x, y, z, o, SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, GetSpellInfo()->Id, true))
                             {
+                                pet->NearTeleportTo(x, y, z, o);
                                 pet->SetReactState(REACT_AGGRESSIVE);
                                 ++count;
                                 if (count >= STAMPED_COUNT)
@@ -216,6 +239,9 @@ class spell_hun_stampede : public SpellScriptLoader
                                     
                                 if (pet->GetMap()->IsBattlegroundOrArena())
                                     pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+
+                                if (pet->IsAIEnabled)
+                                    pet->AI()->AttackStart(target);
                             }
                         }
                     }
@@ -761,10 +787,9 @@ class spell_hun_barrage : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (!target->HasAura(120360))
-                            SetHitDamage(GetHitDamage() / 2);
+                if (Unit* target = GetHitUnit())
+                    if (!target->HasAura(120360))
+                        SetHitDamage(GetHitDamage() / 2);
             }
 
             void Register()
@@ -1655,61 +1680,139 @@ class spell_hun_tame_beast : public SpellScriptLoader
 };
 
 // Glave Toss - 117050
-class spell_hun_Toss : public SpellScriptLoader
+class spell_hun_toss : public SpellScriptLoader
 {
     public:
-        spell_hun_Toss() : SpellScriptLoader("spell_hun_Toss") { }
+        spell_hun_toss() : SpellScriptLoader("spell_hun_toss") { }
 
-        class spell_hun_Toss_SpellScript : public SpellScript
+        class spell_hun_toss_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_hun_Toss_SpellScript);
+            PrepareAuraScript(spell_hun_toss_AuraScript);
 
-            void HandleOnHit()
+            void HandleEffectPeriodic(AuraEffect const* aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (GetSpellInfo()->Id == 117050)
-                        _player->CastSpell(GetHitUnit(), 121414, true);
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
 
-                    if (GetSpellInfo()->Id == 121414 && GetExplTargetUnit() == GetHitUnit())
-                    {
-                        SetHitDamage(GetHitDamage() * 4);
+                Player* _player = caster->ToPlayer();
+                if (!_player)
+                    return;
 
-                        GetHitUnit()->CastSpell(_player, 120755, true);
-                        GetHitUnit()->CastSpell(_player, 120756, true);
-                    }
-                }
+                Unit* target = _player->GetSelectedUnit();
+                if (!target)
+                    return;
+
+                caster->CastSpell(target, 120761, true, NULL, aurEff);
+                caster->CastSpell(target, 121414, true, NULL, aurEff);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_hun_Toss_SpellScript::HandleOnHit);
-            }
-        };
-
-        class spell_hun_Toss_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_Toss_AuraScript);
-
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
-            {
-                SetDuration(0, true);
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_Toss_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_toss_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
-            return new spell_hun_Toss_AuraScript();
+            return new spell_hun_toss_AuraScript();
         }
+};
+
+// Glave Toss - 120761, 121414
+class spell_hun_toss_damage : public SpellScriptLoader
+{
+    public:
+        spell_hun_toss_damage() : SpellScriptLoader("spell_hun_toss_damage") { }
+
+        class spell_hun_toss_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_toss_damage_SpellScript);
+
+            void HandleOnHit(SpellEffIndex effIndex)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->GetSelectedUnit() == GetHitUnit())
+                        SetHitDamage(GetHitDamage() * 4);
+                }
+            }
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster || !caster->ToPlayer())
+                    return;
+
+                Player* _player = caster->ToPlayer();
+
+                AuraEffect const* aurEff = GetSpell()->GetTriggeredAuraEff();
+                Unit* expltarget = _player->GetSelectedUnit();
+                if (!expltarget || !aurEff)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                uint32 tick = aurEff->GetTickNumber();
+                float distanceintick = 3.6f * (tick - 1);
+                float maxDist = caster->GetDistance(expltarget);
+                if(distanceintick > maxDist)
+                    distanceintick = (maxDist * 2) - distanceintick;
+
+                if(distanceintick < 0.0f)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                float angle = caster->GetAngle(expltarget);
+                float angleShift = angle;
+                float shift = 1.5f;
+                if(GetSpellInfo()->Id == 120761)
+                {
+                    targets.remove_if(Trinity::UnitCheckInBetweenShift(false, caster, expltarget, 5.0f, 2.5f, 1.57f));
+                    angleShift += 1.57f;
+                }
+                else
+                {
+                    targets.remove_if(Trinity::UnitCheckInBetweenShift(false, caster, expltarget, 5.0f, 2.5f, -1.57f));
+                    angleShift -= 1.57f;
+                }
+
+                // expload at tick
+                float x = caster->GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(angle);
+                float y = caster->GetPositionY() + (caster->GetObjectSize() + distanceintick) * std::sin(angle);
+                float shift_x = x + 2.5f * std::cos(angleShift);
+                float shift_y = y + 2.5f * std::sin(angleShift);
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                {
+                    if((*itr)->GetDistance2d(shift_x, shift_y) > shift)
+                        targets.erase(itr++);
+                    else
+                        ++itr;
+                }
+                if(expltarget->GetDistance2d(x, y) <= shift)
+                    targets.push_back(expltarget);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_hun_toss_damage_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_toss_damage_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_toss_damage_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_hun_Toss_SpellScript();
+            return new spell_hun_toss_damage_SpellScript();
         }
 };
 
@@ -1851,54 +1954,6 @@ class spell_hun_glyph_of_direction : public SpellScriptLoader
         }
 };
 
-// Glyph of Explosive Trap - 119403, spell trap - 13812
-class spell_hun_glyph_of_explosive_trap : public SpellScriptLoader
-{
-    public:
-        spell_hun_glyph_of_explosive_trap() : SpellScriptLoader("spell_hun_glyph_of_explosive_trap") { }
-
-        class spell_hun_glyph_of_explosive_trap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_glyph_of_explosive_trap_SpellScript);
- 
-            void HandleTriggerEffect(SpellEffIndex effIndex)
-            {                
-                if (Unit* owner = GetCaster()->GetOwner())
-                {  
-                    if (!owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
-                        PreventHitDefaultEffect(EFFECT_2);
-                }
-            }
-            void handlNull(SpellEffIndex effIndex)
-            {
-                PreventHitDefaultEffect(effIndex);
-            }
-            void HandleDamageEffect(SpellEffIndex effIndex)
-            {                
-                if (Unit* owner = GetCaster()->GetOwner())
-                {  
-                    if (owner->HasAura(HUNTER_SPELL_GLYPH_OF_EXPLOSIVE_TRAP))
-                    {
-                        PreventHitDefaultEffect(EFFECT_0);
-                        PreventHitDefaultEffect(EFFECT_1); 
-                    }
-                }
-            }
-            
-            void Register()
-            {
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleTriggerEffect, EFFECT_2, SPELL_EFFECT_TRIGGER_SPELL);
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_1, SPELL_EFFECT_PERSISTENT_AREA_AURA);
-                OnEffectLaunch += SpellEffectFn(spell_hun_glyph_of_explosive_trap_SpellScript::HandleDamageEffect, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            }
-        };
-        
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_glyph_of_explosive_trap_SpellScript();
-        }
-};
-
 // Thrill of the Hunt - 109306, spell: 
 //! Arcane Shot - 3044, Multi-Shot - 2643
 class spell_hun_thrill_of_the_hunt : public SpellScriptLoader
@@ -2003,6 +2058,74 @@ class spell_hun_ice_trap : public SpellScriptLoader
         }
 };
 
+// Scatter Shot - 19503
+class spell_hun_scatter_shot : public SpellScriptLoader
+{
+    public:
+        spell_hun_scatter_shot() : SpellScriptLoader("spell_hun_scatter_shot") { }
+
+        class spell_hun_scatter_shot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_scatter_shot_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+					caster->SendAttackSwingResult(ATTACK_SWING_ERROR_DEAD_TARGET);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_hun_scatter_shot_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_scatter_shot_SpellScript();
+        }
+};
+
+// Bestial Wrath - 19574
+class spell_hun_bestial_wrath  : public SpellScriptLoader
+{
+    public:
+        spell_hun_bestial_wrath() : SpellScriptLoader("spell_hun_bestial_wrath") { }
+
+        class spell_hun_bestial_wrath_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_bestial_wrath_AuraScript);
+
+            void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (dmgInfo.GetDamage() >= target->GetHealth())
+                    {
+                        if(target->GetHealth() > 1)
+                            absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + 1;
+                        else
+                            absorbAmount = dmgInfo.GetDamage();
+                        return;
+                    }
+                }
+                absorbAmount = 0;
+            }
+
+            void Register()
+            {
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_hun_bestial_wrath_AuraScript::Absorb, EFFECT_3);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_bestial_wrath_AuraScript();
+        }
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
@@ -2035,12 +2158,14 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_misdirection_proc();
     new spell_hun_disengage();
     new spell_hun_tame_beast();
-    new spell_hun_Toss();
+    new spell_hun_toss();
     new spell_hun_fetch();
     new spell_hun_fireworks();
     new spell_hun_glyph_of_direction();
-    new spell_hun_glyph_of_explosive_trap();
     new spell_hun_thrill_of_the_hunt();
     new spell_hun_t16_2p_bonus();
     new spell_hun_ice_trap();
+    new spell_hun_scatter_shot();
+    new spell_hun_bestial_wrath();
+    new spell_hun_toss_damage();
 }

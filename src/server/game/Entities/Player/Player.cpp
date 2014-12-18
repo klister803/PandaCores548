@@ -3073,6 +3073,9 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
             curValue = 0;
             m_powerFraction[powerIndex] = 0;
         }
+
+        //Visualization for power
+        VisualForPower(power, curValue, -integerValue);
     }
     else
     {
@@ -3085,10 +3088,10 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
         else
             m_powerFraction[powerIndex] = addvalue - integerValue;
-    }
 
-    //Visualization for power
-    VisualForPower(power, curValue, integerValue);
+        //Visualization for power
+        VisualForPower(power, curValue, integerValue);
+    }
 
     switch (power)
     {
@@ -9255,7 +9258,7 @@ void Player::DuelComplete(DuelCompleteType type)
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
         Aura const* aura = i->second->GetBase();
-        if (!i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
+        if (aura && !i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
             RemoveAura(i);
         else
             ++i;
@@ -23822,6 +23825,11 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
 
+    Unit::AuraEffectList swaps = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS);
+    Unit::AuraEffectList const& swaps2 = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2);
+    if (!swaps2.empty())
+        swaps.insert(swaps.end(), swaps2.begin(), swaps2.end());
+
     double curTime = getPreciseTime();
     uint32 count = 0;
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
@@ -23834,6 +23842,22 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         {
             //ASSERT(spellInfo);
             continue;
+        }
+
+        if (!swaps.empty())
+        {
+            for (Unit::AuraEffectList::const_iterator itr = swaps.begin(); itr != swaps.end(); ++itr)
+            {
+                if ((*itr)->IsAffectingSpell(spellInfo))
+                {
+                    if (SpellInfo const* newInfo = sSpellMgr->GetSpellInfo((*itr)->GetAmount()))
+                    {
+                        spellInfo = newInfo;
+                        unSpellId = newInfo->Id;
+                    }
+                    break;
+                }
+            }
         }
 
         // Not send cooldown for this spells

@@ -1988,10 +1988,11 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         // Stagger Amount
     if (!spellInfo || (spellInfo && spellInfo->Id != 124255))
     {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK && dmgInfo.GetAbsorb() == 0)
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK/* && dmgInfo.GetAbsorb() == 0*/)
         {
-            int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, schoolMask);
-            int32 staggerAbsorb = damage - staggerDamage;
+            int32 damageSave = damage - dmgInfo.GetAbsorb();
+            int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damageSave, damagetype, schoolMask);
+            int32 staggerAbsorb = damageSave - staggerDamage;
             dmgInfo.AbsorbDamage(staggerAbsorb);
         }
     }
@@ -7972,12 +7973,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     if (!roll_chance_i(triggerAmount))
-                        return false;
-
-                    Player* plr = ToPlayer();
-
-                    // check item type request
-                    if (!plr || !plr->HasItemFitToSpellRequirements(procSpell))
                         return false;
 
                     triggered_spell_id = 76663;
@@ -14236,11 +14231,32 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
         AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_PROC_ON_POWER_AMOUNT_2);
         for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         {
-            if ((*i)->GetMiscValue() == power && oldVal < (*i)->GetAmount() && curentVal >= (*i)->GetAmount())
+            uint32 triggered_spell_id = (*i)->GetTriggerSpell() ? (*i)->GetTriggerSpell(): 0;
+            SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
+            if ((*i)->GetMiscValue() == power && oldVal < (*i)->GetAmount() && curentVal >= (*i)->GetAmount() && (*i)->GetMiscValueB() == 0)
             {
-                uint32 triggered_spell_id = (*i)->GetTriggerSpell() ? (*i)->GetTriggerSpell(): 0;
-                if(SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id))
-                    CastSpell(this, triggered_spell_id, true);
+                if(triggerEntry)
+                    CastSpell(this, triggered_spell_id, true, NULL, (*i));
+            }
+        }
+    }
+    else
+    {
+        int32 oldVal = GetPower(power);
+        AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_PROC_ON_POWER_AMOUNT_2);
+        for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        {
+            uint32 triggered_spell_id = (*i)->GetTriggerSpell() ? (*i)->GetTriggerSpell(): 0;
+            SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
+            if ((*i)->GetMiscValue() == power && oldVal > (*i)->GetAmount() && curentVal <= (*i)->GetAmount() && (*i)->GetMiscValueB() == 1)
+            {
+                if(triggerEntry)
+                {
+                    if (Aura* aura = GetAura(triggered_spell_id))
+                        aura->Remove();
+                    else
+                        CastSpell(this, triggered_spell_id, true, NULL, (*i));
+                }
             }
         }
     }
@@ -16153,24 +16169,6 @@ void Unit::SetPower(Powers power, int32 val, bool send)
     
     if (Player* player = ToPlayer())
     {
-        if (player->HasAura(26023)) // Pursuit of Justice - 26023 Custom MoP Script
-        {
-            Aura* aura = player->GetAura(26023);
-            if (aura)
-            {
-                int32 holyPower = player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : player->GetPower(POWER_HOLY_POWER);
-                int32 AddValue = 5 * holyPower;
-
-                aura->GetEffect(0)->ChangeAmount(15 + AddValue);
-
-                Aura* aura2 = player->AddAura(114695, player);
-                if (aura2)
-                    aura2->GetEffect(0)->ChangeAmount(AddValue);
-            }
-        }
-        else if (player->HasAura(114695))
-            player->RemoveAura(114695);
-
         if (player->GetGroup())
             player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
@@ -16524,13 +16522,16 @@ void CharmInfo::InitCharmCreateSpells()
 
 bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate)
 {
-    // pet cannot suumon mob
-    for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
+    // pet cannot summon mob
+    if (spellInfo->Id != 49297)
     {
-        switch (spellInfo->Effects[j].Effect)
+        for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            case SPELL_EFFECT_SUMMON:
-                return false;
+            switch (spellInfo->Effects[j].Effect)
+            {
+                case SPELL_EFFECT_SUMMON:
+                    return false;
+            }
         }
     }
 
@@ -19762,8 +19763,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
 
     // Aura added by spell can`t trigger from self (prevent drop charges/do triggers)
     // But except periodic and kill triggers (can triggered from self)
-    if (procSpell && procSpell->Id == spellProto->Id
-        && !(spellProto->ProcFlags&(PROC_FLAG_KILL)))
+    if (procSpell && procSpell->Id == spellProto->Id && !(spellProto->ProcFlags & (PROC_FLAG_KILL)))
         return false;
 
     // Check spellProcEvent data requirements

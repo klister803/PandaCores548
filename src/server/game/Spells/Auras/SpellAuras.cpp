@@ -322,7 +322,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
 
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
     // stack amount has priority over charges (checked on retail with spell 50262)
-    data << uint8(aura->GetStackAmount() > 1 ? aura->GetStackAmount() : aura->GetCharges());
+    data << uint8((aura->GetStackAmount() > 1 || !aura->GetSpellInfo()->ProcCharges) ? aura->GetStackAmount() : aura->GetCharges());
     data << uint32(GetEffectMask());
     if (flags & AFLAG_DURATION)
         data << uint32(aura->GetDuration());
@@ -1298,6 +1298,7 @@ bool Aura::CanBeSaved() const
         case 124458:
         case 130324:
         case 126119:
+        case 114695:
             return false;
         default:
             break;
@@ -2019,6 +2020,10 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                                     caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
                             }
                         }
+                        break;
+                    case 49440: // Racer Slam, Slamming
+                        if (Creature* racerBunny = target->FindNearestCreature(27674, 25.0f))
+                            target->CastSpell(racerBunny, 49302, false);
                         break;
                 }
                 break;

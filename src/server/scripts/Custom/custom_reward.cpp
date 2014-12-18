@@ -152,6 +152,10 @@ public:
         }
         else
         {
+            if (AchievementEntry const *achiev = sAchievementStore.LookupEntry(252))
+                if (player->GetAchievementMgr().IsCompletedAchievement(achiev))
+                    player->CompletedAchievement(achiev);
+
             if(QueryResult share_result = CharacterDatabase.PQuery("SELECT * FROM `character_share` WHERE guid = '%u'", owner_guid))
             {
                 uint32 totaltime = player->GetTotalPlayedTime();

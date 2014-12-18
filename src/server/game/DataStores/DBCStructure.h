@@ -2258,6 +2258,17 @@ struct SpellPowerEntry
     float     getpercentHp;                                 // 12 take percent hp
 };
 
+// PowerDisplay.dbc
+struct PowerDisplayEntry
+{
+    uint32    Id;                                           // 0 m_ID
+    uint32    PowerType;                                    // 1 m_actualType
+    //char* m_globalStringBaseTag;                          // 2 m_globalStringBaseTag
+    //uint32    red;                                        // 3 m_red
+    //uint32    green;                                      // 4 m_green
+    //uint32    blue;                                       // 5 m_blue
+};
+
 struct SpellRuneCostEntry
 {
     uint32  ID;                                             // 0
@@ -2497,9 +2508,9 @@ struct VehicleEntry
     uint32  m_uiLocomotionType;                             // 35
     float   m_msslTrgtImpactTexRadius;                      // 36
     uint32  m_uiSeatIndicatorType;                          // 37
-    uint32  m_powerType;                                    // 38
-                                                            // 39
-                                                            // 40
+    uint32  m_powerDisplay;                                 // 38 m_powerDisplayID
+                                                            // 39 m_powerDisplayID
+                                                            // 40 m_powerDisplayID
 };
 
 struct VehicleSeatEntry

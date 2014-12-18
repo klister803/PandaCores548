@@ -2027,6 +2027,30 @@ bool WorldObject::IsInBetween(const Position* obj1, const Position* obj2, float 
     return (size * size) >= GetExactDist2dSq(obj1->GetPositionX() + cos(angle) * dist, obj1->GetPositionY() + sin(angle) * dist);
 }
 
+bool WorldObject::IsInBetweenShift(const Position* obj1, const Position* obj2, float size, float shift, float angleShift) const
+{
+    if (!obj1 || !obj2)
+        return false;
+
+    angleShift += obj1->GetOrientation();
+    float destx = obj1->GetPositionX() + shift * std::cos(angleShift);
+    float desty = obj1->GetPositionY() + shift * std::sin(angleShift);
+
+    float dist = GetExactDist2d(destx, desty);
+
+    // not using sqrt() for performance
+    if ((dist * dist) >= obj1->GetExactDist2dSq(obj2->GetPositionX(), obj2->GetPositionY()))
+        return false;
+
+    if (!size)
+        size = GetObjectSize() / 2;
+
+    float angle = obj1->GetAngle(obj2);
+
+    // not using sqrt() for performance
+    return (size * size) >= GetExactDist2dSq(destx + cos(angle) * dist, desty + sin(angle) * dist);
+}
+
 bool WorldObject::IsInBetween(const WorldObject* obj1, float x2, float y2, float size) const
 {
     if (!obj1)

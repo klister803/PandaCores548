@@ -78,43 +78,8 @@ void Vehicle::Install()
 {
     if (Creature* creature = _me->ToCreature())
     {
-        switch (_vehicleInfo->m_powerType)
-        {
-            case POWER_STEAM:
-            case POWER_HEAT:
-            case POWER_BLOOD:
-            case POWER_OOZE:
-            case POWER_WRATH:
-                _me->setPowerType(POWER_ENERGY);
-                _me->SetMaxPower(POWER_ENERGY, 100);
-                break;
-            case POWER_TYPE_VAULT_CRACKING_PROGRESS:
-                _me->setPowerType(POWER_UNKNOWN);
-                _me->SetMaxPower(POWER_UNKNOWN, 100);
-                break;
-            case POWER_PYRITE:
-                _me->setPowerType(POWER_ENERGY);
-                _me->SetMaxPower(POWER_ENERGY, 50);
-                break;
-            default:
-                for (uint32 i = 0; i < MAX_SPELL_VEHICLE; ++i)
-                {
-                    if (!creature->m_spells[i])
-                        continue;
-
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(creature->m_spells[i]);
-                    if (!spellInfo)
-                        continue;
-
-                    if (spellInfo->PowerType == POWER_ENERGY)
-                    {
-                        _me->setPowerType(POWER_ENERGY);
-                        _me->SetMaxPower(POWER_ENERGY, 100);
-                        break;
-                    }
-                }
-                break;
-        }
+        if(PowerDisplayEntry const* powerDisplay = sPowerDisplayStore.LookupEntry(_vehicleInfo->m_powerDisplay))
+            _me->setPowerType(Powers(powerDisplay->PowerType));
     }
 
     _status = STATUS_INSTALLED;

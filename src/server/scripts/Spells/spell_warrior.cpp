@@ -300,35 +300,6 @@ class spell_warr_meat_cleaver : public SpellScriptLoader
         }
 };
 
-// Dragon Roar - 118000
-class spell_warr_dragon_roar : public SpellScriptLoader
-{
-    public:
-        spell_warr_dragon_roar() : SpellScriptLoader("spell_warr_dragon_roar") { }
-
-        class spell_warr_dragon_roar_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_dragon_roar_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warr_dragon_roar_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_dragon_roar_SpellScript();
-        }
-};
-
 // Staggering Shout - 107566
 class spell_warr_staggering_shout : public SpellScriptLoader
 {
@@ -658,13 +629,6 @@ class spell_warr_shockwave : public SpellScriptLoader
                 return true;
             }
 
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, WARRIOR_SPELL_SHOCKWAVE_STUN, true);
-            }
-
             void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (targets.size() >= GetSpellInfo()->Effects[EFFECT_0].BasePoints)
@@ -684,7 +648,6 @@ class spell_warr_shockwave : public SpellScriptLoader
             {
                 AfterCast += SpellCastFn(spell_warr_shockwave_SpellScript::HandleAfterCast);
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warr_shockwave_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
-                OnHit += SpellHitFn(spell_warr_shockwave_SpellScript::HandleOnHit);
             }
         };
 
@@ -1265,7 +1228,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_storm_bolt();
     new spell_warr_colossus_smash();
     new spell_warr_meat_cleaver();
-    new spell_warr_dragon_roar();
     new spell_warr_staggering_shout();
     new spell_warr_sudden_death();
     new spell_warr_mocking_banner();

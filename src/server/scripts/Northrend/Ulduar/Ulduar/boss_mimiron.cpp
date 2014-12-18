@@ -219,6 +219,7 @@ public:
         }
         
         uint32 uiPhase_timer;
+        uint32 CheckIsWipe;
         uint32 uiStep;
         uint32 EnrageTimer;
         uint32 FlameTimer;
@@ -256,6 +257,7 @@ public:
                 }
             }
             phase = PHASE_NULL;
+            CheckIsWipe = 0;
             uiStep = 0;
             uiPhase_timer = -1;
             uiBotTimer = 0;
@@ -309,6 +311,7 @@ public:
             _EnterCombat();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             phase = PHASE_INTRO;
+            CheckIsWipe = 1500;
             FlameTimer = 30000;
             if (MimironHardMode)
                 EnrageTimer = 8*60*1000; // Enrage in 8 min
@@ -327,8 +330,20 @@ public:
         {
             if (!UpdateVictim())
                 return;
+
+            if (CheckIsWipe)
+            {
+                if (CheckIsWipe <= diff)
+                {
+                    if (IsWipe())
+                        EnterEvadeMode();
+                    CheckIsWipe = 1500;
+                }
+                else
+                    CheckIsWipe -= diff;
+            }
                 
-            if (EnrageTimer<= diff && !Enraged)
+            if (EnrageTimer <= diff && !Enraged)
             {
                 DoScriptText(SAY_BERSERK, me);
                 for (uint8 data = DATA_LEVIATHAN_MK_II; data <= DATA_AERIAL_UNIT; ++data)
@@ -345,12 +360,17 @@ public:
                 if (FlameTimer <= diff)
                 {
                     for (uint8 i = 0; i < 3; ++i)
+                    {
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        {
                             if (Creature* Flame = me->SummonCreature(NPC_FLAME, pTarget->GetPositionX() + irand(-6,6), pTarget->GetPositionY() + irand(-6,6), pTarget->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
-                                Flame->AI()->AttackStart(pTarget);
+                                Flame->AI()->SetGUID(pTarget->GetGUID(), 0); 
+                        }
+                    }
                     FlameTimer = 30000;
                 }
-                else FlameTimer -= diff;
+                else 
+                    FlameTimer -= diff;
             }
                 
             // All sections need to die within 10 seconds, else they respawn
@@ -669,6 +689,26 @@ public:
                     achivboom = false;
                     break;
             }
+        }
+
+        bool IsWipe()
+        {
+            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+            
+            if (PlayerList.isEmpty())
+                return true;
+            
+            for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+            {
+                Player* player = Itr->getSource();
+
+                if (!player)
+                    continue;
+
+                if (player->isAlive() && !player->isGameMaster())
+                    return false;
+            }
+            return true;
         }
         
         void DespawnCreatures(uint32 entry, float distance, bool discs = false)
@@ -1619,32 +1659,54 @@ class npc_mimiron_flame_trigger : public CreatureScript
 public:
     npc_mimiron_flame_trigger() : CreatureScript("npc_mimiron_flame_trigger") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new npc_mimiron_flame_triggerAI (pCreature);
-    }
-
     struct npc_mimiron_flame_triggerAI : public ScriptedAI
     {
         npc_mimiron_flame_triggerAI(Creature* pCreature) : ScriptedAI(pCreature)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PACIFIED);
-            DoCast(me, SPELL_FLAME, true);
-            uiFlameTimer = 8000;
+            uiFlameTimer = 0;
+            tGuid = 0;
         }
-        
+
+        uint64 tGuid;
         uint32 uiFlameTimer;
         
         void UpdateAI(uint32 diff)
         {
-            if (uiFlameTimer <= diff)
+            if (uiFlameTimer)
             {
-                me->SummonCreature(NPC_FLAME_SPREAD, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
-                uiFlameTimer = 8000;
+                if (uiFlameTimer <= diff)
+                {
+                    me->StopMoving();
+                    me->GetMotionMaster()->Clear(false);
+                    if (Unit* target = me->GetUnit(*me, tGuid))
+                    {
+                        me->GetMotionMaster()->MoveCharge(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 1.2f);
+                        me->SummonCreature(NPC_FLAME_SPREAD, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                        uiFlameTimer = 5000;
+                    }
+                }
+                else 
+                    uiFlameTimer -= diff;
             }
-            else uiFlameTimer -= diff;
+        }
+
+        void SetGUID(uint64 guid, int32 type/* = 0 */)
+        {
+            tGuid = guid;
+            if (Unit* target = me->GetUnit(*me, tGuid))
+            {
+                me->GetMotionMaster()->MoveCharge(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 1.2f);
+                me->SummonCreature(NPC_FLAME_SPREAD, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+                uiFlameTimer = 5000;
+            }
         }
     };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_mimiron_flame_triggerAI (pCreature);
+    }
 };
 
 class npc_mimiron_flame_spread : public CreatureScript

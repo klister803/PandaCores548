@@ -595,6 +595,7 @@ class Spell
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
         void SetEffectTargets (std::list<uint64> targets) { m_effect_targets = targets; }
         std::list<uint64> GetEffectTargets() { return m_effect_targets; }
+        AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
@@ -693,6 +694,7 @@ class Spell
         // Spell target subsystem
         // *****************************************
         std::list<TargetInfo> m_UniqueTargetInfo;
+        std::list<TargetInfo> m_VisualHitTargetInfo;
         TargetInfo* GetTargetInfo(uint64 targetGUID);
         uint32 m_channelTargetEffectMask;                        // Mask req. alive targets
 
@@ -718,6 +720,7 @@ class Spell
         void AddGOTarget(GameObject* target, uint32 effectMask);
         void AddItemTarget(Item* item, uint32 effectMask);
         void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
+        void AddTargetVisualHit(Unit* target);
         WorldLocation* GetDestTarget(uint32 effIndex) { return &m_destTargets[effIndex]._position; }
 
         void DoAllEffectOnTarget(TargetInfo* target);
@@ -783,6 +786,7 @@ class Spell
         // we can't store original aura link to prevent access to deleted auras
         // and in same time need aura data and after aura deleting.
         SpellInfo const* m_triggeredByAuraSpell;
+        AuraEffect const* m_triggeredByAura;
 
         bool m_skipCheck;
         uint32 m_spellMissMask;

@@ -4034,6 +4034,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 107439: // Twilight Barrage
                 case 106401: // Twilight Onslaught
                 case 103414: // Stomp
+				case 136216: // Caustic Gas
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
@@ -4161,10 +4162,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->Effects[EFFECT_0].TargetB = 0;
                     break;
-                case 19574: // Bestial Wrath
-                    spellInfo->Effects[3].Effect = 0;
-                    spellInfo->Effects[3].ApplyAuraName = 0;
-                    break;
                 case 87935: // Serpent Spread
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -4275,10 +4272,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 50227:  // Sword and Board
                 case 113901: // Demonic Gateway
                 case 131116: // Raging Blow!
+				case 136050: // Malformed Blood
                     spellInfo->ProcCharges = 0;
-                    break;
-                case 109259: // Powershot
-                    spellInfo->Effects[EFFECT_1].BasePoints = 60;
                     break;
                 case 82926: // Fire ! (for Master Marksman)
                     spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
@@ -4290,9 +4285,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 7384: // Overpower
                     spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
                     break;
-                case 114695:// Pursuit of Justice
-                    spellInfo->Effects[EFFECT_0].BasePoints = 0;
-                    break;
                 case 90259: // Glyph of Frost Pillar (Root Aura)
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
                     spellInfo->Effects[EFFECT_0].MiscValueB = 0;
@@ -4300,9 +4292,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 49821: // Mind Sear
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    break;
-                case 10326: // Turn Evil
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                     break;
                 case 117418:// Fists of Fury (damage)
                 case 114083:// Ascendance
@@ -4623,7 +4612,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_TAKE_DAMAGE;
                     break;
                 case 127802: // Touch of the Grave
-                case 117050:
                     spellInfo->Speed = 25.f;
                     break;
 
@@ -5267,9 +5255,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 53260: // Cobra Strikes trigger
                     spellInfo->Effects[0].TriggerSpell = 0;
-                    break;
-                case 51755: // Camouflage taken damage
-                    spellInfo->Effects[3].BasePoints = -10;
                     break;
                 case 91107: // Unholy Might. Hot Fix 5.4.x
                     spellInfo->Effects[0].BasePoints = 35;

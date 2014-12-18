@@ -890,6 +890,7 @@ class WorldObject : public Object, public WorldLocation
         bool isInFront(WorldObject const* target, float arc = M_PI) const;
         bool isInBack(WorldObject const* target, float arc = M_PI) const;
 
+        bool IsInBetweenShift(const Position* obj1, const Position* obj2, float size, float shift, float angleShift) const;
         bool IsInBetween(const Position* obj1, const Position* obj2, float size = 0) const;
         bool IsInBetween(const WorldObject* obj1, float x2, float y2, float size = 0) const;
 

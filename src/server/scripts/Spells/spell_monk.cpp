@@ -1033,53 +1033,6 @@ class spell_monk_mana_tea : public SpellScriptLoader
     public:
         spell_monk_mana_tea() : SpellScriptLoader("spell_monk_mana_tea") { }
 
-        class spell_monk_mana_tea_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_mana_tea_SpellScript);
-
-            SpellModifier* spellMod;
-
-            void HandleBeforeCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    int32 stacks = 0;
-
-                    if (Aura* manaTeaStacks = _player->GetAura(SPELL_MONK_MANA_TEA_STACKS))
-                        stacks = manaTeaStacks->GetStackAmount();
-
-                    int32 newDuration = stacks * IN_MILLISECONDS - GetSpellInfo()->GetDuration();
-
-                    spellMod = new SpellModifier();
-                    spellMod->op = SPELLMOD_DURATION;
-                    spellMod->type = SPELLMOD_FLAT;
-                    spellMod->spellId = SPELL_MONK_MANA_TEA_REGEN;
-                    spellMod->value = newDuration;
-                    spellMod->mask[1] = 0x200000;
-                    spellMod->mask[2] = 0x1;
-
-                    _player->AddSpellMod(spellMod, true);
-                }
-            }
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->AddSpellMod(spellMod, false);
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleBeforeCast);
-                AfterCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_mana_tea_SpellScript();
-        }
-
         class spell_monk_mana_tea_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_monk_mana_tea_AuraScript);
@@ -1100,9 +1053,17 @@ class spell_monk_mana_tea : public SpellScriptLoader
                 }
             }
 
+            void CalculateMaxDuration(int32& duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Aura* manaTeaStacks = caster->GetAura(SPELL_MONK_MANA_TEA_STACKS))
+                        duration = 500 * manaTeaStacks->GetStackAmount();
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_mana_tea_AuraScript::OnTick, EFFECT_0, SPELL_AURA_OBS_MOD_POWER);
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_monk_mana_tea_AuraScript::CalculateMaxDuration);
             }
         };
 

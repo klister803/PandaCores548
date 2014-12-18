@@ -70,6 +70,7 @@ enum Events
     EVENT_RESURRECT             = 12,
     EVENT_MAGMA_RUPTURE_2       = 13,
     EVENT_UNIT_IN_LOS           = 14,
+    EVENT_CHECK_COMBAT          = 15,
 };
 
 enum Adds
@@ -112,7 +113,7 @@ class boss_shannox : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance<boss_shannoxAI>(pCreature, FLScriptName);
+            return GetInstanceAI<boss_shannoxAI>(pCreature);
         }
 
         struct boss_shannoxAI : public BossAI
@@ -153,8 +154,8 @@ class boss_shannox : public CreatureScript
             {
                 _Reset();
 
-                me->SummonCreature(NPC_RIPLIMB, me->GetPositionX()-5,me->GetPositionY()-5,me->GetPositionZ(),TEMPSUMMON_MANUAL_DESPAWN);
-                me->SummonCreature(NPC_RAGEFACE, me->GetPositionX()+5,me->GetPositionY()+5,me->GetPositionZ(),TEMPSUMMON_MANUAL_DESPAWN);
+                me->SummonCreature(NPC_RIPLIMB, dogPos[0]);
+                me->SummonCreature(NPC_RAGEFACE, dogPos[1]);
                 bRiplimbDead = false;
                 bRagefaceDead = false;
                 bFrenzy = false;
@@ -210,9 +211,9 @@ class boss_shannox : public CreatureScript
 
             void EnterCombat(Unit* attacker)
             {
-                if (Creature* pRiplimb = GetRiplimb())
+                if (Creature* pRiplimb = me->FindNearestCreature(NPC_RIPLIMB, 300.0f))
                     DoZoneInCombat(pRiplimb);
-                if (Creature* pRageface = GetRageface())
+                if (Creature* pRageface = me->FindNearestCreature(NPC_RAGEFACE, 300.0f))
                     DoZoneInCombat(pRageface);
 
                 bRiplimbDead = false;
@@ -221,14 +222,14 @@ class boss_shannox : public CreatureScript
                 memset(areas, false, sizeof(areas));
 
                 Talk(SAY_AGGRO);
-                events.ScheduleEvent(EVENT_BERSERK, 60 * MINUTE * IN_MILLISECONDS);
+                events.ScheduleEvent(EVENT_BERSERK, 10 * MINUTE * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_HURL_SPEAR, 15000);
                 events.ScheduleEvent(EVENT_SEPARATION_ANXIETY, 2000);
                 events.ScheduleEvent(EVENT_IMMOLATION_TRAP, urand(10000, 20000));
                 events.ScheduleEvent(EVENT_CRYSTAL_PRISON_TRAP, urand(10000, 25500));
                 events.ScheduleEvent(EVENT_ARCING_SLASH, urand(10000, 12000));
+                events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
                 DoZoneInCombat();
-                me->CallForHelp(50.0f);
                 instance->SetBossState(DATA_SHANNOX, IN_PROGRESS);
             }
 
@@ -236,6 +237,8 @@ class boss_shannox : public CreatureScript
             {
                 _JustDied();
                 Talk(SAY_DEATH);
+
+                AddSmoulderingAura(me);
             }
             
             void KilledUnit(Unit* who)
@@ -292,11 +295,11 @@ class boss_shannox : public CreatureScript
                 {
                     bFrenzy = true;
                     
-                    if (Creature* pRiplimb = GetRiplimb())
+                    if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
                         if (pRiplimb->isAlive())
                             pRiplimb->CastSpell(pRiplimb, SPELL_FRENZIED_DEVOTION, true);
 
-                    if (Creature* pRageface = GetRageface())
+                    if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
                         if (pRageface->isAlive())
                             pRageface->CastSpell(pRageface, SPELL_FRENZIED_DEVOTION, true);
                 }
@@ -308,11 +311,25 @@ class boss_shannox : public CreatureScript
                 {
                     switch (eventId)
                     {
+                        case EVENT_CHECK_COMBAT:
+                            if (me->isInCombat())
+                            {
+                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
+                                    if (!pRiplimb->isInCombat() && !pRiplimb->IsInEvadeMode())
+                                        if (pRiplimb->isAlive())
+                                            DoZoneInCombat(pRiplimb);
+
+                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
+                                    if (!pRageface->isInCombat() && !pRageface->IsInEvadeMode())
+                                        if (pRageface->isAlive())
+                                            DoZoneInCombat(pRageface);
+                            }
+                            events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
                         case EVENT_SEPARATION_ANXIETY:
-                            if (Creature* pRiplimb = GetRiplimb())
+                            if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
                                 if (pRiplimb->isAlive() && !me->IsWithinDist(pRiplimb, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                     DoCast(me, SPELL_SEPARATION_ANXIETY, true);
-                            if (Creature* pRageface = GetRageface())
+                            if (Creature* pRageface = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE)))
                                 if (pRageface->isAlive() && !me->IsWithinDist(pRageface, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                     DoCast(me, SPELL_SEPARATION_ANXIETY, true);
                             events.ScheduleEvent(EVENT_SEPARATION_ANXIETY, 2000);
@@ -325,7 +342,7 @@ class boss_shannox : public CreatureScript
                             events.ScheduleEvent(EVENT_ARCING_SLASH, urand(18000, 22000));
                             break;
                         case EVENT_HURL_SPEAR:
-                            if (Creature* pRiplimb = GetRiplimb())
+                            if (Creature* pRiplimb = me->FindNearestCreature(NPC_RIPLIMB, 300.0f))
                                 DoCast(pRiplimb, SPELL_HURL_SPEAR_SUMMON, true);
                             events.ScheduleEvent(EVENT_HURL_SPEAR, 42000);
                             break;
@@ -360,16 +377,6 @@ class boss_shannox : public CreatureScript
 
                 DoMeleeAttackIfReady();
             }
-
-            Creature* GetRiplimb()
-            {
-                return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB));
-            }
-
-            Creature* GetRageface()
-            {
-                return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RAGEFACE));
-            }
         };
 };
 
@@ -380,7 +387,7 @@ class npc_shannox_riplimb : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_shannox_riplimbAI(pCreature);
+            return GetInstanceAI<npc_shannox_riplimbAI>(pCreature);
         }
 
         struct npc_shannox_riplimbAI : public ScriptedAI
@@ -418,26 +425,19 @@ class npc_shannox_riplimb : public CreatureScript
                 events.Reset();
                 if (IsHeroic())
                     DoCast(me, SPELL_FEEDING_FRENZY, true);
-
-                if (pInstance)
-                    if (Unit* pShannox = ObjectAccessor::GetUnit(*me, pInstance->GetData64(DATA_SHANNOX)))
-                        me->GetMotionMaster()->MoveFollow(pShannox, 5.0f, static_cast<float>(M_PI/2));
             }
 
             void EnterCombat(Unit* who)
             {
-                if(Creature* pShannox = GetShannox())
+                if (Creature* pShannox = me->FindNearestCreature(NPC_SHANNOX, 300.0f))
                     DoZoneInCombat(pShannox);
-                if(Creature* pRageface = GetRageface())
+                if (Creature* pRageface = me->FindNearestCreature(NPC_RAGEFACE, 300.0f))
                     DoZoneInCombat(pRageface);
 
                 DoZoneInCombat();
-                me->CallForHelp(50);
-
-                me->GetMotionMaster()->MoveChase(me->getVictim());
-
                 events.ScheduleEvent(EVENT_LIMB_RIP, 6000);
                 events.ScheduleEvent(EVENT_SEPARATION_ANXIETY, 3000);
+                events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
             }
 
             void DamageTaken(Unit* attacker, uint32 &damage)
@@ -531,6 +531,21 @@ class npc_shannox_riplimb : public CreatureScript
                 {
                     switch (eventId)
                     {
+                        case EVENT_CHECK_COMBAT:
+                            if (me->isInCombat())
+                            {
+                                if (Creature* pRageface = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_RAGEFACE)))
+                                    if (!pRageface->isInCombat() && !pRageface->IsInEvadeMode())
+                                        if (pRageface->isAlive())
+                                            DoZoneInCombat(pRageface);
+
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SHANNOX)))
+                                    if (!pShannox->isInCombat() && !pShannox->IsInEvadeMode())
+                                        if (pShannox->isAlive())
+                                            DoZoneInCombat(pShannox);
+                            }
+                            events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
+                            break;
                         case EVENT_SEPARATION_ANXIETY:
                             if (!me->FindNearestCreature(NPC_SHANNOX, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                 DoCast(me, SPELL_SEPARATION_ANXIETY, true);
@@ -538,7 +553,7 @@ class npc_shannox_riplimb : public CreatureScript
                             break;
                         case EVENT_FETCH_SPEAR:
                             if (pInstance)
-                                if(Creature* pShannox = GetShannox())
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SHANNOX)))
                                 {
                                     bFetch = true;
                                     me->GetMotionMaster()->MovementExpired(false);
@@ -563,16 +578,6 @@ class npc_shannox_riplimb : public CreatureScript
                 }
                 DoMeleeAttackIfReady();
             }
-
-            Creature* GetRageface()
-            {
-                return ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_RAGEFACE));
-            }
-
-            Creature* GetShannox()
-            {
-                return ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SHANNOX));
-            }
         };
 };
 
@@ -583,7 +588,7 @@ class npc_shannox_rageface : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_shannox_ragefaceAI(pCreature);
+            return GetInstanceAI<npc_shannox_ragefaceAI>(pCreature);
         }
 
         struct npc_shannox_ragefaceAI : public ScriptedAI
@@ -617,27 +622,20 @@ class npc_shannox_rageface : public CreatureScript
                 events.Reset();
                 if (IsHeroic())
                     DoCast(me, SPELL_FEEDING_FRENZY, true);
-
-                if (pInstance)
-                    if (Unit* pShannox = ObjectAccessor::GetUnit(*me, pInstance->GetData64(DATA_SHANNOX)))
-                        me->GetMotionMaster()->MoveFollow(pShannox, 5.0f, static_cast<float>(-M_PI/2));
             }
 
             void EnterCombat(Unit* who)
             {
-                if (Creature* pShannox = GetShannox())
+                if (Creature* pShannox = me->FindNearestCreature(NPC_SHANNOX, 300.0f))
                     DoZoneInCombat(pShannox);
-                if (Creature* pRiplimb = GetRiplimb())
+                if (Creature* pRiplimb = me->FindNearestCreature(NPC_RIPLIMB, 300.0f))
                     DoZoneInCombat(pRiplimb);
 
                 DoZoneInCombat();
-                me->CallForHelp(50);
-
-                me->GetMotionMaster()->MoveChase(me->getVictim());
-
                 events.ScheduleEvent(EVENT_FACE_RAGE, 7000);
                 events.ScheduleEvent(EVENT_CHANGE_TARGET, 5000);
                 events.ScheduleEvent(EVENT_SEPARATION_ANXIETY, 3000);
+                events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
             }
 
             void DamageTaken(Unit* who, uint32 &damage)
@@ -683,6 +681,21 @@ class npc_shannox_rageface : public CreatureScript
                 {
                     switch (eventId)
                     {
+                        case EVENT_CHECK_COMBAT:
+                            if (me->isInCombat())
+                            {
+                                if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_RIPLIMB)))
+                                    if (!pRiplimb->isInCombat() && !pRiplimb->IsInEvadeMode())
+                                        if (pRiplimb->isAlive())
+                                            DoZoneInCombat(pRiplimb);
+
+                                if (Creature* pShannox = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SHANNOX)))
+                                    if (!pShannox->isInCombat() && !pShannox->IsInEvadeMode())
+                                        if (pShannox->isAlive())
+                                            DoZoneInCombat(pShannox);
+                            }
+                            events.ScheduleEvent(EVENT_CHECK_COMBAT, 5000);
+                            break;
                         case EVENT_SEPARATION_ANXIETY:
                             if (!me->FindNearestCreature(NPC_SHANNOX, 80.0f) && !me->HasAura(SPELL_SEPARATION_ANXIETY))
                                 DoCast(me, SPELL_SEPARATION_ANXIETY, true);
@@ -722,16 +735,6 @@ class npc_shannox_rageface : public CreatureScript
                 }
                 DoMeleeAttackIfReady();
             }
-
-            Creature* GetRiplimb()
-            {
-                return ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_RIPLIMB));
-            }
-
-            Creature* GetShannox()
-            {
-                return ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SHANNOX));
-            }
         };
 };
 
@@ -742,7 +745,7 @@ class npc_shannox_spear_of_shannox : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_shannox_spear_of_shannoxAI(pCreature);
+            return GetInstanceAI<npc_shannox_spear_of_shannoxAI>(pCreature);
         }
 
         struct npc_shannox_spear_of_shannoxAI : public Scripted_NoMovementAI
@@ -764,6 +767,22 @@ class npc_shannox_spear_of_shannox : public CreatureScript
             {
                 if (spellInfo->Id == SPELL_HURL_SPEAR_DMG)
                 {
+                     
+                    std::list<Creature*> creatureList;
+                    me->GetCreatureListWithEntryInGrid(creatureList, NPC_DULL_EMBERSTONE_FOCUS, 50.0f);
+                    if (!creatureList.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
+                        {
+                            if (Creature* pFocus = (*itr)->ToCreature())
+                            {
+                                pFocus->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                                pFocus->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                                pFocus->CastSpell(pFocus, SPELL_TRANSFORM_CHARGED_EMBERSTONE_FOCUS, true);
+                            }
+                        }
+                    }
+
                     me->RemoveAurasDueToSpell(SPELL_SPEAR_TARGET);
                     DoCast(me, SPELL_MAGMA_FLARE, true);
                     DoCast(me, SPELL_SPEAR_VISUAL, true);
@@ -800,7 +819,7 @@ class npc_shannox_immolation_trap : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_shannox_immolation_trapAI(pCreature);
+            return GetInstanceAI<npc_shannox_immolation_trapAI>(pCreature);
         }
 
         struct npc_shannox_immolation_trapAI : public Scripted_NoMovementAI
@@ -870,7 +889,7 @@ class npc_shannox_crystal_prison_trap : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_shannox_crystal_prison_trapAI(pCreature);
+            return GetInstanceAI<npc_shannox_crystal_prison_trapAI>(pCreature);
         }
 
         struct npc_shannox_crystal_prison_trapAI : public Scripted_NoMovementAI
@@ -940,7 +959,7 @@ class npc_shannox_crystal_prison : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_shannox_crystal_prisonAI(creature);
+            return GetInstanceAI<npc_shannox_crystal_prisonAI>(creature);
         }
 
         struct npc_shannox_crystal_prisonAI : public Scripted_NoMovementAI
@@ -975,6 +994,8 @@ class npc_shannox_crystal_prison : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
+                if (!bDog)
+                    DoCast(me, SPELL_CREATE_EMBERSTONE_FRAGMENT, true);
                 bDog = false;
                 if (Unit* unit = ObjectAccessor::GetUnit(*me, trappedUnit))
                 {

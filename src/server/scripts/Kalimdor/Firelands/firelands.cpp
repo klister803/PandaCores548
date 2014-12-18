@@ -1,49 +1,54 @@
 #include "ScriptPCH.h"
+#include "MoveSplineInit.h"
+#include "Cell.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "firelands.h"
 
 enum Spells
 {
     // Ancient Core Hound
-    SPELL_DINNER_TIME           = 99693,
-    SPELL_DINNER_TIME_VEHICLE   = 99694,
-    SPELL_FLAME_BREATH          = 99736,
-    SPELL_TERRIFYING_ROAR       = 99692,
+    SPELL_DINNER_TIME                           = 99693,
+    SPELL_DINNER_TIME_VEHICLE                   = 99694,
+    SPELL_FLAME_BREATH                          = 99736,
+    SPELL_TERRIFYING_ROAR                       = 99692,
 
     // Ancient Lava Dweller
-    SPELL_LAVA_SHOWER           = 97549,
-    SPELL_LAVA_SHOWER_MISSILE   = 97551,
-    SPELL_LAVA_SPIT             = 97306,
+    SPELL_LAVA_SHOWER                           = 97549,
+    SPELL_LAVA_SHOWER_MISSILE                   = 97551,
+    SPELL_LAVA_SPIT                             = 97306,
 
     // Fire Scorpion
-    SPELL_FIERY_BLOOD           = 99993,
-    SPELL_SLIGHTLY_WARM_PINCERS = 99984,
+    SPELL_FIERY_BLOOD                           = 99993,
+    SPELL_SLIGHTLY_WARM_PINCERS                 = 99984,
 
     // Fire Turtle Hatchling 
-    SPELL_SHELL_SPIN            = 100263,
+    SPELL_SHELL_SPIN                            = 100263,
 
     // Fire Archon
-    SPELL_FLAME_TORRENT         = 100795,
-    SPELL_FIERY_TORMENT         = 100797,
-    SPELL_FIERY_TORMENT_DMG     = 100802,
+    SPELL_FLAME_TORRENT                         = 100795,
+    SPELL_FIERY_TORMENT                         = 100797,
+    SPELL_FIERY_TORMENT_DMG                     = 100802,
 
     // Molten Lord
-    SPELL_FLAME_STOMP           = 99530,
-    SPELL_MELT_ARMOR            = 99532,
-    SPELL_SUMMON_LAVA_JETS      = 99555,
-    SPELL_SUMMON_LAVA_JET       = 99538,
+    SPELL_FLAME_STOMP                           = 99530,
+    SPELL_MELT_ARMOR                            = 99532,
+    SPELL_SUMMON_LAVA_JETS                      = 99555,
+    SPELL_SUMMON_LAVA_JET                       = 99538,
 
     // Molten Flamefather
-    SPELL_EARTHQUAKE            = 100724,
-    SPELL_MAGMA_CONDUIT         = 100728,
+    SPELL_EARTHQUAKE                            = 100724,
+    SPELL_MAGMA_CONDUIT                         = 100728,
 
     // Magma Conduit
-    SPELL_VOLCANO_SMOKE         = 97699,
-    SPELL_VOLCANO_BASE          = 98250,
-    SPELL_SUMMON_MAGMAKIN       = 100746,
-    SPELL_SUMMON_MAGMAKIN_DMG   = 100748,
+    SPELL_VOLCANO_SMOKE                         = 97699,
+    SPELL_VOLCANO_BASE                          = 98250,
+    SPELL_SUMMON_MAGMAKIN                       = 100746,
+    SPELL_SUMMON_MAGMAKIN_DMG                   = 100748,
 
     // Magmakin
-    SPELL_ERUPTION              = 100755,
+    SPELL_ERUPTION                              = 100755,
 
     // Harbinger of Flame
     SPELL_FIRE_IT_UP                            = 100093,
@@ -85,7 +90,6 @@ enum Spells
 
     // Volcanus
     SPELL_FLAMEWAKE                             = 100191,
-    
 };
 
 enum Adds
@@ -99,33 +103,34 @@ enum Adds
     NPC_MOLTEN_ERUPTER  = 53617,
     NPC_MOLTEN_ERUPTION = 53621,
     NPC_MOLTEN_SPEWER   = 53445,
+
 };
 
 enum Events
 {
     // Ancient Core Hound
-    EVENT_DINNER_TIME       = 1,
-    EVENT_FLAME_BREATH      = 2,
-    EVENT_TERRIFYING_ROAR   = 3,
+    EVENT_DINNER_TIME                   = 1,
+    EVENT_FLAME_BREATH                  = 2,
+    EVENT_TERRIFYING_ROAR               = 3,
 
     // Ancient Lava Dweller
-    EVENT_LAVA_SHOWER       = 4,
+    EVENT_LAVA_SHOWER                   = 4,
 
     // Fire Turtle Hatchling
-    EVENT_SHELL_SPIN        = 5,
+    EVENT_SHELL_SPIN                    = 5,
 
     // Fire Archon
-    EVENT_FIERY_TORMENT     = 6,
-    EVENT_FLAME_TORRENT     = 7,
+    EVENT_FIERY_TORMENT                 = 6,
+    EVENT_FLAME_TORRENT                 = 7,
 
     // Molten Lord
-    EVENT_MELT_ARMOR        = 8,
-    EVENT_FLAME_STOMP       = 9,
-    EVENT_SUMMON_LAVA_JETS  = 10,
+    EVENT_MELT_ARMOR                    = 8,
+    EVENT_FLAME_STOMP                   = 9,
+    EVENT_SUMMON_LAVA_JETS              = 10,
 
     // Molten Flamefather
-    EVENT_EARTHQUAKE        = 11,
-    EVENT_MAGMA_CONDUIT     = 12,
+    EVENT_EARTHQUAKE                    = 11,
+    EVENT_MAGMA_CONDUIT                 = 12,
 
     // Blazing Monstrosity
     EVENT_START_SPITTING                = 13,
@@ -156,7 +161,7 @@ class npc_firelands_ancient_core_hound : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_ancient_core_houndAI (pCreature);
+            return GetInstanceAI<npc_firelands_ancient_core_houndAI>(pCreature);
         }
 
         struct npc_firelands_ancient_core_houndAI : public ScriptedAI
@@ -231,7 +236,7 @@ class npc_firelands_ancient_lava_dweller : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_ancient_lava_dwellerAI (pCreature);
+            return GetInstanceAI<npc_firelands_ancient_lava_dwellerAI>(pCreature);
         }
 
         struct npc_firelands_ancient_lava_dwellerAI : public Scripted_NoMovementAI
@@ -285,7 +290,7 @@ class npc_firelands_fire_scorpion : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_fire_scorpionAI (pCreature);
+            return GetInstanceAI<npc_firelands_fire_scorpionAI>(pCreature);
         }
 
         struct npc_firelands_fire_scorpionAI : public ScriptedAI
@@ -309,7 +314,7 @@ class npc_firelands_fire_turtle_hatchling : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_fire_turtle_hatchlingAI (pCreature);
+            return GetInstanceAI<npc_firelands_fire_turtle_hatchlingAI>(pCreature);
         }
 
         struct npc_firelands_fire_turtle_hatchlingAI : public ScriptedAI
@@ -374,7 +379,7 @@ class npc_firelands_flame_archon : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_flame_archonAI (pCreature);
+            return GetInstanceAI<npc_firelands_flame_archonAI>(pCreature);
         }
 
         struct npc_firelands_flame_archonAI : public ScriptedAI
@@ -444,7 +449,7 @@ class npc_firelands_molten_lord : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_molten_lordAI (pCreature);
+            return GetInstanceAI<npc_firelands_molten_lordAI>(pCreature);
         }
 
         struct npc_firelands_molten_lordAI : public ScriptedAI
@@ -492,8 +497,8 @@ class npc_firelands_molten_lord : public CreatureScript
                                 if (!(pPlayer->getClass() == CLASS_MAGE ||
                                     pPlayer->getClass() == CLASS_WARLOCK ||
                                     pPlayer->getClass() == CLASS_PRIEST ||
-                                    (pPlayer->getClass() == CLASS_SHAMAN && (pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL || pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)) ||
-                                    (pPlayer->getClass() == CLASS_DRUID && (pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_DROOD_BALANCE || pPlayer->GetSpecializationId(pPlayer->GetActiveSpec()) == SPEC_DROOD_RESTORATION))))
+                                    (pPlayer->getClass() == CLASS_SHAMAN && (pPlayer->GetActiveSpec() == SPEC_SHAMAN_ELEMENTAL || pPlayer->GetActiveSpec() == SPEC_SHAMAN_RESTORATION)) ||
+                                    (pPlayer->getClass() == CLASS_DRUID && (pPlayer->GetActiveSpec() == SPEC_DROOD_BALANCE || pPlayer->GetActiveSpec() == SPEC_DROOD_RESTORATION))))
                                     continue;
 
                                 if (pPlayer->GetTeam() == ALLIANCE && pPlayer->GetQuestStatus(29453) == QUEST_STATUS_NONE)
@@ -554,7 +559,7 @@ class npc_firelands_molten_flamefather : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_molten_flamefatherAI (pCreature);
+            return GetInstanceAI<npc_firelands_molten_flamefatherAI>(pCreature);
         }
 
         struct npc_firelands_molten_flamefatherAI : public ScriptedAI
@@ -637,7 +642,7 @@ class npc_firelands_magma_conduit : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_magma_conduitAI (pCreature);
+            return GetInstanceAI<npc_firelands_magma_conduitAI>(pCreature);
         }
 
         struct npc_firelands_magma_conduitAI : public Scripted_NoMovementAI
@@ -689,7 +694,7 @@ class npc_firelands_magmakin : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_firelands_magmakinAI (pCreature);
+            return GetInstanceAI<npc_firelands_magmakinAI>(pCreature);
         }
 
         struct npc_firelands_magmakinAI : public ScriptedAI
@@ -939,6 +944,411 @@ class spell_firelands_molten_lord_summon_lava_jets : public SpellScriptLoader
         }
 };
 
+
+enum Texts
+{
+    // Egg Pile
+    EMOTE_CRACKING_EGGS         = 0,    // The Molten Eggs begin to crack and splinter!
+};
+
+#define SPELL_SHARE_HEALTH          (me->GetEntry() == NPC_BLAZING_MONSTROSITY_LEFT ? SPELL_SHARE_HEALTH_LEFT : SPELL_SHARE_HEALTH_RIGHT)
+#define SPELL_MOLTEN_BARRAGE        (me->GetEntry() == NPC_BLAZING_MONSTROSITY_LEFT ? SPELL_MOLTEN_BARRAGE_LEFT : SPELL_MOLTEN_BARRAGE_RIGHT)
+#define SPELL_MOLTEN_BARRAGE_EFFECT (me->GetEntry() == NPC_BLAZING_MONSTROSITY_LEFT ? SPELL_MOLTEN_BARRAGE_EFFECT_L : SPELL_MOLTEN_BARRAGE_EFFECT_R)
+
+class RespawnEggEvent : public BasicEvent
+{
+    public:
+        explicit RespawnEggEvent(Creature* egg) : _egg(egg) { }
+
+        bool Execute(uint64 /*time*/, uint32 /*diff*/)
+        {
+            _egg->RestoreDisplayId();
+            return true;
+        }
+
+    private:
+        Creature* _egg;
+};
+
+class MoltenEggCheck
+{
+    public:
+        explicit MoltenEggCheck(Creature* pile) : _eggPile(pile) { }
+
+        bool operator()(Unit* object) const
+        {
+            if (object->GetEntry() != NPC_MOLTEN_EGG_TRASH)
+                return false;
+
+            if (object->GetDisplayId() != object->GetNativeDisplayId())
+                return false;
+
+            if (_eggPile->GetDistance2d(object) > 20.0f)
+                return false;
+
+            return true;
+        }
+
+    private:
+        Creature* _eggPile;
+};
+
+class TrashRespawnWorker
+{
+    public:
+        void operator()(Creature* creature) const
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_BLAZING_MONSTROSITY_LEFT:
+                case NPC_BLAZING_MONSTROSITY_RIGHT:
+                case NPC_EGG_PILE:
+                case NPC_HARBINGER_OF_FLAME:
+                case NPC_MOLTEN_EGG_TRASH:
+                    if (!creature->isAlive())
+                        creature->Respawn(true);
+                    break;
+                case NPC_SMOULDERING_HATCHLING:
+                    creature->DespawnOrUnsummon();
+                    break;
+            }
+        }
+};
+
+static void AlysrazorTrashEvaded(Creature* creature)
+{
+    TrashRespawnWorker check;
+    Trinity::CreatureWorker<TrashRespawnWorker> worker(creature, check);
+    creature->VisitNearbyGridObject(SIZE_OF_GRIDS, worker);
+}
+
+class npc_harbinger_of_flame : public CreatureScript
+{
+    public:
+        npc_harbinger_of_flame() : CreatureScript("npc_harbinger_of_flame") { }
+
+        struct npc_harbinger_of_flameAI : public ScriptedAI
+        {
+            npc_harbinger_of_flameAI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+
+            void EnterCombat(Unit* /*target*/)
+            {
+                if (Creature* bird = ObjectAccessor::GetCreature(*me, me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)))
+                    DoZoneInCombat(bird, 200.0f);
+
+                me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_FIEROBLAST, 1);
+                _events.ScheduleEvent(EVENT_FIEROCLAST_BARRAGE, 6000);
+            }
+
+            void JustReachedHome()
+            {
+                AlysrazorTrashEvaded(me);
+            }
+
+            void MoveInLineOfSight(Unit* unit)
+            {
+                if (me->isInCombat())
+                    return;
+
+                if (!unit->isCharmedOwnedByPlayerOrPlayer())
+                    return;
+
+                ScriptedAI::MoveInLineOfSight(unit);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!me->isInCombat())
+                    if (!me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+                        if (Creature* fireBird = me->FindNearestCreature((me->GetHomePosition().GetPositionY() > -275.0f ? NPC_BLAZING_MONSTROSITY_LEFT : NPC_BLAZING_MONSTROSITY_RIGHT), 100.0f))
+                            DoCast(fireBird, SPELL_FIRE_CHANNELING);
+
+                if (!UpdateVictim())
+                    return;
+
+                _events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = _events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_FIEROBLAST:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, false, -SPELL_RIDE_MONSTROSITY))
+                                DoCast(target, SPELL_FIEROBLAST_TRASH);
+                            _events.RescheduleEvent(EVENT_FIEROBLAST, 500);  // cast time is longer, but thanks to UNIT_STATE_CASTING check it won't trigger more often (need this because this creature gets a stacking haste aura)
+                            break;
+                        case EVENT_FIEROCLAST_BARRAGE:
+                            DoCastAOE(SPELL_FIEROCLAST_BARRAGE);
+                            _events.ScheduleEvent(EVENT_FIEROCLAST_BARRAGE, urand(9000, 12000));
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap _events;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<npc_harbinger_of_flameAI>(creature);
+        }
+};
+
+class npc_blazing_monstrosity : public CreatureScript
+{
+    public:
+        npc_blazing_monstrosity() : CreatureScript("npc_blazing_monstrosity") { }
+
+        struct npc_blazing_monstrosityAI : public PassiveAI
+        {
+            npc_blazing_monstrosityAI(Creature* creature) : PassiveAI(creature), _summons(creature)
+            {
+            }
+
+            void EnterEvadeMode()
+            {
+                _summons.DespawnAll();
+                _events.Reset();
+                PassiveAI::EnterEvadeMode();
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                _summons.DespawnAll();
+                _events.Reset();
+            }
+
+            void JustReachedHome()
+            {
+                AlysrazorTrashEvaded(me);
+            }
+
+            void EnterCombat(Unit* /*target*/)
+            {
+                DoZoneInCombat();
+                me->RemoveAurasDueToSpell(SPELL_SLEEP_ULTRA_HIGH_PRIORITY);
+                me->PlayOneShotAnimKit(ANIM_KIT_BIRD_WAKE);
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_START_SPITTING, 6000);
+                _events.ScheduleEvent(EVENT_CONTINUE_SPITTING, 9000);
+            }
+
+            void PassengerBoarded(Unit* passenger, int8 /*seat*/, bool apply)
+            {
+                if (!apply)
+                    return;
+
+                // Our passenger is another vehicle (boardable by players)
+                DoCast(passenger, SPELL_SHARE_HEALTH, true);
+                passenger->setFaction(35);
+                passenger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                // Hack to relocate vehicle on vehicle so exiting players are not moved under map
+                Movement::MoveSplineInit init(*passenger);
+                init.DisableTransportPathTransformations();
+                init.MoveTo(0.6654003f, 0.0f, 1.9815f, false);
+                init.SetFacing(0.0f);
+                init.Launch();
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                _summons.Summon(summon);
+            }
+
+            void SummonedCreatureDespawn(Creature* summon)
+            {
+                _summons.Despawn(summon);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                _events.Update(diff);
+
+                while (uint32 eventId = _events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_START_SPITTING:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, false, -SPELL_RIDE_MONSTROSITY))
+                                DoCast(target, SPELL_MOLTEN_BARRAGE);
+                            break;
+                        case EVENT_CONTINUE_SPITTING:
+                            DoCastAOE(SPELL_MOLTEN_BARRAGE_EFFECT);
+                            if (Creature* egg = me->FindNearestCreature(NPC_EGG_PILE, 100.0f))
+                                egg->AI()->DoAction(me->GetEntry());
+                            break;
+                    }
+                }
+            }
+
+        private:
+            SummonList _summons;
+            EventMap _events;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<npc_blazing_monstrosityAI>(creature);
+        }
+};
+
+class npc_molten_barrage : public CreatureScript
+{
+    public:
+        npc_molten_barrage() : CreatureScript("npc_molten_barrage") { }
+
+        struct npc_molten_barrageAI : public NullCreatureAI
+        {
+            npc_molten_barrageAI(Creature* creature) : NullCreatureAI(creature)
+            {
+            }
+
+            void AttackStart(Unit* target)
+            {
+                if (target)
+                    me->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f, MOTION_SLOT_IDLE);
+            }
+
+            void IsSummonedBy(Unit* /*summoner*/)
+            {
+                DoCastAOE(SPELL_AGGRO_CLOSEST, true);
+                DoCast(me, SPELL_MOLTEN_BARRAGE_VISUAL);
+                DoCast(me, SPELL_INVISIBILITY_AND_STEALTH_DETECTION, true);
+            }
+
+            void MovementInform(uint32 movementType, uint32 /*pointId*/)
+            {
+                if (movementType != EFFECT_MOTION_TYPE)
+                    return;
+
+                DoCastAOE(SPELL_AGGRO_CLOSEST);
+                me->ClearUnitState(UNIT_STATE_CANNOT_TURN);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<npc_molten_barrageAI>(creature);
+        }
+};
+
+class npc_egg_pile : public CreatureScript
+{
+    public:
+        npc_egg_pile() : CreatureScript("npc_egg_pile") { }
+
+        struct npc_egg_pileAI : public CreatureAI
+        {
+            npc_egg_pileAI(Creature* creature) : CreatureAI(creature)
+            {
+            }
+
+            void AttackStart(Unit* /*target*/) { }
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                _events.Reset();
+                _callHatchlingSpell = 0;
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                _events.Reset();
+                std::list<Creature*> eggs;
+                GetCreatureListWithEntryInGrid(eggs, me, NPC_MOLTEN_EGG_TRASH, 20.0f);
+                for (std::list<Creature*>::const_iterator itr = eggs.begin(); itr != eggs.end(); ++itr)
+                    (*itr)->CastSpell(*itr, SPELL_ALYSRAZOR_COSMETIC_EGG_XPLOSION, TRIGGERED_FULL_MASK);
+
+                DoCast(me, SPELL_ALYSRAZOR_COSMETIC_EGG_XPLOSION, true);
+            }
+
+            void JustReachedHome()
+            {
+                AlysrazorTrashEvaded(me);
+            }
+
+            void DoAction(int32 const action)
+            {
+                if (action != NPC_BLAZING_MONSTROSITY_LEFT &&
+                    action != NPC_BLAZING_MONSTROSITY_RIGHT)
+                    return;
+
+                if (action == NPC_BLAZING_MONSTROSITY_LEFT)
+                    Talk(EMOTE_CRACKING_EGGS);
+
+                _callHatchlingSpell = (action == NPC_BLAZING_MONSTROSITY_LEFT) ? SPELL_MOLTEN_EGG_TRASH_CALL_L : SPELL_MOLTEN_EGG_TRASH_CALL_R;
+                DoZoneInCombat();
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_SUMMON_SMOULDERING_HATCHLING, 1);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                _events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = _events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SUMMON_SMOULDERING_HATCHLING:
+                        {
+                            std::list<Creature*> eggs;
+                            MoltenEggCheck check(me);
+                            Trinity::CreatureListSearcher<MoltenEggCheck> searcher(me, eggs, check);
+                            me->VisitNearbyGridObject(20.0f, searcher);
+                            if (!eggs.empty())
+                            {
+                                Creature* egg = Trinity::Containers::SelectRandomContainerElement(eggs);
+                                egg->CastSpell(egg, SPELL_SUMMON_SMOULDERING_HATCHLING, TRIGGERED_FULL_MASK);
+                                egg->SetDisplayId(MODEL_INVISIBLE_STALKER);
+                                egg->m_Events.AddEvent(new RespawnEggEvent(egg), egg->m_Events.CalculateTime(5000));
+                            }
+
+                            if (_callHatchlingSpell)
+                                DoCastAOE(_callHatchlingSpell, true);
+                            _events.ScheduleEvent(EVENT_SUMMON_SMOULDERING_HATCHLING, urand(6000, 10000));
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+
+        private:
+            EventMap _events;
+            uint32 _callHatchlingSpell;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<npc_egg_pileAI>(creature);
+        }
+};
+
 class npc_firelands_dull_focus : public CreatureScript
 {
     public:
@@ -1013,7 +1423,7 @@ class npc_firelands_volcanus : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_firelands_volcanusAI(creature);
+            return GetInstanceAI<npc_firelands_volcanusAI>(creature);
         }
 
         struct npc_firelands_volcanusAI : public CreatureAI
@@ -1282,6 +1692,36 @@ class spell_firelands_siphon_essence : public SpellScriptLoader
         }
 };
 
+class npc_firelands_instance_portal : public CreatureScript
+{
+public:
+    npc_firelands_instance_portal() : CreatureScript("npc_firelands_instance_portal") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<npc_firelands_instance_portalAI>(creature);
+    }
+
+    struct npc_firelands_instance_portalAI : public CreatureAI
+    {
+        npc_firelands_instance_portalAI(Creature* creature) : CreatureAI(creature) { }
+
+        void OnSpellClick(Unit* clicker)
+        {
+            if (InstanceScript* instance = me->GetInstanceScript())
+                if (instance->GetBossState(DATA_BALEROC) != DONE)
+                    return;
+
+            if (me->GetEntry() == 54348)
+                clicker->NearTeleportTo(362.498f, -97.7795f, 78.3288f, 3.64774f, false);
+            else if (me->GetEntry() == 54367)
+                clicker->NearTeleportTo(-359.944f, 206.012f, 52.32f, 3.64774f, false);
+        }
+
+        void UpdateAI(uint32 diff) { }
+    };
+};
+
 void AddSC_firelands()
 {
     new npc_firelands_ancient_core_hound();
@@ -1293,6 +1733,7 @@ void AddSC_firelands()
     new npc_firelands_molten_flamefather();
     new npc_firelands_magma_conduit();
     new npc_firelands_magmakin();
+
     new spell_firelands_ancient_core_hound_dinner_time();
     new spell_firelands_ancient_core_hound_flame_breath();
     new spell_firelands_ancient_lava_dweller_lava_shower();
@@ -1300,8 +1741,18 @@ void AddSC_firelands()
     new spell_firelands_flame_archon_fiery_torment();
     new spell_firelands_molten_lord_summon_lava_jets();
 
+    // alysrazor event
+    /*new npc_harbinger_of_flame();
+    new npc_blazing_monstrosity();
+    new npc_molten_barrage();
+    new npc_egg_pile();
+    new spell_alysrazor_cosmetic_egg_xplosion();
+    new spell_alysrazor_turn_monstrosity();
+    new spell_alysrazor_aggro_closest();*/
+
     new npc_firelands_dull_focus();
     new npc_firelands_circle_of_thorns_portal();
     new npc_firelands_volcanus();
     new spell_firelands_siphon_essence();
+    new npc_firelands_instance_portal();
 }

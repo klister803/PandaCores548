@@ -2010,7 +2010,11 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
 
         // found an uncompleted criteria, but DONT return false yet - there might be a completed criteria with ACHIEVEMENT_CRITERIA_COMPLETE_FLAG_ALL
         if (completed)
+        {
             ++count;
+            if (entry->flags & ACHIEVEMENT_FLAG_BAR) //achievement complete if completed one criteria
+                return true;
+        }
         else
             completed_all = false;
 
@@ -3224,25 +3228,28 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
              if (referencePlayer->GetMapId() != reqValue)
                  return false;
              break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_ZONE: // 18
-             if (referencePlayer->GetZoneId() != reqValue && referencePlayer->GetAreaId() != reqValue)
-                 return false;
-             break;
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
              if (!unit || (unit->GetZoneId() != reqValue && unit->GetAreaId() != reqValue))
                  return false;
              break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA: // 17
-         {
-            // those requirements couldn't be found in the dbc
-            if(AchievementCriteriaDataSet const* data = sAchievementMgr->GetCriteriaDataSet(criteria))
-                if (data->Meets(referencePlayer, unit))
-                    return true;
-
-             if (referencePlayer->GetAreaId() != reqValue)
-                 return false;
-             break;
-         }
+        case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
+		{
+            uint32 zoneId, areaId;
+            referencePlayer->GetZoneAndAreaId(zoneId, areaId);
+            if (zoneId != reqValue && areaId != reqValue)
+                return false;
+            break;
+		}
+        case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE: // 18
+		{
+            if (!unit)
+                return false;
+            uint32 zoneId, areaId;
+            unit->GetZoneAndAreaId(zoneId, areaId);
+            if (zoneId != reqValue && areaId != reqValue)
+                return false;
+            break;
+		}
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE: // 25
              if (referencePlayer->getRace() != reqValue)
                  return false;

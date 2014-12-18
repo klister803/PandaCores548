@@ -78,17 +78,18 @@ set(scripts_STAT_SRCS
   Kalimdor/CavernsOfTime/EndTime/instance_end_time.cpp
   Kalimdor/CavernsOfTime/EndTime/end_time.cpp
   Kalimdor/CavernsOfTime/EndTime/end_time.h
-  Kalimdor/Firelands/boss_alysrazor.cpp
-  Kalimdor/Firelands/boss_bethtilac.cpp
-  Kalimdor/Firelands/boss_majordomus.cpp
-  #Kalimdor/Firelands/boss_ragnaros_firelands.cpp
-  Kalimdor/Firelands/boss_ragnaros.cpp
-  Kalimdor/Firelands/boss_lord_rhyolith.cpp
   Kalimdor/Firelands/boss_shannox.cpp
+  Kalimdor/Firelands/boss_lord_rhyolith.cpp
+  Kalimdor/Firelands/boss_lord_rhyolith.h
+  Kalimdor/Firelands/boss_bethtilac.cpp
+  Kalimdor/Firelands/boss_alysrazor.cpp
   Kalimdor/Firelands/boss_baleroc.cpp
-  Kalimdor/Firelands/firelands.h
-  Kalimdor/Firelands/firelands.cpp
+  Kalimdor/Firelands/boss_majordomo_staghelm.cpp
+  Kalimdor/Firelands/boss_ragnaros_firelands.cpp
+  Kalimdor/Firelands/boss_ragnaros_firelands.h
   Kalimdor/Firelands/instance_firelands.cpp
+  Kalimdor/Firelands/firelands.cpp
+  Kalimdor/Firelands/firelands.h
   Kalimdor/HallsOfOrigination/boss_temple_guardian_anhuur.cpp
   Kalimdor/HallsOfOrigination/boss_earthrager_ptah.cpp
   Kalimdor/HallsOfOrigination/boss_anraphet.cpp

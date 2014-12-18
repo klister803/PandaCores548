@@ -167,6 +167,7 @@ const char SpellMiscEntryfmt[]="nixiiiiiiiiiiiiiiiiifiiiii";
 const std::string CustomSpellMiscEntryfmt="ppapppppppppppppppppappp";
 const std::string CustomSpellMiscEntryIndex = "Id";
 const char SpellPowerEntryfmt[]="nixiixiixffif";
+const char PowerDisplayEntryfmt[]="nixxxx";
 const char SpellInterruptsEntryfmt[]="dxxixixi";
 const char SpellEquippedItemsEntryfmt[]="dxxiii";
 const char SpellAuraOptionsEntryfmt[]="nxxiiiiii";

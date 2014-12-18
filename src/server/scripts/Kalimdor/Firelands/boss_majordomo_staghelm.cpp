@@ -1,10 +1,3 @@
-
-// 570,227 -61,8299 90,4227
-/*
- * WowCircle 4.3.4
- * Dev: Ramusik
- */
-
 #include "ScriptPCH.h"
 #include "firelands.h"
 
@@ -89,7 +82,7 @@ class boss_majordomo_staghelm : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return GetAIForInstance<boss_majordomo_staghelmAI>(creature, FLScriptName);
+            return GetInstanceAI<boss_majordomo_staghelmAI>(creature);
         }
 
         struct boss_majordomo_staghelmAI : public BossAI
@@ -116,6 +109,7 @@ class boss_majordomo_staghelm : public CreatureScript
                 _Reset();
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                me->SetHealth(me->GetMaxHealth());
                 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CONCENTRATION_AURA);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LEGENDARY_CONCENTRATION);
@@ -130,6 +124,19 @@ class boss_majordomo_staghelm : public CreatureScript
 
             void EnterCombat(Unit* attacker)
             {
+                if (!instance->CheckRequiredBosses(DATA_STAGHELM, me->GetEntry(), attacker->ToPlayer()))
+                {
+                    EnterEvadeMode();
+                    instance->DoNearTeleportPlayers(FLEntrancePos);
+                    return;
+                }
+
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CONCENTRATION_AURA);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LEGENDARY_CONCENTRATION);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EPIC_CONCENTRATION);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_RARE_CONCENTRATION);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNCOMMON_CONCENTRATION);
+
                 if (IsHeroic())
                     DoCast(me, SPELL_CONCENTRATION, true);
 
@@ -150,6 +157,8 @@ class boss_majordomo_staghelm : public CreatureScript
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 Talk(SAY_DEATH);
                 _JustDied();
+
+                AddSmoulderingAura(me);
             }
 
             void JustReachedHome()
@@ -181,6 +190,14 @@ class boss_majordomo_staghelm : public CreatureScript
                     DoZoneInCombat(summon);
             }
 
+            void MovementInform(uint32 type, uint32 data)
+            {
+                if (data == EVENT_JUMP)
+                {
+                    me->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_LEAPING_FLAMES_PERSISTENT, true);
+                }
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim() || !CheckInArea(diff, 5769))
@@ -195,16 +212,13 @@ class boss_majordomo_staghelm : public CreatureScript
                 {
                     if (_currentPhase == PHASE_CAT)
                     {
-                        DoCast(me, SPELL_LEAPING_FLAMES_SUMMON);
+                        DoCast(me, SPELL_LEAPING_FLAMES_SUMMON, true);
                         Unit* target = NULL;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 1, -20.0f, true);
                         if (!target)
                             target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
                         if (target)
-                        {
                             DoCast(target, SPELL_LEAPING_FLAMES);
-                            me->CastSpell(target, SPELL_LEAPING_FLAMES_PERSISTENT, true); // doesn't work as trigger spell of 98476
-                        }
                         else
                             me->SetPower(POWER_ENERGY, 0);
                     }
@@ -384,8 +398,8 @@ class spell_staghelm_concentration_aura : public SpellScriptLoader
 
                 if (AuraEffect* aurEff = GetAura()->GetEffect(EFFECT_0))
                 {
-                    int32 oldamount = aurEff->GetAmount();
-                    int32 newamount = oldamount + 1;
+                    int32 oldamount = GetUnitOwner()->GetPower(POWER_ALTERNATE_POWER);
+                    int32 newamount = oldamount + 5;
                     if (newamount > 100)
                         newamount = 100;
                     if (newamount == oldamount)
@@ -417,7 +431,7 @@ class spell_staghelm_concentration_aura : public SpellScriptLoader
                         GetUnitOwner()->RemoveAura(SPELL_RARE_CONCENTRATION);
                         GetUnitOwner()->RemoveAura(SPELL_UNCOMMON_CONCENTRATION);
                     }
-                    aurEff->SetAmount(newamount);
+                    GetUnitOwner()->SetPower(POWER_ALTERNATE_POWER, newamount);
                 }
             }
 
@@ -433,7 +447,7 @@ class spell_staghelm_concentration_aura : public SpellScriptLoader
         }
 };
 
-void AddSC_boss_majordomus()
+void AddSC_boss_majordomo_staghelm()
 {
     new boss_majordomo_staghelm();
     new spell_staghelm_searing_seeds_aura();

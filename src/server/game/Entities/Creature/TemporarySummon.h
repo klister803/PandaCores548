@@ -76,7 +76,6 @@ class TempSummon : public Creature
         void setPetType(PetType type) { m_petType = type; }
 
         const SummonPropertiesEntry* const m_Properties;
-        bool            m_Stampeded;
     private:
         TempSummonType m_type;
         uint32 m_timer;

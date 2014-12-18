@@ -78,8 +78,7 @@ enum Events
     EVENT_ARCANE_BARRAGE             = 1,
 
     // ======== WYRMREST SKYTALON ==========
-    EVENT_CAST_RIDE_SPELL            = 1,
-    EVENT_ANNOUNCE_ENERGY            = 2
+    EVENT_CAST_RIDE_SPELL            = 1
 };
 
 enum Phases
@@ -1618,15 +1617,6 @@ public:
                 {
                     case EVENT_CAST_RIDE_SPELL:
                         me->CastSpell(_summoner, SPELL_RIDE_RED_DRAGON_TRIGGERED, true);
-                        _events.ScheduleEvent(EVENT_ANNOUNCE_ENERGY, 500);
-                        break;
-                    case EVENT_ANNOUNCE_ENERGY:
-                        if(_summoner && _summoner->GetSession())
-                        {
-                            bool ru = _summoner->GetSession()->GetSessionDbLocaleIndex() == LOCALE_ruRU;
-                            _summoner->GetSession()->SendNotification(ru ? "Энергия: %u" : "Energy: %u", me->GetPower(POWER_ENERGY));
-                        }
-                        _events.ScheduleEvent(EVENT_ANNOUNCE_ENERGY, 500);
                         break;
                 }
             }

@@ -1891,7 +1891,7 @@ enum Targets
     TARGET_UNK_117                     = 117, //not use
     TARGET_UNIT_FRIEND_OR_RAID         = 118,
     TARGET_MASS_RESSURECTION           = 119,
-    TARGET_UNIT_TARGET_SELECT          = 120,
+    TARGET_UNIT_TARGET_SELF            = 120,
     TARGET_UNIT_RESURRECT              = 121,
     TARGET_UNIT_TARGET_SELECT2         = 122,
     TARGET_UNIT_TARGET_PLAYER          = 123,
@@ -1920,19 +1920,19 @@ enum Targets
 
 enum SpellMissInfo
 {
-    SPELL_MISS_NONE                    = 0,
-    SPELL_MISS_MISS                    = 1,  // hitmask = 1
-    SPELL_MISS_RESIST                  = 2,  // hitmask = 2
-    SPELL_MISS_DODGE                   = 3,  // hitmask = 4
-    SPELL_MISS_PARRY                   = 4,  // hitmask = 8
-    SPELL_MISS_BLOCK                   = 5,  // hitmask = 16
-    SPELL_MISS_EVADE                   = 6,  // hitmask = 32
-    SPELL_MISS_IMMUNE                  = 7,  // hitmask = 64
-    SPELL_MISS_IMMUNE2                 = 8,  // one of these 2 is MISS_TEMPIMMUNE,  hitmask = 128
-    SPELL_MISS_DEFLECT                 = 9,  // hitmask = 256
-    SPELL_MISS_ABSORB                  = 10, // hitmask = 512
-    SPELL_MISS_REFLECT                 = 11, // hitmask = 1024
-    SPELL_MISS_MISFIRED                = 12, // hitmask = 2048
+    SPELL_MISS_NONE                    = 0,  // hitmask = 1
+    SPELL_MISS_MISS                    = 1,  // hitmask = 2
+    SPELL_MISS_RESIST                  = 2,  // hitmask = 4
+    SPELL_MISS_DODGE                   = 3,  // hitmask = 8
+    SPELL_MISS_PARRY                   = 4,  // hitmask = 16
+    SPELL_MISS_BLOCK                   = 5,  // hitmask = 32
+    SPELL_MISS_EVADE                   = 6,  // hitmask = 64
+    SPELL_MISS_IMMUNE                  = 7,  // hitmask = 128
+    SPELL_MISS_IMMUNE2                 = 8,  // one of these 2 is MISS_TEMPIMMUNE,  hitmask = 256
+    SPELL_MISS_DEFLECT                 = 9,  // hitmask = 512
+    SPELL_MISS_ABSORB                  = 10, // hitmask = 1024
+    SPELL_MISS_REFLECT                 = 11, // hitmask = 2048
+    SPELL_MISS_MISFIRED                = 12, // hitmask = 4096
 };
 
 enum SpellHitType
