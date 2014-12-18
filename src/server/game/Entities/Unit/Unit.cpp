@@ -16518,7 +16518,7 @@ void CharmInfo::InitCharmCreateSpells()
 
 bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate)
 {
-    // pet cannot suumon mob
+    // pet cannot summon mob
     if (spellInfo->Id != 49297)
     {
         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)

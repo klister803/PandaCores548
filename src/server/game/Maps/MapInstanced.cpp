@@ -144,7 +144,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
         Difficulty difficulty = IsRaid() ? player->GetRaidDifficulty() : player->GetDungeonDifficulty();
         if(const MapEntry* entry = sMapStore.LookupEntry(mapId))
         {
-            if(entry->maxPlayers == 40)
+            if(entry->maxPlayers == 40 && mapId != 249) // hackfix - Onyxia's Lair 10/25
                 difficulty = MAN40_DIFFICULTY;
         }
         InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), difficulty);
