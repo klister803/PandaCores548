@@ -1070,7 +1070,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
 
             caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-            m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             break;
         }
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
@@ -1079,7 +1078,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {
                 amount = uint32(target->CountPctFromMaxHealth(amount));
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             }
             break;
         }
@@ -1089,7 +1087,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             {
                 amount = caster->SpellDamageBonusDone(target, m_spellInfo, amount, DOT, (SpellEffIndex) GetEffIndex());
                 caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
             }
             break;
         }
@@ -1197,7 +1194,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
 
             caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask(), BASE_ATTACK, m_crit_chance);
-            m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
             break;
         }
         case SPELL_AURA_MOD_THREAT:
@@ -1555,9 +1551,26 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     CalculateFromDummyAmount(caster, target, amount);
 
     if (CalcStack)
-    {
         amount *= GetBase()->GetStackAmount();
-        m_crit_amount *= GetBase()->GetStackAmount();
+
+    switch (GetAuraType())
+    {
+        // Set crit amount for aura
+        case SPELL_AURA_PERIODIC_HEAL:
+        {
+            m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+            break;
+        }
+        case SPELL_AURA_PERIODIC_LEECH:
+        case SPELL_AURA_PERIODIC_DAMAGE:
+        case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+        {
+            m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+            break;
+        }
+        default:
+            m_crit_amount = amount * 2;
+            break;
     }
 
     switch (GetAuraType())

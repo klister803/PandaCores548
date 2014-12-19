@@ -154,6 +154,10 @@ enum SpellAuraDummyType
     SPELL_DUMMY_ADD_PERC_BP                     = 8,            // add percent(bp / 100) to amount
     SPELL_DUMMY_DAMAGE_ADD_PERC                 = 9,            // add percent to damage
     SPELL_DUMMY_DAMAGE_ADD_VALUE                = 10,           // add value to damage
+    SPELL_DUMMY_DURATION_ADD_PERC               = 11,           // add percent to duration
+    SPELL_DUMMY_DURATION_ADD_VALUE              = 12,           // add value to duration
+    SPELL_DUMMY_CASTTIME_ADD_PERC               = 13,           // add percent to castTime
+    SPELL_DUMMY_CASTTIME_ADD_VALUE              = 14,           // add value to castTime
 };
 
 enum SpellTargetFilterType

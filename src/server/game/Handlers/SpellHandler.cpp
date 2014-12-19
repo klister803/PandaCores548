@@ -1017,16 +1017,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             }
             break;
         }
-        case 116467:        // Consecration - 116467 and Consecration - 26573
-        {
-            if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573))
-            {
-                spellInfo = newSpellInfo;
-                spellId = newSpellInfo->Id;
-                replaced = true;
-            }
-            break;
-        }
         case 123273:        // Surging Mist - 123273 and Surging Mist - 116995
         case 116694:        // Surging Mist - 116694 and Surging Mist - 116995
         {
