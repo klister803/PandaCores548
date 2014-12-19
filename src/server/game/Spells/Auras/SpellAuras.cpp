@@ -605,6 +605,98 @@ uint32 Aura::CalculateEffMaskFromDummy(Unit* caster, WorldObject* target, uint32
     return effMask;
 }
 
+void Aura::CalculateDurationFromDummy(int32 &duration)
+{
+    Unit* _caster = GetCaster();
+    if(!_caster)
+        return;
+
+    if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(GetId()))
+    {
+        for (std::vector<SpellAuraDummy>::const_iterator itr = spellAuraDummy->begin(); itr != spellAuraDummy->end(); ++itr)
+        {
+            Unit* _targetAura = _caster;
+            bool check = false;
+
+            if(itr->targetaura == 1 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _targetAura = (Unit*)pet;
+            }
+            if(itr->targetaura == 2) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _targetAura = owner;
+            }
+            if(itr->targetaura == 3 && m_owner->ToUnit()) //get target
+                _targetAura = m_owner->ToUnit();
+
+            if(!_targetAura)
+                _targetAura = _caster;
+
+            switch (itr->option)
+            {
+                case SPELL_DUMMY_DURATION_ADD_PERC: //11
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            duration += CalculatePct(duration, bp);
+                            check = true;
+                        }
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            duration -= CalculatePct(duration, bp);
+                            check = true;
+                        }
+                    }
+                    break;
+                }
+                case SPELL_DUMMY_DURATION_ADD_VALUE: //12
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            duration += bp;
+                            check = true;
+                        }
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            duration -= bp;
+                            check = true;
+                        }
+                    }
+                    break;
+                }
+            }
+            if(check && itr->removeAura)
+                _caster->RemoveAurasDueToSpell(itr->removeAura);
+        }
+    }
+}
+
 Aura::Aura(SpellInfo const* spellproto, WorldObject* owner, Unit* caster, Item* castItem, uint64 casterGUID, uint16 stackAmount) :
 m_spellInfo(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID()),
 m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
@@ -2841,7 +2933,7 @@ void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & 
     }
 }
 
-void Aura::CallScriptCalcMaxDurationHandlers(int32 & maxDuration)
+void Aura::CallScriptCalcMaxDurationHandlers(int32& maxDuration)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2851,6 +2943,7 @@ void Aura::CallScriptCalcMaxDurationHandlers(int32 & maxDuration)
             (*hookItr).Call(*scritr, maxDuration);
         (*scritr)->_FinishScriptCall();
     }
+    CalculateDurationFromDummy(maxDuration);
 }
 
 void Aura::CallScriptEffectChangeTickDamageHandlers(AuraEffect const* aurEff, int32 & amount, Unit* target)

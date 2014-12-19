@@ -1973,7 +1973,7 @@ class Unit : public WorldObject
         uint32 GetDiseasesByCaster(uint64 casterGUID, bool remove = false);
         uint32 GetDoTsByCaster(uint64 casterGUID) const;
 
-        int32 GetTotalAuraModifier(AuraType auratype) const;
+        int32 GetTotalAuraModifier(AuraType auratype, bool raid = false) const;
         int32 GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const;
         float GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const;
         float GetTotalAuraMultiplier(AuraType auratype) const;
@@ -2564,6 +2564,7 @@ class Unit : public WorldObject
         bool SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint8 effect);
         bool SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         void CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spellProto, uint32 mask = 131071, bool damage = true) const; //mask for all 16 effect
+        void CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellProto);
         bool IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent, uint8 effect);
         bool HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, double cooldown);
         bool HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, double cooldown);

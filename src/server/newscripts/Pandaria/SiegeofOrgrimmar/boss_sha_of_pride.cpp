@@ -171,6 +171,10 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_WEST);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
 
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
@@ -283,6 +287,10 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_WEST);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
             }
 
             void UpdateAI(uint32 diff)

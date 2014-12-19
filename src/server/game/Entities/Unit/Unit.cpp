@@ -1153,17 +1153,22 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
     if (damage < 0)
         return;
 
-    if (spellInfo && spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
-    {
-        damageInfo->damage = damage;
-        return;
-    }
-
     Unit* victim = damageInfo->target;
     if (!victim || !victim->isAlive())
         return;
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
+
+    if (spellInfo && spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+    {
+        if (damage > 0)
+        {
+            CalcAbsorbResist(victim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
+            damage -= damageInfo->absorb + damageInfo->resist;
+        }
+        damageInfo->damage = damage;
+        return;
+    }
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
@@ -1976,9 +1981,48 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
 
             uint32 splitted = splitDamage;
             uint32 split_absorb = 0;
-            DealDamageMods(caster, splitted, &split_absorb);
 
-            SendSpellNonMeleeDamageLog(caster, (*itr)->GetSpellInfo()->Id, splitted, schoolMask, split_absorb, 0, false, 0, false);
+            SpellNonMeleeDamage damageInfo(this, caster, (*itr)->GetSpellInfo()->Id, schoolMask);
+
+            if (caster->IsImmunedToDamage(schoolMask))
+            {
+                damageInfo.resist = splitted;
+                splitted = 0;
+            }
+
+            damageInfo.damage = splitted;
+            DealDamageMods(caster, damageInfo.damage, &damageInfo.absorb);
+            SendSpellNonMeleeDamageLog(&damageInfo);
+
+            uint32 m_procVictim = PROC_FLAG_DONE_MELEE_AUTO_ATTACK | PROC_FLAG_DONE_MAINHAND_ATTACK;
+            uint32 m_procAttacker = PROC_FLAG_TAKEN_MELEE_AUTO_ATTACK;
+            if(spellInfo)
+            {
+                switch (spellInfo->DmgClass)
+                {
+                    case SPELL_DAMAGE_CLASS_MELEE:
+                        m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
+                        m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
+                        m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
+                        m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
+                        break;
+                    case SPELL_DAMAGE_CLASS_MAGIC:
+                        m_procAttacker = PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
+                        m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
+                        m_procVictim   = PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
+                        break;
+                    case SPELL_DAMAGE_CLASS_NONE:
+                        m_procVictim   = PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    break;
+                    case SPELL_DAMAGE_CLASS_RANGED:
+                        m_procAttacker = PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
+                        m_procVictim   = PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
+                        break;
+                }
+            }
+
+            DamageInfo dmgInfoProc = DamageInfo(damageInfo);
+            ProcDamageAndSpell(caster, m_procAttacker, m_procVictim, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, (*itr)->GetSpellInfo());
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
@@ -4858,20 +4902,26 @@ std::list<AuraEffect*> Unit::GetTotalNotStuckAuraEffectByType(AuraType auratype)
     return FinishedEffectList;
 }
 
-int32 Unit::GetTotalAuraModifier(AuraType auratype) const
+int32 Unit::GetTotalAuraModifier(AuraType auratype, bool raid) const
 {
     std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
+    int32 raidModifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-         if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
-             modifier += (*i)->GetAmount();
+        if(raid && ((*i)->GetSpellInfo()->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF))
+        {
+            if ((*i)->GetAmount() > raidModifier)
+                raidModifier = (*i)->GetAmount();
+        }
+        else if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+            modifier += (*i)->GetAmount();
 
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         modifier += itr->second;
 
-    return modifier;
+    return modifier + raidModifier;
 }
 
 int32 Unit::GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const
@@ -15516,6 +15566,8 @@ void Unit::ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell
 
         castTime *= mod;
     }
+
+    CalculateCastTimeFromDummy(castTime, spellProto);
 }
 
 DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
@@ -19707,6 +19759,79 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                         {
                             float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
+                            check = true;
+                        }
+                    }
+                    break;
+                }
+            }
+            if(check && itr->removeAura)
+                _caster->RemoveAurasDueToSpell(itr->removeAura);
+        }
+    }
+}
+
+void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellProto)
+{
+    if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(spellProto->Id))
+    {
+        for (std::vector<SpellAuraDummy>::const_iterator itr = spellAuraDummy->begin(); itr != spellAuraDummy->end(); ++itr)
+        {
+            Unit* _caster = this;
+            Unit* _targetAura = this;
+            bool check = false;
+
+            switch (itr->option)
+            {
+                case SPELL_DUMMY_CASTTIME_ADD_PERC: //13
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            castTime += CalculatePct(castTime, bp);
+                            check = true;
+                        }
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            castTime -= CalculatePct(castTime, bp);
+                            check = true;
+                        }
+                    }
+                    break;
+                }
+                case SPELL_DUMMY_CASTTIME_ADD_VALUE: //14
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                        continue;
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                        continue;
+
+                    if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            castTime += bp;
+                            check = true;
+                        }
+                    }
+                    if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
+                    {
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        {
+                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            castTime -= bp;
                             check = true;
                         }
                     }
