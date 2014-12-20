@@ -1558,14 +1558,20 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         // Set crit amount for aura
         case SPELL_AURA_PERIODIC_HEAL:
         {
-            m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+            if(caster)
+                m_crit_amount = caster->SpellCriticalHealingBonus(m_spellInfo, amount, target);
+            else
+                m_crit_amount = amount * 2;
             break;
         }
         case SPELL_AURA_PERIODIC_LEECH:
         case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
         {
-            m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+            if(caster)
+                m_crit_amount = caster->SpellCriticalDamageBonus(m_spellInfo, amount, target);
+            else
+                m_crit_amount = amount * 2;
             break;
         }
         default:
