@@ -261,13 +261,12 @@ public:
         {
             _Reset();
             me->SetReactState(REACT_DEFENSIVE);
+            me->RemoveAllAuras();
             InstallAdds(false);
             //me->ResetLootMode();
             ColossusCount = 0;
             towerCount = 0;
             ShutdownCount = 0;
-
-           
 
             _shutdown = false;
         }
