@@ -1195,7 +1195,10 @@ void PetBattleWild::FinalRound()
     for (uint8 i = 0; i < 2; ++i)
     {
         if (!i)
-            data << uint16(RewardXP(winner[0], levelUp));
+        {
+            uint16 xp = RewardXP(winner[0], levelUp);
+            data << uint16(xp);
+        }
 
         data << uint8(!i ? 0 : 3); // Pboid
         data << uint32(pets[i]->health); // RemainingHealth
