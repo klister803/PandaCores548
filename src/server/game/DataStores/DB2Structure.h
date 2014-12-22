@@ -180,14 +180,32 @@ struct BattlePetAbilityEffectEntry
     uint32 TurnEntryID;         // 1
     //uint32 unk;               // 2
     //uint32 AuraID?;           // 3
-    //uint32 unk;               // 4
+    uint32 propertiesID;        // 4
     uint32 effectIndex;         // 5
-    //uint32 unk;               // 6
-    //uint32 hitChance;         // 7
+    uint32 propertyValue1;      // 6
+    uint32 propertyValue2;      // 7
+    uint32 propertyValue3;      // 8
+    uint32 propertyValue4;      // 9
+    uint32 propertyValue5;      // 10
+    //uint32 unk;               // 11
+};
+
+struct BattlePetEffectPropertiesEntry
+{
+    uint32 ID;                  // 0
+    //uint32 someFlags;         // 1
+    char* propertyDesc1;        // 2
+    char* propertyDesc2;        // 3
+    char* propertyDesc3;        // 4
+    char* propertyDesc4;        // 5
+    char* propertyDesc5;        // 6
+    //uint32 unk;               // 7
     //uint32 unk;               // 8
     //uint32 unk;               // 9
     //uint32 unk;               // 10
     //uint32 unk;               // 11
+    //uint32 unk;               // 12
+    //uint32 unk;               // 13
 };
 
 struct BattlePetAbilityTurnEntry

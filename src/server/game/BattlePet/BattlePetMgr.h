@@ -305,9 +305,10 @@ public:
 
     PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
 
-    // test function
+    // test functions
     uint32 GetAbilityID(uint32 speciesID, uint8 abilityIndex);
     uint32 GetEffectIDByAbilityID(uint32 abilityID);
+    uint32 GetBasePoints(uint32 abilityID, uint32 turnIndex = 1, uint32 effectIdx = 1);
 
 private:
     Player* m_player;

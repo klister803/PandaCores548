@@ -34,6 +34,7 @@ extern DB2Storage <ItemSparseEntry>               sItemSparseStore;
 extern DB2Storage <BattlePetAbilityEntry>         sBattlePetAbilityStore;
 extern DB2Storage <BattlePetAbilityTurnEntry>     sBattlePetAbilityTurnStore;
 extern DB2Storage <BattlePetAbilityEffectEntry>   sBattlePetAbilityEffectStore;
+extern DB2Storage <BattlePetEffectPropertiesEntry>   sBattlePetEffectPropertiesStore;
 extern DB2Storage <BattlePetAbilityStateEntry>    sBattlePetAbilityStateStore;
 extern DB2Storage <BattlePetSpeciesEntry>         sBattlePetSpeciesStore;
 extern DB2Storage <BattlePetSpeciesStateEntry>    sBattlePetSpeciesStateStore;

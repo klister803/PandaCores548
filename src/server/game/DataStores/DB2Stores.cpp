@@ -32,6 +32,7 @@ DB2Storage <ItemSparseEntry> sItemSparseStore (ItemSparsefmt);
 DB2Storage <BattlePetAbilityEntry> sBattlePetAbilityStore(BattlePetAbilityEntryfmt);
 DB2Storage <BattlePetAbilityTurnEntry> sBattlePetAbilityTurnStore(BattlePetAbilityTurnEntryfmt);
 DB2Storage <BattlePetAbilityEffectEntry> sBattlePetAbilityEffectStore(BattlePetAbilityEffectEntryfmt);
+DB2Storage <BattlePetEffectPropertiesEntry> sBattlePetEffectPropertiesStore(BattlePetEffectPropertiesEntryfmt);
 DB2Storage <BattlePetAbilityStateEntry> sBattlePetAbilityStateStore(BattlePetAbilityStateEntryfmt);
 DB2Storage <BattlePetSpeciesEntry> sBattlePetSpeciesStore(BattlePetSpeciesEntryfmt);
 DB2Storage <BattlePetSpeciesStateEntry> sBattlePetSpeciesStateStore(BattlePetSpeciesStateEntryfmt);
@@ -126,6 +127,7 @@ void LoadDB2Stores(const std::string& dataPath)
     }
     LoadDB2(bad_db2_files, sBattlePetAbilityStore,  db2Path, "BattlePetAbility.db2");
     LoadDB2(bad_db2_files, sBattlePetAbilityEffectStore,  db2Path, "BattlePetAbilityEffect.db2");
+    LoadDB2(bad_db2_files, sBattlePetEffectPropertiesStore,  db2Path, "BattlePetEffectProperties.db2");
     LoadDB2(bad_db2_files, sBattlePetAbilityTurnStore,  db2Path, "BattlePetAbilityTurn.db2");
     LoadDB2(bad_db2_files, sBattlePetAbilityStateStore,  db2Path, "BattlePetAbilityState.db2");
     LoadDB2(bad_db2_files, sBattlePetSpeciesStateStore,  db2Path, "BattlePetSpeciesState.db2");

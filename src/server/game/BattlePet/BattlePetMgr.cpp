@@ -691,7 +691,7 @@ void BattlePetMgr::InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid
     m_petBattleWild->Prepare(wildCreatureGuid);
 }
 
-// test function
+// test functions
 uint32 BattlePetMgr::GetAbilityID(uint32 speciesID, uint8 abilityIndex)
 {
     for (uint32 i = 0; i < sBattlePetSpeciesXAbilityStore.GetNumRows(); ++i)
@@ -738,6 +738,60 @@ uint32 BattlePetMgr::GetEffectIDByAbilityID(uint32 abilityID)
             }
         }
     }  
+
+    return 0;
+}
+
+uint32 BattlePetMgr::GetBasePoints(uint32 abilityID, uint32 turnIndex, uint32 effectIdx)
+{
+    // get turn data entry
+    for (uint32 i = 0; i < sBattlePetAbilityTurnStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityTurnEntry const* tEntry = sBattlePetAbilityTurnStore.LookupEntry(i);
+
+        if (!tEntry)
+            continue;
+
+        if (tEntry->AbilityID == abilityID && tEntry->turnIndex == turnIndex)
+        {
+            // get effect data
+            for (uint32 j = 0; j < sBattlePetAbilityEffectStore.GetNumRows(); ++j)
+            {
+                BattlePetAbilityEffectEntry const* eEntry = sBattlePetAbilityEffectStore.LookupEntry(j);
+
+                if (!eEntry)
+                    continue;
+
+                if (eEntry->TurnEntryID == tEntry->ID)
+                {
+                    // get effect properties data
+                    for (uint32 k = 0; k < sBattlePetEffectPropertiesStore.GetNumRows(); ++k)
+                    {
+                        BattlePetEffectPropertiesEntry const* pEntry = sBattlePetEffectPropertiesStore.LookupEntry(k);
+
+                        if (!pEntry)
+                            continue;
+
+                        if (eEntry->propertiesID == pEntry->ID)
+                        {
+                            char* desc = "Points";
+
+                            if (pEntry->propertyDesc1 == desc)
+                                return eEntry->propertyValue1;
+                            else if (pEntry->propertyDesc2 == desc)
+                                return eEntry->propertyValue2;
+                            else if (pEntry->propertyDesc3 == desc)
+                                return eEntry->propertyValue3;
+                            else if (pEntry->propertyDesc4 == desc)
+                                return eEntry->propertyValue4;
+                            else if (pEntry->propertyDesc5 == desc)
+                                return eEntry->propertyValue5;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     return 0;
 }
@@ -1013,18 +1067,16 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
         return;
     }
 
-    // Player 1 - calc ability damage (random!!) / player 1 always started
-    uint32 damage = urand(10, 44);
-    // some level depends
-    damage *= allyPet->level;
+    // Player 1 - calc ability damage (test calc!!) / player 1 always started
+    //uint32 damage = urand(10, 44);
+    uint32 damage = m_player->GetBattlePetMgr()->GetBasePoints(abilities[0]) * (1 + allyPet->power * 0.05f);
 
     enemyPet->health -= damage;
 
     if (enemyPet->health > 0)
     {
-        // Player 2 - calc ability damage (random!!)
-        uint32 damage1 = urand(10, 44);
-        damage1 *= enemyPet->level;
+        // Player 2 - calc ability damage (test calc!!)
+        uint32 damage1 = m_player->GetBattlePetMgr()->GetBasePoints(abilities[1]) * (1 + enemyPet->power * 0.05f);
 
         allyPet->health -= damage1;
     }
