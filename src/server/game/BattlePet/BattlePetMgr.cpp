@@ -776,16 +776,11 @@ uint32 BattlePetMgr::GetBasePoints(uint32 abilityID, uint32 turnIndex, uint32 ef
                         {
                             char* desc = "Points";
 
-                            if (pEntry->propertyDesc1 == desc)
-                                return eEntry->propertyValue1;
-                            else if (pEntry->propertyDesc2 == desc)
-                                return eEntry->propertyValue2;
-                            else if (pEntry->propertyDesc3 == desc)
-                                return eEntry->propertyValue3;
-                            else if (pEntry->propertyDesc4 == desc)
-                                return eEntry->propertyValue4;
-                            else if (pEntry->propertyDesc5 == desc)
-                                return eEntry->propertyValue5;
+                            for (uint8 l = 0; l < MAX_EFFECT_PROPERTIES; ++l)
+                            {
+                                if (!strcmp(pEntry->propertyDescs[l], desc))
+                                    return eEntry->propertyValues[l];
+                            }
                         }
                     }
                 }
