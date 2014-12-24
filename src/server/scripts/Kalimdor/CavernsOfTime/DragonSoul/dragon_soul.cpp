@@ -260,8 +260,8 @@ const Position DeathwingDespawnPos = {-1417.52f, -2193.82f, 374.776f, 0.0f};
 const Position DeathwingOOCVisual[3] =
 {
     {-1671.63f, -2349.82f, 376.255f, 0.0f},
-    {-1417.52f, -2193.82f, 374.776f, 0.0f},
-    {-1895.28f, -2224.41f, 373.882f, 0.0f}
+    {-1705.99f, -2457.97f, 385.585f, 0.0f},
+    {-1786.06f, -2297.38f, 376.207f, 0.0f}
 };
 
 class npc_dragon_soul_ancient_water_lord : public CreatureScript

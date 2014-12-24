@@ -6158,6 +6158,23 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
 
     // int32 unk = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue; // This is set for EffectActivateObject spells; needs research
 
+    switch (m_spellInfo->Id)
+    {
+        case 105847: // Seal Armor Breach (left), Spine of Deathwing, Dragon Soul
+        case 105848: // Seal Armor Breach (right), Spine of Deathwing, Dragon Soul
+        case 105363: // Breach Armor (left), Spine of Deathwing, Dragon Soul
+        case 105385: // Breach Armor (right), Spine of Deathwing, Dragon Soul
+        case 105366: // Plate Fly Off (left), Spine of Deathwing, Dragon Soul
+        case 105384: // Plate Fly Off (right), Spine of Deathwing, Dragon Soul
+            if (gameObjTarget->GetEntry() == 209623 || gameObjTarget->GetEntry() == 209631 || gameObjTarget->GetEntry() == 209632)
+            {
+                // Send anim kit
+                gameObjTarget->SendActivateAnim(m_spellInfo->Effects[0].MiscValueB);
+                return;
+            }
+            break;
+    }
+
     gameObjTarget->GetMap()->ScriptCommandStart(activateCommand, 0, m_caster, gameObjTarget);
 }
 

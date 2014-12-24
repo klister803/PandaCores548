@@ -5389,6 +5389,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 58423: // Relentless Strikes
                     spellInfo->Effects[EFFECT_0].SpellClassMask[1] |= 8;
                     break;
+                case 105847: // Seal Armor Breach
+                case 105848:
+                    spellInfo->InterruptFlags = 0;
+                    break;
                 default:
                     break;
             }

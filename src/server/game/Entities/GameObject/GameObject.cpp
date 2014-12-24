@@ -1819,6 +1819,10 @@ void GameObject::SendCustomAnim(uint32 anim)
     SendMessageToSet(&data, true);
 }
 
+void GameObject::SendActivateAnim(uint32 anim)
+{
+}
+
 bool GameObject::IsInRange(float x, float y, float z, float radius) const
 {
     GameObjectDisplayInfoEntry const* info = sGameObjectDisplayInfoStore.LookupEntry(m_goInfo->displayId);

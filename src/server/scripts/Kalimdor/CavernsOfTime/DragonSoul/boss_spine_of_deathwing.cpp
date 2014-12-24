@@ -1010,7 +1010,7 @@ class npc_spine_of_deathwing_burning_tendons : public CreatureScript
                 {
                     pDeathwing->AI()->SetData(DATA_PLATES, pDeathwing->AI()->GetData(DATA_PLATES) + 1);
                 }
-                me->DespawnOrUnsummon(1000);
+                me->DespawnOrUnsummon();
             }
 
             void UpdateAI(uint32 diff) 
