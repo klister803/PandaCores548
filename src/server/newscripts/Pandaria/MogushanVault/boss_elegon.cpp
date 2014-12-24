@@ -102,6 +102,7 @@ class boss_elegon : public CreatureScript
             {
                 _JustDied();
                 RemoveBuff();
+                me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ() - 10, me->GetHomePosition().GetOrientation());
             }
 
             void UpdateAI(uint32 diff)
