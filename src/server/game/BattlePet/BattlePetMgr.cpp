@@ -1098,6 +1098,10 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
         return;
     }
 
+    // base efects flags
+    effectFlags[0] = 0x1000;
+    effectFlags[1] = 0x1000;
+
     // miss
 
     // Player 1 - calc ability damage (test calc!!) / player 1 always started
@@ -1106,9 +1110,23 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
     // modifiers
     uint8 type = m_player->GetBattlePetMgr()->GetAbilityType(abilities[0]);
     float mod = m_player->GetBattlePetMgr()->GetAttackModifier(type, enemyPet->GetType());
+
+    // flags
+    if (mod > 1.0f)
+        effectFlags[0] |= 0x400;
+    else if (mod < 1.0f)
+        effectFlags[0] |= 0x800;
+
     damage *= mod;
 
     // crit
+    bool crit = roll_chance_i(5);
+
+    if (crit)
+    {
+        effectFlags[0] |= 0x4;
+        damage *= 2;
+    }
 
     enemyPet->health -= damage;
 
@@ -1122,9 +1140,23 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
         // modifiers
         uint8 type1 = m_player->GetBattlePetMgr()->GetAbilityType(abilities[1]);
         float mod1 = m_player->GetBattlePetMgr()->GetAttackModifier(type1, allyPet->GetType());
+
+        // flags
+        if (mod1 > 1.0f)
+            effectFlags[1] |= 0x400;
+        else if (mod1 < 1.0f)
+            effectFlags[1] |= 0x800;
+
         damage1 *= mod;
 
         // crit
+        bool crit1 = roll_chance_i(5);
+
+        if (crit1)
+        {
+            effectFlags[1] |= 0x4;
+            damage1 *= 2;
+        }
 
         allyPet->health -= damage1;
     }
@@ -1209,7 +1241,7 @@ void PetBattleWild::RoundResults()
         }
 
         if (!bit2[i])
-            data << uint16(4096); // Flags
+            data << uint16(!i ? effectFlags[0] : effectFlags[1]); // Flags
 
         if (!bit7[i])
             data << uint16(0);    // SourceAuraInstanceID
