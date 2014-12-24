@@ -8507,7 +8507,16 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
         uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
         // add pet
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
-            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
+        {
+            // init stats for uncage
+            BattlePetStatAccumulator* accumulator = player->GetBattlePetMgr()->InitStateValuesFromDB(speciesID, breedID);
+            accumulator->GetQualityMultiplier(quality, level);
+            uint32 health = accumulator->CalculateHealth();
+            uint32 power = accumulator->CalculatePower();
+            uint32 speed = accumulator->CalculateSpeed();
+            delete accumulator;
+            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
+        }
         // update
         player->GetBattlePetMgr()->SendUpdatePets();
         // learn pet spell, hack, TODO: fix it
