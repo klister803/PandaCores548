@@ -791,6 +791,42 @@ uint32 BattlePetMgr::GetBasePoints(uint32 abilityID, uint32 turnIndex, uint32 ef
     return 0;
 }
 
+uint8 BattlePetMgr::GetAbilityType(uint32 abilityID)
+{
+    for (uint32 i = 0; i < sBattlePetAbilityStore.GetNumRows(); ++i)
+    {
+        BattlePetAbilityEntry const* aEntry = sBattlePetAbilityStore.LookupEntry(i);
+
+        if (!aEntry)
+            continue;
+
+        if (aEntry->ID == abilityID)
+            return aEntry->Type;
+    }
+
+    return 0;
+}
+
+float BattlePetMgr::GetAttackModifier(uint8 attackType, uint8 defenseType)
+{
+    // maybe number of attack types?
+    uint32 formulaValue = 0xA;
+    uint32 modId = defenseType * formulaValue + attackType;
+
+    for (uint32 i = 0; i < sGtBattlePetTypeDamageModStore.GetNumRows(); ++i)
+    {
+        GtBattlePetTypeDamageModEntry const* gt = sGtBattlePetTypeDamageModStore.LookupEntry(i);
+
+        if (!gt)
+            continue;
+
+        if (gt->Id == modId)
+            return gt->value;
+    }
+
+    return 1.0f;
+}
+
 // wild pet battle class handler
 PetBattleWild::PetBattleWild(Player* owner) : m_player(owner), roundID(0)
 {
@@ -1062,16 +1098,33 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
         return;
     }
 
+    // miss
+
     // Player 1 - calc ability damage (test calc!!) / player 1 always started
-    //uint32 damage = urand(10, 44);
     uint32 damage = m_player->GetBattlePetMgr()->GetBasePoints(abilities[0]) * (1 + allyPet->power * 0.05f);
+
+    // modifiers
+    uint8 type = m_player->GetBattlePetMgr()->GetAbilityType(abilities[0]);
+    float mod = m_player->GetBattlePetMgr()->GetAttackModifier(type, enemyPet->GetType());
+    damage *= mod;
+
+    // crit
 
     enemyPet->health -= damage;
 
     if (enemyPet->health > 0)
     {
+        // miss
+
         // Player 2 - calc ability damage (test calc!!)
         uint32 damage1 = m_player->GetBattlePetMgr()->GetBasePoints(abilities[1]) * (1 + enemyPet->power * 0.05f);
+
+        // modifiers
+        uint8 type1 = m_player->GetBattlePetMgr()->GetAbilityType(abilities[1]);
+        float mod1 = m_player->GetBattlePetMgr()->GetAttackModifier(type1, allyPet->GetType());
+        damage1 *= mod;
+
+        // crit
 
         allyPet->health -= damage1;
     }

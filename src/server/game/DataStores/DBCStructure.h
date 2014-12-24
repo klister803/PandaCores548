@@ -1237,6 +1237,12 @@ struct GtOCTBaseMPByClassEntry
     float ratio;
 };
 
+struct GtBattlePetTypeDamageModEntry
+{
+    uint32 Id;
+    float value;
+};
+
 struct GuildPerkSpellsEntry
 {
     //uint32 Id;
