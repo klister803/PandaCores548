@@ -862,13 +862,6 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     if (!t)
         return;
 
-    BattlePetStatAccumulator* accumulator = m_player->GetBattlePetMgr()->InitStateValuesFromDB(s->ID, 12);
-    accumulator->GetQualityMultiplier(2, 1);
-    uint32 health = accumulator->CalculateHealth();
-    uint32 power = accumulator->CalculatePower();
-    uint32 speed = accumulator->CalculateSpeed();
-    delete accumulator;
-
     // roll random quality
     uint8 quality = 0;
     if (roll_chance_i(1))
@@ -879,6 +872,13 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
         quality = 2;
     else if (roll_chance_i(60))
         quality = 1;
+
+    BattlePetStatAccumulator* accumulator = m_player->GetBattlePetMgr()->InitStateValuesFromDB(s->ID, 12);
+    accumulator->GetQualityMultiplier(quality, wildPet->getLevel());
+    uint32 health = accumulator->CalculateHealth();
+    uint32 power = accumulator->CalculatePower();
+    uint32 speed = accumulator->CalculateSpeed();
+    delete accumulator;
 
     pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
     battleslots[1] = new PetBattleSlot(0, false);
