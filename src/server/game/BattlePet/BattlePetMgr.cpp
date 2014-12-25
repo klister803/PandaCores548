@@ -1407,6 +1407,7 @@ uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
     {
         xp = 0;
         levelUp = true;
+        allyPet->level = 2;
     }
 
     allyPet->xp = xp;
