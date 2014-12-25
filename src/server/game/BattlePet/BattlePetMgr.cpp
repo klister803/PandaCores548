@@ -869,7 +869,18 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     uint32 speed = accumulator->CalculateSpeed();
     delete accumulator;
 
-    pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), 1, t->Modelid1, power, speed, health, health, 2, 0, 0, s->spellId, "", 12, 0);
+    // roll random quality
+    uint8 quality = 0;
+    if (roll_chance_i(1))
+        quality = 4;
+    else if (roll_chance(10))
+        quality = 3;
+    else if (roll_chance(25))
+        quality = 2;
+    else if (roll_chance(60))
+        quality = 1;
+
+    pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
     battleslots[1] = new PetBattleSlot(0, false);
 
     if (!pets[1])
@@ -1106,6 +1117,8 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
 
     // Player 1 - calc ability damage (test calc!!) / player 1 always started
     uint32 damage = m_player->GetBattlePetMgr()->GetBasePoints(abilities[0]) * (1 + allyPet->power * 0.05f);
+    // some random element
+    damage = urand(damage - 5, damage + 5);
 
     // modifiers
     uint8 type = m_player->GetBattlePetMgr()->GetAbilityType(abilities[0]);
@@ -1136,6 +1149,8 @@ void PetBattleWild::CalculateRoundData(int8 &state, uint32 _roundID)
 
         // Player 2 - calc ability damage (test calc!!)
         uint32 damage1 = m_player->GetBattlePetMgr()->GetBasePoints(abilities[1]) * (1 + enemyPet->power * 0.05f);
+        // some random element
+        damage1 = urand(damage1 - 5, damage1 + 5);
 
         // modifiers
         uint8 type1 = m_player->GetBattlePetMgr()->GetAbilityType(abilities[1]);
