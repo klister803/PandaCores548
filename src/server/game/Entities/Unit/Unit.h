@@ -2011,6 +2011,10 @@ class Unit : public WorldObject
             ApplyPercentModFloatValue(UNIT_FIELD_POSSTAT0+stat, val, apply);
             ApplyPercentModFloatValue(UNIT_FIELD_NEGSTAT0+stat, val, apply);
         }
+        float GetSpellCritFromIntellect();
+        float OCTRegenMPPerSpirit();
+        float GetRatingMultiplier(CombatRating cr) const;
+
         void SetCreateStat(Stats stat, float val) { m_createStats[stat] = val; }
         void SetCreateHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_BASE_HEALTH, val); }
         uint32 GetCreateHealth() const { return GetUInt32Value(UNIT_FIELD_BASE_HEALTH); }
@@ -2027,6 +2031,8 @@ class Unit : public WorldObject
         void UpdateHastMod();
         void UpdateFocusRegen();
         void UpdateEnergyRegen();
+        void UpdateManaRegen();
+        void UpdatePowerRegen(uint32 power);
         float GetBaseMHastRatingPct() const {return m_baseMHastRatingPct;}
         float GetBaseRHastRatingPct() const { return m_baseRHastRatingPct; }
         float GetMaxBaseHastRatingPct() const
@@ -2061,9 +2067,13 @@ class Unit : public WorldObject
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
         void SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target = NULL);
+        void SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove);
+        bool GetFreeAuraSlot(uint32& slot);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);
+        uint8 HandleHolyPowerCost(uint8 cost, uint8 baseCost);
+        uint8 GetModForHolyPowerSpell() {return m_modForHolyPowerSpell;}
         void DecreaseCastCounter() { if (m_castCounter) --m_castCounter; }
 
         uint32 m_addDmgOnce;
@@ -2193,6 +2203,7 @@ class Unit : public WorldObject
         void RemoveAllAreaObjects();
 
         GameObject* GetGameObject(uint32 spellId) const;
+        GameObject* GetGameObjectbyId(uint32 entry) const;
         void AddGameObject(GameObject* gameObj);
         void RemoveGameObject(GameObject* gameObj, bool del);
         void RemoveGameObject(uint32 spellid, bool del);
@@ -2604,6 +2615,7 @@ class Unit : public WorldObject
         bool m_VisibilityUpdScheduled;
         bool m_VisibilityUpdateTask;
         uint32 m_rootTimes;
+        uint8 m_modForHolyPowerSpell;
 
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;

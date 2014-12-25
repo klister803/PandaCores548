@@ -285,8 +285,12 @@ class spell_pal_art_of_war : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (_player->HasSpellCooldown(PALADIN_SPELL_EXORCISM))
                         _player->RemoveSpellCooldown(PALADIN_SPELL_EXORCISM, true);
+                    if (_player->HasSpellCooldown(122032))
+                        _player->RemoveSpellCooldown(122032, true);
+                }
             }
 
             void Register()
@@ -1443,6 +1447,123 @@ class spell_pal_holy_shock : public SpellScriptLoader
         }
 };
 
+// Glyph of Double Jeopardy - 121027
+class spell_pal_glyph_of_double_jeopardy : public SpellScriptLoader
+{
+    public:
+        spell_pal_glyph_of_double_jeopardy() : SpellScriptLoader("spell_pal_glyph_of_double_jeopardy") { }
+
+        class spell_pal_glyph_of_double_jeopardyAuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_glyph_of_double_jeopardyAuraScript);
+
+            void SaveTarget(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = _player->GetSelectedUnit())
+                    {
+                        GetAura()->ClearEffectTarget();
+                        GetAura()->AddEffectTarget(target->GetGUID());
+                    }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_pal_glyph_of_double_jeopardyAuraScript::SaveTarget, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        // function which creates AuraScript
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_glyph_of_double_jeopardyAuraScript();
+        }
+};
+
+// Judgment - 20271
+class spell_pal_judgment : public SpellScriptLoader
+{
+    public:
+        spell_pal_judgment() : SpellScriptLoader("spell_pal_judgment") { }
+
+        class spell_pal_judgment_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_judgment_SpellScript);
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Aura* glyph = caster->GetAura(121027))
+                    {
+                        uint64 savetarget = glyph->GetRndEffectTarget();
+                        if (Unit* unitTarget = GetHitUnit())
+                        {
+                            if(savetarget != unitTarget->GetGUID())
+                            {
+                                int32 _amount = GetHitDamage();
+                                _amount += CalculatePct(GetHitDamage(), glyph->GetEffect(0)->GetAmount());
+
+                                SetHitDamage(_amount);
+                                glyph->ClearEffectTarget();
+                                glyph->AddEffectTarget(unitTarget->GetGUID());
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pal_judgment_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_judgment_SpellScript();
+        }
+};
+
+// Exorcism - 122032
+class spell_pal_exorcism : public SpellScriptLoader
+{
+    public:
+        spell_pal_exorcism() : SpellScriptLoader("spell_pal_exorcism") { }
+
+        class spell_pal_exorcism_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_exorcism_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                    GetSpell()->AddEffectTarget(unitTarget->GetGUID());
+            }
+
+            void HandleDamage(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* unitTarget = GetHitUnit())
+                {
+                    uint64 savetarget = GetSpell()->GetRndEffectTarget();
+                    if(savetarget != unitTarget->GetGUID())
+                        SetHitDamage(GetHitDamage() / 4);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pal_exorcism_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnEffectHitTarget += SpellEffectFn(spell_pal_exorcism_SpellScript::HandleDamage, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_exorcism_SpellScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1477,4 +1598,7 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_pursuit_of_justice();
     new spell_pal_seal_of_insight();
     new spell_pal_holy_shock();
+    new spell_pal_glyph_of_double_jeopardy();
+    new spell_pal_judgment();
+    new spell_pal_exorcism();
 }

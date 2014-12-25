@@ -731,18 +731,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
-                    // Exorcism
-                    case 122032:
-                    {
-                        if (Player* _player = m_caster->ToPlayer())
-                        {
-                            if (Unit* target = _player->GetSelectedUnit())
-                                if(target == unitTarget)
-                                    break;
-                        }
-                        damage /= 4;
-                        break;
-                    }
                     // Ancient Fury
                     case 86704:
                     {
@@ -3079,9 +3067,6 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         case 1454: // Life Tap
         {
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
-
-            if (int32(m_caster->GetHealth()) < damage)
-                damage = m_caster->GetHealth() - 1;
             break;
         }
         case 9512:                                          // Restore Energy

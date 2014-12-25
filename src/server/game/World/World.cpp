@@ -1331,6 +1331,7 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_LFG_FORCE_MINPLAYERS] = ConfigMgr::GetBoolDefault("DungeonFinder.ForceMinplayers", false);
 
     m_bool_configs[CONFIG_GROUP_BONUS_XP] = ConfigMgr::GetBoolDefault("Group.BonusXp", false);
+    m_bool_configs[CONFIG_FUN_OPTION_ENABLED] = ConfigMgr::GetIntDefault("FunOption", false);
 
     // DBC_ItemAttributes
     m_bool_configs[CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES] = ConfigMgr::GetBoolDefault("DBC.EnforceItemAttributes", true);

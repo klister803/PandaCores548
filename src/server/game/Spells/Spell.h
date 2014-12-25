@@ -595,6 +595,10 @@ class Spell
         uint64 GetSpellDynamicObject() const { return m_spellDynObjGuid; }
         void SetEffectTargets (std::list<uint64> targets) { m_effect_targets = targets; }
         std::list<uint64> GetEffectTargets() { return m_effect_targets; }
+        void AddEffectTarget (uint64 targetGuid) { m_effect_targets.push_back(targetGuid); }
+        void RemoveEffectTarget (uint64 targetGuid) { m_effect_targets.remove(targetGuid); }
+        void ClearEffectTarget () { m_effect_targets.clear(); }
+        uint64 GetRndEffectTarget () { return Trinity::Containers::SelectRandomContainerElement(m_effect_targets); }
         AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }

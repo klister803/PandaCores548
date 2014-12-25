@@ -51,11 +51,11 @@ TeleData data[] =
     {1252, 5550, "Gurubashi arena.",    {0, -13312.44f, 61.878f,  22.193f, 0.0f},       0,        false, false},
 };
 
-class Teleguy : public CreatureScript
+class npc_teleguy : public CreatureScript
 {
 
 public:
-    Teleguy() : CreatureScript("teleguy") {}
+    npc_teleguy() : CreatureScript("npc_teleguy") {}
     
     void AddAction(Player *player, uint16 index)
     {
@@ -127,7 +127,7 @@ public:
     }
 };
 
-void AddSC_teleguy()
+void AddSC_npc_teleguy()
 {
-    new Teleguy();
+    new npc_teleguy();
 }

@@ -566,36 +566,40 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
 
             void OnTick(AuraEffect const* aurEff)
             {
-                if (GetCaster())
-                    GetCaster()->EnergizeBySpell(GetCaster(), WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
+                if (Unit* caster = GetCaster())
+                    caster->EnergizeBySpell(caster, WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
             }
 
             void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
-                if (GetCaster())
+                if (Unit* caster = GetCaster())
                 {
-                    Player* _player = GetCaster()->ToPlayer();
-                    if (!_player)
-                        return;
+                    if (!caster->HasAura(54879))
+                        caster->CastSpell(caster, 54879, true);
 
-                    if (!_player->HasAura(54879))
-                        _player->CastSpell(_player, 54879, true);
-
-                    if (_player->GetPower(POWER_DEMONIC_FURY) <= 40)
+                    if (caster->GetPower(POWER_DEMONIC_FURY) <= 40)
                     {
-                        if (_player->HasAura(WARLOCK_METAMORPHOSIS))
-                            _player->RemoveAura(WARLOCK_METAMORPHOSIS);
+                        if (caster->HasAura(WARLOCK_METAMORPHOSIS))
+                            caster->RemoveAura(WARLOCK_METAMORPHOSIS);
 
-                        if (_player->HasAura(54879))
-                            _player->RemoveAura(54879);
+                        if (caster->HasAura(54879))
+                            caster->RemoveAura(54879);
                     }
                 }
+            }
+
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraEffect* aurEff = caster->GetAuraEffect(109145, 0))
+                        aurEff->ChangeAmount(0);
             }
 
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
                 OnEffectUpdate += AuraEffectUpdateFn(spell_warl_metamorphosis_cost_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT);
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_metamorphosis_cost_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1364,20 +1368,11 @@ class spell_warl_life_tap : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_life_tap_AuraScript);
 
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& /*canBeRecalculated*/)
             {
                 if(Unit* caster = GetCaster())
                 {
-                    amount = CalculatePct(caster->GetMaxHealth(), 15);
-
-                    if (int32(caster->GetHealth()) < amount)
-                    {
-                        amount = caster->GetHealth() - 1;
-                        if (!caster->HasAura(63320))
-                            caster->SetHealth(1);
-                    }
-                    else if (!caster->HasAura(63320))
-                        caster->SetHealth(caster->GetHealth() - amount);
+                    amount = CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->Effects[EFFECT_2].BasePoints);
                     amount += aurEff->GetOldBaseAmount();
                 }
             }
@@ -1387,6 +1382,40 @@ class spell_warl_life_tap : public SpellScriptLoader
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_life_tap_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_SCHOOL_HEAL_ABSORB);
             }
         };
+
+        class spell_warl_life_tap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_life_tap_SpellScript);
+
+            SpellCastResult CheckHealth()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    int32 percent = GetSpellInfo()->Effects[EFFECT_2].BasePoints;
+                    if (caster->GetHealthPct() <= percent)
+                    {
+                        SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_NOT_ENOUGH_HEALTH);
+                        return SPELL_FAILED_CUSTOM_ERROR;
+                    }
+                    else
+                        return SPELL_CAST_OK;
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckHealth);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_life_tap_SpellScript();
+        }
 
         AuraScript* GetAuraScript() const
         {
@@ -1637,36 +1666,46 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_demonic_circle_summon_AuraScript);
 
+            uint32 slot;
+            bool slotExist;
+
             void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
-                if (GetTarget())
+                if(Unit* target = GetTarget())
                 {
                     // If effect is removed by expire remove the summoned demonic circle too.
                     if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
-                        GetTarget()->RemoveGameObject(GetId(), true);
+                        target->RemoveGameObject(GetId(), true);
 
-                    if (GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID()))
-                        GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+                    target->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, (AFLAG_CASTER | AFLAG_POSITIVE | AFLAG_FAKEAURA), 0, slot, true);
                 }
             }
 
             void HandleDummyTick(AuraEffect const* aurEff)
             {
-                if (GetTarget())
+                if(Unit* target = GetTarget())
                 {
-                    if (GameObject* circle = GetTarget()->GetGameObject(GetId()))
+                    if (GameObject* circle = target->GetGameObject(GetId()))
                     {
                         // Here we check if player is in demonic circle teleport range, if so add
                         // WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST; allowing him to cast the WARLOCK_DEMONIC_CIRCLE_TELEPORT.
-                        // If not in range remove the WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST.
 
                         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_CIRCLE_TELEPORT);
 
-                        if (GetTarget()->IsWithinDist(circle, spellInfo->GetMaxRange(true)))
-                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, false);
+                        if (target->IsWithinDist(circle, spellInfo->GetMaxRange(true)))
+                            target->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, (AFLAG_CASTER | AFLAG_POSITIVE | AFLAG_FAKEAURA), 0, slot, false);
                         else
-                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+                            target->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, (AFLAG_CASTER | AFLAG_POSITIVE | AFLAG_FAKEAURA), 0, slot, true);
                     }
+                }
+            }
+
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* target = GetTarget())
+                {
+                    if(target->GetFreeAuraSlot(slot))
+                        target->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, (AFLAG_CASTER | AFLAG_POSITIVE | AFLAG_DURATION), 1000, slot, false);
                 }
             }
 
@@ -1674,6 +1713,7 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
             {
                 OnEffectRemove += AuraEffectApplyFn(spell_warl_demonic_circle_summon_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_demonic_circle_summon_AuraScript::HandleDummyTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectApply += AuraEffectApplyFn(spell_warl_demonic_circle_summon_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
             }
         };
 
@@ -1696,7 +1736,7 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
             {
                 if (Player* player = GetTarget()->ToPlayer())
                 {
-                    if (GameObject* circle = player->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
+                    if (GameObject* circle = player->GetGameObjectbyId(191083))
                     {
                         player->NearTeleportTo(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
                         player->RemoveMovementImpairingAuras();
@@ -1926,9 +1966,17 @@ class spell_warl_rain_of_fire_damage : public SpellScriptLoader
                 }
             }
 
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                    if (roll_chance_i(30))
+                        caster->ModifyPower(POWER_BURNING_EMBERS, 1);
+            }
+
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_warl_rain_of_fire_damage_SpellScript::Damage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+                AfterCast += SpellCastFn(spell_warl_rain_of_fire_damage_SpellScript::HandleAfterCast);
             }
         };
 
@@ -2075,6 +2123,75 @@ class spell_warl_demonic_gateway : public SpellScriptLoader
         }
 };
 
+// Demonic Gateway - 111771
+class spell_warl_demonic_gateway_cast : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway_cast() : SpellScriptLoader("spell_warl_demonic_gateway_cast") { }
+
+        class spell_warl_demonic_gateway_cast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_gateway_cast_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    Position const* pos = GetExplTargetDest();
+                    float delta_z = fabs(pos->GetPositionZ()) - fabs(caster->GetPositionZ());
+                    if(delta_z > 2.7f || delta_z < -2.7f)
+                        return SPELL_FAILED_NOT_HERE;
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_demonic_gateway_cast_SpellScript::CheckCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_gateway_cast_SpellScript();
+        }
+};
+
+// Fire and Brimstone - 108683
+class spell_warl_fire_and_brimstone : public SpellScriptLoader
+{
+    public:
+        spell_warl_fire_and_brimstone() : SpellScriptLoader("spell_warl_fire_and_brimstone") { }
+
+        class spell_warl_fire_and_brimstone_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_fire_and_brimstone_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(caster->GetPower(POWER_BURNING_EMBERS) < 10)
+                        return SPELL_FAILED_NOT_READY;
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_fire_and_brimstone_SpellScript::CheckCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_fire_and_brimstone_SpellScript();
+        }
+};
+
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2123,4 +2240,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_corruption();
     new spell_warl_imp_swarm();
     new spell_warl_demonic_gateway();
+    new spell_warl_demonic_gateway_cast();
+    new spell_warl_fire_and_brimstone();
 }
