@@ -1363,8 +1363,9 @@ void PetBattleWild::FinalRound()
 uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
 {
     PetInfo* allyPet = pets[0];
+    PetInfo* enemyPet = pets[1];
 
-    if (!allyPet)
+    if (!allyPet || !enemyPet)
         return 0;
 
     if (allyPet->level == 2)
@@ -1373,10 +1374,34 @@ uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
     // simple calc xp
     uint16 xp = allyPet->xp;
 
+    // scaling xp -> quality (win)
+    uint16 winXP = 10;
+
+    if (enemyPet->quality == 4)
+        winXP += 15;
+    else if (enemyPet->quality == 3)
+        winXP += 10;
+    else if (enemyPet->quality == 2)
+        winXP += 5;
+    else if (enemyPet->quality == 0)
+        winXP -= 2;
+
+    // scaling xp -> quality (lose)
+    uint16 loseXP = 5;
+
+    if (enemyPet->quality == 4)
+        loseXP += 7;
+    else if (enemyPet->quality == 3)
+        loseXP += 5;
+    else if (enemyPet->quality == 2)
+        loseXP += 2;
+    else if (enemyPet->quality == 0)
+        loseXP -= 3;
+
     if (winner)
-        xp += 10;
+        xp += winXP;
     else
-        xp += 5;
+        xp += loseXP;
 
     if (xp > 50)
     {
