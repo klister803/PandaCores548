@@ -4412,7 +4412,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             // breedID, quality must be generated!
                             // level, depends of pet source
                             uint16 breedID = 5;
-                            uint8 quality = 3;
+                            uint8 quality = 2;
                             uint8 level = 1;
                             BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(spEntry->ID, breedID);
                             accumulator->GetQualityMultiplier(quality, level);

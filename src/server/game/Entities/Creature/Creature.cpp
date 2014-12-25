@@ -1209,7 +1209,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     SetLevel(level);
 
     // for wild battle pets
-    if (isWildBattlePet())
+    if (cinfo->type == CREATURE_TYPE_WILD_PET)
         SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, level);
 
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
