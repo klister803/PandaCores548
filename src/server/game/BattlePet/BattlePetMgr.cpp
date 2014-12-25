@@ -873,11 +873,11 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     uint8 quality = 0;
     if (roll_chance_i(1))
         quality = 4;
-    else if (roll_chance(10))
+    else if (roll_chance_i(10))
         quality = 3;
-    else if (roll_chance(25))
+    else if (roll_chance_i(25))
         quality = 2;
-    else if (roll_chance(60))
+    else if (roll_chance_i(60))
         quality = 1;
 
     pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
