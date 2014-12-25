@@ -1715,9 +1715,11 @@ void Spell::SelectImplicitTargetObjectTargets(SpellEffIndex effIndex, SpellImpli
 
 void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, WorldObject* target, uint32 effMask)
 {
-    uint32 maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
+    int32 maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_JUMP_TARGETS, maxTargets, this);
+    if(maxTargets < 0)
+        maxTargets = m_spellInfo->GetEffect(effIndex, m_diffMode).ChainTarget;
 
     // Havoc
     if (Aura* _aura = m_caster->GetAura(80240))
@@ -3143,8 +3145,11 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         }
                     }
                     m_spellAura->_RegisterForTargets();
-                    m_spellAura->SetEffectTargets(GetEffectTargets());
-                    m_spellAura->SetTriggeredAuraEff(m_triggeredByAura);
+                    std::list<uint64> list_efftarget = GetEffectTargets();
+                    if(!list_efftarget.empty())
+                        m_spellAura->SetEffectTargets(list_efftarget);
+                    if(m_triggeredByAura)
+                        m_spellAura->SetTriggeredAuraEff(m_triggeredByAura);
                     if(uint64 dynObjGuid = GetSpellDynamicObject())
                         m_spellAura->SetSpellDynamicObject(dynObjGuid);
                 }
@@ -6529,7 +6534,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_CASTER_AURASTATE;
 
         // Note: spell 62473 requres casterAuraSpell = triggering spell
-        if (!((m_spellInfo->Id == 48020 || m_spellInfo->Id == 114794) && m_spellInfo->CasterAuraSpell == 62388) && m_spellInfo->CasterAuraSpell && !m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->CasterAuraSpell, m_caster)))
+        if (!((m_spellInfo->Id == 48020 || m_spellInfo->Id == 114794 || m_spellInfo->Id == 104136) && m_spellInfo->CasterAuraSpell == 62388) && m_spellInfo->CasterAuraSpell && !m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->CasterAuraSpell, m_caster)))
             return SPELL_FAILED_CASTER_AURASTATE;
         if (m_spellInfo->ExcludeCasterAuraSpell && m_caster->HasAura(sSpellMgr->GetSpellIdForDifficulty(m_spellInfo->ExcludeCasterAuraSpell, m_caster)))
             return SPELL_FAILED_CASTER_AURASTATE;
@@ -7809,12 +7814,11 @@ SpellCastResult Spell::CheckPower()
             return SPELL_FAILED_NO_POWER;
 
         if (powerType == POWER_HOLY_POWER)
-            if (Player* player = m_caster->ToPlayer())
-            {
-                m_powerCost = player->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
-                if (Player* modOwner = m_caster->GetSpellModOwner())
-                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
-            }
+        {
+            m_powerCost = m_caster->HandleHolyPowerCost(m_powerCost, m_spellInfo->PowerCost);
+            if (Player* modOwner = m_caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, m_powerCost);
+        }
     }
     else if (!GetSpellInfo()->NoPower())
     {

@@ -301,6 +301,9 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     m_baseRHastRatingPct = 0;
     m_baseMHastRatingPct = 0;
+    m_baseHastRatingPct = 1.0f;
+    m_modForHolyPowerSpell = 0;
+
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
 }
@@ -1158,17 +1161,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
         return;
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
-
-    if (spellInfo && spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
-    {
-        if (damage > 0)
-        {
-            CalcAbsorbResist(victim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
-            damage -= damageInfo->absorb + damageInfo->resist;
-        }
-        damageInfo->damage = damage;
-        return;
-    }
+    int32 sourceDamage = damage;
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
@@ -1222,6 +1215,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
                     value *= 2; // double blocked percent
                 damageInfo->blocked = CalculatePct(damage, value);
                 damage -= damageInfo->blocked;
+                sourceDamage -= damageInfo->blocked;
             }
 
             ApplyResilience(victim, &damage, crit);
@@ -1243,6 +1237,17 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
         }
         default:
             break;
+    }
+
+    if (spellInfo && spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+    {
+        if (sourceDamage > 0)
+        {
+            CalcAbsorbResist(victim, damageSchoolMask, SPELL_DIRECT_DAMAGE, sourceDamage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
+            sourceDamage -= damageInfo->absorb + damageInfo->resist;
+        }
+        damageInfo->damage = sourceDamage;
+        return;
     }
 
     // Calculate absorb resist
@@ -5397,6 +5402,16 @@ GameObject* Unit::GetGameObject(uint32 spellId) const
     return NULL;
 }
 
+GameObject* Unit::GetGameObjectbyId(uint32 entry) const
+{
+    for (GameObjectList::const_iterator i = m_gameObj.begin(); i != m_gameObj.end(); ++i)
+        if ((*i)->GetEntry() == entry)
+            return *i;
+
+    return NULL;
+}
+
+
 void Unit::AddGameObject(GameObject* gameObj)
 {
     if (!gameObj || !gameObj->GetOwnerGUID() == 0)
@@ -8062,11 +8077,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 54936: // Glyph of Word of Glory
                 {
-                    if (Player* plr = ToPlayer())
-                    {
-                        basepoints0 = triggerAmount * plr->GetModForHolyPowerSpell();
-                        triggered_spell_id = 115522;
-                    }
+                    basepoints0 = triggerAmount * GetModForHolyPowerSpell();
+                    triggered_spell_id = 115522;
                     break;
                 }
                 case 76672: // Mastery : Hand of Light
@@ -8127,6 +8139,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 case 86674:
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (effIndex != 0)
                         return false;
 
                     // if caster has no guardian of ancient kings aura then remove dummy aura
@@ -12049,8 +12064,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
         else
         {
-            if (dbccoeff/* && spellProto->SchoolMask & SPELL_SCHOOL_MASK_MAGIC*/)
-                coeff = dbccoeff; // 77478 use in SCHOOL_MASK_PHYSICAL
+            if (dbccoeff && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+                coeff = dbccoeff;
 
             if (spellProto->SpellAPBonusMultiplier)
             {
@@ -12140,8 +12155,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
         if (getClass() == CLASS_PALADIN)
             if (RequiresCurrentSpellsToHolyPower(spellProto))
-                if (Player* player = ToPlayer())
-                    tmpDamage *= player->GetModForHolyPowerSpell();
+                tmpDamage *= GetModForHolyPowerSpell();
     }
 
     return uint32(std::max(tmpDamage, 0.0f));
@@ -12296,12 +12310,12 @@ int32 Unit::GetSpellPowerDamage(SpellSchoolMask schoolMask)
     {
         for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
         {
-            if ((1 << i) & schoolMask)
-            {
-                int32 val = plr->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i);
-                if (SPD > val || !SPD)
-                    SPD = val;
-            }
+            int32 val = plr->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i);
+            if (SPD > val || !SPD)
+                SPD = val;
+
+            if ((1 << i) & schoolMask && schoolMask != SPELL_SCHOOL_MASK_NORMAL)
+                return val;
         }
     }
 
@@ -12323,10 +12337,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     Unit* owner = GetAnyOwner();
     //! Mobs can't crit with spells. Players, Pets, Totems can
     if (ToCreature() && !(owner && owner->GetTypeId() == TYPEID_PLAYER))
-        return false;
-
-    // not critting spell
-    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
         return false;
 
     float crit_chance = 0.0f;
@@ -12399,7 +12409,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                     crit_chance += aurEff->GetAmount();
                         // Inferno Blast
                         if (spellProto->Id == 108853)
+                        {
+                            critChance = 100.0f;
                             return true;
+                        }
                         break;
                     case SPELLFAMILY_PALADIN:
                     {
@@ -12441,13 +12454,19 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
 
                             // Glyph of Regrowth
                             if (HasAura(116218))
+                            {
+                                critChance = 100.0f;
                                 return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                            }
                         }
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
+                        {
+                            critChance = 100.0f;
                             return true;
+                        }
                     break;
                     case SPELLFAMILY_WARLOCK:
                     {
@@ -12457,7 +12476,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             case 104027: // Soul Fire (Metamorphosis)
                             case 6353:   // Soul Fire
                             case 31117:  // Unstable Affliction
+                            {
+                                critChance = 100.0f;
                                 return true;
+                            }
                             default:
                                 break;
                         }
@@ -12516,6 +12538,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         {
                             case 118000: // Dragon Roar is always a critical hit
                             {
+                                critChance = 100.0f;
                                 return true;
                             }
                             case 23881: // Bloodthirst has double critical chance
@@ -12562,7 +12585,11 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         default:
             return false;
     }
-    
+
+    // not critting spell
+    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+        return false;
+
     // percent done
     // only players use intelligence for critical chance computations
     if (Player* modOwner = GetSpellModOwner())
@@ -12823,8 +12850,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     if (getClass() == CLASS_PALADIN)
         if (RequiresCurrentSpellsToHolyPower(spellProto))
-            if (Player* player = ToPlayer())
-                heal *= player->GetModForHolyPowerSpell();
+            heal *= GetModForHolyPowerSpell();
 
     return uint32(std::max(heal, 0.0f));
 }
@@ -14275,9 +14301,9 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
     if(!player)
         return;
 
+    int32 oldVal = GetPower(power);
     if(modVal > 0)
     {
-        int32 oldVal = GetPower(power);
         AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_PROC_ON_POWER_AMOUNT_2);
         for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         {
@@ -14292,7 +14318,6 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
     }
     else
     {
-        int32 oldVal = GetPower(power);
         AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_PROC_ON_POWER_AMOUNT_2);
         for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         {
@@ -14397,6 +14422,10 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
                 break;
             }
 
+            if(curentVal <= 200 && oldVal > curentVal && GetShapeshiftForm() == FORM_METAMORPHOSIS)
+                if (AuraEffect* aurEff = GetAuraEffect(109145, 0))
+                    aurEff->ChangeAmount(-100);
+
             // Demonic Fury visuals
             if (curentVal == 1000)
                 CastSpell(this, 131755, true);
@@ -14430,6 +14459,14 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
 
             if(curentVal < 10)
                 RemoveAura(108683);
+
+            if(curentVal < 10 && oldVal > curentVal)
+                if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
+                    aurEff->ChangeAmount(0);
+
+            if (curentVal >= 10 && curentVal > oldVal)
+                if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
+                    aurEff->ChangeAmount(-100);
 
             if (curentVal >= 20 && !HasAura(116920))
                 CastSpell(this, 116920, true);
@@ -14531,12 +14568,6 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 
     int32 maxPower = GetMaxPower(power);
 
-    if(power == POWER_BURNING_EMBERS)
-    {
-        if(val >= maxPower)
-            set = true;
-    }
-
     if (val < maxPower)
     {
         if(set)
@@ -14556,6 +14587,12 @@ int32 Unit::ModifyPower(Powers power, int32 dVal, bool set)
 
     if (gain && power == POWER_ECLIPSE)
         TriggerEclipse(curPower);
+
+    if(power == POWER_BURNING_EMBERS)
+    {
+        if(val >= maxPower && curPower < maxPower)
+            SetPower(power, val);
+    }
 
     return gain;
 }
@@ -15416,8 +15453,7 @@ int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
     int32 duration;
 
     if (spellProto->PowerType == POWER_HOLY_POWER)
-        if (Player* plr = ToPlayer())
-            holyPower = plr->GetModForHolyPowerSpell();
+        holyPower = GetModForHolyPowerSpell();
 
     if (comboPoints && minduration != -1 && minduration != maxduration)
         duration = minduration + int32((maxduration - minduration) * comboPoints / 5);
@@ -16304,6 +16340,59 @@ int32 Unit::GetCreatePowers(Powers power) const
     }
 
     return 0;
+}
+
+float Unit::OCTRegenMPPerSpirit()
+{
+    uint8 level = getLevel();
+    uint32 pclass = getClass();
+
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
+
+    GtRegenMPPerSptEntry  const* moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass-1) * GT_MAX_LEVEL + level-1);
+    if (!moreRatio)
+        return 0.0f;
+
+    // Formula get from PaperDollFrame script
+    return GetStat(STAT_SPIRIT) * moreRatio->ratio;
+}
+
+float Unit::GetSpellCritFromIntellect()
+{
+    uint8 level = getLevel();
+    uint32 pclass = getClass();
+
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
+
+    GtChanceToSpellCritBaseEntry const* critBase = sGtChanceToSpellCritBaseStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    GtChanceToSpellCritEntry const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    if (critBase == NULL || critRatio == NULL)
+        return 0.0f;
+
+    float crit = ((GetStat(STAT_INTELLECT) - 1) / (critRatio->ratio * 100) + critBase->base);
+    return crit * 100.0f;
+}
+
+float Unit::GetRatingMultiplier(CombatRating cr) const
+{
+    uint8 level = getLevel();
+
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
+
+    GtCombatRatingsEntry const* Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
+    // gtOCTClassCombatRatingScalarStore.dbc starts with 1, CombatRating with zero, so cr+1
+    GtOCTClassCombatRatingScalarEntry const* classRating = sGtOCTClassCombatRatingScalarStore.LookupEntry((getClass()-1)*GT_MAX_RATING+cr+1);
+
+    if (cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN)
+        return Rating->ratio;
+
+    if (!Rating || !classRating)
+        return 1.0f;                                        // By default use minimum coefficient (not must be called)
+
+    return classRating->ratio / Rating->ratio;
 }
 
 void Unit::AddToWorld()
@@ -18718,6 +18807,9 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     if(Aura* aura = target->GetAura(abs(itr->spell_trigger), GetGUID()))
                     {
                         int32 _duration = int32(aura->GetDuration() + int32(triggerAmount * 1000));
+                        if(bp0 && bp0 < _duration)
+                            _duration = int32(bp0);
+
                         aura->SetDuration(_duration, true);
                         if (_duration > aura->GetMaxDuration())
                             aura->SetMaxDuration(_duration);
@@ -19251,6 +19343,38 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_HOLYPOWER_BONUS: //36
+                {
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    int32 percent = triggerAmount;
+                    if(bp0)
+                        percent += bp0;
+                    if(bp1)
+                        percent /= bp1;
+                    if(bp2)
+                        percent *= bp2;
+
+                    basepoints0 = CalculatePct(int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()), percent) / GetModForHolyPowerSpell();
+
+                    triggered_spell_id = abs(itr->spell_trigger);
+                    _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true, castItem, triggeredByAura, originalCaster);
+                    if(itr->target == 6)
+                    {
+                        if (Guardian* pet = GetGuardianPet())
+                            _caster->CastCustomSpell(pet, triggered_spell_id, &basepoints0, &basepoints0, &basepoints0, true);
+                    }
+                    check = true;
+                }
+                break;
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
@@ -19668,7 +19792,7 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
@@ -19697,7 +19821,7 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
@@ -19726,7 +19850,7 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
@@ -19755,7 +19879,7 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
@@ -19801,7 +19925,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             castTime -= CalculatePct(castTime, bp);
@@ -19828,7 +19952,7 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             castTime -= bp;
@@ -19893,13 +20017,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
 
     // Check spellProcEvent data requirements
     if (!sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
-    {
-        // Hack Fix Backdraft can be triggered if damage are absorbed
-        if (spellProto && spellProto->Id == 117896 && procSpell && procSpell->Id == 17962 && procExtra && (procExtra & PROC_EX_ABSORB))
-            return true;
-        else
-            return false;
-    }
+        return false;
 
     // In most cases req get honor or XP from kill
     if (EventProcFlag & PROC_FLAG_KILL && GetTypeId() == TYPEID_PLAYER)
@@ -23625,6 +23743,36 @@ bool Unit::RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto)
     return false;
 }
 
+uint8 Unit::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
+{
+    if (!baseCost)
+        return 0;
+
+    uint8 m_baseHolypower = 3;
+
+    if (!cost)
+    {
+        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        return 0;
+    }
+
+    uint8 m_holyPower = GetPower(POWER_HOLY_POWER);
+
+    if (!m_holyPower)
+        return 0;
+
+    if (m_holyPower < m_baseHolypower)
+    {
+        m_modForHolyPowerSpell = m_holyPower / baseCost;
+        return m_holyPower;
+    }
+    else
+    {
+        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
+        return m_baseHolypower;
+    }
+}
+
 void DelayCastEvent::Execute(Unit *caster)
 {
     Unit* target = caster;
@@ -23720,4 +23868,78 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     data << float(positionY);           // y
     data.WriteGuidBytes<5>(casterGuid);
     SendMessageToSet(&data, true);
+}
+
+void Unit::SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove)
+{
+    ObjectGuid targetGuid = GetObjectGuid();
+
+    WorldPacket data(SMSG_AURA_UPDATE);
+    data.WriteGuidMask<0>(targetGuid);
+    data.WriteBit(0);   // has power unit
+    data.WriteBit(0);   // full update
+    data.WriteGuidMask<6>(targetGuid);
+    /*
+    if (hasPowerData) { }
+    */
+    data.WriteGuidMask<4, 7, 3>(targetGuid);
+    data.WriteBits(1, 24);
+    data.WriteGuidMask<1, 5, 2>(targetGuid);
+
+    if (data.WriteBit(!remove))
+    {
+        if (data.WriteBit(!(flags & AFLAG_CASTER)))
+            data.WriteGuidMask<2, 3, 4, 0, 1, 6, 7, 5>(targetGuid);
+        data.WriteBits(0, 22);  // effect count 2
+        data.WriteBits(0, 22);  // effect count
+        data.WriteBit(flags & AFLAG_DURATION);  // has duration
+        data.WriteBit(flags & AFLAG_DURATION);  // has max duration
+    }
+
+    if(remove)
+        data << uint8(_slot);
+    else
+    {
+        data << uint16(getLevel());
+        if (!(flags & AFLAG_CASTER))
+            data.WriteGuidBytes<0, 6, 1, 4, 5, 3, 2, 7>(targetGuid);
+        data << uint8(flags);
+        if (flags & AFLAG_DURATION)
+            data << uint32(diration);
+
+        data << uint8(0); // StackAmount
+        data << uint32(1); // Effect mask
+        if (flags & AFLAG_DURATION)
+            data << uint32(diration);
+        data << uint32(auraId);
+        data << uint8(_slot);
+    }
+
+    /*
+    if (hasPowerData) { }
+    */
+
+    data.WriteGuidBytes<7, 4, 2, 0, 6, 5, 1, 3>(targetGuid);
+
+    SendMessageToSet(&data, true);
+}
+
+bool Unit::GetFreeAuraSlot(uint32& slot)
+{
+    VisibleAuraMap const* visibleAuras = GetVisibleAuras();
+    // lookup for free slots in units visibleAuras
+    VisibleAuraMap::const_iterator itr = visibleAuras->find(23);
+    for (uint32 freeSlot = 23; freeSlot < MAX_AURAS; ++itr, ++freeSlot)
+    {
+        if (itr == visibleAuras->end() || itr->first != freeSlot)
+        {
+            slot = freeSlot;
+            break;
+        }
+    }
+
+    if (slot < MAX_AURAS)
+        return true;
+
+    return false;
 }

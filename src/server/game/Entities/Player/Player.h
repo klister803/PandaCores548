@@ -1951,8 +1951,6 @@ class Player : public Unit, public GridObject<Player>
         void RegenerateHealth();
         void setRegenTimerCount(uint32 time) {m_regenTimerCount = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
-        uint8 HandleHolyPowerCost(uint8 cost, uint8 baseCost);
-        uint8 GetModForHolyPowerSpell() {return m_modForHolyPowerSpell;}
 
         uint64 GetMoney() const { return GetUInt64Value(PLAYER_FIELD_COINAGE); }
         void ModifyMoney(int64 d);
@@ -2374,9 +2372,6 @@ class Player : public Unit, public GridObject<Player>
         inline void RecalculateRating(CombatRating cr) { ApplyRatingMod(cr, 0, true);}
         float GetMeleeCritFromAgility();
         void GetDodgeFromAgility(float &diminishing, float &nondiminishing);
-        float GetSpellCritFromIntellect();
-        float OCTRegenMPPerSpirit();
-        float GetRatingMultiplier(CombatRating cr) const;
         float GetRatingBonusValue(CombatRating cr) const;
         uint32 GetBaseSpellPowerBonus() { return m_baseSpellPower; }
         int32 GetSpellPenetrationItemMod() const { return m_spellPenetrationItemMod; }
@@ -2398,7 +2393,6 @@ class Player : public Unit, public GridObject<Player>
         void ApplyManaRegenBonus(int32 amount, bool apply);
         void ApplyHealthRegenBonus(int32 amount, bool apply);
         void UpdateMasteryAuras();
-        void UpdateManaRegen();
         void UpdateRuneRegen(RuneType rune);
         void UpdateAllRunesRegen();
         void UpdatePvPPower();
@@ -3155,7 +3149,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
-        uint8 m_modForHolyPowerSpell;
 
 
         /*********************************************************/
@@ -3568,8 +3561,6 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         return 0;
     float totalmul = 1.0f;
     int32 totalflat = 0;
-    bool chaosBolt = false;
-    bool soulFire = false;
     int32 value = 0;
 
     // Drop charges for triggering spells instead of triggered ones
@@ -3605,30 +3596,6 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                 continue;
 
             value = mod->value;
-
-            // Fix don't apply Backdraft twice for Chaos Bolt
-            if (mod->spellId == 117828 && mod->op == SPELLMOD_CASTING_TIME && spellInfo->Id == 116858)
-            {
-                if (chaosBolt)
-                    continue;
-                else
-                    chaosBolt = true;
-            }
-            // Fix don't apply Molten Core multiple times for Soul Fire
-            else if (mod->spellId == 122355 && (spellInfo->Id == 6353 || spellInfo->Id == 104027))
-            {
-                if (soulFire)
-                    continue;
-                else
-                    soulFire = true;
-
-                if (m_isMoltenCored)
-                    m_isMoltenCored = false;
-                else if (mod->op == SPELLMOD_CASTING_TIME)
-                    m_isMoltenCored = true;
-
-                value = mod->value / mod->charges;
-            }
 
             totalmul += CalculatePct(1.0f, value);
         }

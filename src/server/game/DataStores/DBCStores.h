@@ -137,6 +137,7 @@ extern DBCStorage <GtRegenMPPerSptEntry>         sGtRegenMPPerSptStore;
 extern DBCStorage <GtSpellScalingEntry>          sGtSpellScalingStore;
 extern DBCStorage <GtOCTBaseHPByClassEntry>      sGtOCTBaseHPByClassStore;
 extern DBCStorage <GtOCTBaseMPByClassEntry>      sGtOCTBaseMPByClassStore;
+extern DBCStorage <GtBattlePetTypeDamageModEntry>      sGtBattlePetTypeDamageModStore;
 extern DBCStorage <GuildPerkSpellsEntry>         sGuildPerkSpellsStore;
 extern DBCStorage <HolidaysEntry>                sHolidaysStore;
 extern DBCStorage <ImportPriceArmorEntry>        sImportPriceArmorStore;

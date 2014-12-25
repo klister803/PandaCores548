@@ -363,37 +363,6 @@ void AuraApplication::ClientUpdate(bool remove)
     _target->SendMessageToSet(&data, true);
 }
 
-void AuraApplication::SendFakeAuraUpdate(uint32 auraId, bool remove)
-{
-    if (!GetTarget())
-        return;
-
-    ObjectGuid targetGuid = GetTarget()->GetObjectGuid();
-
-    WorldPacket data(SMSG_AURA_UPDATE);
-    data.WriteGuidMask<0>(targetGuid);
-    data.WriteBit(0);   // has power unit
-    data.WriteBit(0);   // full update
-    data.WriteGuidMask<6>(targetGuid);
-    /*
-    if (hasPowerData) { }
-    */
-    data.WriteGuidMask<4, 7, 3>(targetGuid);
-    data.WriteBits(1, 24);
-    data.WriteGuidMask<1, 5, 2>(targetGuid);
-
-    BuildBitUpdatePacket(data, remove);
-    BuildByteUpdatePacket(data, remove, auraId);
-
-    /*
-    if (hasPowerData) { }
-    */
-
-    data.WriteGuidBytes<7, 4, 2, 0, 6, 5, 1, 3>(targetGuid);
-
-    _target->SendMessageToSet(&data, true);
- }
-
 uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibleEffectMask, WorldObject* owner)
 {
     ASSERT(spellProto);
@@ -654,7 +623,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration -= CalculatePct(duration, bp);
@@ -681,7 +650,7 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration -= bp;
@@ -1203,7 +1172,8 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
                 if (AuraEffect* aurEff = GetEffect(i))
                     if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                         _useStack = false;
-            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)))
+
+            if(_useStack || (m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)) || GetId() == 122355)
             {
                 ModStackAmount(num);
                 return false;
@@ -1224,10 +1194,6 @@ bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
         }
 
         SetCharges(charges);
-
-        // Molten Core and Arcane Missiles ! : charges = stackAmount
-        if (GetId() == 122355)
-            SetStackAmount(charges);
     }
     return false;
 }
@@ -1294,12 +1260,9 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
         RefreshSpellMods();
         RefreshTimers();
 
-        // Fix Backdraft can stack up to 6 charges max
+        // Fix Backdraft
         if (m_spellInfo->Id == 117828)
-            SetCharges((GetCharges() + 3) > 6 ? 6 : GetCharges() + 3);
-        // Molten Core - Just apply one charge by one charge
-        else if (m_spellInfo->Id == 122355)
-           SetCharges(GetCharges() + 1);
+            ModCharges(3);
         // reset charges
         else
             SetCharges(CalcMaxCharges());

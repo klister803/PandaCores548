@@ -751,7 +751,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_RunesRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
-    m_modForHolyPowerSpell = 0;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -2880,7 +2879,7 @@ void Player::RegenerateAll()
 
         if (m_demonicFuryPowerRegenTimerCount <= m_regenTimer)
         {
-            m_demonicFuryPowerRegenTimerCount = 100;
+            m_demonicFuryPowerRegenTimerCount = 320;
             Regenerate(POWER_DEMONIC_FURY, m_demonicFuryPowerRegenTimerCount);
         }
         else
@@ -2896,6 +2895,8 @@ void Player::RegenerateAll()
 
         if (m_burningEmbersRegenTimerCount <= m_regenTimer)
         {
+            if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
+                aurEff->ChangeAmount(0);
             m_burningEmbersRegenTimerCount = 2500;
             Regenerate(POWER_BURNING_EMBERS, m_burningEmbersRegenTimerCount);
         }
@@ -2906,7 +2907,7 @@ void Player::RegenerateAll()
     {
         m_chiholyPowerRegenTimerCount = 10000;
         m_demonicFuryPowerRegenTimerCount = 30000;
-        m_burningEmbersRegenTimerCount = 30000;
+        m_burningEmbersRegenTimerCount = 28000;
         m_soulShardsRegenTimerCount = 20000;
     }
 
@@ -2944,6 +2945,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
 
 
     float addvalue = 0.0f;
+    int32 regenType = 1; // start type regen + or - for power
 
     // Powers now benefit from haste.
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
@@ -2959,7 +2961,6 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * saveTimer) + CalculatePct(0.001f, spellHaste));
             else
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * saveTimer) + CalculatePct(0.001f, spellHaste));
-
             break;
         }
         // Regenerate Rage
@@ -2970,7 +2971,6 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
                 float RageDecreaseRate = sWorld->getRate(RATE_POWER_RAGE_LOSS);
                 addvalue -= 25 * RageDecreaseRate / meleeHaste;                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
             }
-
             break;
         }
         case POWER_FOCUS: // Regenerate Focus
@@ -2991,7 +2991,6 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
                 float RunicPowerDecreaseRate = sWorld->getRate(RATE_POWER_RUNICPOWER_LOSS);
                 addvalue -= 30 * RunicPowerDecreaseRate;         // 3 RunicPower by tick
             }
-
             break;
         }
         case POWER_HOLY_POWER:
@@ -3004,12 +3003,14 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         // Regenerate Demonic Fury
         case POWER_DEMONIC_FURY:
         {
-            if (curValue > 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue -= 1.0f;    // remove 1 each 100ms
-            else if (curValue < 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue += 1.0f;     // give 1 each 100ms while player has less than 200 demonic fury
+            if (curValue > 200)
+                addvalue -= 0.0125f * saveTimer;    // remove 1 each 100ms
+            else if (curValue < 200)
+                addvalue += 0.0125f * saveTimer;     // give 1 each 100ms while player has less than 200 demonic fury
             else
                 return;
+
+            regenType = -1;
             break;
         }
         // Regenerate Burning Embers
@@ -3017,9 +3018,9 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         {
             // After 15s return to one embers if no one
             // or return to one if more than one
-            if (GetPower(POWER_BURNING_EMBERS) < 10)
+            if (saveCur < 10)
                 addvalue += 1.0f;
-            else if (GetPower(POWER_BURNING_EMBERS) > 10)
+            else if (saveCur > 10)
                 addvalue -= 1.0f;
             else
                 return;
@@ -3027,22 +3028,22 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
         // Regenerate Soul Shards
         case POWER_SOUL_SHARDS:
+        {
             // If isn't in combat, gain 1 shard every 20s
             addvalue += 100.0f;
             break;
+        }
         default:
             break;
     }
 
-    // Mana regen calculated in Player::UpdateManaRegen()
+    // Mana regen calculated in UpdateManaRegen()
     if (power > POWER_MANA)
     {
-        AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-        for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
-            if (Powers((*i)->GetMiscValue()) == power)
-                AddPct(addvalue, (*i)->GetAmount());
-
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * saveTimer) * regenType;
         addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * saveTimer / (5 * IN_MILLISECONDS);
+
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
     }
 
     if (addvalue <= 0.0f)
@@ -4412,7 +4413,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             // breedID, quality must be generated!
                             // level, depends of pet source
                             uint16 breedID = 5;
-                            uint8 quality = 3;
+                            uint8 quality = 2;
                             uint8 level = 1;
                             BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(spEntry->ID, breedID);
                             accumulator->GetQualityMultiplier(quality, level);
@@ -6932,43 +6933,6 @@ void Player::GetDodgeFromAgility(float &diminishing, float &nondiminishing)
     nondiminishing = (((base_agility - 1) / (dodgeRatio->ratio * 100)) * crit_to_dodge[pclass-1] + critBase->base) * 100.0f;
 }
 
-float Player::GetSpellCritFromIntellect()
-{
-    uint8 level = getLevel();
-    uint32 pclass = getClass();
-
-    if (level > GT_MAX_LEVEL)
-        level = GT_MAX_LEVEL;
-
-    GtChanceToSpellCritBaseEntry const* critBase = sGtChanceToSpellCritBaseStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
-    GtChanceToSpellCritEntry const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
-    if (critBase == NULL || critRatio == NULL)
-        return 0.0f;
-
-    float crit = ((GetStat(STAT_INTELLECT) - 1) / (critRatio->ratio * 100) + critBase->base);
-    return crit * 100.0f;
-}
-
-float Player::GetRatingMultiplier(CombatRating cr) const
-{
-    uint8 level = getLevel();
-
-    if (level > GT_MAX_LEVEL)
-        level = GT_MAX_LEVEL;
-
-    GtCombatRatingsEntry const* Rating = sGtCombatRatingsStore.LookupEntry(cr*GT_MAX_LEVEL+level-1);
-    // gtOCTClassCombatRatingScalarStore.dbc starts with 1, CombatRating with zero, so cr+1
-    GtOCTClassCombatRatingScalarEntry const* classRating = sGtOCTClassCombatRatingScalarStore.LookupEntry((getClass()-1)*GT_MAX_RATING+cr+1);
-
-    if (cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN)
-        return Rating->ratio;
-
-    if (!Rating || !classRating)
-        return 1.0f;                                        // By default use minimum coefficient (not must be called)
-
-    return classRating->ratio / Rating->ratio;
-}
-
 float Player::GetRatingBonusValue(CombatRating cr) const
 {
     float baseResult = float(GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)) * GetRatingMultiplier(cr);
@@ -6991,22 +6955,6 @@ float Player::GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const
             break;
     }
     return 0.0f;
-}
-
-float Player::OCTRegenMPPerSpirit()
-{
-    uint8 level = getLevel();
-    uint32 pclass = getClass();
-
-    if (level > GT_MAX_LEVEL)
-        level = GT_MAX_LEVEL;
-
-    GtRegenMPPerSptEntry  const* moreRatio = sGtRegenMPPerSptStore.LookupEntry((pclass-1) * GT_MAX_LEVEL + level-1);
-    if (!moreRatio)
-        return 0.0f;
-
-    // Formula get from PaperDollFrame script
-    return GetStat(STAT_SPIRIT) * moreRatio->ratio;
 }
 
 void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
@@ -19164,8 +19112,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // load battle pets journal ans slots before spells and other
-    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
-    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
+    //_LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+    //_LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
@@ -19344,6 +19292,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
+
+    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     SetLfgBonusFaction(fields[66].GetUInt32());
 
@@ -27476,11 +27427,7 @@ uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
 {
     float cooldown = RUNE_BASE_COOLDOWN;
 
-    AuraEffectList const& regenAura = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for (AuraEffectList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
-        if ((*i)->GetMiscValue() == POWER_RUNES && (*i)->GetMiscValueB() == runeType)
-            cooldown *= 1.0f - (*i)->GetAmount() / 100.0f;
-
+    cooldown *= (1.0f / GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_RUNES, runeType));
     cooldown *= GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     return cooldown;
@@ -30290,36 +30237,6 @@ void Player::CheckItemCapLevel(bool hasCap)
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), true);
             }
         }
-    }
-}
-
-uint8 Player::HandleHolyPowerCost(uint8 cost, uint8 baseCost)
-{
-    if (!baseCost)
-        return 0;
-
-    uint8 m_baseHolypower = 3;
-
-    if (!cost)
-    {
-        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
-        return 0;
-    }
-
-    uint8 m_holyPower = GetPower(POWER_HOLY_POWER);
-
-    if (!m_holyPower)
-        return 0;
-
-    if (m_holyPower < m_baseHolypower)
-    {
-        m_modForHolyPowerSpell = m_holyPower / baseCost;
-        return m_holyPower;
-    }
-    else
-    {
-        m_modForHolyPowerSpell = m_baseHolypower / baseCost;
-        return m_baseHolypower;
     }
 }
 

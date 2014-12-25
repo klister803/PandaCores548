@@ -32,6 +32,7 @@ void AddSC_command_donate();
 void AddSC_command_arena();
 void AddSC_npc_profession();
 void AddSC_npc_beastmaster();
+void AddSC_npc_teleguy();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -859,6 +860,7 @@ void AddExampleScripts()
     AddSC_command_arena();
     AddSC_npc_profession();
     AddSC_npc_beastmaster();
+    AddSC_npc_teleguy();
 }
 
 void AddSpellScripts()

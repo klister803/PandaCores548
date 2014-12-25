@@ -736,18 +736,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
-                    // Exorcism
-                    case 122032:
-                    {
-                        if (Player* _player = m_caster->ToPlayer())
-                        {
-                            if (Unit* target = _player->GetSelectedUnit())
-                                if(target == unitTarget)
-                                    break;
-                        }
-                        damage /= 4;
-                        break;
-                    }
                     // Ancient Fury
                     case 86704:
                     {
@@ -3084,9 +3072,6 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         case 1454: // Life Tap
         {
             damage = CalculatePct(m_caster->GetMaxHealth(), damage);
-
-            if (int32(m_caster->GetHealth()) < damage)
-                damage = m_caster->GetHealth() - 1;
             break;
         }
         case 9512:                                          // Restore Energy
@@ -6163,6 +6148,23 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
 
     // int32 unk = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue; // This is set for EffectActivateObject spells; needs research
 
+    switch (m_spellInfo->Id)
+    {
+        case 105847: // Seal Armor Breach (left), Spine of Deathwing, Dragon Soul
+        case 105848: // Seal Armor Breach (right), Spine of Deathwing, Dragon Soul
+        case 105363: // Breach Armor (left), Spine of Deathwing, Dragon Soul
+        case 105385: // Breach Armor (right), Spine of Deathwing, Dragon Soul
+        case 105366: // Plate Fly Off (left), Spine of Deathwing, Dragon Soul
+        case 105384: // Plate Fly Off (right), Spine of Deathwing, Dragon Soul
+            if (gameObjTarget->GetEntry() == 209623 || gameObjTarget->GetEntry() == 209631 || gameObjTarget->GetEntry() == 209632)
+            {
+                // Send anim kit
+                gameObjTarget->SendActivateAnim(m_spellInfo->Effects[0].MiscValueB);
+                return;
+            }
+            break;
+    }
+
     gameObjTarget->GetMap()->ScriptCommandStart(activateCommand, 0, m_caster, gameObjTarget);
 }
 
@@ -8495,7 +8497,16 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
         uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
         // add pet
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
-            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, 10, 5, 100, 100, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
+        {
+            // init stats for uncage
+            BattlePetStatAccumulator* accumulator = player->GetBattlePetMgr()->InitStateValuesFromDB(speciesID, breedID);
+            accumulator->GetQualityMultiplier(quality, level);
+            uint32 health = accumulator->CalculateHealth();
+            uint32 power = accumulator->CalculatePower();
+            uint32 speed = accumulator->CalculateSpeed();
+            delete accumulator;
+            player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
+        }
         // update
         player->GetBattlePetMgr()->SendUpdatePets();
         // learn pet spell, hack, TODO: fix it

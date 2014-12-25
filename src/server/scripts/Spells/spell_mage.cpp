@@ -855,7 +855,6 @@ class spell_mage_combustion : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        _player->CastSpell(target, SPELL_MAGE_COMBUSTION_IMPACT, true);
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST, true);
                         _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 

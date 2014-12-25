@@ -1220,6 +1220,8 @@ bool SpellInfo::IsMountOrCompanions() const
         if (Effects[i].Effect == SPELL_EFFECT_SUMMON)
             if (Effects[i].MiscValueB == 3221)
                 return true;
+        if (Effects[i].Effect == SPELL_EFFECT_BATTLE_PET)
+            return true;
     }
     return false;
 }
@@ -2536,6 +2538,11 @@ int32 SpellInfo::GetMaxDuration() const
 uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
 {
     int32 castTime = 0;
+
+    // hack -- no cast time while prep
+    if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED) && caster)
+        if (caster->HasAura(SPELL_PREPARATION) || caster->HasAura(SPELL_ARENA_PREPARATION))
+            return 0;
 
     // not all spells have cast time index and this is all is pasiive abilities
     if (caster && CastTimeMax > 0)

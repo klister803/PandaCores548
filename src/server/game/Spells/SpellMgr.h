@@ -139,6 +139,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_ADD_ABSORB_PCT                = 33,           // set basepoint from absorb percent
     SPELL_TRIGGER_ADD_BLOCK_PCT                 = 34,           // set basepoint from block percent
     SPELL_TRIGGER_NEED_COMBOPOINTS              = 35,           // Proc from spell that need compopoiunts
+    SPELL_TRIGGER_HOLYPOWER_BONUS               = 36,           // Holypower bonus
 };
 
 enum SpellAuraDummyType

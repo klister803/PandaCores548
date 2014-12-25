@@ -3712,8 +3712,12 @@ void SpellMgr::LoadSpellCustomAttr()
                                 procInfo->AttributesCu |= SPELL_ATTR0_CU_ENCHANT_PROC;
                             }
                         }
-                        break;
+                        //break;
                     }
+                    case SPELL_EFFECT_APPLY_GLYPH:
+                        if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+                            spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(1);
+                        break;
                     case SPELL_EFFECT_CREATE_ITEM:
                     case SPELL_EFFECT_CREATE_ITEM_2:
                         mSpellCreateItemList.push_back(i);
@@ -3827,9 +3831,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 108366: // Soul Leech
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
-                    break;
-                case 5740: // Rain of Fire
-                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
                     break;
                 case 108942: // Phantasm
                     spellInfo->AttributesEx3 &= ~SPELL_ATTR3_DISABLE_PROC;
@@ -4189,12 +4190,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 5782:  // Fear
                     spellInfo->Mechanic = 0;
                     spellInfo->Effects[EFFECT_0].Mechanic = MECHANIC_NONE;
-                    break;
-                case 51460: // Runic Corruption
-                    spellInfo->Effects[EFFECT_1].Effect = 0;
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;
-                    spellInfo->Effects[EFFECT_0].MiscValue = 5;
-                    spellInfo->Effects[EFFECT_0].MiscValueB = NUM_RUNE_TYPES;
                     break;
                 case 45204: // Mirror Image - Clone Me!
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_INVISIBLE;
@@ -5388,6 +5383,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 58423: // Relentless Strikes
                     spellInfo->Effects[EFFECT_0].SpellClassMask[1] |= 8;
+                    break;
+                case 105847: // Seal Armor Breach
+                case 105848:
+                    spellInfo->InterruptFlags = 0;
+                    break;
+                case 122355: // Molten Core
+                    spellInfo->StackAmount = 10;
+                    break;
+                case 109145: // Demonic Fury
+                    spellInfo->Effects[0].BasePoints = 0;
                     break;
                 default:
                     break;

@@ -74,6 +74,14 @@ struct PetInfo
     uint32 GetMaxHealth() { return maxHealth; }
     bool IsDead() { return health <= 0; }
     bool IsHurt() { return !IsDead() && health < maxHealth; }
+    uint8 GetType()
+    {
+        BattlePetSpeciesBySpellIdMap::const_iterator it = sBattlePetSpeciesBySpellId.find(creatureEntry);
+        if (it != sBattlePetSpeciesBySpellId.end())
+            return it->second->petType;
+
+        return 0;
+    }
 };
 
 struct PetBattleSlot
@@ -209,6 +217,7 @@ protected:
     uint64 guids[2];
     uint32 abilities[2];
     uint32 effects[2];
+    uint32 effectFlags[2];
     uint32 roundID;
 
 };
@@ -305,9 +314,12 @@ public:
 
     PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
 
-    // test function
+    // test functions
     uint32 GetAbilityID(uint32 speciesID, uint8 abilityIndex);
     uint32 GetEffectIDByAbilityID(uint32 abilityID);
+    uint32 GetBasePoints(uint32 abilityID, uint32 turnIndex = 1, uint32 effectIdx = 1);
+    uint8 GetAbilityType(uint32 abilityID);
+    float GetAttackModifier(uint8 attackType, uint8 defenseType);
 
 private:
     Player* m_player;

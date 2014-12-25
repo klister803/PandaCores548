@@ -576,7 +576,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         }
 
     float DoneActualBenefit = 0.0f;
-    bool CalcStack = bool(m_spellInfo->StackAmount) && !(m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG));
+    bool CalcStack = bool(m_spellInfo->StackAmount) && !(m_spellInfo->ProcFlags & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG)) && m_spellInfo->Id != 122355;
 
     if (caster && caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION))
     {
@@ -1105,7 +1105,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             case 54428: // Divine Plea
                 int32 manaPerc;
                 manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
-                amount = CalculatePct(caster->GetStat(STAT_SPIRIT), m_spellInfo->Effects[0].BasePoints);
+                amount = CalculatePct(caster->GetStat(STAT_SPIRIT), amount);
                 if(amount < manaPerc)
                    amount = manaPerc;
                 break;
@@ -1675,7 +1675,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
@@ -1702,7 +1702,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
@@ -1729,7 +1729,7 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
                             float bp = float(dummyInfo->Effects[itr->effectDummy].BasePoints / 100.0f);
                             amount -= CalculatePct(amount, bp);
@@ -5129,24 +5129,38 @@ void AuraEffect::HandleModPowerRegen(AuraApplication const* aurApp, uint8 mode, 
 
     Unit* target = aurApp->GetTarget();
 
-    if (target->GetTypeId() != TYPEID_PLAYER)
-        return;
-    
     switch (GetMiscValue())
     {
-        case POWER_MANA:   target->ToPlayer()->UpdateManaRegen();     break;
-        case POWER_RUNES:  target->ToPlayer()->UpdateAllRunesRegen(); break;
-        case POWER_ENERGY: target->ToPlayer()->UpdateEnergyRegen();   break;
+        case POWER_MANA:
+            target->UpdateManaRegen();
+            break;
         default:
             break;
     }
-    // Update manaregen value
-    // other powers are not immediate effects - implemented in Player::Regenerate, Creature::Regenerate
 }
 
 void AuraEffect::HandleModPowerRegenPCT(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
-    HandleModPowerRegen(aurApp, mode, apply);
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    switch (GetMiscValue())
+    {
+        case POWER_MANA:
+            target->UpdateManaRegen();
+            break;
+        case POWER_RUNES:
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                target->ToPlayer()->UpdateAllRunesRegen();
+            break;
+        default:
+            target->UpdatePowerRegen(GetMiscValue());
+            break;
+    }
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandleModPowerRegenPCT mode %i, apply %i, GetAmount %i", mode, apply, GetAmount());
 }
 
 void AuraEffect::HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -5156,11 +5170,12 @@ void AuraEffect::HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, b
 
     Unit* target = aurApp->GetTarget();
 
+    target->UpdateManaRegen();
+
     if (target->GetTypeId() != TYPEID_PLAYER)
         return;
 
     //Note: an increase in regen does NOT cause threat.
-    target->ToPlayer()->UpdateManaRegen();
     target->ToPlayer()->UpdateAllRunesRegen();
 }
 
@@ -7233,12 +7248,16 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
 
     if(caster && trigger_spell_id)
     {
-        //if (DynamicObject* dynObj = caster->GetDynObject(GetId()))
-        if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
+        std::list<DynamicObject*> list;
+        caster->GetDynObjectList(list, GetId());
+        if(!list.empty())
         {
             Unit* owner = caster->GetAnyOwner();
-            if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, dynObjGuid))
-                caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
+            for (std::list<DynamicObject*>::iterator itr = list.begin(); itr != list.end(); ++itr)
+            {
+                if(DynamicObject* dynObj = (*itr))
+                    caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), trigger_spell_id, true, NULL, this, owner ? owner->GetGUID() : 0);
+            }
         }
         else if(target)
             caster->CastSpell(target, trigger_spell_id, true, NULL, this);
@@ -7617,14 +7636,16 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     {
         if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
         {
-            //if (DynamicObject* dynObj = triggerCaster->GetDynObject(GetId()))
-            if(uint64 dynObjGuid = GetBase()->GetSpellDynamicObject())
+            std::list<DynamicObject*> list;
+            triggerCaster->GetDynObjectList(list, GetId());
+            if(!list.empty())
             {
                 Unit* owner = triggerCaster->GetAnyOwner();
-                if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*triggerCaster, dynObjGuid))
-                    triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
-                else
-                    triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
+                for (std::list<DynamicObject*>::iterator itr = list.begin(); itr != list.end(); ++itr)
+                {
+                    if(DynamicObject* dynObj = (*itr))
+                        triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
+                }
             }
             else
                 triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);

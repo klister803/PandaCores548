@@ -174,20 +174,30 @@ struct BattlePetAbilityEntry
     //string description        // 7
 };
 
+#define MAX_EFFECT_PROPERTIES 6
+
 struct BattlePetAbilityEffectEntry
 {
     uint32 ID;                  // 0
     uint32 TurnEntryID;         // 1
     //uint32 unk;               // 2
     //uint32 AuraID?;           // 3
-    //uint32 unk;               // 4
+    uint32 propertiesID;        // 4
     uint32 effectIndex;         // 5
-    //uint32 unk;               // 6
-    //uint32 hitChance;         // 7
+    uint32 propertyValues[MAX_EFFECT_PROPERTIES];   // 6 - 11
+};
+
+struct BattlePetEffectPropertiesEntry
+{
+    uint32 ID;                  // 0
+    //uint32 someFlags;         // 1
+    char* propertyDescs[MAX_EFFECT_PROPERTIES];     // 2 - 7
     //uint32 unk;               // 8
     //uint32 unk;               // 9
     //uint32 unk;               // 10
     //uint32 unk;               // 11
+    //uint32 unk;               // 12
+    //uint32 unk;               // 13
 };
 
 struct BattlePetAbilityTurnEntry
@@ -222,7 +232,7 @@ struct BattlePetSpeciesEntry
     uint32 CreatureEntry;       // 1
     //uint32 fileDataEntry;     // 2
     uint32 spellId;             // 3
-    //uint32 petType;           // 4
+    uint32 petType;             // 4
     uint32 source;              // 5
     uint32 flags;               // 6
     //string                    // 7

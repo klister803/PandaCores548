@@ -29,6 +29,7 @@ enum AURA_FLAGS
     AFLAG_DURATION               = 0x04,
     AFLAG_ANY_EFFECT_AMOUNT_SENT = 0x08,
     AFLAG_NEGATIVE               = 0x10,
+    AFLAG_FAKEAURA               = 0x20, //May be fake auras or not visible or update fake aura?
 };
 
 // these are modes, in which aura effect handler may be called

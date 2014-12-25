@@ -824,48 +824,6 @@ void Player::ApplyHealthRegenBonus(int32 amount, bool apply)
     _ModifyUInt32(apply, m_baseHealthRegen, amount);
 }
 
-void Player::UpdateManaRegen()
-{
-    // Mana regen from spirit
-    float spirit_regen = OCTRegenMPPerSpirit();
-    // percent of base mana per 5 sec
-    float manaMod = (getClass() == CLASS_MAGE || getClass() == CLASS_WARLOCK) ? 5.0f: 2.0f;
-
-    // manaMod% of base mana every 5 seconds is base for all classes
-    float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
-    float auraMp5regen = 0.0f;
-    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
-    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
-    {
-        if (Powers((*i)->GetMiscValue()) == POWER_MANA)
-        {
-            bool periodic = false;
-            if (Aura* aur = (*i)->GetBase())
-                if (AuraEffect const* aurEff = aur->GetEffect(1))
-                    if(aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
-                    {
-                        periodic = true;
-                        auraMp5regen += aurEff->GetAmount() / 5.0f;
-                    }
-            if(!periodic)
-                auraMp5regen += (*i)->GetAmount() / 5.0f;
-        }
-    }
-
-    float interruptMod = std::max(float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100)), 1.0f);
-    float baseMod = std::max(GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT), 1.0f);
-    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
-
-    // haste also increase your mana regeneration
-    if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN))
-        AddPct(pctRegenMod, GetRatingBonusValue(CR_HASTE_SPELL));
-
-    // out of combar
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod);
-    // in combat
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, (baseRegen * baseMod + auraMp5regen + spirit_regen * interruptMod / 100.0f) * pctRegenMod);
-}
-
 void Player::UpdateRuneRegen(RuneType rune)
 {
     if (rune > NUM_RUNE_TYPES)
@@ -923,6 +881,54 @@ void Player::_RemoveAllStatBonuses()
 + ########   UNITS STAT SYSTEM     ########
 + ########                         ########
 + #######################################*/
+
+void Unit::UpdateManaRegen()
+{
+    // Mana regen from spirit
+    float spirit_regen = OCTRegenMPPerSpirit();
+    // percent of base mana per 5 sec
+    float manaMod = (getClass() == CLASS_MAGE || getClass() == CLASS_WARLOCK) ? 5.0f: 2.0f;
+
+    // manaMod% of base mana every 5 seconds is base for all classes
+    float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
+    float auraMp5regen = 0.0f;
+    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
+    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
+    {
+        if (Powers((*i)->GetMiscValue()) == POWER_MANA)
+        {
+            bool periodic = false;
+            if (Aura* aur = (*i)->GetBase())
+                if (AuraEffect const* aurEff = aur->GetEffect(1))
+                    if(aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
+                    {
+                        periodic = true;
+                        auraMp5regen += aurEff->GetAmount() / 5.0f;
+                    }
+            if(!periodic)
+                auraMp5regen += (*i)->GetAmount() / 5.0f;
+        }
+    }
+
+    float interruptMod = std::max(float(std::min(GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT), 100)), 1.0f);
+    float baseMod = std::max(GetTotalAuraMultiplier(SPELL_AURA_MOD_BASE_MANA_REGEN_PERCENT), 1.0f);
+    float pctRegenMod = GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
+    float regenFromHaste = 1.0f;
+
+    // haste also increase your mana regeneration
+    if (HasAuraType(SPELL_AURA_HASTE_AFFECTS_BASE_MANA_REGEN))
+        regenFromHaste += (1.0f - GetFloatValue(UNIT_MOD_CAST_HASTE));
+
+    float manaRegen = ((baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod) * regenFromHaste;
+    float manaRegenInterupted = ((baseRegen * baseMod + auraMp5regen + spirit_regen * interruptMod / 100.0f) * pctRegenMod) * regenFromHaste;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateManaRegen pctRegenMod %f, regenFromHaste %f, manaRegen %f", pctRegenMod, regenFromHaste, manaRegen);
+
+    // out of combar
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, manaRegen);
+    // in combat
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, manaRegenInterupted);
+}
 
 void Unit::UpdateMeleeHastMod()
 {
@@ -1021,6 +1027,7 @@ void Unit::UpdateHastMod()
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
         player->UpdateAllRunesRegen();
+    UpdateManaRegen();
 }
 
 void Unit::UpdateRangeHastMod()
@@ -1067,8 +1074,7 @@ void Unit::UpdateRangeHastMod()
 
 void Unit::UpdateEnergyRegen()
 {
-    float auramod = GetTotalAuraMultiplier(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    float val = 1.0f / m_baseMHastRatingPct / auramod;
+    float val = 1.0f / m_baseMHastRatingPct;
     float amount = 0.0f;
     
     std::list<AuraType> auratypelist;
@@ -1088,8 +1094,7 @@ void Unit::UpdateEnergyRegen()
 
 void Unit::UpdateFocusRegen()
 {
-    float auramod = GetTotalAuraMultiplier(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    float val = 1.0f / m_baseRHastRatingPct / auramod;
+    float val = 1.0f / m_baseRHastRatingPct;
     float amount = 0.0f;
     
     std::list<AuraType> auratypelist;
@@ -1105,6 +1110,76 @@ void Unit::UpdateFocusRegen()
         ApplyPercentModFloatVar(val, -amount, true);
 
     SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
+}
+
+void Unit::UpdatePowerRegen(uint32 power)
+{
+    uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+    if (powerIndex == MAX_POWERS)
+        return;
+
+    float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
+    float addvalue = 0.0f;
+
+    //add value in 1s
+    switch (power)
+    {
+        case POWER_RAGE: // Regenerate Rage
+        {
+            addvalue -= 25 / meleeHaste / 2;
+            break;
+        }
+        case POWER_FOCUS: // Regenerate Focus
+        {
+            addvalue += 1.0f * m_baseRHastRatingPct * 5;
+            break;
+        }
+        case POWER_ENERGY: // Regenerate Energy
+        {
+            addvalue += (0.01f * 1000) * m_baseMHastRatingPct;
+            break;
+        }
+        case POWER_RUNIC_POWER: // Regenerate Runic Power
+        {
+            addvalue -= 30 / 2;
+            break;
+        }
+        case POWER_HOLY_POWER:
+        case POWER_CHI:
+        {
+            addvalue -= 1.0f / 10;
+            break;
+        }
+        // Regenerate Demonic Fury
+        case POWER_DEMONIC_FURY:
+        {
+            addvalue -= 1.0f * 12.5f;
+            break;
+        }
+        // Regenerate Burning Embers
+        case POWER_BURNING_EMBERS:
+        {
+            addvalue -= 1.0f / 2.5f;
+            break;
+        }
+        // Regenerate Soul Shards
+        case POWER_SOUL_SHARDS:
+        {
+            addvalue += 100.0f / 20;
+            break;
+        }
+        default:
+            break;
+    }
+
+    int32 perc = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
+    float val = CalculatePct(addvalue, perc);
+
+    SetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, val);
+    if(power < POWER_UNUSED)
+        SetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, val);
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen val %f, perc %i, powerIndex %i, power %i, addvalue %f", val, perc, powerIndex, power, addvalue);
 }
 
 /*#######################################
