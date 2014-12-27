@@ -150,6 +150,8 @@ public:
             { "mainhand",           SEC_ADMINISTRATOR,      true,  &HandleCharDisplayMainhandCommand,   "", NULL },
             { "offhand",            SEC_ADMINISTRATOR,      true,  &HandleCharDisplayOffhandCommand,    "", NULL },
             { "ranged",             SEC_ADMINISTRATOR,      true,  &HandleCharDisplayRangedCommand,     "", NULL },
+            { "tabard",             SEC_ADMINISTRATOR,      true,  &HandleCharDisplayTabardCommand,     "", NULL },
+            { "shirt",              SEC_ADMINISTRATOR,      true,  &HandleCharDisplayShirtCommand,     "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
         return commandTable;
@@ -3313,6 +3315,54 @@ public:
         if (pl->HandleChangeSlotModel(PLAYER_VISIBLE_ITEM_18_ENTRYID, newItem, 17))
         {
             pl->m_vis->m_visRanged = newItem;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    static bool HandleCharDisplayTabrdCommand(ChatHandler* handler, const char* args) //РЎСѓРєРё, РїРѕРєР°Р¶РёС‚Рµ СЃРІРѕРё СЂСѓРєРё!
+    {
+        if(!*args)
+            return false;
+        char* cId = handler->extractKeyFromLink((char*)args,"Hitem");
+        if(!cId)
+            return false;
+
+        uint32 newItem = (uint32)atol(cId);
+
+        Player* pl = handler->GetSession()->GetPlayer();
+
+        if(!pl->m_vis)
+            pl->m_vis = new Visuals;
+
+        if (pl->HandleChangeSlotModel(PLAYER_VISIBLE_ITEM_19_ENTRYID, newItem, 18))
+        {
+            pl->m_vis->m_visTabard = newItem;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    static bool HandleCharDisplayShirtCommand(ChatHandler* handler, const char* args) //РЎСѓРєРё, РїРѕРєР°Р¶РёС‚Рµ СЃРІРѕРё СЂСѓРєРё!
+    {
+        if(!*args)
+            return false;
+        char* cId = handler->extractKeyFromLink((char*)args,"Hitem");
+        if(!cId)
+            return false;
+
+        uint32 newItem = (uint32)atol(cId);
+
+        Player* pl = handler->GetSession()->GetPlayer();
+
+        if(!pl->m_vis)
+            pl->m_vis = new Visuals;
+
+        if (pl->HandleChangeSlotModel(PLAYER_VISIBLE_ITEM_4_ENTRYID, newItem, 3))
+        {
+            pl->m_vis->m_visShirt = newItem;
             return true;
         }
         else

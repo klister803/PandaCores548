@@ -1345,7 +1345,7 @@ typedef std::set<uint32> ResearchProjectSet;
 struct Visuals
 {
     Visuals() : m_visHead(1), m_visShoulders(1), m_visChest(1), m_visWaist(1), m_visLegs(1), m_visFeet(1),
-    m_visWrists(1), m_visHands(1), m_visBack(1), m_visMainhand(1), m_visOffhand(1), m_visRanged(1), m_altVis(0) { }
+    m_visWrists(1), m_visHands(1), m_visBack(1), m_visMainhand(1), m_visOffhand(1), m_visRanged(1), m_visTabard(1), m_visShirt(1), m_altVis(0) { }
 
     uint32 m_visHead;
     uint32 m_visShoulders;
@@ -1359,6 +1359,8 @@ struct Visuals
     uint32 m_visMainhand;
     uint32 m_visOffhand;
     uint32 m_visRanged;
+    uint32 m_visTabard;
+    uint32 m_visShirt;
 
     uint8 m_altVis;
 };
