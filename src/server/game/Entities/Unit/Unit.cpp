@@ -6177,6 +6177,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (rollchance > triggerAmount)
                         return false;
+
+                    if (!damage)
+                        return false;
                         
                     triggered_spell_id = 146137;
                     basepoints0 = damage;
@@ -6252,6 +6255,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     int32 rollchance = urand(0, 1000);
 
                     if (rollchance > triggerAmount)
+                        return false;
+
+                    if (!damage)
                         return false;
                         
                     triggered_spell_id = 146061;
