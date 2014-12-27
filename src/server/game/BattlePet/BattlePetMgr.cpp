@@ -53,9 +53,9 @@ void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatur
     m_PetJournal[guid] = new PetInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, state);
 }
 
-void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked)
+void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID)
 {
-    m_battleSlots[slotID] = new PetBattleSlot(guid, locked);
+    m_battleSlots[slotID] = new PetBattleSlot(guid);
 }
 
 void BattlePetMgr::BuildPetJournal(WorldPacket *data)
@@ -93,11 +93,22 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
     {
         PetBattleSlot * slot = GetPetBattleSlot(i);
 
+        // check slot locked conditions
+        bool locked = true;
+
+        switch (i)
+        {
+            case 0: locked = !m_player->HasSpell(119467); break;
+            case 1: locked = !m_player->GetAchievementMgr().HasAchieved(7433); break;
+            case 2: locked = !m_player->GetAchievementMgr().HasAchieved(6566); break;
+            default: break;
+        }
+
         data->WriteBit(!i);                                          // hasSlotIndex
         data->WriteBit(1);                                           // hasCollarID, inverse
         data->WriteBit(slot ? !slot->IsEmpty() : 1);                 // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot ? slot->petGUID : 0);  // pet guid in slot
-        data->WriteBit(slot ? slot->locked : 1);                    // locked slot
+        data->WriteBit(locked);                    // locked slot
     }
 
     data->WriteBit(1);                      // !hasJournalLock
@@ -881,7 +892,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     delete accumulator;
 
     pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
-    battleslots[1] = new PetBattleSlot(0, false);
+    battleslots[1] = new PetBattleSlot(0);
 
     if (!pets[1])
         return;
