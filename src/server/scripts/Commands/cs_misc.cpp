@@ -3321,7 +3321,7 @@ public:
             return false;
     }
 
-    static bool HandleCharDisplayTabrdCommand(ChatHandler* handler, const char* args) //РЎСѓРєРё, РїРѕРєР°Р¶РёС‚Рµ СЃРІРѕРё СЂСѓРєРё!
+    static bool HandleCharDisplayTabardCommand(ChatHandler* handler, const char* args) //РЎСѓРєРё, РїРѕРєР°Р¶РёС‚Рµ СЃРІРѕРё СЂСѓРєРё!
     {
         if(!*args)
             return false;
