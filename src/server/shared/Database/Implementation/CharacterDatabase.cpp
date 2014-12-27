@@ -645,6 +645,6 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     // Else
     PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged FROM character_visuals WHERE guid = ?",  CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged, tabard, shirt FROM character_visuals WHERE guid = ?",  CONNECTION_ASYNC);
 
 }

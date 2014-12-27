@@ -2191,6 +2191,36 @@ class spell_warl_fire_and_brimstone : public SpellScriptLoader
         }
 };
 
+// Felsteed - 5784
+class spell_warl_felsteed : public SpellScriptLoader
+{
+    public:
+        spell_warl_felsteed() : SpellScriptLoader("spell_warl_felsteed") { }
+
+        class spell_warl_felsteed_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_felsteed_AuraScript);
+
+            void OnTick(AuraEffect const* /*aurEff*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    caster->SendSpellCreateVisual(GetSpellInfo());
+                    caster->SendPlaySpellVisualKit(23384, 0);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_felsteed_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_felsteed_AuraScript();
+        }
+};
 
 void AddSC_warlock_spell_scripts()
 {
@@ -2242,4 +2272,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_demonic_gateway();
     new spell_warl_demonic_gateway_cast();
     new spell_warl_fire_and_brimstone();
+    new spell_warl_felsteed();
 }

@@ -19327,6 +19327,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         m_vis->m_visMainhand    = fieldsvis[9].GetUInt32();
         m_vis->m_visOffhand     = fieldsvis[10].GetUInt32();
         m_vis->m_visRanged      = fieldsvis[11].GetUInt32();
+        m_vis->m_visTabard      = fieldsvis[12].GetUInt32();
+        m_vis->m_visShirt       = fieldsvis[13].GetUInt32();
 
         HandleAltVisSwitch();
     }
@@ -20934,7 +20936,7 @@ void Player::SaveToDB(bool create /*=false*/)
     if (m_vis)
     {
         std::ostringstream ps;
-        ps << "REPLACE INTO character_visuals (guid, head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged) VALUES ("
+        ps << "REPLACE INTO character_visuals (guid, head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged, tabard, shirt) VALUES ("
             << GetGUIDLow() << ", "
             << m_vis->m_visHead << ", "
             << m_vis->m_visShoulders << ", "
@@ -20947,7 +20949,9 @@ void Player::SaveToDB(bool create /*=false*/)
             << m_vis->m_visBack << ", "
             << m_vis->m_visMainhand << ", "
             << m_vis->m_visOffhand << ", "
-            << m_vis->m_visRanged << ")";
+            << m_vis->m_visRanged << ", "
+            << m_vis->m_visTabard << ", "
+            << m_vis->m_visShirt << ")";
         CharacterDatabase.Execute(ps.str().c_str());
     }
 
@@ -21306,6 +21310,10 @@ bool Player::HandleChangeSlotModel(uint16 visSlot, uint32 newItem, uint16 pos)
                     if (itemProto->InventoryType == INVTYPE_SHOULDERS)
                         condition = true;
                     break;
+                case PLAYER_VISIBLE_ITEM_4_ENTRYID:    // shirt
+                    if (itemProto->InventoryType == INVTYPE_BODY)
+                        condition = true;
+                    break;
                 case PLAYER_VISIBLE_ITEM_5_ENTRYID:        // chest
                     if (itemProto->InventoryType == INVTYPE_CHEST || itemProto->InventoryType == INVTYPE_ROBE)
                         condition = true;
@@ -21344,6 +21352,10 @@ bool Player::HandleChangeSlotModel(uint16 visSlot, uint32 newItem, uint16 pos)
                     break;
                 case PLAYER_VISIBLE_ITEM_18_ENTRYID:    // weapon - ranged
                     if (itemProto->InventoryType == INVTYPE_RANGED || itemProto->InventoryType == INVTYPE_RANGEDRIGHT)
+                        condition = true;
+                    break;
+                case PLAYER_VISIBLE_ITEM_19_ENTRYID:    // tabard
+                    if (itemProto->InventoryType == INVTYPE_TABARD)
                         condition = true;
                     break;
                 default:
@@ -25900,13 +25912,13 @@ void Player::SendAurasForTarget(Unit* target)
         These movement packets are usually found in SMSG_COMPRESSED_MOVES
     */
     if (target->HasAuraType(SPELL_AURA_FEATHER_FALL))
-        target->SendMovementFeatherFall();
+        target->SetFeatherFall(true, true);
 
     if (target->HasAuraType(SPELL_AURA_WATER_WALK))
-        target->SendMovementWaterWalking();
+        target->SetWaterWalking(true, true);
 
     if (target->HasAuraType(SPELL_AURA_HOVER))
-        target->SendMovementHover();
+        target->SetHover(true, true);
 
     ObjectGuid targetGuid = target->GetObjectGuid();
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
@@ -28021,7 +28033,7 @@ void Player::AddKnownCurrency(uint32 itemId)
 
 void Player::UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode)
 {
-    if (m_lastFallTime >= minfo.fallTime || m_lastFallZ <= minfo.pos.GetPositionZ() || opcode == MSG_MOVE_FALL_LAND)
+    if (m_lastFallTime >= minfo.fallTime || m_lastFallZ <= minfo.pos.GetPositionZ() || opcode == CMSG_MOVE_FALL_LAND)
         SetFallInformation(minfo.fallTime, minfo.pos.GetPositionZ());
 }
 
@@ -29173,14 +29185,6 @@ VoidStorageItem* Player::GetVoidStorageItem(uint64 id, uint8& slot) const
     }
 
     return NULL;
-}
-
-bool Player::SetHover(bool enable)
-{
-    if (!Unit::SetHover(enable))
-        return false;
-
-    return true;
 }
 
 void Player::SendMovementSetCanFly(bool apply)

@@ -470,6 +470,7 @@ public:
     bool HasAreaAuraEffect() const;
     bool HasDynAuraEffect() const;
     bool IsMountOrCompanions() const;
+    bool IsNotProcSpell() const;
     uint32 GetBattlePetEntry() const;
 
     bool IsExplicitDiscovery() const;

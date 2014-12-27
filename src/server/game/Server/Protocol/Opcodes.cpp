@@ -1374,7 +1374,6 @@ void InitOpcodes()
       //DEFINE_OPCODE_HANDLER(MSG_GM_SUMMON,                                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
       //DEFINE_OPCODE_HANDLER(MSG_MOVE_FEATHER_FALL,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
       //DEFINE_OPCODE_HANDLER(MSG_MOVE_GRAVITY_CHNG,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
-      //DEFINE_OPCODE_HANDLER(MSG_MOVE_HOVER,                               STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
       //DEFINE_OPCODE_HANDLER(MSG_MOVE_ROOT,                                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
       //DEFINE_OPCODE_HANDLER(MSG_MOVE_SET_ALL_SPEED_CHEAT,                 STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
       //DEFINE_OPCODE_HANDLER(MSG_MOVE_SET_COLLISION_HEIGHT,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );

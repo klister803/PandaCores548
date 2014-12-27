@@ -608,9 +608,13 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
         inline CreatureAI* AI() const { return (CreatureAI*)i_AI; }
 
+        bool SetCanFly(bool apply);
         bool SetWalk(bool enable);
+        bool SetSwim(bool enable);
         bool SetDisableGravity(bool disable, bool packetOnly = false);
-        bool SetHover(bool enable);
+        bool SetWaterWalking(bool enable, bool packetOnly = false);
+        bool SetFeatherFall(bool enable, bool packetOnly = false);
+        bool SetHover(bool enable, bool packetOnly = false);
 
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }

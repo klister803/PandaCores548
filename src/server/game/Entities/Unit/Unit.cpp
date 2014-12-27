@@ -6177,6 +6177,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     if (rollchance > triggerAmount)
                         return false;
+
+                    if (!damage)
+                        return false;
                         
                     triggered_spell_id = 146137;
                     basepoints0 = damage;
@@ -6252,6 +6255,9 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     int32 rollchance = urand(0, 1000);
 
                     if (rollchance > triggerAmount)
+                        return false;
+
+                    if (!damage)
                         return false;
                         
                     triggered_spell_id = 146061;
@@ -11767,7 +11773,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
-    float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
     float tmpDamage = 0.0f;
 
@@ -12022,66 +12027,37 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
         // Check for table values
-        float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-        float coeff = 0;
+        float SPDCoeffMod = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+        float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
+
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
         if (bonus)
         {
-            if (damagetype == DOT)
-            {
-                coeff = bonus->dot_damage;
-                if (bonus->ap_dot_bonus > 0)
-                {
-                    WeaponAttackType attType;
-
-                    if (Player* plr = ToPlayer())
-                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                    else
-                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
-
-                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    APbonus += GetTotalAttackPowerValue(attType);
-                    DoneTotal += int32(bonus->ap_dot_bonus * stack * APbonus);
-                }
-            }
-            else
-            {
-                coeff = bonus->direct_damage;
-                if (bonus->ap_bonus > 0)
-                {
-                    WeaponAttackType attType;
-
-                    if (Player* plr = ToPlayer())
-                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                    else
-                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
-
-                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    APbonus += GetTotalAttackPowerValue(attType);
-                    DoneTotal += int32(bonus->ap_bonus * stack * APbonus);
-                }
-            }
+            SPDCoeffMod = damagetype == DOT ? bonus->dot_damage : bonus->direct_damage;
+            ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
         }
-        else
+
+		bool calcSPDBonus = SPDCoeffMod > 0;
+
+        if (ApCoeffMod > 0)
         {
-            if (dbccoeff && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
-                coeff = dbccoeff;
+            //code for bonus AP from dbc
 
-            if (spellProto->SpellAPBonusMultiplier)
+            WeaponAttackType attType;
+
+            if (Player* plr = ToPlayer())
+                attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
+            else
+                attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
+
+            float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+            APbonus += GetTotalAttackPowerValue(attType);
+
+            if (calcSPDBonus)
+                calcSPDBonus = DoneAdvertisedBenefit > APbonus;
+
+            if (!calcSPDBonus)
             {
-                ApCoeffMod = spellProto->SpellAPBonusMultiplier;
-
-                //code for bonus AP from dbc
-
-                WeaponAttackType attType;
-
-                if (Player* plr = ToPlayer())
-                    attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                else
-                    attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
-
-                float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                APbonus += GetTotalAttackPowerValue(attType);
                 DoneTotal += int32(stack * ApCoeffMod * APbonus);
 
                 if (damagetype == DOT)
@@ -12093,20 +12069,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             }
         }
         // Default calculation
-        if (DoneAdvertisedBenefit)
+        if (calcSPDBonus)
         {
-//             if ((!bonus && !dbccoeff && !spellProto->SpellAPBonusMultiplier) || coeff < 0)
-//                 coeff = CalculateDefaultCoefficient(spellProto, damagetype);
-
             float factorMod = CalculateLevelPenalty(spellProto);
 
             if (Player* modOwner = GetSpellModOwner())
             {
-                coeff *= 100.0f;
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
-                coeff /= 100.0f;
+                SPDCoeffMod *= 100.0f;
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
+                SPDCoeffMod /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
+            DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -12305,6 +12278,17 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
 int32 Unit::GetSpellPowerDamage(SpellSchoolMask schoolMask)
 {
     int32 SPD = 0;
+
+    switch (getClass())
+    {
+        case CLASS_HUNTER:
+        case CLASS_ROGUE:
+        case CLASS_WARRIOR:
+        case CLASS_DEATH_KNIGHT:
+            return SPD;
+        default:
+            break;
+    }
 
     if (Player* plr = ToPlayer())
     {
@@ -13803,9 +13787,6 @@ void Unit::UpdateMount()
         Player* player = ToPlayer();
         if (!player)
             player = m_movedPlayer;
-
-        if (player)
-            player->SendMovementCanFlyChange();
 
         _mount = newMount;
     }
@@ -22589,14 +22570,6 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         *data << (float)m_movementInfo.splineElevation;
 }
 
-void Unit::SetCanFly(bool apply)
-{
-    if (apply)
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-}
-
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
@@ -23078,6 +23051,18 @@ bool Unit::SetWalk(bool enable)
     return true;
 }
 
+bool Unit::SetSwim(bool enable)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+    return true;
+}
+
 bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
 {
     if (disable == IsLevitating())
@@ -23091,9 +23076,67 @@ bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
     return true;
 }
 
-bool Unit::SetHover(bool enable)
+bool Unit::SetWaterWalking(bool enable, bool packetOnly)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
+        return false;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetWaterWalking(HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING));
+
+    if (packetOnly)
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+    return true;
+}
+
+bool Unit::SetCanFly(bool enable)
+{
+    if (enable && CanFly())
+        return false;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetCanFly(enable);
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+    return true;
+}
+
+bool Unit::SetFeatherFall(bool enable, bool packetOnly)
+{
+    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
+        return false;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetFeatherFall(HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW));
+
+    if (packetOnly)
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+    return true;
+}
+
+bool Unit::SetHover(bool enable, bool packetOnly)
+{
+    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+        return false;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetHover(enable);
+    //for creature using virtual function
+
+    if (packetOnly)
         return false;
 
     if (enable)
@@ -23115,17 +23158,6 @@ bool Unit::SetHover(bool enable)
     }
 
     return true;
-}
-
-void Unit::SendMovementHover()
-{
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetHover(HasUnitMovementFlag(MOVEMENTFLAG_HOVER));
-
-    WorldPacket data(MSG_MOVE_HOVER, 64);
-    data.append(GetPackGUID());
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
 }
 
 void Unit::FocusTarget(Spell const* focusSpell, uint64 target)
@@ -23158,61 +23190,6 @@ Unit* Unit::GetTargetUnit() const
     if (m_curTargetGUID)
         return ObjectAccessor::GetUnit(*this, m_curTargetGUID);
     return NULL;
-}
-
-void Unit::SendMovementWaterWalking()
-{
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetWaterWalking(HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING));
-
-    WorldPacket data(MSG_MOVE_WATER_WALK, 64);
-    data.append(GetPackGUID());
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-}
-
-void Unit::SendMovementFeatherFall()
-{
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetFeatherFall(HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW));
-
-    WorldPacket data(MSG_MOVE_FEATHER_FALL, 64);
-    data.append(GetPackGUID());
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-}
-
-void Unit::SendMovementGravityChange()
-{
-    WorldPacket data(MSG_MOVE_GRAVITY_CHNG, 64);
-    data.append(GetPackGUID());
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-}
-
-void Unit::SendMovementCanFlyChange()
-{
-    /*!
-        if ( a3->MoveFlags & MOVEMENTFLAG_CAN_FLY )
-        {
-            v4->MoveFlags |= 0x1000000u;
-            result = 1;
-        }
-        else
-        {
-            if ( v4->MoveFlags & MOVEMENTFLAG_FLYING )
-                CMovement::DisableFlying(v4);
-            v4->MoveFlags &= 0xFEFFFFFFu;
-            result = 1;
-        }
-    */
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetCanFly(CanFly());
-
-    WorldPacket data(MSG_MOVE_UPDATE_CAN_FLY, 64);
-    data.append(GetPackGUID());
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
 }
 
 bool Unit::IsSplineEnabled() const
