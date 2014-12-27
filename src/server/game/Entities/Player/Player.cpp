@@ -21311,7 +21311,7 @@ bool Player::HandleChangeSlotModel(uint16 visSlot, uint32 newItem, uint16 pos)
                         condition = true;
                     break;
                 case PLAYER_VISIBLE_ITEM_4_ENTRYID:    // shirt
-                    if (itemProto->InventoryType == INVTYPE_SHIRT)
+                    if (itemProto->InventoryType == INVTYPE_BODY)
                         condition = true;
                     break;
                 case PLAYER_VISIBLE_ITEM_5_ENTRYID:        // chest
