@@ -1226,6 +1226,40 @@ bool SpellInfo::IsMountOrCompanions() const
     return false;
 }
 
+bool SpellInfo::IsNotProcSpell() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].IsAura(SPELL_AURA_MOUNTED))
+            return true;
+        if (Effects[i].IsAura(SPELL_AURA_MOD_STAT))
+            return true;
+        switch(Effects[i].Effect)
+        {
+            case SPELL_EFFECT_SUMMON:
+            {
+                if (Effects[i].MiscValueB == 3221)
+                    return true;
+                break;
+            }
+            case SPELL_EFFECT_ENCHANT_ITEM:
+            case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
+            case SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC:
+            case SPELL_EFFECT_ENCHANT_HELD_ITEM:
+            case SPELL_EFFECT_BATTLE_PET:
+            case SPELL_EFFECT_APPLY_GLYPH:
+            case SPELL_EFFECT_CREATE_ITEM:
+            case SPELL_EFFECT_CREATE_ITEM_2:
+            case SPELL_EFFECT_UNLEARN_TALENT:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
 uint32 SpellInfo::GetBattlePetEntry() const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
