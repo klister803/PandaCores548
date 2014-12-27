@@ -892,7 +892,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     delete accumulator;
 
     pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
-    battleslots[1] = new PetBattleSlot(0, false);
+    battleslots[1] = new PetBattleSlot(0);
 
     if (!pets[1])
         return;
