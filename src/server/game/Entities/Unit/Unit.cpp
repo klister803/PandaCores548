@@ -12021,19 +12021,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
         // Check for table values
-		float SPDCoeffMod = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-		float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
+        float SPDCoeffMod = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+        float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
 
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
         if (bonus)
         {
-			SPDCoeffMod = damagetype == DOT ? bonus->dot_damage : bonus->direct_damage;
-			ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
+            SPDCoeffMod = damagetype == DOT ? bonus->dot_damage : bonus->direct_damage;
+            ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
         }
 
 		bool calcSPDBonus = SPDCoeffMod > 0;
 
-		if (ApCoeffMod > 0)
+        if (ApCoeffMod > 0)
         {
             //code for bonus AP from dbc
 
@@ -12047,33 +12047,33 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
             APbonus += GetTotalAttackPowerValue(attType);
 
-			if (calcSPDBonus)
-				calcSPDBonus = DoneAdvertisedBenefit > APbonus;
+            if (calcSPDBonus)
+                calcSPDBonus = DoneAdvertisedBenefit > APbonus;
 
-			if (!calcSPDBonus)
-			{
-				DoneTotal += int32(stack * ApCoeffMod * APbonus);
+            if (!calcSPDBonus)
+            {
+                DoneTotal += int32(stack * ApCoeffMod * APbonus);
 
-				if (damagetype == DOT)
-				{
-					sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
-				}
-				else
-					sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone !DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
-			}
+                if (damagetype == DOT)
+                {
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
+                }
+                else
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone !DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
+            }
         }
         // Default calculation
-		if (calcSPDBonus)
+        if (calcSPDBonus)
         {
             float factorMod = CalculateLevelPenalty(spellProto);
 
             if (Player* modOwner = GetSpellModOwner())
             {
-				SPDCoeffMod *= 100.0f;
-				modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
-				SPDCoeffMod /= 100.0f;
+                SPDCoeffMod *= 100.0f;
+                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
+                SPDCoeffMod /= 100.0f;
             }
-			DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
+            DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -12273,16 +12273,16 @@ int32 Unit::GetSpellPowerDamage(SpellSchoolMask schoolMask)
 {
     int32 SPD = 0;
 
-	switch (getClass())
-	{
-		case CLASS_HUNTER:
-		case CLASS_ROGUE:
-		case CLASS_WARRIOR:
-		case CLASS_DEATH_KNIGHT:
-			return SPD;
-		default:
-			break;
-	}
+    switch (getClass())
+    {
+        case CLASS_HUNTER:
+        case CLASS_ROGUE:
+        case CLASS_WARRIOR:
+        case CLASS_DEATH_KNIGHT:
+            return SPD;
+        default:
+            break;
+    }
 
     if (Player* plr = ToPlayer())
     {
