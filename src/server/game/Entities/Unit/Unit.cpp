@@ -11767,7 +11767,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
-    float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
     float tmpDamage = 0.0f;
 
@@ -12022,91 +12021,59 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             DoneAdvertisedBenefit += ((Guardian*)this)->GetBonusDamage();
 
         // Check for table values
-        float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-        float coeff = 0;
+		float SPDCoeffMod = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+		float ApCoeffMod = spellProto->SpellAPBonusMultiplier;
+
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
         if (bonus)
         {
-            if (damagetype == DOT)
-            {
-                coeff = bonus->dot_damage;
-                if (bonus->ap_dot_bonus > 0)
-                {
-                    WeaponAttackType attType;
-
-                    if (Player* plr = ToPlayer())
-                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                    else
-                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
-
-                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    APbonus += GetTotalAttackPowerValue(attType);
-                    DoneTotal += int32(bonus->ap_dot_bonus * stack * APbonus);
-                }
-            }
-            else
-            {
-                coeff = bonus->direct_damage;
-                if (bonus->ap_bonus > 0)
-                {
-                    WeaponAttackType attType;
-
-                    if (Player* plr = ToPlayer())
-                        attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                    else
-                        attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
-
-                    float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                    APbonus += GetTotalAttackPowerValue(attType);
-                    DoneTotal += int32(bonus->ap_bonus * stack * APbonus);
-                }
-            }
+			SPDCoeffMod = damagetype == DOT ? bonus->dot_damage : bonus->direct_damage;
+			ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
         }
-        else
+
+		bool calcSPDBonus = SPDCoeffMod > 0;
+
+		if (ApCoeffMod > 0)
         {
-            if (dbccoeff && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
-                coeff = dbccoeff;
+            //code for bonus AP from dbc
 
-            if (spellProto->SpellAPBonusMultiplier)
-            {
-                ApCoeffMod = spellProto->SpellAPBonusMultiplier;
+            WeaponAttackType attType;
 
-                //code for bonus AP from dbc
+            if (Player* plr = ToPlayer())
+                attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
+            else
+                attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
 
-                WeaponAttackType attType;
+            float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
+            APbonus += GetTotalAttackPowerValue(attType);
 
-                if (Player* plr = ToPlayer())
-                    attType = plr->getClass() == CLASS_HUNTER ? RANGED_ATTACK: BASE_ATTACK;
-                else
-                    attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_RANGED) ? RANGED_ATTACK : BASE_ATTACK;
+			if (calcSPDBonus)
+				calcSPDBonus = DoneAdvertisedBenefit > APbonus;
 
-                float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
-                APbonus += GetTotalAttackPowerValue(attType);
-                DoneTotal += int32(stack * ApCoeffMod * APbonus);
+			if (!calcSPDBonus)
+			{
+				DoneTotal += int32(stack * ApCoeffMod * APbonus);
 
-                if (damagetype == DOT)
-                {
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
-                }
-                else
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone !DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
-            }
+				if (damagetype == DOT)
+				{
+					sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
+				}
+				else
+					sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SpellDamageBonusDone !DOT DoneTotal %i, APbonus %f", DoneTotal, APbonus);
+			}
         }
         // Default calculation
-        if (DoneAdvertisedBenefit)
+		if (calcSPDBonus)
         {
-//             if ((!bonus && !dbccoeff && !spellProto->SpellAPBonusMultiplier) || coeff < 0)
-//                 coeff = CalculateDefaultCoefficient(spellProto, damagetype);
-
             float factorMod = CalculateLevelPenalty(spellProto);
 
             if (Player* modOwner = GetSpellModOwner())
             {
-                coeff *= 100.0f;
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
-                coeff /= 100.0f;
+				SPDCoeffMod *= 100.0f;
+				modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, SPDCoeffMod);
+				SPDCoeffMod /= 100.0f;
             }
-            DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod * stack);
+			DoneTotal += int32(DoneAdvertisedBenefit * SPDCoeffMod * factorMod * stack);
         }
 
         if (getPowerType() == POWER_MANA)
@@ -12305,6 +12272,17 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask)
 int32 Unit::GetSpellPowerDamage(SpellSchoolMask schoolMask)
 {
     int32 SPD = 0;
+
+	switch (getClass())
+	{
+		case CLASS_HUNTER:
+		case CLASS_ROGUE:
+		case CLASS_WARRIOR:
+		case CLASS_DEATH_KNIGHT:
+			return SPD;
+		default:
+			break;
+	}
 
     if (Player* plr = ToPlayer())
     {
