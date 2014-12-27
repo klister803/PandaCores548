@@ -19112,8 +19112,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // load battle pets journal ans slots before spells and other
-    //_LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
-    //_LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
+    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
+    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
@@ -19292,9 +19292,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
     _LoadCUFProfiles(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES));
-
-    _LoadBattlePets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PETS));
-    _LoadBattlePetSlots(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_BATTLE_PET_SLOTS));
 
     SetLfgBonusFaction(fields[66].GetUInt32());
 
@@ -20394,25 +20391,11 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     {
         // initial first
         for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
-        {
-            bool locked = true;
-
-            // additional checks
-            switch (i)
-            {
-                case 0: locked = !HasSpell(119467); break;
-                case 1: locked = !GetAchievementMgr().HasAchieved(7433); break;
-                case 2: locked = !GetAchievementMgr().HasAchieved(6566); break;
-                default: break;
-            }
-
-            GetBattlePetMgr()->AddPetBattleSlot(0, i, locked);
-        }
-
+            GetBattlePetMgr()->AddPetBattleSlot(0, i);
         return;
     }
 
-    // SELECT slot_0, slot_1, slot_2, locked FROM character_battle_pet WHERE ownerAccID = ?
+    // SELECT slot_0, slot_1, slot_2 FROM character_battle_pet WHERE ownerAccID = ?
     Field* fields = result->Fetch();
 
     uint64 petGUIDs[3] = {0, 0, 0};
@@ -20420,13 +20403,9 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     petGUIDs[0]  = fields[0].GetUInt64();
     petGUIDs[1]  = fields[1].GetUInt64();
     petGUIDs[2]  = fields[2].GetUInt64();
-    uint8 lockedMask = fields[3].GetUInt8();
 
     for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
-    {
-        bool locked = lockedMask & (1 << i);
-        GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i, locked);
-    }
+        GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i);
 }
 
 void Player::_LoadGroup(PreparedQueryResult result)
@@ -22189,17 +22168,13 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
 void Player::_SaveBattlePetSlots(SQLTransaction& trans)
 {
     // save slots
-    uint8 lockedMask = 0;
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_SLOTS);
     stmt->setUInt32(0, GetSession()->GetAccountId());
     for (int i = 0; i < 3; ++i)
     {
         PetBattleSlot * slot = GetBattlePetMgr()->GetPetBattleSlot(i);
-        uint8 locked = slot ? slot->IsLocked() : 1;
-        lockedMask |= locked << i;
         stmt->setUInt64(i+1, slot ? slot->petGUID : 0);
     }
-    stmt->setUInt8(4, lockedMask);
     trans->Append(stmt);
 }
 

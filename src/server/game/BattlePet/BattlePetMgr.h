@@ -86,17 +86,14 @@ struct PetInfo
 
 struct PetBattleSlot
 {
-    PetBattleSlot(uint64 _guid, bool _locked): petGUID(_guid), locked(_locked) {}
+    PetBattleSlot(uint64 _guid): petGUID(_guid) {}
 
     uint64 petGUID;
-    bool locked;
 
     // helpers
     bool IsEmpty() { return petGUID == 0; }
     void SetPet(uint64 guid) { petGUID = guid; }
     uint64 GetPet() { return petGUID; }
-    bool IsLocked() { return locked; }
-    void SetLocked(bool val) { locked = val; }
 };
 
 struct BattlePetStatAccumulator
@@ -238,7 +235,7 @@ public:
     void BuildPetJournal(WorldPacket *data);
 
     void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, uint8 state = STATE_NORMAL);
-    void AddPetBattleSlot(uint64 guid, uint8 slotID, bool locked = true);
+    void AddPetBattleSlot(uint64 guid, uint8 slotID);
 
     void ClosePetBattle();
     void SendUpdatePets();

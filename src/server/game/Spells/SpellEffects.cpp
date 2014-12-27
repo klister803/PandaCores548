@@ -8531,11 +8531,6 @@ void Spell::EffectUnlockPetBattles(SpellEffIndex effIndex)
     // unlock battles
     if (!player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED))
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_PET_BATTLES_UNLOCKED);
-
-    // unlock 1st slot
-    if (PetBattleSlot * slot = player->GetBattlePetMgr()->GetPetBattleSlot(0))
-        if (slot->IsLocked())
-            slot->SetLocked(false);
 }
 
 void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
