@@ -40,7 +40,7 @@ class boss_commander_ulthok : public CreatureScript
 
         CreatureAI* GetAI(Creature *pCreature) const
         {
-            return GetAIForInstance<boss_commander_ulthokAI>(pCreature, TotTScriptName);
+            return new boss_commander_ulthokAI (pCreature);
         }
 
         struct boss_commander_ulthokAI : public BossAI
@@ -141,7 +141,7 @@ class npc_ulthok_dark_fissure : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_ulthok_dark_fissureAI (pCreature);
+            return GetInstanceAI<npc_ulthok_dark_fissureAI>(pCreature);
         }
 
         struct npc_ulthok_dark_fissureAI : public Scripted_NoMovementAI
@@ -171,19 +171,18 @@ class at_tott_commander_ulthok : public AreaTriggerScript
 
         bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
         {
-            sLog->outError(LOG_FILTER_SERVER_LOADING, "ulthok");
-		    if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
-		    {
-			    if (pInstance->GetData(DATA_COMMANDER_ULTHOK_EVENT) != DONE
-                    && pInstance->GetBossState(DATA_LADY_NAZJAR) != DONE)
-			    {
+            if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
+            {
+                if (pInstance->GetData(DATA_COMMANDER_ULTHOK_EVENT) != DONE
+                    && pInstance->GetBossState(DATA_LADY_NAZJAR) == DONE)
+                {
                     pInstance->SetData(DATA_COMMANDER_ULTHOK_EVENT, DONE);
                     if (Creature* pUlthok = ObjectAccessor::GetCreature(*pPlayer, pInstance->GetData64(DATA_COMMANDER_ULTHOK)))
                     {
                         pUlthok->AI()->DoAction(ACTION_COMMANDER_ULTHOK_START_EVENT);
                     }
-			    }
-		    }
+                }
+            }
             return true;
         }
 };

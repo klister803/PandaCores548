@@ -56,7 +56,6 @@ enum Events
 enum Actions
 {
     ACTION_GHURSHA_START    = 1,
-    ACTION_RESET            = 3,
 };
 
 enum Adds
@@ -72,7 +71,7 @@ class boss_erunak_stonespeaker : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_erunak_stonespeakerAI(pCreature);
+            return GetInstanceAI<boss_erunak_stonespeakerAI>(pCreature);
         }
 
         struct boss_erunak_stonespeakerAI : public ScriptedAI
@@ -106,13 +105,11 @@ class boss_erunak_stonespeaker : public CreatureScript
                 events.Reset();
                 summons.DespawnAll();
                 if (pInstance)
-                {
                     if (pInstance->GetBossState(DATA_MINDBENDER_GHURSHA) == DONE || bPhase)
+                    {
                         me->setFaction(35);
-
-                    if (Creature* pOzuma = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_OZUMAT)))
-                        pOzuma->AI()->DoAction(ACTION_RESET);
-                }
+                        me->RemoveAllAuras();
+                    }
             }
 
             void KilledUnit(Unit* victim)
@@ -128,8 +125,8 @@ class boss_erunak_stonespeaker : public CreatureScript
                     if (me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_LAVA_BOLT
                         || me->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id == SPELL_LAVA_BOLT_H)
                         for (uint8 i = 0; i < 3; ++i)
-						    if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
-							    me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                            if (spell->Effects[i].Effect == SPELL_EFFECT_INTERRUPT_CAST)
+                                me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -213,7 +210,7 @@ class boss_mindbender_ghursha : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return GetAIForInstance< boss_mindbender_ghurshaAI >(pCreature, TotTScriptName);
+            return GetInstanceAI<boss_mindbender_ghurshaAI>(pCreature);
         }
 
         struct boss_mindbender_ghurshaAI : public BossAI
@@ -299,7 +296,7 @@ class boss_mindbender_ghursha : public CreatureScript
                         events.ScheduleEvent(EVENT_UNRELENTING_AGONY, 30000);
                         break;
                     }
-                }		
+                }        
                 DoMeleeAttackIfReady();
             }
 
@@ -314,7 +311,7 @@ class boss_mindbender_ghursha : public CreatureScript
                 Talk(SAY_DEATH);
                 if (Creature* pErunak = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ERUNAK_STONESPEAKER)))
                 {
-                    //pErunak->AI()->EnterEvadeMode();
+                    pErunak->AI()->EnterEvadeMode();
                     pErunak->AI()->Talk(SAY_VICTORY);
                 }
             }
@@ -328,7 +325,7 @@ class npc_erunak_earth_shards : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_erunak_earth_shardsAI(pCreature);
+            return GetInstanceAI<npc_erunak_earth_shardsAI>(pCreature);
         }
 
         struct npc_erunak_earth_shardsAI : public Scripted_NoMovementAI
@@ -367,7 +364,7 @@ class npc_ghursha_mind_fog : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_ghursha_mind_fogAI (pCreature);
+            return GetInstanceAI<npc_ghursha_mind_fogAI>(pCreature);
         }
 
         struct npc_ghursha_mind_fogAI : public Scripted_NoMovementAI

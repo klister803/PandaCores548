@@ -74,53 +74,48 @@ public:
 
     bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
     {
-		if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
-		{
-			if (pInstance->GetData(DATA_LADY_NAZJAR_EVENT) != DONE
+        if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
+        {
+            if (pInstance->GetData(DATA_LADY_NAZJAR_EVENT) != DONE
                 && pInstance->GetBossState(DATA_COMMANDER_ULTHOK) != DONE)
-			{
+            {
                 pInstance->SetData(DATA_LADY_NAZJAR_EVENT, DONE);
                 if (Creature* pLadyNazjarEvent = ObjectAccessor::GetCreature(*pPlayer, pInstance->GetData64(DATA_LADY_NAZJAR_EVENT)))
                     pLadyNazjarEvent->AI()->DoAction(ACTION_LADY_NAZJAR_START_EVENT);
-			}
-		}
+            }
+        }
         return true;
     }
 };
 
-const Position teleporterPos[2] = 
+class npc_throne_of_the_tides_teleporter: public CreatureScript
 {
-    {-560.25f, 819.19f, 245.28f, 5.20f}, // entrance;
-    {-14.72f, 796.57f, 808.12f, 1.99f}, // upper
-};
+public:
+    npc_throne_of_the_tides_teleporter() : CreatureScript("npc_throne_of_the_tides_teleporter") { }
 
-class npc_throne_of_the_tides_teleporter : public CreatureScript
-{
-    public:
-        npc_throne_of_the_tides_teleporter() : CreatureScript("npc_throne_of_the_tides_teleporter"){}
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<npc_throne_of_the_tides_teleporter_AI>(creature);
+    }
 
-        bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    struct npc_throne_of_the_tides_teleporter_AI : public CreatureAI
+    {
+       npc_throne_of_the_tides_teleporter_AI(Creature* creature) : CreatureAI(creature) { }
+
+        void OnSpellClick(Unit* clicker)
         {
-            if (pPlayer->isInCombat())
-                return false;
-            switch (pCreature->GetEntry())
-            {
-            case NPC_THRONE_OF_THE_TIDES_TELEPORTER_1:
-                    pPlayer->NearTeleportTo(teleporterPos[1].GetPositionX(),
-                        teleporterPos[1].GetPositionY(),
-                        teleporterPos[1].GetPositionZ(),
-                        teleporterPos[1].GetOrientation());
-                    return false;
-                break;
-            case NPC_THRONE_OF_THE_TIDES_TELEPORTER_2:
-                pPlayer->NearTeleportTo(teleporterPos[0].GetPositionX(),
-                    teleporterPos[0].GetPositionY(),
-                    teleporterPos[0].GetPositionZ(),
-                    teleporterPos[0].GetOrientation());
-                break;
-            }
-            return false;
+            if (InstanceScript* instance = me->GetInstanceScript())
+                if (instance->GetBossState(DATA_LADY_NAZJAR) != DONE)
+                    return;
+
+            if (me->GetEntry() == 51391)
+                clicker->NearTeleportTo(-14.72f, 796.57f, 808.12f, 1.99f, false);
+            else if (me->GetEntry() == 51395)
+                clicker->NearTeleportTo(-560.25f, 819.19f, 245.28f, 5.20f, false);
         }
+
+        void UpdateAI(uint32 diff) { }
+    };
 };
 
 class npc_lady_nazjar_event : public CreatureScript
@@ -130,7 +125,7 @@ class npc_lady_nazjar_event : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_lady_nazjar_eventAI (creature);
+            return GetInstanceAI<npc_lady_nazjar_eventAI>(creature);
         }
 
         struct npc_lady_nazjar_eventAI : public ScriptedAI
