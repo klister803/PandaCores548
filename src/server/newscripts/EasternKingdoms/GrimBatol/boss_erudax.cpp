@@ -440,7 +440,7 @@ public:
             if (!pInstance)
                 return;
 
-            if (pInstance->GetData(DATA_ERUDAX) != IN_PROGRESS)
+            if (pInstance->GetBossState(DATA_ERUDAX) != IN_PROGRESS)
                 me->DespawnOrUnsummon();
         }
     };
