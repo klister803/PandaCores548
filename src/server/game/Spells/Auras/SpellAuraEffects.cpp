@@ -3783,27 +3783,27 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
     }
 
     //! Not entirely sure if this should be sent for creatures as well, but I don't think so.
+    target->SetCanFly(apply);
     if (!apply)
     {
-        target->m_movementInfo.SetFallTime(0);
         target->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
-        target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+        target->m_movementInfo.SetFallTime(0);
     }else
         target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
-
-    target->SetCanFly(apply);
 
     Player* player = target->ToPlayer();
     if (!player)
         player = target->m_movedPlayer;
 
     if (player)
+    {
+        player->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
         target->m_anti_FlightTime = 1000;
+        player->SendMovementCanFlyChange();
+    }
 
     //! We still need to initiate a server-side MoveFall here,
     //! which requires MSG_MOVE_FALL_LAND on landing.
-    if (target->GetTypeId() == TYPEID_UNIT)
-         target->GetMotionMaster()->MoveFall();
 }
 
 void AuraEffect::HandleAuraWaterWalk(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3820,7 +3820,12 @@ void AuraEffect::HandleAuraWaterWalk(AuraApplication const* aurApp, uint8 mode, 
             return;
     }
 
-    target->SetWaterWalking(apply);
+    if (apply)
+        target->AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+    else
+        target->RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+
+    target->SendMovementWaterWalking();
 }
 
 void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3837,7 +3842,12 @@ void AuraEffect::HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode
             return;
     }
 
-    target->SetFeatherFall(apply);
+    if (apply)
+        target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+    else
+        target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+
+    target->SendMovementFeatherFall();
 
     // start fall from current height
     if (!apply && target->GetTypeId() == TYPEID_PLAYER)
@@ -3881,6 +3891,7 @@ void AuraEffect::HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool
     }
 
     target->SetHover(apply);    //! Sets movementflags
+    target->SendMovementHover();
 }
 
 void AuraEffect::HandleWaterBreathing(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
@@ -4230,8 +4241,6 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
         return;
 
     Unit* target = aurApp->GetTarget();
-    if (mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK)
-        target->UpdateSpeed(MOVE_FLIGHT, true);
 
     //! Update ability to fly
     if (GetAuraType() == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
@@ -4239,20 +4248,23 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK && (apply || (!target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !target->HasAuraType(SPELL_AURA_FLY))))
         {
+            target->SetCanFly(apply);
             if (!apply)
             {
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
                 target->m_movementInfo.SetFallTime(0);
-                target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
             }else
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
 
-            target->SetCanFly(apply);
+            Player* player = target->ToPlayer();
+            if (!player)
+                player = target->m_movedPlayer;
+
+            if (player)
+                player->SendMovementCanFlyChange();
 
             //! We still need to initiate a server-side MoveFall here,
             //! which requires MSG_MOVE_FALL_LAND on landing.
-            if (target->GetTypeId() == TYPEID_UNIT)
-                 target->GetMotionMaster()->MoveFall();
         }
 
         //! Someone should clean up these hacks and remove it from this function. It doesn't even belong here.
@@ -4267,6 +4279,9 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
                 target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
         }
     }
+
+    if (mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK)
+        target->UpdateSpeed(MOVE_FLIGHT, true);
 }
 
 void AuraEffect::HandleAuraModIncreaseSwimSpeed(AuraApplication const* aurApp, uint8 mode, bool /*apply*/) const
