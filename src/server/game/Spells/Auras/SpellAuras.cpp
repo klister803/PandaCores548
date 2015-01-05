@@ -1279,6 +1279,37 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
     return false;
 }
 
+void Aura::SetMaxStackAmount()
+{
+    int32 maxStackAmount = m_spellInfo->StackAmount;
+
+    if (Unit* caster = GetCaster())
+        if (Player* modOwner = caster->GetSpellModOwner())
+            modOwner->ApplySpellMod(GetId(), SPELLMOD_STACKAMOUNT, maxStackAmount);
+
+    bool refresh = maxStackAmount >= GetStackAmount();
+
+    // Update stack amount
+    SetStackAmount(maxStackAmount);
+
+    if (refresh)
+    {
+        RefreshSpellMods();
+        RefreshTimers();
+
+        SetCharges(CalcMaxCharges());
+
+        // FIXME: not a best way to synchronize charges, but works
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (AuraEffect* aurEff = GetEffect(i))
+                if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
+                    if (SpellModifier* mod = aurEff->GetSpellModifier())
+                        mod->charges = GetCharges();
+    }
+
+    SetNeedClientUpdateForTargets();
+}
+
 void Aura::RefreshSpellMods()
 {
     for (Aura::ApplicationMap::const_iterator appIter = m_applications.begin(); appIter != m_applications.end(); ++appIter)
@@ -1600,6 +1631,109 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         }
                         else
                             _target->ApplySpellImmune(GetId(), IMMUNITY_ID, -(itr->effect), true);
+                    }
+                    else if (_caster)
+                    {
+                        if(itr->type2 == 2 && _caster)
+                        {
+                            if(itr->hastalent > 0 && !_caster->HasSpell(itr->hastalent))
+                                continue;
+                            else if(itr->hastalent < 0 && _caster->HasSpell(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 > 0 && !_caster->HasSpell(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _caster->HasSpell(abs(itr->hastalent2)))
+                                continue;
+                        }
+                        else if(itr->type2)
+                        {
+                            if(itr->hastalent > 0 && !_caster->HasAura(itr->hastalent))
+                                continue;
+                            else if(itr->hastalent < 0 && _caster->HasAura(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 < 0 && !_caster->HasAura(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _caster->HasAura(abs(itr->hastalent2)))
+                                continue;
+                        }
+                        else
+                        {
+                            if(itr->hastalent > 0 && !_target->HasAura(itr->hastalent))
+                                continue;
+                            else if(itr->hastalent < 0 && _target->HasAura(abs(itr->hastalent)))
+                                continue;
+                            if(itr->hastalent2 > 0 && !_target->HasAura(itr->hastalent2))
+                                continue;
+                            else if(itr->hastalent2 < 0 && _target->HasAura(abs(itr->hastalent2)))
+                                continue;
+                        }
+                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                            continue;
+                        if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER && _target->ToPlayer()->HasSpellCooldown(itr->effect))
+                            continue;
+
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = _caster->ToPlayer())
+                                _lplayer->learnSpell(itr->effect, false);
+                        }
+                        else
+                            _caster->AddAura(itr->effect, _target);
+
+                        if(itr->cooldown != 0 && _target->GetTypeId() == TYPEID_PLAYER)
+                            _target->ToPlayer()->AddSpellCooldown(itr->effect, 0, getPreciseTime() + (double)itr->cooldown);
+                    }
+                }
+            }
+            if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(GetId() + SPELL_LINK_AURA_HIT))
+            {
+                for (std::vector<SpellLinked>::const_iterator itr = spellTriggered->begin(); itr != spellTriggered->end(); ++itr)
+                {
+                    Unit* _target = target;
+                    if(itr->target == 1 && target->ToPlayer()) //get target pet
+                    {
+                        if (Pet* pet = target->ToPlayer()->GetPet())
+                            _target = (Unit*)pet;
+                        else
+                            continue;
+                    }
+                    if(itr->target == 2) //get target owner
+                    {
+                        if (Unit* owner = target->GetOwner())
+                            _target = owner;
+                        else
+                            continue;
+                    }
+                    if(itr->target == 3) //get target as caster
+                        _target = caster;
+
+                    Unit* _caster = caster;
+                    if(itr->caster == 1 && caster && caster->ToPlayer()) //get caster pet
+                    {
+                        if (Pet* pet = caster->ToPlayer()->GetPet())
+                            _caster = (Unit*)pet;
+                        else
+                            continue;
+                    }
+                    if(itr->caster == 2 && caster) //get caster owner
+                    {
+                        if (Unit* owner = caster->GetOwner())
+                            _caster = owner;
+                        else
+                            continue;
+                    }
+                    if(itr->caster == 3) //get caster as target
+                        _caster = target;
+
+                    if (itr->effect < 0)
+                    {
+                        if(itr->learnspell)
+                        {
+                            if(Player* _lplayer = _target->ToPlayer())
+                                _lplayer->removeSpell(-(itr->effect));
+                        }
+                        else
+                            _target->RemoveAurasDueToSpell(-(itr->effect));
                     }
                     else if (_caster)
                     {

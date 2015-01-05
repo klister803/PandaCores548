@@ -471,7 +471,7 @@ class spell_warl_demonic_call : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(WARLOCK_DEMONIC_CALL) && !_player->HasAura(114736))
+                        if (_player->HasAura(WARLOCK_DEMONIC_CALL))
                         {
                             _player->CastSpell(_player, WARLOCK_WILD_IMP_SUMMON, true);
                             _player->RemoveAura(WARLOCK_DEMONIC_CALL);
@@ -574,17 +574,8 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (!caster->HasAura(54879))
-                        caster->CastSpell(caster, 54879, true);
-
                     if (caster->GetPower(POWER_DEMONIC_FURY) <= 40)
-                    {
-                        if (caster->HasAura(WARLOCK_METAMORPHOSIS))
-                            caster->RemoveAura(WARLOCK_METAMORPHOSIS);
-
-                        if (caster->HasAura(54879))
-                            caster->RemoveAura(54879);
-                    }
+                         GetAura()->Remove();
                 }
             }
 
@@ -808,18 +799,70 @@ class spell_warl_demonic_leap : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
-                    _player->CastSpell(_player, WARLOCK_METAMORPHOSIS, true);
-                    _player->CastSpell(_player, WARLOCK_DEMONIC_LEAP_JUMP, true);
+                    caster->CastSpell(caster, WARLOCK_METAMORPHOSIS, true);
+                    if (!caster->HasAura(56247) || !caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
+                        caster->CastSpell(caster, WARLOCK_DEMONIC_LEAP_JUMP, true);
+                    else
+                    {
+                        caster->CastSpell(caster, 124315, true);
+                        caster->CastSpell(caster, 124342, true);
+                    }
+                }
+            }
+
+            SpellCastResult CheckHealth()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
+                    {
+                        float _vmapHeight = caster->GetMap()->GetVmapHeight(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ());
+                        float ground_Z = caster->GetPositionZ() - _vmapHeight;
+                        if(ground_Z < 5.0 || ground_Z > 30.0f)
+                            return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                    }
+                    else
+                        return SPELL_CAST_OK;
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_demonic_leap_SpellScript::CheckHealth);
+                AfterCast += SpellCastFn(spell_warl_demonic_leap_SpellScript::HandleAfterCast);
+            }
+        };
+
+        class spell_warl_demonic_leap_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_demonic_leap_AuraScript);
+
+            void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    //AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    //if (removeMode == AURA_REMOVE_BY_DEATH)
+                        caster->SendPlaySpellVisualKit(26177, 0);
                 }
             }
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_warl_demonic_leap_SpellScript::HandleAfterCast);
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_demonic_leap_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_demonic_leap_AuraScript();
+        }
 
         SpellScript* GetSpellScript() const
         {
@@ -1777,7 +1820,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                     if (AuraEffect const* aurEff = GetEffect(EFFECT_0))
                     {
-                        int32 damage = aurEff->GetAmount() * 8;
+                        int32 damage = aurEff->GetAmount() * 16;
                         Unit* dispeller = dispelInfo->GetDispeller();
 
                         if (dispeller->GetTypeId() == TYPEID_PLAYER)
@@ -1932,7 +1975,7 @@ class spell_warl_havoc : public SpellScriptLoader
 
             void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetAura()->ModStackAmount(3);
+                GetAura()->SetMaxStackAmount();
             }
 
             void Register()
@@ -2056,6 +2099,57 @@ class spell_warl_corruption : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_corruption_AuraScript();
+        }
+};
+
+// Healthstone - 6262
+class spell_warl_healthstone : public SpellScriptLoader
+{
+    public:
+        spell_warl_healthstone() : SpellScriptLoader("spell_warl_healthstone") { }
+
+        class spell_warl_healthstone_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_healthstone_SpellScript);
+
+            void HandleHeal(SpellEffIndex effIndex)
+            {
+                int32 percent = GetSpellInfo()->Effects[effIndex].BasePoints;
+                if (Unit* caster = GetCaster())
+                    SetHitHeal(CalculatePct(caster->GetMaxHealth(), percent));
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_warl_healthstone_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        class spell_warl_healthstone_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_healthstone_AuraScript);
+
+            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                int32 percent = int32(GetSpellInfo()->Effects[aurEff->GetEffIndex()].BasePoints / 10);
+                if (Unit* caster = GetCaster())
+                    amount = CalculatePct(caster->GetMaxHealth(), percent);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_healthstone_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_healthstone_AuraScript();
+        }
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_healthstone_SpellScript();
         }
 };
 
@@ -2201,17 +2295,45 @@ class spell_warl_felsteed : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_felsteed_AuraScript);
 
+            Position savePos;
+
             void OnTick(AuraEffect const* /*aurEff*/)
             {
                 if(Unit* caster = GetCaster())
                 {
-                    caster->SendSpellCreateVisual(GetSpellInfo());
-                    caster->SendPlaySpellVisualKit(23384, 0);
+                    ZLiquidStatus status = caster->GetBaseMap()->getLiquidStatus(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), MAP_ALL_LIQUIDS);
+                    if(!status)
+                        return;
+
+                    float distance = caster->GetDistance(savePos);
+                    uint32 count = uint32(distance / 2);
+                    float angle = caster->GetAngle(&savePos);
+                    if(count > 0)
+                    {
+                        for(int32 j = 0; j < count + 2; ++j)
+                        {
+                            int32 distanceNext = j * 2;
+                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+                            Position tempPos = {destx, desty, caster->GetPositionZ(), 0.0f};
+                            caster->SendSpellCreateVisual(GetSpellInfo(), &tempPos);
+                        }
+
+                        savePos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ()); //save last position
+                        caster->SendPlaySpellVisualKit(23384, 0);
+                    }
                 }
+            }
+
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                    savePos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ());
             }
 
             void Register()
             {
+                OnEffectApply += AuraEffectApplyFn(spell_warl_felsteed_AuraScript::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_felsteed_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
@@ -2219,6 +2341,41 @@ class spell_warl_felsteed : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_felsteed_AuraScript();
+        }
+};
+
+// 114736 - Disrupted Nether
+class spell_warl_disrupted_nether : public SpellScriptLoader
+{
+    public:
+        spell_warl_disrupted_nether() : SpellScriptLoader("spell_warl_disrupted_nether") { }
+
+        class spell_warl_disrupted_nether_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_disrupted_nether_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                    if (!caster->HasAura(114592))
+                        caster->AddAura(114592, caster);
+            }
+
+            void CalculateMaxDuration(int32 & duration)
+            {
+                duration *= 2;
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_warl_disrupted_nether_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_warl_disrupted_nether_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_disrupted_nether_AuraScript();
         }
 };
 
@@ -2268,9 +2425,11 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_rain_of_fire_damage();
     new spell_warl_metamorphosis();
     new spell_warl_corruption();
+    new spell_warl_healthstone();
     new spell_warl_imp_swarm();
     new spell_warl_demonic_gateway();
     new spell_warl_demonic_gateway_cast();
     new spell_warl_fire_and_brimstone();
     new spell_warl_felsteed();
+    new spell_warl_disrupted_nether();
 }

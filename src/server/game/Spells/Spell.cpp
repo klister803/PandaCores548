@@ -2287,7 +2287,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     volatile uint32 spellid = m_spellInfo->Id;
 
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-        if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect() || !CheckEffectTarget(target, effIndex))
+        if (!m_spellInfo->GetEffect(effIndex, m_diffMode).IsEffect() || !CheckEffectTarget(target, effIndex) || CheckEffFromDummy(target, effIndex))
             effectMask &= ~(1 << effIndex);
 
     // no effects left
@@ -3182,6 +3182,8 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             return;
         if (m_spellInfo->Id == 117050 && m_preCastSpell == 117050)
             return;
+        if (m_preCastSpell == 114736)
+            return;
 
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
             // Blizz seems to just apply aura without bothering to cast
@@ -3722,7 +3724,9 @@ void Spell::cast(bool skipCheck)
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_POWER_AND_REAGENT_COST))
         TakePower();
 
-    m_caster->SendSpellCreateVisual(m_spellInfo, m_targets.GetUnitTarget());
+    Position visualPos;
+    visualPos.Relocate(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ());
+    m_caster->SendSpellCreateVisual(m_spellInfo, &visualPos, m_targets.GetUnitTarget());
     // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
     SendSpellGo();
 
@@ -5658,6 +5662,8 @@ void Spell::SendChannelUpdate(uint32 time)
 void Spell::SendChannelStart(uint32 duration)
 {
     uint64 channelTarget = m_targets.GetObjectTargetGUID();
+    uint64 dynObjGuid = GetSpellDynamicObject();
+    uint64 channelGuid = m_caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT);
 
     if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
         if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
@@ -5684,8 +5690,13 @@ void Spell::SendChannelStart(uint32 duration)
     m_caster->SendMessageToSet(&data, true);
 
     m_timer = duration;
-    if (channelTarget)
-        m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, channelTarget);
+    if(!channelGuid)
+    {
+        if(dynObjGuid)
+            m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, dynObjGuid);
+        else if (channelTarget)
+            m_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, channelTarget);
+    }
 
     if (m_spellInfo->Id != 101546)
         m_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, m_spellInfo->Id);
@@ -5856,10 +5867,9 @@ void Spell::TakePower()
         return;
     }
 
-    if(power.getpercentHp)
-        m_powerCost += m_caster->CountPctFromMaxHealth(power.getpercentHp);
-
     CallScriptTakePowerHandlers(powerType, m_powerCost);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::TakePower hit %i, powerType %i, m_powerCost %i", hit, powerType, m_powerCost);
 
     if (!m_powerCost)
         return;
@@ -6081,6 +6091,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             }
             if(i->target == 3) //get target as caster
                 _target = m_caster;
+            if(i->target == 4) //get target selected
+            {
+                if (m_caster->ToPlayer())
+                    _target = m_caster->ToPlayer()->GetSelectedUnit();
+                else
+                    continue;
+            }
 
             _caster = m_caster;
             if(i->caster == 1 && m_caster->ToPlayer()) //get caster pet
@@ -6099,6 +6116,13 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
             }
             if(i->caster == 3) //get caster as target
                 _caster = _target;
+            if(i->caster == 4) //get caster selected
+            {
+                if (m_caster->ToPlayer())
+                    _caster = m_caster->ToPlayer()->GetSelectedUnit();
+                else
+                    continue;
+            }
 
             if(!_caster)
                 continue;

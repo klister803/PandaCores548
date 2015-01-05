@@ -900,6 +900,19 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 //             }
 //             break;
 //         }
+        case 105174: //Hand of Gul'dan
+        {
+            if (_player->HasSpell(123194)) //Glyph of Hand of Gul'dan
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(123194))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    replaced = true;
+                }
+            }
+            break;
+        }
         case 18540: //Summon Terrorguard
         {
             if (_player->HasSpell(112927))

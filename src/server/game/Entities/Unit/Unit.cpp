@@ -14446,7 +14446,7 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
 
             if(curentVal < 10 && oldVal > curentVal)
                 if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
-                    aurEff->ChangeAmount(0);
+                    aurEff->ChangeAmount(-100);
 
             if (curentVal >= 10 && curentVal > oldVal)
                 if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
@@ -19385,6 +19385,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 SpellTypeMask = procSpell ? procSpell->GetSpellTypeMask() : 1;
     uint32 NeedsComboPoints = procSpell ? procSpell->NeedsComboPoints() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
+    int32 deathstateMask = victim ? (1 << victim->getDeathState()) : 0;
 
     //sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i",
     //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid, SpellTypeMask);
@@ -19457,6 +19458,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             break;
                         }
                         if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
                         {
                             procCheck = true;
                             break;
@@ -19568,6 +19574,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
                 if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
                 {
                     procCheck = true;
@@ -19645,6 +19656,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     continue;
                 }
                 if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
                 {
                     procCheck = true;
                     continue;
@@ -21273,7 +21289,7 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     data.WriteGuidMask<5, 4, 6, 0, 1, 7, 3, 2>(guid);
     data.WriteGuidBytes<1, 7, 0, 3, 5, 4, 6, 2>(guid);
 
-    SendMessageToSet(&data, false);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
@@ -23770,7 +23786,7 @@ void DelayCastEvent::Execute(Unit *caster)
     caster->CastSpell(target, Spell, false);
 };
 
-void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
+void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position, Unit* target)
 {
     bool exist = false;
     uint32 visual = 0;
@@ -23780,7 +23796,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     float positionX = 0.0f;
     float positionY = 0.0f;
     float positionZ = 0.0f;
-    bool position = false;
+    bool positionFind = false;
     if (const std::vector<SpellVisual> *spell_visual = sSpellMgr->GetSpellVisual(spellInfo->Id))
     {
         float chance = 100.0f / spell_visual->size();
@@ -23791,7 +23807,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
             unk2 = i->unk2;
             if(i->speed)
                 speed = i->speed;
-            position = i->position;
+            positionFind = i->position;
             exist = true;
             if(roll_chance_f(chance))
                 break;
@@ -23801,7 +23817,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     if(!exist)
         return;
 
-    if(position)
+    if(positionFind)
     {
         if (target)
         {
@@ -23811,9 +23827,9 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
         }
         else
         {
-            positionX = GetPositionX();
-            positionY = GetPositionY();
-            positionZ = GetPositionZ();
+            positionX = position->GetPositionX();
+            positionY = position->GetPositionY();
+            positionZ = position->GetPositionZ();
         }
     }
 
@@ -23827,7 +23843,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     data.WriteGuidMask<7>(targetGuid);
     data.WriteGuidMask<6>(casterGuid);
     data.WriteGuidMask<5>(targetGuid);
-    data.WriteBit(position);            // hasPosition
+    data.WriteBit(positionFind);            // hasPosition
     data.WriteGuidMask<5>(casterGuid);
     data.WriteGuidMask<2, 6, 1>(targetGuid);
     data.WriteGuidMask<7, 1>(casterGuid);
