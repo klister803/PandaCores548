@@ -23094,11 +23094,11 @@ bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
 
 bool Unit::SetWaterWalking(bool enable, bool packetOnly)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
+    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
         return false;
 
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetWaterWalking(HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING));
+        ToPlayer()->SendMovementSetWaterWalking(enable);
 
     if (packetOnly)
         return false;
@@ -23131,7 +23131,7 @@ bool Unit::SetFeatherFall(bool enable, bool packetOnly)
         return false;
 
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetFeatherFall(HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW));
+        ToPlayer()->SendMovementSetFeatherFall(enable);
 
     if (packetOnly)
         return false;
