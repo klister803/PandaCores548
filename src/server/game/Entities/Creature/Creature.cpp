@@ -450,9 +450,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     */
 
     // TODO: Shouldn't we check whether or not the creature is in water first?
-    if (cInfo->InhabitType & INHABIT_WATER && IsInWater())
-        AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-
+    SetSwim(cInfo->InhabitType & INHABIT_WATER && IsInWater());
     return true;
 }
 
@@ -2704,9 +2702,116 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     return true;
 }
 
-bool Creature::SetHover(bool enable)
+bool Creature::SetSwim(bool enable)
 {
-    if (!Unit::SetHover(enable))
+    if (!Unit::SetSwim(enable))
+        return false;
+
+    if (!movespline->Initialized())
+        return true;
+
+    //! Not always a packet is sent
+    ObjectGuid guid = GetGUID();
+    if (enable)
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_START_SWIM, 9);
+        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
+        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        SendMessageToSet(&data, false);
+    }
+    else
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_STOP_SWIM, 9);
+        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
+        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        SendMessageToSet(&data, false);
+    }
+    return true;
+}
+
+bool Creature::SetCanFly(bool enable)
+{
+    if (!Unit::SetCanFly(enable))
+        return false;
+
+    if (!movespline->Initialized())
+        return true;
+
+    //! Not always a packet is sent
+    ObjectGuid guid = GetGUID();
+    if (enable)
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_SET_FLYING, 9);
+        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
+        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        SendMessageToSet(&data, false);
+    }
+    else
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
+        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
+        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        SendMessageToSet(&data, false);
+    }
+    return true;
+}
+
+bool Creature::SetWaterWalking(bool enable, bool packetOnly/* = false*/)
+{
+    if (!packetOnly && !Unit::SetWaterWalking(enable))
+        return false;
+
+    if (!movespline->Initialized())
+        return true;
+
+    //! Not always a packet is sent
+    ObjectGuid guid = GetGUID();
+    if (enable)
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_SET_WATER_WALK, 9);
+        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
+        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        SendMessageToSet(&data, false);
+    }
+    else
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_SET_LAND_WALK, 9);
+        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
+        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        SendMessageToSet(&data, false);
+    }
+    return true;
+}
+bool Creature::SetFeatherFall(bool enable, bool packetOnly/* = false*/)
+{
+    if (!packetOnly && !Unit::SetFeatherFall(enable))
+        return false;
+
+    if (!movespline->Initialized())
+        return true;
+
+    //! Not always a packet is sent
+    ObjectGuid guid = GetGUID();
+    if (enable)
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_SET_FEATHER_FALL, 9);
+        data.WriteGuidMask<1, 4, 3, 2, 0, 5, 6, 7>(guid);
+        data.WriteGuidBytes<0, 3, 2, 6, 7, 5, 4, 1>(guid);
+        SendMessageToSet(&data, false);
+    }
+    else
+    {
+        WorldPacket data(SMSG_SPLINE_MOVE_SET_NORMAL_FALL, 9);
+        data.WriteGuidMask<0, 1, 3, 6, 4, 5, 7, 2>(guid);
+        data.WriteGuidBytes<7, 3, 5, 4, 1, 2, 0, 6>(guid);
+        SendMessageToSet(&data, false);
+    }
+    return true;
+}
+
+bool Creature::SetHover(bool enable, bool packetOnly)
+{
+    if (!packetOnly && !Unit::SetHover(enable))
         return false;
 
     //! Unconfirmed for players:
