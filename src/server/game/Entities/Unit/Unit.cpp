@@ -13788,6 +13788,9 @@ void Unit::UpdateMount()
         if (!player)
             player = m_movedPlayer;
 
+        if (player)
+            player->SendMovementCanFlyChange();
+
         _mount = newMount;
     }
 }
@@ -14443,7 +14446,7 @@ void Unit::VisualForPower(Powers power, int32 curentVal, int32 modVal)
 
             if(curentVal < 10 && oldVal > curentVal)
                 if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
-                    aurEff->ChangeAmount(0);
+                    aurEff->ChangeAmount(-100);
 
             if (curentVal >= 10 && curentVal > oldVal)
                 if (AuraEffect* aurEff = GetAuraEffect(108647, 0))
@@ -19382,6 +19385,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
     uint32 SpellTypeMask = procSpell ? procSpell->GetSpellTypeMask() : 1;
     uint32 NeedsComboPoints = procSpell ? procSpell->NeedsComboPoints() : 0;
     int32 specCheckid = ToPlayer() ? ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) : 0;
+    int32 deathstateMask = victim ? (1 << victim->getDeathState()) : 0;
 
     //sLog->outDebug(LOG_FILTER_PROC, "SpellProcCheck: spellProto->Id %i, effect %i, spellProcId %i, procPowerType %i, procDmgClass %i, AllEffectsMechanicMask %i, specCheckid %i, SpellTypeMask %i",
     //spellProto->Id, effect, spellProcId, procPowerType, procDmgClass, AllEffectsMechanicMask, specCheckid, SpellTypeMask);
@@ -19454,6 +19458,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                             break;
                         }
                         if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                        {
+                            procCheck = true;
+                            break;
+                        }
+                        if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
                         {
                             procCheck = true;
                             break;
@@ -19565,6 +19574,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
+                if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
                 if(itr->fromlevel > 0 && _checkTarget->getLevel() < itr->fromlevel)
                 {
                     procCheck = true;
@@ -19642,6 +19656,11 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     continue;
                 }
                 if(itr->spelltypeMask != 0 && !(SpellTypeMask & itr->spelltypeMask))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->deathstateMask != 0 && !(deathstateMask & itr->deathstateMask))
                 {
                     procCheck = true;
                     continue;
@@ -21270,7 +21289,7 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     data.WriteGuidMask<5, 4, 6, 0, 1, 7, 3, 2>(guid);
     data.WriteGuidBytes<1, 7, 0, 3, 5, 4, 6, 2>(guid);
 
-    SendMessageToSet(&data, false);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
@@ -22570,6 +22589,14 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
         *data << (float)m_movementInfo.splineElevation;
 }
 
+void Unit::SetCanFly(bool apply)
+{
+    if (apply)
+        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+}
+
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
@@ -23051,18 +23078,6 @@ bool Unit::SetWalk(bool enable)
     return true;
 }
 
-bool Unit::SetSwim(bool enable)
-{
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
-        return false;
-
-    if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-    return true;
-}
-
 bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
 {
     if (disable == IsLevitating())
@@ -23076,67 +23091,9 @@ bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
     return true;
 }
 
-bool Unit::SetWaterWalking(bool enable, bool packetOnly)
+bool Unit::SetHover(bool enable)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetWaterWalking(HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING));
-
-    if (packetOnly)
-        return false;
-
-    if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
-    return true;
-}
-
-bool Unit::SetCanFly(bool enable)
-{
-    if (enable && CanFly())
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetCanFly(enable);
-
-    if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-    return true;
-}
-
-bool Unit::SetFeatherFall(bool enable, bool packetOnly)
-{
-    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetFeatherFall(HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW));
-
-    if (packetOnly)
-        return false;
-
-    if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
-    else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
-    return true;
-}
-
-bool Unit::SetHover(bool enable, bool packetOnly)
-{
-    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetHover(enable);
-    //for creature using virtual function
-
-    if (packetOnly)
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
         return false;
 
     if (enable)
@@ -23158,6 +23115,17 @@ bool Unit::SetHover(bool enable, bool packetOnly)
     }
 
     return true;
+}
+
+void Unit::SendMovementHover()
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetHover(HasUnitMovementFlag(MOVEMENTFLAG_HOVER));
+
+    WorldPacket data(MSG_MOVE_HOVER, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, false);
 }
 
 void Unit::FocusTarget(Spell const* focusSpell, uint64 target)
@@ -23190,6 +23158,61 @@ Unit* Unit::GetTargetUnit() const
     if (m_curTargetGUID)
         return ObjectAccessor::GetUnit(*this, m_curTargetGUID);
     return NULL;
+}
+
+void Unit::SendMovementWaterWalking()
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetWaterWalking(HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING));
+
+    WorldPacket data(MSG_MOVE_WATER_WALK, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, false);
+}
+
+void Unit::SendMovementFeatherFall()
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetFeatherFall(HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW));
+
+    WorldPacket data(MSG_MOVE_FEATHER_FALL, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, false);
+}
+
+void Unit::SendMovementGravityChange()
+{
+    WorldPacket data(MSG_MOVE_GRAVITY_CHNG, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, false);
+}
+
+void Unit::SendMovementCanFlyChange()
+{
+    /*!
+        if ( a3->MoveFlags & MOVEMENTFLAG_CAN_FLY )
+        {
+            v4->MoveFlags |= 0x1000000u;
+            result = 1;
+        }
+        else
+        {
+            if ( v4->MoveFlags & MOVEMENTFLAG_FLYING )
+                CMovement::DisableFlying(v4);
+            v4->MoveFlags &= 0xFEFFFFFFu;
+            result = 1;
+        }
+    */
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SendMovementSetCanFly(CanFly());
+
+    WorldPacket data(MSG_MOVE_UPDATE_CAN_FLY, 64);
+    data.append(GetPackGUID());
+    BuildMovementPacket(&data);
+    SendMessageToSet(&data, false);
 }
 
 bool Unit::IsSplineEnabled() const
@@ -23763,7 +23786,7 @@ void DelayCastEvent::Execute(Unit *caster)
     caster->CastSpell(target, Spell, false);
 };
 
-void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
+void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position, Unit* target)
 {
     bool exist = false;
     uint32 visual = 0;
@@ -23773,7 +23796,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     float positionX = 0.0f;
     float positionY = 0.0f;
     float positionZ = 0.0f;
-    bool position = false;
+    bool positionFind = false;
     if (const std::vector<SpellVisual> *spell_visual = sSpellMgr->GetSpellVisual(spellInfo->Id))
     {
         float chance = 100.0f / spell_visual->size();
@@ -23784,7 +23807,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
             unk2 = i->unk2;
             if(i->speed)
                 speed = i->speed;
-            position = i->position;
+            positionFind = i->position;
             exist = true;
             if(roll_chance_f(chance))
                 break;
@@ -23794,7 +23817,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     if(!exist)
         return;
 
-    if(position)
+    if(positionFind)
     {
         if (target)
         {
@@ -23804,9 +23827,9 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
         }
         else
         {
-            positionX = GetPositionX();
-            positionY = GetPositionY();
-            positionZ = GetPositionZ();
+            positionX = position->GetPositionX();
+            positionY = position->GetPositionY();
+            positionZ = position->GetPositionZ();
         }
     }
 
@@ -23820,7 +23843,7 @@ void Unit::SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target)
     data.WriteGuidMask<7>(targetGuid);
     data.WriteGuidMask<6>(casterGuid);
     data.WriteGuidMask<5>(targetGuid);
-    data.WriteBit(position);            // hasPosition
+    data.WriteBit(positionFind);            // hasPosition
     data.WriteGuidMask<5>(casterGuid);
     data.WriteGuidMask<2, 6, 1>(targetGuid);
     data.WriteGuidMask<7, 1>(casterGuid);

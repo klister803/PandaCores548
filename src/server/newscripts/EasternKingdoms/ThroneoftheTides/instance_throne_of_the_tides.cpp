@@ -5,11 +5,11 @@
 
 static const DoorData doordata[] = 
 {
-    {GO_LADY_NAZJAR_DOOR, DATA_LADY_NAZJAR, DOOR_TYPE_ROOM, BOUNDARY_NONE},
-    {GO_LADY_NAZJAR_DOOR, DATA_COMMANDER_ULTHOK, DOOR_TYPE_ROOM, BOUNDARY_NONE},
-    {GO_COMMANDER_ULTHOK_DOOR, DATA_COMMANDER_ULTHOK, DOOR_TYPE_ROOM, BOUNDARY_NONE},
+    {GO_LADY_NAZJAR_DOOR,         DATA_LADY_NAZJAR,        DOOR_TYPE_ROOM, BOUNDARY_NONE},
+    {GO_LADY_NAZJAR_DOOR,         DATA_COMMANDER_ULTHOK,   DOOR_TYPE_ROOM, BOUNDARY_NONE},
+    {GO_COMMANDER_ULTHOK_DOOR,    DATA_COMMANDER_ULTHOK,   DOOR_TYPE_ROOM, BOUNDARY_NONE},
     {GO_ERUNAK_STONESPEAKER_DOOR, DATA_MINDBENDER_GHURSHA, DOOR_TYPE_ROOM, BOUNDARY_NONE},
-    {GO_OZUMAT_DOOR, DATA_OZUMAT, DOOR_TYPE_ROOM, BOUNDARY_NONE},
+    {GO_OZUMAT_DOOR,              DATA_OZUMAT,             DOOR_TYPE_ROOM, BOUNDARY_NONE},
     {0, 0, DOOR_TYPE_ROOM, BOUNDARY_NONE},
 };
 
@@ -49,13 +49,19 @@ public:
             uiInvisibleDoor2GUID = 0;
             uiNeptulonCache = 0;
 
+            archaeologyQuestAura = 0;
+
             memset(m_uiEvents, 0, sizeof(m_uiEvents));
         }
 
         void OnPlayerEnter(Player* pPlayer)
         {
             if (!uiTeamInInstance)
-				uiTeamInInstance = pPlayer->GetTeam();
+            uiTeamInInstance = pPlayer->GetTeam();
+
+            if (archaeologyQuestAura)
+                if (!pPlayer->HasAura(archaeologyQuestAura))
+                    pPlayer->CastSpell(pPlayer, archaeologyQuestAura, true);
         }
 
         void OnCreatureCreate(Creature* pCreature)
@@ -172,17 +178,17 @@ public:
         }
 
         void OnGameObjectRemove(GameObject* pGo)
-		{
-			switch (pGo->GetEntry())
-			{
-			case GO_LADY_NAZJAR_DOOR:
-			case GO_COMMANDER_ULTHOK_DOOR:
-			case GO_ERUNAK_STONESPEAKER_DOOR:
-			case GO_OZUMAT_DOOR:
-				AddDoor(pGo, false);
-				break;
-			}
-		}
+        {
+            switch (pGo->GetEntry())
+            {
+                case GO_LADY_NAZJAR_DOOR:
+                case GO_COMMANDER_ULTHOK_DOOR:
+                case GO_ERUNAK_STONESPEAKER_DOOR:
+                case GO_OZUMAT_DOOR:
+                    AddDoor(pGo, false);
+                    break;
+            }
+        }
 
         void SetData(uint32 type, uint32 data)
         {
@@ -196,6 +202,11 @@ public:
                 break;
             case DATA_NEPTULON_EVENT:
                 m_uiEvents[2] = data;
+                break;
+            case uint32(-1):
+                archaeologyQuestAura = data;
+                SaveToDB();
+                break;
             }
             if (data == DONE)
                 SaveToDB();
@@ -241,34 +252,34 @@ public:
 
         bool SetBossState(uint32 type, EncounterState state)
         {
-			if (!InstanceScript::SetBossState(type, state))
-				return false;
+            if (!InstanceScript::SetBossState(type, state))
+                return false;
 
-			switch (type)
-			{
-			case DATA_LADY_NAZJAR:
-				break;
-			case DATA_COMMANDER_ULTHOK:
-                if (state == DONE)
-                {
-                    if (GameObject* pTentacleRight = instance->GetGameObject(uiTentacleRightGUID))
-                        pTentacleRight->SetPhaseMask(2, true);
-                    if (GameObject* pTentacleLeft = instance->GetGameObject(uiTentacleLeftGUID))
-                        pTentacleLeft->SetPhaseMask(2, true);
-                    if (GameObject* pInvisibleDoor1 = instance->GetGameObject(uiInvisibleDoor1GUID))
-                        pInvisibleDoor1->SetPhaseMask(2, true);
-                    if (GameObject* pInvisibleDoor2 = instance->GetGameObject(uiInvisibleDoor2GUID))
-                        pInvisibleDoor2->SetPhaseMask(2, true);
-                }
-				break;
-			case DATA_MINDBENDER_GHURSHA:
-				break;
-			case DATA_OZUMAT:
-                if (state == DONE)
+            switch (type)
+            {
+                case DATA_LADY_NAZJAR:
+                break;
+                case DATA_COMMANDER_ULTHOK:
+                    if (state == DONE)
+                    {
+                        if (GameObject* pTentacleRight = instance->GetGameObject(uiTentacleRightGUID))
+                            pTentacleRight->SetPhaseMask(2, true);
+                        if (GameObject* pTentacleLeft = instance->GetGameObject(uiTentacleLeftGUID))
+                            pTentacleLeft->SetPhaseMask(2, true);
+                        if (GameObject* pInvisibleDoor1 = instance->GetGameObject(uiInvisibleDoor1GUID))
+                            pInvisibleDoor1->SetPhaseMask(2, true);
+                        if (GameObject* pInvisibleDoor2 = instance->GetGameObject(uiInvisibleDoor2GUID))
+                            pInvisibleDoor2->SetPhaseMask(2, true);
+                    }
+                break;
+                case DATA_MINDBENDER_GHURSHA:
+                break;
+                case DATA_OZUMAT:
+                    if (state == DONE)
                     DoRespawnGameObject(uiNeptulonCache, DAY);
-				break;
+                break;
              }
-			return true;
+            return true;
         }
 
         std::string GetSaveData()
@@ -278,7 +289,7 @@ public:
             std::string str_data;
 
             std::ostringstream saveStream;
-            saveStream << "T o t T " << GetBossSaveData() << m_uiEvents[0] << " " << m_uiEvents[1] << " " << m_uiEvents[2] << " ";
+            saveStream << "T o t T " << GetBossSaveData() << m_uiEvents[0] << " " << m_uiEvents[1] << " " << m_uiEvents[2] << " " << archaeologyQuestAura;
 
             str_data = saveStream.str();
 
@@ -304,22 +315,22 @@ public:
             if (dataHead1 == 'T' && dataHead2 == 'o' && dataHead3 == 't' && dataHead4 == 'T')
             {
                 for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-				{
-					uint32 tmpState;
-					loadStream >> tmpState;
-					if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
-						tmpState = NOT_STARTED;
-					SetBossState(i, EncounterState(tmpState));
-				}
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                    tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
                 for (uint8 i = 0; i < 3; ++i)
                 {
                     uint32 tmpEvent;
                     loadStream >> tmpEvent;
                     if (tmpEvent == IN_PROGRESS || tmpEvent > SPECIAL)
-						tmpEvent = NOT_STARTED;
+                    tmpEvent = NOT_STARTED;
                     m_uiEvents[i] = tmpEvent;
                 }
-
+                loadStream >> archaeologyQuestAura;
             } else OUT_LOAD_INST_DATA_FAIL;
 
             OUT_LOAD_INST_DATA_COMPLETE;
@@ -345,6 +356,7 @@ public:
             uint64 uiInvisibleDoor2GUID;
             uint64 uiNeptulonCache;
             uint32 uiTeamInInstance;
+            uint32 archaeologyQuestAura;
             uint32 m_uiEvents[3];
     };
 };

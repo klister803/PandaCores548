@@ -1202,14 +1202,37 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warr_charge_drop_fire_AuraScript);
 
+            Position savePos;
             void OnTick(AuraEffect const* aurEff)
             {
                 if(Unit* caster = GetCaster())
-                    caster->SendSpellCreateVisual(GetSpellInfo());
+                {
+                    float distance = caster->GetDistance(savePos);
+                    uint32 count = uint32(distance);
+                    float angle = caster->GetAngle(&savePos);
+                    if(count > 0)
+                    {
+                        for(int32 j = 1; j < count + 1; ++j)
+                        {
+                            int32 distanceNext = j;
+                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+                            savePos.Relocate(destx, desty, caster->GetPositionZ());
+                            caster->SendSpellCreateVisual(GetSpellInfo(), &savePos);
+                        }
+                    }
+                }
+            }
+
+            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                    savePos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ());
             }
 
             void Register()
             {
+                OnEffectApply += AuraEffectApplyFn(spell_warr_charge_drop_fire_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_charge_drop_fire_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };

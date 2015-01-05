@@ -98,6 +98,7 @@ enum SpellLinkedType
     SPELL_LINK_ON_HIT       = 1 * 200000,
     SPELL_LINK_AURA         = 2 * 200000,   // +: aura; -: immune
     SPELL_LINK_BEFORE_HIT   = 3 * 200000,
+    SPELL_LINK_AURA_HIT     = 4 * 200000,
     SPELL_LINK_REMOVE       = 0,
 };
 
@@ -679,6 +680,7 @@ struct SpellPrcoCheck
     int32 perchp;
     int32 spelltypeMask;
     int32 combopoints;
+    int32 deathstateMask;
 };
 
 struct SpellTriggered

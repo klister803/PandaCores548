@@ -2658,23 +2658,20 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
                 case POWER_HEALTH:
                     powerCost += int32(CalculatePct(caster->GetCreateHealth(), power.powerCostPercentage));
                     break;
-                case POWER_MANA:
-                    powerCost += int32(CalculatePct(caster->GetCreateMana(), power.powerCostPercentage));
-                    break;
-                case POWER_RAGE:
-                case POWER_FOCUS:
-                case POWER_ENERGY:
-                    powerCost += int32(CalculatePct(caster->GetMaxPower(Powers(power.powerType)), power.powerCostPercentage));
-                    break;
                 case POWER_RUNES:
                 case POWER_RUNIC_POWER:
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Not implemented yet!");
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Not implemented yet!");
                     break;
                 default:
-                    sLog->outError(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Unknown power type '%d' in spell %d", spellPower->powerType, Id);
-                    return 0;
+                    powerCost += int32(CalculatePct(caster->GetCreatePowers(Powers(power.powerType)), power.powerCostPercentage));
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", power.powerType, Id, powerCost, caster->GetCreatePowers(Powers(power.powerType)));
+                    return powerCost;
             }
         }
+
+        if(PowerGetPercentHp)
+            powerCost += caster->CountPctFromMaxHealth(PowerGetPercentHp);
+
         SpellSchools school = GetFirstSchoolInMask(schoolMask);
         // Flat mod from caster auras by spell school
         powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);

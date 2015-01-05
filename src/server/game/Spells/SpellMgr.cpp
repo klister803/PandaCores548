@@ -2658,8 +2658,8 @@ void SpellMgr::LoadSpellPrcoCheck()
 
     mSpellPrcoCheckMap.clear();    // need for reload case
 
-    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16           17
-    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask, combopoints FROM spell_proc_check");
+    //                                                0        1       2      3             4         5      6          7           8         9        10       11            12              13          14       15          16           17             18
+    QueryResult result = WorldDatabase.Query("SELECT entry, entry2, entry3, checkspell, hastalent, chance, target, effectmask, powertype, dmgclass, specId, spellAttr0, targetTypeMask, mechanicMask, fromlevel, perchp, spelltypeMask, combopoints, deathstateMask FROM spell_proc_check");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 proc check spells. DB table `spell_proc_check` is empty.");
@@ -2689,6 +2689,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         int32 perchp = fields[15].GetInt32();
         int32 spelltypeMask = fields[16].GetInt32();
         int32 combopoints = fields[17].GetInt32();
+        int32 deathstateMask = fields[18].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(entry));
         if (!spellInfo)
@@ -2714,6 +2715,7 @@ void SpellMgr::LoadSpellPrcoCheck()
         templink.perchp = perchp;
         templink.spelltypeMask = spelltypeMask;
         templink.combopoints = combopoints;
+        templink.deathstateMask = deathstateMask;
         mSpellPrcoCheckMap[entry].push_back(templink);
         if(entry2)
             mSpellPrcoCheckMap[entry2].push_back(templink);
@@ -5393,6 +5395,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 109145: // Demonic Fury
                     spellInfo->Effects[0].BasePoints = 0;
+                    break;
+                case 58068: // Glyph of Soul Consumption
+                    spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     break;
                 default:
                     break;

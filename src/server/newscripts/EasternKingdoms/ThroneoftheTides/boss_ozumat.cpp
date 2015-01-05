@@ -84,7 +84,6 @@ enum Actions
 {
     ACTION_NEPTULON_START_EVENT = 1,
     ACTION_NEPTULON_START       = 2,
-    ACTION_RESET                = 3,
 };
 
 enum Achievement
@@ -108,7 +107,7 @@ class npc_neptulon : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_neptulonAI (pCreature);
+            return GetInstanceAI<npc_neptulonAI>(pCreature);
         }
 
         bool OnGossipHello(Player* pPlayer, Creature* pCreature)
@@ -179,10 +178,9 @@ class npc_neptulon : public CreatureScript
 
             void DoAction(const int32 action)
             {
-                if (action == ACTION_RESET)
-                    Reset();
-                else if (action == ACTION_NEPTULON_START_EVENT)
+                if (action == ACTION_NEPTULON_START_EVENT)
                 {
+                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     bActive = true;
                     Talk(SAY_INTRO_1);
                     events.ScheduleEvent(EVENT_INTRO_2, 7000);
@@ -296,6 +294,7 @@ class npc_neptulon : public CreatureScript
                     case EVENT_INTRO_2:
                         Talk(SAY_INTRO_2);
                         bActive = false;
+                        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_INTRO_3_2:
                         Talk(SAY_INTRO_3_2);
@@ -390,7 +389,7 @@ class npc_vicious_mindslasher : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_vicious_mindslasherAI(pCreature);
+            return GetInstanceAI<npc_vicious_mindslasherAI>(pCreature);
         }
 
         struct npc_vicious_mindslasherAI : public ScriptedAI
@@ -463,7 +462,7 @@ class npc_unyielding_behemoth : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_unyielding_behemothAI(pCreature);
+            return GetInstanceAI<npc_unyielding_behemothAI>(pCreature);
         }
 
         struct npc_unyielding_behemothAI : public ScriptedAI
@@ -522,7 +521,7 @@ class npc_faceless_sapper : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_faceless_sapperAI(pCreature);
+            return GetInstanceAI<npc_faceless_sapperAI>(pCreature);
         }
 
         struct npc_faceless_sapperAI : public ScriptedAI
@@ -562,7 +561,7 @@ class npc_blight_of_ozumat : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_blight_of_ozumatAI (pCreature);
+            return GetInstanceAI<npc_blight_of_ozumatAI>(pCreature);
         }
 
         struct npc_blight_of_ozumatAI : public Scripted_NoMovementAI
@@ -592,19 +591,19 @@ class at_tott_ozumat : public AreaTriggerScript
 
         bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
         {
-		    if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
-		    {
-			    if (pInstance->GetData(DATA_NEPTULON_EVENT) != DONE
+            if (InstanceScript* pInstance = pPlayer->GetInstanceScript())
+            {
+                if (pInstance->GetData(DATA_NEPTULON_EVENT) != DONE
                     && pInstance->GetBossState(DATA_OZUMAT) != IN_PROGRESS
                     && pInstance->GetBossState(DATA_OZUMAT) != DONE)
-			    {
+                {
                     pInstance->SetData(DATA_NEPTULON_EVENT, DONE);
                     if (Creature* pNeptulon = ObjectAccessor::GetCreature(*pPlayer, pInstance->GetData64(DATA_NEPTULON)))
                     {
                         pNeptulon->AI()->DoAction(ACTION_NEPTULON_START_EVENT);
                     }
-			    }
-		    }
+                }
+            }
             return true;
         }
 };

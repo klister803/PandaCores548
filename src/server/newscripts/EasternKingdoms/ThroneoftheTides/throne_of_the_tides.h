@@ -1,8 +1,6 @@
 #ifndef DEF_THRONEOFTHETIDES_H
 #define DEF_THRONEOFTHETIDES_H
 
-#define TotTScriptName "instance_throne_of_the_tides"
-
 enum CreatureIds
 {
     NPC_LADY_NAZJAR_EVENT       = 39959,
@@ -42,5 +40,15 @@ enum Data
     DATA_COMMANDER_ULTHOK_EVENT = 8,
     DATA_NEPTULON_EVENT         = 9,
 };
+
+template<class AI>
+CreatureAI* GetInstanceAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId("instance_throne_of_the_tides"))
+                return new AI(creature);
+    return NULL;
+}
 
 #endif

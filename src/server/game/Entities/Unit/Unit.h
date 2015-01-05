@@ -1758,16 +1758,17 @@ class Unit : public WorldObject
             which are sent with movementinfo. Furthermore, these packets are broadcast to nearby players as well
             as the current unit.
         */
+        void SendMovementHover();
+        void SendMovementFeatherFall();
+        void SendMovementWaterWalking();
+        void SendMovementGravityChange();
+        void SendMovementCanFlyChange();
 
         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);}
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);}
         virtual bool SetWalk(bool enable);
-        virtual bool SetSwim(bool enable);
         virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
-        virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
-        virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
-        virtual bool SetCanFly(bool apply);
-        bool SetHover(bool enable, bool packetOnly = false);
+        bool SetHover(bool enable);
 
         void SetInFront(Unit const* target);
         void SetFacingTo(float ori);
@@ -2065,7 +2066,7 @@ class Unit : public WorldObject
         Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
-        void SendSpellCreateVisual(SpellInfo const* spellInfo, Unit* target = NULL);
+        void SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position = NULL, Unit* target = NULL);
         void SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove);
         bool GetFreeAuraSlot(uint32& slot);
 
@@ -2403,6 +2404,7 @@ class Unit : public WorldObject
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
         virtual bool CanFly() const = 0;
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
+        void SetCanFly(bool apply);
         void SetTimeForSpline(uint32 time) { m_timeForSpline = time; }
         uint32 GetTimeForSpline() { return m_timeForSpline; }
 
