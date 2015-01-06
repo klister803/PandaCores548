@@ -852,6 +852,8 @@ class AuraScript : public _SpellScript
         // returns owner if it's dynobj, NULL otherwise
         DynamicObject* GetDynobjOwner() const;
 
+        Position const* GetExplTargetDest();
+
         // removes aura with remove mode (see AuraRemoveMode enum)
         void Remove(uint32 removeMode = 0);
         // returns aura object of script

@@ -3130,10 +3130,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         // Fix Pandemic
                         if (periodicDamage && refresh && m_originalCaster->HasAura(131973))
                         {
-                            int32 newDuration = (duration + m_spellAura->GetDuration()) <= (int32(m_spellAura->GetMaxDuration() * 1.5f)) ?
-                                duration + m_spellAura->GetDuration() : int32(m_spellAura->GetMaxDuration() * 1.5f);
-                            int32 newMaxDuration = (duration + m_spellAura->GetMaxDuration()) <= (int32(m_spellAura->GetMaxDuration() * 1.5f)) ?
-                                duration + m_spellAura->GetMaxDuration() : int32(m_spellAura->GetMaxDuration() * 1.5f);
+                            int32 newDuration = (duration + m_spellAura->GetDuration()) <= (int32(m_spellInfo->GetMaxDuration() * 1.5f)) ?
+                                duration + m_spellAura->GetDuration() : int32(m_spellInfo->GetMaxDuration() * 1.5f);
+                            int32 newMaxDuration = (duration + m_spellAura->GetMaxDuration()) <= (int32(m_spellInfo->GetMaxDuration() * 1.5f)) ?
+                                duration + m_spellAura->GetMaxDuration() : int32(m_spellInfo->GetMaxDuration() * 1.5f);
 
                             m_spellAura->SetMaxDuration(newMaxDuration);
                             m_spellAura->SetDuration(newDuration);
@@ -3152,6 +3152,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                         m_spellAura->SetTriggeredAuraEff(m_triggeredByAura);
                     if(uint64 dynObjGuid = GetSpellDynamicObject())
                         m_spellAura->SetSpellDynamicObject(dynObjGuid);
+                    if (m_targets.HasDst())
+                        m_spellAura->SetDst(m_targets.GetDstPos());
                 }
             }
         }
@@ -3456,8 +3458,9 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
     // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
     if (((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && 
-        m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraCastWhileWalking(m_spellInfo))
+        m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraCastWhileWalking(m_spellInfo) && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS))
     {
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u customCastFlags %u mask %u, InterruptFlags %i", m_spellInfo->Id, SPELL_FAILED_MOVING, m_caster->GetEntry(), _triggeredCastFlags, m_targets.GetTargetMask(), m_spellInfo->InterruptFlags);
         SendCastResult(SPELL_FAILED_MOVING);
         finish(false);
         return;

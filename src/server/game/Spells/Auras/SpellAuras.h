@@ -162,6 +162,10 @@ class Aura
         void SetMaxStackAmount();
         bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
+        //Position from spell
+        void SetDst(Position const* pos) { _position.Relocate(pos); }
+        Position const* GetDstPos() const { return &_position; }
+
         void RefreshSpellMods();
 
         uint16 GetCasterLevel() const { return m_casterLevel; }
@@ -259,6 +263,7 @@ class Aura
 
         std::list<AuraScript*> m_loadedScripts;
         int32 m_aura_amount;
+        Position _position;
 
         void SetFromAreaTrigger(bool set) { m_fromAreatrigger = set; }
     private:

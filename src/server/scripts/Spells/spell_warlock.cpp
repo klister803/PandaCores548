@@ -2379,6 +2379,70 @@ class spell_warl_disrupted_nether : public SpellScriptLoader
         }
 };
 
+// 113896, 120729 - Demonic Gateway
+class spell_warl_demonic_gateway_duration : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway_duration() : SpellScriptLoader("spell_warl_demonic_gateway_duration") { }
+
+        class spell_warl_demonic_gateway_duration_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_demonic_gateway_duration_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(Position const* pos = GetExplTargetDest())
+                    {
+                        float dist = caster->GetExactDist2d(pos->GetPositionX(), pos->GetPositionY());
+                        int32 duration = int32((dist / 20.0f) * 1000.0f);
+                        SetDuration(duration);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_warl_demonic_gateway_duration_AuraScript::OnApply, EFFECT_0, SPELL_AURA_SCREEN_EFFECT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_demonic_gateway_duration_AuraScript();
+        }
+};
+
+// 114592 - Wild Imps
+class spell_warl_wild_imps : public SpellScriptLoader
+{
+    public:
+        spell_warl_wild_imps() : SpellScriptLoader("spell_warl_wild_imps") { }
+
+        class spell_warl_wild_imps_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_wild_imps_AuraScript);
+
+            void HandleEffectCalcPeriodic(AuraEffect const* /*aurEff*/, bool& /*isPeriodic*/, int32& amplitude)
+            {
+                if(Unit* caster = GetCaster())
+                    if (caster->HasAura(56242)) // Glyph of Imp Swarm
+                        amplitude += 4 * IN_MILLISECONDS;
+            }
+
+            void Register()
+            {
+                DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_warl_wild_imps_AuraScript::HandleEffectCalcPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_wild_imps_AuraScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2432,4 +2496,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_fire_and_brimstone();
     new spell_warl_felsteed();
     new spell_warl_disrupted_nether();
+    new spell_warl_demonic_gateway_duration();
+    new spell_warl_wild_imps();
 }
