@@ -1130,6 +1130,11 @@ DynamicObject* AuraScript::GetDynobjOwner() const
     return m_aura->GetDynobjOwner();
 }
 
+Position const* AuraScript::GetExplTargetDest()
+{
+    return m_aura->GetDstPos();
+}
+
 void AuraScript::Remove(uint32 removeMode)
 {
     m_aura->Remove((AuraRemoveMode)removeMode);

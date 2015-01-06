@@ -2816,8 +2816,6 @@ class Player : public Unit, public GridObject<Player>
 
         void SetMover(Unit* target);
 
-        bool SetHover(bool enable);
-
         void SetSeer(WorldObject* target) { m_seer = target; }
         void SetViewpoint(WorldObject* target, bool apply);
         WorldObject* GetViewpoint() const;

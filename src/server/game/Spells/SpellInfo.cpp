@@ -2665,7 +2665,7 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
                 default:
                     powerCost += int32(CalculatePct(caster->GetCreatePowers(Powers(power.powerType)), power.powerCostPercentage));
                     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", power.powerType, Id, powerCost, caster->GetCreatePowers(Powers(power.powerType)));
-                    return powerCost;
+                    //return powerCost;
             }
         }
 
