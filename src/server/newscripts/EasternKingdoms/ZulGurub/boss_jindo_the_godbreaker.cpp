@@ -125,6 +125,7 @@ class boss_jindo_the_godbreaker : public CreatureScript
                 chains = 0;
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetCanFly(false);
             }
 
             void EnterCombat(Unit* /*who*/)

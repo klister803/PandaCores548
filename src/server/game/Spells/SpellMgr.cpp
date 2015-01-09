@@ -5399,6 +5399,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 58068: // Glyph of Soul Consumption
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     break;
+                // Zul'Gurub: Jindo The Godbreaker
+                case 96689: // Spirit World aura
+                    spellInfo->Effects[1].MiscValue = 2;
+                    spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                    spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    break;
                 default:
                     break;
             }
