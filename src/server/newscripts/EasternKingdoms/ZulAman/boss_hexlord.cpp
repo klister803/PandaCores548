@@ -170,7 +170,7 @@ class boss_hex_lord_malacrass : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_hex_lord_malacrassAI(pCreature);
+            return GetInstanceAI<boss_hex_lord_malacrassAI>(pCreature);
         }
 
         struct boss_hex_lord_malacrassAI : public BossAI
@@ -347,7 +347,7 @@ class npc_alyson_antille : public CreatureScript
          
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_alyson_antilleAI(pCreature);
+            return GetInstanceAI<npc_alyson_antilleAI>(pCreature);
         }
 
         struct npc_alyson_antilleAI : public ScriptedAI
@@ -408,7 +408,7 @@ class npc_gazakroth : public CreatureScript
          
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_gazakrothAI(pCreature);
+            return GetInstanceAI<npc_gazakrothAI>(pCreature);
         }
 
         struct npc_gazakrothAI : public ScriptedAI
@@ -446,7 +446,7 @@ class npc_darkheart : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_darkheartAI(pCreature);
+            return GetInstanceAI<npc_darkheartAI>(pCreature);
         }
 
         struct npc_darkheartAI : public ScriptedAI
@@ -485,7 +485,7 @@ class npc_slither : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_slitherAI(pCreature);
+            return GetInstanceAI<npc_slitherAI>(pCreature);
         }
 
         struct npc_slitherAI : public ScriptedAI

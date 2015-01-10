@@ -1229,7 +1229,7 @@ class boss_elementium_monstrosity : public CreatureScript
                 {
                     _feludius->SetVisible(true);
                     _feludius->AI()->EnterEvadeMode();
-                                    }
+                }
                 if (Creature* _arion = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ARION)))
                 {
                     _arion->SetVisible(true);

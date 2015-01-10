@@ -37,7 +37,7 @@ class boss_nalorakk : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_nalorakkAI(pCreature);
+            return GetInstanceAI<boss_nalorakkAI>(pCreature);
         }
 
         struct boss_nalorakkAI : public BossAI

@@ -41,7 +41,7 @@ enum Spells
     SPELL_SWEEPING_WINDS            = 97647,
     SPELL_FEATHER_VORTEX_VISUAL     = 97835,
     SPELL_FEATHER_VORTEX_PASSIVE    = 43120,
-    SPELL_LIGHTNING_TOTEM           = 93930,
+    SPELL_LIGHTNING_TOTEM           = 97930,
 
     //SPELL_SPIRIT_AURA               = 42466,
     //SPELL_SIPHON_SOUL               = 43501,
@@ -73,6 +73,7 @@ enum Events
     EVENT_CONTINUE              = 13,
     EVENT_FERAL_SWIPE           = 14,
     EVENT_LIGHTNING_TOTEM       = 15,
+    EVENT_CHECK_PLAYERS         = 16,
 };
 
 enum Adds
@@ -90,6 +91,10 @@ enum Actions
 #define CENTER_X 120.148811f
 #define CENTER_Y 703.713684f
 #define CENTER_Z 45.111477f
+#define MAX_X 136.199707f
+#define MIN_X 104.217331f
+#define MAX_Y 715.623901f
+#define MIN_Y 697.285217f
 
 class boss_daakara : public CreatureScript
 {
@@ -98,7 +103,7 @@ class boss_daakara : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_daakaraAI(pCreature);
+            return GetInstanceAI<boss_daakaraAI>(pCreature);
         }
 
         struct boss_daakaraAI : public BossAI
@@ -117,11 +122,8 @@ class boss_daakara : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                bAchieve = true;
             }
-
-            uint64 ClawTargetGUID;
-            bool bEnrage;
-            uint8 phase;
 
             void Reset()
             {
@@ -129,6 +131,8 @@ class boss_daakara : public CreatureScript
 
                 phase = 0;
                 bEnrage = false;
+                bAchieve = true;
+
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 33975);
                 //me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 218172674);
@@ -138,12 +142,17 @@ class boss_daakara : public CreatureScript
             void EnterCombat(Unit* /*who*/)
             {
                 Talk(SAY_AGGRO);
+
                 phase = 0;
                 bEnrage = false;
+                bAchieve = true;
+
                 me->SetReactState(REACT_AGGRESSIVE);
+
                 events.ScheduleEvent(EVENT_BERSERK, 660000);
                 events.ScheduleEvent(EVENT_GRIEVOUS_THROW, urand(3000, 8000));
                 events.ScheduleEvent(EVENT_WHIRLWIND, urand(6000, 8000));
+                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
                 DoZoneInCombat();
                 instance->SetBossState(DATA_DAAKARA, IN_PROGRESS);
             }
@@ -164,6 +173,11 @@ class boss_daakara : public CreatureScript
                 if (spellInfo->HasEffect(SPELL_EFFECT_ATTACK_ME) ||
                     spellInfo->HasAura(SPELL_AURA_MOD_TAUNT))
                     me->RemoveAurasDueToSpell(SPELL_CLAW_RAGE);
+            }
+
+            bool AllowAchieve()
+            {
+                return bAchieve;
             }
 
             void EnterPhase(uint8 form)
@@ -246,7 +260,8 @@ class boss_daakara : public CreatureScript
                     events.CancelEvent(EVENT_OVERPOWER);
                     events.CancelEvent(EVENT_LYNX_RUSH);
                     events.CancelEvent(EVENT_CLAW_RAGE);
-                    EnterPhase(urand(2, 3));                    
+                    //EnterPhase(urand(2, 3));
+                    EnterPhase(2);
                     return;
                 }
 
@@ -255,13 +270,33 @@ class boss_daakara : public CreatureScript
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                while (uint32 eventId = events.ExecuteEvent())
+                if (uint32 eventId = events.ExecuteEvent())
                 {
                      switch (eventId)
                      {
                         case EVENT_BERSERK:
                             DoCast(me, SPELL_BERSERK);
                             break;
+                        case EVENT_CHECK_PLAYERS:
+                        {
+                            Map::PlayerList const &plrList = instance->instance->GetPlayers();
+                            if (!plrList.isEmpty())
+                            {
+                                for (Map::PlayerList::const_iterator itr = plrList.begin(); itr != plrList.end(); ++itr)
+                                    if (Player* pPlayer = itr->getSource())
+                                        if (pPlayer->GetPositionX() < MIN_X ||
+                                            pPlayer->GetPositionX() > MAX_X ||
+                                            pPlayer->GetPositionY() < MIN_Y ||
+                                            pPlayer->GetPositionY() > MAX_Y)
+                                        {
+                                            bAchieve = false;
+                                            break;
+                                        }
+                            }
+                            if (bAchieve)
+                                events.ScheduleEvent(EVENT_CHECK_PLAYERS, 5000);
+                            break;
+                        }
                         case EVENT_WHIRLWIND:
                             DoCastAOE(SPELL_WHIRLWIND);
                             events.ScheduleEvent(EVENT_WHIRLWIND, urand(12000, 15000));
@@ -319,6 +354,12 @@ class boss_daakara : public CreatureScript
 
                 DoMeleeAttackIfReady();
             }
+
+        private:
+            uint64 ClawTargetGUID;
+            bool bEnrage;
+            uint8 phase;
+            bool bAchieve;
         };
 };
 
@@ -330,7 +371,7 @@ class npc_daakara_vortex : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_daakara_vortexAI(pCreature);
+            return GetInstanceAI<npc_daakara_vortexAI>(pCreature);
         }
 
         struct npc_daakara_vortexAI : public Scripted_NoMovementAI
@@ -386,7 +427,7 @@ class npc_daakara_pillar_of_flame : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_daakara_pillar_of_flameAI(pCreature);
+            return GetInstanceAI<npc_daakara_pillar_of_flameAI>(pCreature);
         }
 
         struct npc_daakara_pillar_of_flameAI : public Scripted_NoMovementAI
@@ -428,7 +469,7 @@ class npc_daakara_amani_lynx : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_daakara_amani_lynxAI(pCreature);
+            return GetInstanceAI<npc_daakara_amani_lynxAI>(pCreature);
         }
 
         struct npc_daakara_amani_lynxAI : public ScriptedAI
@@ -531,6 +572,25 @@ class spell_daakara_sweeping_winds : public SpellScriptLoader
         }
 };
 
+typedef boss_daakara::boss_daakaraAI DaakaraAI;
+
+class achievement_ring_out : public AchievementCriteriaScript
+{
+    public:
+        achievement_ring_out() : AchievementCriteriaScript("achievement_ring_out") { }
+
+        bool OnCheck(Player* source, Unit* target)
+        {
+            if (!target)
+                return false;
+
+            if (DaakaraAI* daakaraAI = CAST_AI(DaakaraAI, target->GetAI()))
+                return daakaraAI->AllowAchieve();
+
+            return false;
+        }
+};
+
 void AddSC_boss_daakara()
 {
     new boss_daakara();
@@ -539,5 +599,6 @@ void AddSC_boss_daakara()
     new npc_daakara_amani_lynx();
     new spell_daakara_claw_rage_charge();
     new spell_daakara_sweeping_winds();
+    new achievement_ring_out();
 }
 

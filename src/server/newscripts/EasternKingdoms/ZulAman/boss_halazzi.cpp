@@ -71,7 +71,7 @@ class boss_halazzi : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_halazziAI(pCreature);
+            return GetInstanceAI<boss_halazziAI>(pCreature);
         }
 
         struct boss_halazziAI : public BossAI
@@ -251,7 +251,7 @@ class npc_halazzi_lynx : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_halazzi_lynxAI(pCreature);
+            return GetInstanceAI<npc_halazzi_lynxAI>(pCreature);
         }
 
         struct npc_halazzi_lynxAI : public ScriptedAI
@@ -340,7 +340,7 @@ class npc_halazzi_water_totem : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_halazzi_water_totemAI(pCreature);
+            return GetInstanceAI<npc_halazzi_water_totemAI>(pCreature);
         }
 
         struct npc_halazzi_water_totemAI : public ScriptedAI
@@ -360,7 +360,7 @@ class npc_halazzi_lightning_totem : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_halazzi_lightning_totemAI(pCreature);
+            return GetInstanceAI<npc_halazzi_lightning_totemAI>(pCreature);
         }
 
         struct npc_halazzi_lightning_totemAI : public Scripted_NoMovementAI

@@ -130,7 +130,7 @@ class boss_janalai : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_janalaiAI(pCreature);
+            return GetInstanceAI<boss_janalaiAI>(pCreature);
         }
 
         struct boss_janalaiAI : public BossAI
@@ -308,7 +308,7 @@ class npc_janalai_hatcher : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_janalai_hatcherAI(pCreature);
+            return GetInstanceAI<npc_janalai_hatcherAI>(pCreature);
         }
 
         struct npc_janalai_hatcherAI : public ScriptedAI
@@ -399,7 +399,7 @@ class npc_janalai_egg : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_janalai_eggAI(pCreature);
+            return GetInstanceAI<npc_janalai_eggAI>(pCreature);
         }
 
         struct npc_janalai_eggAI : public ScriptedAI
@@ -427,7 +427,7 @@ class npc_janalai_firebomb : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_janalai_firebombAI(pCreature);
+            return GetInstanceAI<npc_janalai_firebombAI>(pCreature);
         }
 
         struct npc_janalai_firebombAI : public ScriptedAI
@@ -454,7 +454,7 @@ class npc_janalai_hatchling : public CreatureScript
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_janalai_hatchlingAI(pCreature);
+            return GetInstanceAI<npc_janalai_hatchlingAI>(pCreature);
         }
 
         struct npc_janalai_hatchlingAI : public ScriptedAI

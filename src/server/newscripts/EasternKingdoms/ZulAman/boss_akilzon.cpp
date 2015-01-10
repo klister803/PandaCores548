@@ -1,6 +1,5 @@
 #include "NewScriptPCH.h"
 #include "zulaman.h"
-#include "ScriptedEscortAI.h"
 
 #define SE_LOC_X_MAX 400
 #define SE_LOC_X_MIN 335
@@ -41,7 +40,6 @@ enum Events
     EVENT_GO_BACK           = 6,
     EVENT_SUMMON_EAGLE      = 7,
     EVENT_SUMMON_KIDNAPPER  = 8,
-    EVENT_STAR_FLY          = 9,
 };
 
 enum Points
@@ -56,7 +54,7 @@ class boss_akilzon : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new boss_akilzonAI(pCreature);
+            return GetInstanceAI<boss_akilzonAI>(pCreature);
         }
 
         struct boss_akilzonAI : public BossAI
@@ -184,7 +182,7 @@ class npc_akilzon_soaring_eagle : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_akilzon_soaring_eagleAI(pCreature);
+            return GetInstanceAI<npc_akilzon_soaring_eagleAI>(pCreature);
         }
 
         struct npc_akilzon_soaring_eagleAI : public ScriptedAI
@@ -255,59 +253,19 @@ class npc_akilzon_amani_kidnapper : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_akilzon_amani_kidnapperAI(pCreature);
+            return GetInstanceAI<npc_akilzon_amani_kidnapperAI>(pCreature);
         }
 
-        struct npc_akilzon_amani_kidnapperAI : public npc_escortAI
+        struct npc_akilzon_amani_kidnapperAI : public ScriptedAI
         {
-            npc_akilzon_amani_kidnapperAI(Creature* pCreature) : npc_escortAI(pCreature) 
+            npc_akilzon_amani_kidnapperAI(Creature* pCreature) : ScriptedAI(pCreature) 
             {
                 me->SetReactState(REACT_PASSIVE);
-                Reset();
             }
-
-            EventMap events;
 
             void Reset()
             {
                 me->SetCanFly(true);
-                InitWaypoint();
-                events.Reset();
-                events.ScheduleEvent(EVENT_STAR_FLY, 2000);
-            }
-
-            void InitWaypoint()
-            {
-                AddWaypoint(1, 370.375f, 1429.71f, 89.0745f);
-                AddWaypoint(2, 352.482f, 1407.65f, 90.2659f);
-                AddWaypoint(3, 366.627f, 1383.39f, 88.5714f);
-                AddWaypoint(4, 395.338f, 1383.53f, 89.0076f);
-                AddWaypoint(5, 402.315f, 1407.52f, 91.5229f);
-                AddWaypoint(6, 397.367f, 1424.39f, 93.2904f);
-                AddWaypoint(7, 381.306f, 1429.57f, 92.3437f);
-            }
-
-            void WaypointReached(uint32 i)
-            {
-                if(i == 7)
-                    Start(false, false);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                events.Update(diff);
-
-                while (uint32 eventId = events.ExecuteEvent())
-                {
-                     switch (eventId)
-                     {
-                        case EVENT_STAR_FLY:
-                            Start(false, false);
-                            break;
-                     }
-                }
-
-                npc_escortAI::UpdateAI(diff);
             }
         };
 };
@@ -405,7 +363,7 @@ void AddSC_boss_akilzon()
 {
     new boss_akilzon();
     new npc_akilzon_soaring_eagle();
-    new npc_akilzon_amani_kidnapper();
+    //new npc_akilzon_amani_kidnapper();
     new spell_akilzon_electrical_storm();
     new spell_akilzon_electrical_storm_dmg();
 }

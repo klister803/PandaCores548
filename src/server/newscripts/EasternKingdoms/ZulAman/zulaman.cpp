@@ -19,6 +19,21 @@ enum Spells
     // Amani'shi Warrior
     SPELL_CHARGE                    = 43519,
     SPELL_KICK                      = 43518,
+
+    // Achievement Hex Mix
+    SPELL_MELISSA_ACHIEVEMENT       = 97905,
+    SPELL_MAWAGO_ACHIEVEMENT        = 97906,
+    SPELL_TYLLAN_ACHIEVEMENT        = 97907,
+    SPELL_MICAH_ACHIEVEMENT         = 97908,
+    SPELL_ARINOTH_ACHIEVEMENT       = 97909,
+    SPELL_KALDRICK_ACHIEVEMENT      = 97910,
+    SPELL_LENZO_ACHIEVEMENT         = 97911,
+    SPELL_MELASONG_ACHIEVEMENT      = 97912,
+    SPELL_HARALD_ACHIEVEMENT        = 97913,
+    SPELL_RELISSA_ACHIEVEMENT       = 97914,
+    SPELL_EULINDA_ACHIEVEMENT       = 97915,
+    SPELL_ROSA_ACHIEVEMENT          = 97916,
+
 };
 
 enum Events
@@ -58,7 +73,7 @@ class npc_zulaman_forest_frog : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_zulaman_forest_frogAI(pCreature);
+            return GetInstanceAI<npc_zulaman_forest_frogAI>(pCreature);
         }
 
         npc_zulaman_forest_frog() : CreatureScript("npc_zulaman_forest_frog") { }
@@ -79,18 +94,21 @@ class npc_zulaman_forest_frog : public CreatureScript
                 if (pInstance)
                 {
                     uint32 cEntry = 0;
-                    switch(urand(0, 9))
+                    uint32 spellId = 0; // For Achievement
+                    switch(urand(0, 11))
                     {
-                        case 0: cEntry = NPC_HARALD; break;
-                        case 1: cEntry = NPC_EULINDA; break;
-                        case 2: cEntry = NPC_ARINOTH; reward = 1; break;
-                        case 3: cEntry = NPC_LENZO; reward = 1; break;
-                        case 4: cEntry = NPC_MELISSA; reward = 2; break;
-                        case 5: cEntry = NPC_MAWAGO; reward = 2; break;
-                        case 6: cEntry = NPC_MELASONG; reward = 2; break;
-                        case 7: cEntry = NPC_ROSA; reward = 2; break;
-                        case 8: cEntry = NPC_RELISSA; reward = 2; break;
-                        case 9: cEntry = NPC_TYLLAN; reward = 2; break;
+                        case 0: cEntry = NPC_HARALD; spellId = SPELL_HARALD_ACHIEVEMENT; break;
+                        case 1: cEntry = NPC_EULINDA; spellId = SPELL_EULINDA_ACHIEVEMENT; break;
+                        case 2: cEntry = NPC_ARINOTH; reward = 1; spellId = SPELL_ARINOTH_ACHIEVEMENT; break;
+                        case 3: cEntry = NPC_LENZO; reward = 1; spellId = SPELL_LENZO_ACHIEVEMENT; break;
+                        case 4: cEntry = NPC_MELISSA; reward = 2; spellId = SPELL_MELISSA_ACHIEVEMENT; break;
+                        case 5: cEntry = NPC_MAWAGO; reward = 2; spellId = SPELL_MAWAGO_ACHIEVEMENT; break;
+                        case 6: cEntry = NPC_MELASONG; reward = 2; spellId = SPELL_MELASONG_ACHIEVEMENT;; break;
+                        case 7: cEntry = NPC_ROSA; reward = 2; spellId = SPELL_ROSA_ACHIEVEMENT; break;
+                        case 8: cEntry = NPC_RELISSA; reward = 2; spellId = SPELL_RELISSA_ACHIEVEMENT; break;
+                        case 9: cEntry = NPC_TYLLAN; reward = 2; spellId = SPELL_TYLLAN_ACHIEVEMENT; break;
+                        case 10: cEntry = NPC_KALDRICK; reward = 2; spellId = SPELL_KALDRICK_ACHIEVEMENT; break;
+                        case 11: cEntry = NPC_MICAH; reward = 2; spellId = SPELL_MICAH_ACHIEVEMENT; break;
                     }
 
                     if (cEntry == NPC_HARALD && pInstance->GetData(DATA_VENDOR_1))
@@ -98,9 +116,13 @@ class npc_zulaman_forest_frog : public CreatureScript
                     if (cEntry == NPC_EULINDA && pInstance->GetData(DATA_VENDOR_2))
                         cEntry = NPC_ARINOTH;
 
-                    if (cEntry) me->UpdateEntry(cEntry);
+                    if (cEntry) 
+                        me->UpdateEntry(cEntry);
+
+                    if (spellId)
+                        DoCastAOE(spellId, true);
                     
-                    // There must nbe only one vendor per instance
+                    // There must be only one vendor per instance
                     if (cEntry == NPC_HARALD)
                         pInstance->SetData(DATA_VENDOR_1, DONE);
                     else if (cEntry == NPC_EULINDA)
@@ -138,88 +160,6 @@ class npc_zulaman_forest_frog : public CreatureScript
         };
 };
 
-#define GOSSIP_HOSTAGE1        "I am glad to help you."
-
-static uint32 HostageEntry[] = {23790, 23999, 24024, 24001};
-static uint32 ChestEntry[] = {186648, 187021, 186672, 186667};
-
-class npc_zulaman_hostage : public CreatureScript
-{
-    public:
-        npc_zulaman_hostage() : CreatureScript("npc_zulaman_hostage") { }
-        
-        struct npc_zulaman_hostageAI : public ScriptedAI
-        {
-            npc_zulaman_hostageAI(Creature* creature) : ScriptedAI(creature)
-            {
-                IsLoot = false;
-            }
-
-            bool IsLoot;
-            uint64 PlayerGUID;
-
-            void Reset() {}
-
-            void EnterCombat(Unit* /*who*/) {}
-
-            void JustDied(Unit* /*killer*/)
-            {
-                Player* player = Unit::GetPlayer(*me, PlayerGUID);
-                if (player)
-                    player->SendLoot(me->GetGUID(), LOOT_CORPSE);
-            }
-
-            void UpdateAI(uint32 /*diff*/)
-            {
-                if (IsLoot)
-                    DoCast(me, 7, false);
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_zulaman_hostageAI(creature);
-        }
-
-        bool OnGossipHello(Player* player, Creature* creature)
-        {
-            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HOSTAGE1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
-            return true;
-        }
-
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
-        {
-            player->PlayerTalkClass->ClearMenus();
-
-            if (action == GOSSIP_ACTION_INFO_DEF + 1)
-                player->CLOSE_GOSSIP_MENU();
-
-            if (!creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP))
-                return true;
-
-            creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-
-            InstanceScript* instance = creature->GetInstanceScript();
-            if (instance)
-            {
-                //uint8 progress = instance->GetData(DATA_CHESTLOOTED);
-                float x, y, z;
-                creature->GetPosition(x, y, z);
-                uint32 entry = creature->GetEntry();
-                for (uint8 i = 0; i < 4; ++i)
-                {
-                    if (HostageEntry[i] == entry)
-                    {
-                        creature->SummonGameObject(ChestEntry[i], x-2, y, z, 0, 0, 0, 0, 0, 0);
-                        break;
-                    }
-                }
-            }
-            return true;
-        }
-};
-
 class go_strange_gong : public GameObjectScript
 {
     public:
@@ -242,43 +182,43 @@ class npc_amanishi_tempest : public CreatureScript
         
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_amanishi_tempestAI(pCreature);
+            return GetInstanceAI<npc_amanishi_tempestAI>(pCreature);
         }
 
-		struct npc_amanishi_tempestAI : public ScriptedAI
-		{
-			npc_amanishi_tempestAI(Creature* pCreature) : ScriptedAI(pCreature)
-			{
+        struct npc_amanishi_tempestAI : public ScriptedAI
+        {
+            npc_amanishi_tempestAI(Creature* pCreature) : ScriptedAI(pCreature)
+            {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
-			}
+            }
 
-			EventMap events;
+            EventMap events;
 
-			void Reset()
-			{
-				events.Reset();
-			}
+            void Reset()
+            {
+                events.Reset();
+            }
 
-			void EnterCombat(Unit* attacker)
-			{
+            void EnterCombat(Unit* attacker)
+            {
                 events.ScheduleEvent(EVENT_THUNDERCLAP, urand(5000, 10000));
                 events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(6000, 12000));
-			}
+            }
 
-			void UpdateAI(uint32 diff)
-			{
-				if (!UpdateVictim())
-					return;
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
 
-				events.Update(diff);
+                events.Update(diff);
 
-				if (me->HasUnitState(UNIT_STATE_CASTING))
-					return;
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
-				while (uint32 eventId = events.ExecuteEvent())
-				{
-					switch (eventId)
-					{
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
                         case EVENT_THUNDERCLAP:
                             DoCastAOE(SPELL_THUNDERCLAP);
                             events.ScheduleEvent(EVENT_THUNDERCLAP, urand(14000, 18000));
@@ -288,20 +228,19 @@ class npc_amanishi_tempest : public CreatureScript
                                 DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
                             events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(10000, 12000));
                             break;
-					}
-				}
+                    }
+                }
 
-				DoMeleeAttackIfReady();
-			}
-	 };
+                DoMeleeAttackIfReady();
+            }
+     };
 };
 
 void AddSC_zulaman()
 {
     new npc_zulaman_forest_frog();
-    new npc_zulaman_hostage();
     new go_strange_gong();
-    new npc_amanishi_tempest();
+    //new npc_amanishi_tempest();
     //new npc_amanishi_lookout();
     //new npc_amani_eagle();
     //new npc_amanishi_warrior();

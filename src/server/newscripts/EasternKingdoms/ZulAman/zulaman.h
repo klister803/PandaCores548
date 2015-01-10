@@ -24,6 +24,18 @@ enum CreaturesIds
     NPC_HEX_LORD_MALACRASS  = 24239,
     NPC_DAAKARA             = 23863,
 
+    // Hostages
+    NPC_BAKKALZU            = 52941, // near Akilzon
+    NPC_BAKKALZU_CORPSE     = 52942,
+    NPC_HAZLEK              = 52939,
+    NPC_HAZLEK_CORPSE       = 52940,
+    NPC_NORKANI             = 52943,
+    NPC_NORKANI_CORPSE      = 52944,
+    NPC_KASHA               = 52945,
+    NPC_KASHA_CORPSE        = 52946,
+
+
+    // Event npcs
     NPC_FOREST_FROG         = 24396,
     NPC_HARALD              = 52915, // Vendor 1
     NPC_EULINDA             = 52914, // Vendor 2
@@ -35,6 +47,8 @@ enum CreaturesIds
     NPC_ROSA                = 52905, // Amani Charm Box
     NPC_RELISSA             = 52912, // Amani Charm Box
     NPC_TYLLAN              = 52909, // Amani Charm Box
+    NPC_KALDRICK            = 52918, // Amani Charm Box
+    NPC_MICAH               = 52910, // Amani Charm Box
 
     NPC_AMANISHI_TEMPEST    = 24549,
     NPC_AMANISHI_WARRIOR    = 24225,
@@ -52,7 +66,32 @@ enum GameObjectsIds
     GO_MALACRASS_ENTRANCE   = 186305,
     GO_MALACRASS_EXIT       = 186306,
     GO_DAAKARA_EXIT         = 186859,
+    
+    GO_HAZLEK_CAGE          = 187377,
+    GO_HAZLEK_TRUNK         = 186648,
+
+    GO_NORKANI_CAGE         = 187379,
+    GO_NORKANI_PACKAGE      = 186667,
+
+    GO_KASHA_CAGE           = 187380,
+    GO_KASHA_BAG            = 186672,
+    GO_KASHA_VASE           = 186671,
 };
+
+enum SharedSpells
+{
+    SPELL_ZULAMAN_ACHIEVEMENT = 100938,
+};
+
+template<class AI>
+CreatureAI* GetInstanceAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId("instance_zulaman"))
+                return new AI(creature);
+    return NULL;
+}
 
 #endif
 
