@@ -1484,7 +1484,7 @@ void Guardian::UpdateArmor()
         value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
     
     value += GetModifierValue(unitMod, BASE_PCT);
-    value *= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
+    value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
     value *= m_owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_ARMOR), GetEntry());
 
     SetArmor(int32(value));
@@ -1511,7 +1511,6 @@ void Guardian::UpdateMaxHealth()
 
         multiplicator *= owner->GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT);
         multiplicator *= owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_MAX_HP), GetEntry());
-
         value = owner->GetMaxHealth() * multiplicator;
     }
     else

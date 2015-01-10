@@ -6213,6 +6213,8 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     if(Player* _lplayer = _caster->ToPlayer())
                         _lplayer->learnSpell(i->effect, false);
                 }
+                else if (i->type2 == 6)
+                    _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
                 else
                     _caster->CastSpell(_target ? _target : _caster, i->effect, true);
 

@@ -1758,7 +1758,7 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                 continue;
             if(itr->casteraura < 0 && _caster->HasAura(abs(itr->casteraura)))
                 continue;
-            if(spellId != 0 && spellId != abs(itr->aura))
+            if(spellId != 0 && spellId != abs(itr->fromspell))
                 continue;
             if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
                 continue;
@@ -1785,7 +1785,15 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                         _caster->CastCustomSpell(_target, itr->spellId, &bp0, &bp1, &bp2, true);
                         break;
                     case 2: //add aura
-                        _caster->AddAura(itr->spellId, _target);
+                        if(Aura* aura = _caster->AddAura(itr->spellId, _target))
+                        {
+                            if(bp0 && aura->GetEffect(0))
+                                aura->GetEffect(0)->SetAmount(bp0);
+                            if(bp1 && aura->GetEffect(1))
+                                aura->GetEffect(1)->SetAmount(bp1);
+                            if(bp2 && aura->GetEffect(2))
+                                aura->GetEffect(2)->SetAmount(bp2);
+                        }
                         break;
                     case 3: //cast spell not triggered
                         _caster->CastSpell(_target, itr->spellId, false);
@@ -1808,7 +1816,15 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                         _caster->CastCustomSpell(_target, abs(itr->spellId), &bp0, &bp1, &bp2, true);
                         break;
                     case 2: //add aura
-                        _caster->AddAura(abs(itr->spellId), _target);
+                        if(Aura* aura = _caster->AddAura(abs(itr->spellId), _target))
+                        {
+                            if(bp0 && aura->GetEffect(0))
+                                aura->GetEffect(0)->SetAmount(bp0);
+                            if(bp1 && aura->GetEffect(1))
+                                aura->GetEffect(1)->SetAmount(bp1);
+                            if(bp2 && aura->GetEffect(2))
+                                aura->GetEffect(2)->SetAmount(bp2);
+                        }
                         break;
                     case 3: //cast spell not triggered
                         _caster->CastSpell(_target, abs(itr->spellId), false);
@@ -1855,8 +1871,6 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                 continue;
             if(itr->casteraura < 0 && _caster->HasAura(abs(itr->casteraura)))
                 continue;
-            if(spellId != 0 && spellId != abs(itr->aura))
-                continue;
             if(itr->createdspell != 0 && itr->createdspell != createdSpellId)
                 continue;
 
@@ -1873,6 +1887,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                     _target->RemoveAurasDueToSpell(itr->spellId);
                     continue;
                 }
+                if(spellId != 0 && spellId != abs(itr->fromspell))
+                    continue;
                 switch (itr->option)
                 {
                     case 0: //cast spell without option
@@ -1896,6 +1912,8 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                     _target->RemoveAurasDueToSpell(abs(itr->spellId));
                     continue;
                 }
+                if(spellId != 0 && spellId != abs(itr->fromspell))
+                    continue;
                 switch (itr->option)
                 {
                     case 0: //cast spell without option

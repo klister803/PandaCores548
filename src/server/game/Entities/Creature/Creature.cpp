@@ -557,11 +557,6 @@ void Creature::Update(uint32 diff)
         {
             Unit::Update(diff);
 
-            // creature can be dead after Unit::Update call
-            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if (!isAlive())
-                break;
-
             // if creature is charmed, switch to charmed AI (and back)
             if (NeedChangeAI)
             {
@@ -583,11 +578,6 @@ void Creature::Update(uint32 diff)
                 m_AI_locked = false;
             }
 
-            // creature can be dead after UpdateAI call
-            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if (!isAlive())
-                break;
-
             if (m_regenTimer > 0)
             {
                 if (diff >= m_regenTimer)
@@ -603,6 +593,11 @@ void Creature::Update(uint32 diff)
                 if(m_petregenTimer >= 400)
                     Regenerate(getPowerType());
             }
+
+            // creature can be dead after Unit::Update call
+            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
+            if (!isAlive())
+                break;
 
             if (m_regenTimer != 0)
                break;

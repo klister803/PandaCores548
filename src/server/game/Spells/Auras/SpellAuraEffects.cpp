@@ -1622,6 +1622,16 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
 
             if(itr->caster == 1 && target) //get caster as target
                 _caster = target;
+            if(itr->caster == 2 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _caster = (Unit*)pet;
+            }
+            if(itr->caster == 3) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _caster = owner;
+            }
 
             if(itr->targetaura == 1) //get caster aura
                 _targetAura = GetCaster();
@@ -1663,7 +1673,9 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
@@ -1672,7 +1684,9 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -1690,7 +1704,9 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += bp;
                             check = true;
                         }
@@ -1699,7 +1715,9 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
                             check = true;
                         }
@@ -1717,7 +1735,11 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            float bp = float(dummyInfo->Effects[itr->effectDummy].BasePoints / 100.0f);
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+
+                            bp /= 100.0f;
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
@@ -1726,7 +1748,11 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            float bp = float(dummyInfo->Effects[itr->effectDummy].BasePoints / 100.0f);
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+
+                            bp /= 100.0f;
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }

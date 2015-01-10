@@ -2443,6 +2443,130 @@ class spell_warl_wild_imps : public SpellScriptLoader
         }
 };
 
+// Demonic Slash - 114175
+class spell_warl_demonic_slash : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_slash() : SpellScriptLoader("spell_warl_demonic_slash") { }
+
+        class spell_warl_demonic_slash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_slash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 60, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_demonic_slash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_slash_SpellScript();
+        }
+};
+
+// Demonic Gateway - 113902
+class spell_warl_demonic_gateway_at : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway_at() : SpellScriptLoader("spell_warl_demonic_gateway_at") { }
+
+        class spell_warl_demonic_gateway_at_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_gateway_at_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    float distanceG = 0.0f;
+                    float distanceP = 0.0f;
+                    uint64 uGateG = 0;
+                    uint64 uGateP = 0;
+                    for (int32 i = 0; i < MAX_SUMMON_SLOT; ++i)
+                    {
+                        if(!caster->m_SummonSlot[i])
+                            continue;
+
+                        Unit* uGate = ObjectAccessor::GetUnit(*caster, caster->m_SummonSlot[i]);
+                        if(uGate && uGate->GetEntry() == 59271)
+                        {
+                            distanceG = caster->GetDistance(uGate);
+                            uGateG = caster->m_SummonSlot[i];
+                        }
+                        if(uGate && uGate->GetEntry() == 59262)
+                        {
+                            distanceP = caster->GetDistance(uGate);
+                            uGateP = caster->m_SummonSlot[i];
+                        }
+                    }
+
+                    if(uGateG && uGateP && (distanceG != 0.0f || distanceP != 0.0f))
+                    {
+                        if(distanceG > distanceP)
+                        {
+                            if(Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*caster, uGateP))
+                                creature->AI()->OnSpellClick(caster);
+                        }
+                        else
+                        {
+                            if(Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*caster, uGateG))
+                                creature->AI()->OnSpellClick(caster);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_demonic_gateway_at_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_gateway_at_SpellScript();
+        }
+};
+
+// Seduction (Special Ability) - 6358, Mesmerize (Special Ability) - 115268
+class spell_warl_seduction : public SpellScriptLoader
+{
+    public:
+        spell_warl_seduction() : SpellScriptLoader("spell_warl_seduction") { }
+
+        class spell_warl_seduction_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_seduction_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* owner = caster->GetAnyOwner())
+                        if(owner->HasAura(56249)) // Glyph of Demon Training
+                            if (Unit* target = GetHitUnit())
+                                target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_seduction_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_seduction_SpellScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2498,4 +2622,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_disrupted_nether();
     new spell_warl_demonic_gateway_duration();
     new spell_warl_wild_imps();
+    new spell_warl_demonic_slash();
+    new spell_warl_demonic_gateway_at();
+    new spell_warl_seduction();
 }

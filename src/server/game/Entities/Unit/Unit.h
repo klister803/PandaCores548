@@ -2476,6 +2476,8 @@ class Unit : public WorldObject
         void SetAttackDist(float dist) { m_attackDist = dist; }
         float GetAttackDist() { return m_attackDist; }
 
+        void SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown = 0);
+
     protected:
         explicit Unit (bool isWorldObject);
 

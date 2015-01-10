@@ -299,8 +299,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)
         m_damage_counters[i].push_front(0);
 
-    m_baseRHastRatingPct = 0;
-    m_baseMHastRatingPct = 0;
+    m_baseRHastRatingPct = 1.0f;
+    m_baseMHastRatingPct = 1.0f;
     m_baseHastRatingPct = 1.0f;
     m_modForHolyPowerSpell = 0;
 
@@ -2046,9 +2046,9 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
         }
     }
 
-    if (victim && victim->ToPlayer() && victim->getClass() == CLASS_PALADIN)
+    if (victim && victim->ToPlayer())
     {
-        if (victim->HasAura(498))
+        if (victim->getClass() == CLASS_PALADIN && victim->HasAura(498))
         {
             if(Aura* aura = victim->GetAura(144580)) //Item - Paladin T16 Protection 2P Bonus
                 aura->GetEffect(0)->SetAmount(aura->GetEffect(0)->GetAmount() + dmgInfo.GetDamage());
@@ -2065,6 +2065,11 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
                 else
                     aura->GetEffect(0)->SetAmount(_amount + _damage);
             }
+        }
+        if (victim->getClass() == CLASS_WARLOCK && victim->ToPlayer()->HasSpellCooldown(5484) && !victim->ToPlayer()->HasSpellCooldown(112891)) // Howl of Terror
+        {
+            victim->ToPlayer()->ModifySpellCooldown(5484, -1000);
+            victim->ToPlayer()->AddSpellCooldown(112891, 0, getPreciseTime() + 1.0);
         }
     }
 
@@ -7372,7 +7377,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 108558: // Nightfall
                 {
-                    triggered_spell_id = 87388;
+                    triggered_spell_id = 17941;
                     break;
                 }
                 case 108869: // Decimation
@@ -19782,7 +19787,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
@@ -19791,7 +19798,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -19811,7 +19820,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += bp;
                             check = true;
                         }
@@ -19820,7 +19831,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
                             check = true;
                         }
@@ -19840,7 +19853,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
@@ -19849,7 +19864,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -19869,7 +19886,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount += bp;
                             check = true;
                         }
@@ -19878,7 +19897,9 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             amount -= bp;
                             check = true;
                         }
@@ -19902,6 +19923,28 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
             Unit* _targetAura = this;
             bool check = false;
 
+            if(itr->caster == 2 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _caster = (Unit*)pet;
+            }
+            if(itr->caster == 3) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _caster = owner;
+            }
+
+            if(itr->targetaura == 1 && _caster->ToPlayer()) //get target pet
+            {
+                if (Pet* pet = _caster->ToPlayer()->GetPet())
+                    _targetAura = (Unit*)pet;
+            }
+            if(itr->targetaura == 2) //get target owner
+            {
+                if (Unit* owner = _caster->GetOwner())
+                    _targetAura = owner;
+            }
+
             switch (itr->option)
             {
                 case SPELL_DUMMY_CASTTIME_ADD_PERC: //13
@@ -19915,7 +19958,10 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            int32 bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+
                             castTime += CalculatePct(castTime, bp);
                             check = true;
                         }
@@ -19924,7 +19970,9 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            int32 bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             castTime -= CalculatePct(castTime, bp);
                             check = true;
                         }
@@ -19942,7 +19990,9 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            int32 bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             castTime += bp;
                             check = true;
                         }
@@ -19951,7 +20001,9 @@ void Unit::CalculateCastTimeFromDummy(int32& castTime, SpellInfo const* spellPro
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            float bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            int32 bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             castTime -= bp;
                             check = true;
                         }
@@ -23935,4 +23987,46 @@ bool Unit::GetFreeAuraSlot(uint32& slot)
         return true;
 
     return false;
+}
+
+void Unit::SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown)
+{
+
+
+    Player* player = ToPlayer();
+    if(!player)
+    {
+        if(Unit* owner = GetAnyOwner())
+            player = owner->ToPlayer();
+    }
+    if(!player)
+        return;
+
+    if(!cooldown)
+    {
+        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_cooldown))
+            cooldown = spellInfo->RecoveryTime;
+    }
+    if(!cooldown)
+    {
+        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
+            cooldown = spellInfo->RecoveryTime;
+    }
+    if(!cooldown)
+        return;
+
+
+
+    ObjectGuid guid = player->GetGUID();
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+    data.WriteGuidMask<4, 7, 6>(guid);
+    data.WriteBits(1, 21);
+    data.WriteGuidMask<2, 3, 1, 0>(guid);
+    data.WriteBit(1);
+    data.WriteGuidMask<5>(guid);
+
+    data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
+    data << uint32(cooldown);
+    data << uint32(spellId);
+    player->GetSession()->SendPacket(&data);
 }

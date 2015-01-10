@@ -546,6 +546,7 @@ struct PetAura
     int32 aura;
     int32 casteraura;
     int32 createdspell;
+    int32 fromspell;
 };
 
 typedef UNORDERED_MAP<int32, std::vector<PetAura> > SpellPetAuraMap;
@@ -747,6 +748,7 @@ struct SpellAuraDummy
     int32 chance;
     int32 attr;
     int32 attrValue;
+    float custombp;
 };
 
 struct SpellTargetFilter

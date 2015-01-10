@@ -74,6 +74,8 @@ struct AreaTriggerAction
     uint32 spellId;
     int8 maxCharges;
     uint32 chargeRecoveryTime;
+    int32 aura;
+    int32 hasspell;
 };
 
 typedef std::list<AreaTriggerAction> AreaTriggerActionList;

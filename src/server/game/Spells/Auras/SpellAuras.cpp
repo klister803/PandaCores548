@@ -616,7 +616,9 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration += CalculatePct(duration, bp);
                             check = true;
                         }
@@ -625,7 +627,9 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration -= CalculatePct(duration, bp);
                             check = true;
                         }
@@ -643,7 +647,9 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration += bp;
                             check = true;
                         }
@@ -652,7 +658,9 @@ void Aura::CalculateDurationFromDummy(int32 &duration)
                     {
                         if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
                         {
-                            int32 bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                            float bp = itr->custombp;
+                            if(!bp)
+                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
                             duration -= bp;
                             check = true;
                         }
@@ -3328,12 +3336,22 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:
-                        targetList.push_back(GetUnitOwner());
-                    case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
                     {
+                        targetList.push_back(GetUnitOwner());
                         if (Unit* owner = GetUnitOwner()->GetCharmerOrOwner())
                             if (GetUnitOwner()->IsWithinDistInMap(owner, radius))
                                 targetList.push_back(owner);
+                        break;
+                    }
+                    case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
+                    {
+                        if (Unit* owner = GetUnitOwner()->GetCharmerOrOwner())
+                        {
+                            if (GetUnitOwner()->IsWithinDistInMap(owner, radius))
+                                targetList.push_back(owner);
+                        }
+                        else
+                            targetList.push_back(GetUnitOwner());
                         break;
                     }
                     case SPELL_EFFECT_APPLY_AURA_ON_PET_OR_SELF:

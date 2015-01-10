@@ -333,14 +333,14 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
 
     if (m_spellInfo->Id == 108503)
     {
-        if(Pet* pet = unitTarget->ToPet())
-            pet->CastPetAuras(false, m_spellInfo->Id);
-
         if (!unitTarget->GetHealth() || !unitTarget->isAlive())
         {
             unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
             return;
         }
+
+        if(Pet* pet = unitTarget->ToPet())
+            pet->CastPetAuras(false, m_spellInfo->Id);
     }
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
@@ -1187,27 +1187,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     }
 
                     triggered_spell_id = abs(spell_trigger);
-                    if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
-                    {
-                        if (Unit* owner = triggerCaster->GetOwner())
-                        {
-                            if (Player* _player = owner->ToPlayer())
-                            {
-                                ObjectGuid guid = _player->GetGUID();
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
-                                data.WriteGuidMask<4, 7, 6>(guid);
-                                data.WriteBits(1, 21);
-                                data.WriteGuidMask<2, 3, 1, 0>(guid);
-                                data.WriteBit(1);
-                                data.WriteGuidMask<5>(guid);
-
-                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
-                                data << uint32(spellInfo->RecoveryTime);
-                                data << uint32(m_spellInfo->Id);
-                                _player->GetSession()->SendPacket(&data);
-                            }
-                        }
-                    }
+                    //triggerCaster->SendSpellCooldown(m_spellInfo->Id, triggered_spell_id);
                     triggerCaster->CastSpell(triggerTarget, triggered_spell_id, false);
                     check = true;
                 }
@@ -1234,24 +1214,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     triggered_spell_id = abs(spell_trigger);
                     if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id))
                     {
-                        if (Unit* owner = triggerCaster->GetOwner())
-                        {
-                            if (Player* _player = owner->ToPlayer())
-                            {
-                                ObjectGuid guid = _player->GetGUID();
-                                WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
-                                data.WriteGuidMask<4, 7, 6>(guid);
-                                data.WriteBits(1, 21);
-                                data.WriteGuidMask<2, 3, 1, 0>(guid);
-                                data.WriteBit(1);
-                                data.WriteGuidMask<5>(guid);
-
-                                data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
-                                data << uint32(spellInfo->RecoveryTime);
-                                data << uint32(m_spellInfo->Id);
-                                _player->GetSession()->SendPacket(&data);
-                            }
-                        }
+                        //triggerCaster->SendSpellCooldown(m_spellInfo->Id, triggered_spell_id);
 
                         targets.SetDst(m_targets);
                         CustomSpellValues values;
@@ -1728,12 +1691,18 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
     uint32 triggered_spell_id = m_spellInfo->GetEffect(effIndex, m_diffMode).TriggerSpell;
 
     // todo: move those to spell scripts
-    if (m_spellInfo->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_TRIGGER_SPELL
-        && effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+    if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
     {
         // special cases
         switch (triggered_spell_id)
         {
+            // Demonic Fury (not exist)
+            case 104330:
+            {
+                if (Unit* owner = m_caster->GetAnyOwner())
+                    m_caster->EnergizeBySpell(owner, m_spellInfo->Id, damage, POWER_DEMONIC_FURY);
+                return;
+            }
             // Vanish (not exist)
             case 18461:
             {
@@ -3954,14 +3923,13 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     // On success dispel
     // Devour Magic
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->Category == SPELLCATEGORY_DEVOUR_MAGIC)
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PET_ABILITY && m_spellInfo->Category == SPELLCATEGORY_DEVOUR_MAGIC)
     {
-        int32 heal_amount = m_spellInfo->GetEffect(EFFECT_1, m_diffMode).CalcValue(m_caster);
-        m_caster->CastCustomSpell(m_caster, 19658, &heal_amount, NULL, NULL, true);
+        m_caster->CastSpell(m_caster, 19658, true);
         // Glyph of Felhunter
         if (Unit* owner = m_caster->GetOwner())
             if (owner->GetAura(56249))
-                owner->CastCustomSpell(owner, 19658, &heal_amount, NULL, NULL, true);
+                m_caster->CastSpell(owner, 19658, true);
     }
 }
 
@@ -7518,6 +7486,17 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
     // Spellsteal and Glyph of Spellsteal
     if (m_spellInfo->Id == 30449 && m_caster->HasAura(115713))
         m_caster->CastSpell(m_caster, 115714, true);
+
+    // On success dispel
+    // Devour Magic
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PET_ABILITY && m_spellInfo->Category == SPELLCATEGORY_DEVOUR_MAGIC)
+    {
+        m_caster->CastSpell(m_caster, 19658, true);
+        // Glyph of Felhunter
+        if (Unit* owner = m_caster->GetAnyOwner())
+            if (owner->GetAura(56249))
+                m_caster->CastSpell(owner, 19658, true);
+    }
 
     std::list<uint32> spellSuccess;
     for (DispelList::iterator itr = success_list.begin(); itr!=success_list.end(); ++itr)

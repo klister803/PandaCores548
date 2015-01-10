@@ -423,6 +423,16 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         if (!HasInArc(static_cast<float>(M_PI), unit))
             return;
 
+    if (action.action->aura > 0 && !unit->HasAura(action.action->aura))
+        return;
+    else if (action.action->aura < 0 && unit->HasAura(abs(action.action->aura)))
+        return;
+
+    if (action.action->hasspell > 0 && !unit->HasSpell(action.action->hasspell))
+        return;
+    else if (action.action->hasspell < 0 && unit->HasSpell(abs(action.action->hasspell)))
+        return;
+
     if (!CheckActionConditions(*action.action, unit))
         return;
 

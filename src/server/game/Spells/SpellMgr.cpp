@@ -2235,8 +2235,8 @@ void SpellMgr::LoadSpellPetAuras()
 
     mSpellPetAuraMap.clear();                                  // need for reload case
 
-    //                                                    0          1         2         3            4         5      6     7        8         9              10
-    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura`, `createdspell` FROM `spell_pet_auras`");
+    //                                                    0          1         2         3            4         5      6     7        8         9              10            11
+    QueryResult result = WorldDatabase.Query("SELECT `petEntry`, `spellId`, `option`, `target`, `targetaura`, `bp0`, `bp1`, `bp2`, `aura`, `casteraura`, `createdspell`, `fromspell` FROM `spell_pet_auras`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell pet auras. DB table `spell_pet_auras` is empty.");
@@ -2259,6 +2259,7 @@ void SpellMgr::LoadSpellPetAuras()
         int32 aura = fields[8].GetInt32();
         int32 casteraura = fields[9].GetInt32();
         int32 createdspell = fields[10].GetInt32();
+        int32 fromspell = fields[11].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
         if (!spellInfo)
@@ -2279,6 +2280,7 @@ void SpellMgr::LoadSpellPetAuras()
         tempPetAura.aura = aura;
         tempPetAura.casteraura = casteraura;
         tempPetAura.createdspell = createdspell;
+        tempPetAura.fromspell = fromspell;
         mSpellPetAuraMap[petEntry].push_back(tempPetAura);
 
         ++count;
@@ -2866,8 +2868,8 @@ void SpellMgr::LoadSpellTriggered()
         ++count;
     } while (result->NextRow());
 
-    //                                        0             1          2         3         4           5              6             7           8        9          10         11        12
-    result = WorldDatabase.Query("SELECT `spellId`, `spellDummyId`, `option`, `target`, `caster`, `targetaura`, `effectmask`, `effectDummy`, `aura`, `chance`, `removeAura`, `attr`, `attrValue` FROM `spell_aura_dummy`");
+    //                                        0             1          2         3         4           5              6             7           8        9          10         11        12           13
+    result = WorldDatabase.Query("SELECT `spellId`, `spellDummyId`, `option`, `target`, `caster`, `targetaura`, `effectmask`, `effectDummy`, `aura`, `chance`, `removeAura`, `attr`, `attrValue`, `custombp` FROM `spell_aura_dummy`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 aura dummy spells. DB table `spell_aura_dummy` is empty.");
@@ -2891,6 +2893,7 @@ void SpellMgr::LoadSpellTriggered()
         int32 removeAura = fields[10].GetInt32();
         int32 attr = fields[11].GetInt32();
         int32 attrValue = fields[12].GetInt32();
+        float custombp = fields[13].GetFloat();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spellId));
         if (!spellInfo)
@@ -2914,6 +2917,7 @@ void SpellMgr::LoadSpellTriggered()
         tempdummy.chance = chance;
         tempdummy.attr = attr;
         tempdummy.attrValue = attrValue;
+        tempdummy.custombp = custombp;
         mSpellAuraDummyMap[spellId].push_back(tempdummy);
 
         ++count;
@@ -3511,14 +3515,11 @@ void SpellMgr::LoadSpellClassInfo()
             if (!spellEntry)
                 continue;
 
-            if (spellEntry->SpellLevel == 0)
-                continue;
-
-            if (skillLine->skillId !=  SkillClass[ClassID] || skillLine->learnOnGetSkill != ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL)
+            if (skillLine->skillId != SkillClass[ClassID] || (spellEntry->SpellLevel == 0 && skillLine->learnOnGetSkill != ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL))
                 continue;
 
             // See CGSpellBook::InitFutureSpells in client
-            if (spellEntry->Attributes & SPELL_ATTR0_TRADESPELL || spellEntry->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE
+            if (spellEntry->Attributes & SPELL_ATTR0_TRADESPELL || ((spellEntry->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE) && !(spellEntry->Attributes & SPELL_ATTR0_PASSIVE))
                 || spellEntry->AttributesEx8 & SPELL_ATTR8_UNK13 || spellEntry->AttributesEx4 & SPELL_ATTR4_UNK15)
                 continue;
 
@@ -3527,22 +3528,20 @@ void SpellMgr::LoadSpellClassInfo()
 
             mSpellClassInfo[ClassID].insert(spellEntry->Id);
         }
-
-        for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
-        {
-            SpecializationSpellEntry const* specializationInfo = sSpecializationSpellStore.LookupEntry(i);
-            if (!specializationInfo)
-                continue;
-
-            ChrSpecializationsEntry const* chrSpec = sChrSpecializationsStore.LookupEntry(specializationInfo->SpecializationEntry);
-            if (!chrSpec)
-                continue;
-
-            mSpellClassInfo[chrSpec->classId].insert(specializationInfo->LearnSpell);
-        }
     }
 
+    for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
+    {
+        SpecializationSpellEntry const* specializationInfo = sSpecializationSpellStore.LookupEntry(i);
+        if (!specializationInfo)
+            continue;
 
+        ChrSpecializationsEntry const* chrSpec = sChrSpecializationsStore.LookupEntry(specializationInfo->SpecializationEntry);
+        if (!chrSpec)
+            continue;
+
+        mSpellClassInfo[chrSpec->classId].insert(specializationInfo->LearnSpell);
+    }
 }
 
 struct spellDifficultyLoadInfo
@@ -3800,9 +3799,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 13165:  // Aspect of the Hawk
                 case 109260: // Aspect of the Iron Hawk
                     spellInfo->Effects[0].BasePoints = 35;
-                    break;
-                case 53209:  // Chimera Shot
-                    spellInfo->Effects[2].BasePoints = 398;
                     break;
                 case 146202: // Wrath
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HIDE_DURATION;
@@ -5252,27 +5248,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 53260: // Cobra Strikes trigger
                     spellInfo->Effects[0].TriggerSpell = 0;
-                    break;
-                case 91107: // Unholy Might. Hot Fix 5.4.x
-                    spellInfo->Effects[0].BasePoints = 35;
-                    break;
-                case 982: // Revive Pet. Hot Fix 5.4.x
-                    spellInfo->CastTimeEntry = sSpellCastTimesStore.LookupEntry(5); // 2s
-                    break;
-                case 16246: // Clearcasting. Hot Fix 5.4.x
-                    spellInfo->Effects[1].BasePoints = 20;
-                    break;
-                case 50887: // Icy Talons. Hot Fix 5.4.x
-                    spellInfo->Effects[0].BasePoints = 45;
-                    break;
-                case 15473: // Shadowform. Hot Fix 5.4.x
-                    spellInfo->Effects[6].BasePoints = 100;
-                    break;
-                case 24858: // Moonkin Form. Hot Fix 5.4.x
-                    spellInfo->Effects[2].BasePoints = 100;
-                    break;
-                case 127663: // Astral Communion. Hot Fix 5.4.x
-                    spellInfo->PreventionType = 0;
                     break;
                 case 96117: // Toss Stink Bomb Credit
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_PASSENGER_0;
