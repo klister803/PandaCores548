@@ -163,6 +163,7 @@ class boss_sha_of_pride : public CreatureScript
             }
 
             InstanceScript* instance;
+            bool bPhaseLowHp;
 
             void Reset()
             {
@@ -175,10 +176,15 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
-
+                
+                me->RemoveAurasDueToSpell(SPELL_UNLEASHED);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                bPhaseLowHp = false;
+                
+                if (Creature* norushen = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
+                    norushen->Respawn();
 
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
             }
@@ -222,7 +228,6 @@ class boss_sha_of_pride : public CreatureScript
                 events.RescheduleEvent(EVENT_SUMMON_MANIFESTATION_OF_PRIDE, t += 9000, 0, PHASE_BATTLE);      //19:02:57.000
                 events.RescheduleEvent(EVENT_PRIDE_GENERATION, 4000);                                         //first SPELL_SWELLING_PRIDE at 19:03:11.000
                 events.RescheduleEvent(EVENT_SPELL_REACHING_ATTACK, 15000, 0, PHASE_BATTLE);                  //19:03:49.000. Cast only if no in attack range ppl.
-                events.RescheduleEvent(EVENT_SPELL_UNLEASHED, RAID_MODE(10 * MINUTE * IN_MILLISECONDS, 10 * MINUTE * IN_MILLISECONDS, 20* MINUTE * IN_MILLISECONDS , 20 * MINUTE * IN_MILLISECONDS), 0, PHASE_BATTLE);                //19:21:11.000 
 
                 Map::PlayerList const& PlayerList = instance->instance->GetPlayers();
 
@@ -298,6 +303,12 @@ class boss_sha_of_pride : public CreatureScript
                 if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                if (me->HealthBelowPct(30) && !bPhaseLowHp)
+                {
+                    events.ScheduleEvent(EVENT_SPELL_UNLEASHED, 1000);
+                    bPhaseLowHp = true;
+                }
+                
                 EnterEvadeIfOutOfCombatArea(diff);
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
@@ -337,6 +348,7 @@ class boss_sha_of_pride : public CreatureScript
                             uint8 i = 0;
                             std::list<Unit*> targetList;
                             SelectTargetList(targetList, count, SELECT_TARGET_RANDOM, 0.0f, true);
+                            targetList.remove_if(TankTargetSelector(me));
                             for(std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             {
                                 if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prison[i])))
@@ -435,7 +447,12 @@ public:
             start = false;
             _gift.clear();
         }
-
+        
+        void JustRespawned()
+        {
+            start = true;
+        }
+        
         void MoveInLineOfSight(Unit* who)
         {
             if (start)return;

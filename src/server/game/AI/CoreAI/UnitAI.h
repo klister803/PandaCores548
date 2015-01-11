@@ -125,6 +125,17 @@ struct NonTankTargetSelector : public std::unary_function<Unit*, bool>
         bool _playerOnly;
 };
 
+struct TankTargetSelector : public std::unary_function<Unit*, bool>
+{
+    public:
+        TankTargetSelector(Creature* source, bool playerOnly = true) : _source(source), _playerOnly(playerOnly) { }
+        bool operator()(Unit const* target) const;
+
+    private:
+        Creature const* _source;
+        bool _playerOnly;
+};
+
 class UnitAI
 {
     protected:

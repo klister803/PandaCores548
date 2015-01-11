@@ -316,3 +316,14 @@ bool NonTankTargetSelector::operator()(Unit const* target) const
 
     return target != _source->getVictim();
 }
+
+bool TankTargetSelector::operator()(Unit const* target) const
+{
+    if (!target)
+        return false;
+
+    if (_playerOnly && target->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    return target == _source->getVictim();
+}
