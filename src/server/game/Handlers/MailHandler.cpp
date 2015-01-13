@@ -131,7 +131,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     uint64 rc = 0;
     if (normalizePlayerName(receiver))
-        rc = sObjectMgr->GetPlayerGUIDByName(receiver);
+        rc = ObjectMgr::GetPlayerGUIDByName(receiver);
 
     if (!rc)
     {
@@ -235,7 +235,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     uint32 rc_account = receive
         ? receive->GetSession()->GetAccountId()
-        : sObjectMgr->GetPlayerAccountIdByGUID(rc);
+        : ObjectMgr::GetPlayerAccountIdByGUID(rc);
 
     Item* items[MAX_MAIL_ITEMS];
 
@@ -520,16 +520,16 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
                 else
                 {
                     // can be calculated early
-                    sender_accId = sObjectMgr->GetPlayerAccountIdByGUID(sender_guid);
+                    sender_accId = ObjectMgr::GetPlayerAccountIdByGUID(sender_guid);
 
-                    if (!sObjectMgr->GetPlayerNameByGUID(sender_guid, sender_name))
+                    if (!ObjectMgr::GetPlayerNameByGUID(sender_guid, sender_name))
                         sender_name = sObjectMgr->GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
                 sLog->outCommand(GetAccountId(), "GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: " UI64FMTD " to player: %s (Account: %u)",
                     GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), m->COD, sender_name.c_str(), sender_accId);
             }
             else if (!receive)
-                sender_accId = sObjectMgr->GetPlayerAccountIdByGUID(sender_guid);
+                sender_accId = ObjectMgr::GetPlayerAccountIdByGUID(sender_guid);
 
             // check player existence
             if (receive || sender_accId)

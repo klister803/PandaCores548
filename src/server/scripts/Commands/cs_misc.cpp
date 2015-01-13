@@ -1638,7 +1638,7 @@ public:
 
         uint32 parseGUID = MAKE_NEW_GUID(atol((char*)args), 0, HIGHGUID_PLAYER);
 
-        if (sObjectMgr->GetPlayerNameByGUID(parseGUID, targetName))
+        if (ObjectMgr::GetPlayerNameByGUID(parseGUID, targetName))
         {
             target = sObjectMgr->GetPlayerByLowGUID(parseGUID);
             targetGuid = parseGUID;
@@ -1962,7 +1962,7 @@ public:
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))
             return false;
 
-        uint32 accountId = target ? target->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
+        uint32 accountId = target ? target->GetSession()->GetAccountId() : ObjectMgr::GetPlayerAccountIdByGUID(targetGuid);
 
         // find only player from same account if any
         if (!target)
@@ -2050,7 +2050,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        uint32 accountId = target ? target->GetSession()->GetAccountId() : sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
+        uint32 accountId = target ? target->GetSession()->GetAccountId() : ObjectMgr::GetPlayerAccountIdByGUID(targetGuid);
 
         // find only player from same account if any
         if (!target)

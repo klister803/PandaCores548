@@ -93,8 +93,8 @@ public:
         }
 
         // Get target information
-        uint64 targetGuid = sObjectMgr->GetPlayerGUIDByName(target.c_str());
-        uint64 targetAccountId = sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
+        uint64 targetGuid = ObjectMgr::GetPlayerGUIDByName(target.c_str());
+        uint64 targetAccountId = ObjectMgr::GetPlayerAccountIdByGUID(targetGuid);
         uint32 targetGmLevel = AccountMgr::GetSecurity(targetAccountId, realmID);
 
         // Target must exist and have administrative rights
@@ -378,7 +378,7 @@ public:
         else
         {
             uint64 guid = ticket->GetAssignedToGUID();
-            uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+            uint32 accountId = ObjectMgr::GetPlayerAccountIdByGUID(guid);
             security = AccountMgr::GetSecurity(accountId, realmID);
         }
 
@@ -438,7 +438,7 @@ public:
         if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
             guid = player->GetGUID();
         else
-            guid = sObjectMgr->GetPlayerGUIDByName(name);
+            guid = ObjectMgr::GetPlayerGUIDByName(name);
 
         // Target must exist
         if (!guid)

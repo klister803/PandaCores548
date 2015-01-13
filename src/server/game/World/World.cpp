@@ -2681,7 +2681,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
         if (mode == BAN_ACCOUNT)
             account = AccountMgr::GetId(nameOrIP);
         else if (mode == BAN_CHARACTER)
-            account = sObjectMgr->GetPlayerAccountIdByPlayerName(nameOrIP);
+            account = ObjectMgr::GetPlayerAccountIdByPlayerName(nameOrIP);
 
         if (!account)
             return false;

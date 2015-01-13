@@ -101,7 +101,7 @@ std::string Object::GetString() const
     if (GetTypeId() == TYPEID_PLAYER)
     {
         std::string name;
-        if (sObjectMgr->GetPlayerNameByGUID(GetGUID(), name))
+        if (ObjectMgr::GetPlayerNameByGUID(GetGUID(), name))
             str << " " << name;
     }
 

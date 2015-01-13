@@ -476,7 +476,7 @@ public:
 
         uint32 parseGUID = MAKE_NEW_GUID(atol((char*)args), 0, HIGHGUID_PLAYER);
 
-        if (sObjectMgr->GetPlayerNameByGUID(parseGUID, targetName))
+        if (ObjectMgr::GetPlayerNameByGUID(parseGUID, targetName))
         {
             target = sObjectMgr->GetPlayerByLowGUID(parseGUID);
             targetGuid = parseGUID;

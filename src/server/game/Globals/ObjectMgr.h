@@ -681,11 +681,11 @@ class ObjectMgr
 
         void GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, PlayerLevelInfo* info) const;
 
-        uint64 GetPlayerGUIDByName(std::string name) const;
-        bool GetPlayerNameByGUID(uint64 guid, std::string &name) const;
+        static uint64 GetPlayerGUIDByName(std::string name);
+        static bool GetPlayerNameByGUID(uint64 guid, std::string &name);
         uint32 GetPlayerTeamByGUID(uint64 guid) const;
-        uint32 GetPlayerAccountIdByGUID(uint64 guid) const;
-        uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;
+        static uint32 GetPlayerAccountIdByGUID(uint64 guid);
+        static uint32 GetPlayerAccountIdByPlayerName(const std::string& name);
 
         uint32 GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team);
         void GetTaxiPath(uint32 source, uint32 destination, uint32 &path, uint32 &cost);

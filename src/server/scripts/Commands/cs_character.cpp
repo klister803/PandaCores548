@@ -210,7 +210,7 @@ public:
             return;
         }
 
-        if (sObjectMgr->GetPlayerGUIDByName(delInfo.name))
+        if (ObjectMgr::GetPlayerGUIDByName(delInfo.name))
         {
             handler->PSendSysMessage(LANG_CHARACTER_DELETED_SKIP_NAME, delInfo.name.c_str(), delInfo.lowGuid, delInfo.accountId);
             return;
@@ -691,14 +691,14 @@ public:
         }
         else
         {
-            characterGuid = sObjectMgr->GetPlayerGUIDByName(characterName);
+            characterGuid = ObjectMgr::GetPlayerGUIDByName(characterName);
             if (!characterGuid)
             {
                 handler->PSendSysMessage(LANG_NO_PLAYER, characterName.c_str());
                 handler->SetSentErrorMessage(true);
                 return false;
             }
-            accountId = sObjectMgr->GetPlayerAccountIdByGUID(characterGuid);
+            accountId = ObjectMgr::GetPlayerAccountIdByGUID(characterGuid);
         }
 
         std::string accountName;
@@ -827,7 +827,7 @@ public:
                 return false;
             }
 
-            if (sObjectMgr->GetPlayerAccountIdByGUID(guid))
+            if (ObjectMgr::GetPlayerAccountIdByGUID(guid))
             {
                 handler->PSendSysMessage(LANG_CHARACTER_GUID_IN_USE, guid);
                 handler->SetSentErrorMessage(true);
@@ -886,10 +886,10 @@ public:
                 return false;
             }
 
-            guid = sObjectMgr->GetPlayerGUIDByName(name);
+            guid = ObjectMgr::GetPlayerGUIDByName(name);
         }
 
-        if (!sObjectMgr->GetPlayerAccountIdByGUID(guid))
+        if (!ObjectMgr::GetPlayerAccountIdByGUID(guid))
         {
             handler->PSendSysMessage(LANG_PLAYER_NOT_FOUND);
             handler->SetSentErrorMessage(true);
@@ -941,7 +941,7 @@ public:
             else
             {
                 std::string PlayerNewName;
-                sObjectMgr->GetPlayerNameByGUID(PlayerGuid, PlayerNewName); // nom actuel en cas de rename multiple !
+                ObjectMgr::GetPlayerNameByGUID(PlayerGuid, PlayerNewName); // nom actuel en cas de rename multiple !
                 handler->PSendSysMessage("Le nom actuel du joueur de guid '%u' est : '%s'", PlayerGuid, PlayerNewName.c_str());
                 return true;
             }
@@ -960,7 +960,7 @@ public:
             else
             {
                 std::string PlayerNewName;
-                sObjectMgr->GetPlayerNameByGUID(result->Fetch()->GetUInt32(), PlayerNewName); // nom actuel en cas de rename multiple !
+                ObjectMgr::GetPlayerNameByGUID(result->Fetch()->GetUInt32(), PlayerNewName); // nom actuel en cas de rename multiple !
                 handler->PSendSysMessage("Le nom actuel du joueur '%s' est : '%s' (guid : '%u')", character.c_str(), PlayerNewName.c_str(), result->Fetch()->GetUInt32());
                 return true;
             }
