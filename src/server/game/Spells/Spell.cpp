@@ -1190,7 +1190,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     std::list<WorldObject*> targets;
     float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
     if(radius <= 0)
-        return;
+        radius = 5000.0f;
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
 
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
