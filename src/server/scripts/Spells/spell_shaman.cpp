@@ -1505,6 +1505,9 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
 
                 Position const* sumpos = GetExplTargetDest();
                 TempSummon* summon = caster->GetMap()->SummonCreature(47319, *sumpos, NULL, 0, caster, GetSpellInfo()->Id);
+                if(!summon)
+                    return;
+
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]))
                 {
                     Position pos;
