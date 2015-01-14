@@ -24606,7 +24606,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         recTime = (double)mktime(ltm);
     }
 
-    if (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY)
+    if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY))
         recTime *= GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     // self spell cooldown

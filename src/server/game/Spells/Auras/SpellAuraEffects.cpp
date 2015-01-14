@@ -315,7 +315,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //255 SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT    implemented in Unit::SpellDamageBonus
     &AuraEffect::HandleNoReagentUseAura,                          //256 SPELL_AURA_NO_REAGENT_USE Use SpellClassMask for spell select
     &AuraEffect::HandleNULL,                                      //257 SPELL_AURA_MOD_TARGET_RESIST_BY_SPELL_CLASS Use SpellClassMask for spell select
-    &AuraEffect::HandleNULL,                                      //258 SPELL_AURA_MOD_SPELL_VISUAL
+    &AuraEffect::HandleNULL,                                      //258 SPELL_AURA_258
     &AuraEffect::HandleNoImmediateEffect,                         //259 SPELL_AURA_MOD_HOT_PCT implemented in Unit::SpellHealingBonusTaken
     &AuraEffect::HandleNoImmediateEffect,                         //260 SPELL_AURA_SCREEN_EFFECT (miscvalue = id in ScreenEffect.dbc) not required any code
     &AuraEffect::HandlePhase,                                     //261 SPELL_AURA_PHASE
@@ -460,7 +460,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleAuraModSkill,                              //400 SPELL_AURA_MOD_SKILL_2
     &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_CART_AURA
     &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_ENABLE_POWER_TYPE
-    &AuraEffect::HandleNoImmediateEffect,                         //403 SPELL_AURA_MOD_SPELL_VISUAL
+    &AuraEffect::HandleAuraModSpellVisual,                        //403 SPELL_AURA_MOD_SPELL_VISUAL
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
     &AuraEffect::HandleNoImmediateEffect,                         //406 SPELL_AURA_OVERRIDE_CLIENT_CONTROLS
@@ -8900,6 +8900,52 @@ void AuraEffect::HandleCreateAreaTrigger(AuraApplication const* aurApp, uint8 mo
         if(uint64 areaTriggerGuid = GetBase()->GetSpellAreaTrigger())
             if(AreaTrigger* areaTrigger = ObjectAccessor::GetAreaTrigger(*GetCaster(), areaTriggerGuid))
                 areaTrigger->SetDuration(0);
+    }
+}
+
+void AuraEffect::HandleAuraModSpellVisual(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    return;
+
+    if(apply)
+    {
+        Unit::AuraEffectList const& auras = target->GetAuraEffectsByType(GetAuraType());
+        uint8 count = (auras.size() + 1) * 2;
+
+        for (int i = 0; i <= count;)
+        {
+            uint32 current = target->GetDynamicPassiveSpells(i + 1);
+            if(!current || current == m_spellInfo->Id)
+            {
+                target->SetDynamicPassiveSpells(0, i);
+                target->SetDynamicPassiveSpells(m_spellInfo->Id, i + 1);
+                break;
+            }
+            i += 2;
+        }
+    }
+    else
+    {
+        Unit::AuraEffectList const& auras = target->GetAuraEffectsByType(GetAuraType());
+        uint8 count = auras.size() * 2;
+
+        for (int i = 0; i <= count;)
+        {
+            if(target->GetDynamicPassiveSpells(i + 1) == m_spellInfo->Id)
+            {
+                target->SetDynamicPassiveSpells(m_spellInfo->Id, i);
+                target->SetDynamicPassiveSpells(0, i + 1);
+                break;
+            }
+            i += 2;
+        }
     }
 }
 

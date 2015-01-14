@@ -2477,6 +2477,8 @@ class Unit : public WorldObject
         float GetAttackDist() { return m_attackDist; }
 
         void SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown = 0);
+        void SetDynamicPassiveSpells(uint32 spellId, uint32 slot);
+        uint32 GetDynamicPassiveSpells(uint32 slot);
 
     protected:
         explicit Unit (bool isWorldObject);

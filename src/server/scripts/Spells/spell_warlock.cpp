@@ -156,7 +156,6 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                     // EFFECT_11 : Duration for HB
                     switch(aurEff->GetEffIndex())
                     {
-                        case EFFECT_2:
                         case EFFECT_5:
                         case EFFECT_7:
                         case EFFECT_8:
@@ -169,6 +168,7 @@ class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
                                 break;
                         }
                         break;
+                        case EFFECT_2:
                         case EFFECT_3:
                         case EFFECT_9:
                         switch (player->GetSpecializationId(player->GetActiveSpec()))

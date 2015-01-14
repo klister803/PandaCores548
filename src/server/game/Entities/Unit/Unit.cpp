@@ -24030,3 +24030,15 @@ void Unit::SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown
     data << uint32(spellId);
     player->GetSession()->SendPacket(&data);
 }
+
+void Unit::SetDynamicPassiveSpells(uint32 spellId, uint32 slot)
+{
+    //from sniff 1-3 enable spell, 0-2 disable
+    SetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot, spellId);
+}
+
+uint32 Unit::GetDynamicPassiveSpells(uint32 slot)
+{
+    //from sniff 1-3 enable spell, 0-2 disable
+    return GetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot);
+}

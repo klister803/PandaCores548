@@ -900,6 +900,19 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 //             }
 //             break;
 //         }
+        case 686: //Shadow Bolt
+        {
+            if (_player->HasSpell(112092)) //Shadow Bolt (Glyphed)
+            {
+                if (SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112092))
+                {
+                    spellInfo = newSpellInfo;
+                    spellId = newSpellInfo->Id;
+                    replaced = true;
+                }
+            }
+            break;
+        }
         case 105174: //Hand of Gul'dan
         {
             if (_player->HasSpell(123194)) //Glyph of Hand of Gul'dan
