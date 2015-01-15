@@ -98,6 +98,11 @@ Position const Sha_of_pride_manifestation[2]  = {
 
 uint32 const prison[4] = { GO_CORRUPTED_PRISON_WEST, GO_CORRUPTED_PRISON_EAST, GO_CORRUPTED_PRISON_NORTH, GO_CORRUPTED_PRISON_SOUTH };
 uint32 const prison_spell[4] = { SPELL_CORRUPTED_PRISON_WEST, SPELL_CORRUPTED_PRISON_EAST, SPELL_CORRUPTED_PRISON_NORTH, SPELL_CORRUPTED_PRISON_SOUTH };
+uint32 const prisonbutton[12] = 
+{ GO_CORRUPTED_BUTTON_WEST_1, GO_CORRUPTED_BUTTON_WEST_2, GO_CORRUPTED_BUTTON_WEST_3, GO_CORRUPTED_BUTTON_EAST_1, GO_CORRUPTED_BUTTON_EAST_2,
+  GO_CORRUPTED_BUTTON_EAST_3, GO_CORRUPTED_BUTTON_NORTH_1, GO_CORRUPTED_BUTTON_NORTH_2, GO_CORRUPTED_BUTTON_NORTH_3, GO_CORRUPTED_BUTTON_SOUTH_1,
+  GO_CORRUPTED_BUTTON_SOUTH_2, GO_CORRUPTED_BUTTON_SOUTH_3 };
+
 enum PhaseEvents
 {
     EVENT_SPELL_MARK_OF_ARROGANCE       = 1,    
@@ -187,6 +192,14 @@ class boss_sha_of_pride : public CreatureScript
                     norushen->Respawn();
 
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                
+                for(uint8 i = 0; i < 12; ++i)
+                {
+                    if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prisonbutton[i])))
+                    {
+                        prisonGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                    }
+                }
             }
 
             void SetData(uint32 id, uint32 value)

@@ -4890,10 +4890,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                     spellInfo->Effects[0].TriggerSpell = 143579;
                     break;
-                case 143579: //Sha Corruption
-                case 103534: // Danger
-                case 103536: // Warning
-                case 103541: // Safe
+                case 143579: // Immerseus: Sha Corruption
+                case 103534: // Resonating Crystal: Danger
+                case 103536: // Resonating Crystal: Warning
+                case 103541: // Resonating Crystal: Safe
+                case 105479: // Corruption: Searing Plasma
+                case 144774: // Sha of Pride: Reaching Attack
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors
@@ -5280,9 +5282,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 103178: // Earths Vengeance dmg
                     spellInfo->SetDurationIndex(618);
-                    break;
-                case 105479: // Searing Plasma
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 105241: // Absorb Blood
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4 yards
