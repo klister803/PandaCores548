@@ -465,7 +465,19 @@ struct GameObjectTemplate
             default: return false;
         }
     }
-
+    
+    bool IsUsableMounted() const 
+    {
+        switch (type) 
+        {
+            case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.allowMounted; 
+            case GAMEOBJECT_TYPE_TEXT: return text.allowMounted; 
+            case GAMEOBJECT_TYPE_GOOBER: return goober.allowMounted; 
+            case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.allowMounted; 
+            default: return false; 
+        }
+    }
+    
     uint32 GetLockId() const
     {
         switch (type)
