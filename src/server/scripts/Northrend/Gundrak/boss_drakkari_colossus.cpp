@@ -147,11 +147,13 @@ class boss_drakkari_colossus : public CreatureScript
                         DoCast(SPELL_EMERGE);
                         break;
                     case ACTION_FREEZE_COLOSSUS:
+                        me->GetMotionMaster()->Clear();
                         me->GetMotionMaster()->MoveIdle();
 
                         me->SetReactState(REACT_PASSIVE);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         DoCast(me, SPELL_FREEZE_ANIM);
+                        DoStopAttack();
                         break;
                     case ACTION_UNFREEZE_COLOSSUS:
 
@@ -279,7 +281,7 @@ class boss_drakkari_elemental : public CreatureScript
                 if (instance)
                 {
                     if (Creature* colossus = Unit::GetCreature(*me, instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
-                        killer->Kill(colossus);
+                        colossus->Kill(colossus);
                 }
             }
 
