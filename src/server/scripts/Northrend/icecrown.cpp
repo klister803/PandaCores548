@@ -1126,24 +1126,20 @@ public:
 
         void SpellHit(Unit* caster, SpellInfo const* spell)
         {
-            if(caster->GetCharmerOrOwner())
+            switch (Npc_Entry)
             {
-                Player * pPlayer = caster->GetCharmerOrOwner()->ToPlayer();
-                switch (Npc_Entry)
-                {
-                    case NPC_MELEE: // dummy melee
-                        if (pPlayer && spell->Id == SPELL_ARGENT_MELEE && (pPlayer->GetQuestStatus(13828) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13829) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13625) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13677) == QUEST_STATUS_INCOMPLETE))
-                            me->CastSpell(pPlayer,62672,true);
-                        return;
-                    case NPC_CHARGE: // dummy charge
-                        if (pPlayer && spell->Id == SPELL_ARGENT_CHARGE && (pPlayer->GetQuestStatus(13837) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13839) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13625) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13677) == QUEST_STATUS_INCOMPLETE))
-                            me->CastSpell(pPlayer,62658,true);
-                        return;
-                    case NPC_RANGE: // dummy range
-                        if (pPlayer && spell->Id == SPELL_ARGENT_BREAK_SHIELD && (pPlayer->GetQuestStatus(13835) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13838) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13625) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(13677) == QUEST_STATUS_INCOMPLETE))
-                            me->CastSpell(pPlayer,62673,true);
-                        return;
-                }
+                case NPC_MELEE: // dummy melee
+                    if (spell->Id == SPELL_ARGENT_MELEE)
+                        me->CastSpell(caster,62672,true);
+                    return;
+                case NPC_CHARGE: // dummy charge
+                    if (spell->Id == SPELL_ARGENT_CHARGE)
+                        me->CastSpell(caster,62658,true);
+                    return;
+                case NPC_RANGE: // dummy range
+                    if (spell->Id == SPELL_ARGENT_BREAK_SHIELD)
+                        me->CastSpell(caster,62673,true);
+                    return;
             }
         }
 
