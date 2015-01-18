@@ -1071,7 +1071,7 @@ enum eTrainingdummy
     NPC_RANGE                  = 33243,
     SPELL_ARGENT_MELEE         = 62544,
     SPELL_ARGENT_CHARGE        = 62874,
-    SPELL_ARGENT_BREAK_SHIELD  = 62575,  // spell goes't work
+    SPELL_ARGENT_BREAK_SHIELD  = 62626,  // spell goes't work
     SPELL_DEFEND_AURA          = 62719,  // it's spell spam in console
     SPELL_DEFEND_AURA_1        = 64100,  // it's spell spam in console
     NPC_ADVANCED_TARGET_DUMMY  = 2674,
