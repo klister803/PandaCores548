@@ -529,8 +529,8 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_VOID_STORAGE_UNLOCK,                     STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleVoidStorageUnlock         );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_VOID_SWAP_ITEM,                          STATUS_LOGGEDIN,  PROCESS_INPLACE,      &WorldSession::HandleVoidSwapItem              );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_WARDEN_DATA,                             STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleWardenDataOpcode          ); // STATUS_AUTHED
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_WARGAME_ACCEPT,                          STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
-    //DEFINE_OPCODE_HANDLER(CMSG, CMSG_WARGAME_START,                           STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_WARGAME_ACCEPT,                          STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleWarGameAccept                     );
+    DEFINE_OPCODE_HANDLER(CMSG, CMSG_WARGAME_START,                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleWarGameStart                 );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_WHO,                                     STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleWhoOpcode                 );
     //DEFINE_OPCODE_HANDLER(CMSG, CMSG_WHOIS,                                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleWhoisOpcode               );
     DEFINE_OPCODE_HANDLER(CMSG, CMSG_MOVE_WORLDPORT_ACK,                      STATUS_TRANSFER,  PROCESS_THREADUNSAFE, &WorldSession::HandleMoveWorldportAckOpcode    );
@@ -1320,8 +1320,8 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WAIT_QUEUE_FINISH,                       STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WAIT_QUEUE_UPDATE,                       STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WARDEN_DATA,                             STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WARGAME_CHECK_ENTRY,                     STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WARGAME_REQUEST_SENT,                    STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_WARGAME_CHECK_ENTRY,                     STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_WARGAME_REQUEST_SENT,                    STATUS_NEVER, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_WEATHER,                                 STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_WEEKLY_LAST_RESET,                       STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_WEEKLY_RESET_CURRENCY,                   STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );

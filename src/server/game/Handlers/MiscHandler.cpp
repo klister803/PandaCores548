@@ -2390,3 +2390,101 @@ void WorldSession::HandleCemeteryListOpcode(WorldPacket& recvPacket)
 {
     GetPlayer()->SendCemeteryList(false);
 }
+
+// WarGames
+
+void WorldSession::HandleWarGameStart(WorldPacket& recvPacket)
+{
+    ObjectGuid guid, guid2;
+    recvPacket.ReadGuidMask<6, 5, 2>(guid2);
+    recvPacket.ReadGuidMask<3>(guid);
+    recvPacket.ReadGuidMask<1>(guid2);
+    recvPacket.ReadGuidMask<1, 7>(guid);
+    recvPacket.ReadGuidMask<0, 4, 3>(guid2);
+    recvPacket.ReadGuidMask<6>(guid);
+    recvPacket.ReadGuidMask<7>(guid2);
+    recvPacket.ReadGuidMask<4, 2, 5, 0>(guid);
+
+    recvPacket.ReadGuidBytes<4>(guid);
+    recvPacket.ReadGuidBytes<3>(guid2);
+    recvPacket.ReadGuidBytes<2>(guid);
+    recvPacket.ReadGuidBytes<1>(guid2);
+    recvPacket.ReadGuidBytes<5>(guid);
+    recvPacket.ReadGuidBytes<5>(guid2);
+    recvPacket.ReadGuidBytes<7, 3>(guid);
+    recvPacket.ReadGuidBytes<7>(guid2);
+    recvPacket.ReadGuidBytes<1>(guid);
+    recvPacket.ReadGuidBytes<6>(guid2);
+    recvPacket.ReadGuidBytes<6>(guid);
+    recvPacket.ReadGuidBytes<0, 2>(guid2);
+    recvPacket.ReadGuidBytes<0>(guid);
+    recvPacket.ReadGuidBytes<4>(guid2);
+}
+
+void WorldSession::HandleWarGameAccept(WorldPacket& recvPacket)
+{
+    ObjectGuid guid, guid2;
+
+    recvPacket.ReadGuidMask<4>(guid);
+    recvPacket.ReadGuidMask<7>(guid2);
+    recvPacket.ReadGuidMask<3>(guid);
+    recvPacket.ReadGuidMask<5, 3>(guid2);
+    recvPacket.ReadGuidMask<6>(guid);
+    recvPacket.ReadGuidMask<4, 2>(guid2);
+    recvPacket.ReadGuidMask<2, 5, 7>(guid);
+    recvPacket.ReadGuidMask<0>(guid2);
+    bool accept = recvPacket.ReadBit();
+    recvPacket.ReadGuidMask<1, 0>(guid);
+    recvPacket.ReadGuidMask<6, 1>(guid2);
+
+    recvPacket.ReadGuidBytes<4>(guid2);
+    recvPacket.ReadGuidBytes<3>(guid);
+    recvPacket.ReadGuidBytes<1, 2>(guid2);
+    recvPacket.ReadGuidBytes<4>(guid);
+    recvPacket.ReadGuidBytes<5>(guid2);
+    recvPacket.ReadGuidBytes<7>(guid);
+    recvPacket.ReadGuidBytes<7>(guid2);
+    recvPacket.ReadGuidBytes<1>(guid);
+    recvPacket.ReadGuidBytes<0, 3, 6>(guid2);
+    recvPacket.ReadGuidBytes<2, 5, 0, 6>(guid);
+
+    // if (accept)
+    //
+}
+
+// SMSG_WARGAME_CHECK_ENTRY - maybe sent to other party leader after accept? need data of Cata implementations
+/*{
+    ObjectGuid guid, guid2;
+    WorldPacket data(SMSG_WARGAME_CHECK_ENTRY);
+
+    data.WriteGuidMask<3, 4>(guid);
+    data.WriteGuidMask<0>(guid2);
+    data.WriteGuidMask<1>(guid);
+    data.WriteGuidMask<5, 1, 7, 4, 2>(guid2);
+    data.WriteGuidMask<0>(guid);
+    data.WriteGuidMask<6>(guid2);
+    data.WriteGuidMask<2, 7>(guid);
+    data.WriteGuidMask<3>(guid2);
+    data.WriteGuidMask<6, 5>(guid);
+
+    data << uint32(0); 
+
+    data.WriteGuidBytes<2, 7, 5>(guid);
+    data.WriteGuidBytes<7, 5>(guid2);
+    data.WriteGuidBytes<6, 4>(guid);
+    data.WriteGuidBytes<6, 2, 0>(guid2);
+    data.WriteGuidBytes<1, 3>(guid);
+    data.WriteGuidBytes<4, 3>(guid2);
+    data.WriteGuidBytes<0>(guid);
+    data.WriteGuidBytes<1>(guid2);
+}*/
+
+// SMSG_WARGAME_REQUEST_SENT - maybe sent to initiator if wargame request sucessfully sended to other party leader
+/*{
+    // public ulong Opponent
+    ObjectGuid guid;
+    WorldPacket data(SMSG_WARGAME_REQUEST_SENT);
+
+    data.WriteGuidMask<0, 6, 7, 2, 4, 3, 1, 5>(guid);
+    data.WriteGuidBytes<0, 2, 1, 6, 3, 7, 5, 4>(guid);
+}*/

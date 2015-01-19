@@ -1049,6 +1049,10 @@ class WorldSession
         void HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket);
         void HandleChallengeModeRequestOpcode(WorldPacket& recvPacket);
 
+        // WarGames
+        void HandleWarGameStart(WorldPacket& recvPacket);
+        void HandleWarGameAccept(WorldPacket& recvPacket);
+
         void LootCorps(uint64 corpsGUID, WorldObject* lootedBy = NULL);
     private:
         void InitializeQueryCallbackParameters();

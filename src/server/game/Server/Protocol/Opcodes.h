@@ -1457,8 +1457,8 @@ enum Opcodes
     SMSG_WAIT_QUEUE_FINISH                            = 0xF17,  // 5.0.5 16048
     SMSG_WAIT_QUEUE_UPDATE                            = 0xAC8,  // 5.0.5 16048
     SMSG_WARDEN_DATA                                  = 0x09AC, // 5.4.1 17538
-    SMSG_WARGAME_CHECK_ENTRY                          = 0xBE6,  // 5.0.5 16048
-    SMSG_WARGAME_REQUEST_SENT                         = 0xF48,  // 5.0.5 16048
+    SMSG_WARGAME_CHECK_ENTRY                          = 0x143C, // 5.4.1 17538
+    SMSG_WARGAME_REQUEST_SENT                         = 0x0507, // 5.4.1 17538
     SMSG_WEATHER                                      = 0x0485, // 5.4.1 17538
     SMSG_WEEKLY_LAST_RESET                            = 0xB2D,  // 5.0.5 16048
     SMSG_WEEKLY_RESET_CURRENCY                        = 0x011E, // 5.4.1 17538
