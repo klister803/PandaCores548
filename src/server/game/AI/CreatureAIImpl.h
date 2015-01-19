@@ -671,7 +671,7 @@ inline bool CreatureAI::_EnterEvadeMode()
         case 35814:
             break;
         default:
-            if(!me->isAnySummons())
+            if (!me->isAnySummons() && !me->isTrainingDummy())
                 me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
             break;
     }

@@ -2572,11 +2572,11 @@ public:
     {
         npc_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature){}
 
-        EventMap events;
-
         void Reset()
         {
-            events.Reset();
+            if (!me->isTrainingDummy())
+                me->AddUnitTypeMask(UNIT_MASK_TRAINING_DUMMY);
+
             me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
         }
@@ -2586,38 +2586,33 @@ public:
             damage = 0;
         }
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1500);
-        }
-
         void SpellHit(Unit* source, SpellInfo const* spell)
+        {
+            if(source)
             {
-                if(source)
-                {
-                    Player* player = source->ToPlayer();
-                    if(!player)
-                        return;
+                Player* player = source->ToPlayer();
+                if(!player)
+                    return;
                     
-                    switch (spell->Id)
+                switch (spell->Id)
+                {
+                    case 100:
+                    case 172:
+                    case 589:
+                    case 8921:
+                    case 20271:
+                    case 73899:
+                    case 100787:
+                    case 118215:
                     {
-                        case 100:
-                        case 172:
-                        case 589:
-                        case 8921:
-                        case 20271:
-                        case 73899:
-                        case 100787:
-                        case 118215:
-                        {
-                            player->KilledMonsterCredit(44175, 0);
-                            break;
-                        }
-                        default:
-                            break;
+                        player->KilledMonsterCredit(44175, 0);
+                        break;
                     }
+                    default:
+                        break;
                 }
             }
+        }
 
         void UpdateAI(uint32 diff)
         {
@@ -2627,25 +2622,16 @@ public:
             if (!me->HasUnitState(UNIT_STATE_STUNNED))
                 me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
 
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
+            std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+            if (!threatlist.empty())
             {
-                if (eventId == EVENT_CHECK_PLAYERS)
+                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
                 {
-                    std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
-                    if (!threatlist.empty())
+                    if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
                     {
-                        for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
-                        {
-                            if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                            {
-                                if (me->GetDistance(pl) > 40.0f)
-                                    pl->CombatStop(false);
-                            }
-                        }
+                        if (!pl->GetCombatTimer())
+                            pl->CombatStop(false);
                     }
-                    events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1500);
                 }
             }
         }

@@ -817,6 +817,7 @@ enum UnitTypeMask
     UNIT_MASK_UNK                   = 0x00000400,
     UNIT_MASK_UNK2                  = 0x00000800,
     UNIT_MASK_UNK3                  = 0x00001000,
+    UNIT_MASK_TRAINING_DUMMY        = 0x00002000,
 };
 
 namespace Movement{
@@ -1441,6 +1442,7 @@ class Unit : public WorldObject
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         bool IsVehicle() const  { return m_unitTypeMask & UNIT_MASK_VEHICLE; }
         bool isMinion() const   { return m_unitTypeMask & UNIT_MASK_MINION; }
+        bool isTrainingDummy() const { return m_unitTypeMask & UNIT_MASK_TRAINING_DUMMY; }
         bool isAnySummons() const   { return m_unitTypeMask & (UNIT_MASK_SUMMON | UNIT_MASK_GUARDIAN | UNIT_MASK_PET | UNIT_MASK_HUNTER_PET | UNIT_MASK_TOTEM | UNIT_MASK_VEHICLE); }
 
         uint8 getLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
@@ -1674,6 +1676,7 @@ class Unit : public WorldObject
         void SetInCombatWith(Unit* enemy);
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
+        void SetCombatTimer(uint32 amount) { m_CombatTimer = amount; }
 
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint32 familyFlags) const;
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }

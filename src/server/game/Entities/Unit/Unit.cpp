@@ -399,14 +399,15 @@ void Unit::Update(uint32 p_time)
         // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
-        if (m_HostileRefManager.isEmpty())
+        if (m_CombatTimer <= p_time) // m_CombatTimer set at aura start and it will be freeze until aura removing
         {
-            // m_CombatTimer set at aura start and it will be freeze until aura removing
-            if (m_CombatTimer <= p_time)
+            if (m_HostileRefManager.isEmpty())
                 ClearInCombat();
             else
-                m_CombatTimer -= p_time;
+                m_CombatTimer = 0;
         }
+        else
+            m_CombatTimer -= p_time;
     }
 
     // not implemented before 3.0.2
@@ -13914,8 +13915,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if (!isAlive())
         return;
 
-    if (PvP)
-        m_CombatTimer = 5000;
+    SetCombatTimer(5000);
 
     if (isInCombat() || HasUnitState(UNIT_STATE_EVADE))
         return;

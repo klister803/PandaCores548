@@ -531,6 +531,7 @@ void WorldSession::LogoutPlayer(bool Save)
         }
         else if (!_player->getAttackers().empty())
         {
+            bool _killer = false;
             // build set of player who attack _player or who have pet attacking of _player
             std::set<Player*> aset;
             for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
@@ -540,16 +541,23 @@ void WorldSession::LogoutPlayer(bool Save)
                     aset.insert(owner->ToPlayer());
                 else if ((*itr)->GetTypeId() == TYPEID_PLAYER)
                     aset.insert((Player*)(*itr));
+
+                if (!(*itr)->isTrainingDummy())
+                    _killer = true;
             }
             // CombatStop() method is removing all attackers from the AttackerSet
             // That is why it must be AFTER building current set of attackers
             _player->CombatStop();
             _player->getHostileRefManager().setOnlineOfflineState(false);
-            _player->RemoveAllAurasOnDeath();
-            _player->SetPvPDeath(!aset.empty());
-            _player->KillPlayer();
-            _player->BuildPlayerRepop();
-            _player->RepopAtGraveyard();
+
+            if (_killer)
+            {
+                _player->RemoveAllAurasOnDeath();
+                _player->SetPvPDeath(!aset.empty());
+                _player->KillPlayer();
+                _player->BuildPlayerRepop();
+                _player->RepopAtGraveyard();
+            }
 
             // give honor to all attackers from set like group case
             for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
