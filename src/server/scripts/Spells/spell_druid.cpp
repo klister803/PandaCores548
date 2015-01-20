@@ -524,7 +524,8 @@ class spell_dru_incarnation : public SpellScriptLoader
                 switch (GetId())
                 {
                     case 33891:     // Incarnation: Tree of Life (Shapeshift)
-                        target->CastSpell(target, 117679, true);
+                        if (!target->HasAura(117679))
+                            target->CastSpell(target, 117679, true);
                         break;
                     case 102543:    // Incarnation: King of the Jungle
                         if (!target->HasAura(768))
