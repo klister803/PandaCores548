@@ -1364,8 +1364,8 @@ void ObjectMgr::LoadCreatures()
 
     //                                               0              1   2       3      4       5           6           7           8            9            10            11          12
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, zoneId, areaId, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, "
-    //        13            14         15       16            17         18         19          20          21                22                   23                     24
-        "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, eventEntry, pool_entry, creature.npcflag, creature.unit_flags, creature.dynamicflags, creature.isActive "
+    //        13            14         15       16            17         18         19          20          21                22                   23                     24                    25
+        "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, eventEntry, pool_entry, creature.npcflag, creature.npcflag2, creature.unit_flags, creature.dynamicflags, creature.isActive "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid");
@@ -1424,6 +1424,7 @@ void ObjectMgr::LoadCreatures()
         int16 gameEvent     = fields[index++].GetInt8();
         uint32 PoolId       = fields[index++].GetUInt32();
         data.npcflag        = fields[index++].GetUInt32();
+        data.npcflag2       = fields[index++].GetUInt32();
         data.unit_flags     = fields[index++].GetUInt32();
         data.dynamicflags   = fields[index++].GetUInt32();
         data.isActive       = fields[index++].GetBool();
@@ -1722,6 +1723,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     data.phaseMask = PHASEMASK_NORMAL;
     data.dbData = false;
     data.npcflag = cInfo->npcflag;
+    data.npcflag2 = cInfo->npcflag2;
     data.unit_flags = cInfo->unit_flags;
     data.dynamicflags = cInfo->dynamicflags;
 
