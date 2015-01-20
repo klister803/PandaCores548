@@ -2577,7 +2577,9 @@ public:
             if (!me->isTrainingDummy())
                 me->AddUnitTypeMask(UNIT_MASK_TRAINING_DUMMY);
 
-            me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
+            if (!me->HasAura(113368))
+                me->AddAura(113368, me);
+
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
         }
 
@@ -2618,9 +2620,6 @@ public:
         {
             if (!UpdateVictim())
                 return;
-
-            if (!me->HasUnitState(UNIT_STATE_STUNNED))
-                me->SetControlled(true, UNIT_STATE_STUNNED);//disable rotate
 
             std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
             if (!threatlist.empty())
