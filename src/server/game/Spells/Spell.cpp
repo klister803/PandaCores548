@@ -1191,9 +1191,15 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     float radius = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster) * m_spellValue->RadiusMod;
     if(radius <= 0)
         radius = 5000.0f;
+
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
 
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i, Conditions %i", m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), effIndex, m_spellInfo->GetEffect(effIndex, m_diffMode).ImplicitTargetConditions);
+
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitAreaTargets after filter %u, radius %f, GetObjectType %u, targets count %u, GetCheckType %i, X %f, Y %f",
+    m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), targetType.GetCheckType(), center->GetPositionX(), center->GetPositionY());
 
     std::list<Unit*> unitTargets;
     std::list<GameObject*> gObjTargets;

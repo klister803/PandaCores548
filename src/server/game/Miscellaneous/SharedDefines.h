@@ -23,6 +23,12 @@
 #include "Define.h"
 #include <cassert>
 
+enum EncounterCreditType
+{
+    ENCOUNTER_CREDIT_KILL_CREATURE  = 0,
+    ENCOUNTER_CREDIT_CAST_SPELL     = 1,
+};
+
 #define MAX_CREATURE_BASE_HP 5
 
 enum SpellEffIndex

@@ -593,6 +593,8 @@ void Vehicle::RelocatePassengers()
             passenger->m_movementInfo.t_pos.GetPosition(px, py, pz, po);
             CalculatePassengerPosition(px, py, pz, po);
             passenger->UpdatePosition(px, py, pz, po);
+            //if (passenger->GetTypeId() == TYPEID_PLAYER)
+                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RelocatePassengers loc(%f %f %f)", px, py, pz);
         }
     }
 }

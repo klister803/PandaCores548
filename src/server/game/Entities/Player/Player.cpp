@@ -679,7 +679,7 @@ void KillRewarder::Reward()
     if (Creature* victim = _victim->ToCreature())
     {
         if (victim->IsDungeonBoss())
-            if (InstanceScript* instance = _victim->GetInstanceScript())
+            if (Map* instance = _victim->GetMap())
                 instance->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, _victim->GetEntry(), _victim);
 
         if (uint32 guildId = victim->GetMap()->GetOwnerGuildId())
@@ -785,7 +785,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_DelayedOperations = 0;
     m_bCanDelayTeleport = false;
     m_bHasDelayedTeleport = false;
-    m_isMoltenCored = false;
     m_teleport_options = 0;
 
     m_trade = NULL;
@@ -2437,7 +2436,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     DisableSpline();
 
     //hack for Stand of Acient for teleportation to the ships.
-    if (m_transport || mapid == 607)
+    if (m_movementInfo.t_guid || mapid == 607)
     {
         if (!(options & TELE_TO_NOT_LEAVE_TRANSPORT))
         {
@@ -2513,7 +2512,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
          if ( mapid == 646  && getLevel() < 80 && !isGameMaster())
             return false;
 
-        if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL)
+        if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL && !isGameMaster())
             return false;
 
         // far teleport to another map
@@ -23311,7 +23310,7 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
             ++itr;
 
             // spellmods without aura set cannot be charged
-            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges() || mod->ownerAura->GetSpellInfo()->ProcFlags != 0)
+            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges())
                 continue;
 
             // check if mod affected this spell
@@ -23319,13 +23318,17 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
             if (iterMod == spell->m_appliedMods.end())
                 continue;
 
-            if(casting && (mod->op != SPELLMOD_CASTING_TIME || !(mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT)))
+            if(casting && (mod->op != SPELLMOD_CASTING_TIME && mod->op != SPELLMOD_COST))
                 continue;
-            if(!casting && mod->op == SPELLMOD_CASTING_TIME && (mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT))
+            if(!casting && (mod->op == SPELLMOD_CASTING_TIME || mod->op == SPELLMOD_COST))
                 continue;
 
             // remove from list
             spell->m_appliedMods.erase(iterMod);
+            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RemoveSpellMods spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, casting %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), casting, mod->op);
+
+            if(spell->GetSpellInfo()->Id == 116858 && mod->spellId == 117828 && mod->ownerAura->GetCharges() > 2) // Chaos Bolt
+                mod->ownerAura->ModCharges(-2);
 
             if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_DROP_CHARGERS))
                 itr = m_spellMods[i].begin();
@@ -23335,15 +23338,10 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
 
 void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 {
-
-    // don't handle spells with proc_event entry defined
-    // this is a temporary workaround, because all spellmods should be handled like that
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(mod->spellId);
-    if(!spellInfo || spellInfo->ProcFlags != 0)
-        return;
-
     if (spell && mod->ownerAura && mod->charges > 0)
     {
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "DropModCharge spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), mod->op);
+
         if (--mod->charges == 0)
             mod->charges = -1;
 

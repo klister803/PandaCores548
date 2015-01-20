@@ -33,6 +33,8 @@
 #include "Group.h"
 #include "DynamicTree.h"
 #include "Vehicle.h"
+#include "LFGMgr.h"
+#include "ChallengeMgr.h"
 
 union u_map_magic
 {
@@ -2963,4 +2965,94 @@ WorldObject* Map::GetActiveObjectWithEntry(uint32 entry)
         return obj;
     }
     return NULL;
+}
+
+void Map::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source)
+{
+    InstanceScript* instance = source->GetInstanceScript();
+
+    uint32 completedEncounters = 0;
+    uint32 challenge_timer = 0;
+    if(instance)
+    {
+        completedEncounters = instance->GetCompletedEncounterMask();
+        challenge_timer = instance->GetChallengeTime();
+    }
+
+    Difficulty diff = GetDifficulty();
+    if (challenge_timer)
+        diff = HEROIC_DIFFICULTY;
+
+    DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(GetId(), diff);
+    if (!encounters)
+        return;
+
+    uint32 dungeonId = 0;
+    uint32 fullEncounterIndex = 0;
+
+    for (DungeonEncounterList::const_iterator itr = encounters->begin(); itr != encounters->end(); ++itr)
+    {
+        DungeonEncounter const* encounter = *itr;
+        if (encounter->creditType == type && encounter->creditEntry == creditEntry)
+        {
+            completedEncounters |= 1 << encounter->dbcEntry->encounterIndex;
+            if (encounter->lastEncounterDungeon)
+            {
+                dungeonId = encounter->lastEncounterDungeon;
+                sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u, diff %i, creditEntry %i", GetMapName(), GetInstanceId(), encounter->dbcEntry->encounterName, dungeonId, diff, creditEntry);
+                // no break need check all encounters.
+                //break;
+            }
+        }
+        fullEncounterIndex |= 1 << encounter->dbcEntry->encounterIndex;
+    }
+
+    if (dungeonId && (fullEncounterIndex == completedEncounters || GetDifficulty() != CHALLENGE_MODE_DIFFICULTY))
+    {
+        Map::PlayerList const& players = GetPlayers();
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+        {
+            if (Player* player = i->getSource())
+            {
+                if (Group* grp = player->GetGroup())
+                {
+                    if (grp->isLFGGroup())
+                    {
+                        sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Challenge reward
+        if(instance)
+        {
+            if (uint32 time = instance->GetChallengeProgresTime())
+            {
+                MapChallengeModeEntryMap::iterator itr = sMapChallengeModeEntrybyMap.find(GetId());
+                if (itr != sMapChallengeModeEntrybyMap.end())
+                {
+                    ChallengeMode medal = CHALLENGE_MEDAL_NONE;
+                    MapChallengeModeEntry const* mode = itr->second;
+
+                    // Calculate reward medal
+                    if (mode->gold > time)
+                        medal = CHALLENGE_MEDAL_GOLD;
+                    else if (mode->silver > time)
+                        medal = CHALLENGE_MEDAL_SILVER;
+                    else if (mode->bronze > time)
+                        medal = CHALLENGE_MEDAL_BRONZE;
+                    else
+                        return;
+
+                    sChallengeMgr->GroupReward(this, getMSTime() - challenge_timer, medal);
+                    instance->StopChallenge();
+                }
+            }
+        }
+    }
+
+    if(instance)
+        instance->SetCompletedEncountersMask(completedEncounters);
 }

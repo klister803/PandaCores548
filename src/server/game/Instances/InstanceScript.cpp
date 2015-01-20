@@ -554,11 +554,13 @@ bool InstanceScript::IsWipe()
     return true;
 }
 
-void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)
-{
+//void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* /*source*/)
+/*{
     Difficulty diff = instance->GetDifficulty();
     if (challenge_timer)
         diff = HEROIC_DIFFICULTY;
+
+    sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) diff %u. creditEntry: %u, type %u", instance->GetMapName(), instance->GetInstanceId(), diff, creditEntry, type);
 
     DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), diff);
     if (!encounters)
@@ -576,7 +578,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
             if (encounter->lastEncounterDungeon)
             {
                 dungeonId = encounter->lastEncounterDungeon;
-                sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName[0], dungeonId);
+                sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName, dungeonId);
                 // no break need check all encounters.
                 //break;
             }
@@ -593,6 +595,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                 if (Group* grp = player->GetGroup())
                     if (grp->isLFGGroup())
                     {
+                        sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: grp->GetGUID %u. Credit Dungeon: %u", grp->GetGUID(), dungeonId);
                         sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId);
                         break;
                     }
@@ -623,7 +626,7 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
             }
         }
     }
-}
+}*/
 
 void InstanceScript::UpdatePhasing()
 {
@@ -744,6 +747,11 @@ void InstanceScript::StartChallenge()
     data << uint32(CHALLENGE_START);
     data << uint32(CHALLENGE_START);
     BroadcastPacket(data);
+}
+
+void InstanceScript::StopChallenge()
+{
+     _events.ScheduleEvent(EVENT_CHALLENGE_STOP, 1000);
 }
 
 void InstanceScript::FillInitialWorldTimers(WorldPacket& data)

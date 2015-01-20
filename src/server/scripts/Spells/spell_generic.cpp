@@ -904,7 +904,7 @@ class spell_gen_dungeon_credit : public SpellScriptLoader
 
                 _handled = true;
                 Unit* caster = GetCaster();
-                if (InstanceScript* instance = caster->GetInstanceScript())
+                if (Map* instance = caster->GetMap())
                     instance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, GetSpellInfo()->Id, caster);
             }
 

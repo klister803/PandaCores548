@@ -196,7 +196,7 @@ public:
             if (instance)
             {
                 // Ingvar has MOB_INGVAR_UNDEAD id in this moment, so we have to update encounter state for his original id
-                instance->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, MOB_INGVAR_HUMAN, me);
+                me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, MOB_INGVAR_HUMAN, me);
                 instance->SetData(DATA_INGVAR_EVENT, DONE);
             }
         }

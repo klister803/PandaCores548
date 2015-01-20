@@ -570,12 +570,6 @@ struct LanguageDesc
 extern LanguageDesc lang_description[LANGUAGE_DESC_COUNT];
 LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
-enum EncounterCreditType
-{
-    ENCOUNTER_CREDIT_KILL_CREATURE  = 0,
-    ENCOUNTER_CREDIT_CAST_SPELL     = 1,
-};
-
 struct DungeonEncounter
 {
     DungeonEncounter(DungeonEncounterEntry const* _dbcEntry, EncounterCreditType _creditType, uint32 _creditEntry, uint32 _lastEncounterDungeon)

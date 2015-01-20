@@ -485,6 +485,9 @@ void Unit::UpdateSplinePosition(bool stop/* = false*/)
     if (HasUnitState(UNIT_STATE_CANNOT_TURN))
         loc.orientation = GetOrientation();
 
+    //if (GetTypeId() == TYPEID_PLAYER)
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdateSplinePosition loc(%f %f %f)", loc.x, loc.y, loc.z);
+
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation, false, stop);
 }
 
@@ -17466,6 +17469,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     {
+                        //charges take in spellmods system
+                        if(procExtra & PROC_EX_ON_CAST)
+                            break;
+
                         if (!triggeredByAura->IsAffectingSpell(procSpell) && !triggeredByAura->IsAffectingSpell(procAura))
                             break;
 
@@ -22670,6 +22677,9 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     if (turn && !stop)
         RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
 
+    //if (GetTypeId() == TYPEID_PLAYER)
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdatePosition loc(%f %f %f) relocated %i, GetPosition(%f %f %f)", x, y, z, relocated, GetPositionX(), GetPositionY(), GetPositionZ());
+
     if (relocated)
     {
         if (!stop)
@@ -23262,7 +23272,7 @@ Unit* Unit::GetTargetUnit() const
 
 bool Unit::IsSplineEnabled() const
 {
-    return movespline->Initialized();
+    return !movespline->Finalized();
 }
 
 void Unit::WriteMovementUpdate(WorldPacket &data) const

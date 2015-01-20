@@ -439,6 +439,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         }
 
         ObjectGuid transGuid = self->m_movementInfo.t_guid;
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "BuildMovement GUID %u, Entry %u, t_guid %u, Flags %i, FlagsExtra %i, flags %i, xyz (%f %f %f) Zofset %f, T(%f %f %f)", 
+        //GetGUID(), GetEntry(), self->m_movementInfo.t_guid, movementFlags, movementFlagsExtra, flags, self->GetPositionX(), self->GetPositionY(), self->GetPositionZ(), self->GetPositionZMinusOffset(), self->GetTransOffsetX(), self->GetTransOffsetY(), self->GetTransOffsetZ());
 
         data->WriteGuidMask<4, 1>(guid);
         data->WriteBits(0, 19);                     // dword160
@@ -2356,7 +2358,7 @@ bool WorldObject::CanDetect(WorldObject const* obj, bool ignoreStealth) const
     if (obj->IsAlwaysDetectableFor(seer))
         return true;
 
-    if (!seer->CanDetectInvisibilityOf(obj))
+    if (!ignoreStealth && !seer->CanDetectInvisibilityOf(obj))
         return false;
 
     if (!ignoreStealth && !seer->CanDetectStealthOf(obj))

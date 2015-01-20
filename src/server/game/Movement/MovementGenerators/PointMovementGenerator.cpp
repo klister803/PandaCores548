@@ -145,7 +145,7 @@ void EffectMovementGenerator::Finalize(Unit &unit)
 //----- Charge Movement Generator
 void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
 {
-    //sLog->outError("ChargeMovementGenerator GetDestination (X: %f Y: %f Z: %f)", i_x, i_y, i_z);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator GetDestination (%f %f %f)", i_x, i_y, i_z);
 
     if(!i_path)
         i_path = new PathFinderMovementGenerator(&unit);
@@ -178,6 +178,8 @@ bool ChargeMovementGenerator::Update(Unit &unit, const uint32&)
 
 void ChargeMovementGenerator::Initialize(Unit &unit)
 {
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator Initialize (%f %f %f)", i_x, i_y, i_z);
+
     if (!unit.IsStopped())
         unit.StopMoving();
 
@@ -189,6 +191,8 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
 {
     if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
         return;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator Finalize (%f %f %f) spellId %i", i_x, i_y, i_z, triggerspellId);
 
     unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 

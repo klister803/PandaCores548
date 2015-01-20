@@ -1084,36 +1084,6 @@ class spell_warl_demonic_gateway_charges : public SpellScriptLoader
         }
 };
 
-// Chaos Bolt - 116858
-class spell_warl_chaos_bolt : public SpellScriptLoader
-{
-    public:
-        spell_warl_chaos_bolt() : SpellScriptLoader("spell_warl_chaos_bolt") { }
-
-        class spell_warl_chaos_bolt_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_chaos_bolt_SpellScript);
-
-            void HandleAfterCast()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(WARLOCK_PYROCLASM))
-                        if(Aura* backdraft = _player->GetAura(WARLOCK_BACKDRAFT))
-                            backdraft->ModCharges(-3);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_warl_chaos_bolt_SpellScript::HandleAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_chaos_bolt_SpellScript();
-        }
-};
-
 // Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
 class spell_warl_conflagrate_aura : public SpellScriptLoader
 {
@@ -2590,7 +2560,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_swap();
     new spell_warl_drain_soul();
     new spell_warl_demonic_gateway_charges();
-    new spell_warl_chaos_bolt();
     new spell_warl_conflagrate_aura();
     new spell_warl_shadowburn();
     new spell_warl_burning_embers();

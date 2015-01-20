@@ -253,7 +253,7 @@ class npc_neptulon : public CreatureScript
                                     }
                         }
                     }
-                    pInstance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_COMPLETE, me); 
+                    me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_COMPLETE, me); 
                     pInstance->SetBossState(DATA_OZUMAT, DONE);
                 }
                 EnterEvadeMode();

@@ -460,6 +460,7 @@ class Map : public GridRefManager<NGridType>
         void InsertGameObjectModel(const GameObjectModel& model) { /*_dynamicTree.insert(model);*/ }
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
         bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
+        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
 
         virtual uint32 GetOwnerGuildId(uint32 /*team*/ = TEAM_OTHER) const { return 0; }
         /*

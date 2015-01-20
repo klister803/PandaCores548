@@ -1083,7 +1083,7 @@ class boss_ragnaros_firelands : public CreatureScript
                     }
                 }
 
-                instance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_COMPLETE, me); 
+                me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_COMPLETE, me); 
                 instance->SetBossState(DATA_RAGNAROS, DONE);
 
                 if (GetDifficulty() == MAN10_DIFFICULTY)

@@ -216,7 +216,7 @@ class InstanceScript : public ZoneScript
         }
 
         // Checks encounter state at kill/spellcast
-        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
+        //void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
 
         // Used only during loading
         void SetCompletedEncountersMask(uint32 newMask) { completedEncounters = newMask; }
@@ -261,8 +261,10 @@ class InstanceScript : public ZoneScript
         // Challenge
         void FillInitialWorldTimers(WorldPacket& data);
         void StartChallenge();
+        void StopChallenge();
         uint32 GetChallengeProgresTime();
         void SetChallengeProgresInSec(uint32 timer);
+        uint32 GetChallengeTime() { return challenge_timer; }
 
     protected:
         void LoadDoorData(DoorData const* data);

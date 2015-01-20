@@ -141,8 +141,6 @@ public:
                 case TYPE_OPTIONAL_BOSS:        m_auiEncounter[3] = uiData; break;
                 case TYPE_OPERA:
                     m_auiEncounter[4] = uiData;
-                    if (uiData == DONE)
-                        UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, 16812, NULL);
                     break;
                 case TYPE_CURATOR:              m_auiEncounter[5] = uiData; break;
                 case TYPE_ARAN:                 m_auiEncounter[6] = uiData; break;

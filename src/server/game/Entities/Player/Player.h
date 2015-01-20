@@ -3500,7 +3500,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_DelayedOperations;
         bool m_bCanDelayTeleport;
         bool m_bHasDelayedTeleport;
-        bool m_isMoltenCored;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;
@@ -3583,6 +3582,10 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         if((affectSpell->Attributes & SPELL_ATTR0_ONLY_STEALTHED) && !HasStealthAura())
             continue;
 
+        //Don`t moded value if allready max moded
+        if(mod->value == 0 || (totalmul <= 0.0f && mod->value < 0) || (totalflat < 0 && ((basevalue + totalflat) <= 0) && mod->value < 0))
+            continue;
+
         if (mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
@@ -3595,13 +3598,18 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
+            if(spellId == 116858 && mod->spellId == 117828) // Chaos Bolt
+            {
+                if(mod->ownerAura->GetCharges() < 3)
+                    continue;
+            }
+
             value = mod->value;
 
             totalmul += CalculatePct(1.0f, value);
         }
 
-        if (!m_isMoltenCored)
-            DropModCharge(mod, spell);
+        DropModCharge(mod, spell);
     }
 
     float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
