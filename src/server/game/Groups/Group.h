@@ -330,10 +330,16 @@ class Group
         void ClearAoeSlots() { m_aoe_slots = 0; };
         bool isRolledSlot(uint8 _slot)
         {
-            for (Rolls::iterator iter=RollId.begin(); iter != RollId.end(); ++iter)
+            for (Rolls::iterator iter = RollId.begin(); iter != RollId.end(); ++iter)
                 if ((*iter)->aoeSlot == _slot && (*iter)->isValid())
                     return true;
             return false;
+        }
+        bool RollIsActive()
+        {
+            if(RollId.empty())
+                return false;
+            return true;
         }
 
         // related to disenchant rolls

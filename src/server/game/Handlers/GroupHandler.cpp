@@ -726,7 +726,7 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
     recvData.ReadGuidBytes<4, 7, 6, 3, 5, 1, 2, 0>(lootMaster);
 
     Group* group = GetPlayer()->GetGroup();
-    if (!group)
+    if (!group || group->RollIsActive())
         return;
 
     /** error handling **/
