@@ -586,10 +586,10 @@ struct AreaTableEntry
     //uint32 unk21;                                         // 23 4.0.0
     //uint32 unk22;                                         // 24 4.0.0
     //uint32 unk23;                                         // 25 4.0.0
-    //uint32 unk24;                                         // 26 worldStateId
-    //uint32 unk25                                          // 27
-    //uint32 unk541_1;                                      // 28
-    //uint32 unk541_2;                                      // 29
+    //uint32 m_world_pvp_id;                                // 26
+    //uint32 m_pvpCombatWorldStateID                        // 27
+    uint32 m_wildBattlePetLevelMin;                         // 28
+    uint32 m_wildBattlePetLevelMax;                         // 29
 
     // helpers
     bool IsSanctuary() const
