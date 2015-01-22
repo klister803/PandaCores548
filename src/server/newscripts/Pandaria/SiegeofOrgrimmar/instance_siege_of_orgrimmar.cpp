@@ -88,6 +88,12 @@ public:
         {
             if (!TeamInInstance)
                 TeamInInstance = player->GetTeam();
+            
+            if (GetBossState(DATA_SHA_OF_PRIDE) == IN_PROGRESS)
+                player->CastSpell(player, 144343, true);
+            
+            if (GetBossState(DATA_NORUSHEN) == IN_PROGRESS)
+                player->CastSpell(player, 144421, true);
 
             //Custom check.
             CustomSpellCheck(player);

@@ -414,8 +414,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
 
-                me->RemoveAurasDueToSpell(SPELL_FRAYED);
-                me->RemoveAurasDueToSpell(SPELL_ICY_FEAR);
+                me->RemoveAllAuras();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->ModifyAuraState(AURA_STATE_UNKNOWN22, true);
                 ApplyOrRemoveBar(false);
@@ -533,7 +532,8 @@ class boss_amalgam_of_corruption : public CreatureScript
                             events.ScheduleEvent(EVENT_CHECK_VICTIM, 2000);
                             break;
                         case EVENT_QUARANTINE_SAFETY:
-                            DoCastAOE(SPELL_QUARANTINE_SAFETY);
+                            me->CastSpell(me, SPELL_QUARANTINE_SAFETY, true);
+                            EnterEvadeMode();
                             break;
                         case EVENT_UNLEASHED_ANGER:
                             if (me->getVictim())
