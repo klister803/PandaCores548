@@ -274,22 +274,22 @@ public:
                     _frostwornGeneral = data;
                     break;
                 case DATA_ESCAPE_EVENT:
-                    if (data == IN_PROGRESS)
-                    {
-                        if (!_jainaOrSylvanasPart2GUID)
-                            SetData(DATA_ESCAPE_EVENT, NOT_STARTED);
-                        if (!_escapeevent)
-                            if (Creature* jaina_or_sylvanas = instance->GetCreature(_jainaOrSylvanasPart2GUID))
-                                jaina_or_sylvanas->AI()->DoAction(ACTION_START_ESCAPING);
-                    }
-                    else if (data == NOT_STARTED)
+                    if (data == NOT_STARTED)
                     {
                         if (!_jainaOrSylvanasPart2GUID)
                             if (_teamInInstance == ALLIANCE)
                                 instance->SummonCreature(NPC_JAINA_PART2, JainaSpawnPos2);
                             else
                                 instance->SummonCreature(NPC_SYLVANAS_PART2, SylvanasSpawnPos2);
-                        SetData(DATA_ESCAPE_EVENT,IN_PROGRESS);
+                        //SetData(DATA_ESCAPE_EVENT, IN_PROGRESS);
+                    }
+                    else if (data == IN_PROGRESS)
+                    {
+                        if (!_jainaOrSylvanasPart2GUID)
+                            SetData(DATA_ESCAPE_EVENT, NOT_STARTED);
+                        if (!_escapeevent)
+                            if (Creature* jaina_or_sylvanas = instance->GetCreature(_jainaOrSylvanasPart2GUID))
+                                jaina_or_sylvanas->AI()->DoAction(ACTION_START_ESCAPING);
                     }
                      _escapeevent = data;
                     break;

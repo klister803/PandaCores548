@@ -237,6 +237,7 @@ enum Spells
     SPELL_FINDING_JAINA_CREDIT         = 71538,
     SPELL_FINDING_SYLVANAS_CREDIT      = 71536,
     SPELL_ESCAPING_ARTHAS_CREDIT       = 71352,
+    SPELL_ACHIEV_CHECK                 = 72830,
 
     //Raging gnoul
     SPELL_EMERGE_VISUAL                = 50142,
@@ -1110,6 +1111,7 @@ class npc_jaina_or_sylvanas_escape_hor : public CreatureScript
                            cave->SetGoState(GO_STATE_READY);
                         _events.ScheduleEvent(EVENT_ESCAPE_26, 4000);
                         DoCastAOE(SPELL_ESCAPING_ARTHAS_CREDIT);
+                        DoCast(me, SPELL_ACHIEV_CHECK);
                         break;
                     case EVENT_ESCAPE_26:
                         if (_instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
@@ -1965,13 +1967,14 @@ public:
         {
             DoCast(me, SPELL_EMERGE_VISUAL);
             DoZoneInCombat(me, 100.00f);
+            if (Creature* leader =  ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_ESCAPE_LEADER)))
+                me->Attack(leader, true);
         }
 
         void JustDied(Unit* /*killer*/)
         {
             if (_instance)
                 _instance->SetData(DATA_SUMMONS, 0);
-
         }
 
         void AttackStart(Unit* who)
