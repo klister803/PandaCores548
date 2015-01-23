@@ -225,7 +225,7 @@ struct npc_mounted_championAI : ScriptedAI
         return false;
     }
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(uint32 uiDiff)
     {
         if (!UpdateVictim())
             return;
@@ -1218,7 +1218,7 @@ class player_hex_mendingAI : public PlayerAI
             me->CastCustomSpell(SPELL_HEX_OF_MENDING_HEAL, SPELLVALUE_BASE_POINT0, int32(addHealth*2.0f), me, true);
         }
 
-        void UpdateAI(const uint32 /*diff*/) { }
+        void UpdateAI(uint32 /*diff*/) { }
 
     private:
         uint64 casterGUID;
