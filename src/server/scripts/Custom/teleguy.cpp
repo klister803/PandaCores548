@@ -31,7 +31,7 @@ TeleData data[] =
     {1224, 0, "Ironforge.",             {0, -4924.07f, -951.95f, 501.55f, 5.40f},       ALLIANCE, false, false},
     {1226, 0, "Shrine of Seven Stars.", {870, 881.49f, 308.12f, 503.12f, 0.0f},         ALLIANCE, false, false},
 
-    {1251, 0, "Duel Zone.",             {1, 5465.16f, -3724.59f, 1593.44f, 0.0f},       HORDE,    false, false},
+    {1251, 0, "Duel Zone.",             {870, -229.73f, -5376.26f, 123.07f, 0.0f},        HORDE,    false, false},
     {1215, 0, "Orgrimmar.",             {1, 1424.53f, -4411.07f, 73.91f, 0.0f},         HORDE,    false, false},
     {1217, 0, "Silvermoon.",            {530, 9338.74f, -7277.27f, 13.7895f, 0.0f},     HORDE,    false, false},
     {1213, 0, "Undercity.",             {0, 1819.71f, 238.79f, 60.5321f, 0.0f},         HORDE,    false, false},
