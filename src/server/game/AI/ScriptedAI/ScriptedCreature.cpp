@@ -497,7 +497,10 @@ void BossAI::_Reset()
     summons.DespawnAll();
 
     if (instance && me->isAlive())
+    {
         instance->SetBossState(_bossId, NOT_STARTED);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
+    }
 }
 
 void BossAI::_JustDied()
@@ -508,6 +511,7 @@ void BossAI::_JustDied()
     {
         instance->SetBossState(_bossId, DONE);
         instance->SaveToDB();
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
     }
 }
 
@@ -541,6 +545,7 @@ void BossAI::_EnterCombat()
             return;
         }
         instance->SetBossState(_bossId, IN_PROGRESS);
+        instance->SendEncounterUnit(ENCOUNTER_FRAME_SET_COMBAT_RES_LIMIT, me);
     }
 }
 

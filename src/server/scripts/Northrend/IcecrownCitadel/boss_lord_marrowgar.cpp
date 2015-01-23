@@ -111,6 +111,7 @@ class boss_lord_marrowgar : public CreatureScript
 
             void EnterCombat(Unit* /*who*/)
             {
+                _EnterCombat();
                 Talk(SAY_AGGRO);
 
                 me->setActive(true);
