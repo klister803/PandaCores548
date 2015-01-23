@@ -178,6 +178,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             // send in universal language if player in .gm on mode (ignore spell effects)
             if (sender->isGameMaster())
                 lang = LANG_UNIVERSAL;
+            else if(sWorld->getIntConfig(CONFIG_FUN_OPTION_ENABLED) && sender->GetAreaId() == 6823)
+                lang = LANG_UNIVERSAL;
             else
             {
                 // send in universal language in two side iteration allowed mode

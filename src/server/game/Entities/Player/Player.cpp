@@ -8964,6 +8964,17 @@ void Player::UpdateArea(uint32 newArea)
     else
         RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
 
+    //for FUN servers
+    if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+    {
+        if(newArea == 6823)
+        {
+            SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+            pvpInfo.inNoPvPArea = true;
+            CombatStopWithPets();
+        }
+    }
+
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
 
