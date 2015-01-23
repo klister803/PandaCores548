@@ -291,6 +291,8 @@ public:
                             if (Creature* jaina_or_sylvanas = instance->GetCreature(_jainaOrSylvanasPart2GUID))
                                 jaina_or_sylvanas->AI()->DoAction(ACTION_START_ESCAPING);
                     }
+                    if (data == FAIL)
+                        DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
                      _escapeevent = data;
                     break;
                 case DATA_SUMMONS:

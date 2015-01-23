@@ -237,7 +237,6 @@ enum Spells
     SPELL_FINDING_JAINA_CREDIT         = 71538,
     SPELL_FINDING_SYLVANAS_CREDIT      = 71536,
     SPELL_ESCAPING_ARTHAS_CREDIT       = 71352,
-    SPELL_ACHIEV_CHECK                 = 72830,
 
     //Raging gnoul
     SPELL_EMERGE_VISUAL                = 50142,
@@ -745,12 +744,13 @@ class npc_jaina_or_sylvanas_escape_hor : public CreatureScript
             _icewall = 0;
             _isattackingwall = false;
             _events.ScheduleEvent(EVENT_ESCAPE, 0);
+            _instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
         }
 
         void JustDied(Unit* /*Killer*/)
         {
             if (_instance)
-            _instance->SetData(DATA_ESCAPE_EVENT, FAIL);
+                _instance->SetData(DATA_ESCAPE_EVENT, FAIL);
         }
 
         void DoAction(int32 const actionID)
@@ -868,6 +868,7 @@ class npc_jaina_or_sylvanas_escape_hor : public CreatureScript
                             else
                                 lichking->RemoveAurasDueToSpell(SPELL_SYLVANAS_DARKBINDING);
                         }
+                        _instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
                         _events.ScheduleEvent(EVENT_ESCAPE_8, 1000);
                         break;
                     case EVENT_ESCAPE_8:
