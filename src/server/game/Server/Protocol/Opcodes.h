@@ -619,6 +619,7 @@ enum Opcodes
     CMSG_BATTLE_PET_SUMMON                            = 0x01C0, // 5.4.1 17538
     CMSG_CAGE_BATTLE_PET                              = 0x1345, // 5.4.1 17538
     CMSG_BATTLE_PET_SET_BATTLE_SLOT                   = 0x0D61, // 5.4.1 17538
+    // CMSG_CLEAR_LOSS_OF_CONTROL
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538
     SMSG_AUCTION_HELLO                                = 0x0C9E, // 5.4.1 17538
@@ -1478,6 +1479,9 @@ enum Opcodes
     SMSG_UNSET_MOVEFLAG2_0x1000                       = 0x07A4, // 5.4.1 17538
     SMSG_SPELL_0x00E9                                 = 0x00E9, // 5.4.1 17538
     SMSG_SPELL_SCRIPT_CAST                            = 0x098D, // 5.4.1 17538
+    SMSG_ADD_LOSS_OF_CONTROL                          = 0x140C, // 5.4.1 17538
+    SMSG_LOSS_OF_CONTROL_AURA_UPDATE                  = 0x0904, // 5.4.1 17538
+    SMSG_REMOVE_LOSS_OF_CONTROL                       = 0x01A7, // 5.4.1 17538
 };
 
 /// Player state

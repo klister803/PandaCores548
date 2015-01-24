@@ -1340,6 +1340,9 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_UNSET_MOVEFLAG2_0x1000,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SPELL_0x00E9,                            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SPELL_SCRIPT_CAST,                       STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_ADD_LOSS_OF_CONTROL,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOSS_OF_CONTROL_AURA_UPDATE,             STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_REMOVE_LOSS_OF_CONTROL,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
 
     //------------                      M S G                   ------------//
 

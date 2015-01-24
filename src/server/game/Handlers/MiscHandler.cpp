@@ -2488,3 +2488,49 @@ void WorldSession::HandleWarGameAccept(WorldPacket& recvPacket)
     data.WriteGuidMask<0, 6, 7, 2, 4, 3, 1, 5>(guid);
     data.WriteGuidBytes<0, 2, 1, 6, 3, 7, 5, 4>(guid);
 }*/
+
+// Loss of Control
+
+/*SMSG_ADD_LOSS_OF_CONTROL - added LossOfControl frame
+{
+    WorldPacket data(SMSG_ADD_LOSS_OF_CONTROL);
+    ObjectGuid guid;          // CasterGUID
+    data.WriteBits(x, 8);     // Mechanic
+    data.WriteBits(x, 8);     // Type (interrupt or some other)
+    data.WriteGuidMask<2, 1, 4, 3, 5, 6, 7, 0>(guid);
+    data.WriteGuidBytes<3, 1, 4>(guid);
+    data << uint32(x);        // RemainingDuration (контролирует блокировку баров, скажем если duration = 40000, а это число 10000, то как только останется 10 секунд, на барах пойдет прокрутка, иначе просто затеменено)
+    data << uint32(x);        // Duration (время действия)
+    data.WriteGuidBytes<0>(guid);
+    data << uint32(val4);     // SpellID
+    data.WriteGuidBytes<2, 5, 6, 7>(guid);
+    data << uint32(val5);     // SchoolMask (для type == interrupt and other)
+}
+
+SMSG_REMOVE_LOSS_OF_CONTROL
+{
+    WorldPacket data(SMSG_REMOVE_LOSS_OF_CONTROL);
+    ObjectGuid guid;
+    data.WriteGuidMask<1, 7, 0, 6, 2, 4, 5>(guid);
+    data.WriteBits(x, 8); // Type
+    data.WriteGuidMask<3>(guid);
+    data.WriteGuidBytes<1, 0, 4, 6, 7>(guid);
+    data << uint32(x); // SpellID
+    data.WriteGuidBytes<3, 5, 2>(guid);
+}
+
+SMSG_LOSS_OF_CONTROL_AURA_UPDATE
+{
+    WorldPacket data(SMSG_LOSS_OF_CONTROL_AURA_UPDATE);
+    data.WriteBits(y, 22); // LossOfControl effects count
+    for (int i = 0; i < y; i++)
+    {
+        data.WriteBits(x, 8); // Mechanic
+        data.WriteBits(x, 8); // Type
+    }
+    for (int i = 0; i < y; i++)
+    {
+        data << uint8(x); // effectIndex
+        data << uint8(x); // auraSlot
+    }
+}*/
