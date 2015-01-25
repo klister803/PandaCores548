@@ -40,6 +40,7 @@ struct CriteriaProgress
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
     bool changed;
+    bool newAdd;
 };
 
 enum AchievementCriteriaDataType
@@ -224,7 +225,6 @@ struct CompletedAchievementData
     time_t date;
     std::set<uint64> guids;
     uint64 first_guid;
-    bool completedByThisCharacter;
     bool changed;
 };
 

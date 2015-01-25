@@ -487,7 +487,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //427 SPELL_AURA_427
     &AuraEffect::HandleNULL,                                      //428 SPELL_AURA_SUMMON_CONTROLLER
     &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_PET_DAMAGE_DONE_PCT
-    &AuraEffect::HandleNULL,                                      //430 SPELL_AURA_ACTIVATE_SCENE
+    &AuraEffect::HandleAuraActivateScene,                         //430 SPELL_AURA_ACTIVATE_SCENE
     &AuraEffect::HandleNULL,                                      //431 SPELL_AURA_CONTESTED_PVP
     &AuraEffect::HandleNULL,                                      //432 SPELL_AURA_432
     &AuraEffect::HandleNULL,                                      //433 SPELL_AURA_433
@@ -8949,3 +8949,17 @@ void AuraEffect::HandleAuraModSpellVisual(AuraApplication const* aurApp, uint8 m
     }
 }
 
+void AuraEffect::HandleAuraActivateScene(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    Position pos;
+    target->GetPosition(&pos);
+
+    target->SendSpellScene(GetMiscValue(), &pos);
+}

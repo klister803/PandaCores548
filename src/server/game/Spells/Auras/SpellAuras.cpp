@@ -198,6 +198,9 @@ void AuraApplication::BuildBitUpdatePacket(ByteBuffer& data, bool remove) const
     bool nosendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
+        if(!(_effectsToApply & (1 << i)))
+            continue;
+
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
         {
             ++count;
@@ -244,6 +247,9 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
     bool nosendEffect = false;
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
+        if(!(_effectsToApply & (1 << i)))
+            continue;
+
         if(aura->GetSpellInfo()->Effects[i].IsEffect())
         {
             if (AuraEffect const* eff = aura->GetEffect(i))
@@ -270,6 +276,8 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
+            if(!(_effectsToApply & (1 << i)))
+                continue;
             if(aura->GetSpellInfo()->Effects[i].IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))
@@ -288,6 +296,9 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
+            if(!(_effectsToApply & (1 << i)))
+                continue;
+
             if(aura->GetSpellInfo()->Effects[i].IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))
@@ -310,6 +321,9 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
+            if(!(_effectsToApply & (1 << i)))
+                continue;
+
             if(aura->GetSpellInfo()->Effects[i].IsEffect())
             {
                 if (AuraEffect const* eff = aura->GetEffect(i))

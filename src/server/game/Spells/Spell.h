@@ -501,7 +501,6 @@ class Spell
         void SendSpellStart();
         void SendSpellGo();
         void SendSpellPendingCast();
-        void SendSpellActivationScene();
         void SendSpellCooldown();
         void SendLogExecute();
         void ExecuteLogEffectGeneric(uint8 effIndex, uint64 guid);
@@ -602,6 +601,10 @@ class Spell
         uint64 GetRndEffectTarget () { return Trinity::Containers::SelectRandomContainerElement(m_effect_targets); }
         AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
 
+        // Spell mod
+        void AddSpellModId (uint32 spellId) { m_spell_mods.push_back(spellId); }
+        std::list<uint32>* GetSpellMods() { return &m_spell_mods; }
+
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
     protected:
         bool HasGlobalCooldown();
@@ -666,6 +669,7 @@ class Spell
         // used in effects handlers
         Aura* m_spellAura;
         std::list<uint64> m_effect_targets;
+        std::list<uint32> m_spell_mods;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;

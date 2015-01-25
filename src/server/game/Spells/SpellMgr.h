@@ -769,6 +769,21 @@ struct SpellTargetFilter
     int32 addcaster;
 };
 
+struct SpellScene
+{
+    int32 ScenePackageId;
+    int32 MiscValue;
+    bool hasO;
+    int32 SceneInstanceID;
+    int32 PlaybackFlags;
+    bool bit16;
+    float x;
+    float y;
+    float z;
+    float o;
+    int32 transport;
+};
+
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
 typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
 typedef std::map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
@@ -779,6 +794,7 @@ typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
 typedef std::map<int32, std::vector<SpellVisual> > SpellVisualMap;
 typedef std::map<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
 typedef std::map<int32, SpellMountList* > SpellMountListMap;
+typedef std::map<int32, std::vector<SpellScene> > SpellSceneMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -897,6 +913,7 @@ class SpellMgr
         const std::vector<SpellTargetFilter> *GetSpellTargetFilter(int32 spell_id) const;
         const std::vector<SpellVisual> *GetSpellVisual(int32 spell_id) const;
         const std::vector<SpellPendingCast> *GetSpellPendingCast(int32 spell_id) const;
+        const std::vector<SpellScene> *GetSpellScene(int32 miscValue) const;
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;
@@ -955,6 +972,7 @@ class SpellMgr
         void LoadForbiddenSpells();
         void LoadSpellVisual();
         void LoadSpellPendingCast();
+        void LoadSpellScene();
 
         std::vector<uint32>        mSpellCreateItemList;
 
@@ -1001,6 +1019,7 @@ class SpellMgr
         SpellVisualMap             mSpellVisualMap;
         SpellPendingCastMap        mSpellPendingCastMap;
         std::list<uint32>          mForbiddenSpells;
+        SpellSceneMap              mSpellSceneMap;
 };
 
 #define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()

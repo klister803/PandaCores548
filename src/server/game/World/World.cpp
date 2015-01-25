@@ -1727,6 +1727,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellTriggered();
     sSpellMgr->LoadSpellVisual();
     sSpellMgr->LoadSpellPendingCast();
+    sSpellMgr->LoadSpellScene();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading mount replace list...");
     sSpellMgr->LoadmSpellMountList();

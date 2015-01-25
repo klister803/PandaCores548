@@ -2896,6 +2896,8 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     summon->InitSummon();
     summon->CastPetAuras(true);
 
+    //sLog->outDebug(LOG_FILTER_PETS, "Map::SummonCreature summoner %u entry %i mask %i", summoner ? summoner->GetGUID() : 0, entry, mask);
+
     //ObjectAccessor::UpdateObjectVisibility(summon);
 
     return summon;

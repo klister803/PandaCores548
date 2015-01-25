@@ -256,8 +256,8 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectDespawnAreatrigger,                       //182 SPELL_EFFECT_DESPAWN_AREATRIGGER
     &Spell::EffectNULL,                                     //183 SPELL_EFFECT_183
     &Spell::EffectNULL,                                     //184 SPELL_EFFECT_REPUTATION_REWARD
-    &Spell::EffectNULL,                                     //185 SPELL_EFFECT_ACTIVATE_SCENE4
-    &Spell::EffectNULL,                                     //186 SPELL_EFFECT_ACTIVATE_SCENE5
+    &Spell::SendScene,                                      //185 SPELL_EFFECT_ACTIVATE_SCENE4
+    &Spell::SendScene,                                      //186 SPELL_EFFECT_ACTIVATE_SCENE5
     &Spell::EffectRandomizeDigsites,                        //187 SPELL_EFFECT_RANDOMIZE_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_STAMPEDE
     &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
@@ -266,9 +266,9 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
     &Spell::EffectNULL,                                     //194 SPELL_EFFECT_194
-    &Spell::EffectNULL,                                     //195 SPELL_EFFECT_ACTIVATE_SCENE
-    &Spell::EffectNULL,                                     //196 SPELL_EFFECT_ACTIVATE_SCENE2
-    &Spell::EffectNULL,                                     //197 SPELL_EFFECT_ACTIVATE_SCENE6
+    &Spell::SendScene,                                      //195 SPELL_EFFECT_ACTIVATE_SCENE
+    &Spell::SendScene,                                      //196 SPELL_EFFECT_ACTIVATE_SCENE2
+    &Spell::SendScene,                                      //197 SPELL_EFFECT_ACTIVATE_SCENE6
     &Spell::SendScene,                                      //198 SPELL_EFFECT_ACTIVATE_SCENE3 send package
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
     &Spell::EffectHealBattlePetPct,                         //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
@@ -7810,7 +7810,9 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 {
                     if(sInfo->GetMaxRange(false) >= 30.0f && sInfo->GetMaxRange(false) > summon->GetAttackDist() && sInfo->IsAutocastable())
                     {
-                        summon->SetCasterPet(true);
+                        PetStats const* pStats = sObjectMgr->GetPetStats(entry);
+                        if(!pStats)
+                            summon->SetCasterPet(true);
                         if(!sInfo->IsPositive())
                             summon->SetAttackDist(sInfo->GetMaxRange(false));
                     }
@@ -8550,50 +8552,11 @@ void Spell::SendScene(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    Player* player = m_caster->ToPlayer();
-    if (!player)
-        return;
+    Position pos;
+    if (m_targets.HasDst())
+        pos = *m_targets.GetDstPos();
+    else
+        m_caster->GetPosition(&pos);
 
-    ObjectGuid casterGuid = /*m_caster->GetObjectGuid()*/0; // not caster something else??? wrong val. could break scean.
-
-    bool hasMValue = true;
-    bool hasUnk = true;    //disabeling not find any change
-    bool hasO = true;
-    bool bit28 = true;     //disabeling not find any change
-    bool bit16 = false;
-
-    uint32 ScenePackage = 0;
-    switch(m_spellInfo->Id)
-    {
-        case 117790:
-            ScenePackage = 26;      //Shen-zin Su - Healing Cinematic (CSA)
-            break;
-    }
-    WorldPacket data(SMSG_PLAY_SCENE_DATA, 46);
-    data.WriteBit(!hasMValue);
-    data.WriteBit(!hasUnk);
-    data.WriteBit(!ScenePackage);
-    data.WriteBit(!hasO);
-    data.WriteBit(!bit28);
-    data.WriteBit(!bit16);
-
-    data.WriteGuidMask<0, 5, 1, 7, 4, 2, 6, 3>(casterGuid);
-    data.WriteGuidBytes<1, 2, 5, 6, 0, 7, 3, 4>(casterGuid);
-
-    data << float(m_caster->GetPositionY());            // Y
-
-    if(hasUnk)
-        data << uint32(1);                              // SceneInstanceID
-    if(hasMValue)
-        data << uint32(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue);                              // SceneID
-    if(hasO)
-        data << float(m_caster->GetOrientation());      // Facing
-    if(ScenePackage)
-        data << uint32(ScenePackage);                   // SceneScriptPackageID
-    if(bit28)
-        data << uint32(9);                              // PlaybackFlags
-
-    data << float(m_caster->GetPositionX());            // X
-    data << float(m_caster->GetPositionZ());            // Z
-    player->GetSession()->SendPacket(&data);
+    m_caster->SendSpellScene(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue, &pos);
 }

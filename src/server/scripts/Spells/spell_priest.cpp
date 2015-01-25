@@ -2641,6 +2641,43 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
         }
 };
 
+// 114404 - Void Tendril's Grasp
+class spell_pri_void_tendrils_grasp : public SpellScriptLoader
+{
+    public:
+        spell_pri_void_tendrils_grasp() : SpellScriptLoader("spell_pri_void_tendrils_grasp") { }
+
+        class spell_pri_void_tendrils_grasp_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_void_tendrils_grasp_AuraScript);
+
+            void CalculateMaxDuration(int32 & duration)
+            {
+                if (WorldObject* owner = GetOwner())
+                    if (owner->GetTypeId() == TYPEID_PLAYER)
+                        duration = 8000;
+            }
+
+            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Creature* me = caster->ToCreature())
+                        me->DespawnOrUnsummon(500);
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_pri_void_tendrils_grasp_AuraScript::CalculateMaxDuration);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_pri_void_tendrils_grasp_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_ROOT, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_void_tendrils_grasp_AuraScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_glyph_of_mass_dispel();
@@ -2696,4 +2733,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_lightwell_trigger();
     new spell_pri_hymn_of_hope();
     new spell_pri_mind_blast();
+    new spell_pri_void_tendrils_grasp();
 }

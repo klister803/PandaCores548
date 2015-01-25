@@ -108,6 +108,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 return DIMINISHING_LIMITONLY;
             break;
         }
+        case SPELLFAMILY_PRIEST:
+        {
+            if (spellproto->Id == 114404)
+                return DIMINISHING_NONE;
+            break;
+        }
         case SPELLFAMILY_WARRIOR:
         {
             // Hamstring and Piercing Howl - limit duration to 10s in PvP
@@ -1114,6 +1120,12 @@ const std::vector<SpellVisual>* SpellMgr::GetSpellVisual(int32 spell_id) const
 {
     SpellVisualMap::const_iterator itr = mSpellVisualMap.find(spell_id);
     return itr != mSpellVisualMap.end() ? &(itr->second) : NULL;
+}
+
+const std::vector<SpellScene>* SpellMgr::GetSpellScene(int32 miscValue) const
+{
+    SpellSceneMap::const_iterator itr = mSpellSceneMap.find(miscValue);
+    return itr != mSpellSceneMap.end() ? &(itr->second) : NULL;
 }
 
 const std::vector<SpellPendingCast>* SpellMgr::GetSpellPendingCast(int32 spell_id) const
@@ -2553,6 +2565,57 @@ void SpellMgr::LoadSpellVisual()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u visual spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void SpellMgr::LoadSpellScene()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellSceneMap.clear();    // need for reload case
+
+    //                                                      0            1       2           3               4          5    6  7  8  9     10
+    QueryResult result = WorldDatabase.Query("SELECT ScenePackageId, MiscValue, hasO, SceneInstanceID, PlaybackFlags, bit16, x, y, z, o, transport FROM spell_scene");
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 visual spells. DB table `spell_visual_send` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 ScenePackageId = fields[0].GetInt32();
+        int32 MiscValue = fields[1].GetInt32();
+        bool hasO   = bool(fields[2].GetUInt8());
+        int32 SceneInstanceID = fields[3].GetInt32();
+        int32 PlaybackFlags = fields[4].GetInt32();
+        bool bit16 = bool(fields[5].GetUInt8());
+        float x = fields[6].GetFloat();
+        float y = fields[7].GetFloat();
+        float z = fields[8].GetFloat();
+        float o = fields[9].GetFloat();
+        int32 transport = fields[10].GetInt32();
+
+        SpellScene templink;
+        templink.ScenePackageId = ScenePackageId;
+        templink.MiscValue = MiscValue;
+        templink.hasO = hasO;
+        templink.SceneInstanceID = SceneInstanceID;
+        templink.PlaybackFlags = PlaybackFlags;
+        templink.bit16 = bit16;
+        templink.x = x;
+        templink.y = y;
+        templink.z = z;
+        templink.o = o;
+        templink.transport = transport;
+        mSpellSceneMap[MiscValue].push_back(templink);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u visual spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void SpellMgr::LoadSpellPendingCast()
 {
     uint32 oldMSTime = getMSTime();
@@ -3632,12 +3695,12 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 switch (spellInfo->Effects[j].ApplyAuraName)
                 {
-                    case SPELL_AURA_MOD_POSSESS:
-                    case SPELL_AURA_MOD_CONFUSE:
-                    case SPELL_AURA_MOD_CHARM:
-                    case SPELL_AURA_AOE_CHARM:
-                    case SPELL_AURA_MOD_FEAR:
-                    case SPELL_AURA_MOD_FEAR_2:
+                    //case SPELL_AURA_MOD_POSSESS:
+                    //case SPELL_AURA_MOD_CONFUSE:
+                    //case SPELL_AURA_MOD_CHARM:
+                    //case SPELL_AURA_AOE_CHARM:
+                    //case SPELL_AURA_MOD_FEAR:
+                    //case SPELL_AURA_MOD_FEAR_2:
                     case SPELL_AURA_MOD_STUN:
                         spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
                         break;

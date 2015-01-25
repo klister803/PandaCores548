@@ -362,11 +362,10 @@ void AnyPetAI::InitializeAI()
 
     if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
         if(pStats->state)
-        {
             me->SetReactState(ReactStates(pStats->state));
-            if(Unit* victim = me->GetTargetUnit())
-                me->Attack(victim, !me->GetCasterPet());
-        }
+
+    if(Unit* victim = me->GetTargetUnit())
+        me->Attack(victim, !me->GetCasterPet());
 
     // Update speed as needed to prevent dropping too far behind and despawning
     me->UpdateSpeed(MOVE_RUN, true);
@@ -389,10 +388,19 @@ void AnyPetAI::UpdateAI(uint32 diff)
     Unit* target = me->getAttackerForHelper();
     Unit* targetOwner = NULL;
     if (owner)
+    {
         targetOwner = owner->getAttackerForHelper();
+        if(!targetOwner && owner->ToPlayer())
+            targetOwner = owner->ToPlayer()->GetSelectedUnit();
+    }
 
     if(targetOwner != NULL && targetOwner != target)
-        AttackStart(targetOwner);
+    {
+        if(me->GetCasterPet())
+            AttackStartCaster(targetOwner, me->GetAttackDist() - 0.5f);
+        else
+            AttackStart(targetOwner);
+    }
     else if (me->getVictim())
     {
         // is only necessary to stop casting, the pet must not exit combat

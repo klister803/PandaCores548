@@ -1090,6 +1090,8 @@ void Unit::UpdateEnergyRegen()
         ApplyPercentModFloatVar(val, -amount, true);
 
     SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
+
+    UpdatePowerRegen(POWER_ENERGY);
 }
 
 void Unit::UpdateFocusRegen()
@@ -1110,6 +1112,8 @@ void Unit::UpdateFocusRegen()
         ApplyPercentModFloatVar(val, -amount, true);
 
     SetFloatValue(UNIT_MOD_HASTE_REGEN, val);
+
+    UpdatePowerRegen(POWER_FOCUS);
 }
 
 void Unit::UpdatePowerRegen(uint32 power)
@@ -1482,7 +1486,9 @@ void Guardian::UpdateArmor()
         value = m_owner->GetModifierValue(unitMod, BASE_VALUE) * pStats->armor;
     else
         value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
-    
+
+    //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateArmor value %f creature_ID %i", value, creature_ID);
+
     value += GetModifierValue(unitMod, BASE_PCT);
     value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
     value *= m_owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_ARMOR), GetEntry());
@@ -1512,6 +1518,8 @@ void Guardian::UpdateMaxHealth()
         multiplicator *= owner->GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_HEALTH_FROM_OWNER_PCT);
         multiplicator *= owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_MAX_HP), GetEntry());
         value = owner->GetMaxHealth() * multiplicator;
+
+        //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
     }
     else
     {
@@ -1543,6 +1551,7 @@ void Guardian::UpdateMaxPower(Powers power)
             value = pStats->energy;
     }
 
+    //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
     SetMaxPower(power, uint32(value));
 }
 

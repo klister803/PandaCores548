@@ -23321,7 +23321,7 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
             ++itr;
 
             // spellmods without aura set cannot be charged
-            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges())
+            if (!mod->ownerAura || !mod->ownerAura->IsUsingCharges() || mod->ownerAura->GetSpellInfo()->ProcFlags != 0)
                 continue;
 
             // check if mod affected this spell
@@ -23329,17 +23329,13 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
             if (iterMod == spell->m_appliedMods.end())
                 continue;
 
-            if(casting && (mod->op != SPELLMOD_CASTING_TIME && mod->op != SPELLMOD_COST))
+            if(casting && (mod->op != SPELLMOD_CASTING_TIME || !(mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT)))
                 continue;
-            if(!casting && (mod->op == SPELLMOD_CASTING_TIME || mod->op == SPELLMOD_COST))
+            if(!casting && mod->op == SPELLMOD_CASTING_TIME && (mod->ownerAura->GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_USE_SPELL_CAST_EVENT))
                 continue;
 
             // remove from list
             spell->m_appliedMods.erase(iterMod);
-            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "RemoveSpellMods spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, casting %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), casting, mod->op);
-
-            if(spell->GetSpellInfo()->Id == 116858 && mod->spellId == 117828 && mod->ownerAura->GetCharges() > 2) // Chaos Bolt
-                mod->ownerAura->ModCharges(-2);
 
             if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_DROP_CHARGERS))
                 itr = m_spellMods[i].begin();
@@ -23349,6 +23345,19 @@ void Player::RemoveSpellMods(Spell* spell, bool casting)
 
 void Player::DropModCharge(SpellModifier* mod, Spell* spell)
 {
+    // don't handle spells with proc_event entry defined
+    // this is a temporary workaround, because all spellmods should be handled like that
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(mod->spellId);
+    if(!spellInfo)
+        return;
+
+    if(spellInfo->ProcFlags != 0)
+    {
+        if(spell)
+            spell->AddSpellModId(mod->spellId);
+        return;
+    }
+
     if (spell && mod->ownerAura && mod->charges > 0)
     {
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "DropModCharge spell %i, modId %i, charges %i, GetCharges %i, GetStackAmount %i, op %i", spell->GetSpellInfo()->Id, mod->spellId, mod->charges, mod->ownerAura->GetCharges(), mod->ownerAura->GetStackAmount(), mod->op);
@@ -26630,7 +26639,7 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
     data.WriteGuidBytes<3, 6, 7, 1, 5, 0, 2, 4>(guid);
 
     GetSession()->SendPacket(&data);
-    if (target == this)
+    if (target == this && allowMove)
         SetMover(this);
 }
 

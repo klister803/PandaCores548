@@ -240,7 +240,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetName(fields[7].GetString());
 
     // ignore model info data for 
-    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.0f);
+    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, ATTACK_DISTANCE);
 
     switch (getPetType())

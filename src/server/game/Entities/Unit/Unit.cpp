@@ -5590,15 +5590,15 @@ void Unit::SendSpellNonMeleeDamageLog(Unit* target, uint32 SpellID, uint32 Damag
     SendSpellNonMeleeDamageLog(&log);
 }
 
-void Unit::ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procExtra, DamageInfo* dmgInfoProc, WeaponAttackType attType, SpellInfo const* procSpell, SpellInfo const* procAura)
+void Unit::ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procExtra, DamageInfo* dmgInfoProc, WeaponAttackType attType, SpellInfo const* procSpell, SpellInfo const* procAura, std::list<uint32>* mSpellModsList)
 {
      // Not much to do if no flags are set.
     if (procAttacker)
-        ProcDamageAndSpellFor(false, victim, procAttacker, procExtra, attType, procSpell, dmgInfoProc, procAura);
+        ProcDamageAndSpellFor(false, victim, procAttacker, procExtra, attType, procSpell, dmgInfoProc, procAura, mSpellModsList);
     // Now go on with a victim's events'n'auras
     // Not much to do if no flags are set or there is no victim
     if (victim && victim->isAlive() && procVictim)
-        victim->ProcDamageAndSpellFor(true, this, procVictim, procExtra, attType, procSpell, dmgInfoProc, procAura);
+        victim->ProcDamageAndSpellFor(true, this, procVictim, procExtra, attType, procSpell, dmgInfoProc, procAura, mSpellModsList);
 }
 
 void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
@@ -13944,13 +13944,6 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
                 creature->GetFormation()->MemberAttackStart(creature, enemy);
         }
 
-        if (isPet())
-        {
-            UpdateSpeed(MOVE_RUN, true);
-            UpdateSpeed(MOVE_SWIM, true);
-            UpdateSpeed(MOVE_FLIGHT, true);
-        }
-
         if (!(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_MOUNTED_COMBAT))
             Dismount();
     }
@@ -16931,7 +16924,7 @@ uint32 createProcExtendMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missC
     return procEx;
 }
 
-void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, DamageInfo* dmgInfoProc, SpellInfo const* procAura)
+void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, DamageInfo* dmgInfoProc, SpellInfo const* procAura, std::list<uint32>* mSpellModsList)
 {
     // Player is loaded now - do not allow passive spell casts to proc
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetSession()->PlayerLoading())
@@ -17469,12 +17462,22 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_ADD_FLAT_MODIFIER:
                     case SPELL_AURA_ADD_PCT_MODIFIER:
                     {
-                        //charges take in spellmods system
-                        if(procExtra & PROC_EX_ON_CAST)
-                            break;
-
                         if (!triggeredByAura->IsAffectingSpell(procSpell) && !triggeredByAura->IsAffectingSpell(procAura))
                             break;
+
+                        //take charges only if spell moded by this spell
+                        if(procExtra & PROC_EX_ON_CAST)
+                        {
+                            bool moded = false;
+                            for (std::list<uint32>::iterator imods = mSpellModsList->begin(); imods != mSpellModsList->end(); ++imods)
+                                if((*imods) == triggeredByAura->GetId())
+                                    moded = true;
+                            if(!moded)
+                                break;
+
+                            if(procSpell && procSpell->Id == 116858 && triggeredByAura->GetId() == 117828 && i->aura->GetCharges() > 2) // Chaos Bolt
+                                i->aura->ModCharges(-2);
+                        }
 
                         if (HandleSpellModAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                         {
@@ -20829,7 +20832,10 @@ void Unit::SetConfused(bool apply)
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
+    {
+        ToPlayer()->SendMovementSetCollisionHeight(ToPlayer()->GetCollisionHeight(apply));
         ToPlayer()->SetClientControl(this, !apply);
+    }
 }
 
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
@@ -24052,3 +24058,46 @@ uint32 Unit::GetDynamicPassiveSpells(uint32 slot)
     //from sniff 1-3 enable spell, 0-2 disable
     return GetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot);
 }
+
+void Unit::SendSpellScene(uint32 miscValue, Position* /*pos*/)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    ObjectGuid casterGuid = /*m_caster->GetObjectGuid()*/0; // not caster something else??? wrong val. could break scean.
+
+    if (const std::vector<SpellScene> *spell_scene = sSpellMgr->GetSpellScene(miscValue))
+    {
+        for (std::vector<SpellScene>::const_iterator i = spell_scene->begin(); i != spell_scene->end(); ++i)
+        {
+            WorldPacket data(SMSG_PLAY_SCENE_DATA, 46);
+            data.WriteBit(!i->MiscValue);
+            data.WriteBit(!i->SceneInstanceID);
+            data.WriteBit(!i->ScenePackageId);
+            data.WriteBit(!i->hasO);
+            data.WriteBit(!i->PlaybackFlags);
+            data.WriteBit(!i->bit16);
+
+            data.WriteGuidMask<0, 5, 1, 7, 4, 2, 6, 3>(casterGuid);
+            data.WriteGuidBytes<1, 2, 5, 6, 0, 7, 3, 4>(casterGuid);
+
+            data << float(i->y);            // Y
+
+            if(i->SceneInstanceID)
+                data << uint32(i->SceneInstanceID);                              // SceneInstanceID
+            if(miscValue)
+                data << uint32(miscValue);// SceneID
+            if(i->hasO)
+                data << float(i->o);      // Facing
+            if(i->ScenePackageId)
+                data << uint32(i->ScenePackageId);                   // SceneScriptPackageID
+            if(i->PlaybackFlags)
+                data << uint32(i->PlaybackFlags);                              // PlaybackFlags
+
+            data << float(i->x);            // X
+            data << float(i->z);            // Z
+            ToPlayer()->GetSession()->SendPacket(&data);
+        }
+    }
+}
+

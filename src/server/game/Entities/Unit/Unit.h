@@ -1589,8 +1589,8 @@ class Unit : public WorldObject
         void Kill(Unit* victim, bool durabilityLoss = true, SpellInfo const* spellProto = NULL);
         int32 DealHeal(Unit* victim, uint32 addhealth, SpellInfo const* spellProto = NULL);
 
-        void ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procEx, DamageInfo* dmgInfoProc, WeaponAttackType attType = BASE_ATTACK, SpellInfo const* procSpell = NULL, SpellInfo const* procAura = NULL);
-        void ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, DamageInfo* dmgInfoProc, SpellInfo const* procAura = NULL);
+        void ProcDamageAndSpell(Unit* victim, uint32 procAttacker, uint32 procVictim, uint32 procEx, DamageInfo* dmgInfoProc, WeaponAttackType attType = BASE_ATTACK, SpellInfo const* procSpell = NULL, SpellInfo const* procAura = NULL, std::list<uint32>* mSpellModsList = NULL);
+        void ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const* procSpell, DamageInfo* dmgInfoProc, SpellInfo const* procAura = NULL, std::list<uint32>* mSpellModsList = NULL);
 
         void GetProcAurasTriggeredOnEvent(std::list<AuraApplication*>& aurasTriggeringProc, std::list<AuraApplication*>* procAuras, ProcEventInfo eventInfo);
         void TriggerAurasProcOnEvent(CalcDamageInfo& damageInfo);
@@ -2071,6 +2071,7 @@ class Unit : public WorldObject
         void SendSpellCreateVisual(SpellInfo const* spellInfo, Position* position = NULL, Unit* target = NULL);
         void SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove);
         bool GetFreeAuraSlot(uint32& slot);
+        void SendSpellScene(uint32 miscValue, Position* pos);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);

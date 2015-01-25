@@ -297,6 +297,9 @@ void TempSummon::InitStats(uint32 duration)
         }
     }
 
+    bool damageSet = false;
+    InitBaseStat(GetEntry(), damageSet);
+
     if (m_Properties->Faction)
         setFaction(m_Properties->Faction);
     else if (IsVehicle() && owner) // properties should be vehicle
@@ -320,6 +323,8 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
     CreatureTemplate const* cinfo = GetCreatureTemplate();
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(getLevel(), cinfo->unit_class);
     Unit* owner = GetAnyOwner();
+
+    //sLog->outDebug(LOG_FILTER_PETS, "TempSummon::InitBaseStat owner %u creatureId %i", owner ? owner->GetGUID() : 0, creatureId);
 
     PetStats const* pStats = sObjectMgr->GetPetStats(creatureId);
     if (pStats)                                      // exist in DB

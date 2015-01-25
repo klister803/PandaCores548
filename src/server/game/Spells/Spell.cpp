@@ -3499,7 +3499,6 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
         m_caster->SetCurrentCastedSpell(this);
         SendSpellPendingCast(); //Send activation spell
-        //SendSpellActivationScene(); //Send activation scene
         SendSpellStart();
 
         // set target for proper facing
@@ -3846,12 +3845,12 @@ void Spell::cast(bool skipCheck)
                 {
                     procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
                     DamageInfo dmgInfoProc = DamageInfo(damageInfo);
-                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
                 else
                 {
                     DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
-                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
+                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
             }
         }
@@ -4923,64 +4922,6 @@ void Spell::SendSpellPendingCast()
     WorldPacket data(SMSG_SPELL_SCRIPT_CAST, 4);
     data << uint32(_spellId);           //Spell Id
     player->GetSession()->SendPacket(&data);
-}
-
-void Spell::SendSpellActivationScene()
-{
-    Player* player = m_caster->ToPlayer();
-    if(!player)
-        return;
-
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-    {
-        uint32 effect = m_spellInfo->GetEffect(i, m_diffMode).Effect;
-
-        switch (effect)
-        {
-            case SPELL_EFFECT_ACTIVATE_SCENE:
-            case SPELL_EFFECT_ACTIVATE_SCENE2:
-            case SPELL_EFFECT_ACTIVATE_SCENE3:
-            {
-                ObjectGuid casterGuid = m_caster->GetObjectGuid();
-
-                bool hasMValue = true;
-                bool hasUnk = false;
-                bool hasSP = false;
-                bool hasO = true;
-                bool bit28 = false;
-                bool bit16 = false;
-
-                WorldPacket data(SMSG_PLAY_SCENE_DATA, 46);
-                data.WriteBit(!hasMValue);
-                data.WriteBit(!hasUnk);
-                data.WriteBit(!hasSP);
-                data.WriteBit(!hasO);
-                data.WriteBit(!bit28);
-                data.WriteBit(!bit16);
-
-                data.WriteGuidMask<0, 5, 1, 7, 4, 2, 6, 3>(casterGuid);
-                data.WriteGuidBytes<1, 2, 5, 6, 0, 7, 3, 4>(casterGuid);
-
-                data << float(m_caster->GetPositionY());            // Y
-
-                if(hasUnk)
-                    data << uint32(1);                              // SceneInstanceID
-                if(hasMValue)
-                    data << uint32(m_spellInfo->GetEffect(i, m_diffMode).MiscValue);   // SceneID
-                if(hasO)
-                    data << float(m_caster->GetOrientation());      // Facing
-                if(hasSP)
-                    data << uint32(0);                              // SceneScriptPackageID
-                if(bit28)
-                    data << uint32(0);                              // PlaybackFlags
-
-                data << float(m_caster->GetPositionX());            // X
-                data << float(m_caster->GetPositionZ());            // Z
-                player->GetSession()->SendPacket(&data);
-                break;
-            }
-        }
-    }
 }
 
 void Spell::SendSpellGo()
