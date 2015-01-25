@@ -873,6 +873,8 @@ struct npc_measure : public ScriptedAI
             me->RemoveAura(SPELL_SHA_CORRUPTION_GLOOM_OF_ROOK);     //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_SOR_OF_ROOK);       //rook
             me->RemoveAura(SPELL_SHA_CORRUPTION_OF_SUN);            //sun
+            me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+            me->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
             
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->EnterVehicle(lotos, vehSlotForMeasures(me->GetEntry()));
@@ -889,6 +891,9 @@ struct npc_measure : public ScriptedAI
             goBack();
             damage = 0;
         }
+
+        if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+            damage = 0;
     }
 
     void JustSummoned(Creature* summon)
@@ -951,12 +956,6 @@ public:
             npc_measure::DoAction(action);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
         }
 
         void JustSummoned(Creature* summon)
@@ -1067,12 +1066,6 @@ public:
             me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
         }
 
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
-        }
-
         bool AllowSelectNextVictim(Unit* target)
         {
             // Only our aura target could be.
@@ -1139,12 +1132,6 @@ public:
                     me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
                     break;
             }
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
         }
 
         void UpdateAI(uint32 diff)
