@@ -124,6 +124,8 @@ struct boss_fallen_protectors : public BossAI
         _healthPhase = 0;
         me->CastSpell(me, SPELL_DESPAWN_AT, true);
         //me->RemoveAllAreaObjects();
+        instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
+        instance->DoRemoveAurasDueToSpellOnPlayers(143959);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
@@ -228,6 +230,8 @@ struct boss_fallen_protectors : public BossAI
         summons.DespawnAll();
 
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+        instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
+        instance->DoRemoveAurasDueToSpellOnPlayers(143959);
     }
 
     void summonDesperation()
@@ -324,6 +328,9 @@ class boss_rook_stonetoe : public CreatureScript
             void Reset()
             {
                 boss_fallen_protectors::Reset();
+                
+                if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
+                    sun->AI()->EnterEvadeMode();
             }
 
             enum local
@@ -428,6 +435,9 @@ class boss_he_softfoot : public CreatureScript
             {
                 boss_fallen_protectors::Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
+                
+                if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
+                    sun->AI()->EnterEvadeMode();
             }
 
             enum local
@@ -880,6 +890,8 @@ struct npc_measure : public ScriptedAI
         }
         else
             sLog->outError(LOG_FILTER_GENERAL, " >> Script boss_fallen_protectors::npc_measure can't find vehowner %u", ownVehicle);
+        
+        me->CombatStop();
     }
 
     void DamageTaken(Unit* attacker, uint32 &damage)
@@ -889,6 +901,9 @@ struct npc_measure : public ScriptedAI
             goBack();
             damage = 0;
         }
+
+        if (me->HasAura(46598))
+            damage = 0;
     }
 
     void JustSummoned(Creature* summon)
