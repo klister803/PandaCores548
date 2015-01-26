@@ -535,11 +535,11 @@ void BattlePetMgr::ClosePetBattle()
 }
 
 // packet updates pet stats after finish battle and other actions (renaming?)
-void BattlePetMgr::SendUpdatePets()
+void BattlePetMgr::SendUpdatePets(bool added)
 {
     uint32 count = 0;
     WorldPacket data(SMSG_BATTLE_PET_UPDATES);
-    data.WriteBit(1);
+    data.WriteBit(added);
     uint32 bit_pos = data.bitwpos();
     data.WriteBits(0, 19);                              // placeholder, count of update pets
     for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
@@ -714,7 +714,7 @@ uint32 BattlePetMgr::GetAbilityID(uint32 speciesID, uint8 abilityIndex)
 
         if (xEntry->speciesID == speciesID && xEntry->rank == abilityIndex)
         {
-            if (xEntry->requiredLevel > 4)
+            if (xEntry->requiredLevel > 2)
                 continue;
             else
                 return xEntry->abilityID;

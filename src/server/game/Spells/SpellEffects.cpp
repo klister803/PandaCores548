@@ -8443,7 +8443,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
             player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
         }
         // update
-        player->GetBattlePetMgr()->SendUpdatePets();
+        player->GetBattlePetMgr()->SendUpdatePets(true);
         // learn pet spell, hack, TODO: fix it
         player->learnSpell(bp->spellId, false);
         // destroy the cage

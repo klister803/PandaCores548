@@ -238,7 +238,7 @@ public:
     void AddPetBattleSlot(uint64 guid, uint8 slotID);
 
     void ClosePetBattle();
-    void SendUpdatePets();
+    void SendUpdatePets(bool added = false);
 
     void InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid);
 
