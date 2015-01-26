@@ -1,367 +1,206 @@
 /*
-* Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 #include "ruby_sanctum.h"
 
-enum BossSpells
+enum Texts
 {
-    SPELL_ENRAGE                = 78722, //soft enrage + fire nova
-    SPELL_FLAME_BREATH          = 74404,
-    SPELL_BEACON                = 74453, //mark for conflag, in enter to fly phase, 2 in 10, 5 in 25
-    SPELL_CONFLAGATION          = 74452, // after fly up
-    SPELL_CONFLAGATION_1        = 74454, // Triggered?
-    SPELL_CONFLAGATION_2        = 74456, // Aura
+    SAY_AGGRO                   = 0, // You will sssuffer for this intrusion! (17528)
+    SAY_CONFLAGRATION           = 1, // Burn in the master's flame! (17532)
+    EMOTE_ENRAGED               = 2, // %s becomes enraged!
+    SAY_KILL                    = 3, // Halion will be pleased. (17530) - As it should be.... (17529)
+};
+
+enum Spells
+{
+    SPELL_CONFLAGRATION         = 74452,
+    SPELL_FLAME_BEACON          = 74453,
+    SPELL_CONFLAGRATION_2       = 74454, // Unknown dummy effect
+    SPELL_ENRAGE                = 78722,
+    SPELL_FLAME_BREATH          = 74403,
+};
+
+enum Events
+{
+    EVENT_ENRAGE                = 1,
+    EVENT_FLIGHT                = 2,
+    EVENT_FLAME_BREATH          = 3,
+    EVENT_CONFLAGRATION         = 4,
+    EVENT_LAND_GROUND           = 5,
+    EVENT_AIR_MOVEMENT          = 6,
+
+    // Event group
+    EVENT_GROUP_LAND_PHASE      = 1,
 };
 
 enum MovementPoints
 {
-    POINT_START                 = 0,
-    POINT_FLYE                  = 1,
+    POINT_FLIGHT                = 1,
+    POINT_LAND                  = 2,
+    POINT_TAKEOFF               = 3,
+    POINT_LAND_GROUND           = 4
 };
 
-struct Locations
+enum Misc
 {
-    float x, y, z;
+    SOUND_ID_DEATH              = 17531,
 };
 
-static Locations SpawnLoc[]=
-{
-    {3151.3898f, 636.8519f, 78.7396f}, // 0 Saviana start point
-    {3149.635f, 668.9644f, 90.507f}, // 1 Saviana fly phase, o=4,69
-};
-
-Position const SavianaRagefireLandPos = {3151.07f, 636.443f, 79.54f, 4.69f};
-Position const SavianaRagefireFlyPos  = {3155.51f, 683.844f, 95.20f, 4.69f};
-
-#define TARGETS_10 2
-#define TARGETS_25 5
+Position const SavianaRagefireFlyOutPos  = {3155.51f, 683.844f, 95.0f,   4.69f};
+Position const SavianaRagefireFlyInPos   = {3151.07f, 636.443f, 79.540f, 4.69f};
+Position const SavianaRagefireLandPos    = {3151.07f, 636.443f, 78.649f, 4.69f};
 
 class boss_saviana_ragefire : public CreatureScript
 {
-public:
-    boss_saviana_ragefire() : CreatureScript("boss_saviana_ragefire") { }
+    public:
+        boss_saviana_ragefire() : CreatureScript("boss_saviana_ragefire") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
-    {
-        return new boss_saviana_ragefireAI(pCreature);
-    }
-
-    struct boss_saviana_ragefireAI : public ScriptedAI
-    {
-        boss_saviana_ragefireAI(Creature* pCreature) : ScriptedAI(pCreature)
+        struct boss_saviana_ragefireAI : public BossAI
         {
-            pInstance = (InstanceScript*)pCreature->GetInstanceScript();
-            Reset();
-        }
-
-        InstanceScript* pInstance;
-
-
-        uint8 nextPoint;
-        uint8 stage;
-        uint32 m_uiFlameBreathTimer;
-        uint32 m_uiEnrage;
-        uint32 m_uiBeakonTimer;
-        uint32 m_uiConflagrateTimer;
-
-        bool MovementStarted;
-        bool conflagated;
-
-        void Reset()
-        {
-            if(!pInstance)
-                return;
-            me->SetRespawnDelay(7*DAY);
-            if (me->isAlive()) pInstance->SetData(TYPE_RAGEFIRE, NOT_STARTED);
-
-            m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-            m_uiEnrage = urand(20*IN_MILLISECONDS,40*IN_MILLISECONDS);
-            m_uiBeakonTimer = urand(30*IN_MILLISECONDS,45*IN_MILLISECONDS);
-            m_uiConflagrateTimer = 5*IN_MILLISECONDS;
-
-            setStage(0);
-            nextPoint = 0;
-            conflagated = false;
-        }
-
-        void setStage(uint8 phase)
-        {
-            stage = phase;
-        }
-
-        uint8 getStage()
-        {
-            return stage;
-        }
-
-        void MovementInform(uint32 type, uint32 id)
-        {
-            if (type != POINT_MOTION_TYPE) return;
-
-            if (id == POINT_FLYE)
+            boss_saviana_ragefireAI(Creature* creature) : BossAI(creature, DATA_SAVIANA_RAGEFIRE)
             {
-                me->SetWalk(false);
-                me->SetHomePosition(SpawnLoc[id].x, SpawnLoc[id].y, SpawnLoc[id].z,0);
-                MovementStarted = false;
             }
 
-            if (id == POINT_START)
+            void Reset()
             {
-                me->SetHomePosition(SpawnLoc[id].x, SpawnLoc[id].y, SpawnLoc[id].z,0);
-                MovementStarted = false;
+                _Reset();
+                me->SetReactState(REACT_AGGRESSIVE);
             }
-        }
 
-        void SetFly(bool command = false)
-        {
-            if (command)
+            void EnterCombat(Unit* /*who*/)
             {
-                me->HandleEmoteCommand(EMOTE_ONESHOT_FLY_SIT_GROUND_UP);
-                me->SetCanFly(true);
+                _EnterCombat();
+                Talk(SAY_AGGRO);
+                events.Reset();
+                events.ScheduleEvent(EVENT_ENRAGE, 20000, EVENT_GROUP_LAND_PHASE);
+                events.ScheduleEvent(EVENT_FLAME_BREATH, 14000, EVENT_GROUP_LAND_PHASE);
+                events.ScheduleEvent(EVENT_FLIGHT, 60000);
             }
-            else
+
+            void JustDied(Unit* /*killer*/)
             {
-                me->SetCanFly(false);
+                _JustDied();
+                me->PlayDirectSound(SOUND_ID_DEATH);
             }
-        }
 
-        void StartMovement(uint32 id)
-        {
-            nextPoint = id;
-            SetCombatMovement(false);
-            me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MovePoint(id, SpawnLoc[id].x, SpawnLoc[id].y, SpawnLoc[id].z);
-            MovementStarted = true;
-        }
+            void MovementInform(uint32 type, uint32 point)
+            {
+                if (type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE)
+                    return;
 
-        void KilledUnit(Unit* pVictim)
-        {
-            switch (urand(0,1)) {
-                case 0:
-                       DoScriptText(-1666401,me,pVictim);
-                       break;
-                case 1:
-                       DoScriptText(-1666402,me,pVictim);
-                       break;
+                switch (point)
+                {
+                    case POINT_FLIGHT:
+                        events.ScheduleEvent(EVENT_CONFLAGRATION, 1000);
+                        Talk(SAY_CONFLAGRATION);
+                        break;
+                    case POINT_LAND:
+                        events.ScheduleEvent(EVENT_LAND_GROUND, 1);
+                        break;
+                    case POINT_LAND_GROUND:
+                        me->SetCanFly(false);
+                        me->SetDisableGravity(false);
+                        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        DoStartMovement(me->getVictim());
+                        break;
+                    case POINT_TAKEOFF:
+                        events.ScheduleEvent(EVENT_AIR_MOVEMENT, 1);
+                        break;
+                    default:
+                        break;
                 }
-        }
-
-        void JustReachedHome()
-        {
-            if (pInstance)
-                pInstance->SetData(TYPE_RAGEFIRE, FAIL);
-        }
-
-        void EnterCombat(Unit *who)
-        {
-            if(!pInstance) return;
-
-            pInstance->SetData(TYPE_RAGEFIRE, IN_PROGRESS);
-            me->SetInCombatWithZone();
-            DoScriptText(-1666400,me);
-        }
-
-        void JustDied(Unit *killer)
-        {
-            if(!pInstance) return;
-
-            pInstance->SetData(TYPE_RAGEFIRE, DONE);
-            DoScriptText(-1666403,me);
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-            switch (getStage())
-            {
-                case 0: //GROUND
-                    if (m_uiFlameBreathTimer <= diff)
-                    {
-                        DoCast(SPELL_FLAME_BREATH);
-                        m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-                    } else m_uiFlameBreathTimer -= diff;
-
-                    if (m_uiEnrage <= diff)
-                    {
-                        DoCast(SPELL_ENRAGE);
-                        m_uiEnrage = urand(20*IN_MILLISECONDS,40*IN_MILLISECONDS);
-                        DoScriptText(-1666405,me);
-                    } else m_uiEnrage -= diff;
-
-                    if ( HealthBelowPct(81) ) setStage(1);
-                    break;
-
-                case 1: //Air phase start
-                    SetCombatMovement(false);
-                    me->InterruptNonMeleeSpells(true);
-                    SetFly(true);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    me->GetMotionMaster()->MovePoint(POINT_FLYE, SpawnLoc[1].x, SpawnLoc[1].y, SpawnLoc[1].z);
-                    MovementStarted = true;
-                    setStage(2);
-                    break;
-
-                case 2: // Wait for movement
-                    if (MovementStarted) return;
-                    DoCast(SPELL_CONFLAGATION);
-                    //me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    DoScriptText(-1666404,me);
-                    setStage(3);
-                    break;
-
-                case 3: // Wait for cast finish
-                    if (!me->IsNonMeleeSpellCasted(false))
-                        setStage(4);
-                    break;
-
-                case 4: // Air phase
-                    if (m_uiFlameBreathTimer <= diff)
-                    {
-                        DoCast(SPELL_FLAME_BREATH);
-                        m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-                    } else m_uiFlameBreathTimer -= diff;
-
-                    if (m_uiBeakonTimer <= diff)
-                    {
-                        DoCast(SPELL_CONFLAGATION);
-                        m_uiBeakonTimer = urand(30*IN_MILLISECONDS,45*IN_MILLISECONDS);
-                    } else m_uiBeakonTimer -= diff;
-
-                    if ( HealthBelowPct(61) ) setStage(5);
-                    break;
-
-                case 5: //Air phase end
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    me->SetWalk(true);
-                    me->GetMotionMaster()->MovePoint(POINT_START, SpawnLoc[0].x, SpawnLoc[0].y, SpawnLoc[0].z);
-                    MovementStarted = true;
-                    setStage(6);
-                    break;
-
-                case 6: // Wait for movement
-                    if (MovementStarted) return;
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    SetFly(false);
-                    SetCombatMovement(true);
-                    me->GetMotionMaster()->Clear();
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-                    setStage(7);
-                    break;
-                case 7: //GROUND
-                    if (m_uiFlameBreathTimer <= diff)
-                    {
-                       DoCast(SPELL_FLAME_BREATH);
-                       m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-                    } else m_uiFlameBreathTimer -= diff;
-
-                    if (m_uiEnrage <= diff)
-                    {
-                        DoCast(SPELL_ENRAGE);
-                        m_uiEnrage = urand(20*IN_MILLISECONDS,40*IN_MILLISECONDS);
-                        DoScriptText(-1666405,me);
-                    } else m_uiEnrage -= diff;
-
-                    if ( HealthBelowPct(41) ) setStage(8);
-                    break;
-                case 8: //Air phase start
-                    SetCombatMovement(false);
-                    me->InterruptNonMeleeSpells(true);
-                    SetFly(true);
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    me->GetMotionMaster()->MovePoint(POINT_FLYE, SpawnLoc[1].x, SpawnLoc[1].y, SpawnLoc[1].z);
-                    MovementStarted = true;
-                    setStage(9);
-                    break;
-                case 9: // Wait for movement
-                    if (MovementStarted) return;
-                    //me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    DoCast(SPELL_CONFLAGATION);
-                    DoScriptText(-1666404,me);
-                    setStage(10);
-                    break;
-                case 10: // Wait for cast finish
-                    if (!me->IsNonMeleeSpellCasted(false))
-                        setStage(11);
-                    break;
-                case 11: // Air phase
-                    if (m_uiFlameBreathTimer <= diff)
-                    {
-                        DoCast(SPELL_FLAME_BREATH);
-                        m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-                    } else m_uiFlameBreathTimer -= diff;
-
-                    if (m_uiBeakonTimer <= diff)
-                    {
-                        DoCast(SPELL_CONFLAGATION);
-                        m_uiBeakonTimer = urand(30*IN_MILLISECONDS,45*IN_MILLISECONDS);
-                    } else m_uiBeakonTimer -= diff;
-
-                    if ( HealthBelowPct(21) ) setStage(12);
-                    break;
-                case 12: //Air phase end
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    me->SetWalk(true);
-                    me->GetMotionMaster()->MovePoint(POINT_START, SpawnLoc[0].x, SpawnLoc[0].y, SpawnLoc[0].z);
-                    MovementStarted = true;
-                    setStage(13);
-                    break;
-                case 13: // Wait for movement
-                    if (MovementStarted) return;
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->SetWalk(true);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
-                    SetFly(false);
-                    SetCombatMovement(true);
-                    me->GetMotionMaster()->Clear();
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-                    setStage(14);
-                    break;
-
-                case 14: //GROUND
-                    if (m_uiFlameBreathTimer <= diff)
-                    {
-                        DoCast(SPELL_FLAME_BREATH);
-                        m_uiFlameBreathTimer = urand(5*IN_MILLISECONDS,15*IN_MILLISECONDS);
-                    } else m_uiFlameBreathTimer -= diff;
-
-                    if (m_uiEnrage <= diff)
-                    {
-                        DoCast(SPELL_ENRAGE);
-                        m_uiEnrage = urand(15*IN_MILLISECONDS,30*IN_MILLISECONDS);
-                        DoScriptText(-1666405,me);
-                    } else m_uiEnrage -= diff;
-                    break;
-                default:
-                    break;
             }
 
-            DoMeleeAttackIfReady();
+            void JustReachedHome()
+            {
+                _JustReachedHome();
+                me->SetCanFly(false);
+                me->SetDisableGravity(false);
+            }
+
+            void KilledUnit(Unit* victim)
+            {
+                if (victim->GetTypeId() == TYPEID_PLAYER)
+                    Talk(SAY_KILL);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_FLIGHT:
+                        {
+                            me->SetCanFly(true);
+                            me->SetDisableGravity(true);
+                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            Position pos;
+                            pos.Relocate(me);
+                            pos.m_positionZ += 10.0f;
+                            me->GetMotionMaster()->MoveTakeoff(POINT_TAKEOFF, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+                            events.ScheduleEvent(EVENT_FLIGHT, 50000);
+                            events.DelayEvents(12500, EVENT_GROUP_LAND_PHASE);
+                            break;
+                        }
+                        case EVENT_CONFLAGRATION:
+                            DoCast(me, SPELL_CONFLAGRATION, true);
+                            break;
+                        case EVENT_ENRAGE:
+                            DoCast(me, SPELL_ENRAGE);
+                            Talk(EMOTE_ENRAGED);
+                            events.ScheduleEvent(EVENT_ENRAGE, urand(15000, 20000), EVENT_GROUP_LAND_PHASE);
+                            break;
+                        case EVENT_FLAME_BREATH:
+                            DoCastVictim(SPELL_FLAME_BREATH);
+                            events.ScheduleEvent(EVENT_FLAME_BREATH, urand(20000, 30000), EVENT_GROUP_LAND_PHASE);
+                            break;
+                        case EVENT_AIR_MOVEMENT:
+                            me->GetMotionMaster()->MovePoint(POINT_FLIGHT, SavianaRagefireFlyOutPos);
+                            break;
+                        case EVENT_LAND_GROUND:
+                            me->GetMotionMaster()->MoveLand(POINT_LAND_GROUND, SavianaRagefireLandPos);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return GetInstanceAI<boss_saviana_ragefireAI>(creature);
         }
-    };
 };
 
 class ConflagrationTargetSelector
@@ -369,7 +208,7 @@ class ConflagrationTargetSelector
     public:
         ConflagrationTargetSelector() { }
 
-        bool operator()(WorldObject* unit)
+        bool operator()(WorldObject* unit) const
         {
             return unit->GetTypeId() != TYPEID_PLAYER;
         }
@@ -384,19 +223,19 @@ class spell_saviana_conflagration_init : public SpellScriptLoader
         {
             PrepareSpellScript(spell_saviana_conflagration_init_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                unitList.remove_if (ConflagrationTargetSelector());
+                targets.remove_if(ConflagrationTargetSelector());
                 uint8 maxSize = uint8(GetCaster()->GetMap()->GetSpawnMode() & 1 ? 6 : 3);
-                if (unitList.size() > maxSize)
-                    Trinity::Containers::RandomResizeList(unitList, maxSize);
+                if (targets.size() > maxSize)
+                    Trinity::Containers::RandomResizeList(targets, maxSize);
             }
 
             void HandleDummy(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                GetCaster()->CastSpell(GetHitUnit(), SPELL_BEACON, true);
-                GetCaster()->CastSpell(GetHitUnit(), SPELL_CONFLAGATION_1, false);
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_FLAME_BEACON, true);
+                GetCaster()->CastSpell(GetHitUnit(), SPELL_CONFLAGRATION_2, false);
             }
 
             void Register()
@@ -425,7 +264,7 @@ class spell_saviana_conflagration_throwback : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(effIndex);
                 GetHitUnit()->CastSpell(GetCaster(), uint32(GetEffectValue()), true);
-                GetHitUnit()->GetMotionMaster()->MovePoint(POINT_START, SavianaRagefireLandPos);
+                GetHitUnit()->GetMotionMaster()->MovePoint(POINT_LAND, SavianaRagefireFlyInPos);
             }
 
             void Register()
