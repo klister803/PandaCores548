@@ -952,13 +952,6 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->CastSpell(me, SPELL_SHA_CORRUPTION_OF_SUN, true);
         }
-
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
-        }
-
         void JustSummoned(Creature* summon)
         {
             npc_measure::JustSummoned(summon);
@@ -1067,12 +1060,6 @@ public:
             me->CastSpell(me, SPELL_SHA_CORRUPTION_SUMMONED, true); //dark aura
         }
 
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
-        }
-
         bool AllowSelectNextVictim(Unit* target)
         {
             // Only our aura target could be.
@@ -1139,12 +1126,6 @@ public:
                     me->CastSpell(me, SPELL_SHA_CORRUPTION_SOR_OF_ROOK, true);
                     break;
             }
-        }
-
-        void DamageTaken(Unit* /*who*/, uint32& damage)
-        {
-            if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
-                damage = 0;
         }
 
         void UpdateAI(uint32 diff)
