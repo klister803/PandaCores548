@@ -22947,7 +22947,7 @@ void Player::VehicleSpellInitialize()
 
     for (uint32 i = 0; i < MAX_SPELL_CONTROL_BAR; ++i)
     {
-        uint32 spellId = i < CREATURE_MAX_SPELLS ? vehicle->m_spells[i] : 0;
+        uint32 spellId = i < CREATURE_MAX_SPELLS ? vehicle->m_temlate_spells[i] : 0;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
         {

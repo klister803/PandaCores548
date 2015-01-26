@@ -65,8 +65,8 @@ int VehicleAI::Permissible(const Creature* /*creature*/)
 void CombatAI::InitializeAI()
 {
     for (uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
-        if (me->m_spells[i] && sSpellMgr->GetSpellInfo(me->m_spells[i]))
-            spells.push_back(me->m_spells[i]);
+        if (me->m_temlate_spells[i] && sSpellMgr->GetSpellInfo(me->m_temlate_spells[i]))
+            spells.push_back(me->m_temlate_spells[i]);
 
     CreatureAI::InitializeAI();
 }
@@ -189,10 +189,10 @@ void CasterAI::UpdateAI(uint32 diff)
 
 ArcherAI::ArcherAI(Creature* c) : CreatureAI(c)
 {
-    if (!me->m_spells[0])
+    if (!me->m_temlate_spells[0])
         sLog->outError(LOG_FILTER_GENERAL, "ArcherAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_spells[0]);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_temlate_spells[0]);
     m_minRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
 
     if (!m_minRange)
@@ -227,7 +227,7 @@ void ArcherAI::UpdateAI(uint32 /*diff*/)
         return;
 
     if (!me->IsWithinCombatRange(me->getVictim(), m_minRange))
-        DoSpellAttackIfReady(me->m_spells[0]);
+        DoSpellAttackIfReady(me->m_temlate_spells[0]);
     else
         DoMeleeAttackIfReady();
 }
@@ -238,10 +238,10 @@ void ArcherAI::UpdateAI(uint32 /*diff*/)
 
 TurretAI::TurretAI(Creature* c) : CreatureAI(c)
 {
-    if (!me->m_spells[0])
+    if (!me->m_temlate_spells[0])
         sLog->outError(LOG_FILTER_GENERAL, "TurretAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_spells[0]);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_temlate_spells[0]);
     m_minRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
     me->m_CombatDistance = spellInfo ? spellInfo->GetMaxRange(false) : 0;
     me->m_SightDistance = me->m_CombatDistance;
@@ -267,7 +267,7 @@ void TurretAI::UpdateAI(uint32 /*diff*/)
     if (!UpdateVictim())
         return;
 
-    DoSpellAttackIfReady(me->m_spells[0]);
+    DoSpellAttackIfReady(me->m_temlate_spells[0]);
 }
 
 //////////////
@@ -365,7 +365,12 @@ void AnyPetAI::InitializeAI()
             me->SetReactState(ReactStates(pStats->state));
 
     if(Unit* victim = me->GetTargetUnit())
+    {
         me->Attack(victim, !me->GetCasterPet());
+        Unit* owner = me->GetCharmerOrOwner();
+        if (owner && !owner->isInCombat())
+            owner->SetInCombatWith(me->getVictim());
+    }
 
     // Update speed as needed to prevent dropping too far behind and despawning
     me->UpdateSpeed(MOVE_RUN, true);
@@ -391,7 +396,11 @@ void AnyPetAI::UpdateAI(uint32 diff)
     {
         targetOwner = owner->getAttackerForHelper();
         if(!targetOwner && owner->ToPlayer())
+        {
             targetOwner = owner->ToPlayer()->GetSelectedUnit();
+            if (me->IsFriendlyTo(targetOwner))
+                targetOwner = NULL;
+        }
     }
 
     if(targetOwner != NULL && targetOwner != target)
@@ -427,7 +436,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
 
         for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
         {
-            uint32 spellID = me->m_spells[i];
+            uint32 spellID = me->m_temlate_spells[i];
             if (!spellID)
                 continue;
 

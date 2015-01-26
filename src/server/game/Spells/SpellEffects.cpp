@@ -3512,22 +3512,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
         }
     }
 
-    // Primal Elementalist
-    if (m_spellInfo->Id == 33663 || m_spellInfo->Id == 117663)
-    {
-        if (m_originalCaster->GetTypeId() == TYPEID_UNIT)
-        {
-            if (m_originalCaster->isTotem() && m_originalCaster->GetOwner())
-            {
-                if (m_originalCaster->GetOwner()->HasAura(117013))
-                {
-                    m_originalCaster->CastSpell(m_originalCaster, m_spellInfo->Id == 33663 ? 118323 : 118291, true);
-                    return;
-                }
-            }
-        }
-    }
-
     int32 duration = m_spellInfo->GetDuration();
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
@@ -4492,35 +4476,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             pet->SetReactState(REACT_DEFENSIVE);
     }
 
-    if (m_caster->GetTypeId() == TYPEID_UNIT)
-    {
-        if (m_caster->ToCreature()->isTotem())
-        {
-            if (pet->GetEntry() == 61029 || pet->GetEntry() == 61056)
-            {
-                if (Unit* owner = m_caster->GetOwner())
-                {
-                    if (Player* _plr = owner->ToPlayer())
-                    {
-                        if (pet->GetEntry() == 61029)
-                        {
-                            pet->addSpell(118297);  // Immolate
-                            pet->addSpell(118350);  // Empower
-                        }
-                        else
-                        {
-                            pet->addSpell(118337);  // Harden Skin
-                            pet->addSpell(118345);  // Pulverize
-                            pet->addSpell(118347);  // Reinforce
-                        }
-
-                        _plr->PetSpellInitialize();
-                    }
-                }
-            }
-        }
-    }
-
     // generate new name for summon pet
     if (petentry)
     {
@@ -4555,7 +4510,8 @@ void Spell::EffectLearnPetSpell(SpellEffIndex effIndex)
 
     pet->learnSpell(learn_spellproto->Id);
     pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
-    pet->GetOwner()->PetSpellInitialize();
+    if(Player* player = pet->GetOwner()->ToPlayer())
+        player->PetSpellInitialize();
 }
 
 void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
@@ -6334,8 +6290,11 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
     Pet* pet = unitTarget->ToPet();
 
     ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
-    pet->GetOwner()->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
-    pet->GetOwner()->m_currentPetNumber = 0;
+    if(Player* player = pet->GetOwner()->ToPlayer())
+    {
+        player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
+        player->m_currentPetNumber = 0;
+    }
 }
 
 void Spell::EffectSummonObject(SpellEffIndex effIndex)
@@ -7805,7 +7764,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         {
             for (uint8 i = 0; i < summon->GetPetAutoSpellSize(); ++i)
             {
-                if(uint32 spellId = summon->m_spells[i])
+                if(uint32 spellId = summon->m_temlate_spells[i])
                 if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(spellId))
                 {
                     if(sInfo->GetMaxRange(false) >= 30.0f && sInfo->GetMaxRange(false) > summon->GetAttackDist() && sInfo->IsAutocastable())

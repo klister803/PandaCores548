@@ -691,7 +691,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         SpellInfo const* reachWithSpellAttack(Unit* victim);
         SpellInfo const* reachWithSpellCure(Unit* victim);
 
-        uint32 m_spells[CREATURE_MAX_SPELLS];
+        uint32 m_temlate_spells[CREATURE_MAX_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
 

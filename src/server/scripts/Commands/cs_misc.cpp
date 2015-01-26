@@ -2728,7 +2728,7 @@ public:
         uint32 spellId = handler->extractSpellIdFromLink((char*)args);
 
         if (pet->HasSpell(spellId))
-            pet->removeSpell(spellId, false);
+            pet->removeSpell(spellId);
         else
             handler->PSendSysMessage("Pet doesn't have that spell");
 

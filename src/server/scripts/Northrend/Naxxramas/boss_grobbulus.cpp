@@ -152,7 +152,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);//can't be damaged
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(11686);//invisible model, around a size of a player
-            DoCast(me, me->m_spells[0]);
+            DoCast(me, me->m_temlate_spells[0]);
         }
 
         void UpdateAI(uint32 /*diff*/){}

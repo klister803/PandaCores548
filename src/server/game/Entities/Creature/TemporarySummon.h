@@ -71,11 +71,22 @@ class TempSummon : public Creature
         TempSummonType const& GetSummonType() { return m_type; }
         uint32 GetTimer() { return m_timer; }
         void CastPetAuras(bool current, uint32 spellId = 0);
+        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
+        bool removeSpell(uint32 spell_id);
+
+        bool learnSpell(uint32 spell_id);
+        bool unlearnSpell(uint32 spell_id);
+        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
 
         PetType getPetType() const { return m_petType; }
         void setPetType(PetType type) { m_petType = type; }
 
         const SummonPropertiesEntry* const m_Properties;
+        bool    m_loading;
+        Unit*   m_owner;
+        PetSpellMap     m_spells;
+        AutoSpellList   m_autospells;
+
     private:
         TempSummonType m_type;
         uint32 m_timer;
@@ -99,7 +110,6 @@ class Minion : public TempSummon
         bool IsWarlockPet() const;
         bool IsGuardianPet() const;
     protected:
-        Unit* const m_owner;
         float m_followAngle;
 };
 
@@ -109,9 +119,7 @@ class Guardian : public Minion
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         void InitStats(uint32 duration);
         bool InitStatsForLevel(uint8 level);
-        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
         void InitSummon();
-        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
@@ -124,8 +132,6 @@ class Guardian : public Minion
 
         int32 GetBonusDamage() { return m_bonusSpellDamage; }
         void SetBonusDamage(int32 damage);
-        PetSpellMap     m_spells;
-        AutoSpellList   m_autospells;
 
     protected:
         int32   m_bonusSpellDamage;
@@ -141,7 +147,6 @@ class Puppet : public Minion
         void Update(uint32 time);
         void RemoveFromWorld();
     protected:
-        Player* m_owner;
 };
 
 class ForcedUnsummonDelayEvent : public BasicEvent

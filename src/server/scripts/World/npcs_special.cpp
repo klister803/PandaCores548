@@ -2643,98 +2643,6 @@ public:
 };
 
 /*######
-# npc_fire_elemental
-######*/
-
-class npc_fire_elemental : public CreatureScript
-{
-    public:
-        npc_fire_elemental() : CreatureScript("npc_fire_elemental") { }
-
-        struct npc_fire_elementalAI : public ScriptedAI
-        {
-            npc_fire_elementalAI(Creature* creature) : ScriptedAI(creature) {}
-
-            uint32 FireBlastTimer;
-
-            void Reset()
-            {
-                me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
-                FireBlastTimer = 6000;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                if (FireBlastTimer <= diff)
-                {
-                    me->CastSpell(me->getVictim(), 57984, true);
-                    FireBlastTimer = 6000;
-                }
-                else
-                    FireBlastTimer -= diff;
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_fire_elementalAI(creature);
-        }
-};
-
-/*######
-# npc_earth_elemental
-######*/
-#define SPELL_ANGEREDEARTH        36213
-
-class npc_earth_elemental : public CreatureScript
-{
-    public:
-        npc_earth_elemental() : CreatureScript("npc_earth_elemental") { }
-
-        struct npc_earth_elementalAI : public ScriptedAI
-        {
-            npc_earth_elementalAI(Creature* creature) : ScriptedAI(creature) {}
-
-            uint32 AngeredEarth_Timer;
-
-            void Reset()
-            {
-                AngeredEarth_Timer = 0;
-                me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NATURE, true);
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (AngeredEarth_Timer <= diff)
-                {
-                    DoCast(me->getVictim(), SPELL_ANGEREDEARTH);
-                    AngeredEarth_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-                }
-                else
-                    AngeredEarth_Timer -= diff;
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_earth_elementalAI(creature);
-        }
-};
-
-/*######
 # npc_wormhole
 ######*/
 
@@ -3509,52 +3417,6 @@ class npc_generic_harpoon_cannon : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_generic_harpoon_cannonAI(creature);
-        }
-};
-
-/*######
-## npc_feral_spirit
-######*/
-
-class npc_feral_spirit : public CreatureScript
-{
-    public:
-        npc_feral_spirit() : CreatureScript("npc_feral_spirit") { }
-
-        struct npc_feral_spiritAI : public ScriptedAI
-        {
-            npc_feral_spiritAI(Creature* creature) : ScriptedAI(creature) {}
-
-            uint32 SpiritBiteTimer;
-
-            void Reset()
-            {
-                SpiritBiteTimer = 6000;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!UpdateVictim())
-                    return;
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                if (SpiritBiteTimer <= diff)
-                {
-                    me->CastSpell(me->getVictim(), 58859, true);
-                    SpiritBiteTimer = 6000;
-                }
-                else
-                    SpiritBiteTimer -= diff;
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_feral_spiritAI(creature);
         }
 };
 
@@ -4565,12 +4427,9 @@ void AddSC_npcs_special()
     new npc_pet_trainer();
     new npc_locksmith();
     new npc_experience();
-    new npc_fire_elemental();
-    new npc_earth_elemental();
     new npc_firework();
     new npc_spring_rabbit();
     new npc_generic_harpoon_cannon();
-    new npc_feral_spirit();
     new npc_spirit_link_totem();
     new npc_frozen_orb();
     new npc_guardian_of_ancient_kings();

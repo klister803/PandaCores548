@@ -11128,6 +11128,8 @@ Unit* Unit::GetCharm() const
 
 void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
 {
+    //sLog->outDebug(LOG_FILTER_PETS, "SetMinion %u for %u, apply %u, slot %i, stampeded %i", minion->GetEntry(), GetEntry(), apply, slot, stampeded);
+
     if (apply)
     {
         if (minion->GetOwnerGUID())
@@ -11251,10 +11253,16 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
                 }
             }
 
-            if (minion->GetEntry() == 15439 && minion->GetOwner() && minion->GetOwner()->HasAura(117013))
-                RemoveAllMinionsByEntry(61029);
-            else if (minion->GetEntry() == 15430 && minion->GetOwner() && minion->GetOwner()->HasAura(117013))
-                RemoveAllMinionsByEntry(61056);
+            if (minion->GetEntry() == 15439 && minion->GetOwner())
+            {
+                if(minion->GetOwner()->HasAura(117013))
+                    RemoveAllMinionsByEntry(61029);
+            }
+            else if (minion->GetEntry() == 15430 && minion->GetOwner())
+            {
+                if(minion->GetOwner()->HasAura(117013))
+                    RemoveAllMinionsByEntry(61056);
+            }
         }
 
         if (GetTypeId() == TYPEID_PLAYER)
@@ -16580,7 +16588,7 @@ void CharmInfo::InitPossessCreateSpells()
     {
         for (uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         {
-            uint32 spellId = m_unit->ToCreature()->m_spells[i];
+            uint32 spellId = m_unit->ToCreature()->m_temlate_spells[i];
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (spellInfo && !(spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD))
             {
@@ -16605,7 +16613,7 @@ void CharmInfo::InitCharmCreateSpells()
 
     for (uint32 x = 0; x < MAX_SPELL_CHARM; ++x)
     {
-        uint32 spellId = m_unit->ToCreature()->m_spells[x];
+        uint32 spellId = m_unit->ToCreature()->m_temlate_spells[x];
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
         if (!spellInfo || spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD)

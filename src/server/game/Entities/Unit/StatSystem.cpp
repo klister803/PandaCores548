@@ -1547,7 +1547,7 @@ void Guardian::UpdateMaxPower(Powers power)
     uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
     if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
     {
-        if(!pStats->energy)
+        if(!pStats->energy && pStats->energy_type == 1)
             value = pStats->energy;
     }
 

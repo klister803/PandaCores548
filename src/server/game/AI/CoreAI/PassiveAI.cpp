@@ -75,6 +75,6 @@ void CritterAI::EnterEvadeMode()
 
 void TriggerAI::IsSummonedBy(Unit* summoner)
 {
-    if (me->m_spells[0])
-        me->CastSpell(me, me->m_spells[0], false, 0, NULL, summoner->GetGUID());
+    if (me->m_temlate_spells[0])
+        me->CastSpell(me, me->m_temlate_spells[0], false, 0, NULL, summoner->GetGUID());
 }

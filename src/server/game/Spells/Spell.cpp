@@ -7311,7 +7311,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_AURA_MOD_POSSESS_PET:
             {
                 if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                    return SPELL_FAILED_NO_PET;
+                    break;
 
                 Pet* pet = m_caster->ToPlayer()->GetPet();
                 if (!pet)

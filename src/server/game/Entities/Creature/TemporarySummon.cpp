@@ -24,7 +24,7 @@
 
 TempSummon::TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) :
 Creature(isWorldObject), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
-m_timer(0), m_lifetime(0), onUnload(false)
+m_timer(0), m_lifetime(0), onUnload(false), m_loading(false), m_owner(owner)
 {
     m_summonerGUID = owner ? owner->GetGUID() : 0;
     m_unitTypeMask |= UNIT_MASK_SUMMON;
@@ -177,7 +177,7 @@ void TempSummon::InitStats(uint32 duration)
 
     Unit* owner = GetSummoner();
 
-    if (owner && isTrigger() && m_spells[0])
+    if (owner && isTrigger() && m_temlate_spells[0])
     {
         setFaction(owner->getFaction());
         SetLevel(owner->getLevel());
@@ -464,8 +464,8 @@ void TempSummon::RemoveFromWorld()
 }
 
 Minion::Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : TempSummon(properties, owner, isWorldObject)
-, m_owner(owner)
 {
+    m_owner = owner;
     ASSERT(m_owner);
     m_unitTypeMask |= UNIT_MASK_MINION;
     m_followAngle = frand(0, 2*M_PI);
@@ -511,6 +511,7 @@ bool Minion::IsWarlockPet() const
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject)
 , m_bonusSpellDamage(0)
 {
+    m_owner = owner;
     bool controlable = true;
     memset(m_statFromOwner, 0, sizeof(float)*MAX_STATS);
     m_unitTypeMask |= UNIT_MASK_GUARDIAN;
@@ -557,8 +558,8 @@ void Guardian::InitSummon()
 
 Puppet::Puppet(SummonPropertiesEntry const* properties, Unit* owner) : Minion(properties, owner, false) //maybe true?
 {
+    m_owner = owner;
     ASSERT(owner->GetTypeId() == TYPEID_PLAYER);
-    m_owner = (Player*)owner;
     m_unitTypeMask |= UNIT_MASK_PUPPET;
 }
 

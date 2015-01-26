@@ -168,7 +168,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     isCasterPet = false;
 
     for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)
-        m_spells[i] = 0;
+        m_temlate_spells[i] = 0;
 
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
@@ -350,7 +350,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
         m_defaultMovementType = IDLE_MOTION_TYPE;
 
     for (uint8 i=0; i < CREATURE_MAX_SPELLS; ++i)
-        m_spells[i] = GetCreatureTemplate()->spells[i];
+        m_temlate_spells[i] = GetCreatureTemplate()->spells[i];
 
     return true;
 }
@@ -1848,12 +1848,12 @@ SpellInfo const* Creature::reachWithSpellAttack(Unit* victim)
 
     for (uint32 i=0; i < CREATURE_MAX_SPELLS; ++i)
     {
-        if (!m_spells[i])
+        if (!m_temlate_spells[i])
             continue;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(m_spells[i]);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(m_temlate_spells[i]);
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_UNITS, "WORLD: unknown spell id %i", m_spells[i]);
+            sLog->outError(LOG_FILTER_UNITS, "WORLD: unknown spell id %i", m_temlate_spells[i]);
             continue;
         }
 
@@ -1899,12 +1899,12 @@ SpellInfo const* Creature::reachWithSpellCure(Unit* victim)
 
     for (uint32 i=0; i < CREATURE_MAX_SPELLS; ++i)
     {
-        if (!m_spells[i])
+        if (!m_temlate_spells[i])
             continue;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(m_spells[i]);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(m_temlate_spells[i]);
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_UNITS, "WORLD: unknown spell id %i", m_spells[i]);
+            sLog->outError(LOG_FILTER_UNITS, "WORLD: unknown spell id %i", m_temlate_spells[i]);
             continue;
         }
 
@@ -2383,12 +2383,15 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
     if (!spellInfo)
         return;
 
+    uint32 baseCD = 6000; //for pet prevented spamm spell
     uint32 cooldown = spellInfo->GetRecoveryTime();
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellid, SPELLMOD_COOLDOWN, cooldown);
 
     if (cooldown)
         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/IN_MILLISECONDS);
+    else
+        _AddCreatureSpellCooldown(spellid, time(NULL) + baseCD/IN_MILLISECONDS);
 
     if (spellInfo->Category)
         _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL));
@@ -2414,7 +2417,7 @@ bool Creature::HasSpell(uint32 spellID) const
 {
     uint8 i;
     for (i = 0; i < CREATURE_MAX_SPELLS; ++i)
-        if (spellID == m_spells[i])
+        if (spellID == m_temlate_spells[i])
             break;
     return i < CREATURE_MAX_SPELLS;                         //broke before end of iteration of known spells
 }

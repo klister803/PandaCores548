@@ -134,12 +134,7 @@ class Pet : public Guardian
         void _LoadSpells();
         void _SaveSpells(SQLTransaction& trans);
 
-        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
-        bool learnSpell(uint32 spell_id);
-        void learnSpellHighRank(uint32 spellid);
         void InitLevelupSpellsForLevel();
-        bool unlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
-        bool removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
         void CleanupActionBar();
 
         void InitPetCreateSpells();
@@ -152,7 +147,7 @@ class Pet : public Guardian
 
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
-        Player* GetOwner() { return m_owner; }
+        Unit* GetOwner() { return m_owner; }
 
         uint32 GetSpecializationId() const { return m_specialization; }
         void SetSpecializationId(uint32 id) { m_specialization = id; }
@@ -160,10 +155,8 @@ class Pet : public Guardian
         void UnlearnSpecializationSpell();
 
     protected:
-        Player* m_owner;
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
         uint64  m_auraRaidUpdateMask;
-        bool    m_loading;
         bool    m_Update;
         uint32  m_specialization;
         uint8   m_slot;

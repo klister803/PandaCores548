@@ -212,7 +212,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
     //Check if each spell is viable(set it to null if not)
     for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
     {
-        tempSpell = sSpellMgr->GetSpellInfo(me->m_spells[i]);
+        tempSpell = sSpellMgr->GetSpellInfo(me->m_temlate_spells[i]);
 
         //This spell doesn't exist
         if (!tempSpell)
@@ -220,11 +220,11 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 school, uint32 mec
 
         // Targets and Effects checked first as most used restrictions
         //Check the spell targets if specified
-        if (targets && !(SpellSummary[me->m_spells[i]].Targets & (1 << (targets-1))))
+        if (targets && !(SpellSummary[me->m_temlate_spells[i]].Targets & (1 << (targets-1))))
             continue;
 
         //Check the type of spell if we are looking for a specific spell type
-        if (effects && !(SpellSummary[me->m_spells[i]].Effects & (1 << (effects-1))))
+        if (effects && !(SpellSummary[me->m_temlate_spells[i]].Effects & (1 << (effects-1))))
             continue;
 
         //Check for school if specified

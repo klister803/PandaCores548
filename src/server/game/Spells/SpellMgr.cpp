@@ -4179,10 +4179,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 6203:  // Soulstone
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
-                case 118291:// Greater Fire Elemental
-                case 118323:// Greater Earth Elemental
-                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_SUMMON_PET;
-                    break;
                 case 114942:// Healing Tide
                     spellInfo->SpellFamilyFlags[0] = 0x00002000;
                     break;
