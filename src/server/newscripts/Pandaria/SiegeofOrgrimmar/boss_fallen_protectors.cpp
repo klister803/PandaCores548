@@ -126,6 +126,8 @@ struct boss_fallen_protectors : public BossAI
         //me->RemoveAllAreaObjects();
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
+        instance->DoRemoveAurasDueToSpellOnPlayers(143564);
+
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
@@ -232,6 +234,7 @@ struct boss_fallen_protectors : public BossAI
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
+        instance->DoRemoveAurasDueToSpellOnPlayers(143564);
     }
 
     void summonDesperation()
@@ -328,7 +331,8 @@ class boss_rook_stonetoe : public CreatureScript
             void Reset()
             {
                 boss_fallen_protectors::Reset();
-                
+                me->CastSpell(me, SPELL_DESPAWN_AT, true);
+
                 if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
                     sun->AI()->EnterEvadeMode();
             }
@@ -435,7 +439,9 @@ class boss_he_softfoot : public CreatureScript
             {
                 boss_fallen_protectors::Reset();
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_GARROTE);
-                
+
+                me->CastSpell(me, SPELL_DESPAWN_AT, true);
+
                 if (Creature* sun = instance->instance->GetCreature(instance->GetData64(NPC_SUN_TENDERHEART)))
                     sun->AI()->EnterEvadeMode();
             }
