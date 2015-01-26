@@ -532,7 +532,7 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
                 me->GetCharmInfo()->SetIsReturning(false);
                 me->GetCharmInfo()->SetIsFollowing(false);
                 me->GetCharmInfo()->SetIsCommandAttack(false);
-                me->GetMotionMaster()->Clear();
+                //me->GetMotionMaster()->Clear();
             }
             break;
         }
