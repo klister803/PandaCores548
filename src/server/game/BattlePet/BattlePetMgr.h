@@ -31,11 +31,17 @@
 
 #define MAX_ACTIVE_PETS 3
 
-enum PetInternalStates
+enum BattlePetInternalStates
 {
     STATE_NORMAL  = 0,
     STATE_UPDATED = 1,
     STATE_DELETED = 2
+};
+
+enum BattlePetTeam
+{
+    TEAM_ALLY = 0,
+    TEAM_ENEMY = 1
 };
 
 struct PetInfo
@@ -64,10 +70,13 @@ struct PetInfo
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
+    std::string GetCustomName() { return customName; }
     bool HasFlag(uint16 _flag) { return (flags & _flag) != 0; }
     void SetFlag(uint16 _flag) { if (!HasFlag(_flag)) flags |= _flag; }
     void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
     void SetInternalState(uint8 state) { internalState = state; }
+    BattlePetInternalStates GetInternalState() { return BattlePetInternalStates(internalState); }
+    void SetXP(uint16 _xp) { xp = _xp; }
     uint16 GetXP() { return xp; }
     int32 GetHealth() { return health; }
     void SetHealth(int32 _health) { health = _health; }
