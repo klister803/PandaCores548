@@ -896,6 +896,8 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     if (!wildPet)
         return;
 
+    uint8 wildPetLevel = wildPet->GetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL);
+
     BattlePetSpeciesEntry const* s = m_player->GetBattlePetMgr()->GetBattlePetSpeciesEntry(wildPet->GetEntry());
 
     if (!s)
@@ -924,7 +926,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
     uint32 speed = accumulator->CalculateSpeed();
     delete accumulator;
 
-    pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPet->getLevel(), t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
+    pets[1] = new PetInfo(s->ID, wildPet->GetEntry(), wildPetLevel, t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12, 0);
     battleslots[1] = new PetBattleSlot(0);
 
     if (!pets[1])
