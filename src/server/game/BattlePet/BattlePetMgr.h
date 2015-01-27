@@ -84,6 +84,9 @@ struct PetInfo
     int32 GetHealth() { return health; }
     void SetHealth(int32 _health) { health = _health; }
     uint32 GetMaxHealth() { return maxHealth; }
+    void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
+    void SetPower(uint16 _power) { power = _power; }
+    void SetSpeed(uint16 _speed) { speed = _speed; }
     bool IsDead() { return health <= 0; }
     bool IsHurt() { return !IsDead() && health < maxHealth; }
     uint8 GetType()

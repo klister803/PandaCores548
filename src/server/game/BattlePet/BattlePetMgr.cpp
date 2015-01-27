@@ -920,7 +920,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
         quality = 1;
 
     BattlePetStatAccumulator* accumulator = m_player->GetBattlePetMgr()->InitStateValuesFromDB(s->ID, 12);
-    accumulator->GetQualityMultiplier(quality, wildPet->getLevel());
+    accumulator->GetQualityMultiplier(quality, wildPetLevel);
     uint32 health = accumulator->CalculateHealth();
     uint32 power = accumulator->CalculatePower();
     uint32 speed = accumulator->CalculateSpeed();
@@ -1448,6 +1448,19 @@ uint16 PetBattleWild::CalcRewardXP(bool winner)
             allyPet->SetLevel(allyPet->GetLevel() + 1);
             uint16 remXp = newXp - totalXp;
             allyPet->SetXP(remXp);
+
+            // recalculate stats
+            BattlePetStatAccumulator* accumulator = m_player->GetBattlePetMgr()->InitStateValuesFromDB(allyPet->speciesID, 5);
+            accumulator->GetQualityMultiplier(allyPet->quality, allyPet->level);
+            uint32 health = accumulator->CalculateHealth();
+            uint32 power = accumulator->CalculatePower();
+            uint32 speed = accumulator->CalculateSpeed();
+            delete accumulator;
+
+            allyPet->SetHealth(health);
+            allyPet->SetMaxHealth(health);
+            allyPet->SetPower(power);
+            allyPet->SetSpeed(speed);
         }
         else
         {
