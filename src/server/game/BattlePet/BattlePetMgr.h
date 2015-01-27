@@ -30,6 +30,7 @@
 #include "DB2Stores.h"
 
 #define MAX_ACTIVE_PETS 3
+#define MAX_PET_LEVEL 25
 
 enum BattlePetInternalStates
 {
@@ -78,6 +79,8 @@ struct PetInfo
     BattlePetInternalStates GetInternalState() { return BattlePetInternalStates(internalState); }
     void SetXP(uint16 _xp) { xp = _xp; }
     uint16 GetXP() { return xp; }
+    void SetLevel(uint8 _level) { level = _level; }
+    uint8 GetLevel() { return level; }
     int32 GetHealth() { return health; }
     void SetHealth(int32 _health) { health = _health; }
     uint32 GetMaxHealth() { return maxHealth; }
@@ -208,7 +211,7 @@ public:
     void RoundResults();
     void FinalRound();
     void FinishPetBattle();
-    uint16 RewardXP(bool winner, bool& levelUp);
+    uint16 CalcRewardXP(bool winner);
 
     void CalculateRoundData(int8 &state, uint32 _roundID);
     PetInfo* GetAllyPet() { return pets[0]; }
@@ -326,6 +329,8 @@ public:
     uint32 GetBasePoints(uint32 abilityID, uint32 turnIndex = 1, uint32 effectIdx = 1);
     uint8 GetAbilityType(uint32 abilityID);
     float GetAttackModifier(uint8 attackType, uint8 defenseType);
+
+    uint32 GetXPForNextLevel(uint8 level);
 
 private:
     Player* m_player;

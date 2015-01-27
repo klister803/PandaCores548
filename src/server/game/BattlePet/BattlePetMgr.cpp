@@ -838,6 +838,39 @@ float BattlePetMgr::GetAttackModifier(uint8 attackType, uint8 defenseType)
     return 1.0f;
 }
 
+// testing....
+uint32 BattlePetMgr::GetXPForNextLevel(uint8 level)
+{
+    switch (level)
+    {
+        case 1: return 50; break;
+        case 2: return 110; break;
+        case 3: return 120; break;
+        case 4: return 195; break;
+        case 5: return 280; break;
+        case 6: return 450; break;
+        case 7: return 560; break;
+        case 8: return 595; break;
+        case 9: return 720; break;
+        case 10: return 760; break;
+        case 11: return 900; break;
+        case 12: return 945; break;
+        case 13: return 990; break;
+        case 14: return 1150; break;
+        case 15: return 1200; break;
+        case 16: return 1250; break;
+        case 17: return 1430; break;
+        case 18: return 1485; break;
+        case 19: return 1555; break;
+        case 20: return 1595; break;
+        case 21: return 1800; break;
+        case 22: return 1860; break;
+        case 23: return 1920; break;
+        case 24: return 1980; break;
+        default: return 9999; break;
+    }
+}
+
 // wild pet battle class handler
 PetBattleWild::PetBattleWild(Player* owner) : m_player(owner), roundID(0)
 {
@@ -1255,7 +1288,7 @@ void PetBattleWild::RoundResults()
     for (uint8 i = 0; i < effectCount; ++i)
     {
         if (!bit3[i])
-            data << uint16(!i ? 1 : 2); // TurnInstanceID
+            data << uint16(!i ? 1 : 2); // TurnInstanceID?
 
         for (uint8 j = 0; j < 1; ++j)
         {
@@ -1270,19 +1303,19 @@ void PetBattleWild::RoundResults()
             data << uint16(!i ? effectFlags[0] : effectFlags[1]); // Flags
 
         if (!bit7[i])
-            data << uint16(0);    // SourceAuraInstanceID
+            data << uint16(0);    // SourceAuraInstanceID?
 
         if (!bit[i])
             data << uint8(!i ? 0 : 3);     // CasterPBOID
 
         if (!bit4[i])
-            data << uint8(1);     // StackDepth
+            data << uint8(1);     // StackDepth?
 
         if (!bit5[i])
             data << uint32(!i ? effects[0] : effects[1]); // AbilityEffectID
 
         if (!bit1[i])
-            data << uint8((i == 1) ? 13 : 14); // PetBattleEffectType
+            data << uint8((i == 1) ? 13 : 14); // PetBattleEffectType?
     }
 
     for (uint8 i = 0; i < 2; ++i)
@@ -1325,7 +1358,7 @@ void PetBattleWild::FinalRound()
     if (winner[0] == -1 || winner[1] == -1)
         return;
 
-    bool levelUp = false;
+    uint8 oldLevel = allyPet->GetLevel();
 
     WorldPacket data(SMSG_PET_BATTLE_FINAL_ROUND);
     // pet depends count
@@ -1342,27 +1375,27 @@ void PetBattleWild::FinalRound()
         data.WriteBit(0); // unused
     }
 
-    data.WriteBit(0); // !abandoned
+    data.WriteBit(1); // unk
 
     // winners bits
     for (uint8 i = 0; i < 2; ++i)
         data.WriteBit(winner[i]);
 
-    data.WriteBit(0); // !hasXpReward???
+    data.WriteBit(0); // abandoned
 
     for (uint8 i = 0; i < 2; ++i)
     {
         if (!i)
         {
-            uint16 xp = RewardXP(winner[0], levelUp);
+            uint16 xp = CalcRewardXP(winner[0]);
             data << uint16(xp);
         }
 
         data << uint8(!i ? 0 : 3); // Pboid
-        data << uint32(pets[i]->health); // RemainingHealth
-        data << uint16(levelUp ? pets[i]->level+1 : pets[i]->level);  // Level
-        data << uint32(pets[i]->maxHealth); // maxHealth
-        data << uint16(pets[i]->level); // InitialLevel
+        data << uint32(pets[i]->GetHealth()); // RemainingHealth
+        data << uint16(pets[i]->GetLevel());  // NewLevel
+        data << uint32(pets[i]->GetMaxHealth()); // maxHealth
+        data << uint16(!i ? oldLevel : pets[i]->GetLevel()); // InitialLevel
     }
 
     for (uint8 i = 0; i < 2; ++i)
@@ -1371,7 +1404,7 @@ void PetBattleWild::FinalRound()
     m_player->GetSession()->SendPacket(&data);
 }
 
-uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
+uint16 PetBattleWild::CalcRewardXP(bool winner)
 {
     PetInfo* allyPet = pets[0];
     PetInfo* enemyPet = pets[1];
@@ -1379,50 +1412,48 @@ uint16 PetBattleWild::RewardXP(bool winner, bool& levelUp)
     if (!allyPet || !enemyPet)
         return 0;
 
-    if (allyPet->level == 2)
+    if (allyPet->GetLevel() == MAX_PET_LEVEL)
         return 0;
 
     // simple calc xp
-    uint16 xp = allyPet->xp;
-
-    // scaling xp -> quality (win)
-    uint16 winXP = 10;
-
-    if (enemyPet->quality == 4)
-        winXP += 15;
-    else if (enemyPet->quality == 3)
-        winXP += 10;
-    else if (enemyPet->quality == 2)
-        winXP += 5;
-    else if (enemyPet->quality == 0)
-        winXP -= 2;
-
-    // scaling xp -> quality (lose)
-    uint16 loseXP = 5;
-
-    if (enemyPet->quality == 4)
-        loseXP += 7;
-    else if (enemyPet->quality == 3)
-        loseXP += 5;
-    else if (enemyPet->quality == 2)
-        loseXP += 2;
-    else if (enemyPet->quality == 0)
-        loseXP -= 3;
+    uint16 oldXp = allyPet->GetXP();
+    uint16 newXp = 0;
 
     if (winner)
-        xp += winXP;
-    else
-        xp += loseXP;
-
-    if (xp > 50)
     {
-        xp = 0;
-        levelUp = true;
-        allyPet->level = 2;
+        int8 levelDiff = allyPet->GetLevel() - enemyPet->GetLevel();
+        // some checks
+        if (levelDiff > 2)
+            levelDiff = 2;
+        if (levelDiff < -5)
+            levelDiff = -5;
+
+        // formula
+        uint16 rewardXp = (enemyPet->GetLevel() + 9) * (levelDiff + 5);
+
+        // two or three pets....
+        /*float coeff = 1.0f;
+        if (enemyPet->GetLevel() > 5)
+            coeff = 2.0f;
+        else if (enemyPet->GetLevel() > 15)
+            coeff = 2.5f;*/
+
+        // check level-up
+        newXp = oldXp + rewardXp;
+        uint32 totalXp = m_player->GetBattlePetMgr()->GetXPForNextLevel(allyPet->GetLevel());
+        if (newXp >= totalXp)
+        {
+            allyPet->SetLevel(allyPet->GetLevel() + 1);
+            uint16 remXp = newXp - totalXp;
+            allyPet->SetXP(remXp);
+        }
+        else
+        {
+            allyPet->SetXP(newXp);
+        }
     }
 
-    allyPet->xp = xp;
-    return xp;
+    return newXp;
 }
 
 void PetBattleWild::FinishPetBattle()
