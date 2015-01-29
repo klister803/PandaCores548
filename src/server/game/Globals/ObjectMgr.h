@@ -1278,11 +1278,7 @@ class ObjectMgr
                 case NONE_DIFFICULTY:
                 case REGULAR_DIFFICULTY:
                 case HEROIC_DIFFICULTY:
-                    if(size > 5)
-                        return 2;
-                    else
-                        return 1;
-                    break;
+                    return 1;
                 case MAN10_DIFFICULTY:
                 case MAN10_HEROIC_DIFFICULTY:
                     return 2;
