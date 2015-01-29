@@ -227,13 +227,20 @@ public:
             case TYPE_RIFT:
                 if (data == SPECIAL)
                 {
-                    if (mRiftPortalCount < 7)
-                        NextPortal_Timer = 5000;
+                    if (mRiftPortalCount != 18)
+                    {    
+                        if (mRiftPortalCount == 6 || mRiftPortalCount == 12)
+                            NextPortal_Timer = 15000;
+                        else
+                            NextPortal_Timer = 5000;
+                    }
                 }
                 else
                     m_auiEncounter[1] = data;
                 break;
             }
+            if (data == DONE)
+                SaveToDB();
         }
 
         uint32 GetData(uint32 type)
@@ -258,6 +265,39 @@ public:
                 return MedivhGUID;
 
             return 0;
+        }
+
+        std::string GetSaveData()
+        {
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << m_auiEncounter[0] << ' ' << m_auiEncounter[1];
+
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return saveStream.str();
+        }
+
+        void Load(const char* in)
+        {
+            if (!in)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(in);
+
+            std::istringstream loadStream(in);
+            loadStream >> m_auiEncounter[0] >> m_auiEncounter[1];
+
+            // Do not reset 1, 2 and 3. they are not set to done, yet .
+            if (m_auiEncounter[0] == IN_PROGRESS)
+                m_auiEncounter[0] = NOT_STARTED;
+            if (m_auiEncounter[1] == IN_PROGRESS)
+                m_auiEncounter[1] = NOT_STARTED;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
         Creature* SummonedPortalBoss(Creature* me)
