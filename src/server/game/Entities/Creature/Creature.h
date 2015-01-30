@@ -810,6 +810,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 GetBossId() const { return bossid; }
         uint8 GetMobDifficulty() const { return difficulty; }
 
+        float GetFollowAngle() const { return m_followAngle; }
+        void SetFollowAngle(float angle) { m_followAngle = angle; }
+
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
         uint32 m_LOSCheckTimer;
@@ -872,6 +875,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 guid_transport;
         uint32 bossid;
         uint8 difficulty;
+        float m_followAngle;
 
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;

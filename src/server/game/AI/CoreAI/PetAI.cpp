@@ -52,7 +52,28 @@ void PetAI::EnterEvadeMode()
 void PetAI::InitializeAI()
 {
     if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
-        me->SetReactState(ReactStates(pStats->state));
+    {
+        if(me->ToPet() && me->ToPet()->GetDuration())
+            me->SetReactState(ReactStates(pStats->state));
+
+        if(pStats->state == REACT_AGGRESSIVE)
+        {
+            if(Unit* victim = me->GetTargetUnit())
+            {
+                Unit* owner = me->GetCharmerOrOwner();
+                if (me->Attack(victim, !me->GetCasterPet()))
+                {
+                    me->GetCharmInfo()->SetIsAtStay(false);
+                    me->GetCharmInfo()->SetIsFollowing(false);
+                    me->GetCharmInfo()->SetIsReturning(false);
+                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 0.5f);
+                    if (owner && !owner->isInCombat())
+                        owner->SetInCombatWith(victim);
+                }
+            }
+        }
+    }
 
     CreatureAI::InitializeAI();
 
@@ -471,25 +492,13 @@ void PetAI::DoAttack(Unit* target, bool chase)
 
     if (chase)
     {
-        if(me->GetCasterPet())
-        {
-            if (me->Attack(target, false))
-            {
-                me->GetCharmInfo()->SetIsAtStay(false);
-                me->GetCharmInfo()->SetIsFollowing(false);
-                me->GetCharmInfo()->SetIsReturning(false);
-                me->GetMotionMaster()->Clear();
-                if(!me->IsWithinMeleeRange(target, me->GetAttackDist()))
-                    me->GetMotionMaster()->MoveChase(target, me->GetAttackDist() - 0.5f);
-            }
-        }
-        else if (me->Attack(target, true))
+        if (me->Attack(target, true))
         {
             me->GetCharmInfo()->SetIsAtStay(false);
             me->GetCharmInfo()->SetIsFollowing(false);
             me->GetCharmInfo()->SetIsReturning(false);
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveChase(target);
+            me->GetMotionMaster()->MoveChase(target, me->GetAttackDist() - 0.5f);
         }
     }
     else // (Stay && ((Aggressive || Defensive) && In Melee Range)))

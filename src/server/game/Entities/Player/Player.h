@@ -1501,8 +1501,8 @@ class Player : public Unit, public GridObject<Player>
         void UpdateInnerTime (time_t time) { time_inn_enter = time; }
 
         Pet* GetPet() const;
-        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, PetSlot slotID = PET_SLOT_UNK_SLOT, uint32 spellId = 0, bool stampeded = false);
-        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false);
+        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, uint32 spellId = 0, bool stampeded = false);
+        void RemovePet(Pet* pet, bool isDelete = false);
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 
@@ -2848,6 +2848,7 @@ class Player : public Unit, public GridObject<Player>
 
         // current pet slot
         uint32 m_currentPetNumber;
+        PetSlot m_currentSummonedSlot;
 
         void setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bool isHanterPet);
         int16 SetOnAnyFreeSlot(uint32 petID);

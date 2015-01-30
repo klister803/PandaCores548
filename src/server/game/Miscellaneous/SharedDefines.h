@@ -4410,18 +4410,11 @@ enum PetSlot
     PET_SLOT_FULL_LIST              =  -4,        //Used when there is no slot free for tameing
     PET_SLOT_UNK_SLOT               =  -3,        //Used in some scripts.
 
-    PET_SLOT_ACTUAL_PET_SLOT        =  -2,        //Save the pet in his actual slot.
-    PET_SLOT_DELETED                =  -1,        //Delete the pet
-
     //Hunter pet slots, sended to client at stable.
     PET_SLOT_HUNTER_FIRST           =   0,        //PetType == HUNTER_PET
     PET_SLOT_HUNTER_LAST            =   4,        //PetType == HUNTER_PET
     PET_SLOT_STABLE_FIRST           =   5,
     PET_SLOT_STABLE_LAST            =  55,
-    PET_SLOT_WARLOCK_PET_FIRST      =  0,
-    PET_SLOT_WARLOCK_PET_LAST       =  10,
-    PET_SLOT_STAMPED_FIRST          =  0,
-    PET_SLOT_STAMPED_LAST           =  10,
 
     //Non-hunter pet slot
     PET_SLOT_OTHER_PET              = 56,        // PetType != HUNTER_PET

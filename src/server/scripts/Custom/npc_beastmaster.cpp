@@ -49,9 +49,9 @@ public:
         pet->UpdateAllStats();
         
         // caster have pet now
-        player->SetMinion(pet, true, PET_SLOT_ACTUAL_PET_SLOT);
+        player->SetMinion(pet, true);
 
-        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+        pet->SavePetToDB();
         pet->LearnPetPassives();
         pet->InitLevelupSpellsForLevel();
         player->PetSpellInitialize();

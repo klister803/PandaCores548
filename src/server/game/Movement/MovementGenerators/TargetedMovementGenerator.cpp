@@ -79,7 +79,10 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else
     {
-        i_target->GetContactPoint(&owner, x, y, z, distance);
+        if(static_cast<D*>(this)->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+            i_target->GetNearPoint(&owner, x, y, z, owner.GetObjectSize() + i_target->GetObjectSize(), distance, i_target->GetOrientation() + angle);
+        else
+            i_target->GetContactPoint(&owner, x, y, z, distance);
         //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u GetContactPoint (%f %f %f)", owner.GetEntry(), x, y, z);
     }
 

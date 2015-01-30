@@ -35,6 +35,8 @@ public:
         uint32 priceRace = uint32(150 * rate);
         uint32 priceGender = uint32(100 * rate);
         uint32 priceRecobery = uint32(225 * rate);
+        if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+            priceFaction = 0;
 
         LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
         char printinfo[500]; // Max length

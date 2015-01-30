@@ -418,6 +418,7 @@ struct PetStats
     float armor;
     float damage;
     int32 type;
+    int32 maxspdorap;
 };
 
 struct MailLevelReward

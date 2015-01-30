@@ -290,7 +290,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     {
                         ASSERT(pet->GetTypeId() == TYPEID_UNIT);
                         if (pet->isPet())
-                            GetPlayer()->RemovePet((Pet*)pet, PET_SLOT_DELETED);
+                            GetPlayer()->RemovePet((Pet*)pet);
                         else if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
                         {
                             ((Minion*)pet)->UnSummon();
@@ -790,7 +790,7 @@ void WorldSession::HandlePetAbandon(WorldPacket& recvData)
     {
         if (pet->isPet())
         {
-            _player->RemovePet((Pet*)pet, PET_SLOT_DELETED);
+            _player->RemovePet((Pet*)pet, true);
             _player->GetSession()->SendStablePet(0);
         }
         else if (pet->GetGUID() == _player->GetCharmGUID())

@@ -7651,21 +7651,83 @@ bool Spell::CanAutoCast(Unit* target)
 
     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
     {
-        if (m_spellInfo->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA)
+        switch (m_spellInfo->Effects[j].Effect)
         {
-            if (m_spellInfo->StackAmount <= 1)
+            case SPELL_EFFECT_APPLY_AURA:
             {
-                if (target->HasAuraEffect(m_spellInfo->Id, j))
-                    return false;
-            }
-            else
-            {
-                if (AuraEffect* aureff = target->GetAuraEffect(m_spellInfo->Id, j))
-                    if (aureff->GetBase()->GetStackAmount() >= m_spellInfo->StackAmount)
+                if (m_spellInfo->StackAmount <= 1)
+                {
+                    if (target->HasAuraEffect(m_spellInfo->Id, j))
                         return false;
+                }
+                else
+                {
+                    if (AuraEffect* aureff = target->GetAuraEffect(m_spellInfo->Id, j))
+                        if (aureff->GetBase()->GetStackAmount() >= m_spellInfo->StackAmount)
+                            return false;
+                }
+                switch (m_spellInfo->Effects[j].ApplyAuraName)
+                {
+                    case SPELL_AURA_MOD_CONFUSE:
+                    case SPELL_AURA_MOD_FEAR:
+                    case SPELL_AURA_MOD_STUN:
+                    {
+                        bool find = false;
+                        for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+                            if (target->GetCurrentSpell(CurrentSpellTypes(i)))
+                                find = true;
+                        if(!find)
+                            return false;
+                        break;
+                    }
+                    case SPELL_AURA_MOD_PET_STATS_MODIFIER:
+                    {
+                        if(target->GetHealthPct() >= 20.0f)
+                            return false;
+                        break;
+                    }
+                }
+                break;
+            }
+            case SPELL_EFFECT_DISPEL:
+            case SPELL_EFFECT_STEAL_BENEFICIAL_BUFF:
+            {
+                DispelChargesList dispelList;
+                uint32 dispelMask = SpellInfo::GetDispelMask(DispelType(m_spellInfo->GetEffect(j, m_diffMode).MiscValue));
+                target->GetDispellableAuraList(m_caster, dispelMask, dispelList);
+
+                if (dispelList.empty())
+                    return false;
+                break;
+            }
+            case SPELL_EFFECT_ATTACK_ME:
+            {
+                if (target->getVictim() == m_caster)
+                    return false;
+                break;
+            }
+            case SPELL_EFFECT_JUMP:
+            case SPELL_EFFECT_CHARGE:
+            case SPELL_EFFECT_PULL_TOWARDS:
+            {
+                if(m_spellInfo->GetMinRange(!m_caster->IsHostileTo(target)))
+                    break;
+                if (m_caster->IsWithinMeleeRange(target))
+                    return false;
+                break;
+            }
+            case SPELL_EFFECT_INTERRUPT_CAST:
+            {
+                bool find = false;
+                for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+                    if (target->GetCurrentSpell(CurrentSpellTypes(i)))
+                        find = true;
+                if(!find)
+                    return false;
+                break;
             }
         }
-        else if (m_spellInfo->Effects[j].IsAreaAuraEffect())
+        if (m_spellInfo->Effects[j].IsAreaAuraEffect())
         {
             if (target->HasAuraEffect(m_spellInfo->Id, j))
                 return false;
@@ -7678,7 +7740,7 @@ bool Spell::CanAutoCast(Unit* target)
     {
         SelectSpellTargets();
         //check if among target units, our WANTED target is as well (->only self cast spells return false)
-        for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+        for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
             if (ihit->targetGUID == targetguid)
                 return true;
     }

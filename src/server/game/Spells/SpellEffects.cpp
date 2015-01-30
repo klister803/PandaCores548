@@ -335,7 +335,7 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     {
         if (!unitTarget->GetHealth() || !unitTarget->isAlive())
         {
-            unitTarget->ToPet()->Remove(PET_SLOT_ACTUAL_PET_SLOT);
+            unitTarget->ToPet()->Remove();
             return;
         }
 
@@ -3494,24 +3494,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (!m_originalCaster)
         return;
 
-    // Fix Mindbender : Pet entry update function of weapon (sha)
-    if (m_spellInfo->Id == 123040 && m_originalCaster->ToPlayer())
-    {
-        Item* mainItem = m_originalCaster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-        if (mainItem && (mainItem->GetEntry() == 86335 || mainItem->GetEntry() == 86227))
-        {
-            entry = sSpellMgr->GetSpellInfo(132604)->GetEffect(effIndex, m_diffMode).MiscValue;
-            properties = sSummonPropertiesStore.LookupEntry(sSpellMgr->GetSpellInfo(132604)->GetEffect(effIndex, m_diffMode).MiscValueB);
-
-            if (!properties)
-            {
-                sLog->outError(LOG_FILTER_SPELLS_AURAS, "EffectSummonType: Unhandled summon type %u", m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValueB);
-                return;
-            }
-        }
-    }
-
     int32 duration = m_spellInfo->GetDuration();
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
@@ -4328,6 +4310,9 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
         return;
     }
 
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->m_currentSummonedSlot = slot;
+
     // cast finish successfully
     //SendChannelUpdate(0);
     finish();
@@ -4351,11 +4336,12 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
     // caster have pet now
-    m_caster->SetMinion(pet, true, m_caster->GetTypeId() == TYPEID_PLAYER ? slot : PET_SLOT_UNK_SLOT);
+    m_caster->SetMinion(pet, true);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+        m_caster->ToPlayer()->m_currentSummonedSlot = slot;
+        pet->SavePetToDB();
         m_caster->ToPlayer()->PetSpellInitialize();
         m_caster->ToPlayer()->GetSession()->SendStablePet(0);
     }
@@ -4375,50 +4361,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     }
 
     uint32 petentry = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
-
-    PetSlot slot = PetSlot(m_spellInfo->GetEffect(effIndex, m_diffMode).BasePoints);
-    if(petentry)
-    {
-        switch(petentry)
-        {
-            case 17252: //Felguard
-            case 26125: //Risen Ally
-                slot = PET_SLOT_WARLOCK_PET_FIRST;
-                break;
-            case 1863:  //Succubus
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 1);
-                break;
-            case 1860:  //Voidwalker
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 2);
-                break;
-            case 417:   //Felhunter
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 3);
-                break;
-            case 416:   //Imp
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 4);
-                break;
-            case 58959: //Fel Imp
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 5);
-                break;
-            case 58960: //Voidlord
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 6);
-                break;
-            case 58963: //Shivarra
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 7);
-                break;
-            case 58964: //Observer
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 8);
-                break;
-            case 58965: //Wrathguard
-                slot = PetSlot(PET_SLOT_WARLOCK_PET_FIRST + 9);
-                break;
-            case 510:   //Water Elemental
-            default:
-                slot = PET_SLOT_UNK_SLOT;
-                break;
-        }
-    }
-
     if (!owner)
     {
         SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(67);
@@ -4440,15 +4382,9 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
 
             ASSERT(OldSummon->GetMap() == owner->GetMap());
 
-            //OldSummon->GetMap()->Remove(OldSummon->ToCreature(), false);
-
             float px, py, pz;
             owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
-
             OldSummon->NearTeleportTo(px, py, pz, OldSummon->GetOrientation());
-            //OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
-            //OldSummon->SetMap(owner->GetMap());
-            //owner->GetMap()->Add(OldSummon->ToCreature());
 
             if (owner->GetTypeId() == TYPEID_PLAYER && OldSummon->isControlled())
                 owner->ToPlayer()->PetSpellInitialize();
@@ -4457,14 +4393,18 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->GetTypeId() == TYPEID_PLAYER)
-            owner->ToPlayer()->RemovePet(OldSummon,PET_SLOT_ACTUAL_PET_SLOT,false);
+            owner->ToPlayer()->RemovePet(OldSummon);
         else
             return;
     }
 
-    float x, y, z;
-    owner->GetClosePoint(x, y, z, owner->GetObjectSize());
-    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0, PetSlot(slot), m_spellInfo->Id);
+    PetSlot slot = PetSlot(m_spellInfo->GetEffect(effIndex, m_diffMode).BasePoints);
+    owner->m_currentSummonedSlot = slot;
+
+    Position pos;
+    owner->GetFirstCollisionPosition(pos, owner->GetObjectSize(), PET_FOLLOW_ANGLE);
+
+    Pet* pet = owner->SummonPet(petentry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetOrientation(), SUMMON_PET, 0, m_spellInfo->Id);
     if (!pet)
         return;
 
@@ -4509,7 +4449,7 @@ void Spell::EffectLearnPetSpell(SpellEffIndex effIndex)
         return;
 
     pet->learnSpell(learn_spellproto->Id);
-    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+    pet->SavePetToDB();
     if(Player* player = pet->GetOwner()->ToPlayer())
         player->PetSpellInitialize();
 }
@@ -6292,7 +6232,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
     ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
     if(Player* player = pet->GetOwner()->ToPlayer())
     {
-        player->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
+        player->RemovePet(pet);
         player->m_currentPetNumber = 0;
     }
 }
@@ -7019,7 +6959,7 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 
     //pet->AIM_Initialize();
     //player->PetSpellInitialize();
-    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+    pet->SavePetToDB();
 }
 
 void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
@@ -7576,19 +7516,21 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER || unitTarget->GetPetGUID() || unitTarget->getClass() != CLASS_HUNTER)
         return;
 
+    PetSlot slot = m_caster->ToPlayer()->getSlotForNewPet();
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->m_currentSummonedSlot = slot;
+
     uint32 creatureEntry = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     Pet* pet = unitTarget->CreateTamedPetFrom(creatureEntry, m_spellInfo->Id);
     if (!pet)
         return;
 
-    PetSlot slot = m_caster->ToPlayer()->getSlotForNewPet();
-
     // add to world
     pet->GetMap()->AddToMap(pet->ToCreature());
 
-    unitTarget->SetMinion(pet, true, slot);
+    unitTarget->SetMinion(pet, true);
 
-    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+    pet->SavePetToDB();
     unitTarget->ToPlayer()->PetSpellInitialize();
 
     unitTarget->ToPlayer()->GetSession()->SendStablePet(0);
@@ -7722,9 +7664,9 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     {
         if (Player * player = caster->ToPlayer())
         {
-            float x, y, z;
-            caster->GetClosePoint(x, y, z, caster->GetObjectSize());
-            if(Pet* pet = player->SummonPet(entry, x, y, z, caster->GetOrientation(), SUMMON_PET, duration, PET_SLOT_OTHER_PET, m_spellInfo->Id, true))
+            Position pos;
+            caster->GetFirstCollisionPosition(pos, caster->GetObjectSize(), PET_FOLLOW_ANGLE);
+            if(Pet* pet = player->SummonPet(entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, caster->GetOrientation(), SUMMON_PET, duration, m_spellInfo->Id, true))
             {
                 pet->SetReactState(REACT_AGGRESSIVE);
                 if (Unit * target = player->GetSelectedUnit())
@@ -7781,9 +7723,6 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
         if (properties && properties->Category == SUMMON_CATEGORY_ALLY)
             summon->setFaction(caster->getFaction());
-
-        if (summon->HasUnitTypeMask(UNIT_MASK_MINION) && m_targets.HasDst())
-            ((Minion*)summon)->SetFollowAngle(m_caster->GetAngle(summon));
 
         if (summon->GetEntry() == 27893)
         {

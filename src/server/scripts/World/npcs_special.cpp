@@ -4022,63 +4022,6 @@ class npc_fungal_growth : public CreatureScript
             return new npc_fungal_growthAI(pCreature);
         }
 };
-/*######
-## npc_psyfiend -- 59190
-######*/
-
-enum PsyfiendSpells
-{
-    SPELL_PSYCHIC_HORROR    = 113792,
-    SPELL_ROOT_FOR_EVER     = 31366,
-    SPELL_SHADOW_FORM       = 34429,
-};
-
-class npc_psyfiend : public CreatureScript
-{
-    public:
-        npc_psyfiend() : CreatureScript("npc_psyfiend") { }
-
-        struct npc_psyfiendAI : public Scripted_NoMovementAI
-        {
-            npc_psyfiendAI(Creature* c) : Scripted_NoMovementAI(c)
-            {
-                me->SetReactState(REACT_AGGRESSIVE);
-            }
-
-            void Reset()
-            {
-                Unit * owner = me->GetOwner();
-                if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                if (!me->HasAura(SPELL_ROOT_FOR_EVER))
-                    me->AddAura(SPELL_ROOT_FOR_EVER, me);
-
-                if (!me->HasAura(SPELL_SHADOW_FORM))
-                    me->AddAura(SPELL_SHADOW_FORM, me);
-
-                me->SetLevel(owner->getLevel());
-                me->SetMaxPower(POWER_RAGE, 0);
-                me->SetMaxHealth(CalculatePct(owner->GetMaxHealth(), 2.5f));
-                me->SetFullHealth();
-                // Set no damage
-                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 0.0f);
-                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0.0f);
-                
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (!me->HasUnitState(UNIT_STATE_CASTING))
-                    DoCast(me, SPELL_PSYCHIC_HORROR, false);
-            }
-        };
-
-        CreatureAI* GetAI(Creature *creature) const
-        {
-            return new npc_psyfiendAI(creature);
-        }
-};
 
 /*######
 ## npc_spectral_guise -- 59607
@@ -4091,6 +4034,7 @@ enum spectralGuiseSpells
     SPELL_SPECTRAL_GUISE_CLONE      = 119012,
     SPELL_SPECTRAL_GUISE_CHARGES    = 119030,
     SPELL_SPECTRAL_GUISE_STEALTH    = 119032,
+    SPELL_ROOT_FOR_EVER             = 31366,
 };
 
 class npc_spectral_guise : public CreatureScript
@@ -4445,7 +4389,6 @@ void AddSC_npcs_special()
     new npc_brewfest_keg_thrower;
     new npc_brewfest_keg_receiver;
     new npc_brewfest_ram_master;
-    new npc_psyfiend();
     new npc_spectral_guise();
     new npc_bloodworm();
     new npc_past_self();

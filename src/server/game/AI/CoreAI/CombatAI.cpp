@@ -361,15 +361,22 @@ void AnyPetAI::InitializeAI()
     CreatureAI::InitializeAI();
 
     if(PetStats const* pStats = sObjectMgr->GetPetStats(me->GetEntry()))
+    {
         if(pStats->state)
             me->SetReactState(ReactStates(pStats->state));
-
-    if(Unit* victim = me->GetTargetUnit())
-    {
-        me->Attack(victim, !me->GetCasterPet());
-        Unit* owner = me->GetCharmerOrOwner();
-        if (owner && !owner->isInCombat())
-            owner->SetInCombatWith(me->getVictim());
+        if(pStats->state == REACT_AGGRESSIVE)
+        {
+            if(Unit* victim = me->GetTargetUnit())
+            {
+                if(me->GetCasterPet())
+                    AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
+                else
+                    AttackStart(victim);
+                Unit* owner = me->GetCharmerOrOwner();
+                if (owner && !owner->isInCombat())
+                    owner->SetInCombatWith(victim);
+            }
+        }
     }
 
     // Update speed as needed to prevent dropping too far behind and despawning
@@ -392,41 +399,44 @@ void AnyPetAI::UpdateAI(uint32 diff)
     Unit* owner = me->GetCharmerOrOwner();
     Unit* target = me->getAttackerForHelper();
     Unit* targetOwner = NULL;
-    if (owner)
+    if(!me->HasReactState(REACT_PASSIVE))
     {
-        targetOwner = owner->getAttackerForHelper();
-        if(!targetOwner && owner->ToPlayer())
+        if (owner)
         {
-            targetOwner = owner->ToPlayer()->GetSelectedUnit();
-            if (me->IsFriendlyTo(targetOwner))
-                targetOwner = NULL;
-        }
-    }
-
-    if(targetOwner != NULL && targetOwner != target)
-    {
-        if(me->GetCasterPet())
-            AttackStartCaster(targetOwner, me->GetAttackDist() - 0.5f);
-        else
-            AttackStart(targetOwner);
-    }
-    else if (me->getVictim())
-    {
-        // is only necessary to stop casting, the pet must not exit combat
-        if (me->getVictim()->HasCrowdControlAura(me))
-        {
-            me->InterruptNonMeleeSpells(false);
-            return;
+            targetOwner = owner->getAttackerForHelper();
+            if(!targetOwner && owner->ToPlayer())
+            {
+                targetOwner = owner->ToPlayer()->GetSelectedUnit();
+                if (targetOwner && !me->IsValidAttackTarget(targetOwner))
+                    targetOwner = NULL;
+            }
         }
 
-        if (owner && !owner->isInCombat())
-            owner->SetInCombatWith(me->getVictim());
+        if(targetOwner != NULL && targetOwner != target)
+        {
+            if(me->GetCasterPet())
+                AttackStartCaster(targetOwner, me->GetAttackDist() - 0.5f);
+            else
+                AttackStart(targetOwner);
+        }
+        else if (me->getVictim())
+        {
+            // is only necessary to stop casting, the pet must not exit combat
+            if (me->getVictim()->HasCrowdControlAura(me))
+            {
+                me->InterruptNonMeleeSpells(false);
+                return;
+            }
 
-        if(!me->GetCasterPet())
-            DoMeleeAttackIfReady();
+            if (owner && !owner->isInCombat())
+                owner->SetInCombatWith(me->getVictim());
+
+            if(!me->GetCasterPet())
+                DoMeleeAttackIfReady();
+        }
+        else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
     }
-    else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
-        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
 
     // Autocast (casted only in combat or persistent spells in any state)
     if (!me->HasUnitState(UNIT_STATE_CASTING))
@@ -444,6 +454,9 @@ void AnyPetAI::UpdateAI(uint32 diff)
             if (!spellInfo)
                 continue;
 
+            //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
+            //spellID, me->HasSpellCooldown(spellID), spellInfo->IsPositive(), spellInfo->CanBeUsedInCombat(), me->GetGUIDLow());
+
             if (me->HasSpellCooldown(spellID))
                 continue;
 
@@ -451,10 +464,6 @@ void AnyPetAI::UpdateAI(uint32 diff)
             {
                 if (spellInfo->CanBeUsedInCombat())
                 {
-                    // check spell cooldown
-                    if (me->HasSpellCooldown(spellInfo->Id))
-                        continue;
-
                     // Check if we're in combat
                     if (!me->isInCombat())
                         continue;
@@ -496,6 +505,13 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 if (!spellUsed)
                     delete spell;
             }
+            else if(spellInfo->IsAffectingArea())
+            {
+                if(target)
+                    me->CastSpell(target, spellInfo, false);
+                else
+                    me->CastSpell(me, spellInfo, false);
+            }
             else if (target && me->IsWithinMeleeRange(target, me->GetAttackDist()) && spellInfo->CanBeUsedInCombat())
             {
                 Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
@@ -504,6 +520,8 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 else
                     delete spell;
             }
+            //else
+                //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI not cast");
         }
 
         //found units to cast on to
@@ -533,6 +551,8 @@ void AnyPetAI::UpdateAI(uint32 diff)
 
             spell->prepare(&targets);
         }
+        //else
+            //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI targetSpellStore is empty");
 
         // deleted cached Spell objects
         for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)

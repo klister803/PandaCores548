@@ -2966,12 +2966,9 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, uint32 spellId, bool stampeded)
+Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, uint32 spellId, bool stampeded)
 {
-    bool currentPet = (slotID != PET_SLOT_UNK_SLOT);
-    if (getClass() != CLASS_HUNTER)
-        currentPet = false;
-    else
+    if (getClass() == CLASS_HUNTER)
         petType = HUNTER_PET;
 
     Pet* pet = new Pet(this, petType);
@@ -2986,12 +2983,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             return NULL;
         }
 
-        if (pet->LoadPetFromDB(this, entry, 0, currentPet, slotID, stampeded))
+        if (pet->LoadPetFromDB(this, entry, 0, stampeded))
         {
-            if (getClass() == CLASS_WARLOCK)
-                if (HasAura(108503))
-                    RemoveAura(108503);
-
             if (duration > 0)
                 pet->SetDuration(duration);
 
@@ -3002,6 +2995,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)
     {
+        sLog->outError(LOG_FILTER_PETS, "no such entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -3009,7 +3003,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->Relocate(x, y, z, ang);
     if (!pet->IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
+        sLog->outError(LOG_FILTER_PETS, "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
         delete pet;
         return NULL;
     }
@@ -3018,7 +3012,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if (!pet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET), map, GetPhaseMask(), entry, pet_number))
     {
-        sLog->outError(LOG_FILTER_GENERAL, "no such creature entry %u", entry);
+        sLog->outError(LOG_FILTER_PETS, "no such creature entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -3029,36 +3023,24 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
 
-    switch (petType)
-    {
-        case SUMMON_PET:
-            // this enables pet details window (Shift+P)
-            pet->GetCharmInfo()->SetPetNumber(pet_number, true);
-            break;
-        default:
-            break;
-    }
+    if(petType == SUMMON_PET)
+        pet->GetCharmInfo()->SetPetNumber(pet_number, true);
 
-    // Only slot 100, as it's not hunter pet.
     // After SetPetNumber
-    SetMinion(pet, true, slotID != PET_SLOT_UNK_SLOT ? slotID : PET_SLOT_OTHER_PET);
+    SetMinion(pet, true);
+
+    if(petType == SUMMON_PET)
+    {
+        pet->InitPetCreateSpells();
+        pet->SynchronizeLevelWithOwner();
+        pet->LearnPetPassives();
+        pet->InitLevelupSpellsForLevel();
+        pet->SavePetToDB();
+        PetSpellInitialize();
+        SendTalentsInfoData(true);
+    }
 
     map->AddToMap(pet->ToCreature());
-
-    switch (petType)
-    {
-        case SUMMON_PET:
-            pet->InitPetCreateSpells();
-            pet->SynchronizeLevelWithOwner();
-            pet->LearnPetPassives();
-            pet->InitLevelupSpellsForLevel();
-            pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
-            PetSpellInitialize();
-            SendTalentsInfoData(true);
-            break;
-        default:
-            break;
-    }
 
     if (getClass() == CLASS_WARLOCK)
         if (HasAura(108503))
@@ -3066,6 +3048,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if (duration > 0)
         pet->SetDuration(duration);
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SummonPet entry %i, petType %i, spellId %i", entry, petType, spellId);
 
     pet->CastPetAuras(true);
     return pet;

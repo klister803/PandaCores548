@@ -1572,41 +1572,42 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
 
         if (PetStats const* pStats = sObjectMgr->GetPetStats(creature_ID))
         {
+            int32 temp_ap = owner->GetTotalAttackPowerValue(WeaponAttackType(pStats->ap_type));
+            int32 school_spd = 0;
+            int32 school_temp_spd = 0;
+            for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
+            {
+                if(pStats->school_mask & (1 << i))
+                {
+                    school_temp_spd = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + i) + owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + i);
+                    if(school_temp_spd > school_spd)
+                        school_spd = school_temp_spd;
+                }
+            }
+
             if(pStats->ap > 0)
-                AP = int32(owner->GetTotalAttackPowerValue(WeaponAttackType(pStats->ap_type)) * pStats->ap);
+                AP = int32(temp_ap * pStats->ap);
             else if(pStats->ap < 0)
             {
-                int32 school_temp_spd = 0;
-                int32 school_spd = 0;
-                for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-                {
-                    if(pStats->school_mask & (1 << i))
-                    {
-                        school_temp_spd = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + i) + owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + i);
-                        if(school_temp_spd > school_spd)
-                            school_spd = school_temp_spd;
-                    }
-                }
                 if(school_spd)
                     AP = -int32(school_spd * pStats->ap);
             }
             if(pStats->spd < 0)
-                SPD = -int32(owner->GetTotalAttackPowerValue(WeaponAttackType(pStats->ap_type)) * pStats->spd);
+                SPD = -int32(temp_ap * pStats->spd);
             else if(pStats->spd > 0)
             {
-                int32 school_temp_spd = 0;
-                int32 school_spd = 0;
-                for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-                {
-                    if(pStats->school_mask & (1 << i))
-                    {
-                        school_temp_spd = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + i) + owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + i);
-                        if(school_temp_spd > school_spd)
-                            school_spd = school_temp_spd;
-                    }
-                }
                 if(school_spd)
                     SPD = int32(school_spd * pStats->spd);
+            }
+            if(pStats->maxspdorap > 0)
+            {
+                AP = temp_ap > school_spd ? int32(temp_ap * abs(pStats->ap)) : int32(school_spd * abs(pStats->spd));
+                SPD = temp_ap > school_spd ? int32(temp_ap * abs(pStats->ap)) : int32(school_spd * abs(pStats->spd));
+            }
+            else if(pStats->maxspdorap < 0)
+            {
+                AP = int32(((temp_ap + school_spd) / 2) * abs(pStats->ap));
+                SPD = int32(((temp_ap + school_spd) / 2) * abs(pStats->spd));
             }
         }
         else

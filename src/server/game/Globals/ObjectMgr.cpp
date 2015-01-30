@@ -2790,8 +2790,8 @@ void ObjectMgr::LoadPetStats()
     uint32 oldMSTime = getMSTime();
     _petStatsStore.clear();
 
-    //                                                 0      1     2       3        4          5           6        7            8           9       10      11
-    QueryResult result = WorldDatabase.Query("SELECT entry, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, `state`, `energy`, `energy_type`, `armor`, `type`, `damage` FROM pet_stats");
+    //                                                 0      1     2       3        4          5           6        7            8           9       10      11           12
+    QueryResult result = WorldDatabase.Query("SELECT entry, `hp`, `ap`, `ap_type`, `spd`, `school_mask`, `state`, `energy`, `energy_type`, `armor`, `type`, `damage`, `maxspdorap` FROM pet_stats");
 
     if (!result)
     {
@@ -2814,15 +2814,16 @@ void ObjectMgr::LoadPetStats()
         PetStats stats;
         stats.hp = fields[1].GetFloat();
         stats.ap   = fields[2].GetFloat();
-        stats.ap_type  = fields[3].GetUInt32();
+        stats.ap_type  = fields[3].GetInt32();
         stats.spd  = fields[4].GetFloat();
-        stats.school_mask  = fields[5].GetUInt32();
-        stats.state  = fields[6].GetUInt32();
-        stats.energy  = fields[7].GetUInt32();
-        stats.energy_type  = fields[8].GetUInt32();
+        stats.school_mask  = fields[5].GetInt32();
+        stats.state  = fields[6].GetInt32();
+        stats.energy  = fields[7].GetInt32();
+        stats.energy_type  = fields[8].GetInt32();
         stats.armor  = fields[9].GetFloat();
-        stats.type  = fields[10].GetUInt32();
+        stats.type  = fields[10].GetInt32();
         stats.damage  = fields[11].GetFloat();
+        stats.maxspdorap  = fields[12].GetInt32();
         _petStatsStore[entry] = stats;
 
         ++count;

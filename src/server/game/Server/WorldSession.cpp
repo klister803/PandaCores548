@@ -615,11 +615,11 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- Remove pet
         if (_player->getClass() != CLASS_WARLOCK)
-            _player->RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+            _player->RemovePet(NULL);
         else
         {
             if (Pet* _pet = _player->GetPet())
-                _pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+                _pet->SavePetToDB();
         }
 
         ///- empty buyback items and save the player in the database

@@ -162,6 +162,7 @@ m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_A
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
 m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_onVehicleAccessory(false)
 {
+    m_followAngle = PET_FOLLOW_ANGLE;
     m_regenTimer = CREATURE_REGEN_INTERVAL;
     m_petregenTimer = 0;
     m_valuesCount = UNIT_END;
@@ -2395,13 +2396,17 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
         return;
 
     uint32 baseCD = 6000; //for pet prevented spamm spell
+    if(spellInfo->CalcCastTime())
+        baseCD = 0;
     uint32 cooldown = spellInfo->GetRecoveryTime();
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellid, SPELLMOD_COOLDOWN, cooldown);
 
+    //sLog->outDebug(LOG_FILTER_PETS, "Creature::AddCreatureSpellCooldown cooldown %i, baseCD %i", cooldown, baseCD);
+
     if (cooldown)
         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/IN_MILLISECONDS);
-    else
+    else if(baseCD)
         _AddCreatureSpellCooldown(spellid, time(NULL) + baseCD/IN_MILLISECONDS);
 
     if (spellInfo->Category)

@@ -196,7 +196,7 @@ class spell_hun_stampede : public SpellScriptLoader
                         target->GetPosition(x, y, z);
                         uint32 count = 0;
                         PetSlot currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
-                        PetSlot slot = PET_SLOT_HUNTER_FIRST;
+
                         if(curentPet)
                             count++;
                         else
@@ -205,7 +205,7 @@ class spell_hun_stampede : public SpellScriptLoader
                             {
                                 if (_player->getPetIdBySlot(i))
                                 {
-                                    currentSlot = slot;
+                                    currentSlot = PetSlot(i);
                                     break;
                                 }
                             }
@@ -216,20 +216,20 @@ class spell_hun_stampede : public SpellScriptLoader
                         for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
                         {
                             if (gliph)
-                                slot = currentSlot;
+                                _player->m_currentSummonedSlot = currentSlot;
                             else if (_player->getPetIdBySlot(i))
-                                slot = PetSlot(i);
+                                _player->m_currentSummonedSlot = PetSlot(i);
                             else if (count < STAMPED_COUNT)
-                                slot = currentSlot;
+                                _player->m_currentSummonedSlot = currentSlot;
                             else
                                 continue;
 
-                            if(curentPet && curentPet->GetSlot() == slot && !gliph && _player->getPetIdBySlot(i))
+                            if(curentPet && curentPet->GetSlot() == i && !gliph)
                                 continue;
 
                             o =_player->GetOrientation() + (M_PI/5) * count;
 
-                            if(Pet* pet = _player->SummonPet(0, x, y, z, o, SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), slot, GetSpellInfo()->Id, true))
+                            if(Pet* pet = _player->SummonPet(0, x, y, z, o, SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), GetSpellInfo()->Id, true))
                             {
                                 pet->NearTeleportTo(x, y, z, o);
                                 pet->SetReactState(REACT_AGGRESSIVE);

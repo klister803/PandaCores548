@@ -314,54 +314,6 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
         }
 };
 
-// Shadowfiend - 34433 or Mindbender - 123040
-class spell_pri_shadowfiend : public SpellScriptLoader
-{
-    public:
-        spell_pri_shadowfiend() : SpellScriptLoader("spell_pri_shadowfiend") { }
-
-        class spell_pri_shadowfiend_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_shadowfiend_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetExplTargetUnit())
-                    {
-                        if (Unit* pet = _player->GetGuardianPet())
-                        {
-                            if(pet->GetEntry() == 62982 || pet->GetEntry() == 67236)
-                                pet->CastSpell(pet, PRIEST_SPELL_MINDBENDER_TRIGGERED, true);
-                            else
-                                pet->CastSpell(pet, PRIEST_SPELL_SHADOWFIEND_TRIGGERED, true);
-
-                            if (pet->IsValidAttackTarget(target))
-                                pet->ToCreature()->AI()->AttackStart(target);
-                            else
-                            {
-                                Unit* victim = _player->GetSelectedUnit();
-                                if (victim && pet->IsValidAttackTarget(target))
-                                    pet->ToCreature()->AI()->AttackStart(target);
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_pri_shadowfiend_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_shadowfiend_SpellScript();
-        }
-};
-
 // Called by Flash Heal - 2061
 // Surge of Light - 114255
 class spell_pri_surge_of_light : public SpellScriptLoader
@@ -2686,7 +2638,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_divine_insight_shadow();
     new spell_pri_power_word_solace();
     new spell_pri_shadow_word_insanity_allowing();
-    new spell_pri_shadowfiend();
     new spell_pri_surge_of_light();
     new spell_pri_body_and_soul();
     new spell_pri_prayer_of_mending_divine_insight();

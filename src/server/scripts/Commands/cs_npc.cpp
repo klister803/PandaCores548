@@ -1253,9 +1253,9 @@ public:
         pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
         // caster have pet now
-        player->SetMinion(pet, true, PET_SLOT_UNK_SLOT);
+        player->SetMinion(pet, true);
 
-        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+        pet->SavePetToDB();
         player->PetSpellInitialize();
 
         return true;

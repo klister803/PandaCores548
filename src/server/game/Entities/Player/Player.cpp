@@ -708,6 +708,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_speakCount = 0;
 
     m_currentPetNumber = 0;
+    m_currentSummonedSlot = PET_SLOT_HUNTER_FIRST;
 
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
@@ -2130,7 +2131,7 @@ void Player::setDeathState(DeathState s)
         ClearResurrectRequestData();
 
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
-        RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+        RemovePet(NULL);
 
         // save value before aura remove in Unit::setDeathState
         ressSpellId = GetUInt32Value(PLAYER_SELF_RES_SPELL);
@@ -4763,7 +4764,7 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
                 }
                 case 2: //remove pet
                 {
-                    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+                    RemovePet(NULL);
                     break;
                 }
             }
@@ -4862,7 +4863,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
                 }
                 case 2: //remove pet
                 {
-                    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+                    RemovePet(NULL);
                     break;
                 }
             }
@@ -5484,7 +5485,7 @@ bool Player::ResetTalents(bool no_cost)
         }
     }
 
-    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+    RemovePet(NULL);
 
     PlayerTalentMap* Talents = GetTalentMap(GetActiveSpec());
     for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
@@ -5527,7 +5528,7 @@ bool Player::ResetTalents(bool no_cost)
 
 void Player::ResetSpec(bool takeMoney)
 {
-    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
+    RemovePet(NULL);
     uint32 cost = 0;
 
     if (takeMoney && !sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
@@ -20047,7 +20048,7 @@ void Player::LoadPet()
     if (IsInWorld())
     {
         Pet* pet = new Pet(this);
-        if (!pet->LoadPetFromDB(this, 0, 0, true, PET_SLOT_ACTUAL_PET_SLOT))
+        if (!pet->LoadPetFromDB(this, 0, m_currentPetNumber))
             delete pet;
     }
 }
@@ -21261,7 +21262,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
-        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+        pet->SavePetToDB();
 }
 
 bool Player::HandleChangeSlotModel(uint16 visSlot, uint32 newItem, uint16 pos)
@@ -22551,14 +22552,14 @@ Pet* Player::GetPet() const
     return NULL;
 }
 
-void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
+void Player::RemovePet(Pet* pet, bool isDelete)
 {
     if (!pet)
         pet = GetPet();
 
     if (pet)
     {
-        sLog->outDebug(LOG_FILTER_PETS, "RemovePet %u, %u, %u", pet->GetEntry(), mode, returnreagent);
+        sLog->outDebug(LOG_FILTER_PETS, "RemovePet %u, isDelete %u", pet->GetEntry(), isDelete);
 
         if (pet->m_removed)
             return;
@@ -22567,9 +22568,8 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
     if (!pet || pet->GetOwnerGUID() != GetGUID())
         return;
 
-    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+    if (isDelete)
     {
-        mode = PetSlot(pet->GetSlot());
         if (!pet->m_Stampeded)
             m_currentPetNumber = pet->GetCharmInfo()->GetPetNumber();   //just protection.
     }
@@ -22577,12 +22577,9 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
     pet->CombatStop();
     // only if current pet in slot
     if (!pet->m_Stampeded)
-        pet->SavePetToDB(mode);
+        pet->SavePetToDB(isDelete);
 
-    if (pet->getPetType() != HUNTER_PET)
-        SetMinion(pet, false, PET_SLOT_UNK_SLOT);
-    else
-        SetMinion(pet, false, PET_SLOT_ACTUAL_PET_SLOT);
+    SetMinion(pet, false);
 
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
@@ -22730,7 +22727,7 @@ void Player::PetSpellInitialize()
     if (!pet || pet->m_Stampeded)
         return;
 
-    sLog->outDebug(LOG_FILTER_PETS, "Pet Spells Groups");
+    sLog->outDebug(LOG_FILTER_PETS, "Player::PetSpellInitialize entry %i", pet->GetEntry());
 
     CharmInfo* charmInfo = pet->GetCharmInfo();
     ObjectGuid petGuid = pet->GetGUID();
@@ -25077,7 +25074,7 @@ template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
     if (p->GetPetGUID() == t->GetGUID() && t->ToCreature()->isPet())
-        ((Pet*)t)->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
+        ((Pet*)t)->Remove();
 }
 
 void Player::UpdateVisibilityOf(WorldObject* target)
@@ -27311,7 +27308,7 @@ void Player::UpdateCharmedAI()
     }
 
     if (!charmer->isInCombat())
-        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, charmer->GetFollowAngle());
 
     Unit* target = getVictim();
     if (!target || !charmer->IsValidAttackTarget(target))
@@ -28055,7 +28052,7 @@ void Player::UnsummonPetTemporaryIfAny()
     }
 
     pet->CastPetAuras(false);
-    RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
+    RemovePet(pet);
 }
 
 void Player::ResummonPetTemporaryUnSummonedIfAny()
@@ -28072,7 +28069,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 
     Pet* NewPet = new Pet(this);
 
-    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
+    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber))
         delete NewPet;
 
     m_temporaryUnsummonedPetNumber = 0;
@@ -28630,7 +28627,7 @@ void Player::ActivateSpec(uint8 spec)
 
     // TO-DO: We need more research to know what happens with warlock's reagent
     if (Pet* pet = GetPet())
-        RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT, true);
+        RemovePet(pet);
 
     ClearComboPointHolders();
     ClearAllReactives();
@@ -29983,7 +29980,8 @@ void Player::setPetSlotWithStableMoveOrRealDelete(PetSlot slot, uint32 petID, bo
                     m_PetSlots[i] = m_PetSlots[slot];
                     break;
                 }
-        }else               // delete pet data at all. WARN! REAL DELETE!
+        }
+        else               // delete pet data at all. WARN! REAL DELETE!
         {
             Pet::DeleteFromDB(m_PetSlots[slot]);
         }
@@ -30044,10 +30042,7 @@ PetSlot Player::GetSlotForPetId(uint32 petID)
 
 PetSlot Player::GetMaxCurentPetSlot() const
 {
-    if (getClass() == CLASS_HUNTER)
-        return PET_SLOT_HUNTER_LAST;
-
-    return PET_SLOT_WARLOCK_PET_LAST;
+    return PET_SLOT_HUNTER_LAST;
 }
 
 bool Player::CanSummonPet(uint32 entry) const

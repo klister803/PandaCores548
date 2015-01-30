@@ -185,6 +185,9 @@ void TempSummon::InitStats(uint32 duration)
             m_ControlledByPlayer = true;
     }
 
+    bool damageSet = false;
+    InitBaseStat(GetEntry(), damageSet);
+
     if (!m_Properties)
         return;
 
@@ -297,9 +300,6 @@ void TempSummon::InitStats(uint32 duration)
         }
     }
 
-    bool damageSet = false;
-    InitBaseStat(GetEntry(), damageSet);
-
     if (m_Properties->Faction)
         setFaction(m_Properties->Faction);
     else if (IsVehicle() && owner) // properties should be vehicle
@@ -411,10 +411,7 @@ void TempSummon::UnSummon(uint32 msTime)
     //ASSERT(!isPet());
     if (isPet())
     {
-        if (((Pet*)this)->getPetType() == HUNTER_PET)
-            ((Pet*)this)->Remove(PET_SLOT_ACTUAL_PET_SLOT, false);
-        else
-            ((Pet*)this)->Remove(PET_SLOT_OTHER_PET);
+        ((Pet*)this)->Remove();
         ASSERT(!IsInWorld());
         return;
     }
@@ -468,7 +465,6 @@ Minion::Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorl
     m_owner = owner;
     ASSERT(m_owner);
     m_unitTypeMask |= UNIT_MASK_MINION;
-    m_followAngle = frand(0, 2*M_PI);
 }
 
 void Minion::InitStats(uint32 duration)
@@ -480,7 +476,7 @@ void Minion::InitStats(uint32 duration)
     SetCreatorGUID(m_owner->GetGUID());
     setFaction(m_owner->getFaction());
 
-    m_owner->SetMinion(this, true, PET_SLOT_UNK_SLOT);
+    m_owner->SetMinion(this, true);
 }
 
 void Minion::RemoveFromWorld()
@@ -488,7 +484,7 @@ void Minion::RemoveFromWorld()
     if (!IsInWorld() || !m_owner || !this)
         return;
 
-    m_owner->SetMinion(this, false, PET_SLOT_UNK_SLOT);
+    m_owner->SetMinion(this, false);
     TempSummon::RemoveFromWorld();
 }
 

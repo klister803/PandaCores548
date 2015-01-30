@@ -11126,9 +11126,9 @@ Unit* Unit::GetCharm() const
     return NULL;
 }
 
-void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
+void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "SetMinion %u for %u, apply %u, slot %i, stampeded %i", minion->GetEntry(), GetEntry(), apply, slot, stampeded);
+    //sLog->outDebug(LOG_FILTER_PETS, "SetMinion %u for %u, apply %u, stampeded %i", minion->GetEntry(), GetEntry(), apply, stampeded);
 
     if (apply)
     {
@@ -11144,9 +11144,6 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
             minion->m_ControlledByPlayer = true;
             minion->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
         }
-
-        if (slot == PET_SLOT_UNK_SLOT)
-            slot = PET_SLOT_OTHER_PET;
 
         // Can only have one pet. If a new one is summoned, dismiss the old one.
         if (minion->IsGuardianPet())
@@ -11167,7 +11164,7 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
-                        ((Pet*)oldPet)->Remove(PET_SLOT_ACTUAL_PET_SLOT);
+                        ((Pet*)oldPet)->Remove();
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());
@@ -11182,13 +11179,10 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
         }
         
         //! Important part for pet slot system. Where we set curent pet number and set in slot array
-        if (GetTypeId() == TYPEID_PLAYER)
+        if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_HUNTER && minion->GetCharmInfo() && !stampeded)
         {
-            if (slot >= PET_SLOT_HUNTER_FIRST && slot <= ToPlayer()->GetMaxCurentPetSlot() && !stampeded) // Always save thoose spots where hunter is correct
-            {
-                ToPlayer()->m_currentPetNumber = minion->GetCharmInfo()->GetPetNumber();
-                ToPlayer()->setPetSlotWithStableMoveOrRealDelete(slot, minion->GetCharmInfo()->GetPetNumber(), minion->isHunterPet()); // minion->isHunterPet() always true ;)
-            }
+            ToPlayer()->m_currentPetNumber = minion->GetCharmInfo()->GetPetNumber();
+            ToPlayer()->setPetSlotWithStableMoveOrRealDelete(ToPlayer()->m_currentSummonedSlot, minion->GetCharmInfo()->GetPetNumber(), minion->isHunterPet()); // minion->isHunterPet() always true ;)
         }
 
         if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
@@ -11257,11 +11251,15 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
             {
                 if(minion->GetOwner()->HasAura(117013))
                     RemoveAllMinionsByEntry(61029);
+                else
+                    RemoveAllMinionsByEntry(15438);
             }
             else if (minion->GetEntry() == 15430 && minion->GetOwner())
             {
                 if(minion->GetOwner()->HasAura(117013))
                     RemoveAllMinionsByEntry(61056);
+                else
+                    RemoveAllMinionsByEntry(15352);
             }
         }
 
@@ -11312,6 +11310,15 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
                 }
             }
         }
+    }
+
+    uint32 count = 0;
+    for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+    {
+        float angle = PET_FOLLOW_ANGLE + (((PET_FOLLOW_ANGLE * 2) / m_Controlled.size()) * count);
+        if (Creature* creature = (*itr)->ToCreature())
+            creature->SetFollowAngle(angle);
+        count++;
     }
 }
 
