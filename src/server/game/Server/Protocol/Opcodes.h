@@ -613,6 +613,7 @@ enum Opcodes
     CMSG_PET_BATTLE_REQUEST_UPDATE                    = 0x1ACF, // 5.4.1 17538
     CMSG_PET_BATTLE_INPUT_FIRST_PET                   = 0x15CC, // 5.4.1 17538
     CMSG_PET_BATTLE_INPUT                             = 0x08E4, // 5.4.1 17538
+    CMSG_PET_BATTLE_FINAL_NOTIFY                      = 0x125D, // 5.4.1 17538
     CMSG_BATTLE_PET_SET_FLAGS                         = 0x1464, // 5.4.1 17538
     CMSG_BATTLE_PET_MODIFY_NAME                       = 0x056C, // 5.4.1 17538
     CMSG_BATTLE_PET_NAME_QUERY                        = 0x17C5, // 5.4.1 17538
@@ -620,7 +621,6 @@ enum Opcodes
     CMSG_CAGE_BATTLE_PET                              = 0x1345, // 5.4.1 17538
     CMSG_BATTLE_PET_SET_BATTLE_SLOT                   = 0x0D61, // 5.4.1 17538
     CMSG_BATTLE_PET_UPDATE_NOTIFY                     = 0x1754, // 5.4.1 17538
-    CMSG_BATTLE_PET_FINAL_NOTIFY                      = 0x125D, // 5.4.1 17538
     // CMSG_CLEAR_LOSS_OF_CONTROL
     MSG_INSPECT_ARENA_TEAMS                           = 0x0,    // 5.4.1 17538 obsolete
     CMSG_AUCTION_HELLO                                = 0x0AC4, // 5.4.1 17538

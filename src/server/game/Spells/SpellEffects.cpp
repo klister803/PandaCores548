@@ -8374,7 +8374,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
         {
             // init stats for uncage
             BattlePetStatAccumulator* accumulator = player->GetBattlePetMgr()->InitStateValuesFromDB(speciesID, breedID);
-            accumulator->GetQualityMultiplier(quality, level);
+            accumulator->CalcQualityMultiplier(quality, level);
             uint32 health = accumulator->CalculateHealth();
             uint32 power = accumulator->CalculatePower();
             uint32 speed = accumulator->CalculateSpeed();

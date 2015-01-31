@@ -29,8 +29,8 @@
 #include "DBCStores.h"
 #include "DB2Stores.h"
 
-#define MAX_ACTIVE_PETS 3
-#define MAX_PET_LEVEL 25
+#define MAX_ACTIVE_BATTLE_PETS 3
+#define MAX_BATTLE_PET_LEVEL 25
 
 enum BattlePetInternalStates
 {
@@ -43,6 +43,20 @@ enum BattlePetTeam
 {
     TEAM_ALLY = 0,
     TEAM_ENEMY = 1
+};
+
+enum BattlePetBreeds
+{
+    BATTLE_PET_BREED_BB = 3,  // 25% health, 25% power, 25% speed
+    BATTLE_PET_BREED_PP = 4,  // 100% power
+    BATTLE_PET_BREED_SS = 5,  // 100% speed
+    BATTLE_PET_BREED_HH = 6,  // 100% health
+    BATTLE_PET_BREED_HP = 7,  // 45% health, 45% power
+    BATTLE_PET_BREED_PS = 8,  // 45% power, 45% speed
+    BATTLE_PET_BREED_HS = 9,  // 45% health, 45% speed
+    BATTLE_PET_BREED_PB = 10, // 45% power, 20% health, 20% speed
+    BATTLE_PET_BREED_SB = 11, // 45% speed, 20% power, 20% health
+    BATTLE_PET_BREED_HB = 12, // 45% health, 20% power, 20% speed
 };
 
 struct PetInfo
@@ -87,6 +101,14 @@ struct PetInfo
     void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
     void SetPower(uint16 _power) { power = _power; }
     void SetSpeed(uint16 _speed) { speed = _speed; }
+    uint16 GetSpeed() { return speed; }
+    uint16 GetPower() { return power; }
+    uint16 GetBreedID() { return breedID; }
+    void SetBreedID(uint16 _breedID) { breedID = _breedID; }
+    uint8 GetQuality() { return quality; }
+    void SetQuality(uint8 _quality) { quality = _quality; }
+    uint32 GetSpeciesID() { return speciesID; }
+    uint32 GetDisplayID() { return displayID; }
     bool IsDead() { return health <= 0; }
     bool IsHurt() { return !IsDead() && health < maxHealth; }
     uint8 GetType()
@@ -97,6 +119,7 @@ struct PetInfo
 
         return 0;
     }
+    uint32 GetActiveAbilityID(uint8 rank);
 };
 
 struct PetBattleSlot
@@ -115,7 +138,6 @@ struct BattlePetStatAccumulator
 {
     BattlePetStatAccumulator(uint32 _healthMod, uint32 _powerMod, uint32 _speedMod): healthMod(_healthMod), powerMod(_powerMod), speedMod(_speedMod), qualityMultiplier(0.0f) {}
 
-    //uint64 guid;
     int32 healthMod;
     int32 powerMod;
     int32 speedMod;
@@ -133,7 +155,7 @@ struct BattlePetStatAccumulator
     {
         return int32((powerMod * qualityMultiplier) + 0.5f);
     }
-    void GetQualityMultiplier(uint8 quality, uint8 level)    
+    void CalcQualityMultiplier(uint8 quality, uint8 level)    
     {
         for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
         {
@@ -164,6 +186,67 @@ struct BattlePetStatAccumulator
         else if (state->flags & 0x100)
             powerMod += value;
     }
+};
+
+struct PetBattleAbility
+{
+    PetBattleAbility(uint32 _ID) : ID(_ID) {}
+
+    uint32 ID;
+    uint8 type;
+    float mods[10];
+    uint16 cooldownRemaining;
+    uint16 lockdownRemaining;
+
+    void CalculateAbilityData();
+    uint32 GetBasePoints(uint32 turnIndex, uint32 effectIdx);
+    uint32 GetRequiredLevel();
+    uint32 GetEffectIDByAbilityID();
+};
+
+struct PetBattleData
+{
+    PetBattleData(uint8 _petX, PetBattleSlot* _slot, PetInfo* _tempPet) : petX(_petX), slot(_slot), tempPet(_tempPet) {}
+
+    uint8 petX;
+    PetBattleSlot* slot;
+    PetInfo* tempPet;
+    PetBattleAbility* activeAbilities[3];
+    bool active;
+
+    PetInfo* GetPetInfo() { return tempPet; }
+    uint8 GetPetNumber() { return petX; }
+    PetBattleSlot* GetSlot() { return slot; }
+};
+
+struct PetBattleEffectTarget
+{
+    uint8 type;
+    uint8 targetPetX;
+    // only SetHealth effect
+    int32 remainingHealth;
+};
+
+struct PetBattleEffect
+{
+    std::list<PetBattleEffectTarget*> targets;
+    uint32 abilityEffectID;
+    uint16 flags;
+    uint16 sourceAuraInstanceID;
+    uint16 turnInstanceID;
+    uint8 petBattleEffectType;
+    uint8 casterPBOID;
+    uint8 stackDepth;
+    // test
+    uint8 bitpack[7];
+};
+
+struct PetBattleRound
+{
+    PetBattleRound(uint32 round) : roundID(round) {}
+
+    std::list<PetBattleEffect*> effects;
+    uint32 roundID;
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
@@ -209,28 +292,28 @@ class PetBattleWild
 {
 public:
     PetBattleWild(Player* owner);
+
+    bool InitBattleData();
     void Prepare(ObjectGuid creatureGuid);
-    void FirstRound();
-    void RoundResults();
+
+    void SendFirstRound(uint8 firstPet);
+    void CalculateAndSendRoundResults(uint32 abilityID, uint32 _roundID, bool &finalr);
     void FinalRound();
+
     void FinishPetBattle();
     uint16 CalcRewardXP(bool winner);
 
-    void CalculateRoundData(int8 &state, uint32 _roundID);
-    PetInfo* GetAllyPet() { return pets[0]; }
-    uint32 GetEffectID(uint32 abilityID, uint8 effectIndex);
+    PetBattleData* GetPetBattleData(uint8 team, uint8 index) { return battleData[team][index]; }
 
 private:
     Player* m_player;
 
 protected:
-    PetInfo* pets[2];
-    PetBattleSlot* battleslots[2];
-    uint64 guids[2];
-    uint32 abilities[2];
-    uint32 effects[2];
-    uint32 effectFlags[2];
-    uint32 roundID;
+    PetBattleData* battleData[2][MAX_ACTIVE_BATTLE_PETS];
+    uint32 petsCount[2];
+    uint64 teamGuids[2];
+    uint8 winners[2];
+    uint32 currentRoundID;
 
 };
 
@@ -243,7 +326,7 @@ public:
         for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
             delete itr->second;
 
-        for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
+        for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             delete m_battleSlots[i];
     }
 
@@ -338,13 +421,8 @@ public:
 private:
     Player* m_player;
     PetJournal m_PetJournal;
-    PetBattleSlot* m_battleSlots[MAX_ACTIVE_PETS];
+    PetBattleSlot* m_battleSlots[MAX_ACTIVE_BATTLE_PETS];
     PetBattleWild* m_petBattleWild;
 };
-
-/*struct PetBattlePlayerUpdate
-{
-    PetInfo pets[MAX_ACTIVE_PETS];
-};*/
 
 #endif

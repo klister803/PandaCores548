@@ -4416,7 +4416,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             uint8 quality = 2;
                             uint8 level = 1;
                             BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(spEntry->ID, breedID);
-                            accumulator->GetQualityMultiplier(quality, level);
+                            accumulator->CalcQualityMultiplier(quality, level);
                             uint32 health = accumulator->CalculateHealth();
                             uint32 power = accumulator->CalculatePower();
                             uint32 speed = accumulator->CalculateSpeed();
@@ -20390,7 +20390,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     if (!result)
     {
         // initial first
-        for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
+        for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
             GetBattlePetMgr()->AddPetBattleSlot(0, i);
         return;
     }
@@ -20404,7 +20404,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     petGUIDs[1]  = fields[1].GetUInt64();
     petGUIDs[2]  = fields[2].GetUInt64();
 
-    for (int i = 0; i < MAX_ACTIVE_PETS; ++i)
+    for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
         GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i);
 }
 
