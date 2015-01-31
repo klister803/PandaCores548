@@ -67,23 +67,33 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
     float angle = i_angle ? i_angle : 360.0f;
 
-    if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && !i_target->IsWithinLOSInMap(&owner))
+    if(static_cast<D*>(this)->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
-        Position pos;
-        i_target->GetFirstCollisionPosition(pos, distance, angle);
-        x = pos.m_positionX;
-        y = pos.m_positionY;
-        z = pos.m_positionZ;
+        i_target->GetNearPoint(&owner, x, y, z, owner.GetObjectSize() + i_target->GetObjectSize(), distance, i_target->GetOrientation() + angle);
 
-        //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
+        if(!i_target->IsWithinLOS(x, y, z))
+        {
+            Position pos;
+            i_target->GetFirstCollisionPosition(pos, distance, angle);
+            x = pos.m_positionX;
+            y = pos.m_positionY;
+            z = pos.m_positionZ;
+            //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
+        }
     }
     else
     {
-        if(static_cast<D*>(this)->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
-            i_target->GetNearPoint(&owner, x, y, z, owner.GetObjectSize() + i_target->GetObjectSize(), distance, i_target->GetOrientation() + angle);
+        if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && !i_target->IsWithinLOSInMap(&owner))
+        {
+            Position pos;
+            i_target->GetFirstCollisionPosition(pos, distance, angle);
+            x = pos.m_positionX;
+            y = pos.m_positionY;
+            z = pos.m_positionZ;
+            //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
+        }
         else
             i_target->GetContactPoint(&owner, x, y, z, distance);
-        //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u GetContactPoint (%f %f %f)", owner.GetEntry(), x, y, z);
     }
 
     if (!i_path)

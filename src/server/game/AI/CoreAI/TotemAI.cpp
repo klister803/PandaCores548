@@ -35,7 +35,7 @@ int TotemAI::Permissible(Creature const* creature)
     return PERMIT_BASE_NO;
 }
 
-TotemAI::TotemAI(Creature* c) : CreatureAI(c), i_victimGuid(0)
+TotemAI::TotemAI(Creature* c) : CreatureAI(c)
 {
     ASSERT(c->isTotem());
 }
@@ -51,6 +51,8 @@ void TotemAI::InitializeAI()
             if(Unit* victim = me->GetTargetUnit())
                 me->Attack(victim, !me->GetCasterPet());
         }
+
+    i_victimGuid = 0;
 }
 
 void TotemAI::MoveInLineOfSight(Unit* /*who*/)
@@ -70,8 +72,22 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
     if (!me->isAlive())
         return;
 
-    // pointer to appropriate target if found any
+    // Search spell
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->ToTotem()->GetSpell());
+    if (!spellInfo)
+        return;
+
+    Unit* owner = me->GetCharmerOrOwner();
     Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(*me, i_victimGuid) : NULL;
+    if (!owner)
+        return;
+
+    Unit* targetOwner = owner->getAttackerForHelper();
+    if(targetOwner != NULL && targetOwner != victim && me->IsWithinDistInMap(targetOwner, spellInfo->GetMaxRange(false)))
+    {
+        victim = targetOwner;
+        i_victimGuid = victim->GetGUID();
+    }
 
     if (me->IsNonMeleeSpellCasted(false))
     {
@@ -81,39 +97,15 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
             return;
     }
 
-    // Search spell
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->ToTotem()->GetSpell());
-    if (!spellInfo)
-        return;
-
-    // Get spell range
-    float max_range = spellInfo->GetMaxRange(false);
-
-    // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
-
-    // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
-    if (!victim ||
-        !victim->isTargetableForAttack() || !me->IsWithinDistInMap(victim, max_range) ||
-        me->IsFriendlyTo(victim) || !me->canSeeOrDetect(victim) || victim->HasCrowdControlAura())
-    {
-        victim = NULL;
-        Trinity::NearestAttackableNoCCUnitInObjectRangeCheck u_check(me, me, max_range);
-        Trinity::UnitLastSearcher<Trinity::NearestAttackableNoCCUnitInObjectRangeCheck> checker(me, victim, u_check);
-        me->VisitNearbyObject(max_range, checker);
-    }
-
     // If have target
     if (victim)
     {
-        // remember
-        i_victimGuid = victim->GetGUID();
-
+        if (!owner->isInCombat())
+            owner->SetInCombatWith(victim);
         // attack
         me->SetInFront(victim);                         // client change orientation by self
-        me->CastSpell(victim, me->ToTotem()->GetSpell(), false);
+        me->CastSpell(victim, spellInfo, false);
     }
-    else
-        i_victimGuid = 0;
 }
 
 void TotemAI::AttackStart(Unit* /*victim*/)

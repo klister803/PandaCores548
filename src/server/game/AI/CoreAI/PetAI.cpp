@@ -55,22 +55,21 @@ void PetAI::InitializeAI()
     {
         if(me->ToPet() && me->ToPet()->GetDuration())
             me->SetReactState(ReactStates(pStats->state));
-
-        if(pStats->state == REACT_AGGRESSIVE)
+    }
+    if(me->GetReactState() == REACT_AGGRESSIVE)
+    {
+        if(Unit* victim = me->GetTargetUnit())
         {
-            if(Unit* victim = me->GetTargetUnit())
+            Unit* owner = me->GetCharmerOrOwner();
+            if (me->Attack(victim, !me->GetCasterPet()))
             {
-                Unit* owner = me->GetCharmerOrOwner();
-                if (me->Attack(victim, !me->GetCasterPet()))
-                {
-                    me->GetCharmInfo()->SetIsAtStay(false);
-                    me->GetCharmInfo()->SetIsFollowing(false);
-                    me->GetCharmInfo()->SetIsReturning(false);
-                    me->GetMotionMaster()->Clear();
-                    me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 0.5f);
-                    if (owner && !owner->isInCombat())
-                        owner->SetInCombatWith(victim);
-                }
+                me->GetCharmInfo()->SetIsAtStay(false);
+                me->GetCharmInfo()->SetIsFollowing(false);
+                me->GetCharmInfo()->SetIsReturning(false);
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 0.5f);
+                if (owner && !owner->isInCombat())
+                    owner->SetInCombatWith(victim);
             }
         }
     }

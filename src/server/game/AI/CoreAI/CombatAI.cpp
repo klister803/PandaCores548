@@ -364,18 +364,18 @@ void AnyPetAI::InitializeAI()
     {
         if(pStats->state)
             me->SetReactState(ReactStates(pStats->state));
-        if(pStats->state == REACT_AGGRESSIVE)
+    }
+    if(me->GetReactState() == REACT_AGGRESSIVE)
+    {
+        if(Unit* victim = me->GetTargetUnit())
         {
-            if(Unit* victim = me->GetTargetUnit())
-            {
-                if(me->GetCasterPet())
-                    AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
-                else
-                    AttackStart(victim);
-                Unit* owner = me->GetCharmerOrOwner();
-                if (owner && !owner->isInCombat())
-                    owner->SetInCombatWith(victim);
-            }
+            if(me->GetCasterPet())
+                AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
+            else
+                AttackStart(victim);
+            Unit* owner = me->GetCharmerOrOwner();
+            if (owner && !owner->isInCombat())
+                owner->SetInCombatWith(victim);
         }
     }
 

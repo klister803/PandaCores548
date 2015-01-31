@@ -3163,6 +3163,8 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
         return;
 
     uint32 gain = CalculatePct(maxPower, damage);
+    if(m_spellInfo->Id == 123051) //Mana Leech for Mindbender
+        gain = CalculatePct(maxPower, 1.75f);
     m_addptype = power;
     m_addpower = gain;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, gain, power);
