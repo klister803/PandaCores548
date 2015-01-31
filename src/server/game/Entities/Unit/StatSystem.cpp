@@ -1025,6 +1025,17 @@ void Unit::UpdateHastMod()
     SetFloatValue(UNIT_MOD_CAST_HASTE, value);
     SetFloatValue(UNIT_MOD_CAST_SPEED, value);
 
+    if(isAnySummons())
+    {
+        float haste = GetFloatValue(UNIT_MOD_CAST_HASTE);
+        if(CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(GetEntry()))
+        {
+            SetAttackTime(BASE_ATTACK, cinfo->baseattacktime * haste);
+            SetAttackTime(OFF_ATTACK, cinfo->baseattacktime * haste);
+            SetAttackTime(RANGED_ATTACK, cinfo->rangeattacktime * haste);
+        }
+    }
+
     if (player && getClass() == CLASS_DEATH_KNIGHT)
         player->UpdateAllRunesRegen();
     UpdateManaRegen();

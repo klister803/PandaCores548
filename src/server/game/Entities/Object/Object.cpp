@@ -2893,8 +2893,8 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
         summon->AddPlayersInPersonnalVisibilityList(*viewersList);
 
     AddToMap(summon->ToCreature());
-    summon->CastPetAuras(true);
     summon->InitSummon();
+    summon->CastPetAuras(true);
 
     //sLog->outDebug(LOG_FILTER_PETS, "Map::SummonCreature summoner %u entry %i mask %i", summoner ? summoner->GetGUID() : 0, entry, mask);
 
@@ -3022,12 +3022,15 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
+    pet->InitStatsForLevel(getLevel());
 
     if(petType == SUMMON_PET)
         pet->GetCharmInfo()->SetPetNumber(pet_number, true);
 
     // After SetPetNumber
     SetMinion(pet, true);
+
+    map->AddToMap(pet->ToCreature());
 
     if(petType == SUMMON_PET)
     {
@@ -3040,7 +3043,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         SendTalentsInfoData(true);
     }
 
-    map->AddToMap(pet->ToCreature());
 
     if (getClass() == CLASS_WARLOCK)
         if (HasAura(108503))

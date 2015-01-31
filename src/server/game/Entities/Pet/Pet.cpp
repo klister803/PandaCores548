@@ -112,7 +112,16 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
 
     // find number
     if (!petnumber && !petentry)
-        petnumber = owner->getPetIdBySlot(owner->m_currentSummonedSlot);
+    {
+        if(owner->m_currentSummonedSlot < PET_SLOT_HUNTER_FIRST)
+        {
+            sLog->outDebug(LOG_FILTER_PETS, "Pet::LoadPetFromDB error m_currentSummonedSlot < 0");
+            m_loading = false;
+            return false;
+        }
+        else
+            petnumber = owner->getPetIdBySlot(owner->m_currentSummonedSlot);
+    }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "LoadPetFromDB petentry %i, petnumber %i, ownerid %i slot %i stampeded %i m_currentPet %i", petentry, petnumber, ownerid, owner->m_currentSummonedSlot, stampeded, owner->m_currentPetNumber);
 
@@ -817,12 +826,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, float(petlevel*50));
 
-    SetAttackTime(BASE_ATTACK, BASE_ATTACK_TIME);
-    SetAttackTime(OFF_ATTACK, BASE_ATTACK_TIME);
-    SetAttackTime(RANGED_ATTACK, BASE_ATTACK_TIME);
+    UpdateMeleeHastMod();
+    UpdateHastMod();
+    UpdateRangeHastMod();
 
-    SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-    SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
     SetUInt32Value(UNIT_FIELD_FLAGS_2, cinfo->unit_flags2);
 
     // Resistance
