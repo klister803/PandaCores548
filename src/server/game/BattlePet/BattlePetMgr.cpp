@@ -907,21 +907,24 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
 
         for (uint8 j = 0; j < petsCount[i]; ++j)
         {
-            data.WriteGuidMask<3, 4, 0>(battleData[i][j]->GetSlot()->GetPet());
-            data.WriteBit(0);
-            data.WriteGuidMask<6>(battleData[i][j]->GetSlot()->GetPet());
-            data.WriteBits(4, 21);  // state count
-            data.WriteBits(1, 20);  // abilities count
-            data.WriteGuidMask<5>(battleData[i][j]->GetSlot()->GetPet());
+            if(battleData[i][j]->GetSlot())
+            {
+                data.WriteGuidMask<3, 4, 0>(battleData[i][j]->GetSlot()->GetPet());
+                data.WriteBit(0);
+                data.WriteGuidMask<6>(battleData[i][j]->GetSlot()->GetPet());
+                data.WriteBits(4, 21);  // state count
+                data.WriteBits(1, 20);  // abilities count
+                data.WriteGuidMask<5>(battleData[i][j]->GetSlot()->GetPet());
 
-            data.WriteBit(0);
+                data.WriteBit(0);
 
-            data.WriteGuidMask<2, 1, 7>(battleData[i][j]->GetSlot()->GetPet());
-            data.WriteBit(1);
+                data.WriteGuidMask<2, 1, 7>(battleData[i][j]->GetSlot()->GetPet());
+                data.WriteBit(1);
 
-            uint8 len = battleData[i][j]->GetPetInfo()->GetCustomName() == "" ? 0 : battleData[i][j]->GetPetInfo()->GetCustomName().length();
-            data.WriteBits(len, 7);
-            data.WriteBits(0, 21);  // auras count
+                uint8 len = battleData[i][j]->GetPetInfo()->GetCustomName() == "" ? 0 : battleData[i][j]->GetPetInfo()->GetCustomName().length();
+                data.WriteBits(len, 7);
+                data.WriteBits(0, 21);  // auras count
+            }
         }
 
         data.WriteGuidMask<6>(teamGuids[i]);
