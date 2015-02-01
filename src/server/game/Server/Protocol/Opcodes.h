@@ -764,7 +764,6 @@ enum Opcodes
     SMSG_PET_BATTLE_FULL_UPDATE                       = 0x002F, // 5.4.1 17538
     SMSG_PET_BATTLE_ROUND_RESULT                      = 0x0D8F, // 5.4.1 17538
     SMSG_PET_BATTLE_FINISHED                          = 0x118C, // 5.4.1 17538
-    SMSG_PET_BATTLE_REPLACEMENTS_MADE                 = 0x100F, // 5.4.1 17538
     SMSG_BATTLEFIELD_LIST                             = 0x09B7, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0x089D, // 5.4.1 17538
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048

@@ -1097,7 +1097,7 @@ void PetBattleWild::CalculateAndSendRoundResults(uint32 abilityID, uint32 _round
     PetBattleEffect* effect = new PetBattleEffect();
     // effect data
     effect->flags = 0x1000;
-    effect->casterPBOID = battleData[TEAM_ALLY][0]->GetPetNumber();
+    effect->casterPBOID = 0;
     effect->petBattleEffectType = 0;
     effect->abilityEffectID = battleData[TEAM_ALLY][0]->activeAbilities[0]->GetEffectIDByAbilityID();
     effect->sourceAuraInstanceID = 0;
@@ -1183,7 +1183,7 @@ void PetBattleWild::CalculateAndSendRoundResults(uint32 abilityID, uint32 _round
         PetBattleEffect* effect2 = new PetBattleEffect();
         // effect data
         effect2->flags = 0x1000;
-        effect2->casterPBOID = battleData[TEAM_ENEMY][0]->GetPetNumber();
+        effect2->casterPBOID = 0;
         effect2->petBattleEffectType = 0;
         effect2->abilityEffectID = battleData[TEAM_ENEMY][0]->activeAbilities[0]->GetEffectIDByAbilityID();
         effect2->sourceAuraInstanceID = 0;
