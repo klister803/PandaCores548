@@ -65,6 +65,8 @@ public:
 
         float rate = sWorld->getRate(RATE_DONATE);
         uint32 priceFaction = uint32(200 * rate);
+        if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+            priceFaction = 0;
         uint32 priceRace = uint32(150 * rate);
         uint32 priceGender = uint32(100 * rate);
         uint32 priceRecobery = uint32(225 * rate);
