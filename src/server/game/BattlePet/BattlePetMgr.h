@@ -301,7 +301,7 @@ public:
     void FinalRound();
 
     void FinishPetBattle();
-    uint16 CalcRewardXP(bool winner);
+    uint16 CalcRewardXP();
 
     PetBattleData* GetPetBattleData(uint8 team, uint8 index) { return battleData[team][index]; }
 
