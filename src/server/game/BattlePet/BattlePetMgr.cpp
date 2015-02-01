@@ -1146,8 +1146,6 @@ void PetBattleWild::CalculateAndSendRoundResults(uint32 abilityID, uint32 _round
 
     if (newHealth <= 0)
     {
-        //life-hack
-        newHealth = 0;
         petXDiedCount++;
         petXDiedNumber = battleData[TEAM_ENEMY][0]->GetPetNumber();
         enemyDied = true;
@@ -1230,8 +1228,6 @@ void PetBattleWild::CalculateAndSendRoundResults(uint32 abilityID, uint32 _round
 
         if (newHealth <= 0)
         {
-            // life-hack
-            newHealth = 0;
             petXDiedCount++;
             petXDiedNumber = battleData[TEAM_ALLY][0]->GetPetNumber();
             winners[TEAM_ALLY] = 0;
@@ -1362,28 +1358,24 @@ void PetBattleWild::CalculateAndSendRoundResults(uint32 abilityID, uint32 _round
 void PetBattleWild::FinalRound()
 {
     uint8 oldLevel = battleData[TEAM_ALLY][0]->GetPetInfo()->GetLevel();
-    uint16 rewardXP[2] = { 0, 0 };
+    uint16 rewardXP = 0;
 
     if (winners[TEAM_ALLY])
-    {
-        rewardXP[TEAM_ALLY] = CalcRewardXP();
-        rewardXP[TEAM_ENEMY] = 0;
-    }
+        rewardXP = CalcRewardXP(true);
 
     WorldPacket data(SMSG_PET_BATTLE_FINAL_ROUND);
     // petsCount
-    uint8 totalPetsCount = petsCount[TEAM_ALLY] + petsCount[TEAM_ENEMY];
-    data.WriteBits(totalPetsCount, 20);
+    data.WriteBits(2, 20);
 
-    for (uint8 i = 0; i < totalPetsCount; i++)
+    for (uint8 i = 0; i < 2; i++)
     {
         data.WriteBit(0); // hasCaptured | hasCaged
         data.WriteBit(1); // hasSeenAction
-        data.WriteBit(rewardXP[i] ? 0 : 1); // !hasXp
+        data.WriteBit(winners[TEAM_ALLY] ? 0 : 1); // !hasXp
         data.WriteBit(0); // hasCaptured | hasCaged
         data.WriteBit(0); // !hasInitialLevel
         data.WriteBit(0); // !hasLevel
-        data.WriteBit(rewardXP[i] ? 1 : 0); // awardedXP
+        data.WriteBit(rewardXP); // awardedXP
     }
 
     data.WriteBit(0); // pvpBattle
@@ -1394,12 +1386,12 @@ void PetBattleWild::FinalRound()
 
     data.WriteBit(0); // abandoned
 
-    for (uint8 i = 0; i < totalPetsCount; ++i)
+    for (uint8 i = 0; i < 2; ++i)
     {
-        if (rewardXP[i])
-            data << uint16(rewardXP[i]);
+        if (winners[TEAM_ALLY])
+            data << uint16(rewardXP);
 
-        data << uint8(battleData[i][0]->GetPetNumber()); // Pboid
+        data << uint8(battleData[TEAM_ALLY][i]->GetPetNumber()); // Pboid
         data << uint32(battleData[i][0]->GetPetInfo()->GetHealth()); // RemainingHealth
         data << uint16(battleData[i][0]->GetPetInfo()->GetLevel());  // NewLevel
         data << uint32(battleData[i][0]->GetPetInfo()->GetMaxHealth()); // maxHealth
@@ -1412,7 +1404,7 @@ void PetBattleWild::FinalRound()
     m_player->GetSession()->SendPacket(&data);
 }
 
-uint16 PetBattleWild::CalcRewardXP()
+uint16 PetBattleWild::CalcRewardXP(bool winner)
 {
     PetInfo* allyPet0 = battleData[TEAM_ALLY][0]->GetPetInfo();
     PetInfo* enemyPet0 = battleData[TEAM_ENEMY][0]->GetPetInfo();
@@ -1424,7 +1416,7 @@ uint16 PetBattleWild::CalcRewardXP()
     uint16 oldXp = allyPet0->GetXP();
     uint16 newXp = 0;
 
-    if (winners[TEAM_ALLY])
+    if (winner)
     {
         int8 levelDiff = allyPet0->GetLevel() - enemyPet0->GetLevel();
         // some checks
