@@ -206,7 +206,7 @@ struct PetBattleAbility
 
 struct PetBattleData
 {
-    PetBattleData(uint8 _petX, PetBattleSlot* _slot, PetInfo* _tempPet) : petX(_petX), slot(_slot), tempPet(_tempPet) {}
+    PetBattleData(uint8 _petX, PetBattleSlot* _slot, PetInfo* _tempPet, bool _active) : petX(_petX), slot(_slot), tempPet(_tempPet), active(_active) {}
 
     uint8 petX;
     PetBattleSlot* slot;
@@ -221,32 +221,62 @@ struct PetBattleData
 
 struct PetBattleEffectTarget
 {
+    PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type) {}
+
     uint8 type;
-    uint8 targetPetX;
+    int8 petX;
     // only SetHealth effect
     int32 remainingHealth;
 };
 
 struct PetBattleEffect
 {
+    PetBattleEffect(int8 _casterPBOID, uint32 _abilityEffectID, uint8 _petBattleEffectType, uint16 _flags, uint16 _sourceAuraInstanceID, uint16 _turnInstanceID, uint8 _stackDepth) :
+        casterPBOID(_casterPBOID), abilityEffectID(_abilityEffectID), petBattleEffectType(_petBattleEffectType), flags(_flags), sourceAuraInstanceID(_sourceAuraInstanceID), turnInstanceID(_turnInstanceID), stackDepth(_stackDepth) {}
+
     std::list<PetBattleEffectTarget*> targets;
     uint32 abilityEffectID;
     uint16 flags;
     uint16 sourceAuraInstanceID;
     uint16 turnInstanceID;
     uint8 petBattleEffectType;
-    uint8 casterPBOID;
+    int8 casterPBOID;
     uint8 stackDepth;
-    // test
-    uint8 bitpack[7];
 };
 
-struct PetBattleRound
+struct PetBattleRoundResults
 {
-    PetBattleRound(uint32 round) : roundID(round) {}
+    PetBattleRoundResults(uint32 round) : roundID(round) {}
 
     std::list<PetBattleEffect*> effects;
     uint32 roundID;
+    std::vector<uint8> petXDiedNumbers;
+};
+
+struct PetBattleFinalRound
+{
+    std::vector<uint8> levelupPetNumbers;
+    std::map<uint8, uint16> rewardedXP;
+
+    uint16 GetRewardedXP(uint8 petNumber) 
+    {
+        std::map<uint8, uint16>::iterator itr = rewardedXP.find(petNumber);
+        if (itr == rewardedXP.end())
+            return 0;
+
+        return itr->second;
+    }
+
+    bool isLevelUp(uint8 petNumber)
+    {
+        for (uint8 i = 0; i < levelupPetNumbers.size(); ++i)
+        {
+            if (levelupPetNumbers[i] == petNumber)
+                return true;
+        }
+
+        return false;
+    }
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
@@ -296,15 +326,35 @@ public:
     bool InitBattleData();
     void Prepare(ObjectGuid creatureGuid);
 
-    void SendFirstRound(uint8 firstPet);
-    void CalculateAndSendRoundResults(uint32 abilityID, uint32 _roundID, bool &finalr);
-    void FinalRound();
+    PetBattleRoundResults* PrepareFirstRound(uint8 frontPet);
+    void SendFirstRound(PetBattleRoundResults* firstRound);
+    PetBattleRoundResults* UseAbility(uint32 abilityID, uint32 _roundID);
+    void SendRoundResults(PetBattleRoundResults* round);
+    PetBattleFinalRound* PrepareFinalRound();
+    void SendFinalRound(PetBattleFinalRound* finalRound);
+    //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
+    //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
 
     void FinishPetBattle();
     void SendFinishPetBattle();
-    uint16 CalcRewardXP(bool winner);
 
     PetBattleData* GetPetBattleData(uint8 team, uint8 index) { return battleData[team][index]; }
+    PetBattleData* GetPetBattleData(uint8 petNumber) 
+    {
+        if (petNumber > 5)
+            return NULL;
+
+        uint8 index = petNumber;
+        uint8 team = TEAM_ALLY;
+        if (petNumber > 2)
+        {
+            index = petNumber - 3;
+            team = TEAM_ENEMY;
+        }
+
+        return battleData[team][index];
+    }
+
     PetBattleData* GetActivePet(uint8 team)
     {
         for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
@@ -322,20 +372,28 @@ public:
     {
         // clear all
         for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+        {
+            if (!battleData[team][i])
+                return;
+
             battleData[team][i]->active = false;
+        }
         // set needed
         battleData[team][index]->active = true;
     }
+    bool NextRoundFinal() { return nextRoundFinal; }
 
 private:
     Player* m_player;
 
 protected:
     PetBattleData* battleData[2][MAX_ACTIVE_BATTLE_PETS];
+    //PetBattleRoundResults* curRound;
+    //PetBattleFinalRound* finalRound;
     uint32 petsCount[2];
     uint64 teamGuids[2];
     uint8 winners[2];
-    uint32 currentRoundID;
+    bool nextRoundFinal;
 
 };
 
