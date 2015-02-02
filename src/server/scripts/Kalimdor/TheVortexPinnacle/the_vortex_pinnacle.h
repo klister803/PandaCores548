@@ -8,6 +8,7 @@ enum Data
     DATA_ERTAN      = 1,
     DATA_ALTAIRUS   = 2,
     DATA_ASAAD      = 3,
+    DATA_ORB
 };
 
 

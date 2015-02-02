@@ -1127,6 +1127,31 @@ class npc_wild_vortex : public CreatureScript
      };
 };
 
+class npc_golden_orb : public CreatureScript
+{
+
+public:
+    npc_golden_orb() : CreatureScript("npc_golden_orb") {}
+
+    bool OnGossipHello(Player* player, Creature* me)
+    {
+        if (InstanceScript* pInstance = me->GetInstanceScript())
+        {
+            uint32 OrbsCount = pInstance->GetData(DATA_ORB) + 1;
+            pInstance->DoUpdateWorldState(5649, OrbsCount);
+            pInstance->SetData(DATA_ORB, OrbsCount);
+
+            if (OrbsCount == 5)
+            {
+                pInstance->DoCastSpellOnPlayers(94756);
+            }
+
+            me->DespawnOrUnsummon();
+        }
+        return true;
+    }
+};
+
 class spell_minister_of_air_lightning_lash : public SpellScriptLoader
 {
     public:
@@ -1207,6 +1232,7 @@ void AddSC_the_vortex_pinnacle()
     new npc_temple_adept();
     new npc_turbulent_squall();
     new npc_wild_vortex();
+    new npc_golden_orb();
     new spell_minister_of_air_lightning_lash();
     new spell_howling_gale_howling_gale();
 };
