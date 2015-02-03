@@ -595,12 +595,16 @@ void BattlePetMgr::CloseWildPetBattle()
 {
     uint8 updateCount = 0;
 
-    for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+    for (uint8 i = 0; i < 1/*MAX_ACTIVE_BATTLE_PETS*/; ++i)
     {
         if (PetBattleSlot * slot = GetPetBattleSlot(i))
         {
             if (PetInfo * pet = GetPetInfoByPetGUID(slot->GetPet()))
             {
+                // life-hack
+                if (pet->GetHealth() < 0)
+                    pet->SetHealth(0);
+
                 pet->SetInternalState(STATE_UPDATED);
                 updateCount++;
             }
@@ -915,6 +919,13 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
 
                 // not find real pet object
                 if (!battleData[TEAM_ALLY][i]->tempPet || !battleData[TEAM_ALLY][i]->slot)
+                {
+                    FinishPetBattle();
+                    return;
+                }
+
+                // hack check dead pet
+                if (battleData[TEAM_ALLY][i]->tempPet->IsDead())
                 {
                     FinishPetBattle();
                     return;
