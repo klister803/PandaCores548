@@ -369,13 +369,14 @@ void AnyPetAI::InitializeAI()
     {
         if(Unit* victim = me->GetTargetUnit())
         {
+            Unit* owner = me->GetCharmerOrOwner();
+            if (owner && !owner->isInCombat())
+                owner->SetInCombatWith(victim);
+
             if(me->GetCasterPet())
                 AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
             else
                 AttackStart(victim);
-            Unit* owner = me->GetCharmerOrOwner();
-            if (owner && !owner->isInCombat())
-                owner->SetInCombatWith(victim);
         }
     }
 
@@ -402,15 +403,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
     if(!me->HasReactState(REACT_PASSIVE))
     {
         if (owner)
-        {
             targetOwner = owner->getAttackerForHelper();
-            if(!targetOwner && owner->ToPlayer())
-            {
-                targetOwner = owner->ToPlayer()->GetSelectedUnit();
-                if (targetOwner && !me->IsValidAttackTarget(targetOwner))
-                    targetOwner = NULL;
-            }
-        }
 
         if(targetOwner != NULL && targetOwner != target)
         {
@@ -418,6 +411,8 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 AttackStartCaster(targetOwner, me->GetAttackDist() - 0.5f);
             else
                 AttackStart(targetOwner);
+
+            //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI AttackStart");
         }
         else if (me->getVictim())
         {
@@ -435,7 +430,10 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 DoMeleeAttackIfReady();
         }
         else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW))
+        {
             me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
+            //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI PET_FOLLOW_DIST");
+        }
     }
 
     // Autocast (casted only in combat or persistent spells in any state)
@@ -443,10 +441,11 @@ void AnyPetAI::UpdateAI(uint32 diff)
     {
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
+        //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI GetPetCastSpellSize %i", me->GetPetCastSpellSize());
 
-        for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
+        for (uint8 i = 0; i < me->GetPetCastSpellSize(); ++i)
         {
-            uint32 spellID = me->m_temlate_spells[i];
+            uint32 spellID = me->GetPetCastSpellOnPos(i);
             if (!spellID)
                 continue;
 
@@ -505,14 +504,14 @@ void AnyPetAI::UpdateAI(uint32 diff)
                 if (!spellUsed)
                     delete spell;
             }
-            else if(spellInfo->IsAffectingArea())
+            else if(spellInfo->IsTargetingAreaCast())
             {
                 if(target)
                     me->CastSpell(target, spellInfo, false);
                 else
                     me->CastSpell(me, spellInfo, false);
             }
-            else if (target && me->IsWithinMeleeRange(target, me->GetAttackDist()) && spellInfo->CanBeUsedInCombat())
+            else if (target/* && me->IsWithinMeleeRange(target, me->GetAttackDist())*/ && spellInfo->CanBeUsedInCombat())
             {
                 Spell* spell = new Spell(me, spellInfo, TRIGGERED_NONE, 0);
                 if (spell->CanAutoCast(target))
@@ -521,7 +520,7 @@ void AnyPetAI::UpdateAI(uint32 diff)
                     delete spell;
             }
             //else
-                //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI not cast");
+                //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI not cast spellID %i", spellID);
         }
 
         //found units to cast on to
@@ -600,4 +599,25 @@ void AnyPetAI::UpdateAllies()
     }
     else                                                    //remove group
         m_AllySet.insert(owner->GetGUID());
+}
+
+void AnyPetAI::MovementInform(uint32 moveType, uint32 data)
+{
+    //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::MovementInform Pet %u moveType %i data %i", me->GetEntry(), moveType, data);
+    // Receives notification when pet reaches stay or follow owner
+    switch (moveType)
+    {
+        case POINT_MOTION_TYPE:
+        {
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveIdle();
+            if(me->getVictim() && me->isInCombat())
+                me->GetMotionMaster()->MoveChase(me->getVictim(), me->GetAttackDist() - 0.5f);
+            if(me->GetCharmerOrOwner() && (!me->getVictim() || !me->isInCombat()))
+                me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), PET_FOLLOW_DIST, me->GetFollowAngle());
+            break;
+        }
+        default:
+            break;
+    }
 }

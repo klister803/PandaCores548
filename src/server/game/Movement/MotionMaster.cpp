@@ -717,7 +717,7 @@ void MotionMaster::DelayedDelete(_Ty curr)
 {
     if(!curr)
         return;
-    sLog->outFatal(LOG_FILTER_GENERAL, "Unit (Entry %u) is trying to delete its updating MG (Type %u)!", _owner->GetEntry(), curr->GetMovementGeneratorType());
+    sLog->outDebug(LOG_FILTER_GENERAL, "Unit (Entry %u) is trying to delete its updating MG (Type %u)!", _owner->GetEntry(), curr->GetMovementGeneratorType());
     if (isStatic(curr))
         return;
     if (!_expList)

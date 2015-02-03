@@ -182,7 +182,7 @@ class spell_hun_stampede : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_stampede_SpellScript);
 
-            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            void HandleOnHit(SpellEffIndex effIndex)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -196,6 +196,7 @@ class spell_hun_stampede : public SpellScriptLoader
                         target->GetPosition(x, y, z);
                         uint32 count = 0;
                         PetSlot currentSlot = _player->GetSlotForPetId(_player->m_currentPetNumber);
+                        GetCaster()->SetInCombatWith(target);
 
                         if(curentPet)
                             count++;
@@ -227,21 +228,26 @@ class spell_hun_stampede : public SpellScriptLoader
                             if(curentPet && curentPet->GetSlot() == i && !gliph)
                                 continue;
 
-                            o =_player->GetOrientation() + (M_PI/5) * count;
+                            o = _player->GetOrientation() + PET_FOLLOW_ANGLE + (((PET_FOLLOW_ANGLE * 2) / 5) * count);
 
-                            if(Pet* pet = _player->SummonPet(0, x, y, z, o, SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), GetSpellInfo()->Id, true))
+                            Position pos;
+                            target->GetFirstCollisionPosition(pos, MIN_MELEE_REACH, o);
+
+                            if(Pet* pet = _player->SummonPet(0, pos.m_positionX, pos.m_positionY, pos.m_positionZ, o, SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), GetSpellInfo()->Id, true))
                             {
-                                pet->NearTeleportTo(x, y, z, o);
                                 pet->SetReactState(REACT_AGGRESSIVE);
-                                ++count;
-                                if (count >= STAMPED_COUNT)
-                                    break;
                                     
                                 if (pet->GetMap()->IsBattlegroundOrArena())
                                     pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
 
                                 if (pet->IsAIEnabled)
                                     pet->AI()->AttackStart(target);
+
+                                GetSpell()->ExecuteLogEffectGeneric(effIndex, pet->GetGUID());
+
+                                ++count;
+                                if (count >= STAMPED_COUNT)
+                                    break;
                             }
                         }
                     }

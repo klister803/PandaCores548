@@ -63,13 +63,14 @@ void PetAI::InitializeAI()
             Unit* owner = me->GetCharmerOrOwner();
             if (me->Attack(victim, !me->GetCasterPet()))
             {
+                if (owner && !owner->isInCombat())
+                    owner->SetInCombatWith(victim);
+
                 me->GetCharmInfo()->SetIsAtStay(false);
                 me->GetCharmInfo()->SetIsFollowing(false);
                 me->GetCharmInfo()->SetIsReturning(false);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 0.5f);
-                if (owner && !owner->isInCombat())
-                    owner->SetInCombatWith(victim);
             }
         }
     }
@@ -176,6 +177,7 @@ void PetAI::UpdateAI(uint32 diff)
     {
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
+        //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI GetPetAutoSpellSize %i", me->GetPetAutoSpellSize());
 
         for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
         {
@@ -186,6 +188,9 @@ void PetAI::UpdateAI(uint32 diff)
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
             if (!spellInfo)
                 continue;
+
+            //sLog->outDebug(LOG_FILTER_PETS, "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
+            //spellID, me->HasSpellCooldown(spellID), spellInfo->IsPositive(), spellInfo->CanBeUsedInCombat(), me->GetGUIDLow());
 
             if (me->GetCharmInfo() && me->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
                 continue;
@@ -518,8 +523,7 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
         case POINT_MOTION_TYPE:
         {
             // Pet is returning to where stay was clicked. data should be
-            // pet's GUIDLow since we set that as the waypoint ID
-            if (data == me->GetGUIDLow() && me->GetCharmInfo()->IsReturning())
+            if (me->GetCharmInfo()->IsReturning())
             {
                 me->GetCharmInfo()->SetIsAtStay(true);
                 me->GetCharmInfo()->SetIsReturning(false);
@@ -527,6 +531,15 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
                 me->GetCharmInfo()->SetIsCommandAttack(false);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MoveIdle();
+            }
+            else
+            {
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveIdle();
+                if(me->GetCharmInfo() && me->GetCharmInfo()->IsCommandAttack() && me->getVictim())
+                    me->GetMotionMaster()->MoveChase(me->getVictim(), me->GetAttackDist() - 0.5f);
+                if(me->GetCharmerOrOwner() && me->GetCharmInfo() && me->GetCharmInfo()->IsFollowing())
+                    me->GetMotionMaster()->MoveFollow(me->GetCharmerOrOwner(), PET_FOLLOW_DIST, me->GetFollowAngle());
             }
             break;
         }

@@ -586,12 +586,12 @@ bool Unit::HasCrowdControlAura(Unit* excludeCasterChannel) const
     if (Spell* currentChanneledSpell = excludeCasterChannel ? excludeCasterChannel->GetCurrentSpell(CURRENT_CHANNELED_SPELL) : NULL)
         excludeAura = currentChanneledSpell->GetSpellInfo()->Id; //Avoid self interrupt of channeled Crowd Control spells like Seduction
 
-    return (   HasCrowdControlAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
-            || HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
-            || HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR_2, excludeAura)
+    return ( HasCrowdControlAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
+            //|| HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
+            //|| HasCrowdControlAuraType(SPELL_AURA_MOD_FEAR_2, excludeAura)
             || HasCrowdControlAuraType(SPELL_AURA_MOD_STUN, excludeAura)
-            || HasCrowdControlAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
-            || HasCrowdControlAuraType(SPELL_AURA_TRANSFORM, excludeAura));
+            /*|| HasCrowdControlAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
+            || HasCrowdControlAuraType(SPELL_AURA_TRANSFORM, excludeAura)*/);
 }
 
 void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
@@ -11146,7 +11146,7 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
         }
 
         // Can only have one pet. If a new one is summoned, dismiss the old one.
-        if (minion->IsGuardianPet())
+        if (minion->IsGuardianPet() && !stampeded)
         {
             Guardian* oldPet = NULL;
             for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
@@ -16569,13 +16569,17 @@ void CharmInfo::InitPetActionBar()
         SetActionBar(ACTION_BAR_INDEX_PET_SPELL_START + i, 0, ACT_PASSIVE);
 
     // last 3 SpellOrActions are reactions
-    for (uint32 i = 0; i < ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_PET_SPELL_END; ++i)
+    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + 0, REACT_HELPER, ACT_REACTION);
+    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + 1, REACT_DEFENSIVE, ACT_REACTION);
+    SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + 2, REACT_PASSIVE, ACT_REACTION);
+
+    /*for (uint32 i = 0; i < ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_PET_SPELL_END; ++i)
     {
-        if (i != 1)
+        if (i != 2)
             SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
         else
             SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, REACT_HELPER, ACT_REACTION);
-    }
+    }*/
 }
 
 void CharmInfo::InitEmptyActionBar(bool withAttack)
@@ -18267,7 +18271,6 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
     pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
     pet->InitPetCreateSpells();
-    //pet->InitLevelupSpellsForLevel();
     pet->SetFullHealth();
     return true;
 }

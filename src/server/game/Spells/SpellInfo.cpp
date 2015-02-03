@@ -1412,6 +1412,13 @@ bool SpellInfo::IsTargetingArea() const
     return false;
 }
 
+bool SpellInfo::IsTargetingAreaCast(uint8 effect) const
+{
+    if (Effects[effect].IsEffect() && Effects[effect].IsTargetingArea())
+        return true;
+    return false;
+}
+
 bool SpellInfo::NeedsExplicitUnitTarget() const
 {
     return GetExplicitTargetMask() & TARGET_FLAG_UNIT_MASK;

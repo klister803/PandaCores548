@@ -69,7 +69,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
     if(static_cast<D*>(this)->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
-        i_target->GetNearPoint(&owner, x, y, z, owner.GetObjectSize() + i_target->GetObjectSize(), distance, i_target->GetOrientation() + angle);
+        i_target->GetNearPoint(&owner, x, y, z, CONTACT_DISTANCE, distance, i_target->GetOrientation() + angle);
 
         if(!i_target->IsWithinLOS(x, y, z))
         {
@@ -235,16 +235,28 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
         else if(((Creature*)&owner)->isPet())
             allowed_dist = sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
         else
-            allowed_dist = i_target->GetObjectSize() + owner.GetObjectSize() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+            allowed_dist = i_target->GetObjectSize() + sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
 
         if (allowed_dist < owner.GetObjectSize())
             allowed_dist = owner.GetObjectSize();
 
         bool targetMoved = false;
-        if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsFlying())
-            targetMoved = !i_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
+
+        if(static_cast<D*>(this)->GetMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+        {
+            allowed_dist = sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+            if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsFlying())
+                targetMoved = !i_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
+            else
+                targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
+        }
         else
-            targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
+        {
+            if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsFlying())
+                targetMoved = !i_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
+            else
+                targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
+        }
 
         if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet())
         {
@@ -360,7 +372,7 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature &unit)
 template<class T>
 void FetchMovementGenerator<T>::_reachTarget(T &owner)
 {
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator _reachTarget i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+   //sLog->outDebug(LOG_FILTER_NETWORKIO, "FetchMovementGenerator _reachTarget i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
 }
 
 template<>

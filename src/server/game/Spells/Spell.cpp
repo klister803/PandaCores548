@@ -3426,7 +3426,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
         //#ifdef WIN32
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, result, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, result, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
         //#endif
         // Periodic auras should be interrupted when aura triggers a spell which can't be cast
         // for example bladestorm aura should be removed on disarm as of patch 3.3.5
@@ -3466,7 +3466,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && 
         m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraCastWhileWalking(m_spellInfo) && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS))
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u customCastFlags %u mask %u, InterruptFlags %i", m_spellInfo->Id, SPELL_FAILED_MOVING, m_caster->GetEntry(), _triggeredCastFlags, m_targets.GetTargetMask(), m_spellInfo->InterruptFlags);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u customCastFlags %u mask %u, InterruptFlags %i", m_spellInfo->Id, SPELL_FAILED_MOVING, m_caster->GetEntry(), _triggeredCastFlags, m_targets.GetTargetMask(), m_spellInfo->InterruptFlags);
         SendCastResult(SPELL_FAILED_MOVING);
         finish(false);
         return;

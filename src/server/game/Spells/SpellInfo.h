@@ -485,6 +485,7 @@ public:
 
     bool IsAffectingArea() const;
     bool IsTargetingArea() const;
+    bool IsTargetingAreaCast(uint8 effect = 0) const;
     bool NeedsExplicitUnitTarget() const;
     bool NeedsToBeTriggeredByCaster() const;
 

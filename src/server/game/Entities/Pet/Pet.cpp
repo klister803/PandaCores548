@@ -197,9 +197,12 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
         return false;
     }
 
-    float px, py, pz;
-    owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, GetFollowAngle());
-    Relocate(px, py, pz, owner->GetOrientation());
+    if(petnumber && !stampeded)
+    {
+        Position pos;
+        owner->GetFirstCollisionPosition(pos, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        Relocate(pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetOrientation());
+    }
 
     if (!IsPositionValid())
     {
@@ -304,7 +307,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
     _LoadSpells();
     _LoadSpellCooldowns();
     LearnPetPassives();
-    InitLevelupSpellsForLevel();
 
     if(owner->HasSpell(108415)) // active talent Soul Link
         CastSpell(this, 108446, true);
@@ -342,7 +344,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
     }
 
     //set last used pet number (for use in BG's)
-    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && getPetType() == HUNTER_PET)
+    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && getPetType() == HUNTER_PET && !m_Stampeded)
         owner->ToPlayer()->SetLastPetNumber(pet_number);
 
     CastPetAuras(true);
@@ -542,8 +544,9 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Unit* owner = GetOwner();
-            if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID()))
+            if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID() && !m_Stampeded))
             {
+                //sLog->outDebug(LOG_FILTER_PETS, "Pet::Update GetPetGUID %i", owner ? owner->GetPetGUID() : 0);
                 Remove();
                 m_Update = false;
                 return;
@@ -729,7 +732,6 @@ void Pet::GivePetLevel(uint8 level)
     }
 
     InitStatsForLevel(level);
-    InitLevelupSpellsForLevel();
 }
 
 bool Pet::CreateBaseAtCreature(Creature* creature)
@@ -886,6 +888,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     }
     else
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
+
+    InitLevelupSpellsForLevel();
 
     SetFullHealth();
     return true;
@@ -1312,11 +1316,8 @@ bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, 
         if (state == PETSPELL_UNCHANGED)                    // spell load case
         {
             sLog->outDebug(LOG_FILTER_PETS, "Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.", spellId);
-
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_PET_SPELL);
-
             stmt->setUInt32(0, spellId);
-
             CharacterDatabase.Execute(stmt);
         }
         else
@@ -1355,7 +1356,10 @@ bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, 
 
     if (active == ACT_DECIDE)                               // active was not used before, so we save it's autocast/passive state here
     {
-        if (spellInfo->IsAutocastable())
+        SpellInfo const* spellInfoDur = sSpellMgr->GetSpellInfo(GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        if(spellInfoDur && spellInfoDur->GetDuration() > 0 && spellInfo->GetMaxRange(false))
+            newspell.active = ACT_ENABLED;
+        else if (spellInfo->IsAutocastable())
             newspell.active = ACT_DISABLED;
         else
             newspell.active = ACT_PASSIVE;
@@ -1365,16 +1369,35 @@ bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, 
 
     m_spells[spellId] = newspell;
 
-    if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
-        CastSpell(this, spellId, true);
+    if(m_charmInfo)
+    {
+        if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
+            CastSpell(this, spellId, true);
+        else
+            m_charmInfo->AddSpellToActionBar(spellInfo);
+    }
     else
-        m_charmInfo->AddSpellToActionBar(spellInfo);
+    {
+        if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
+            CastSpell(this, spellId, true);
+        else
+            AddPetCastSpell(spellId);
+
+        if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && (spellInfo->AttributesCu & SPELL_ATTR0_CU_DIRECT_DAMAGE) && !spellInfo->IsTargetingAreaCast())
+            SetAttackDist(spellInfo->GetMaxRange(false));
+
+        //sLog->outDebug(LOG_FILTER_PETS, "TempSummon::addSpell guard GetMaxRange %f GetAttackDist %f GetCasterPet %i", spellInfo->GetMaxRange(false), GetAttackDist(), GetCasterPet());
+
+        return false; //No info in spell for guard pet
+    }
 
     if (newspell.active == ACT_ENABLED)
         ToggleAutocast(spellInfo, true);
 
-    if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && spellInfo->IsAutocastable())
+    if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && spellInfo->IsAutocastable() && (spellInfo->AttributesCu & SPELL_ATTR0_CU_DIRECT_DAMAGE) && !spellInfo->IsTargetingAreaCast())
         SetAttackDist(spellInfo->GetMaxRange(false));
+
+    //sLog->outDebug(LOG_FILTER_PETS, "TempSummon::addSpell pet GetMaxRange %f, active %i GetAttackDist %f GetCasterPet %i", spellInfo->GetMaxRange(false), newspell.active, GetAttackDist(), GetCasterPet());
 
     return true;
 }
@@ -1396,41 +1419,59 @@ bool TempSummon::learnSpell(uint32 spell_id)
     return true;
 }
 
-void Pet::InitLevelupSpellsForLevel()
+void TempSummon::InitLevelupSpellsForLevel()
 {
     uint8 level = getLevel();
 
-    if (PetLevelupSpellSet const* levelupSpells = GetCreatureTemplate()->family ? sSpellMgr->GetPetLevelupSpellList(GetCreatureTemplate()->family) : NULL)
+    //sLog->outDebug(LOG_FILTER_PETS, "TempSummon::InitLevelupSpellsForLevel level %i", level);
+
+    if(m_charmInfo)
     {
-        // PetLevelupSpellSet ordered by levels, process in reversed order
-        for (PetLevelupSpellSet::const_reverse_iterator itr = levelupSpells->rbegin(); itr != levelupSpells->rend(); ++itr)
+        if (PetLevelupSpellSet const* levelupSpells = GetCreatureTemplate()->family ? sSpellMgr->GetPetLevelupSpellList(GetCreatureTemplate()->family) : NULL)
         {
-            // will called first if level down
-            if (itr->first > level)
-                unlearnSpell(itr->second);                 // will learn prev rank if any
-            // will called if level up
-            else
-                learnSpell(itr->second);                        // will unlearn prev rank if any
+            // PetLevelupSpellSet ordered by levels, process in reversed order
+            for (PetLevelupSpellSet::const_reverse_iterator itr = levelupSpells->rbegin(); itr != levelupSpells->rend(); ++itr)
+            {
+                // will called first if level down
+                if (itr->first > level)
+                    unlearnSpell(itr->second);                 // will learn prev rank if any
+                // will called if level up
+                else
+                    learnSpell(itr->second);                        // will unlearn prev rank if any
+            }
+        }
+
+        int32 petSpellsId = GetCreatureTemplate()->PetSpellDataId ? -(int32)GetCreatureTemplate()->PetSpellDataId : GetEntry();
+
+        // default spells (can be not learned if pet level (as owner level decrease result for example) less first possible in normal game)
+        if (PetDefaultSpellsEntry const* defSpells = sSpellMgr->GetPetDefaultSpellsEntry(petSpellsId))
+        {
+            for (uint8 i = 0; i < MAX_CREATURE_SPELL_DATA_SLOT; ++i)
+            {
+                SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(defSpells->spellid[i]);
+                if (!spellEntry)
+                    continue;
+
+                // will called first if level down
+                if (spellEntry->SpellLevel > level)
+                    unlearnSpell(spellEntry->Id);
+                // will called if level up
+                else
+                    learnSpell(spellEntry->Id);
+            }
         }
     }
-
-    int32 petSpellsId = GetCreatureTemplate()->PetSpellDataId ? -(int32)GetCreatureTemplate()->PetSpellDataId : GetEntry();
-
-    // default spells (can be not learned if pet level (as owner level decrease result for example) less first possible in normal game)
-    if (PetDefaultSpellsEntry const* defSpells = sSpellMgr->GetPetDefaultSpellsEntry(petSpellsId))
+    else
     {
-        for (uint8 i = 0; i < MAX_CREATURE_SPELL_DATA_SLOT; ++i)
+        for (uint8 i=0; i < CREATURE_MAX_SPELLS; ++i)
         {
-            SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(defSpells->spellid[i]);
-            if (!spellEntry)
+            if (!m_temlate_spells[i])
+                continue;
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(m_temlate_spells[i]);
+            if (!spellInfo)
                 continue;
 
-            // will called first if level down
-            if (spellEntry->SpellLevel > level)
-                unlearnSpell(spellEntry->Id);
-            // will called if level up
-            else
-                learnSpell(spellEntry->Id);
+            learnSpell(spellInfo->Id);
         }
     }
 }
@@ -1558,7 +1599,7 @@ bool Pet::HasSpell(uint32 spell) const
 }
 
 // Get all passive spells in our skill line
-void Pet::LearnPetPassives()
+void TempSummon::LearnPetPassives()
 {
     CreatureTemplate const* cInfo = GetCreatureTemplate();
     if (!cInfo)

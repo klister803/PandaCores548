@@ -787,7 +787,7 @@ class WorldObject : public Object, public WorldLocation
 
         float GetObjectSize() const
         {
-            return (m_valuesCount > UNIT_FIELD_BOUNDINGRADIUS) ? m_floatValues[UNIT_FIELD_BOUNDINGRADIUS] : DEFAULT_WORLD_OBJECT_SIZE;
+            return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
         }
         void UpdateGroundPositionZ(float x, float y, float &z) const;
         void UpdateAllowedPositionZ(float x, float y, float &z) const;

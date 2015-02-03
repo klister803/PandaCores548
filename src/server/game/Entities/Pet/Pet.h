@@ -91,15 +91,6 @@ class Pet : public Guardian
         void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
         void Update(uint32 diff);                           // overwrite virtual Creature::Update and Unit::Update
 
-        uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
-        uint32 GetPetAutoSpellOnPos(uint8 pos) const
-        {
-            if (pos >= m_autospells.size())
-                return 0;
-            else
-                return m_autospells[pos];
-        }
-
         void SetSlot(PetSlot slot) { m_slot = slot; }
         PetSlot GetSlot() { return m_slot; }
 
@@ -124,7 +115,6 @@ class Pet : public Guardian
 
         bool HasSpell(uint32 spell) const;
 
-        void LearnPetPassives();
         bool IsPetAura(Aura const* aura);
 
         void _LoadSpellCooldowns();
@@ -134,7 +124,6 @@ class Pet : public Guardian
         void _LoadSpells();
         void _SaveSpells(SQLTransaction& trans);
 
-        void InitLevelupSpellsForLevel();
         void CleanupActionBar();
 
         void InitPetCreateSpells();

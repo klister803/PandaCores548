@@ -21,38 +21,6 @@
 
 #include "Creature.h"
 
-enum PetSpellState
-{
-    PETSPELL_UNCHANGED = 0,
-    PETSPELL_CHANGED   = 1,
-    PETSPELL_NEW       = 2,
-    PETSPELL_REMOVED   = 3
-};
-
-enum PetSpellType
-{
-    PETSPELL_NORMAL = 0,
-    PETSPELL_FAMILY = 1,
-    PETSPELL_TALENT = 2,
-};
-
-struct PetSpell
-{
-    ActiveStates active;
-    PetSpellState state;
-    PetSpellType type;
-};
-
-enum PetType
-{
-    SUMMON_PET              = 0,
-    HUNTER_PET              = 1,
-    MAX_PET_TYPE            = 4,
-};
-
-typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
-typedef std::vector<uint32> AutoSpellList;
-
 class TempSummon : public Creature
 {
     public:
@@ -73,6 +41,8 @@ class TempSummon : public Creature
         void CastPetAuras(bool current, uint32 spellId = 0);
         bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
         bool removeSpell(uint32 spell_id);
+        void LearnPetPassives();
+        void InitLevelupSpellsForLevel();
 
         bool learnSpell(uint32 spell_id);
         bool unlearnSpell(uint32 spell_id);
@@ -84,8 +54,6 @@ class TempSummon : public Creature
         const SummonPropertiesEntry* const m_Properties;
         bool    m_loading;
         Unit*   m_owner;
-        PetSpellMap     m_spells;
-        AutoSpellList   m_autospells;
 
     private:
         TempSummonType m_type;

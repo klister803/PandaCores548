@@ -323,10 +323,10 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
                     charmInfo->SetIsReturning(true);
                 case REACT_DEFENSIVE:                       //recovery
                 case REACT_HELPER:
+                case REACT_AGGRESSIVE:
                     if (pet->GetTypeId() == TYPEID_UNIT)
                         pet->ToCreature()->SetReactState(ReactStates(spellid));
                     break;
-                case REACT_AGGRESSIVE:                      //There is no on MOP
                 default:
                     break;
             }
@@ -610,7 +610,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         //return;
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X", _player->GetName(), position, spell_id, uint32(act_state));
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X HasSpell %i", _player->GetName(), position, spell_id, uint32(act_state), pet->HasSpell(spell_id));
 
     //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
     if (!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_PASSIVE) && spell_id && !pet->HasSpell(spell_id)))
@@ -620,7 +620,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
             //sign for autocast
             if (act_state == ACT_ENABLED)
             {
-                if (pet->GetTypeId() == TYPEID_UNIT && pet->ToCreature()->isPet())
+                if (pet->GetCharmInfo())
                     ((Pet*)pet)->ToggleAutocast(spellInfo, true);
                 else
                     for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)
@@ -630,7 +630,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
             //sign for no/turn off autocast
             else if (act_state == ACT_DISABLED)
             {
-                if (pet->GetTypeId() == TYPEID_UNIT && pet->ToCreature()->isPet())
+                if (pet->GetCharmInfo())
                     ((Pet*)pet)->ToggleAutocast(spellInfo, false);
                 else
                     for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)

@@ -2973,6 +2973,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     Pet* pet = new Pet(this, petType);
 
+    pet->Relocate(x, y, z, ang);
+
     //summoned pets always non-curent!
     if (petType == SUMMON_PET || petType == HUNTER_PET)
     {
@@ -3000,7 +3002,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         return NULL;
     }
 
-    pet->Relocate(x, y, z, ang);
     if (!pet->IsPositionValid())
     {
         sLog->outError(LOG_FILTER_PETS, "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
@@ -3037,12 +3038,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         pet->InitPetCreateSpells();
         pet->SynchronizeLevelWithOwner();
         pet->LearnPetPassives();
-        pet->InitLevelupSpellsForLevel();
         pet->SavePetToDB();
         PetSpellInitialize();
         SendTalentsInfoData(true);
     }
-
 
     if (getClass() == CLASS_WARLOCK)
         if (HasAura(108503))

@@ -490,6 +490,38 @@ struct TrainerSpellData
 
 typedef std::map<uint32, time_t> CreatureSpellCooldowns;
 
+enum PetSpellState
+{
+    PETSPELL_UNCHANGED = 0,
+    PETSPELL_CHANGED   = 1,
+    PETSPELL_NEW       = 2,
+    PETSPELL_REMOVED   = 3
+};
+
+enum PetSpellType
+{
+    PETSPELL_NORMAL = 0,
+    PETSPELL_FAMILY = 1,
+    PETSPELL_TALENT = 2,
+};
+
+enum PetType
+{
+    SUMMON_PET              = 0,
+    HUNTER_PET              = 1,
+    MAX_PET_TYPE            = 4,
+};
+
+struct PetSpell
+{
+    ActiveStates active;
+    PetSpellState state;
+    PetSpellType type;
+};
+
+typedef UNORDERED_MAP<uint32, PetSpell> PetSpellMap;
+typedef std::vector<uint32> AutoSpellList;
+
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
 
@@ -749,13 +781,24 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
-        virtual uint8 GetPetAutoSpellSize() const { return MAX_SPELL_CHARM; }
-        virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
+        uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
+        uint32 GetPetAutoSpellOnPos(uint8 pos) const
         {
-            if (pos >= MAX_SPELL_CHARM || m_charmInfo->GetCharmSpell(pos)->GetType() != ACT_ENABLED)
+            if (pos >= m_autospells.size())
                 return 0;
             else
-                return m_charmInfo->GetCharmSpell(pos)->GetAction();
+                return m_autospells[pos];
+        }
+
+
+        uint8 GetPetCastSpellSize() const { return m_castspells.size(); }
+        void AddPetCastSpell(uint32 spellid) { m_castspells.push_back(spellid); }
+        uint32 GetPetCastSpellOnPos(uint8 pos) const
+        {
+            if (pos >= m_castspells.size())
+                return 0;
+            else
+                return m_castspells[pos];
         }
 
         void SetPosition(float x, float y, float z, float o);
@@ -819,6 +862,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool m_LOSCheck_creature;
         bool m_LOSCheck_player;
         bool m_Stampeded;
+        AutoSpellList   m_autospells;
+        AutoSpellList   m_castspells;
+        PetSpellMap     m_spells;
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }
