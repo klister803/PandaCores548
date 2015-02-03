@@ -421,13 +421,14 @@ void WorldSession::HandlePetBattleRequestWild(WorldPacket& recvData)
     data.WriteBit(0);
     data.WriteBit(0);
 
-    locationResult = 21;
+    locationResult = sWorld->getBoolConfig(CONFIG_PET_BATTLES_ENABLED) ? 21 : 0;
     data << _player->GetOrientation();
     data << uint32(locationResult);
     SendPacket(&data);
 
     // send full update and start pet battle
-    _player->GetBattlePetMgr()->InitWildBattle(_player, guid);
+    if (sWorld->getBoolConfig(CONFIG_PET_BATTLES_ENABLED))
+        _player->GetBattlePetMgr()->InitWildBattle(_player, guid);
 }
 
 void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)

@@ -1405,6 +1405,9 @@ void World::LoadConfigSettings(bool reload)
     // Blizzard Shop
     m_bool_configs[CONFIG_PURCHASE_SHOP_ENABLED] = ConfigMgr::GetBoolDefault("Purchase.Shop.Enabled", true);
 
+    // Battle Pets
+    m_bool_configs[CONFIG_PET_BATTLES_ENABLED] = ConfigMgr::GetBoolDefault("PetBattles.Enabled", true);
+
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }
