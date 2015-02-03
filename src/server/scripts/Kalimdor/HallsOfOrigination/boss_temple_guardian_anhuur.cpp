@@ -111,6 +111,7 @@ class boss_temple_guardian_anhuur : public CreatureScript
             uint8 phase;
             uint8 beacons;
             bool achieve;
+            bool InterruptPhase;
 
             void Reset()
             {
@@ -120,6 +121,7 @@ class boss_temple_guardian_anhuur : public CreatureScript
                 phase = 0;
                 beacons = 0;
                 achieve = false;
+                InterruptPhase = false;
             }
 
             void KilledUnit(Unit* /*Killed*/)
@@ -170,17 +172,16 @@ class boss_temple_guardian_anhuur : public CreatureScript
                 if (me->HasAura(SPELL_SHIELD_OF_LIGHT))
                     return;
 
-                if (spell->HasEffect(SPELL_EFFECT_INTERRUPT_CAST))
-			        if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-				        if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_REVERBERATING_HYMN)
-                        {
-                            me->InterruptSpell(CURRENT_CHANNELED_SPELL);
-                            phase++;
-                            me->SetReactState(REACT_AGGRESSIVE);
-                            me->GetMotionMaster()->MoveChase(me->getVictim());
-                            events.ScheduleEvent(EVENT_DIVINE_RECKONING, urand(3000, 10000));
-                            events.ScheduleEvent(EVENT_SEARING_FLAME, urand(2000, 7000));
-                        }
+                if (spell->HasEffect(SPELL_EFFECT_INTERRUPT_CAST) && InterruptPhase)
+                {
+                    InterruptPhase = false;
+                    me->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                    phase++;
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
+                    events.ScheduleEvent(EVENT_DIVINE_RECKONING, urand(3000, 10000));
+                    events.ScheduleEvent(EVENT_SEARING_FLAME, urand(2000, 7000));
+                }
 		    }
 
             void JustSummoned(Creature* summon)
@@ -237,7 +238,8 @@ class boss_temple_guardian_anhuur : public CreatureScript
                             events.ScheduleEvent(EVENT_REVERBERATING_HYMN, 1000);
                             break;
                         case EVENT_REVERBERATING_HYMN:
-                            DoCast(me, SPELL_REVERBERATING_HYMN);
+                            InterruptPhase = true;
+                            DoCast(me, SPELL_REVERBERATING_HYMN, true);
                             break;
                         case EVENT_ACHIEVEMENT:
                             achieve = false;
