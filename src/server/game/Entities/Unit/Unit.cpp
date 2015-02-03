@@ -11160,7 +11160,7 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
             //if (Guardian* oldPet = GetGuardianPet())
             if (oldPet)
             {
-                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
+                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()))
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
@@ -11228,7 +11228,7 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
                 SetCritterGUID(0);
         }
 
-        if (minion->IsGuardianPet())
+        if (minion->IsGuardianPet() && !stampeded)
         {
             if (GetPetGUID() == minion->GetGUID())
                 SetPetGUID(0);

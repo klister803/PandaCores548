@@ -2396,7 +2396,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
         return;
 
     uint32 baseCD = 6000; //for pet prevented spamm spell
-    if(spellInfo->CalcCastTime())
+    if(spellInfo->CalcCastTime() || spellInfo->PowerType < MAX_POWERS)
         baseCD = 0;
     uint32 cooldown = spellInfo->GetRecoveryTime();
     if (Player* modOwner = GetSpellModOwner())
