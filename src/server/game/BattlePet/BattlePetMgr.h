@@ -329,6 +329,8 @@ public:
     PetBattleRoundResults* PrepareFirstRound(uint8 frontPet);
     void SendFirstRound(PetBattleRoundResults* firstRound);
     PetBattleRoundResults* UseAbility(uint32 abilityID, uint32 _roundID);
+    PetBattleRoundResults* SkipTurn(uint32 _roundID);
+    PetBattleRoundResults* Forfeit(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
     PetBattleFinalRound* PrepareFinalRound();
     void SendFinalRound(PetBattleFinalRound* finalRound);
@@ -394,6 +396,7 @@ protected:
     uint64 teamGuids[2];
     uint8 winners[2];
     bool nextRoundFinal;
+    bool abandoned;
 
 };
 

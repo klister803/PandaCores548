@@ -502,10 +502,6 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     if (!bit4)
         recvData >> newFrontPet;
 
-    // skip other action - trap, forfeit, skip turn, etc....
-    if (!abilityID && moveType != 4)
-        return;
-
     PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild();
 
     if (!petBattle)
@@ -527,12 +523,22 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
             petBattle->FinishPetBattle();
     }
     // SkipTurn
-    /*else if ()
+    else if (moveType == 2)
     {
+        PetBattleRoundResults* round = petBattle->SkipTurn(roundID);
 
+        if (round)
+        {
+            petBattle->SendRoundResults(round);
+
+            delete round;
+            round = NULL;
+        }
+        else
+            petBattle->FinishPetBattle();
     }
     // TrapPet
-    else if ()
+    /*else if ()
     {
 
     }
@@ -864,6 +870,7 @@ bool PetBattleWild::InitBattleData()
     }
 
     nextRoundFinal = false;
+    abandoned = false;
 
     return true;
 }
@@ -1344,6 +1351,75 @@ PetBattleRoundResults* PetBattleWild::UseAbility(uint32 abilityID, uint32 _round
         round->effects.push_back(effect3);
     }
 
+    // increase round
+    round->roundID++;
+    return round;
+}
+
+PetBattleRoundResults* PetBattleWild::SkipTurn(uint32 _roundID)
+{
+    PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
+
+    PetBattleEffect* effect = new PetBattleEffect(0, 0, 4, 1, 0, 0, 0);
+    PetBattleEffectTarget * target = new PetBattleEffectTarget(0, 6);
+
+    effect->targets.push_back(target);
+    round->effects.push_back(effect);
+
+    // generate effects and effectTargets data for player 2 (ONLY TESTING!!)
+    PetBattleEffect* effect2 = new PetBattleEffect(battleData[TEAM_ENEMY][0]->GetPetNumber(), battleData[TEAM_ENEMY][0]->activeAbilities[0]->GetEffectIDByAbilityID(), 0, 0x1000, 0, 2, 1);
+    // calculate damage
+    uint32 base = battleData[TEAM_ENEMY][0]->activeAbilities[0]->GetBasePoints(1, 0);
+    uint32 baseDamage = base * (1 + battleData[TEAM_ENEMY][0]->GetPetInfo()->GetPower() * 0.05f);
+    uint32 cleanDamage = urand(baseDamage - 5, baseDamage + 5);
+    // mods
+    float mod = battleData[TEAM_ENEMY][0]->activeAbilities[0]->mods[battleData[TEAM_ALLY][0]->GetPetInfo()->GetType()];
+    uint32 finalDamage = cleanDamage * mod;
+
+    if (mod > 1.0f)
+        effect2->flags |= 0x400;
+    else if (mod < 1.0f)
+        effect2->flags |= 0x800;
+
+    // crit
+    if (roll_chance_i(5))
+    {
+        effect2->flags |= 0x4;
+        finalDamage *= 2;
+    }
+
+    // enemy -> ally
+    // setHealth (only for base abilities, needed full rewrite damage system for other...)
+    int32 oldHealth = battleData[TEAM_ALLY][0]->GetPetInfo()->GetHealth();
+    battleData[TEAM_ALLY][0]->GetPetInfo()->SetHealth(oldHealth - finalDamage);
+    int32 newHealth = battleData[TEAM_ALLY][0]->GetPetInfo()->GetHealth();
+
+    if (newHealth <= 0)
+    {
+        round->petXDiedNumbers.push_back(battleData[TEAM_ALLY][0]->GetPetNumber());
+        winners[TEAM_ALLY] = 0;
+        winners[TEAM_ENEMY] = 1;
+        nextRoundFinal = true;
+    }
+
+    PetBattleEffectTarget * target2 = new PetBattleEffectTarget(battleData[TEAM_ALLY][0]->GetPetNumber(), 6);
+    target2->remainingHealth = newHealth;
+
+    effect2->targets.push_back(target2);
+    round->effects.push_back(effect2);
+
+    PetBattleEffect* effect1 = new PetBattleEffect(-1, 0, 13, 0, 0, 0, 0);
+    PetBattleEffectTarget * target1 = new PetBattleEffectTarget(-1, 3);
+
+    effect1->targets.push_back(target1);
+    round->effects.push_back(effect1);
+
+    PetBattleEffect* effect3 = new PetBattleEffect(-1, 0, 14, 0, 0, 0, 0);
+    PetBattleEffectTarget * target3 = new PetBattleEffectTarget(-1, 3);
+
+    effect3->targets.push_back(target3);
+    round->effects.push_back(effect3);
+    
     // increase round
     round->roundID++;
     return round;
