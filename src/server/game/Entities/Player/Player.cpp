@@ -9272,13 +9272,10 @@ void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply)
 
     sLog->outInfo(LOG_FILTER_PLAYER_ITEMS, "applying mods for item %u ", item->GetGUIDLow());
 
-    uint8 attacktype = Player::GetAttackBySlot(slot);
-
     if (proto->Socket[0].Color)                              //only (un)equipping of items with sockets can influence metagems, so no need to waste time with normal items
         CorrectMetaGemEnchants(slot, apply);
 
-    if (attacktype < MAX_ATTACK)
-        _ApplyWeaponDependentAuraMods(item, WeaponAttackType(attacktype), apply);
+    _ApplyOrRemoveItemEquipDependentAuras(item->GetGUID(), apply);
 
     _ApplyItemBonuses(proto, slot, apply);
     ApplyItemEquipSpell(item, apply);
@@ -9610,81 +9607,102 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
         UpdateDamagePhysical(attType);
 }
 
-void Player::_ApplyWeaponDependentAuraMods(Item* item, WeaponAttackType attackType, bool apply)
+void Player::_ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID, bool apply)
 {
-    AuraEffectList const& auraCritList = GetAuraEffectsByType(SPELL_AURA_MOD_WEAPON_CRIT_PERCENT);
-    for (AuraEffectList::const_iterator itr = auraCritList.begin(); itr != auraCritList.end(); ++itr)
-        _ApplyWeaponDependentAuraCritMod(item, attackType, *itr, apply);
+    if (apply)
+    {
+        for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+        {
+            uint32 SpellId = itr->first;
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SpellId);
 
-    AuraEffectList const& auraDamageFlatList = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE);
-    for (AuraEffectList::const_iterator itr = auraDamageFlatList.begin(); itr != auraDamageFlatList.end(); ++itr)
-        _ApplyWeaponDependentAuraDamageMod(item, attackType, *itr, apply);
+            switch (spellInfo->EquippedItemClass)
+            {
+                case ITEM_CLASS_WEAPON:
+                case ITEM_CLASS_ARMOR:
+                {
+                    if (spellInfo->IsPassive())
+                        if (CheckItemEquipDependentSpell(spellInfo) && !HasAura(SpellId))
+                            CastSpell(this, SpellId, true);
+                }
+                default:
+                    continue;
+            }
+        }
+    }
+    else
+    {
+        std::vector<uint32> RemoveAurasList;
 
-    AuraEffectList const& auraDamagePctList = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-    for (AuraEffectList::const_iterator itr = auraDamagePctList.begin(); itr != auraDamagePctList.end(); ++itr)
-        _ApplyWeaponDependentAuraDamageMod(item, attackType, *itr, apply);
+        for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+        {
+            Aura const* aura = iter->second->GetBase();
+            SpellInfo const* spellInfo = aura->GetSpellInfo();
+
+            switch (spellInfo->EquippedItemClass)
+            {
+                case ITEM_CLASS_WEAPON:
+                case ITEM_CLASS_ARMOR:
+                {
+                    if (!CheckItemEquipDependentSpell(spellInfo, itemGUID))
+                        RemoveAurasList.push_back(aura->GetId());
+
+                }
+                default:
+                    continue;
+            }
+        }
+
+        for (std::vector<uint32>::iterator itr = RemoveAurasList.begin(); itr != RemoveAurasList.end(); ++itr)
+            RemoveAurasDueToSpell(*itr);
+    }
 }
 
-void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
+bool Player::CheckItemEquipDependentSpell(SpellInfo const* spellInfo, uint64 itemGUID)
 {
-    // don't apply mod if item is broken or cannot be used
-    if (item->IsBroken() || !CanUseAttackType(attackType))
-        return;
-
-    // generic not weapon specific case processes in aura code
-    if (aura->GetSpellInfo()->EquippedItemClass == -1)
-        return;
-
-    BaseModGroup mod = BASEMOD_END;
-    switch (attackType)
+    switch (spellInfo->EquippedItemClass)
     {
-        case BASE_ATTACK:   mod = CRIT_PERCENTAGE;        break;
-        case OFF_ATTACK:    mod = OFFHAND_CRIT_PERCENTAGE;break;
-        case RANGED_ATTACK: mod = RANGED_CRIT_PERCENTAGE; break;
-        default: return;
+        case ITEM_CLASS_WEAPON:
+        {
+            bool onlyDual = (spellInfo->EquippedItemInventoryTypeMask & (1 << INVTYPE_WEAPON));
+            uint8 resemblance = 0;
+
+            for (uint8 i = EQUIPMENT_SLOT_MAINHAND; i < EQUIPMENT_SLOT_TABARD; ++i)
+                if (Item* checkItem = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, i))
+                    if (!itemGUID || itemGUID != checkItem->GetGUID())
+                        if (ItemTemplate const* checkItemTemplate = checkItem->GetTemplate())
+                            if (spellInfo->EquippedItemSubClassMask & (1 << checkItemTemplate->SubClass))
+                                resemblance++;
+
+            if (onlyDual && resemblance > 1 || !onlyDual && resemblance > 0)
+                return true;
+
+            break;
+        }
+        case ITEM_CLASS_ARMOR:
+        {
+            int32 resemblanceMask = 0;
+            for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_MAINHAND; ++i)
+                if (Item* checkItem = GetUseableItemByPos(INVENTORY_SLOT_BAG_0, i))
+                    if (!itemGUID || itemGUID != checkItem->GetGUID())
+                        if (ItemTemplate const* checkItemTemplate = checkItem->GetTemplate())
+                            if (spellInfo->EquippedItemSubClassMask & (1 << checkItemTemplate->SubClass))
+                                resemblanceMask |= (1 << checkItemTemplate->InventoryType);
+
+            if (spellInfo->AttributesEx8 & SPELL_ATTR8_ARMOR_SPECIALIZATION)
+            {
+                resemblanceMask |= (1 << INVTYPE_ROBE);
+                return resemblanceMask == spellInfo->EquippedItemInventoryTypeMask;
+            }
+
+            if (resemblanceMask & spellInfo->EquippedItemInventoryTypeMask)
+                return true;
+
+            break;
+        }
     }
 
-    if (item->IsFitToSpellRequirements(aura->GetSpellInfo()))
-        HandleBaseModValue(mod, FLAT_MOD, float (aura->GetAmount()), apply);
-}
-
-void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
-{
-    // don't apply mod if item is broken or cannot be used
-    if (item->IsBroken() || !CanUseAttackType(attackType))
-        return;
-
-    // ignore spell mods for not wands
-    if ((aura->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) == 0 && (getClassMask() & CLASSMASK_WAND_USERS) == 0)
-        return;
-
-    // generic not weapon specific case processes in aura code
-    if (aura->GetSpellInfo()->EquippedItemClass == -1)
-        return;
-
-    UnitMods unitMod = UNIT_MOD_END;
-    switch (attackType)
-    {
-        case BASE_ATTACK:   unitMod = UNIT_MOD_DAMAGE_MAINHAND; break;
-        case OFF_ATTACK:    unitMod = UNIT_MOD_DAMAGE_OFFHAND;  break;
-        case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
-        default: return;
-    }
-
-    UnitModifierType unitModType = TOTAL_VALUE;
-    switch (aura->GetAuraType())
-    {
-        case SPELL_AURA_MOD_DAMAGE_DONE:         unitModType = TOTAL_VALUE; break;
-        case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE: unitModType = TOTAL_PCT;   break;
-        default: return;
-    }
-
-    if (item->IsFitToSpellRequirements(aura->GetSpellInfo()))
-    {
-        HandleStatModifier(unitMod, unitModType, float(aura->GetAmount()), apply);
-        if (unitModType == TOTAL_VALUE)
-            ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS, aura->GetAmount(), apply);
-    }
+    return false;
 }
 
 void Player::ApplyItemEquipSpell(Item* item, bool apply, bool form_change)
@@ -10145,9 +10163,9 @@ void Player::_RemoveAllItemMods()
             if (!proto)
                 continue;
 
-            uint32 attacktype = Player::GetAttackBySlot(i);
-            if (attacktype < MAX_ATTACK)
-                _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), false);
+//             uint32 attacktype = Player::GetAttackBySlot(i);
+//             if (attacktype < MAX_ATTACK)
+//                 _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), false);
 
             _ApplyItemBonuses(proto, i, false);
         }
@@ -10171,9 +10189,9 @@ void Player::_ApplyAllItemMods()
             if (!proto)
                 continue;
 
-            uint32 attacktype = Player::GetAttackBySlot(i);
-            if (attacktype < MAX_ATTACK)
-                _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), true);
+//             uint32 attacktype = Player::GetAttackBySlot(i);
+//             if (attacktype < MAX_ATTACK)
+//                 _ApplyWeaponDependentAuraMods(m_items[i], WeaponAttackType(attacktype), true);
 
             _ApplyItemBonuses(proto, i, true);
         }
@@ -13704,9 +13722,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     {
         if (getClass() == CLASS_MONK && HasAura(120277))
         {
-            RemoveAurasDueToSpell(120275);
-            RemoveAurasDueToSpell(108977);
-
             uint32 trigger = 0;
             if (IsTwoHandUsed())
             {
@@ -13719,11 +13734,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                 if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
                     trigger = 108977;
             }
-
-            if (trigger)
-                CastSpell(this, trigger, true);
-
-            ToPlayer()->UpdateRating(CR_HASTE_MELEE);
 
             if (!m_Controlled.empty())
             {
@@ -13744,25 +13754,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     }
                 }
             }
-        }
-    }
-    // Assassin's Resolve - 84601
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        if (getClass() == CLASS_ROGUE && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION)
-        {
-            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-
-            if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
-            {
-                if (HasAura(84601))
-                    RemoveAura(84601);
-
-                CastSpell(this, 84601, true);
-            }
-            else
-                RemoveAura(84601);
         }
     }
 
@@ -14574,53 +14565,6 @@ void Player::SwapItem(uint16 src, uint16 dst)
                 }
             }
         }
-        // Way of the Monk - 120277
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            if (getClass() == CLASS_MONK && HasAura(120277))
-            {
-                RemoveAurasDueToSpell(120275);
-                RemoveAurasDueToSpell(108977);
-
-                uint32 trigger = 0;
-                if (IsTwoHandUsed())
-                {
-                    trigger = 120275;
-                }
-                else
-                {
-                    Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                    Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-                    if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-                        trigger = 108977;
-                }
-
-                if (trigger)
-                    CastSpell(this, trigger, true);
-
-                ToPlayer()->UpdateRating(CR_HASTE_MELEE);
-            }
-        }
-        // Assassin's Resolve - 84601
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            if (getClass() == CLASS_ROGUE && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION)
-            {
-                Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-
-                if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
-                {
-                    if (HasAura(84601))
-                        RemoveAura(84601);
-
-                    CastSpell(this, 84601, true);
-                }
-                else
-                    RemoveAura(84601);
-            }
-        }
-
         return;
     }
 
@@ -19305,6 +19249,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // Clean bug Specialization Spells
     RemoveNotActiveSpecializationSpells();
+    _ApplyOrRemoveItemEquipDependentAuras(0, false);
 
     if(PreparedQueryResult resultvis = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_VISUAL))
     {
@@ -28692,6 +28637,7 @@ void Player::ActivateSpec(uint8 spec)
     SetUsedTalentCount(usedTalentPoint);
     InitTalentForLevel();
     InitSpellForLevel();
+    _ApplyOrRemoveItemEquipDependentAuras(0, false);
 
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_ACTIONS_SPEC);
