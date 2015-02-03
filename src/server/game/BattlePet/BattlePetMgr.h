@@ -330,9 +330,8 @@ public:
     void SendFirstRound(PetBattleRoundResults* firstRound);
     PetBattleRoundResults* UseAbility(uint32 abilityID, uint32 _roundID);
     PetBattleRoundResults* SkipTurn(uint32 _roundID);
-    PetBattleRoundResults* Forfeit(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
-    PetBattleFinalRound* PrepareFinalRound();
+    PetBattleFinalRound* PrepareFinalRound(bool abandoned = false);
     void SendFinalRound(PetBattleFinalRound* finalRound);
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
@@ -384,6 +383,17 @@ public:
         battleData[team][index]->active = true;
     }
     bool NextRoundFinal() { return nextRoundFinal; }
+    void SetAbandoned(bool apply) { abandoned = apply; }
+    void SetWinner(uint8 team) 
+    {
+        for (uint8 i = 0; i < 2; ++i)
+        {
+            if (i == team)
+                winners[i] = 1;
+            else
+                winners[i] = 0;
+        }
+    }
 
 private:
     Player* m_player;

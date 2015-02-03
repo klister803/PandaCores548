@@ -542,7 +542,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     {
 
     }
-    // Forfeit
+    // Forfeit - handle in QuitNotify
     else if ()
     {
 
@@ -568,6 +568,27 @@ void WorldSession::HandlePetBattleFinalNotify(WorldPacket& recvData)
 {
     if (PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild())
         petBattle->FinishPetBattle();
+}
+
+void WorldSession::HandlePetBattleQuitNotify(WorldPacket& recvData)
+{
+    if (PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild())
+    {
+        petBattle->SetAbandoned(true);
+        petBattle->SetWinner(TEAM_ENEMY);
+
+        PetBattleFinalRound* finalRound = petBattle->PrepareFinalRound(true);
+
+        if (finalRound)
+        {
+            petBattle->SendFinalRound(finalRound);
+
+            delete finalRound;
+            finalRound = NULL;
+        }
+        else
+            petBattle->FinishPetBattle();
+    }
 }
 
 void BattlePetMgr::CloseWildPetBattle()
@@ -1533,7 +1554,7 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
     m_player->GetSession()->SendPacket(&data);
 }
 
-PetBattleFinalRound* PetBattleWild::PrepareFinalRound()
+PetBattleFinalRound* PetBattleWild::PrepareFinalRound(bool abandoned)
 {
     PetInfo* allyPet = battleData[TEAM_ALLY][0]->GetPetInfo();
     PetInfo* enemyPet = battleData[TEAM_ENEMY][0]->GetPetInfo();
@@ -1600,6 +1621,12 @@ PetBattleFinalRound* PetBattleWild::PrepareFinalRound()
     {
         finalRound->rewardedXP[battleData[TEAM_ALLY][0]->GetPetNumber()] = 0;
         finalRound->rewardedXP[battleData[TEAM_ENEMY][0]->GetPetNumber()] = 0;
+
+        if (abandoned)
+        {
+            uint32 percent10 = allyPet->GetHealth() / 10;
+            allyPet->SetHealth(allyPet->GetHealth() - percent10);
+        }
     }
 
     return finalRound;
@@ -1640,7 +1667,7 @@ void PetBattleWild::SendFinalRound(PetBattleFinalRound* finalRound)
     for (uint8 i = 0; i < 2; ++i)
         data.WriteBit(winners[i]);
 
-    data.WriteBit(0); // abandoned
+    data.WriteBit(abandoned); // abandoned
 
     for (uint8 i = 0; i < 2; i++)
     {

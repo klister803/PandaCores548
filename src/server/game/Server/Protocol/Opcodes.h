@@ -614,6 +614,7 @@ enum Opcodes
     CMSG_PET_BATTLE_INPUT_FIRST_PET                   = 0x15CC, // 5.4.1 17538
     CMSG_PET_BATTLE_INPUT                             = 0x08E4, // 5.4.1 17538
     CMSG_PET_BATTLE_FINAL_NOTIFY                      = 0x125D, // 5.4.1 17538
+    CMSG_PET_BATTLE_QUIT_NOTIFY                       = 0x1775, // 5.4.1 17538
     CMSG_BATTLE_PET_SET_FLAGS                         = 0x1464, // 5.4.1 17538
     CMSG_BATTLE_PET_MODIFY_NAME                       = 0x056C, // 5.4.1 17538
     CMSG_BATTLE_PET_NAME_QUERY                        = 0x17C5, // 5.4.1 17538
