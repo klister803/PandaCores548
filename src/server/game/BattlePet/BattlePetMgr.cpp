@@ -337,17 +337,26 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     if (slotID >= MAX_ACTIVE_BATTLE_PETS)
         return;
 
-    // find slot
+    // find dest slot
     PetBattleSlot * slot = _player->GetBattlePetMgr()->GetPetBattleSlot(slotID);
 
     if (!slot)
         return;
 
-    // find pet
+    // find current pet
     PetInfo* pet = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
     if (!pet || pet->internalState == STATE_DELETED)
         return;
+
+    // special handle switch slots
+    if (!slot->IsEmpty())
+    {
+        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+            if (PetBattleSlot* sourceSlot = _player->GetBattlePetMgr()->GetPetBattleSlot(i))
+                if (sourceSlot->GetPet() == guid)
+                    sourceSlot->SetPet(slot->GetPet());
+    }
 
     slot->SetPet(guid);
 }

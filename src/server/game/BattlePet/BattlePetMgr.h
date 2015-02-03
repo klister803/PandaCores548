@@ -480,6 +480,11 @@ public:
     }
 
     PetBattleSlot* GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
+    uint64 GetPetGUIDBySlot(uint8 slotID)
+    {
+        if (m_battleSlots[slotID])
+            return m_battleSlots[slotID]->GetPet();
+    }
 
     ObjectGuid InverseGuid(ObjectGuid guid)
     {
