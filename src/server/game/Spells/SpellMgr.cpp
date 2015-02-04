@@ -4097,6 +4097,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 106401: // Twilight Onslaught
                 case 103414: // Stomp
 				case 136216: // Caustic Gas
+                case 117418: // Fists of Fury (damage)
+                case 114083: // Ascendance
+                case 135703: // Static shock tr ef dmg
+                case 98474: // Flame Scythe
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
@@ -4344,10 +4348,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 49821: // Mind Sear
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_CHANNEL_TARGET;
                     spellInfo->Effects[EFFECT_0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
-                    break;
-                case 117418:// Fists of Fury (damage)
-                case 114083:// Ascendance
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 case 6770:   // Sap
                 case 6346:   // Fear Ward
@@ -4884,9 +4884,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 135695: //Static shock base aura
                     spellInfo->Effects[0].TargetA = 6;
                     spellInfo->Effects[0].TargetB = 0;
-                    break;
-                case 135703: //Static shock tr ef dmg
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
                 //Ra Den
                 case 138321: //Material of creation
