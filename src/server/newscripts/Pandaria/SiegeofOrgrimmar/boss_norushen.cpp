@@ -420,6 +420,9 @@ class boss_amalgam_of_corruption : public CreatureScript
                 ApplyOrRemoveBar(false);
                 FrayedCounter = 0;
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                
+                if (Creature* HealChGreater = me->FindNearestCreature(NPC_GREATER_CORRUPTION, 200.0f))
+                    me->Kill(HealChGreater);
 
                 challengeCounter.clear();
             }
@@ -966,7 +969,7 @@ public:
         enum sp
         {
             SPELL_UNLEASHED                              = 146173,
-            SPELL_UNLEASHED_0_EFFECT_PROCK      = 148974,
+            SPELL_UNLEASHED_0_EFFECT_PROCK               = 148974,
         };
 
         void Reset()
@@ -1278,6 +1281,7 @@ public:
         void spawnOnRealWorld()
         {
             me->SetPhaseId(0, true);
+            me->ClearVisibleOnlyForSomePlayers();
             me->SetInCombatWithZone();
             me->SetFullHealth();
         }
@@ -1344,7 +1348,7 @@ struct npc_norushen_heal_chAI : public ScriptedAI
         if (damage >= me->GetHealth())
         {
             if (!me->HasAura(SPELL_PROTECTORS_EXHAUSTED))
-                DoCast(me, SPELL_PROTECTORS_EXHAUSTED);
+                DoCast(me, SPELL_PROTECTORS_EXHAUSTED, true);
             damage = 0;
         }
     }

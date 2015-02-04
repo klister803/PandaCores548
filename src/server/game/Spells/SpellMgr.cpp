@@ -4953,6 +4953,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 105479: // Corruption: Searing Plasma
                 case 144774: // Sha of Pride: Reaching Attack
                 case 100941: // CATA: Ragnaros: Dreadflame
+                case 146703: // Amalgam of Corruption: Bottomless Pit
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors

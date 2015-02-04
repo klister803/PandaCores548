@@ -1023,6 +1023,7 @@ class WorldObject : public Object, public WorldLocation
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
         void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& playerList) { playerList = _visibilityPlayerList; }
+        void ClearVisibleOnlyForSomePlayers()  { _visibilityPlayerList.clear(); }
 
         bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
         bool IsGroupInPersonnalVisibilityList(uint64 guid) const;
