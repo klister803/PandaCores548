@@ -4406,7 +4406,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             uint16 breedID = 5;
                             uint8 quality = 2;
                             uint8 level = 1;
-                            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(spEntry->ID, breedID, 0, 0, 0, 0.0f);
+                            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(spEntry->ID, breedID);
                             accumulator->CalcQualityMultiplier(quality, level);
                             uint32 health = accumulator->CalculateHealth();
                             uint32 power = accumulator->CalculatePower();

@@ -184,7 +184,7 @@ private:
 class BattlePetStatAccumulator
 {
 public:
-    BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID, uint32 _healthMod, uint32 _powerMod, uint32 _speedMod, float _qualityMultiplier);
+    BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID);
 
     int32 CalculateHealth()
     {

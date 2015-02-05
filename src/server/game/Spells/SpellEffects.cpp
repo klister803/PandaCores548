@@ -8323,7 +8323,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
         {
             // init stats for uncage
-            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID, 0, 0, 0, 0.0f);
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID);
             accumulator->CalcQualityMultiplier(quality, level);
             uint32 health = accumulator->CalculateHealth();
             uint32 power = accumulator->CalculatePower();

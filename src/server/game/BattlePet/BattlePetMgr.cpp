@@ -308,7 +308,7 @@ void BattlePetMgr::InitWildBattle(Player* initiator, ObjectGuid wildCreatureGuid
 }
 
 // BattlePetStatAccumulator
-BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID, uint32 _healthMod, uint32 _powerMod, uint32 _speedMod, float _qualityMultiplier)
+BattlePetStatAccumulator::BattlePetStatAccumulator(uint32 _speciesID, uint16 _breedID) : healthMod(0), powerMod(0), speedMod(0), qualityMultiplier(0.0f)
 {
     for (uint32 i = 0; i < sBattlePetSpeciesStateStore.GetNumRows(); ++i)
     {
@@ -441,7 +441,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
         else if (roll_chance_i(60))
             quality = 1;
 
-        BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(s->ID, 12, 0, 0, 0, 0.0f);
+        BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(s->ID, 12);
         accumulator->CalcQualityMultiplier(quality, wildPetLevel);
         uint32 health = accumulator->CalculateHealth();
         uint32 power = accumulator->CalculatePower();
@@ -1062,7 +1062,7 @@ PetBattleFinalRound* PetBattleWild::PrepareFinalRound(bool abandoned)
             finalRound->levelupPetNumbers.push_back(battleData[TEAM_ALLY][0]->GetPetNumber());
 
             // recalculate stats
-            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(allyPet->GetSpeciesID(), BATTLE_PET_BREED_SS, 0, 0, 0, 0.0f);
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(allyPet->GetSpeciesID(), BATTLE_PET_BREED_SS);
             accumulator->CalcQualityMultiplier(allyPet->GetQuality(), allyPet->GetLevel());
             uint32 health = accumulator->CalculateHealth();
             uint32 power = accumulator->CalculatePower();
