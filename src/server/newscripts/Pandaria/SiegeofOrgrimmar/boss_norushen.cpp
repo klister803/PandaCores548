@@ -492,7 +492,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                 }
 
                 //deal less damage if plr have corruptuin. Default value - 75%
-                damage = CalculatePct(damage, 100 - attacker->GetPower(POWER_ALTERNATE_POWER));
+                damage = CalculatePct(damage, 125 - attacker->GetPower(POWER_ALTERNATE_POWER));
 
                 //Frayed summon manifestation of corruption every 10% after 50 pct.
                 if (HealthBelowPct(50) && damage < me->GetHealth())
