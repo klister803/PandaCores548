@@ -5899,7 +5899,7 @@ void AuraEffect::HandleModOffhandDamagePercent(AuraApplication const* aurApp, ui
 
     Unit* target = aurApp->GetTarget();
 
-    target->HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT, float(GetAmount()), apply);
+    target->UpdateDamagePhysical(OFF_ATTACK);
 }
 
 void AuraEffect::HandleShieldBlockValue(AuraApplication const* aurApp, uint8 mode, bool apply) const

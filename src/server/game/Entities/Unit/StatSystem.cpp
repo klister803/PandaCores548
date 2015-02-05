@@ -458,8 +458,19 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / 14.0f * att_speed;
     float base_pct    = GetModifierValue(unitMod, BASE_PCT);
     float total_value = GetModifierValue(unitMod, TOTAL_VALUE);
-    float total_pct = attType == OFF_ATTACK ? 0.5f : 1.0f;
-    total_pct *= addTotalPct ? GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL) : 1.0f;
+    float total_pct = 1.0f;
+
+    if (addTotalPct)
+    {
+        total_pct *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+
+        if (attType == OFF_ATTACK)
+        {
+            total_pct *= 0.5f;
+            total_pct *= GetTotalAuraMultiplier(SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT);
+        }
+    }
+    
 
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
