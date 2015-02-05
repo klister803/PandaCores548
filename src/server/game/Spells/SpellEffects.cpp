@@ -3621,15 +3621,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                                 m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
                                 summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
                                 // timestamp for custom name cache
-                                if (pet->customName != "")
+                                if (pet->GetCustomName() != "")
                                     summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
                                 // quality
-                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->quality);
+                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->GetQuality());
                                 // level
-                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->level);
+                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->GetLevel());
                                 // some pet data
-                                summon->SetHealth(pet->health);
-                                summon->SetMaxHealth(pet->maxHealth);
+                                summon->SetHealth(pet->GetHealth());
+                                summon->SetMaxHealth(pet->GetMaxHealth());
                                 // more....
                             }
                         }
@@ -8323,7 +8323,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
         if (CreatureTemplate const* creature = sObjectMgr->GetCreatureTemplate(bp->CreatureEntry))
         {
             // init stats for uncage
-            BattlePetStatAccumulator* accumulator = player->GetBattlePetMgr()->InitStateValuesFromDB(speciesID, breedID);
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID, 0, 0, 0, 0.0f);
             accumulator->CalcQualityMultiplier(quality, level);
             uint32 health = accumulator->CalculateHealth();
             uint32 power = accumulator->CalculatePower();

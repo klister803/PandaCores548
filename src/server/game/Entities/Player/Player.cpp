@@ -4406,7 +4406,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             uint16 breedID = 5;
                             uint8 quality = 2;
                             uint8 level = 1;
-                            BattlePetStatAccumulator* accumulator = GetBattlePetMgr()->InitStateValuesFromDB(spEntry->ID, breedID);
+                            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(spEntry->ID, breedID, 0, 0, 0, 0.0f);
                             accumulator->CalcQualityMultiplier(quality, level);
                             uint32 health = accumulator->CalculateHealth();
                             uint32 power = accumulator->CalculatePower();
@@ -15879,11 +15879,11 @@ void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received,
     data.WriteGuidBytes<4>(guid2);
     data.WriteGuidBytes<0, 1>(guid);
     data.WriteGuidBytes<7>(guid2);
-    data << uint32(pet ? pet->quality : 0);                 // battle pet quality
+    data << uint32(pet ? pet->GetQuality() : 0);            // battle pet quality
     data.WriteGuidBytes<3>(guid2);
-    data << uint32(pet ? pet->breedID : 0);                 // battle pet breedID
+    data << uint32(pet ? pet->GetBreedID() : 0);            // battle pet breedID
     data.WriteGuidBytes<5>(guid2);
-    data << uint32(pet ? pet->level : 0);                   // battle pet level
+    data << uint32(pet ? pet->GetLevel() : 0);              // battle pet level
     data.WriteGuidBytes<7>(guid);
     data.WriteGuidBytes<6>(guid2);
     data.WriteGuidBytes<4>(guid);
@@ -15892,7 +15892,7 @@ void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received,
     data.WriteGuidBytes<5>(guid);
     data.WriteGuidBytes<0>(guid2);
     data << uint8(item->GetBagSlot());                      // bagslot
-    data << uint32(pet ? pet->speciesID : 0);               // battle pet speciesID
+    data << uint32(pet ? pet->GetSpeciesID() : 0);          // battle pet speciesID
     data << uint32(item->GetItemRandomPropertyId());        // random property
     data << uint32(item->GetEntry());                       // item id
     data.WriteGuidBytes<6>(guid);
@@ -22080,7 +22080,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     // save journal
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
-        if (pet->second->internalState == STATE_DELETED)
+        if (pet->second->GetInternalState() == STATE_DELETED)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
             stmt->setUInt64(0, pet->first);
@@ -22092,20 +22092,20 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
         stmt->setUInt64(0, pet->first);
         stmt->setUInt32(1, GetSession()->GetAccountId());
-        stmt->setString(2, pet->second->customName);
-        stmt->setUInt32(3, pet->second->creatureEntry);
-        stmt->setInt32(4, pet->second->speciesID);
-        stmt->setInt32(5, pet->second->summonSpellID);
-        stmt->setUInt8(6, pet->second->level);
-        stmt->setInt32(7, pet->second->displayID);
-        stmt->setUInt16(8, pet->second->power);
-        stmt->setUInt16(9, pet->second->speed);
-        stmt->setInt32(10, pet->second->health);
-        stmt->setInt32(11, pet->second->maxHealth);
-        stmt->setUInt8(12, pet->second->quality);
-        stmt->setUInt16(13, pet->second->xp);
-        stmt->setUInt16(14, pet->second->flags);
-        stmt->setInt16(15, pet->second->breedID);
+        stmt->setString(2, pet->second->GetCustomName());
+        stmt->setUInt32(3, pet->second->GetCreatureEntry());
+        stmt->setInt32(4, pet->second->GetSpeciesID());
+        stmt->setInt32(5, pet->second->GetSummonSpell());
+        stmt->setUInt8(6, pet->second->GetLevel());
+        stmt->setInt32(7, pet->second->GetDisplayID());
+        stmt->setUInt16(8, pet->second->GetPower());
+        stmt->setUInt16(9, pet->second->GetSpeed());
+        stmt->setInt32(10, pet->second->GetHealth());
+        stmt->setInt32(11, pet->second->GetMaxHealth());
+        stmt->setUInt8(12, pet->second->GetQuality());
+        stmt->setUInt16(13, pet->second->GetXP());
+        stmt->setUInt16(14, pet->second->GetFlags());
+        stmt->setInt16(15, pet->second->GetBreedID());
 
         trans->Append(stmt);
     }
@@ -22119,7 +22119,7 @@ void Player::_SaveBattlePetSlots(SQLTransaction& trans)
     for (int i = 0; i < 3; ++i)
     {
         PetBattleSlot * slot = GetBattlePetMgr()->GetPetBattleSlot(i);
-        stmt->setUInt64(i+1, slot ? slot->petGUID : 0);
+        stmt->setUInt64(i+1, slot ? slot->GetPet() : 0);
     }
     trans->Append(stmt);
 }

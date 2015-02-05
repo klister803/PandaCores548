@@ -753,7 +753,7 @@ enum Opcodes
     SMSG_BATTLE_PET_PVP_CHALLENGE                     = 0xE65,  // 5.0.5 16048
     SMSG_BATTLE_PET_QUEUE_PROPOSE_MATCH               = 0xE58,  // 5.0.5 16048
     SMSG_BATTLE_PET_QUEUE_STATUS                      = 0xB51,  // 5.0.5 16048
-    SMSG_BATTLE_PET_REPLACEMENTS_MADE                 = 0xE89,  // 5.0.5 16048
+    SMSG_BATTLE_PET_REPLACEMENTS_MADE                 = 0x100F, // 5.4.1 17538
     SMSG_BATTLE_PET_REQUEST_FAILED                    = 0xB04,  // 5.0.5 16048
     SMSG_BATTLE_PET_SLOT_UPDATE                       = 0xF16,  // 5.0.5 16048
     SMSG_BATTLE_PET_TRAP_LEVEL                        = 0xAE1,  // 5.0.5 16048
