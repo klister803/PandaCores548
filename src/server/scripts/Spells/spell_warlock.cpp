@@ -768,16 +768,36 @@ class spell_warl_hellfire : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_hellfire_SpellScript);
 
-            void HandleOnHit()
+            void HandleTargetSelect(std::list<WorldObject*>& targets)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 3, POWER_DEMONIC_FURY);
+                if (!targets.empty())
+                    if (Unit* caster = GetCaster())
+                        if (Player* _player = caster->ToPlayer())
+                        {
+                            SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(1949);
+                            int32 bp = 0;
+                            bool firstTatget = true;
+
+                            for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                            {
+                                if (firstTatget)
+                                {
+                                    bp += _spellinfo->Effects[EFFECT_2].BasePoints;
+                                    firstTatget = false;
+                                }
+                                else
+                                {
+                                    bp += _spellinfo->Effects[EFFECT_3].BasePoints;
+                                }
+                            }
+
+                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, bp, POWER_DEMONIC_FURY);
+                        }
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_warl_hellfire_SpellScript::HandleOnHit);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warl_hellfire_SpellScript::HandleTargetSelect, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
             }
         };
 

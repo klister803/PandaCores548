@@ -21375,7 +21375,7 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
 void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
 {
     // player mounted on multi-passenger mount is also classified as vehicle
-    if (IsVehicle() || (victim->IsVehicle() && victim->GetTypeId() != TYPEID_PLAYER))
+    if (IsVehicle() && GetTypeId() != TYPEID_PLAYER || (victim->IsVehicle() && victim->GetTypeId() != TYPEID_PLAYER))
         return;
 
     // Resilience works only for players or pets against other players or pets
