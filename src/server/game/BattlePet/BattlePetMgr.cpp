@@ -1375,3 +1375,16 @@ uint32 PetInfo::GetAbilityID(uint8 rank)
 
     return 0;
 }
+
+// PetBattleRoundResults
+PetBattleRoundResults::~PetBattleRoundResults()
+{
+    // delete targets
+    for (std::list<PetBattleEffect*>::iterator itr = effects.begin(); itr != effects.end(); ++itr)
+        for (std::list<PetBattleEffectTarget*>::iterator itr2 = (*itr)->targets.begin(); itr2 != (*itr)->targets.end(); ++itr2)
+            delete (*itr2);
+
+    // delete effects
+    for (std::list<PetBattleEffect*>::iterator itr = effects.begin(); itr != effects.end(); ++itr)
+        delete (*itr);
+}

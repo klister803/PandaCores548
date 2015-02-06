@@ -384,12 +384,9 @@ void WorldSession::HandlePetBattleRequestUpdate(WorldPacket& recvData)
 {
     ObjectGuid guid;
     recvData.ReadGuidMask<6, 2, 3, 7, 0, 4>(guid);
-    recvData.ReadBit();                                       // unk
+    bool cancelled = recvData.ReadBit();                                       // Cancelled
     recvData.ReadGuidMask<5, 1>(guid);
     recvData.ReadGuidBytes<3, 5, 6, 7, 1, 0, 2, 4>(guid);
-
-    // send full update? wrong packet?
-    //_player->GetBattlePetMgr()->InitWildBattle(_player, guid);
 }
 
 void WorldSession::HandlePetBattleInput(WorldPacket& recvData)

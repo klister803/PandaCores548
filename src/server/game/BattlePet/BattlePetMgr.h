@@ -325,6 +325,7 @@ struct PetBattleEffect
 struct PetBattleRoundResults
 {
     PetBattleRoundResults(uint32 round) : roundID(round) {}
+    ~PetBattleRoundResults();
 
     std::list<PetBattleEffect*> effects;
     uint32 roundID;
@@ -333,6 +334,8 @@ struct PetBattleRoundResults
 
 struct PetBattleFinalRound
 {
+    std::vector<uint8> cagedPetNumbers;
+    std::vector<uint8> capturedPetNumbers;
     std::vector<uint8> levelupPetNumbers;
     std::map<uint8, uint16> rewardedXP;
 
@@ -347,13 +350,7 @@ struct PetBattleFinalRound
 
     bool isLevelUp(uint8 petNumber)
     {
-        for (uint8 i = 0; i < levelupPetNumbers.size(); ++i)
-        {
-            if (levelupPetNumbers[i] == petNumber)
-                return true;
-        }
-
-        return false;
+        return std::find(levelupPetNumbers.begin(), levelupPetNumbers.end(), petNumber) != levelupPetNumbers.end();
     }
 };
 
