@@ -8375,6 +8375,7 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
     PetJournal journal = player->GetBattlePetMgr()->GetPetJournal();
 
     // healed/revived hurt pets
+    uint8 updateCount = 0;
     for (PetJournal::const_iterator j = journal.begin(); j != journal.end(); ++j)
     {
         PetInfo * pet = j->second;
@@ -8388,10 +8389,12 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
         {
             pet->SetHealth(uint32(pet->GetMaxHealth() * healthPct / 100.0f));
             pet->SetInternalState(STATE_UPDATED);
+            updateCount++;
         }
     }
 
-    player->GetBattlePetMgr()->SendUpdatePets();
+    if (updateCount)
+        player->GetBattlePetMgr()->SendUpdatePets();
 }
 
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
