@@ -2628,7 +2628,7 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     switch (m_spellInfo->Id)
     {
         case 63106: // Siphon Life
-            divider = 100;
+            divider = 1000;
             break;
         case 59754: // Rune Tap - Party
             if (unitTarget == m_caster)
