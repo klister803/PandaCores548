@@ -430,6 +430,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
 
         if (round)
         {
+            petBattle->GenerateTrapStatuses(round);
             petBattle->SendRoundResults(round);
 
             delete round;
@@ -445,6 +446,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
 
         if (round)
         {
+            petBattle->GenerateTrapStatuses(round);
             petBattle->SendRoundResults(round);
 
             delete round;
@@ -454,15 +456,22 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
             petBattle->FinishPetBattle();
     }
     // TrapPet
-    /*else if ()
+    else if (moveType == 3)
     {
+        PetBattleRoundResults* round = petBattle->UseTrap(roundID);
 
+        if (round)
+        {
+            petBattle->GenerateTrapStatuses(round);
+            petBattle->SendRoundResults(round);
+
+            delete round;
+            round = NULL;
+        }
+        else
+            petBattle->FinishPetBattle();
     }
     // Forfeit - handle in QuitNotify
-    else if ()
-    {
-
-    }*/
 
     if (petBattle->NextRoundFinal() && moveType != 4)
     {

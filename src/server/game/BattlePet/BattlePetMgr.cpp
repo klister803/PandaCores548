@@ -601,7 +601,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
             data << uint8(j); // Slot
         }
 
-        data << uint32(0);   // TrapSpellID
+        data << uint32(427);   // TrapSpellID
         data.WriteGuidBytes<2, 5>(teamGuids[i]);
         data << uint32(2);   // TrapStatus
 
@@ -910,6 +910,84 @@ PetBattleRoundResults* PetBattleWild::SkipTurn(uint32 _roundID)
     return round;
 }
 
+PetBattleRoundResults* PetBattleWild::UseTrap(uint32 _roundID)
+{
+    PetBattleData* de = GetActivePet(TEAM_ENEMY);
+    PetBattleData* da = GetActivePet(TEAM_ALLY);
+
+    // cheater checks, TODO:
+    if (da && de)
+    {
+        if (da->GetPetInfo() && da->GetPetInfo()->IsDead())
+            return NULL;
+
+        if (de->GetPetInfo() && (de->GetPetInfo()->IsDead() || de->GetPetInfo()->GetHealthPct() > 20))
+            return NULL;
+    }
+
+    PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
+
+    PetBattleEffect* effect = new PetBattleEffect(0, 698, 5, 0, 0, 1, 1);
+    PetBattleEffectTarget * target = new PetBattleEffectTarget(3, 1);
+
+    effect->targets.push_back(target);
+    round->effects.push_back(effect);
+
+    PetBattleEffect* effect1 = new PetBattleEffect(-1, 0, 13, 0, 0, 0, 0);
+    PetBattleEffectTarget * target1 = new PetBattleEffectTarget(-1, 3);
+
+    effect1->targets.push_back(target1);
+    round->effects.push_back(effect1);
+
+    PetBattleEffect* effect3 = new PetBattleEffect(-1, 0, 14, 0, 0, 0, 0);
+    PetBattleEffectTarget * target3 = new PetBattleEffectTarget(-1, 3);
+
+    effect3->targets.push_back(target3);
+    round->effects.push_back(effect3);
+
+    // set trap status
+    round->trapStatus[TEAM_ALLY] = PET_BATTLE_TRAP_ERR_8;
+    nextRoundFinal = true;
+
+    // increase round
+    round->roundID++;
+    return round;
+}
+
+void PetBattleWild::GenerateTrapStatuses(PetBattleRoundResults* round)
+{
+    // temporary, TODO: 3 pets functionality
+    round->trapStatus[TEAM_ENEMY] = PET_BATTLE_TRAP_ERR_2;
+
+    if (round->trapStatus[TEAM_ALLY] == PET_BATTLE_TRAP_ERR_8)
+        return;
+
+    PetBattleData* activeEnemyPet = GetActivePet(TEAM_ENEMY);
+    PetBattleData* activeAllyPet = GetActivePet(TEAM_ENEMY);
+
+    if (activeAllyPet && activeEnemyPet)
+    {
+        uint8 allyTrapStatus = PET_BATTLE_TRAP_ERR_4;
+
+        if (PetInfo* enemyPet = activeEnemyPet->GetPetInfo())
+        {
+            if (enemyPet->GetHealthPct() < 20)
+                allyTrapStatus = PET_BATTLE_TRAP_ACTIVE;
+
+            // some checks
+            uint32 spell = enemyPet->GetSummonSpell();
+            if (m_player->HasActiveSpell(spell))
+                allyTrapStatus = PET_BATTLE_TRAP_ERR_5;
+
+            if (PetInfo* allyPet = activeAllyPet->GetPetInfo())
+            {
+                if (allyPet->IsDead() || enemyPet->IsDead())
+                    allyTrapStatus = PET_BATTLE_TRAP_ERR_3;
+            }
+        }
+    }
+}
+
 void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
 {
     WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
@@ -945,6 +1023,9 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
             if (target->type == 6)
                 data.WriteBit(0); // !hasRemainingHealth
 
+            if (target->type == 1)
+                data.WriteBit(0); // !hasUnk
+
             data.WriteBit(target->petX == -1 ? 1 : 0); // !hasPetX
         }
 
@@ -978,6 +1059,12 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
                 data << uint8(target->petX); // targetPetX
                 data << int32(target->remainingHealth);
             }
+
+            if (target->type == 1)
+            {
+                data << uint8(target->petX); // targetPetX
+                data << uint32(1);
+            }
         }
 
         if (effect->flags)
@@ -1003,7 +1090,7 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
     {
         data << uint8(0);  // NextInputFlags
         data << uint16(0); // RoundTimeSecs
-        data << uint8(2);  // NextTrapStatus
+        data << uint8(round->trapStatus[i]);  // NextTrapStatus
     }
 
     data << uint32(round->roundID);

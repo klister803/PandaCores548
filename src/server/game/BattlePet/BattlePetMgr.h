@@ -97,6 +97,17 @@ enum BattlePetSpeciesSource
     SOURCE_NOT_AVALIABLE = 0xFFFFFFFF,
 };
 
+enum TrapStatus
+{
+    PET_BATTLE_TRAP_ACTIVE = 1, // active trap button
+    PET_BATTLE_TRAP_ERR_2 = 2,  // "Traps become available when one of your pets reaches level 3."
+    PET_BATTLE_TRAP_ERR_3 = 3,  // "You cannot trap a dead pet."
+    PET_BATTLE_TRAP_ERR_4 = 4,  // "The enemy pet's health is not low enough."
+    PET_BATTLE_TRAP_ERR_5 = 5,  // "You already have 3 of this pet or your journal is full."
+    PET_BATTLE_TRAP_ERR_6 = 6,  // "Your enemy pet is not caputurable."
+    PET_BATTLE_TRAP_ERR_7 = 7,  // "Can't trap an NPC's pets"
+    PET_BATTLE_TRAP_ERR_8 = 8,  // "Can't trap twice in same battle"
+};
 
 class PetInfo
 {
@@ -120,6 +131,7 @@ public:
     void SetLevel(uint8 _level) { level = _level; }
     uint8 GetLevel() { return level; }
     int32 GetHealth() { return health; }
+    float GetHealthPct() { return maxHealth ? 100.f * health / maxHealth : 0.0f; }
     void SetHealth(int32 _health) { health = _health; }
     uint32 GetMaxHealth() { return maxHealth; }
     void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
@@ -305,6 +317,8 @@ struct PetBattleEffectTarget
     int8 petX;
     // only SetHealth effect
     int32 remainingHealth;
+    //
+    int32 unkValue;
 };
 
 struct PetBattleEffect
@@ -330,6 +344,7 @@ struct PetBattleRoundResults
     std::list<PetBattleEffect*> effects;
     uint32 roundID;
     std::vector<uint8> petXDiedNumbers;
+    uint8 trapStatus[2];
 };
 
 struct PetBattleFinalRound
@@ -368,11 +383,13 @@ public:
     void SendFirstRound(PetBattleRoundResults* firstRound);
     PetBattleRoundResults* UseAbility(uint32 abilityID, uint32 _roundID);
     PetBattleRoundResults* SkipTurn(uint32 _roundID);
+    PetBattleRoundResults* UseTrap(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
     PetBattleFinalRound* PrepareFinalRound(bool abandoned = false);
     void SendFinalRound(PetBattleFinalRound* finalRound);
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
+    void GenerateTrapStatuses(PetBattleRoundResults* round);
 
     void FinishPetBattle();
     void SendFinishPetBattle();
