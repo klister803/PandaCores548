@@ -309,6 +309,42 @@ private:
     bool activePet;
 };
 
+class PetBattleFinalData
+{
+public:
+    PetBattleFinalData(uint8 _petX, uint16 _initialLevel, uint16 _newLevel, uint16 _totalXP, uint32 _health, uint32 _maxHealth) : petX(_petX), inititalLevel(_initialLevel), newLevel(_newLevel), totalXP(_totalXP),
+        health(_health), maxHealth(_maxHealth), captured(false), caged(false) {}
+
+    void SetCaptured(bool apply)
+    {
+        captured = apply;
+        caged = apply;
+    }
+
+    bool Captured() { return captured; }
+    bool Caged() { return caged; }
+    uint8 GetPetNumber() { return petX; }
+    uint16 GetXP() { return totalXP; }
+    void SetXP(uint16 xp) { totalXP = xp; }
+    uint16 GetInitialLevel() { return inititalLevel; }
+    uint16 GetNewLevel() { return newLevel; }
+    void SetNewLevel(uint16 level) { newLevel = level; }
+    uint32 GetMaxHealth() { return maxHealth; }
+    void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
+    int32 GetHealth() { return health; }
+    void SetHealth(int32 _health) { health = _health; }
+
+private:
+    uint8 petX;
+    uint16 inititalLevel;
+    uint16 newLevel;
+    uint16 totalXP;
+    uint32 maxHealth;
+    int32 health;
+    bool captured;
+    bool caged;
+};
+
 struct PetBattleEffectTarget
 {
     PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type) {}
@@ -349,24 +385,7 @@ struct PetBattleRoundResults
 
 struct PetBattleFinalRound
 {
-    std::vector<uint8> cagedPetNumbers;
-    std::vector<uint8> capturedPetNumbers;
-    std::vector<uint8> levelupPetNumbers;
-    std::map<uint8, uint16> rewardedXP;
-
-    uint16 GetRewardedXP(uint8 petNumber) 
-    {
-        std::map<uint8, uint16>::iterator itr = rewardedXP.find(petNumber);
-        if (itr == rewardedXP.end())
-            return 0;
-
-        return itr->second;
-    }
-
-    bool isLevelUp(uint8 petNumber)
-    {
-        return std::find(levelupPetNumbers.begin(), levelupPetNumbers.end(), petNumber) != levelupPetNumbers.end();
-    }
+    PetBattleFinalData* finalBattleData[2][MAX_ACTIVE_BATTLE_PETS];
 };
 
 typedef std::map<uint64, PetInfo*> PetJournal;
@@ -385,7 +404,7 @@ public:
     PetBattleRoundResults* SkipTurn(uint32 _roundID);
     PetBattleRoundResults* UseTrap(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
-    PetBattleFinalRound* PrepareFinalRound(bool abandoned = false);
+    PetBattleFinalRound* PrepareFinalRound(bool abandoned = false, bool trapped = false);
     void SendFinalRound(PetBattleFinalRound* finalRound);
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
