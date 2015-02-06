@@ -559,7 +559,7 @@ void PetBattleWild::Prepare(ObjectGuid creatureGuid)
                 data << uint16(0);
                 data << uint8(0);
                 data << uint16(0);
-                data << uint32(battleData[i][j]->GetAbility(i)->GetID());
+                data << uint32(battleData[i][j]->GetAbility(k)->GetID());
             }
 
             data << uint16(pet->GetXP());
