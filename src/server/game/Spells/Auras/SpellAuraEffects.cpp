@@ -824,26 +824,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
-        case SPELL_AURA_MOD_RESILIENCE_PCT:
-        {
-            if (!caster)
-                break;
-
-            switch (GetId())
-            {
-                case 115043: // Player Damage Reduction
-                {
-                    if (caster->getLevel() == 90)
-                    {
-                        amount = -7700;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
         case SPELL_AURA_DUMMY:
         {
             if (!caster)

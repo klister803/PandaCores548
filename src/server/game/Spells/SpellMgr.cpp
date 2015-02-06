@@ -3468,6 +3468,8 @@ void SpellMgr::LoadSpellClassInfo()
 
         // Player damage reduction (40% base resilience)
         mSpellClassInfo[ClassID].insert(115043);
+        // Player damage reduction (37% base resilience)
+        mSpellClassInfo[ClassID].insert(142689);
         // Player heal reduction (Battle Fatigue)
         mSpellClassInfo[ClassID].insert(134732);
         // Player mastery activation

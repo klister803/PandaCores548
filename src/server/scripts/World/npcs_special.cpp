@@ -331,6 +331,7 @@ public:
                             me->CastSpell(me, visualAuraId, true);
                             owner->AddAura(120272, me);
                             owner->AddAura(115043, me);
+                            owner->AddAura(142689, me);
                             owner->AddAura(128595, me);
                             me->AddAura(138130, me);
                             me->AddAura(103985, me);
