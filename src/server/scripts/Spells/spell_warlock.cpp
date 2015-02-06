@@ -821,7 +821,6 @@ class spell_warl_demonic_leap : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    caster->CastSpell(caster, WARLOCK_METAMORPHOSIS, true);
                     if (!caster->HasAura(56247) || !caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_FAR))
                         caster->CastSpell(caster, WARLOCK_DEMONIC_LEAP_JUMP, true);
                     else
