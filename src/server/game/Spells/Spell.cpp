@@ -2338,6 +2338,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     // Get spell hit result on target
     TargetInfo targetInfo;
     targetInfo.targetGUID = targetGUID;                         // Store target GUID
+    targetInfo.timeDelay = 0LL;
     targetInfo.effectMask = effectMask;                         // Store all effects not immune
     targetInfo.processed  = false;                              // Effects not apply on target
     targetInfo.alive      = target->isAlive();
