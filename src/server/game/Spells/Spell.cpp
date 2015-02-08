@@ -3232,6 +3232,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
                 }
             }
         }
+        m_hitTriggerSpells.clear();
     }
 
     // Predatory Swiftness
