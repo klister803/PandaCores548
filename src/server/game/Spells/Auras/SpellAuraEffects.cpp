@@ -831,6 +831,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (GetId())
             {
+                case 77219: // Mastery: Master Demonologist
+                {
+                    if (m_effIndex != EFFECT_0)
+                        break;
+
+                    if (Aura* aura = caster->GetAura(114168))
+                    {
+                        aura->GetEffect(EFFECT_1)->SetCanBeRecalculated(true);
+                        aura->GetEffect(EFFECT_1)->RecalculateAmount();
+                        aura->SetNeedClientUpdateForTargets();;
+                    }
+                    break;
+                }
                 case 76657: // Mastery: Master of Beasts
                 {
                     if (Guardian* pet = caster->ToPlayer()->GetPet())
@@ -887,6 +900,31 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     amount = 0;
                 }
             }
+        }
+        case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+        {
+            if (!caster)
+                break;
+
+            switch (m_spellInfo->Id)
+            {
+                case 114168: // Dark Apotheosis
+                {
+                    if (m_effIndex != EFFECT_1)
+                        break;
+
+                    if (Player* plr = caster->ToPlayer())
+                    {
+                        float mastery = plr->GetFloatValue(PLAYER_MASTERY);
+                        amount = -(RoundingFloatValue(float(m_spellInfo->Effects[EFFECT_5].BasePoints) + (mastery / (mastery + float(m_spellInfo->Effects[EFFECT_0].BasePoints))) * 100.0f));
+                        
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
         }
         case SPELL_AURA_BYPASS_ARMOR_FOR_CASTER:
         {
