@@ -9602,6 +9602,9 @@ void Player::_ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID, bool apply)
 {
     if (apply)
     {
+        if (!isAlive())
+            return;
+
         for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
         {
             if (itr->second->state == PLAYERSPELL_REMOVED)
