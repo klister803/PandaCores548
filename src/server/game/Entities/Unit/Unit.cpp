@@ -7488,16 +7488,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 if (!target)
                     return false;
 
-                if (!procSpell)
-                    return false;
-
-                if (procSpell->Id != 596 && !(procEx & PROC_EX_CRITICAL_HIT))
-                    return false;
-
                 basepoints0 = CalculatePct(int32(damage), triggerAmount);
-
-                if(roll_chance_f(triggeredByAura->GetCritChance()))
-                    basepoints0 *= 2;
 
                 if(AuraEffect const* aurEff = GetAuraEffect(47753, EFFECT_0))
                 {
