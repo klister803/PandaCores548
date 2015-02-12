@@ -7667,9 +7667,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 102351: // Cenarion Ward
                 {
-                    if (procEx & PROC_EX_INTERNAL_HOT) // temporarily
-                        return false;
-
                     target = this;
                     break;
                 }

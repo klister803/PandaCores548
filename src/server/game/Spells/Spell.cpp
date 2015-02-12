@@ -3814,9 +3814,9 @@ void Spell::cast(bool skipCheck)
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
                     if (!positive)
-                        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
+                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     else
-                        procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
+                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_NONE:
@@ -9726,25 +9726,25 @@ void Spell::WriteProjectile(uint8 &ammoInventoryType, uint32 &ammoDisplayID)
 
 bool Spell::CanSpellProc(Unit* target, uint32 mask) const
 {
-    if(m_CastItem)
+    if (m_CastItem)
         return false;
-    if(AttributesCustom & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+    if (AttributesCustom & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
         return false;
-    if(AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC)
+    if (AttributesCustomEx3 & SPELL_ATTR3_CANT_TRIGGER_PROC)
         return false;
-    if(AttributesCustomEx6 & SPELL_ATTR6_CANT_PROC)
+    if (AttributesCustomEx6 & SPELL_ATTR6_CANT_PROC)
         return false;
-    if(AttributesCustomEx2 & SPELL_ATTR2_FOOD_BUFF)
+    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_CONSOLIDATED_RAID_BUFF)
         return false;
-    if(target && !target->CanProc())
+    if (AttributesCustomEx2 & SPELL_ATTR2_FOOD_BUFF)
         return false;
-    if(!CanExecuteTriggersOnHit(mask))
+    if (target && !target->CanProc())
         return false;
-    if(m_spellInfo->IsPassive())
+    if (!CanExecuteTriggersOnHit(mask))
         return false;
-    if(m_spellInfo->IsNotProcSpell())
+    if (m_spellInfo->IsPassive())
         return false;
-    if(m_CastItem)
+    if (m_spellInfo->IsNotProcSpell())
         return false;
 
     return true;
