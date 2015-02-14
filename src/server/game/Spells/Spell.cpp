@@ -1588,6 +1588,8 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
     switch (targetType.GetTarget())
     {
         case TARGET_DEST_TARGET_ENEMY:
+            m_targets.SetDst(*target);
+            return;
         case TARGET_DEST_TARGET_ANY:
         case TARGET_DEST_CHANNEL_CASTER:
             m_targets.SetDst(*target);
@@ -2099,9 +2101,10 @@ void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Pos
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
     if (!containerTypeMask)
         return;
-    Trinity::WorldObjectSpellAreaTargetCheck check(range, position, m_caster, referer, m_spellInfo, selectionType, condList);
-    Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
-    SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> > (searcher, containerTypeMask, m_caster, position, range);
+    Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
+    Trinity::WorldObjectSpellAreaTargetCheck check(range, position, caster, referer, m_spellInfo, selectionType, condList);
+    Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> searcher(caster, targets, check, containerTypeMask);
+    SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> > (searcher, containerTypeMask, caster, position, range);
 }
 
 void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, ConditionList* condList, bool isChainHeal)
@@ -3766,13 +3769,15 @@ void Spell::cast(bool skipCheck)
     }
 
     Unit* procTarget = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
-    uint32 procAttacker = m_procAttacker;
+    uint32 procAttacker = PROC_EX_NONE;
+    uint32 procVictim   = PROC_EX_NONE;
     TargetInfo* infoTarget = GetTargetInfo(procTarget ? procTarget->GetGUID() : 0);
     //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, m_UniqueTargetInfo %i, procAttacker %i, target %u, infoTarget %u",
     //m_spellInfo->Id, m_UniqueTargetInfo.size(), procAttacker, procTarget ? procTarget->GetGUID() : 0, infoTarget ? infoTarget->targetGUID : 0);
 
     if (!procAttacker)
     {
+        Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
         uint32 mask = 7;
         bool canEffectTrigger = CanSpellProc(procTarget, mask);
         //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
@@ -3814,17 +3819,29 @@ void Spell::cast(bool skipCheck)
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
                     if (!positive)
+                    {
                         procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
+                    }
                     else
+                    {
                         procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
+                    }
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_NONE:
                 {
                     if (positive)
+                    {
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+                    }
                     else
+                    {
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    }
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_RANGED:
@@ -3836,7 +3853,7 @@ void Spell::cast(bool skipCheck)
                 }
             }
 
-            SpellNonMeleeDamage damageInfo(m_caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
+            SpellNonMeleeDamage damageInfo(caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
 
             if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
                 procEx |= PROC_EX_ON_CAST;
@@ -3847,12 +3864,12 @@ void Spell::cast(bool skipCheck)
                 {
                     procEx |= createProcExtendMask(&damageInfo, infoTarget->missCondition);
                     DamageInfo dmgInfoProc = DamageInfo(damageInfo);
-                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
+                    caster->ProcDamageAndSpell(procTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
                 else
                 {
-                    DamageInfo dmgInfoProc = DamageInfo(m_caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
-                    m_caster->ProcDamageAndSpell(procTarget, procAttacker, PROC_FLAG_NONE, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
+                    DamageInfo dmgInfoProc = DamageInfo(caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
+                    caster->ProcDamageAndSpell(procTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
             }
         }

@@ -2200,7 +2200,7 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
         else
         {
             // attack can be redirected to another target
-            victim = GetMeleeHitRedirectTarget(victim);
+            Unit* redirectVictim = GetMeleeHitRedirectTarget(victim);
 
             // Custom MoP Script
             // SPELL_AURA_STRIKE_SELF
@@ -2211,30 +2211,32 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
                 {
                     if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
                     {
-                        victim->CastSpell(this, 118022, true);
+                        redirectVictim->CastSpell(this, 118022, true);
                         return;
                     }
                 }
             }
 
             CalcDamageInfo damageInfo;
-            CalculateMeleeDamage(victim, 0, &damageInfo, attType);
+            CalculateMeleeDamage(redirectVictim, 0, &damageInfo, attType);
             // Send log damage message to client
-            DealDamageMods(victim, damageInfo.damage, &damageInfo.absorb);
+            DealDamageMods(redirectVictim, damageInfo.damage, &damageInfo.absorb);
             SendAttackStateUpdate(&damageInfo);
 
             //TriggerAurasProcOnEvent(damageInfo);
             DamageInfo dmgInfoProc = DamageInfo(damageInfo);
-            ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
+            ProcDamageAndSpell(redirectVictim, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
+            if(redirectVictim != victim)
+                ProcDamageAndSpell(victim, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, &dmgInfoProc, damageInfo.attackType);
 
             DealMeleeDamage(&damageInfo, true);
 
             if (GetTypeId() == TYPEID_PLAYER)
                 sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+                    GetGUIDLow(), redirectVictim->GetGUIDLow(), redirectVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
             else
                 sLog->outDebug(LOG_FILTER_UNITS, "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                    GetGUIDLow(), victim->GetGUIDLow(), victim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+                    GetGUIDLow(), redirectVictim->GetGUIDLow(), redirectVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
 
             if (replacementAttackAura)
                 RemoveAura(replacementAttackAura);
@@ -3078,7 +3080,7 @@ float Unit::GetUnitBlockChance() const
     }
 }
 
-float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim) const
+float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victim, SpellInfo const* spellProto) const
 {
     float crit;
 
@@ -3114,7 +3116,15 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         crit += victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_CHANCE);
 
-    crit += victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+    int32 critMod = victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+
+    if (spellProto && critMod < 0)
+    {
+        if (!spellProto->IsPositive())
+            crit += critMod;
+    }
+    else
+        crit += critMod;
 
     if (crit < 0.0f)
         crit = 0.0f;
@@ -3739,7 +3749,7 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     ASSERT(!aurApp->GetEffectMask());
 
     // Remove totem at next update if totem loses its aura
-    if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem()&& ToTotem()->GetSummonerGUID() == aura->GetCasterGUID())
+    if ((aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || aurApp->GetRemoveMode() == AURA_REMOVE_BY_DROP_CHARGERS) && GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem() && ToTotem()->GetSummonerGUID() == aura->GetCasterGUID())
     {
         if (ToTotem()->GetSpell() == aura->GetId() && ToTotem()->GetTotemType() == TOTEM_PASSIVE)
             ToTotem()->setDeathState(JUST_DIED);
@@ -12157,7 +12167,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
         return pdamage;
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
         return pdamage;
 
     int32 TakenTotal = 0;
@@ -12856,7 +12866,7 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     float TakenTotalMod = 1.0f;
 
     // Some spells don't benefit from done mods
-    if ((spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
         return healamount;
 
     // No bonus
@@ -13176,14 +13186,14 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
         SpellImmuneList const& list = m_spellImmune[IMMUNITY_STATE];
         for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
             if (itr->type == aura)
-                return true;
+                if (!(spellInfo->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT))
+                    return true;
         // Check for immune to application of harmful magical effects
         AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
         for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-            if (spellInfo->Dispel == DISPEL_MAGIC &&                                      // Magic debuff
+            if ((spellInfo->Dispel == DISPEL_MAGIC || spellInfo->Dispel == DISPEL_DISEASE) &&                                      // Magic debuff
                 ((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&  // Check school
                 !spellInfo->IsPositiveEffect(index))                                  // Harmful
-                if (!(spellInfo->AttributesEx3 & SPELL_ATTR3_IGNORE_HIT_RESULT))
                     return true;
     }
 
@@ -17348,7 +17358,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
                     case SPELL_AURA_MOD_CASTING_SPEED:
                         // Skip melee hits or instant cast spells
-                        if (procSpell && procSpell->CalcCastTime() != 0)
+                        if (procSpell && (procSpell->CalcCastTime() != 0 || procSpell->IsChanneled()))
                             takeCharges = true;
                         break;
                     case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
@@ -17371,12 +17381,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         break;
                     case SPELL_AURA_MECHANIC_IMMUNITY:
                         // Compare mechanic
-                        if (procSpell && procSpell->Mechanic == uint32(triggeredByAura->GetMiscValue()))
+                        if (procSpell && (procSpell->GetAllEffectsMechanicMask() & uint32(1<<(triggeredByAura->GetMiscValue()))))
                             takeCharges = true;
                         break;
                     case SPELL_AURA_MOD_MECHANIC_RESISTANCE:
                         // Compare mechanic
-                        if (procSpell && procSpell->Mechanic == uint32(triggeredByAura->GetMiscValue()))
+                        if (procSpell && (procSpell->GetAllEffectsMechanicMask() & uint32(1<<(triggeredByAura->GetMiscValue()))))
                             takeCharges = true;
                         break;
                     case SPELL_AURA_MOD_DAMAGE_FROM_CASTER:

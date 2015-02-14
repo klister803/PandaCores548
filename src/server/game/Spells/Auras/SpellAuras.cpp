@@ -2280,23 +2280,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (!caster)
                     break;
                 break;
-            case SPELLFAMILY_SHAMAN:
-            {
-                switch (m_spellInfo->Id)
-                {
-                    case 8178: // Grounding Totem
-                    {
-                        if (caster == target && removeMode != AURA_REMOVE_NONE)
-                        {
-                            caster->setDeathState(JUST_DIED);
-                        }
-                        break;
-                    }
-                    default:
-                        break;
-                }
-                break;
-            }
             case SPELLFAMILY_ROGUE:
             {
                 switch (GetId())
@@ -3351,7 +3334,8 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
                     }
                     case SPELL_EFFECT_APPLY_AREA_AURA_PET:
                     {
-                        targetList.push_back(GetUnitOwner());
+                        if(GetUnitOwner()->isAlive())
+                            targetList.push_back(GetUnitOwner());
                         if (Unit* owner = GetUnitOwner()->GetCharmerOrOwner())
                             if (GetUnitOwner()->IsWithinDistInMap(owner, radius))
                                 targetList.push_back(owner);

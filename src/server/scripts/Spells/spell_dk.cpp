@@ -1770,6 +1770,15 @@ class spell_dk_death_grip_dummy : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_death_grip_dummy_SpellScript);
 
+            SpellCastResult CheckCast()
+            {
+                if(Unit* caster = GetCaster())
+                    if (caster->GetUnitMovementFlags() & MOVEMENTFLAG_FALLING)
+                        return SPELL_FAILED_ERROR;
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -1784,6 +1793,7 @@ class spell_dk_death_grip_dummy : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_dk_death_grip_dummy_SpellScript::CheckCast);
                 OnEffectHitTarget += SpellEffectFn(spell_dk_death_grip_dummy_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
 

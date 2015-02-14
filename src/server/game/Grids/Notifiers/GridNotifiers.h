@@ -1900,5 +1900,18 @@ namespace Trinity
             float _shift;
             float _angleShift;
     };
+
+    class UnitCheckCCAura
+    {
+        public:
+            UnitCheckCCAura(bool present, Unit* caster) : _present(present), _caster(caster) {}
+            bool operator() (WorldObject* object)
+            {
+                return object->ToUnit() && object->ToUnit()->HasCrowdControlAura(_caster) == _present;
+            }
+        private:
+            bool _present;
+            Unit* _caster;
+    };
 }
 #endif
