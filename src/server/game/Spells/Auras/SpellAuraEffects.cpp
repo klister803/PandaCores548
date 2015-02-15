@@ -5900,7 +5900,7 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const* aurApp, uint8
 
     float amount = target->GetTotalAuraMultiplier(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
 
-    if ((GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) && (GetSpellInfo()->EquippedItemClass == -1 || target->GetTypeId() != TYPEID_PLAYER))
+    if (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
     {
         for (int i = 0; i < MAX_ATTACK; ++i)
             target->UpdateDamagePhysical(WeaponAttackType(i));
