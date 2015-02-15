@@ -9688,8 +9688,11 @@ bool Player::CheckItemEquipDependentSpell(SpellInfo const* spellInfo, uint64 ite
 
             if (spellInfo->AttributesEx8 & SPELL_ATTR8_ARMOR_SPECIALIZATION)
             {
-                resemblanceMask |= (1 << INVTYPE_ROBE);
-                return resemblanceMask == spellInfo->EquippedItemInventoryTypeMask;
+                if ((resemblanceMask | (1 << INVTYPE_ROBE)) == spellInfo->EquippedItemInventoryTypeMask ||
+                    (resemblanceMask | (1 << INVTYPE_CHEST)) == spellInfo->EquippedItemInventoryTypeMask)
+                    return true;
+
+                return false;
             }
 
             if (resemblanceMask & spellInfo->EquippedItemInventoryTypeMask)
