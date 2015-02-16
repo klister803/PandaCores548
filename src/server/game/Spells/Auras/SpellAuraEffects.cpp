@@ -7911,6 +7911,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     if (damage)
         procVictim |= PROC_FLAG_TAKEN_DAMAGE;
 
+    if (absorb && !damage)
+        procEx |= PROC_EX_ABSORB;
+
     if (damage > 0)
     {
         if (GetSpellInfo()->Effects[m_effIndex].IsTargetingArea() || GetSpellInfo()->Effects[m_effIndex].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
