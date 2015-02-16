@@ -610,26 +610,25 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
         {
             PrepareSpellScript(spell_rog_crimson_tempest_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 percent = 240;
-                        if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
-                            percent = sinfo->Effects[0].BasePoints;
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                        if (Unit* target = GetHitUnit())
+                        {
+                            int32 percent = 240;
+                            if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
+                                percent = sinfo->Effects[0].BasePoints;
 
-                        int32 damage = int32(GetHitDamage() / 6);
-                        AddPct(damage, percent);
-                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
-                    }
-                }
+                            int32 damage = int32(GetHitDamage() / 6);
+                            AddPct(damage, percent);
+                            _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
+                        }
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_rog_crimson_tempest_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_rog_crimson_tempest_SpellScript::HandleAfterHit);
             }
         };
 
