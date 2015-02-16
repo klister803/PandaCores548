@@ -19440,7 +19440,7 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
             uint64 caster_guid = fields[0].GetUInt64();
             uint8 slot = fields[1].GetUInt8();
             uint32 spellid = fields[2].GetUInt32();
-            uint32 effmask = fields[3].GetUInt8();
+            uint32 effmask = fields[3].GetUInt16();
             uint32 recalculatemask = fields[4].GetUInt8();
             uint8 stackcount = fields[5].GetUInt8();
             int32 maxduration = fields[6].GetInt32();
@@ -21470,7 +21470,7 @@ void Player::_SaveAuras(SQLTransaction& trans)
         stmt->setUInt64(index++, itr->second->GetCasterGUID());
         stmt->setUInt64(index++, itr->second->GetCastItemGUID());
         stmt->setUInt32(index++, itr->second->GetId());
-        stmt->setUInt8(index++, effMask);
+        stmt->setUInt16(index++, effMask);
         stmt->setUInt8(index++, recalculateMask);
         stmt->setUInt8(index++, itr->second->GetStackAmount());
         stmt->setInt32(index++, itr->second->GetMaxDuration());
