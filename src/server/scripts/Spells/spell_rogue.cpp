@@ -443,24 +443,23 @@ class spell_rog_hemorrhage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_rog_hemorrhage_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if(_player->HasAura(56807) && !target->HasAuraWithMechanic((1 << MECHANIC_BLEED))) //Glyph of Hemorrhage
-                            return;
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                        if (Unit* target = GetHitUnit())
+                        {
+                            if(_player->HasAura(56807) && !target->HasAuraWithMechanic((1 << MECHANIC_BLEED))) //Glyph of Hemorrhage
+                                return;
 
-                        int32 bp = int32(GetHitDamage() / 2 / 8);
-                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
-                    }
-                }
+                            int32 bp = CalculatePct(GetHitDamage() + GetHitAbsorb(), GetSpellInfo()->Effects[EFFECT_3].BasePoints) / 8;
+                            _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
+                        }
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_rog_hemorrhage_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_rog_hemorrhage_SpellScript::HandleAfterHit);
             }
         };
 
@@ -620,7 +619,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                             if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
                                 percent = sinfo->Effects[0].BasePoints;
 
-                            int32 damage = int32(GetHitDamage() / 6);
+                            int32 damage = int32(GetHitDamage() + GetHitAbsorb() / 6);
                             AddPct(damage, percent);
                             _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
                         }
