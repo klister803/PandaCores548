@@ -3819,29 +3819,17 @@ void Spell::cast(bool skipCheck)
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
                     if (!positive)
-                    {
                         procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                        procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
-                    }
                     else
-                    {
                         procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
-                        procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
-                    }
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_NONE:
                 {
                     if (positive)
-                    {
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
-                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
-                    }
                     else
-                    {
                         procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
-                    }
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_RANGED:
