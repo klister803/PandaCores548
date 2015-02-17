@@ -3220,9 +3220,21 @@ void Unit::_UpdateAutoRepeatSpell()
         // Check if able to cast
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true) != SPELL_CAST_OK)
         {
+            if (m_attacking)
+            {
+                m_attacking->_removeAttacker(this);
+                m_attacking = NULL;
+            }
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
         }
+
+        if (!m_attacking)
+            if (Unit* curspellTarget = m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets.GetUnitTarget())
+            {
+                m_attacking = curspellTarget;
+                m_attacking->_addAttacker(this);
+            }
 
         // we want to shoot
         Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, TRIGGERED_FULL_MASK);
