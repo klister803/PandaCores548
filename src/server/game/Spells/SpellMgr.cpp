@@ -3822,9 +3822,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 148008: // Essence of Yu'lon
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
-                case 146194: // Flurry of Xuen
-                    spellInfo->Effects[EFFECT_1].TriggerSpell = 0;
-                    break;
                 case 51640: // Taunt Flag Targeting
                     spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     break;

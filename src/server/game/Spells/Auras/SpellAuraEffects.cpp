@@ -7281,7 +7281,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
     }
 }
 
-void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, SpellEffIndex /*effIndex*/) const
+void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, SpellEffIndex effIndex) const
 {
     // generic casting code with custom spells and target/caster customs
     uint32 triggerSpellId = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).TriggerSpell;
@@ -7519,6 +7519,29 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
             {
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     return;
+                break;
+            }
+            case 146194: // Flurry of Xuen
+            {
+                switch (effIndex)
+                {
+                    case EFFECT_0:
+                    {
+                        if (caster->getClass() == CLASS_HUNTER) 
+                            return;
+                        break;
+                    }
+                    case EFFECT_1:
+                    {
+                        if (caster->getClass() != CLASS_HUNTER) 
+                            return;
+
+                        if (Player* plr = caster->ToPlayer())
+                            if (Unit* _target = plr->GetSelectedUnit())
+                                caster->CastSpell(_target, triggerSpellId, true);
+                        return;
+                    }
+                }
                 break;
             }
             case 107851: // Focused Assault, Hagara, Dragon Soul
