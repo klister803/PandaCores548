@@ -1960,7 +1960,7 @@ class npc_zafod_boombox : public CreatureScript
                 if (msg == EQUIP_ERR_OK)
                 {
                     Item* item = player->StoreNewItem(dest, 49278, true);
-                    player->SendNewItem(item, NULL, 1, true, false);
+                    player->SendNewItem(item, 1, true, false);
                 }
                 else
                 {

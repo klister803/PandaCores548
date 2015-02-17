@@ -2830,7 +2830,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
 
         // send info to the client
-        player->SendNewItem(pItem, NULL, num_to_add, true, bgType == 0);
+        player->SendNewItem(pItem, num_to_add, true, bgType == 0);
 
         // we succeeded in creating at least one item, so a level up is possible
         if (bgType == 0)
@@ -3618,21 +3618,21 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                         uint64 battlePetGUID = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetGUIDBySpell(m_spellInfo->Id);
                         if (battlePetGUID)
                         {
-                            if (PetInfo * pet = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
+                            if (PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
                             {
                                 // set guids
                                 m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
                                 summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
                                 // timestamp for custom name cache
-                                if (pet->GetCustomName() != "")
+                                if (petInfo->GetCustomName() != "")
                                     summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
                                 // quality
-                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, pet->GetQuality());
+                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
                                 // level
-                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, pet->GetLevel());
+                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
                                 // some pet data
-                                summon->SetHealth(pet->GetHealth());
-                                summon->SetMaxHealth(pet->GetMaxHealth());
+                                summon->SetHealth(petInfo->GetHealth());
+                                summon->SetMaxHealth(petInfo->GetMaxHealth());
                                 // more....
                             }
                         }
@@ -8381,17 +8381,17 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
     uint8 updateCount = 0;
     for (PetJournal::const_iterator j = journal.begin(); j != journal.end(); ++j)
     {
-        PetInfo * pet = j->second;
+        PetJournalInfo * petInfo = j->second;
 
-        if (!pet)
+        if (!petInfo)
             continue;
 
         // calc health restore pct
         int32 healthPct = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(m_caster);
-        if (pet->IsDead() || pet->IsHurt())
+        if (petInfo->IsDead() || petInfo->IsHurt())
         {
-            pet->SetHealth(uint32(pet->GetMaxHealth() * healthPct / 100.0f));
-            pet->SetInternalState(STATE_UPDATED);
+            petInfo->SetHealth(uint32(petInfo->GetMaxHealth() * healthPct / 100.0f));
+            petInfo->SetInternalState(STATE_UPDATED);
             updateCount++;
         }
     }

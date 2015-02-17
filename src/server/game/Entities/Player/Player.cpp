@@ -15858,7 +15858,7 @@ void Player::SendItemDurations()
         (*itr)->SendTimeUpdate(this);
 }
 
-void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received, bool created, bool broadcast)
+void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast, PetJournalInfo * petInfo)
 {
     if (!item)                                               // prevent crash
         return;
@@ -15888,11 +15888,11 @@ void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received,
     data.WriteGuidBytes<4>(guid2);
     data.WriteGuidBytes<0, 1>(guid);
     data.WriteGuidBytes<7>(guid2);
-    data << uint32(pet ? pet->GetQuality() : 0);            // battle pet quality
+    data << uint32(petInfo ? petInfo->GetQuality() : 0);    // battle pet quality
     data.WriteGuidBytes<3>(guid2);
-    data << uint32(pet ? pet->GetBreedID() : 0);            // battle pet breedID
+    data << uint32(petInfo ? petInfo->GetBreedID() : 0);    // battle pet breedID
     data.WriteGuidBytes<5>(guid2);
-    data << uint32(pet ? pet->GetLevel() : 0);              // battle pet level
+    data << uint32(petInfo ? petInfo->GetLevel() : 0);      // battle pet level
     data.WriteGuidBytes<7>(guid);
     data.WriteGuidBytes<6>(guid2);
     data.WriteGuidBytes<4>(guid);
@@ -15901,7 +15901,7 @@ void Player::SendNewItem(Item* item, PetInfo * pet, uint32 count, bool received,
     data.WriteGuidBytes<5>(guid);
     data.WriteGuidBytes<0>(guid2);
     data << uint8(item->GetBagSlot());                      // bagslot
-    data << uint32(pet ? pet->GetSpeciesID() : 0);          // battle pet speciesID
+    data << uint32(petInfo ? petInfo->GetSpeciesID() : 0);  // battle pet speciesID
     data << uint32(item->GetItemRandomPropertyId());        // random property
     data << uint32(item->GetEntry());                       // item id
     data.WriteGuidBytes<6>(guid);
@@ -16871,7 +16871,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
             if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, quest->RewardChoiceItemCount[reward]) == EQUIP_ERR_OK)
             {
                 Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-                SendNewItem(item, NULL, quest->RewardChoiceItemCount[reward], true, false);
+                SendNewItem(item, quest->RewardChoiceItemCount[reward], true, false);
             }
         }
     }
@@ -16886,7 +16886,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, quest->RewardItemIdCount[i]) == EQUIP_ERR_OK)
                 {
                     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-                    SendNewItem(item, NULL, quest->RewardItemIdCount[i], true, false);
+                    SendNewItem(item, quest->RewardItemIdCount[i], true, false);
                 }
             }
         }
@@ -16902,7 +16902,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                 if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, PackageItem->ItemID, PackageItem->count) == EQUIP_ERR_OK)
                 {
                     Item* item = StoreNewItem(dest, PackageItem->ItemID, true, Item::GenerateItemRandomPropertyId(PackageItem->ItemID));
-                    SendNewItem(item, NULL, PackageItem->count, true, false);
+                    SendNewItem(item, PackageItem->count, true, false);
                 }
             }
         }
@@ -17510,7 +17510,7 @@ bool Player::GiveQuestSourceItem(Quest const* quest)
         if (msg == EQUIP_ERR_OK)
         {
             Item* item = StoreNewItem(dest, srcitem, true);
-            SendNewItem(item, NULL, count, true, false);
+            SendNewItem(item, count, true, false);
             return true;
         }
         // player already have max amount required item, just report success
@@ -23946,7 +23946,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         data.WriteGuidBytes<6, 4>(guid);
 
         GetSession()->SendPacket(&data);
-        SendNewItem(it, NULL, count, true, false, false);
+        SendNewItem(it, count, true, false, false);
 
         if (!bStore)
             AutoUnequipOffhandIfNeed();
@@ -27539,7 +27539,7 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
             }
 
             Item* pItem = StoreNewItem(dest, lootItem->itemid, true, lootItem->randomPropertyId);
-            SendNewItem(pItem, NULL, lootItem->count, false, false, broadcast);
+            SendNewItem(pItem, lootItem->count, false, false, broadcast);
         }
     }
     if (max_slot > 0)
@@ -27625,7 +27625,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
                 if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
                     guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
 
-        SendNewItem(newitem, NULL, uint32(item->count), false, false, true);
+        SendNewItem(newitem, uint32(item->count), false, false, true);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item->itemid, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item->itemid, item->count);
@@ -28797,7 +28797,7 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 
     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
     if (item)
-        SendNewItem(item, NULL, count, true, false);
+        SendNewItem(item, count, true, false);
     else
         return false;
     return true;
@@ -28936,7 +28936,7 @@ void Player::RefundItem(Item* item)
             InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, count);
             ASSERT(msg == EQUIP_ERR_OK) /// Already checked before
             Item* it = StoreNewItem(dest, itemid, true);
-            SendNewItem(it, NULL, count, true, false, true);
+            SendNewItem(it, count, true, false, true);
         }
     }
 

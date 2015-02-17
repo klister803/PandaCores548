@@ -118,7 +118,7 @@ class npc_verdisa_beglaristrasz_eternos : public CreatureScript
                 uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count);
                 if (msg == EQUIP_ERR_OK)
                     if (Item* item = player->StoreNewItem(dest, itemId, true))
-                        player->SendNewItem(item, NULL, count, true, true);
+                        player->SendNewItem(item, count, true, true);
             }
 
             void RemoveEssence(Player* player, uint32 itemId)

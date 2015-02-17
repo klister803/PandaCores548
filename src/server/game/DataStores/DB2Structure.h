@@ -168,7 +168,7 @@ struct BattlePetAbilityEntry
     uint32 Type;                // 1
     //uint32 fileDataEntry;     // 2
     uint32 turnCooldown;        // 3
-    uint32 auraInstanceID;      // 4
+    uint32 auraAbilityID;       // 4
     uint32 auraDuration;        // 5
     //string name               // 6
     //string description        // 7

@@ -389,19 +389,16 @@ bool OPvPCapturePointNA::HandleCustomSpell(Player* player, uint32 spellId, GameO
             count -= noSpaceForCount;
 
         if (count == 0 || dest.empty())                         // can't add any
-        {
             return true;
-        }
 
         Item* item = player->StoreNewItem(dest, itemid, true);
 
         if (count > 0 && item)
-        {
-            player->SendNewItem(item, NULL, count, true, false);
-        }
+            player->SendNewItem(item, count, true, false);
 
         return true;
     }
+
     return false;
 }
 
