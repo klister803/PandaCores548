@@ -7536,8 +7536,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                         if (caster->getClass() != CLASS_HUNTER) 
                             return;
 
-                        if (Player* plr = caster->ToPlayer())
-                            if (Unit* _target = plr->GetSelectedUnit())
+                        if (Unit* _target = caster->getVictim())
+                            if (caster->HasInArc(static_cast<float>(M_PI), _target))
                                 caster->CastSpell(_target, triggerSpellId, true);
                         return;
                     }
