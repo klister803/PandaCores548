@@ -492,7 +492,7 @@ public:
     PetBattleRoundResults* UseTrap(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
-    //void SendFinalRound(PetBattleFinalRound* finalRound);
+    void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
     void CheckTrapStatuses(PetBattleRoundResults* round);

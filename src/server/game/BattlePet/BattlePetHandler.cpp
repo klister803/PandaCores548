@@ -475,20 +475,14 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     // Forfeit - handle in QuitNotify
 
     // FinalRound
-    /*if (petBattle->NextRoundFinal() && moveType != 4)
+    if (petBattle->NextRoundFinal() && moveType != 4)
     {
-        PetBattleFinalRound* finalRound = petBattle->PrepareFinalRound();
-
-        if (finalRound)
+        if (!petBattle->FinalRoundHandler(false))
         {
-            petBattle->SendFinalRound(finalRound);
-
-            delete finalRound;
-            finalRound = NULL;
-        }
-        else
             petBattle->FinishPetBattle();
-    }*/
+            // error response
+        }
+    }
 }
 
 void WorldSession::HandlePetBattleFinalNotify(WorldPacket& recvData)
