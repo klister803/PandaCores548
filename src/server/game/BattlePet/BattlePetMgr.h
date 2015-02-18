@@ -467,7 +467,8 @@ struct PetBattleRoundResults
     void AuraProcessingEnd();
     void ProcessAbilityDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 damage, uint8 turnInstanceID);
     void ProcessSkipTurn(PetBattleInfo* attacker);
-    void SetTrapStatus(uint8 team, TrapStatus status) { trapStatus[team] = status; }
+    void SetTrapStatus(uint8 team, uint8 status) { trapStatus[team] = status; }
+    uint8 GetTrapStatus(uint8 team) { return trapStatus[team]; }
 };
 
 typedef std::map<uint64, PetJournalInfo*> PetJournal;
@@ -489,15 +490,17 @@ public:
     void SendFirstRound(PetBattleRoundResults* firstRound);
     bool UseAbilityHandler(uint32 abilityID, uint32 roundID);
     bool SkipTurnHandler(uint32 _roundID);
-    PetBattleRoundResults* UseTrap(uint32 _roundID);
+    bool UseTrapHandler(uint32 _roundID);
+    bool SwapPetHandler(uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
     void CheckTrapStatuses(PetBattleRoundResults* round);
+    void UpdateLoadout();
 
-    void FinishPetBattle();
+    void FinishPetBattle(bool error = false);
     void SendFinishPetBattle();
 
     PetBattleInfo* GetOpponentPet(uint8 team)
@@ -611,6 +614,7 @@ protected:
     uint32 petsCount[2];
     uint64 teamGuids[2];
     uint8 winners[2];
+    uint8 petBattleState;
     bool nextRoundFinal;
     bool abandoned;
 
@@ -635,7 +639,7 @@ public:
     void AddPetBattleSlot(uint64 guid, uint8 slotID);
 
     void CloseWildPetBattle();
-    void SendUpdatePets(bool added = false);
+    void SendUpdatePets(std::list<uint64> &updates, bool added = false);
 
     void CreateWildBattle(Player* initiator, ObjectGuid wildCreatureGuid);
 

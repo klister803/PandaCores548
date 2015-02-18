@@ -403,7 +403,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     uint32 abilityID = 0;
     uint32 roundID = 0;
     uint8 moveType = 0;
-    uint8 newFrontPet = 0;
+    int8 newFrontPet = -1;
     uint8 battleInterrupted = 0;
 
     if (!bit5)
@@ -429,7 +429,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     {
         if (!petBattle->UseAbilityHandler(abilityID, roundID))
         {
-            petBattle->FinishPetBattle();
+            petBattle->FinishPetBattle(true);
             // error response
         }
     }
@@ -438,48 +438,36 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     {
         if (!petBattle->SkipTurnHandler(roundID))
         {
-            petBattle->FinishPetBattle();
+            petBattle->FinishPetBattle(true);
             // error response
         }
     }
     // TrapPet
     else if (moveType == 3)
     {
-        PetBattleRoundResults* round = petBattle->UseTrap(roundID);
-
-        if (round)
+        if (!petBattle->UseTrapHandler(roundID))
         {
-            //petBattle->GenerateTrapStatuses(round);
-            petBattle->SendRoundResults(round);
-
-            delete round;
-            round = NULL;
+            petBattle->FinishPetBattle(true);
+            // error response
         }
-        else
-            petBattle->FinishPetBattle();
-
-        petBattle->SetWinner(TEAM_ALLY);
-
-        /*PetBattleFinalRound* finalRound = petBattle->PrepareFinalRound(false, true);
-
-        if (finalRound)
-        {
-            petBattle->SendFinalRound(finalRound);
-
-            delete finalRound;
-            finalRound = NULL;
-        }
-        else
-            petBattle->FinishPetBattle();*/
     }
     // Forfeit - handle in QuitNotify
+    // SwapPet
+    else if (newFrontPet != -1)
+    {
+        if (!petBattle->SwapPetHandler(roundID))
+        {
+            petBattle->FinishPetBattle(true);
+            // error response
+        }
+    }
 
     // FinalRound
     if (petBattle->NextRoundFinal() && moveType != 4)
     {
         if (!petBattle->FinalRoundHandler(false))
         {
-            petBattle->FinishPetBattle();
+            petBattle->FinishPetBattle(true);
             // error response
         }
     }
@@ -498,16 +486,10 @@ void WorldSession::HandlePetBattleQuitNotify(WorldPacket& recvData)
         petBattle->SetAbandoned(true);
         petBattle->SetWinner(TEAM_ENEMY);
 
-        /*PetBattleFinalRound* finalRound = petBattle->PrepareFinalRound(true);
-
-        if (finalRound)
+        if (!petBattle->FinalRoundHandler(true))
         {
-            petBattle->SendFinalRound(finalRound);
-
-            delete finalRound;
-            finalRound = NULL;
+            petBattle->FinishPetBattle();
+            // error response
         }
-        else
-            petBattle->FinishPetBattle();*/
     }
 }

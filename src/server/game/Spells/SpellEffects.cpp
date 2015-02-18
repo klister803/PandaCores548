@@ -8334,8 +8334,12 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
             delete accumulator;
             player->GetBattlePetMgr()->AddPetInJournal(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
         }
-        // update
-        player->GetBattlePetMgr()->SendUpdatePets(true);
+        std::list<uint64> updates;
+        updates.clear();
+
+        updates.push_back(petguid);
+        // update for client
+        player->GetBattlePetMgr()->SendUpdatePets(updates, true);
         // learn pet spell, hack, TODO: fix it
         player->learnSpell(bp->spellId, false);
         // destroy the cage
@@ -8378,7 +8382,8 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
     PetJournal journal = player->GetBattlePetMgr()->GetPetJournal();
 
     // healed/revived hurt pets
-    uint8 updateCount = 0;
+    std::list<uint64> updates;
+    updates.clear();
     for (PetJournal::const_iterator j = journal.begin(); j != journal.end(); ++j)
     {
         PetJournalInfo * petInfo = j->second;
@@ -8391,13 +8396,11 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
         if (petInfo->IsDead() || petInfo->IsHurt())
         {
             petInfo->SetHealth(uint32(petInfo->GetMaxHealth() * healthPct / 100.0f));
-            petInfo->SetInternalState(STATE_UPDATED);
-            updateCount++;
+            updates.push_back(j->first);
         }
     }
 
-    if (updateCount)
-        player->GetBattlePetMgr()->SendUpdatePets();
+    player->GetBattlePetMgr()->SendUpdatePets(updates);
 }
 
 //! Based on SPELL_EFFECT_ACTIVATE_SCENE3 spell 117790
