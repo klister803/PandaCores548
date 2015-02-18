@@ -793,7 +793,7 @@ void PetBattleWild::ForceReplacePetHandler(uint8 petNumberDest, uint8 index, uin
 
         data.WriteBit(!effect->stackDepth);
         data.WriteBit(!effect->abilityEffectID);
-        data.WriteBit(!effect->casterPBOID);
+        data.WriteBit(effect->casterPBOID == -1 ? 1 : 0);
         data.WriteBit(!effect->flags);
 
         // effect target count
