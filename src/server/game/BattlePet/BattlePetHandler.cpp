@@ -434,7 +434,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         }
     }
     // SkipTurn
-    else if (moveType == 2)
+    else if (moveType == 2 && newFrontPet == -1)
     {
         if (!petBattle->SkipTurnHandler(roundID))
         {
@@ -455,7 +455,7 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
     // SwapPet
     else if (newFrontPet != -1)
     {
-        if (!petBattle->SwapPetHandler(roundID))
+        if (!petBattle->SwapPetHandler(newFrontPet, roundID))
         {
             petBattle->FinishPetBattle(true);
             // error response

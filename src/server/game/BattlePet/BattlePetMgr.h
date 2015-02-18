@@ -491,7 +491,7 @@ public:
     bool UseAbilityHandler(uint32 abilityID, uint32 roundID);
     bool SkipTurnHandler(uint32 _roundID);
     bool UseTrapHandler(uint32 _roundID);
-    bool SwapPetHandler(uint32 _roundID);
+    bool SwapPetHandler(uint8 newFrontPet, uint32 _roundID);
     void SendRoundResults(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();

@@ -922,7 +922,10 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
                 if (GetAlivePetCountInTeam(TEAM_ENEMY))
                     replace[TEAM_ENEMY] = true;
                 else
+                {
+                    SetWinner(TEAM_ALLY);
                     nextRoundFinal = true;
+                }
             }
             else
             {
@@ -1069,7 +1072,7 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
     round->AuraProcessingEnd();
 
     // set trap status
-    round->trapStatus[TEAM_ALLY] = PET_BATTLE_TRAP_ERR_8;
+    round->SetTrapStatus(TEAM_ALLY, PET_BATTLE_TRAP_ERR_8);
 
     // increase round
     round->roundID++;
@@ -1083,7 +1086,7 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
     return true;
 }
 
-bool PetBattleWild::SwapPetHandler(uint32 _roundID)
+bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
 {
     PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
 
@@ -1094,7 +1097,19 @@ bool PetBattleWild::SwapPetHandler(uint32 _roundID)
     if (!allyPet || !enemyPet)
         return false;
 
-    round->ProcessSkipTurn(allyPet);
+    // simple combination of effect 4 and target type 3 - needed function
+    PetBattleEffect* effect = new PetBattleEffect(allyPet->GetPetNumber(), 0, 4, 0, 0, 0, 0);
+    PetBattleEffectTarget* target = new PetBattleEffectTarget(newFrontPet, 3);
+
+    effect->AddTarget(target);
+    round->AddEffect(effect);
+
+    SetActivePet(TEAM_ALLY, GetPetIndexByPetNumber(newFrontPet));
+    // check active pets
+    allyPet = GetActivePet(TEAM_ALLY);
+
+    if (!allyPet)
+        return false;
 
     uint32 damage = 0;
     if (PetBattleAbilityInfo* ainfo = enemyPet->GetAbilityInfoByIndex(0))
@@ -1747,10 +1762,10 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* attacker, PetBat
 
 void PetBattleRoundResults::ProcessSkipTurn(PetBattleInfo* attacker)
 {
-    // simple combination of effect 4 and target type 6
+    // simple combination of effect 4 and target type 3
     // send PETBATTLE_EFFECT_FLAG_INVALID_TARGET for something? fake swap?
     PetBattleEffect* effect = new PetBattleEffect(attacker->GetPetNumber(), 0, 4, 1, 0, 0, 0);
-    PetBattleEffectTarget* target = new PetBattleEffectTarget(attacker->GetPetNumber(), 6);
+    PetBattleEffectTarget* target = new PetBattleEffectTarget(attacker->GetPetNumber(), 3);
 
     effect->AddTarget(target);
     AddEffect(effect);
