@@ -364,7 +364,12 @@ void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
     uint8 firstPetID;
     recvData >> firstPetID;
 
-    if (PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild())
+    PetBattleWild* petBattle = _player->GetBattlePetMgr()->GetPetBattleWild();
+
+    if (!petBattle)
+        return;
+
+    if (!firstPetID)
     {
         if (PetBattleRoundResults* firstRound = petBattle->PrepareFirstRound(firstPetID))
         {
@@ -378,6 +383,11 @@ void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
             petBattle->FinishPetBattle();
             // send error
         }
+    }
+    // replace player pet if previous are DEAD!
+    else
+    {
+        petBattle->ForceReplacePetHandler(firstPetID, petBattle->GetPetIndexByPetNumber(firstPetID), petBattle->GetCurrentRoundID());
     }
 }
 
@@ -433,10 +443,10 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
             // error response
         }
     }
-    // SkipTurn
-    else if (moveType == 2 && newFrontPet == -1)
+    // SkipTurn / SwapPet
+    else if (moveType == 2 && newFrontPet != -1)
     {
-        if (!petBattle->SkipTurnHandler(roundID))
+        if (!petBattle->SwapPetHandler(newFrontPet, roundID))
         {
             petBattle->FinishPetBattle(true);
             // error response
@@ -452,15 +462,6 @@ void WorldSession::HandlePetBattleInput(WorldPacket& recvData)
         }
     }
     // Forfeit - handle in QuitNotify
-    // SwapPet
-    else if (newFrontPet != -1)
-    {
-        if (!petBattle->SwapPetHandler(newFrontPet, roundID))
-        {
-            petBattle->FinishPetBattle(true);
-            // error response
-        }
-    }
 
     // FinalRound
     if (petBattle->NextRoundFinal() && moveType != 4)

@@ -484,7 +484,7 @@ public:
 
     void SendFullUpdate(ObjectGuid creatureGuid);
 
-    void ReplacePetHandler(uint8 petNumberSource, uint8 petNumberDest, uint8 index, uint32 roundID, bool enemy = false);
+    void ForceReplacePetHandler(uint8 petNumberDest, uint8 index, uint32 roundID, bool enemy = false);
 
     PetBattleRoundResults* PrepareFirstRound(uint8 frontPet);
     void SendFirstRound(PetBattleRoundResults* firstRound);
@@ -492,7 +492,7 @@ public:
     bool SkipTurnHandler(uint32 _roundID);
     bool UseTrapHandler(uint32 _roundID);
     bool SwapPetHandler(uint8 newFrontPet, uint32 _roundID);
-    void SendRoundResults(PetBattleRoundResults* round);
+    void SendRoundResults(PetBattleRoundResults* round, bool forceSwap = false);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
@@ -589,6 +589,24 @@ public:
         return count;
     }
 
+    // only demo
+    int8 GetLastAlivePetID()
+    {
+        for (uint8 i = 0; i < 2; ++i)
+        {
+            if (i == TEAM_ALLY)
+            {
+                for (uint8 j = 0; j < MAX_ACTIVE_BATTLE_PETS; ++j)
+                {
+                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead())
+                        return battleInfo[i][j]->GetPetNumber();
+                }
+            }
+        }
+
+        return -1;
+    }
+
     uint8 GetPetIndexByPetNumber(uint8 petNumber)
     {
         switch (petNumber)
@@ -603,6 +621,9 @@ public:
         }
     }
 
+    uint32 GetCurrentRoundID();
+    void SetCurrentRoundID(uint32 roundID) { currentRoundID = roundID; }
+
 private:
     Player* m_player;
 
@@ -611,6 +632,7 @@ protected:
     //PetBattleRoundResults* curRound;
     //PetBattleFinalRound* finalRound;
     std::map<uint32, PetBattleEnviroment*> enviro;
+    uint32 currentRoundID;
     uint32 petsCount[2];
     uint64 teamGuids[2];
     uint8 winners[2];

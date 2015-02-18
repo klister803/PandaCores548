@@ -456,6 +456,7 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
     }
 
     petBattleState = 1;
+    SetCurrentRoundID(0);
 
     return true;
 }
@@ -746,11 +747,21 @@ void PetBattleWild::SendFirstRound(PetBattleRoundResults* firstRound)
     m_player->GetSession()->SendPacket(&data);
 }
 
-void PetBattleWild::ReplacePetHandler(uint8 petNumberSource, uint8 petNumberDest, uint8 index, uint32 roundID, bool enemy)
+void PetBattleWild::ForceReplacePetHandler(uint8 petNumberDest, uint8 index, uint32 roundID, bool enemy)
 {
     PetBattleRoundResults* round = new PetBattleRoundResults(roundID);
 
-    PetBattleEffect* effect = new PetBattleEffect(petNumberSource, 0, 4, 0, 0, 0, 0);
+    // check active pets
+    PetBattleInfo* activePet = NULL;
+    if (enemy)
+        activePet = GetActivePet(TEAM_ENEMY);
+    else
+        activePet = GetActivePet(TEAM_ALLY);
+
+    if (!activePet)
+        return;
+
+    PetBattleEffect* effect = new PetBattleEffect(activePet->GetPetNumber(), 0, 4, 0, 0, 0, 0);
     PetBattleEffectTarget* target = new PetBattleEffectTarget(petNumberDest, 3);
 
     effect->AddTarget(target);
@@ -848,6 +859,8 @@ void PetBattleWild::ReplacePetHandler(uint8 petNumberSource, uint8 petNumberDest
 bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
 {
     PetBattleRoundResults* round = new PetBattleRoundResults(roundID);
+    // default state - need system for control it
+    petBattleState = 2;
 
     // check active pets
     PetBattleInfo* allyPet = GetActivePet(TEAM_ALLY);
@@ -882,9 +895,10 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
         return false;
 
     // some testing
-    bool replace[2];
-    replace[TEAM_ALLY] = false;
-    replace[TEAM_ENEMY] = false;
+    bool forceReplace[2];
+    forceReplace[TEAM_ALLY] = false;
+    forceReplace[TEAM_ENEMY] = false;
+    bool forceSwap = false;
 
     uint32 damage = 0;
     // TODO: script battle for wild pets
@@ -920,7 +934,7 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
             if (enemyPet->IsDead())
             {
                 if (GetAlivePetCountInTeam(TEAM_ENEMY))
-                    replace[TEAM_ENEMY] = true;
+                    forceReplace[TEAM_ENEMY] = true;
                 else
                 {
                     SetWinner(TEAM_ALLY);
@@ -933,6 +947,14 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
                 {
                     SetWinner(TEAM_ENEMY);
                     nextRoundFinal = true;
+                }
+                else if (GetAlivePetCountInTeam(TEAM_ALLY) == 1)
+                    forceReplace[TEAM_ALLY] = true;
+                else
+                {
+                    // set state to waiting new pet after previous pet death
+                    petBattleState = 3;
+                    forceSwap = true;
                 }
             }
         }
@@ -969,20 +991,33 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
 
     // increase round number
     round->roundID++;
+    SetCurrentRoundID(round->roundID);
 
     CheckTrapStatuses(round);
-    SendRoundResults(round);
+    SendRoundResults(round, forceSwap);
 
-    if (replace[TEAM_ENEMY])
-        ReplacePetHandler(enemyPet->GetPetNumber(), enemyPet->GetPetNumber() + 1, GetPetIndexByPetNumber(enemyPet->GetPetNumber() + 1), round->roundID, true);
+    if (forceReplace[TEAM_ENEMY])
+        ForceReplacePetHandler(enemyPet->GetPetNumber() + 1, GetPetIndexByPetNumber(enemyPet->GetPetNumber() + 1), round->roundID, true);
+    else if (forceReplace[TEAM_ALLY])
+        ForceReplacePetHandler(GetLastAlivePetID(), GetPetIndexByPetNumber(GetLastAlivePetID()), round->roundID);
+
+    // return to default state - need system for control it
+    petBattleState = 2;
 
     delete round;
     return true;
 }
 
+uint32 PetBattleWild::GetCurrentRoundID()
+{
+    return currentRoundID;
+}
+
 bool PetBattleWild::SkipTurnHandler(uint32 _roundID)
 {
     PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
+    // default state - need system for control it
+    petBattleState = 2;
 
     // check active pets
     PetBattleInfo* allyPet = GetActivePet(TEAM_ALLY);
@@ -993,23 +1028,61 @@ bool PetBattleWild::SkipTurnHandler(uint32 _roundID)
 
     round->ProcessSkipTurn(allyPet);
 
+    // some testing
+    bool forceReplace[2];
+    forceReplace[TEAM_ALLY] = false;
+    forceReplace[TEAM_ENEMY] = false;
+    bool forceSwap = false;
+
     uint32 damage = 0;
+    uint32 abilityID = 0;
     if (PetBattleAbilityInfo* ainfo = enemyPet->GetAbilityInfoByIndex(0))
     {
+        abilityID = ainfo->GetID();
         damage = ainfo->CalculateDamage(enemyPet, allyPet);
         round->ProcessAbilityDamage(enemyPet, allyPet, ainfo->GetID(), damage, 1);
     }
     else
         return false;
 
+    if (allyPet->IsDead())
+    {
+        // added petID to died ID
+        round->petXDiedNumbers.push_back(allyPet->GetPetNumber());
+
+        // set state DEAD (testing!)
+        PetBattleEffect* effect = new PetBattleEffect(enemyPet->GetPetNumber(), enemyPet->GetVisualEffectIDByAbilityID(abilityID), 6, 0, 0, 1, 1);
+        PetBattleEffectTarget* target = new PetBattleEffectTarget(allyPet->GetPetNumber(), 4);
+        effect->AddTarget(target);
+        round->AddEffect(effect);
+
+        if (!GetAlivePetCountInTeam(TEAM_ALLY))
+        {
+            SetWinner(TEAM_ENEMY);
+            nextRoundFinal = true;
+        }
+        else if (GetAlivePetCountInTeam(TEAM_ALLY) == 1)
+            forceReplace[TEAM_ALLY] = true;
+        else
+        {
+            // set state to waiting new pet after previous pet death
+            petBattleState = 3;
+            forceSwap = true;
+        }
+    }
+
     round->AuraProcessingBegin();
     round->AuraProcessingEnd();
 
     // increase round number
     round->roundID++;
+    SetCurrentRoundID(round->roundID);
 
     CheckTrapStatuses(round);
-    SendRoundResults(round);
+    SendRoundResults(round, forceSwap);
+
+    if (forceReplace[TEAM_ALLY])
+        ForceReplacePetHandler(GetLastAlivePetID(), GetPetIndexByPetNumber(GetLastAlivePetID()), round->roundID);
 
     delete round;
     return true;
@@ -1037,6 +1110,8 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
         trapped = 1;
 
     PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
+    // default state - need system for control it
+    petBattleState = 2;
 
     PetBattleEffect* effect = new PetBattleEffect(allyPet->GetPetNumber(), 698, 5, 0, 0, 1, 1);
     PetBattleEffectTarget * target = new PetBattleEffectTarget(enemyPet->GetPetNumber(), 1);
@@ -1076,11 +1151,12 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
 
     // increase round
     round->roundID++;
+    SetCurrentRoundID(round->roundID);
 
     SendRoundResults(round);
 
     if (replace[TEAM_ENEMY])
-        ReplacePetHandler(enemyPet->GetPetNumber(), enemyPet->GetPetNumber() + 1, GetPetIndexByPetNumber(enemyPet->GetPetNumber() + 1), round->roundID, true);
+        ForceReplacePetHandler(enemyPet->GetPetNumber() + 1, GetPetIndexByPetNumber(enemyPet->GetPetNumber() + 1), round->roundID, true);
 
     delete round;
     return true;
@@ -1089,6 +1165,8 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
 bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
 {
     PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
+    // default state - need system for control it
+    petBattleState = 2;
 
     // check active pets
     PetBattleInfo* allyPet = GetActivePet(TEAM_ALLY);
@@ -1096,6 +1174,15 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
 
     if (!allyPet || !enemyPet)
         return false;
+
+    if (newFrontPet < 0 || newFrontPet > 2)
+        return false;
+
+    if (allyPet->GetPetNumber() == newFrontPet)
+    {
+        SkipTurnHandler(_roundID);
+        return true;
+    }
 
     // simple combination of effect 4 and target type 3 - needed function
     PetBattleEffect* effect = new PetBattleEffect(allyPet->GetPetNumber(), 0, 4, 0, 0, 0, 0);
@@ -1111,23 +1198,61 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
     if (!allyPet)
         return false;
 
+    // some testing
+    bool forceReplace[2];
+    forceReplace[TEAM_ALLY] = false;
+    forceReplace[TEAM_ENEMY] = false;
+    bool forceSwap = false;
+
     uint32 damage = 0;
+    uint32 abilityID = 0;
     if (PetBattleAbilityInfo* ainfo = enemyPet->GetAbilityInfoByIndex(0))
     {
+        abilityID = ainfo->GetID();
         damage = ainfo->CalculateDamage(enemyPet, allyPet);
         round->ProcessAbilityDamage(enemyPet, allyPet, ainfo->GetID(), damage, 1);
     }
     else
         return false;
 
+    if (allyPet->IsDead())
+    {
+        // added petID to died ID
+        round->petXDiedNumbers.push_back(allyPet->GetPetNumber());
+
+        // set state DEAD (testing!)
+        PetBattleEffect* effect = new PetBattleEffect(enemyPet->GetPetNumber(), enemyPet->GetVisualEffectIDByAbilityID(abilityID), 6, 0, 0, 1, 1);
+        PetBattleEffectTarget* target = new PetBattleEffectTarget(allyPet->GetPetNumber(), 4);
+        effect->AddTarget(target);
+        round->AddEffect(effect);
+
+        if (!GetAlivePetCountInTeam(TEAM_ALLY))
+        {
+            SetWinner(TEAM_ENEMY);
+            nextRoundFinal = true;
+        }
+        else if (GetAlivePetCountInTeam(TEAM_ALLY) == 1)
+            forceReplace[TEAM_ALLY] = true;
+        else
+        {
+            // set state to waiting new pet after previous pet death
+            petBattleState = 3;
+            forceSwap = true;
+        }
+    }
+
     round->AuraProcessingBegin();
     round->AuraProcessingEnd();
 
     // increase round number
     round->roundID++;
+    SetCurrentRoundID(round->roundID);
 
     CheckTrapStatuses(round);
-    SendRoundResults(round);
+    SendRoundResults(round, forceSwap);
+
+    if (forceReplace[TEAM_ALLY])
+        ForceReplacePetHandler(GetLastAlivePetID(), GetPetIndexByPetNumber(GetLastAlivePetID()), round->roundID);
 
     delete round;
     return true;
@@ -1164,7 +1289,7 @@ void PetBattleWild::CheckTrapStatuses(PetBattleRoundResults* round)
     round->SetTrapStatus(TEAM_ALLY, allyTrapStatus);
 }
 
-void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
+void PetBattleWild::SendRoundResults(PetBattleRoundResults* round, bool forceSwap)
 {
     WorldPacket data(SMSG_PET_BATTLE_ROUND_RESULT);
     data.WriteBit(0); // !hasNextBattleState
@@ -1273,13 +1398,23 @@ void PetBattleWild::SendRoundResults(PetBattleRoundResults* round)
 
     for (uint8 i = 0; i < 2; ++i)
     {
-        data << uint8(0);  // NextInputFlags
+        if (forceSwap)
+        {
+            if (i == TEAM_ALLY)
+                data << uint8(8);
+            else
+                data << uint8(6);  // NextInputFlags - unk
+        }
+        else
+        {
+            data << uint8(0);  // NextInputFlags
+        }
         data << uint16(0); // RoundTimeSecs
         data << uint8(round->trapStatus[i]);  // NextTrapStatus
     }
 
     data << uint32(round->roundID);
-    data << uint8(2); // NextPetBattleState
+    data << uint8(petBattleState); // NextPetBattleState
 
     if (round->petXDiedNumbers.size() > 0)
     {
