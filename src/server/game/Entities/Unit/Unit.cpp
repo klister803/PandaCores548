@@ -18854,7 +18854,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     triggered_spell_id = itr->spell_trigger;
 
-                    if (int32 alldamage = dmgInfoProc->GetDamageBeforeHit())
+                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage() + dmgInfoProc->GetAbsorb())
                     {
                         uint32 count = getThreatManager().getThreatList().size();
                         float _percent = triggerAmount / 100.0f;
