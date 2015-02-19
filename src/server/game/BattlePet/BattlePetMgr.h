@@ -580,7 +580,7 @@ public:
             {
                 for (uint8 j = 0; j < MAX_ACTIVE_BATTLE_PETS; ++j)
                 {
-                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead())
+                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead() && !battleInfo[i][j]->Captured())
                         count++;
                 }
             }

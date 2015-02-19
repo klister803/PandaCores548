@@ -981,6 +981,46 @@ bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)
             }
             else
                 return false;
+
+            if (first->IsDead())
+            {
+                // added petID to died ID
+                round->petXDiedNumbers.push_back(first->GetPetNumber());
+
+                // set state DEAD (testing!)
+                PetBattleEffect* effect = new PetBattleEffect(second->GetPetNumber(), second->GetVisualEffectIDByAbilityID(castAbilityID), 6, 0, 0, 2, 1);
+                PetBattleEffectTarget* target = new PetBattleEffectTarget(first->GetPetNumber(), 4);
+                effect->AddTarget(target);
+                round->AddEffect(effect);
+
+                // replace pet or end battle
+                if (enemyPet->IsDead())
+                {
+                    if (GetAlivePetCountInTeam(TEAM_ENEMY))
+                        forceReplace[TEAM_ENEMY] = true;
+                    else
+                    {
+                        SetWinner(TEAM_ALLY);
+                        nextRoundFinal = true;
+                    }
+                }
+                else
+                {
+                    if (!GetAlivePetCountInTeam(TEAM_ALLY))
+                    {
+                        SetWinner(TEAM_ENEMY);
+                        nextRoundFinal = true;
+                    }
+                    else if (GetAlivePetCountInTeam(TEAM_ALLY) == 1)
+                        forceReplace[TEAM_ALLY] = true;
+                    else
+                    {
+                        // set state to waiting new pet after previous pet death
+                        petBattleState = 3;
+                        forceSwap = true;
+                    }
+                }
+            }
         }
     }
     else
@@ -1105,9 +1145,9 @@ bool PetBattleWild::UseTrapHandler(uint32 _roundID)
         return false;
 
     // check chance - base implemented
-    uint8 trapped = 0;
-    if (roll_chance_i(70))
-        trapped = 1;
+    uint8 trapped = 1;
+    //if (roll_chance_i(70))
+        //trapped = 1;
 
     PetBattleRoundResults* round = new PetBattleRoundResults(_roundID);
     // default state - need system for control it
@@ -1280,7 +1320,7 @@ void PetBattleWild::CheckTrapStatuses(PetBattleRoundResults* round)
 
     // some checks
     uint32 spell = enemyPet->GetSummonSpell();
-    if (m_player->HasActiveSpell(spell))
+    if (m_player->HasSpell(spell))
         allyTrapStatus = PET_BATTLE_TRAP_ERR_5;
 
     if (allyPet->IsDead() || enemyPet->IsDead())
