@@ -413,7 +413,11 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
         return false;
 
     // roll creature count
-    uint32 creatureCount = 2;
+    uint32 creatureCount = 1;
+    if (wildPetLevel > 5)
+        creatureCount = 2;
+    else if (wildPetLevel > 10)
+        creatureCount = 3;
 
     for (uint8 i = 0; i < creatureCount; ++i)
     {
