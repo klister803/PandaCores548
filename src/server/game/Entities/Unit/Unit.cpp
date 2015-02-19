@@ -18845,7 +18845,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target /*|| target->GetCharmerOrOwnerPlayerOrPlayerItself()*/ || (procSpell && procSpell->IsAffectingArea()))
+                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && procSpell->IsAffectingArea()))
                         return false;
 
                     if (itr->aura)
