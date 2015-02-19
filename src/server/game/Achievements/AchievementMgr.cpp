@@ -3225,11 +3225,11 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
                  return false;
              break;
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
-             if ((!referencePlayer || referencePlayer->GetMapId() != reqValue) && (!unit || unit->GetZoneId() != reqValue))
+             if (!referencePlayer || referencePlayer->GetMapId() != reqValue)
                  return false;
              break;
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
-             if (referencePlayer->GetZoneId() != reqValue) // achievement=1291
+             if (!referencePlayer || referencePlayer->GetZoneId() != reqValue) // achievement=1291
                  return false;
              break;
         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
