@@ -3225,7 +3225,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
                  return false;
              break;
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
-             if (referencePlayer->GetMapId() != reqValue)
+             if ((!referencePlayer || referencePlayer->GetMapId() != reqValue) && (!unit || unit->GetZoneId() != reqValue))
                  return false;
              break;
          case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
