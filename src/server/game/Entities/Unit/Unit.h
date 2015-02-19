@@ -936,6 +936,7 @@ private:
     uint32 m_resist;
     uint32 m_block;
     uint32 m_cleanDamage;
+    uint32 m_damageBeforeHit;
     int32 m_addpower;
     int32 m_addptype;
 public:
@@ -961,6 +962,7 @@ public:
     uint32 GetResist() const { return m_resist; };
     uint32 GetBlock() const { return m_block; };
     uint32 GetCleanDamage() const { return m_cleanDamage; };
+    uint32 GetDamageBeforeHit() const { return m_damageBeforeHit; }
     int32 GetAddPower() const { return m_addpower; };
     int32 GetAddPType() const { return m_addptype; };
 };
@@ -1037,6 +1039,7 @@ struct CalcDamageInfo
     uint32 procVictim;
     uint32 procEx;
     uint32 cleanDamage;          // Used only for rage calculation
+    uint32 damageBeforeHit;
     MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
 };
 
@@ -1044,7 +1047,7 @@ struct CalcDamageInfo
 struct SpellNonMeleeDamage{
     SpellNonMeleeDamage(Unit* _attacker = NULL, Unit* _target = NULL, uint32 _SpellID = 0, uint32 _schoolMask = 0)
         : target(_target), attacker(_attacker), SpellID(_SpellID), damage(0), overkill(0), schoolMask(_schoolMask),
-        absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0)
+        absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0), damageBeforeHit(0)
     {}
 
     Unit   *target;
@@ -1061,6 +1064,7 @@ struct SpellNonMeleeDamage{
     uint32 HitInfo;
     // Used for help
     uint32 cleanDamage;
+    uint32 damageBeforeHit;
 };
 
 struct SpellPeriodicAuraLogInfo
@@ -2226,7 +2230,7 @@ class Unit : public WorldObject
         int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, int32 baseBonus = NULL);
         int32 SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask);
         uint32 SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex = EFFECT_0, uint32 stack = 1);
-        uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex = EFFECT_0, uint32 stack = 1);
+        uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage);
         int32 SpellBaseHealingBonusDone(SpellSchoolMask schoolMask, int32 baseBonus = NULL);
         int32 SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask);
         uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, SpellEffIndex effIndex = EFFECT_0, uint32 stack = 1);

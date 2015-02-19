@@ -108,18 +108,19 @@ m_damageType(_damageType), m_attackType(BASE_ATTACK)
     m_resist = 0;
     m_block = 0;
     m_cleanDamage = 0;
+    m_damageBeforeHit = 0;
     m_addpower = 0;
     m_addptype = -1;
 }
 DamageInfo::DamageInfo(CalcDamageInfo& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.damageSchoolMask)),
 m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked_amount), m_cleanDamage(dmgInfo.cleanDamage)
-,m_addptype(-1), m_addpower(0)
+, m_damageBeforeHit(dmgInfo.damageBeforeHit), m_addptype(-1), m_addpower(0)
 {
 }
 DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
-m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage)
+m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage), m_damageBeforeHit(dmgInfo.damageBeforeHit)
 {
 }
 
@@ -1166,9 +1167,15 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
     int32 sourceDamage = damage;
+    damageInfo->damageBeforeHit = crit ? (damage + damage): damage;
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
+    {
+        damage = victim->MeleeDamageBonusTaken(this, (uint32)damage, attackType, spellInfo);
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
+    }
+    else
+        victim->SpellDamageBonusTaken(this, spellInfo, (uint32)damage);
 
     bool blocked = false;
     // Per-school calc
@@ -1300,6 +1307,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     damageInfo->attackType       = attackType;
     damageInfo->damage           = 0;
     damageInfo->cleanDamage      = 0;
+    damageInfo->damageBeforeHit  = 0;
     damageInfo->absorb           = 0;
     damageInfo->resist           = 0;
     damageInfo->blocked_amount   = 0;
@@ -1349,6 +1357,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
 
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
+    damageInfo->damageBeforeHit = damage;
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
 
     // Calculate armor reduction
@@ -1390,6 +1399,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             damageInfo->procEx         |= PROC_EX_CRITICAL_HIT;
             // Crit bonus calc
             damageInfo->damage += damageInfo->damage;
+            damageInfo->damageBeforeHit += damageInfo->damageBeforeHit;
             float mod = 0.0f;
             // Apply SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE or SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE
             if (damageInfo->attackType == RANGED_ATTACK)
@@ -1617,7 +1627,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             if (Unit* caster = (*dmgShieldItr)->GetCaster())
             {
                 damage = caster->SpellDamageBonusDone(this, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
-                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
+                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage);
             }
 
             // No Unit::CalcAbsorbResist here - opcode doesn't send that data - this damage is probably not affected by that
@@ -12168,14 +12178,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
-uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
+uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage)
 {
-    if (!spellProto || damagetype == DIRECT_DAMAGE)
-        return pdamage;
-
-    // small exception for Stagger Amount, can't find any general rules
-    // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
-    if (spellProto->Id == 115080)
+    if (!spellProto)
         return pdamage;
 
     // Some spells don't benefit from done mods
@@ -12213,35 +12218,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
                 AddPct(TakenTotalMod, (*i)->GetAmount());
     }
 
-    int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask());
-
-    // Check for table values
-    float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-    if(!dbccoeff)
-        dbccoeff = spellProto->SpellAPBonusMultiplier;
-    float coeff = 0;
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
-        coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
-    else
-        coeff = dbccoeff;
-
-    // Default calculation
-    if (TakenAdvertisedBenefit)
-    {
-        if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype);
-
-        float factorMod = CalculateLevelPenalty(spellProto);
-        // level penalty still applied on Taken bonus - is it blizzlike?
-        if (Player* modOwner = GetSpellModOwner())
-        {
-            coeff *= 100.0f;
-            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
-            coeff /= 100.0f;
-        }
-        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
-    }
+    TakenTotal += SpellBaseDamageBonusTaken(spellProto->GetSchoolMask());
 
     float tmpDamage = 0.0f;
 
@@ -17257,7 +17234,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: doing %u damage from spell id %u (triggered by %s aura of spell %u)", triggeredByAura->GetAmount(), spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                         SpellNonMeleeDamage damageInfo(this, target, spellInfo->Id, spellInfo->SchoolMask);
                         uint32 newDamage = SpellDamageBonusDone(target, spellInfo, triggeredByAura->GetAmount(), SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
-                        newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
                         CalculateSpellDamageTaken(&damageInfo, newDamage, spellInfo, (1 << effIndex));
                         DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
                         SendSpellNonMeleeDamageLog(&damageInfo);
@@ -18869,7 +18845,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 }
                 case SPELL_TRIGGER_VENGEANCE: // 24
                 {
-                    if (!target || target->GetCharmerOrOwnerPlayerOrPlayerItself() || (procSpell && procSpell->IsAffectingArea()))
+                    if (!target /*|| target->GetCharmerOrOwnerPlayerOrPlayerItself()*/ || (procSpell && procSpell->IsAffectingArea()))
                         return false;
 
                     if (itr->aura)
@@ -18878,7 +18854,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     triggered_spell_id = itr->spell_trigger;
 
-                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage() + dmgInfoProc->GetAbsorb())
+                    if (int32 alldamage = dmgInfoProc->GetDamageBeforeHit())
                     {
                         uint32 count = getThreatManager().getThreatList().size();
                         float _percent = triggerAmount / 100.0f;
