@@ -1005,6 +1005,7 @@ class WorldSession
         void HandlePetBattleInput(WorldPacket& recvData);
         void HandlePetBattleFinalNotify(WorldPacket& recvData);
         void HandlePetBattleQuitNotify(WorldPacket& recvData);
+        void HandleBattlePetDelete(WorldPacket& recvData);
 
         // Blizzard Store
         void HandlePurchaseGetProductList(WorldPacket& recvData);

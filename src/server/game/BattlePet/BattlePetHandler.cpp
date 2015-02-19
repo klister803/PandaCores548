@@ -494,3 +494,21 @@ void WorldSession::HandlePetBattleQuitNotify(WorldPacket& recvData)
         }
     }
 }
+
+void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
+{
+    ObjectGuid guid;
+    recvData.ReadGuidMask<4, 3, 5, 7, 2, 1, 6, 0>(guid);
+    recvData.ReadGuidBytes<6, 3, 5, 0, 4, 7, 1, 2>(guid);
+
+    // find current pet
+    PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
+
+    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+        return;
+
+    if (petInfo->GetFlags() & 0xC)
+        return;
+
+    _player->GetBattlePetMgr()->DeletePetByPetGUID(guid);
+}
