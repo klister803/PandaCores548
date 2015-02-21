@@ -39,6 +39,20 @@ enum eData
     DATA_FP_EVADE,
     DATA_SHA_PRE_EVENT,
 
+    //Galakras
+    DATA_GALAKRAS_PRE_EVENT,
+    DATA_GALAKRAS_PRE_EVENT_COUNT,
+    DATA_JAINA_OR_SYLVANA,
+    DATA_VEREESA_OR_AETHAS,
+    DATA_SOUTH_TOWER,
+    DATA_NORTH_TOWER,
+    DATA_SOUTH_COUNT,
+    DATA_NORTH_COUNT,
+    DATA_DEMOLITIONS_EXPERT_S,
+    DATA_DEMOLITIONS_EXPERT_N,
+
+    DATA_TEAM_IN_INSTANCE,
+
     // Additional data
     DATA_IMMERSEUS_INTRO,
 };
@@ -96,7 +110,7 @@ enum eCreatures
     NPC_PORTAL_TO_ORGRIMMAR         = 73536,
     //controller 68553?? Sha Vortex triger 146034
 
-    //  Norushen
+    //Norushen
     NPC_NORUSHEN                        = 71967,
     NPC_AMALGAM_OF_CORRUPTION           = 72276,
     NPC_ESSENCE_OF_CORRUPTION_C         = 71976,
@@ -110,14 +124,62 @@ enum eCreatures
     NPC_NN_HEAL_EVENT_PROTECTOR_1       = 71996,
     NPC_NN_HEAL_EVENT_PROTECTOR_2       = 72000,
     NPC_NN_HEAL_EVENT_PROTECTOR_3       = 71995,
-    //
+
+    //Galakras
     NPC_GALAKRAS                    = 72249,
+    NPC_WARLORD_ZAELA               = 72248,
+
+    NPC_LADY_JAINA_PROUDMOORE_A     = 72302,
+    NPC_LADY_SYLVANAS_WINDRUNNER_H  = 72561,
+    NPC_KING_VARIAN_WRYNN_A         = 72311,
+    NPC_LORTHEMAR_THERON_H          = 72560,
+    NPC_VEREESA_WINDRUNNER_A        = 73910,
+    NPC_ARCHMAGE_AETHAS_SUNREAVER_H = 73909,
+
+    NPC_HIGHGUARD_KAILUS_A          = 72312,
+    NPC_HIGHGUARD_TYRIUS_A          = 72313,
+    NPC_ALLIANCE_VANGUARD_GNOM_A    = 72549,
+    NPC_ALLIANCE_VANGUARD_HUMAN_A   = 72548,
+    NPC_ALLIANCE_VANGUARD_DWARF_A   = 72534,
+    NPC_SUNREAVER_MAGUS_H           = 72581,
+    NPC_SUNREAVER_SENTINEL_H        = 72579,
+    NPC_SUNREAVER_CONSTRUCT_H       = 72580,
+    NPC_DEMOLITIONS_EXPERT_S_A      = 73493,
+    NPC_DEMOLITIONS_ASSISTANT_S_A   = 73494,
+    NPC_DEMOLITIONS_EXPERT_N_A      = 73495,
+    NPC_DEMOLITIONS_ASSISTANT_N_A   = 73496,
+    NPC_DEMOLITIONS_EXPERT_S_H      = 73550,
+    NPC_DEMOLITIONS_ASSISTANT_S_H   = 73551,
+    NPC_DEMOLITIONS_EXPERT_N_H      = 73552,
+    NPC_DEMOLITIONS_ASSISTANT_N_H   = 73553,
+
+    NPC_TOWER_SOUTH                 = 73565,
+    NPC_TOWER_NORTH                 = 73628,
+    NPC_ANTIAIR_TURRET              = 72408,
+
+    NPC_MASTER_CANNONEER_DAGRYN     = 72356,
+    NPC_LIEUTENANT_KRUGRUK          = 72357,
+    NPC_KORKRON_DEMOLISHER          = 72947,
+    NPC_HIGH_ENFORCER_THRANOK       = 72355,
+    NPC_KORGRA_THE_SNAKE            = 72456,
+    NPC_DRAGONMAW_GRUNT             = 72941,
+    NPC_DRAGONMAW_GRUNT_H           = 73530,
+    NPC_DRAGONMAW_FLAGBEARER        = 72942,
+    NPC_DRAGONMAW_PROTO_DRAKE       = 72943,
+    NPC_DRAGONMAW_BONECRUSHER       = 72945,
+    NPC_DRAGONMAW_EBON_STALKER      = 72352,
+    NPC_DRAGONMAW_FLAMESLINGER      = 72353,
+    NPC_DRAGONMAW_TIDAL_SHAMAN      = 72958,
+    NPC_KORKRON_CANNON              = 72358,
+
+    //
     NPC_IRON_JUGGERNAUT             = 71466,
     NPC_KORKRON_D_SHAMAN            = 71859,
     NPC_GENERAL_NAZGRIM             = 71515,
     NPC_MALKOROK                    = 71454,
     NPC_THOK                        = 71529,
     NPC_BLACKFUSE                   = 71504,
+
     //Paragons of the Klaxxi
     NPC_KILRUK                      = 71161,
     NPC_XARIL                       = 71157,
@@ -128,6 +190,7 @@ enum eCreatures
     NPC_SKEER                       = 71152,
     NPC_RIKKAL                      = 71158,
     NPC_HISEK                       = 71153,
+
     //
     NPC_GARROSH                     = 71865,
 };
@@ -200,11 +263,64 @@ enum eGameObjects
 
     //Sha of Pride
     GO_SHA_OF_PRIDE_ENT_DOOR        = 221446,
+    
+    //Galakras
+    GO_SOUTH_DOOR                   = 221916,
+    GO_NORTH_DOOR                   = 223044,
 };
 
-enum miscData
+enum GalakrasEvent
 {
     TRANSPORT_PERIOD                = 98995,
+    
+    //Galakras
+    ACTION_GALAKRAS_START_EVENT         = 1,
+    ACTION_DEMOLITIONS_SOUTH            = 2,
+    ACTION_DEMOLITIONS_NORTH            = 3,
+    ACTION_DEMOLITIONS_COMPLETE         = 4,
+
+    //Heroic summons
+    ACTION_GRUNT_SOUTH                  = 5,
+    ACTION_GRUNT_NORTH                  = 6,
+    ACTION_GRUNT_SOUTH_FINISH           = 7,
+    ACTION_GRUNT_NORTH_FINISH           = 8,
+
+    //Galakras Guards Towers
+    ACTION_TOWER_DESPAWN                = 9,
+    ACTION_TOWER_GUARDS                 = 10,
+    ACTION_TOWER_TURRET                 = 11,
+    
+    ACTION_PRE_EVENT_FINISH             = 12,
+
+    //Galakras Friendly Force
+    ACTION_VARIAN_OR_LORTHEMAR_EVENT    = 1,
+    ACTION_FRIENDLY_BOSS                = 2,
+};
+
+enum GalakrasFinishEvent
+{
+    //Galakras Horde Event
+    EVENT_FINISH_1_H                      = 1,
+    EVENT_FINISH_2_H                      = 2,
+    EVENT_FINISH_3_H                      = 3,
+    //Galakras Alliance Event
+    EVENT_FINISH_1_A                      = 4,
+    EVENT_FINISH_2_A                      = 5,
+    EVENT_FINISH_3_A                      = 6,
+};
+
+enum WorldStatesICC
+{
+    WS_SHOW_SOUTH_TOWER             = 8545,
+    WS_SHOW_NORTH_TOWER             = 8547,
+    WS_SHOW_CAPTURE_SOUTH_TOWER     = 8546,
+    WS_SHOW_CAPTURE_NORTH_TOWER     = 8548,
+    WS_SOUTH_TOWER                  = 8461,
+    WS_NORTH_TOWER                  = 8462,
+    WS_CAPTURE_SOUTH_TOWER          = 8468,
+    WS_CAPTURE_NORTH_TOWER          = 8469,
+    WS_SHOW_KORKRON_CANNON          = 8414,
+    WS_KORKRON_CANNON_COUNT         = 8373,
 };
 
 static uint8 vehSlotForMeasures(uint32 entry)

@@ -4949,6 +4949,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144774: // Sha of Pride: Reaching Attack
                 case 100941: // CATA: Ragnaros: Dreadflame
                 case 146703: // Amalgam of Corruption: Bottomless Pit
+                case 148310: // Bombard Stun
+                case 148311: // Bombard Stun
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //Fallen Protectors
@@ -5431,6 +5433,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].MiscValue = 2;
                     spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
+                    break;
+                case 147514: // Galakras: Anti-Air Cannon
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
                     break;
                 default:
                     break;

@@ -41,7 +41,7 @@ class SummonList : public std::list<uint64>
         void Despawn(Creature* summon) { remove(summon->GetGUID()); }
         void DespawnEntry(uint32 entry);
         void DespawnAll();
-
+        void SetReactState(ReactStates state);
         template <class Predicate> void DoAction(int32 info, Predicate& predicate, uint16 max = 0)
         {
             // We need to use a copy of SummonList here, otherwise original SummonList would be modified

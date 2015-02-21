@@ -85,10 +85,6 @@ enum eSpells
 Position const Sha_of_pride_taranzhu  = {748.1805f, 1058.264f, 356.1557f, 5.566918f };
 Position const Sha_of_pride_finish_jaina  = {765.6154f, 1050.112f, 357.0135f, 1.514341f };
 Position const Sha_of_pride_finish_teron  = {756.955f, 1048.71f, 357.0236f, 1.68638f };
-Position const Sha_of_pride_portal[2]  = {
-    {783.5452f, 1168.182f, 356.1551f, 4.221592f},
-    {691.1077f, 1149.943f, 356.1552f, 5.842754f},
-};
 
 //Manifestation of Pride
 Position const Sha_of_pride_manifestation[2]  = {
@@ -748,13 +744,10 @@ public:
                             teron->AI()->ZoneTalk(TEXT_GENERIC_3, 0);
                         break;
                     case EVENT_14:
-                        for(uint32 i = 0; i < 2; ++i)
-                            if (Creature * c = instance->instance->SummonCreature(NPC_PORTAL_TO_ORGRIMMAR, Sha_of_pride_portal[i]))
-                            {
-                                c->SetInt32Value(UNIT_FIELD_INTERACT_SPELL_ID, 148034);
-                                c->SetDisplayId(51795);
-                            }
-                            
+                        if (Creature * c = instance->instance->GetCreature(instance->GetData64(NPC_PORTAL_TO_ORGRIMMAR)))
+                        {
+                            c->SetVisible(true);
+                        }
                         if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
                         {
                             jaina->AI()->ZoneTalk(TEXT_GENERIC_4, 0);

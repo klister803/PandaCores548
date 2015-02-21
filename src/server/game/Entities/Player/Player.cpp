@@ -11292,6 +11292,24 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_TV)
                 bg->FillInitialWorldStates(data);
             break;
+        // Siege Of Orgrimmar
+        case 6738:
+            if (instance && mapid == 1136)
+                instance->FillInitialWorldStates(data);
+            else
+            {
+                FillInitialWorldState(data, 0, 8545);          // WORLDSTATE_SHOW_SOUTH_TOWER
+                FillInitialWorldState(data, 0, 8461);          // WORLDSTATE_SOUTH_TOWER
+                FillInitialWorldState(data, 0, 8547);          // WORLDSTATE_SHOW_NORTH_TOWER
+                FillInitialWorldState(data, 0, 8462);          // WORLDSTATE_NORTH_TOWER
+                FillInitialWorldState(data, 0, 8546);          // WORLDSTATE_SHOW_CAPTURE_SOUTH_TOWER
+                FillInitialWorldState(data, 100, 8468);        // WORLDSTATE_CAPTURE_SOUTH_TOWER
+                FillInitialWorldState(data, 0, 8548);          // WORLDSTATE_SHOW_CAPTURE_NORTH_TOWER
+                FillInitialWorldState(data, 100, 8469);        // WORLDSTATE_CAPTURE_NORTH_TOWER
+                FillInitialWorldState(data, 0, 8414);          // WORLDSTATE_SHOW_KORKRON_CANNON
+                FillInitialWorldState(data, 0, 8373);          // WORLDSTATE_KORKRON_CANNON_COUNT
+            }
+            break;
         default:
             FillInitialWorldState(data, 0x914, 0x0);           // 7
             FillInitialWorldState(data, 0x913, 0x0);           // 8

@@ -66,6 +66,16 @@ void SummonList::DespawnAll()
     }
 }
 
+void SummonList::SetReactState(ReactStates state)
+{
+    for (iterator i = begin(); i != end();)
+    {
+        Creature* summon = Unit::GetCreature(*me, *i++);
+        if (summon && summon->IsAIEnabled)
+            summon->SetReactState(state);
+    }
+}
+
 void SummonList::RemoveNotExisting()
 {
     for (iterator i = begin(); i != end();)

@@ -7674,21 +7674,25 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     if (triggeredSpellInfo)
     {
-        if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? caster : target)
+        Position pos;
+        target->GetPosition(&pos);
+        std::list<DynamicObject*> list;
+        caster->GetDynObjectList(list, GetId());
+        if(!list.empty())
         {
-            std::list<DynamicObject*> list;
-            triggerCaster->GetDynObjectList(list, GetId());
-            if(!list.empty())
+            Unit* owner = caster->GetAnyOwner();
+            for (std::list<DynamicObject*>::iterator itr = list.begin(); itr != list.end(); ++itr)
             {
-                Unit* owner = triggerCaster->GetAnyOwner();
-                for (std::list<DynamicObject*>::iterator itr = list.begin(); itr != list.end(); ++itr)
-                {
-                    if(DynamicObject* dynObj = (*itr))
-                        triggerCaster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
-                }
+                if(DynamicObject* dynObj = (*itr))
+                    caster->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), triggerSpellId, true, NULL, this, owner ? owner->GetGUID() : 0);
             }
+        }
+        else
+        {
+            if(triggeredSpellInfo->NeedsToBeTriggeredByCaster())
+                caster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
             else
-                triggerCaster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
+                caster->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), triggerSpellId, true, NULL, this);
         }
     }
     else

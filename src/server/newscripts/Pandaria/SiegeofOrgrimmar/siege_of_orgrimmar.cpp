@@ -23,6 +23,11 @@
 
 enum eSpells
 {
+    SPELL_KORKRON_SNIPER_SNIPED        = 146743,
+    SPELL_KORKRON_SNIPER_SHOOT_ME      = 146745,
+    SPELL_SPIKE_MINE_DETONATION        = 145752,
+    SPELL_AT_SPIKE_MINE                = 145740,
+    SPELL_AT_SPIKE_MINE_DETONATION     = 148506,
 };
 
 //Lorewalker Cho
@@ -239,6 +244,116 @@ public:
     };
 };
 
+class npc_korkron_elite_sniper : public CreatureScript
+{
+    public:
+        npc_korkron_elite_sniper() : CreatureScript("npc_korkron_elite_sniper") {}
+
+        struct npc_korkron_elite_sniperAI : public Scripted_NoMovementAI
+        {
+            npc_korkron_elite_sniperAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+            EventMap events;
+
+            void SpellHit(Unit* pCaster, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_KORKRON_SNIPER_SHOOT_ME)
+                    DoCast(pCaster, SPELL_KORKRON_SNIPER_SNIPED);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_korkron_elite_sniperAI(creature);
+        }
+};
+
+class npc_korkron_cannon : public CreatureScript
+{
+    public:
+        npc_korkron_cannon() : CreatureScript("npc_korkron_cannon") {}
+
+        struct npc_korkron_cannonAI : public Scripted_NoMovementAI
+        {
+            npc_korkron_cannonAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                reset = true;
+            }
+
+            InstanceScript* instance;
+            bool reset;
+
+            void Reset()
+            {
+                if (reset)
+                {
+                    uint32 CannonCount = instance->GetData(DATA_GALAKRAS_PRE_EVENT_COUNT) + 1;
+                    instance->SetData(DATA_GALAKRAS_PRE_EVENT_COUNT, CannonCount);
+                    reset = false;
+                }
+            }
+            
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if(spell->Id == SPELL_SPIKE_MINE_DETONATION)
+                    me->Kill(me);
+            }
+            
+            void JustDied(Unit* /*killer*/)
+            {
+                if (!instance)
+                    return;
+
+                uint32 CannonCount = instance->GetData(DATA_GALAKRAS_PRE_EVENT_COUNT) - 1;
+                instance->SetData(DATA_GALAKRAS_PRE_EVENT_COUNT, CannonCount);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_korkron_cannonAI(creature);
+        }
+};
+
+class npc_pressure_mine : public CreatureScript
+{
+    public:
+        npc_pressure_mine() : CreatureScript("npc_pressure_mine") {}
+
+        struct npc_pressure_mineAI : public Scripted_NoMovementAI
+        {
+            npc_pressure_mineAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+
+            void Reset()
+            {
+                DoCast(SPELL_AT_SPIKE_MINE);
+            }
+            
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if(spell->Id == SPELL_AT_SPIKE_MINE_DETONATION)
+                    me->DespawnOrUnsummon();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_pressure_mineAI(creature);
+        }
+};
+
 class spell_self_absorbed: public SpellScriptLoader
 {
     public:
@@ -287,9 +402,30 @@ class at_siege_of_orgrimmar_portal_to_orgrimmar : public AreaTriggerScript
         }
 };
 
+class at_siege_of_orgrimmar_sniper_shoot_me : public AreaTriggerScript
+{
+public:
+    at_siege_of_orgrimmar_sniper_shoot_me() : AreaTriggerScript("at_siege_of_orgrimmar_sniper_shoot_me") { }
+
+    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/, bool /*enter*/)
+    {
+        InstanceScript* instance = player->GetInstanceScript();
+        /*if (!instance || instance->GetBossState(DATA_GALAKRAS) == DONE)
+            return false;*/
+
+        player->CastSpell(player, SPELL_KORKRON_SNIPER_SHOOT_ME);
+
+        return false;
+    }
+};
+
 void AddSC_siege_of_orgrimmar()
 {
     new npc_lorewalker_cho();
+    new npc_korkron_elite_sniper();
+    new npc_korkron_cannon();
+    new npc_pressure_mine();
     new spell_self_absorbed();
     new at_siege_of_orgrimmar_portal_to_orgrimmar();
+    new at_siege_of_orgrimmar_sniper_shoot_me();
 }

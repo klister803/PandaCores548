@@ -22,7 +22,7 @@ DoorData const doorData[] =
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
     {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
-    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE   }, // END
 };
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
@@ -37,8 +37,17 @@ public:
         std::map<uint32, uint64> easyGUIDconteiner;
         //Misc
         uint32 TeamInInstance;
+        uint32 _teamInInstance;
         uint32 EventfieldOfSha;
         uint32 lingering_corruption_count;
+
+        //Galakras worldstate
+        uint16 ShowCannon;
+        uint16 CannonCount;
+        uint32 ShowSouthTower;
+        uint32 ShowNorthTower;
+        uint32 SouthTowerCount;
+        uint32 NorthTowerCount;
 
         //GameObjects
         uint64 immerseusexdoorGUID;
@@ -49,6 +58,11 @@ public:
         std::set<uint64> shaSlgGUID;
         uint64 LorewalkerChoGUIDtmp;
         uint64 fpGUID[3];
+        uint64 WrynOrLorthemarGUID;
+        uint64 JainaOrSylvanaGUID;
+        uint64 VereesaOrAethasGUID;
+        uint64 sExpertGUID;
+        uint64 nExpertGUID;
 
         EventMap Events;
 
@@ -67,6 +81,7 @@ public:
             LoadDoorData(doorData);
 
             TeamInInstance = 0;
+            _teamInInstance = 0;
             lingering_corruption_count = 0;
 
             //GameObject
@@ -78,10 +93,38 @@ public:
             LorewalkerChoGUIDtmp    = 0;
             memset(fpGUID, 0, 3 * sizeof(uint64));
             EventfieldOfSha     = 0;
+            WrynOrLorthemarGUID     = 0;
+            JainaOrSylvanaGUID      = 0;
+            VereesaOrAethasGUID     = 0;
+            sExpertGUID             = 0;
+            nExpertGUID             = 0;
 
             onInitEnterState = false;
 
             transport = NULL;
+            
+            //Galakras WorldState
+            ShowCannon            = NOT_STARTED;
+            ShowSouthTower        = NOT_STARTED;
+            ShowNorthTower        = NOT_STARTED;
+
+            CannonCount     = 0;
+            SouthTowerCount = 0;
+            NorthTowerCount = 0;
+        }
+
+        void FillInitialWorldStates(WorldPacket& data)
+        {
+            data << uint32(ShowSouthTower == IN_PROGRESS)        << uint32(WS_SHOW_SOUTH_TOWER);
+            data << uint32(ShowNorthTower == IN_PROGRESS)        << uint32(WS_SHOW_NORTH_TOWER);
+            data << uint32(ShowSouthTower == SPECIAL)            << uint32(WS_SHOW_CAPTURE_SOUTH_TOWER);
+            data << uint32(ShowNorthTower == SPECIAL)            << uint32(WS_SHOW_CAPTURE_NORTH_TOWER);
+            data << uint32(SouthTowerCount)                      << uint32(WS_SOUTH_TOWER);
+            data << uint32(NorthTowerCount)                      << uint32(WS_NORTH_TOWER);
+            data << uint32(SouthTowerCount)                      << uint32(WS_CAPTURE_SOUTH_TOWER);
+            data << uint32(NorthTowerCount)                      << uint32(WS_CAPTURE_NORTH_TOWER);
+            data << uint32(ShowCannon == IN_PROGRESS)            << uint32(WS_SHOW_KORKRON_CANNON);
+            data << uint32(CannonCount)                          << uint32(WS_KORKRON_CANNON_COUNT);
         }
 
         void OnPlayerEnter(Player* player)
@@ -184,6 +227,14 @@ public:
 
         void OnCreatureCreate(Creature* creature)
         {
+            if (!_teamInInstance)
+            {
+                Map::PlayerList const& players = instance->GetPlayers();
+                if (!players.isEmpty())
+                    if (Player* player = players.begin()->getSource())
+                        _teamInInstance = player->GetTeam();
+            }
+
             switch (creature->GetEntry())
             {
                 case NPC_IMMERSEUS:
@@ -207,6 +258,10 @@ public:
                 case NPC_B_H_CONTROLLER:
                 case NPC_BLIND_HATRED:
                 case NPC_GALAKRAS:
+                case NPC_WARLORD_ZAELA:
+                case NPC_TOWER_SOUTH:
+                case NPC_TOWER_NORTH:
+                case NPC_ANTIAIR_TURRET:
                 case NPC_IRON_JUGGERNAUT:
                 case NPC_KORKRON_D_SHAMAN:
                 case NPC_GENERAL_NAZGRIM:
@@ -250,8 +305,35 @@ public:
                 case NPC_SLG_GENERIC_MOP:
                     shaSlgGUID.insert(creature->GetGUID());
                     break;
+                case NPC_PORTAL_TO_ORGRIMMAR:
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    creature->SetVisible((GetBossState(DATA_SHA_OF_PRIDE)==DONE) ? false : true);
+                    break;
 
-                //Paragons of the Klaxxi
+                //Galakras:
+                case NPC_KING_VARIAN_WRYNN_A:
+                case NPC_LORTHEMAR_THERON_H:
+                    WrynOrLorthemarGUID = creature->GetGUID();
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    break;
+                case NPC_LADY_JAINA_PROUDMOORE_A:
+                case NPC_LADY_SYLVANAS_WINDRUNNER_H:
+                    JainaOrSylvanaGUID = creature->GetGUID();
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    break;
+                case NPC_VEREESA_WINDRUNNER_A:
+                case NPC_ARCHMAGE_AETHAS_SUNREAVER_H:
+                    VereesaOrAethasGUID = creature->GetGUID();
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    break;
+                case NPC_DEMOLITIONS_EXPERT_S_A:
+                case NPC_DEMOLITIONS_EXPERT_S_H:
+                    sExpertGUID = creature->GetGUID();
+                    break;
+                case NPC_DEMOLITIONS_EXPERT_N_A:
+                case NPC_DEMOLITIONS_EXPERT_N_H:
+                    nExpertGUID = creature->GetGUID();
+                    break;
             }
         }
 
@@ -276,6 +358,8 @@ public:
                 case GO_CORRUPTED_BUTTON_SOUTH_1:
                 case GO_CORRUPTED_BUTTON_SOUTH_2:
                 case GO_CORRUPTED_BUTTON_SOUTH_3:
+                case GO_SOUTH_DOOR:
+                case GO_NORTH_DOOR:
                     easyGUIDconteiner[go->GetEntry()] = go->GetGUID();
                     break;
                 case GO_VAULT_OF_FORBIDDEN_TREASURES_1:
@@ -322,7 +406,6 @@ public:
                     if (EventfieldOfSha >= 3)
                         HandleGameObject(go->GetGUID(), true, go);
                     break;
-            // Sha
             }
         }
 
@@ -383,6 +466,34 @@ public:
                         pChest->SetRespawnTime(pChest->GetRespawnDelay());
                 }
                 break;
+            case DATA_GALAKRAS:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                            SetData(DATA_SOUTH_TOWER, NOT_STARTED);
+                            SetData(DATA_NORTH_TOWER, NOT_STARTED);
+                            if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
+                                SouthDoor->SetGoState(GO_STATE_READY);
+                            if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
+                                NorthDoor->SetGoState(GO_STATE_READY);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                            {
+                                Galakras->AI()->Reset();
+                                Galakras->AI()->EnterEvadeMode();
+                            }
+                            break;
+                        case IN_PROGRESS:
+                            if (Creature* JainaOrSylvana = instance->GetCreature(JainaOrSylvanaGUID))
+                                JainaOrSylvana->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                            if (Creature* VereesOrAethas = instance->GetCreature(VereesaOrAethasGUID))
+                                VereesOrAethas->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                            break;
+                        case DONE:
+                            break;
+                    }
+                }
+                break;
             }
 
             if (state == DONE)
@@ -421,10 +532,183 @@ public:
                     }
                 }
             }
+            switch (type)
+            {
+                case DATA_GALAKRAS_PRE_EVENT:
+                {
+                    switch (data)
+                    {
+                        case IN_PROGRESS:
+                            ShowCannon = data;
+                            DoUpdateWorldState(WS_SHOW_KORKRON_CANNON, ShowCannon);
+                            break;
+                        case DONE:
+                            ShowCannon = data;
+                            DoUpdateWorldState(WS_SHOW_KORKRON_CANNON, 0);
+                            DoUpdateWorldState(WS_KORKRON_CANNON_COUNT, 0);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_PRE_EVENT_FINISH);
+                            break;
+                    }
+                    break;
+                }
+                case DATA_GALAKRAS_PRE_EVENT_COUNT:
+                {
+                    CannonCount = data;
+                    DoUpdateWorldState(WS_KORKRON_CANNON_COUNT, CannonCount);
+                    
+                    if (CannonCount > 7)
+                        CannonCount = 7;
+                    
+                    if (CannonCount == 0)
+                        SetData(DATA_GALAKRAS_PRE_EVENT, DONE);
+                    break;
+                }
+                case DATA_GALAKRAS:
+                {
+                    if (data == DONE)
+                    {
+                        if (TeamInInstance == HORDE)
+                            Events.ScheduleEvent(EVENT_FINISH_1_H, 3000);
+                        else
+                            Events.ScheduleEvent(EVENT_FINISH_1_A, 3000);
+                    }
+                    break;
+                }
+                case DATA_SOUTH_TOWER:
+                {
+                    switch (data)
+                    {
+                        case IN_PROGRESS:
+                            ShowSouthTower = data;
+                            DoUpdateWorldState(WS_SHOW_SOUTH_TOWER, 1);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_GRUNT_SOUTH);
+                            break;
+                        case NOT_STARTED:
+                            ShowSouthTower = data;
+                            DoUpdateWorldState(WS_SHOW_SOUTH_TOWER, 0);
+                            DoUpdateWorldState(WS_SHOW_CAPTURE_SOUTH_TOWER, 0);
+                            DoUpdateWorldState(WS_SOUTH_TOWER, SouthTowerCount = 0);
+                            break;
+                        case SPECIAL:
+                            ShowSouthTower = data;
+                            DoUpdateWorldState(WS_SHOW_SOUTH_TOWER, 0);
+                            DoUpdateWorldState(WS_SHOW_CAPTURE_SOUTH_TOWER, 1);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_GRUNT_SOUTH_FINISH);
+                            break;
+                    }
+                    break;
+                }
+                case DATA_NORTH_TOWER:
+                {
+                    switch (data)
+                    {
+                        case IN_PROGRESS:
+                            ShowNorthTower = data;
+                            DoUpdateWorldState(WS_SHOW_NORTH_TOWER, 1);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_GRUNT_NORTH);
+                            break;
+                        case NOT_STARTED:
+                            ShowNorthTower = data;
+                            DoUpdateWorldState(WS_SHOW_NORTH_TOWER, 0);
+                            DoUpdateWorldState(WS_SHOW_CAPTURE_NORTH_TOWER, 0);
+                            DoUpdateWorldState(WS_NORTH_TOWER, NorthTowerCount = 0);
+                            break;
+                        case SPECIAL:
+                            ShowNorthTower = data;
+                            DoUpdateWorldState(WS_SHOW_NORTH_TOWER, 0);
+                            DoUpdateWorldState(WS_SHOW_CAPTURE_NORTH_TOWER, 1);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_GRUNT_NORTH_FINISH);
+                            break;
+                    }
+                    break;
+                }
+                case DATA_SOUTH_COUNT:
+                {
+                    SouthTowerCount = data;
+                    DoUpdateWorldState(WS_SOUTH_TOWER, SouthTowerCount);
+                    DoUpdateWorldState(WS_CAPTURE_SOUTH_TOWER, SouthTowerCount);
+
+                    if (SouthTowerCount >= 100)
+                    {
+                        if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
+                            SouthDoor->SetGoState(GO_STATE_ACTIVE);
+                        if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                            Galakras->AI()->DoAction(ACTION_DEMOLITIONS_NORTH);
+                        if (Creature* STower = instance->GetCreature(GetData64(NPC_TOWER_SOUTH)))
+                            STower->AI()->DoAction(ACTION_TOWER_GUARDS);
+                        if (Creature* sDemo = instance->GetCreature(sExpertGUID))
+                            sDemo->AI()->DoAction(ACTION_DEMOLITIONS_COMPLETE);
+                        SetData(DATA_SOUTH_TOWER, SPECIAL);
+                        SetData(DATA_NORTH_TOWER, IN_PROGRESS);
+                    }
+                    if (SouthTowerCount == 0)
+                    {
+                        SetData(DATA_SOUTH_TOWER, NOT_STARTED);
+                        if (Creature* STower = instance->GetCreature(GetData64(NPC_TOWER_SOUTH)))
+                            STower->AI()->DoAction(ACTION_TOWER_TURRET);
+                    }
+                    break;
+                }
+                case DATA_NORTH_COUNT:
+                {
+                    NorthTowerCount = data;
+                    DoUpdateWorldState(WS_NORTH_TOWER, NorthTowerCount);
+                    DoUpdateWorldState(WS_CAPTURE_NORTH_TOWER, NorthTowerCount);
+
+                    if (NorthTowerCount >= 100)
+                    {
+                        if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
+                            NorthDoor->SetGoState(GO_STATE_ACTIVE);
+                        if (Creature* NTower = instance->GetCreature(GetData64(NPC_TOWER_NORTH)))
+                            NTower->AI()->DoAction(ACTION_TOWER_GUARDS);
+                        if (Creature* nDemo = instance->GetCreature(nExpertGUID))
+                            nDemo->AI()->DoAction(ACTION_DEMOLITIONS_COMPLETE);
+                        SetData(DATA_NORTH_TOWER, SPECIAL);
+                    }
+                    if (NorthTowerCount == 0)
+                    {
+                        SetData(DATA_NORTH_TOWER, NOT_STARTED);
+                        if (Creature* NTower = instance->GetCreature(GetData64(NPC_TOWER_NORTH)))
+                            NTower->AI()->DoAction(ACTION_TOWER_TURRET);
+                    }
+                    break;
+                }
+                break;
+            }
         }
 
         uint32 GetData(uint32 type)
         {
+            switch (type)
+            {
+                case DATA_TEAM_IN_INSTANCE:
+                    if (!_teamInInstance)
+                    {
+                        Map::PlayerList const& players = instance->GetPlayers();
+                        if (!players.isEmpty())
+                            if (Player* player = players.begin()->getSource())
+                                _teamInInstance = player->GetTeam();
+                    }
+                    return _teamInInstance;
+
+                case DATA_GALAKRAS_PRE_EVENT:
+                    return ShowCannon;
+                case DATA_GALAKRAS_PRE_EVENT_COUNT:
+                    return CannonCount;
+                case DATA_SOUTH_TOWER:
+                    return ShowSouthTower;
+                case DATA_SOUTH_COUNT:
+                    return SouthTowerCount;
+                case DATA_NORTH_TOWER:
+                    return ShowNorthTower;
+                case DATA_NORTH_COUNT:
+                    return NorthTowerCount;
+            }
             return 0;
         }
 
@@ -439,10 +723,16 @@ public:
                     return fpGUID[1];
                 case NPC_HE_SOFTFOOT:
                     return fpGUID[2];
-                //Sha
-
+                //Galakras
+                case DATA_JAINA_OR_SYLVANA:
+                    return JainaOrSylvanaGUID;
+                case DATA_VEREESA_OR_AETHAS:
+                    return VereesaOrAethasGUID;
+                case DATA_DEMOLITIONS_EXPERT_S:
+                    return sExpertGUID;
+                case DATA_DEMOLITIONS_EXPERT_N:
+                    return nExpertGUID;
                 //Paragons of the Klaxxi
-                //
                 case NPC_LOREWALKER_CHO:
                 case NPC_LOREWALKER_CHO3:
                     return LorewalkerChoGUIDtmp;
@@ -566,12 +856,42 @@ public:
             {
                 Events.Update(diff);
 
-                /*while (uint32 eventId = Events.ExecuteEvent())
+                while (uint32 eventId = Events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
+                        // Galakras finish event. Horde
+                        case EVENT_FINISH_1_H:
+                            if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
+                                Lorthemar->AI()->Talk(7);
+                            Events.ScheduleEvent(EVENT_FINISH_2_H, 2000);
+                            break;
+                        case EVENT_FINISH_2_H:
+                            if (Creature* Sylvana = instance->GetCreature(GetData64(NPC_LADY_SYLVANAS_WINDRUNNER_H)))
+                                Sylvana->AI()->Talk(5);
+                            Events.ScheduleEvent(EVENT_FINISH_3_H, 4000);
+                            break;
+                        case EVENT_FINISH_3_H:
+                            if (Creature* Lorthemar = instance->GetCreature(GetData64(NPC_LORTHEMAR_THERON_H)))
+                                Lorthemar->AI()->Talk(8);
+                            break;
+                        // Galakras finish event. Alliance
+                        case EVENT_FINISH_1_A:
+                            if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
+                                Jaina->AI()->Talk(5);
+                            Events.ScheduleEvent(EVENT_FINISH_2_A, 2000);
+                            break;
+                        case EVENT_FINISH_2_A:
+                            if (Creature* Varian = instance->GetCreature(GetData64(NPC_KING_VARIAN_WRYNN_A)))
+                                Varian->AI()->Talk(7);
+                            Events.ScheduleEvent(EVENT_FINISH_3_A, 4000);
+                            break;
+                        case EVENT_FINISH_3_A:
+                            if (Creature* Jaina = instance->GetCreature(GetData64(NPC_LADY_JAINA_PROUDMOORE_A)))
+                                Jaina->AI()->Talk(6);
+                            break;
                     }
-                }*/
+                }
             }
 
             Transport* CreateTransport(uint32 goEntry, uint32 period)
