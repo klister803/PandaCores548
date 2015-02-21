@@ -4,11 +4,17 @@ delete from creature where map = 1136 and id in
 73551,73552,73553,73565,73628,72408,72356,72357,72947,72355,73086,72456,
 72941,72942,72943,72945,72352,72353,72958,73310,73100,73094,73088);
 
+update creature_template set speed_fly = 3, rank = 3, flags_extra = 1, ScriptName = 'boss_galakras' where entry = 72249;
 delete from creature where id = 72249;
 INSERT INTO `creature` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) VALUES 
 (72249, 1136, 6738, 6800, 16536, 1, 0, 0, 1409.42, -4815.51, 77.2564, 4.98926, 604800, 0, 0, 416946976, 1000, 0, 0, 0, 0, 0, 0);
 
-update creature_template set speed_fly = 3, rank = 3, flags_extra = 1, ScriptName = 'boss_galakras' where entry = 72249;
+update gameobject_template set flag = 48 where entry in (221916, 223044);
+delete from gameobject where id in (221916, 223044);
+INSERT INTO `gameobject` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `isActive`) VALUES 
+(221916, 1136, 6738, 6800, 16536, 1, 1368.15, -4845.38, 32.7172, 5.4018, 0.00426456, 0.00262746, -0.426574, 0.904439, 7200, 255, 1, 0),
+(223044, 1136, 6738, 6800, 16536, 1, 1459.69, -4812.72, 29.3937, 4.36332, 0, 0, -0.819152, 0.573577, 7200, 255, 1, 0);
+
 update creature_template set flags_extra = 2 where entry = 72248;
 update creature_template set minlevel = 90, maxlevel = 90, ScriptName = 'npc_demolitions' where entry in (73550,73552,73493,73495);
 update creature_template set spell1 = 146488 where entry = 72408;
@@ -38,6 +44,10 @@ update creature_template set ScriptName = 'npc_dragonmaw_grunt' where entry = 72
 update creature_template set ScriptName = 'npc_korkron_cannon' where entry = 72358;
 update creature_template set ScriptName = 'npc_pressure_mine' where entry = 72910;
 update creature_template set speed_walk = 1.6, speed_run = 1.4, faction_a = 1771, faction_h = 1771, equipment_id = entry, ScriptName = 'npc_dragonmaw_grunt_h' where entry = 73530;
+
+delete from vehicle_template_accessory where EntryOrAura = 72249;
+INSERT INTO `vehicle_template_accessory` (`EntryOrAura`, `accessory_entry`, `seat_id`, `minion`, `description`, `summontype`, `summontimer`) VALUES 
+(72249, 72248, 0, 1, 'Boss Galakras', 6, 30000);
 
 delete from creature_template_addon where entry in (73094, 72942);
 INSERT INTO `creature_template_addon` (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES 

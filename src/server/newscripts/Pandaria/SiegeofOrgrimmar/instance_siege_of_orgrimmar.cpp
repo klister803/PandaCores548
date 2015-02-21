@@ -464,6 +464,12 @@ public:
                 {
                     if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
                         pChest->SetRespawnTime(pChest->GetRespawnDelay());
+                    if (GetData(DATA_GALAKRAS_PRE_EVENT) != IN_PROGRESS)
+                    {
+                        if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                            Galakras->AI()->DoAction(ACTION_PRE_EVENT);
+                        SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
+                    }
                 }
                 break;
             case DATA_GALAKRAS:

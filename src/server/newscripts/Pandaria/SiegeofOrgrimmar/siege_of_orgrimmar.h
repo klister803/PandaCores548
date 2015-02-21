@@ -290,7 +290,8 @@ enum GalakrasEvent
     ACTION_TOWER_GUARDS                 = 10,
     ACTION_TOWER_TURRET                 = 11,
     
-    ACTION_PRE_EVENT_FINISH             = 12,
+    ACTION_PRE_EVENT                    = 12,
+    ACTION_PRE_EVENT_FINISH             = 13,
 
     //Galakras Friendly Force
     ACTION_VARIAN_OR_LORTHEMAR_EVENT    = 1,

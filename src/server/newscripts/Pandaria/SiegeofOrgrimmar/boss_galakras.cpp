@@ -334,13 +334,13 @@ class boss_galakras : public CreatureScript
                 summons.DoAction(ACTION_TOWER_DESPAWN, pred3);
                 summons.DoAction(ACTION_TOWER_DESPAWN, pred4);
                 summons.DespawnAll();
-                if (!PreEvent)
-                    Summons();
-                else
+
+                if (instance->GetBossState(DATA_SHA_OF_PRIDE) == DONE)
                 {
-                    if (instance->GetBossState(DATA_SHA_OF_PRIDE) == DONE)
-                        instance->SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
-                    SummonCannon();
+                    if (!PreEvent)
+                        Summons();
+                    else
+                        SummonCannon();
                 }
             }
 
@@ -363,6 +363,9 @@ class boss_galakras : public CreatureScript
             
             void SummonCannon()
             {
+                if (instance->GetData(DATA_GALAKRAS_PRE_EVENT) != IN_PROGRESS)
+                    instance->SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
+
                 for (uint8 n = 0; n < 7; n++)
                     me->SummonCreature(NPC_KORKRON_CANNON, CannonPos[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
             }
@@ -375,6 +378,9 @@ class boss_galakras : public CreatureScript
             {
                 switch (action)
                 {
+                    case ACTION_PRE_EVENT:
+                        SummonCannon();
+                        break;
                     case ACTION_PRE_EVENT_FINISH:
                         PreEvent = false;
                         Summons();

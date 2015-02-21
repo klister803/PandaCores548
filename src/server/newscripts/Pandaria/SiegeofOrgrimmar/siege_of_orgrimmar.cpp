@@ -283,7 +283,7 @@ class npc_korkron_cannon : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                 reset = true;
             }
 
@@ -292,6 +292,9 @@ class npc_korkron_cannon : public CreatureScript
 
             void Reset()
             {
+                if (!instance)
+                    return;
+
                 if (reset)
                 {
                     uint32 CannonCount = instance->GetData(DATA_GALAKRAS_PRE_EVENT_COUNT) + 1;
