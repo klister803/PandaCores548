@@ -60,7 +60,7 @@ enum TypeMask
     TYPEMASK_DYNAMICOBJECT  = 0x0040,
     TYPEMASK_CORPSE         = 0x0080,
     TYPEMASK_AREATRIGGER    = 0x0100,
-    TYPEMASK_SEER           = TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT
+    TYPEMASK_SEER           = TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT
 };
 
 enum TypeID
@@ -521,7 +521,7 @@ struct Position
     float GetDegreesAngel(float x, float y, bool relative = false) const;
 
     Position GetRandPointBetween(const Position &B) const;
-    void SimplePosXYRelocationByAngle(Position &pos, float dist, float angle) const;
+    void SimplePosXYRelocationByAngle(Position &pos, float dist, float angle, bool relative = false) const;
 
     bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }

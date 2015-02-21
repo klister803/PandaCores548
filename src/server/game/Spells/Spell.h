@@ -534,6 +534,8 @@ class Spell
         uint32 m_count_dispeling; // Final count dispell auras
         bool m_interupted;
         bool m_replaced;
+        WorldLocation destAtTarget;
+        WorldLocation* destTarget;
 
         UsedSpellMods m_appliedMods;
 
@@ -661,7 +663,6 @@ class Spell
         Unit* unitTarget;
         Item* itemTarget;
         GameObject* gameObjTarget;
-        WorldLocation* destTarget;
         int32 damage;
         bool damageCalculate[MAX_SPELL_EFFECTS];
         int32 saveDamageCalculate[MAX_SPELL_EFFECTS];

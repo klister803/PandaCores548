@@ -1695,7 +1695,7 @@ class spell_norushen_residual_corruption : public SpellScriptLoader
                     return;
 
                 AreaTrigger * areaTrigger = new AreaTrigger;
-                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), 5022, caster, GetSpellInfo(), *caster))
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), 5022, caster, GetSpellInfo(), *caster, *caster))
                 {
                     delete areaTrigger;
                     return;

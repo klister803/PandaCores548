@@ -1628,7 +1628,7 @@ class spell_fallen_protectors_defile_ground : public SpellScriptLoader
                     return;
 
                 AreaTrigger * areaTrigger = new AreaTrigger;
-                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), AT_ENTRY, caster, GetSpellInfo(), *target, GetSpell()))
+                if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), AT_ENTRY, caster, GetSpellInfo(), *target, *target, GetSpell()))
                 {
 
                     delete areaTrigger;

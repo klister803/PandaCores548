@@ -60,7 +60,7 @@ void AreaTrigger::RemoveFromWorld()
     }
 }
 
-bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell /*=NULL*/, uint64 targetGuid /*=0*/)
+bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Position const& posMove, Spell* spell /*=NULL*/, uint64 targetGuid /*=0*/)
 {
     m_spellInfo = info;
 
@@ -129,15 +129,25 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     SetUInt32Value(AREATRIGGER_SPELLID, info->Id);
     SetUInt32Value(AREATRIGGER_SPELLVISUALID, info->SpellVisual[0] ? info->SpellVisual[0] : info->SpellVisual[1]);
     SetUInt32Value(AREATRIGGER_DURATION, duration);
-    SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1);
+    SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, 1.0f);
     SetTargetGuid(targetGuid);
 
     // culculate destination point
     if (isMoving())
     {
         _startPosition.Relocate(pos);
-        pos.SimplePosXYRelocationByAngle(_destPosition, GetSpellInfo()->GetMaxRange(), 0.0f);
-        _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
+        if (atInfo.moveType)
+        {
+            _destPosition.Relocate(posMove);
+            SetDuration(int32(pos.GetExactDist2d(&posMove) * 100));
+        }
+        else
+            pos.SimplePosXYRelocationByAngle(_destPosition, GetSpellInfo()->GetMaxRange(), 0.0f);
+
+        if (atInfo.speed)
+            _moveSpeed = atInfo.speed;
+        else
+            _moveSpeed = GetSpellInfo()->GetMaxRange() / duration;
     }
 
     FillCustiomData();
@@ -488,6 +498,14 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
                 aura->ModStackAmount(-1);
             break;
         }
+        case AT_ACTION_TYPE_CHANGE_SCALE:
+        {
+            float scale = GetFloatValue(AREATRIGGER_EXPLICIT_SCALE) + action.action->scale;
+            if(scale <= 0.10f) // Set minimum scale as 10%
+                scale = 0.10f;
+            SetFloatValue(AREATRIGGER_EXPLICIT_SCALE, scale);
+            break;
+        }
     }
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction action");
@@ -518,7 +536,6 @@ void AreaTrigger::Remove(bool duration)
             UpdateAffectedList(0, AT_ACTION_MOMENT_DESPAWN);//remove from world with time
         else
             UpdateAffectedList(0, AT_ACTION_MOMENT_LEAVE);//remove from world in action
-
 
         // Possibly this?
         if (!IsInWorld())
@@ -600,6 +617,9 @@ void AreaTrigger::UpdateMovement(uint32 diff)
     if (!isMoving())
         return;
 
+    float angle = _startPosition.GetAngle(_destPosition.GetPositionX(), _destPosition.GetPositionY());
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement %f %f %f %f %i angle %f", GetPositionX(), GetPositionY(), GetPositionZ(), getMoveSpeed(), _moveTime, angle);
+
     _moveTime += diff;
-    _startPosition.SimplePosXYRelocationByAngle(*this, getMoveSpeed() * _moveTime, 0.0f);
+    _startPosition.SimplePosXYRelocationByAngle(*this, getMoveSpeed() * _moveTime, angle, true);
 }

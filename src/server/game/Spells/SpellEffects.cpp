@@ -8021,6 +8021,8 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
         GetCaster()->GetPosition(&pos);
     else
         destTarget->GetPosition(&pos);
+    Position posMove;
+    destAtTarget.GetPosition(&posMove);
 
     // trigger entry/miscvalue relation is currently unknown, for now use MiscValue as trigger entry
     uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;
@@ -8028,7 +8030,7 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
         return;
 
     AreaTrigger * areaTrigger = new AreaTrigger;
-    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos, this))
+    if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGER), triggerEntry, GetCaster(), GetSpellInfo(), pos, posMove, this))
         delete areaTrigger;
 }
 

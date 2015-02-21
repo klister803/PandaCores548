@@ -1594,9 +1594,10 @@ Position Position::GetRandPointBetween(const Position &B) const
     return result;
 }
 
-void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float angle) const
+void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float angle, bool relative) const
 {
-    angle += GetOrientation();
+    if(!relative)
+        angle += GetOrientation();
 
     pos.m_positionX = m_positionX + dist * std::cos(angle);
     pos.m_positionY = m_positionY + dist * std::sin(angle);
@@ -3029,7 +3030,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         pet->GetCharmInfo()->SetPetNumber(pet_number, true);
 
     // After SetPetNumber
-    SetMinion(pet, true);
+    SetMinion(pet, true, stampeded);
 
     map->AddToMap(pet->ToCreature());
 

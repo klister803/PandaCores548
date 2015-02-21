@@ -22531,18 +22531,15 @@ void Player::RemovePet(Pet* pet, bool isDelete)
     if (!pet || pet->GetOwnerGUID() != GetGUID())
         return;
 
-    if (isDelete)
-    {
-        if (!pet->m_Stampeded)
-            m_currentPetNumber = pet->GetCharmInfo()->GetPetNumber();   //just protection.
-    }
+    if (isDelete && !pet->m_Stampeded)
+        m_currentPetNumber = pet->GetCharmInfo()->GetPetNumber();   //just protection.
 
     pet->CombatStop();
     // only if current pet in slot
     if (!pet->m_Stampeded)
         pet->SavePetToDB(isDelete);
 
-    SetMinion(pet, false);
+    SetMinion(pet, false, pet->m_Stampeded);
 
     pet->AddObjectToRemoveList();
     pet->m_removed = true;

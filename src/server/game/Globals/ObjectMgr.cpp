@@ -9445,8 +9445,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
 
-    //                                               0         1              2        3            4          5             6          7           8
-    QueryResult result = WorldDatabase.Query("SELECT entry, customVisualId, radius, radius2, activationDelay, updateDelay, maxCount, customEntry, isMoving FROM areatrigger_data");
+    //                                               0         1              2        3            4          5             6          7           8         9       10
+    QueryResult result = WorldDatabase.Query("SELECT entry, customVisualId, radius, radius2, activationDelay, updateDelay, maxCount, customEntry, isMoving, speed, moveType FROM areatrigger_data");
     if (result)
     {
         uint32 counter = 0;
@@ -9465,6 +9465,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             info.maxCount = fields[i++].GetUInt8();
             info.customEntry = fields[i++].GetUInt32();
             info.isMoving = fields[i++].GetBool();
+            info.speed = fields[i++].GetFloat();
+            info.moveType = fields[i++].GetUInt32();
             ++counter;
         }
         while (result->NextRow());
@@ -9474,8 +9476,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
     else
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 areatrigger data. DB table `areatrigger_data` is empty.");
 
-    //                                                0      1     2         3           4           5         6                7           8       9
-    QueryResult result2 = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, aura, hasspell FROM areatrigger_actions");
+    //                                                0      1     2         3           4           5         6                7           8       9       10
+    QueryResult result2 = WorldDatabase.Query("SELECT entry, id, moment, actionType, targetFlags, spellId, maxCharges, chargeRecoveryTime, aura, hasspell, scale FROM areatrigger_actions");
     if (result2)
     {
         uint32 counter = 0;
@@ -9495,6 +9497,7 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             action.chargeRecoveryTime = fields[i++].GetUInt32();
             action.aura = fields[i++].GetInt32();
             action.hasspell = fields[i++].GetInt32();
+            action.scale = fields[i++].GetFloat();
 
             if (action.actionType >= AT_ACTION_TYPE_MAX)
             {

@@ -26,14 +26,15 @@ class Spell;
 
 enum AreaTriggerActionMoment
 {
-    AT_ACTION_MOMENT_ENTER      = 0x01,                // when unit enters areatrigger
-    AT_ACTION_MOMENT_LEAVE      = 0x02,                // when unit exits areatrigger
-    AT_ACTION_MOMENT_UPDATE     = 0x04,                // on areatrigger update
-    AT_ACTION_MOMENT_DESPAWN    = 0x08,                // when areatrigger despawn
-    AT_ACTION_MOMENT_SPAWN      = 0x10,                // when areatrigger spawn
-    AT_ACTION_MOMENT_REMOVE     = 0x20,                // when areatrigger remove
+    AT_ACTION_MOMENT_ENTER        = 0x001,                // when unit enters areatrigger
+    AT_ACTION_MOMENT_LEAVE        = 0x002,                // when unit exits areatrigger
+    AT_ACTION_MOMENT_UPDATE       = 0x004,                // on areatrigger update
+    AT_ACTION_MOMENT_DESPAWN      = 0x008,                // when areatrigger despawn
+    AT_ACTION_MOMENT_SPAWN        = 0x010,                // when areatrigger spawn
+    AT_ACTION_MOMENT_REMOVE       = 0x020,                // when areatrigger remove
     //range should be = distance.
-    AT_ACTION_MOMENT_ON_THE_WAY = 0x40,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
+    AT_ACTION_MOMENT_ON_THE_WAY   = 0x040,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
+    AT_ACTION_MOMENT_ON_STOP_MOVE = 0x080,                // when target is betwin source and dest points. For movement only. WARN! Should add AT_ACTION_MOMENT_ENTER flag too
 };
 
 enum AreaTriggerActionType
@@ -42,7 +43,8 @@ enum AreaTriggerActionType
     AT_ACTION_TYPE_REMOVE_AURA  = 1,
     AT_ACTION_TYPE_ADD_STACK    = 2,
     AT_ACTION_TYPE_REMOVE_STACK = 3,
-    AT_ACTION_TYPE_MAX          = 4,
+    AT_ACTION_TYPE_CHANGE_SCALE = 4,
+    AT_ACTION_TYPE_MAX          = 5,
 };
 
 enum AreaTriggerTargetFlags
@@ -76,6 +78,7 @@ struct AreaTriggerAction
     uint32 chargeRecoveryTime;
     int32 aura;
     int32 hasspell;
+    float scale;
 };
 
 typedef std::list<AreaTriggerAction> AreaTriggerActionList;
@@ -83,7 +86,7 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 struct AreaTriggerInfo
 {
     AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1), customEntry(0), isMoving(false){}
+        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0){}
 
     bool isMoving;
     float radius;
@@ -94,6 +97,8 @@ struct AreaTriggerInfo
     uint32 customEntry;
     uint8 maxCount;
     AreaTriggerActionList actions;
+    float speed;
+    uint32 moveType;
 };
 
 class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
@@ -119,7 +124,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Spell* spell = NULL, uint64 targetGuid = 0);
+        bool CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* caster, SpellInfo const* info, Position const& pos, Position const& posMove, Spell* spell = NULL, uint64 targetGuid = 0);
         void Update(uint32 p_time);
         void UpdateAffectedList(uint32 p_time, AreaTriggerActionMoment actionM);
         void Remove(bool duration = true);
