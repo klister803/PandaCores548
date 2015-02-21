@@ -307,7 +307,7 @@ public:
                     break;
                 case NPC_PORTAL_TO_ORGRIMMAR:
                     easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
-                    creature->SetVisible((GetBossState(DATA_SHA_OF_PRIDE)==DONE) ? false : true);
+                    creature->SetVisible((GetBossState(DATA_SHA_OF_PRIDE)==DONE) ? true : false);
                     break;
 
                 //Galakras:

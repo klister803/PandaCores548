@@ -2434,6 +2434,7 @@ class spell_most_complicated_bomb : public SpellScriptLoader
         }
 };
 
+// Flames of Galakrond - 146991
 class spell_galakras_flames_of_galakrond : public SpellScriptLoader
 {
     public:
@@ -2443,19 +2444,27 @@ class spell_galakras_flames_of_galakrond : public SpellScriptLoader
         {
             PrepareSpellScript(spell_galakras_flames_of_galakrond_SpellScript);
 
+            void HandleBeforeCast()
+            {
+                GetSpell()->destAtTarget = *GetExplTargetDest();
+            }
+
             void HandleOnHit(SpellEffIndex /*effIndex*/)
             {
-                WorldLocation destPos;
-                Position pos;
-                GetCaster()->GetPosition(&pos);
-                destPos.Relocate(pos);
-                SetExplTargetDest(destPos);
-                GetHitDest()->Relocate(pos);
+                if(Unit* caster = GetCaster())
+                {
+                    Position pos;
+                    WorldLocation destPos = *GetExplTargetDest();
+                    caster->GetPosition(&pos);
+                    destPos.Relocate(pos);
+                    GetSpell()->destTarget = &destPos;
+                }
             }
 
             void Register()
             {
-                OnEffectLaunch += SpellEffectFn(spell_galakras_flames_of_galakrond_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_CREATE_AREATRIGGER);
+                BeforeCast += SpellCastFn(spell_galakras_flames_of_galakrond_SpellScript::HandleBeforeCast);
+                OnEffectHit += SpellEffectFn(spell_galakras_flames_of_galakrond_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_CREATE_AREATRIGGER);
             }
         };
 
