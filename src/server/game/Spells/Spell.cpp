@@ -1587,9 +1587,6 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
     WorldObject* target = m_targets.GetObjectTarget();
     switch (targetType.GetTarget())
     {
-        case TARGET_DEST_TARGET_ENEMY:
-            m_targets.SetDst(*target);
-            return;
         case TARGET_DEST_TARGET_ANY:
         case TARGET_DEST_CHANNEL_CASTER:
             m_targets.SetDst(*target);
@@ -1618,12 +1615,23 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
     // can only happen if previous destination target could not be set for some reason
     // (not found nearby target, or channel target for example
     // maybe we should abort the spell in such case?
+    if (SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
+    {
+        // TODO: fix this check
+        if (m_spellInfo->HasEffect(SPELL_EFFECT_TELEPORT_UNITS))
+            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation, (int32)st->target_mapId);
+        else if (st->target_mapId == m_caster->GetMapId())
+            m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation);
+        return;
+    }
+
     if (!m_targets.HasDst())
         m_targets.SetDst(*m_caster);
 
     switch (targetType.GetTarget())
     {
         case TARGET_DEST_TARGET_SELECT:
+        case TARGET_DEST_TARGET_ENEMY:
             if (Unit* target = m_targets.GetUnitTarget())
                 m_targets.SetDst(*target);
             return;
@@ -2247,14 +2255,6 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
     }
     m_procEx = PROC_EX_NONE;
 
-    // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
-        (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
-        m_spellInfo->Id == 57879 ||                     // Snake Trap - done this way to avoid double proc
-        m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
-
-        m_procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
-
     /* Effects which are result of aura proc from triggered spell cannot proc
         to prevent chain proc of these spells */
 
@@ -2710,6 +2710,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     bool positive = true;
     if (canEffectTrigger && !procAttacker && !procVictim)
     {
+        // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
+        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
+            (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
+            m_spellInfo->Id == 57879 ||                     // Snake Trap - done this way to avoid double proc
+            m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
+            procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
+
         if (m_damage > 0)
             positive = false;
         else if (!m_healing)
@@ -3813,6 +3820,13 @@ void Spell::cast(bool skipCheck)
                         break;
                     }
             }
+
+            // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
+            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
+                (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
+                m_spellInfo->Id == 57879 ||                     // Snake Trap - done this way to avoid double proc
+                m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
+                procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
             switch (m_spellInfo->DmgClass)
             {

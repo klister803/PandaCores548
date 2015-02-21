@@ -17896,7 +17896,7 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
                         continue;
 
                     // skip Cast at creature objective
-                    if (qInfo->RequiredSpellCast[j] != 0)
+                    if (j <= QUEST_SOURCE_ITEM_IDS_COUNT && qInfo->RequiredSpellCast[j] != 0)
                         continue;
 
                     uint32 reqkill = qInfo->RequiredNpcOrGo[j];
@@ -17989,7 +17989,7 @@ void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
                 for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
                 {
                     // skip kill creature objective (0) or wrong spell casts
-                    if (qInfo->RequiredSpellCast[j] != spell_id)
+                    if (j <= QUEST_SOURCE_ITEM_IDS_COUNT && qInfo->RequiredSpellCast[j] != spell_id)
                         continue;
 
                     uint32 reqTarget = 0;
@@ -18066,7 +18066,7 @@ void Player::TalkedToCreature(uint32 entry, uint64 guid)
                 for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
                 {
                                                             // skip spell casts and Gameobject objectives
-                    if (qInfo->RequiredSpellCast[j] > 0 || qInfo->RequiredNpcOrGo[j] < 0)
+                    if ((j <= QUEST_SOURCE_ITEM_IDS_COUNT && qInfo->RequiredSpellCast[j] > 0) || qInfo->RequiredNpcOrGo[j] < 0)
                         continue;
 
                     uint32 reqTarget = 0;
