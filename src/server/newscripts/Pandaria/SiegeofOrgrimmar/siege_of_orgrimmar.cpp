@@ -295,7 +295,7 @@ class npc_korkron_cannon : public CreatureScript
                 if (!instance)
                     return;
 
-                if (Unit* mine = FindNearestCreature(72656, 15.0f))
+                if (Creature* mine = me->FindNearestCreature(72656, 15.0f))
                     mine->Respawn();
 
                 if (reset)
