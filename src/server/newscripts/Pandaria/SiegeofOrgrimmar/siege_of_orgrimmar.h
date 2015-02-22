@@ -171,6 +171,7 @@ enum eCreatures
     NPC_DRAGONMAW_FLAMESLINGER      = 72353,
     NPC_DRAGONMAW_TIDAL_SHAMAN      = 72958,
     NPC_KORKRON_CANNON              = 72358,
+    NPC_SPIKE_MINE                  = 72656,
 
     //
     NPC_IRON_JUGGERNAUT             = 71466,

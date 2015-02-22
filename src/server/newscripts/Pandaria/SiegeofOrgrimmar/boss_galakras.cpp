@@ -185,8 +185,8 @@ enum sEvents
     EVENT_CURSE_OF_VENOM               = 20,
     EVENT_VENOM_BOLT_VOLLEY            = 21,
     EVENT_DAGRYN_SHOOT                 = 22,
-    EVENT_MUZZLE_SPRAY                 = 23,
-    EVENT_ARCING_SMASH                 = 24,
+    EVENT_MUZZLE_SPRAY_START           = 23,
+    EVENT_ARCING_SMASH_START           = 24,
     EVENT_THUNDER_CLAP                 = 25,
     EVENT_SHADOW_STALK                 = 26,
     EVENT_SHADOW_ASSAULT               = 27,
@@ -206,6 +206,9 @@ enum sEvents
     EVENT_FIXATE                       = 41,
     EVENT_BANTER_GRUNT                 = 42,
     EVENT_KNOCKED_OVER                 = 43,
+    EVENT_TOWER_KNOCK_BACK             = 44,
+    EVENT_ARCING_SMASH_STOP            = 45,
+    EVENT_MUZZLE_SPRAY_STOP            = 46,
 };
 
 Position const CannonPos[7]
@@ -218,7 +221,30 @@ Position const CannonPos[7]
     {1249.06f, -5039.08f, 1.91f, 5.04f},
     {1351.58f, -4989.40f, 0.59f, 5.33f},
 };
-
+Position const MinePos[21]
+{
+    {1405.49f, -4928.59f, 11.34f},
+    {1405.82f, -4927.37f, 11.34f},
+    {1405.01f, -4927.66f, 12.52f},
+    {1404.16f, -4927.52f, 11.34f},
+    {1375.21f, -4956.54f, 1.73f},
+    {1374.42f, -4955.58f, 1.85f},
+    {1374.51f, -4956.06f, 1.82f},
+    {1374.03f, -4957.01f, 1.84f},
+    {1355.39f, -4984.73f, 1.04f},
+    {1355.76f, -4986.14f, 0.81f},
+    {1353.94f, -4985.19f, 1.05f},
+    {1327.44f, -4995.72f, 1.60f},
+    {1326.37f, -4996.81f, 1.45f},
+    {1280.89f, -5005.36f, 1.65f},
+    {1279.71f, -5005.82f, 1.68f},
+    {1280.18f, -5004.88f, 3.27f},
+    {1280.1f,  -5004.41f, 1.75f},
+    {1264.96f, -5017.68f, 1.68f},
+    {1263.11f, -5017.77f, 1.77f},
+    {1243.05f, -5036.72f, 2.67f},
+    {1243.06f, -5034.79f, 2.80f},
+};
 Position const FriendlyForcesSpawn[15] =
 {
     {1422.56f, -4900.93f, 11.3574f, 1.75f}, // Lady Sylvanas
@@ -395,6 +421,9 @@ class boss_galakras : public CreatureScript
 
                 for (uint8 n = 0; n < 7; n++)
                     me->SummonCreature(NPC_KORKRON_CANNON, CannonPos[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
+                
+                for (uint8 n = 0; n < 21; n++)
+                    me->SummonCreature(NPC_SPIKE_MINE, MinePos[n]);
             }
             
             void EnterCombat(Unit* who)
@@ -640,7 +669,7 @@ class npc_varian_or_lorthemar : public CreatureScript
         { 
             player->CLOSE_GOSSIP_MENU();
             if (action)
-                creature->AI()->DoAction(true);
+                creature->AI()->DoAction(ACTION_VARIAN_OR_LORTHEMAR_EVENT);
 
             return true;
         }
@@ -651,11 +680,13 @@ class npc_varian_or_lorthemar : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 group_member = sFormationMgr->CreateCustomFormation(me);
+                bool startEvent = false;
             }
 
             InstanceScript* instance;
             EventMap events;
             FormationInfo* group_member;
+            bool startEvent;
 
             void Reset()
             {
@@ -680,22 +711,27 @@ class npc_varian_or_lorthemar : public CreatureScript
                 {
                     case ACTION_VARIAN_OR_LORTHEMAR_EVENT:
                     {
-                        if (Creature* jainasylvana = instance->instance->GetCreature(instance->GetData64(DATA_JAINA_OR_SYLVANA)))
-                            if (CreatureGroup* f = me->GetFormation())
-                                f->AddMember(jainasylvana, group_member);
-                        if (Creature* VereesaAethas = instance->instance->GetCreature(instance->GetData64(DATA_VEREESA_OR_AETHAS)))
-                            if (CreatureGroup* f = me->GetFormation())
-                                f->AddMember(VereesaAethas, group_member);
-
-                        me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
-                        instance->SetBossState(DATA_GALAKRAS, IN_PROGRESS);
-                        instance->SetData(DATA_SOUTH_TOWER, IN_PROGRESS);
-                        DoCast(SPELL_ENABLE_UNIT_FRAME);
-                        if (Creature* pGalakras = instance->instance->GetCreature(instance->GetData64(NPC_GALAKRAS)))
-                            pGalakras->AI()->DoAction(ACTION_GALAKRAS_START_EVENT);
-                        me->GetMotionMaster()->MovePoint(1, RinOrlortPos[0]);
-                        me->SetHomePosition(RinOrlortPos[0]);
-                        break;
+                        if (!startEvent)
+                        {
+                            startEvent = true;
+                            me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                            me->GetMotionMaster()->MovePoint(1, RinOrlortPos[0]);
+                            me->SetHomePosition(RinOrlortPos[0]);
+    
+                            if (Creature* jainasylvana = instance->instance->GetCreature(instance->GetData64(DATA_JAINA_OR_SYLVANA)))
+                                if (CreatureGroup* f = me->GetFormation())
+                                    f->AddMember(jainasylvana, group_member);
+                            if (Creature* VereesaAethas = instance->instance->GetCreature(instance->GetData64(DATA_VEREESA_OR_AETHAS)))
+                                if (CreatureGroup* f = me->GetFormation())
+                                    f->AddMember(VereesaAethas, group_member);
+                            if (Creature* pGalakras = instance->instance->GetCreature(instance->GetData64(NPC_GALAKRAS)))
+                                pGalakras->AI()->DoAction(ACTION_GALAKRAS_START_EVENT);
+    
+                            instance->SetBossState(DATA_GALAKRAS, IN_PROGRESS);
+                            instance->SetData(DATA_SOUTH_TOWER, IN_PROGRESS);
+                            DoCast(SPELL_ENABLE_UNIT_FRAME);
+                            break;
+                        }
                     }
                 }
             }
@@ -1368,7 +1404,7 @@ class npc_lieutenant_krugruk : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 Talk(SAY_KRUGRUK_0);
-                events.ScheduleEvent(EVENT_ARCING_SMASH, 12000);
+                events.ScheduleEvent(EVENT_ARCING_SMASH_START, 12000);
                 events.ScheduleEvent(EVENT_THUNDER_CLAP, 22000);
             }
 
@@ -1376,7 +1412,7 @@ class npc_lieutenant_krugruk : public CreatureScript
             {
                 UpdateVictim();
 
-                if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+                if (me->GetDistance(me->GetHomePosition()) > 25.0f)
                 {
                     EnterEvadeMode();
                     return;
@@ -1390,10 +1426,23 @@ class npc_lieutenant_krugruk : public CreatureScript
                 {
                     switch (eventId)
                     {
-                        case EVENT_ARCING_SMASH:
-                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 15.0f, true))
+                        case EVENT_ARCING_SMASH_START:
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            me->GetMotionMaster()->MoveTargetedHome();
+                            events.ScheduleEvent(EVENT_ARCING_SMASH_START, 21000);
+                            break;
+                        case EVENT_TOWER_KNOCK_BACK:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                            {
+                                me->SetFacingToObject(pTarget);
                                 DoCast(pTarget, SPELL_ARCING_SMASH);
-                            events.ScheduleEvent(EVENT_ARCING_SMASH, 4000);
+                            }
+                            events.ScheduleEvent(EVENT_TOWER_KNOCK_BACK, 2000);
+                            break;
+                        case EVENT_ARCING_SMASH_STOP:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            events.CancelEvent(EVENT_TOWER_KNOCK_BACK);
                             break;
                         case EVENT_THUNDER_CLAP:
                             DoCast(SPELL_THUNDER_CLAP);
@@ -1402,6 +1451,15 @@ class npc_lieutenant_krugruk : public CreatureScript
                     }
                 }
                 DoMeleeAttackIfReady();
+            }
+
+            void JustReachedHome()
+            {
+                if (me->isInCombat())
+                {
+                    events.ScheduleEvent(EVENT_TOWER_KNOCK_BACK, 500);
+                    events.ScheduleEvent(EVENT_ARCING_SMASH_STOP, 6000);
+                }
             }
 
             void JustDied(Unit* /*killer*/)
@@ -1457,19 +1515,19 @@ class npc_master_cannoneer_dagryn : public CreatureScript
             {
                 Talk(SAY_DAGRYN_0);
                 events.ScheduleEvent(EVENT_DAGRYN_SHOOT, 1000);
-                events.ScheduleEvent(EVENT_MUZZLE_SPRAY, 15000);
+                events.ScheduleEvent(EVENT_MUZZLE_SPRAY_START, 15000);
             }
 
             void UpdateAI(uint32 diff)
             {
                 UpdateVictim();
 
-                if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+                if (me->GetDistance(me->GetHomePosition()) > 25.0f)
                 {
                     EnterEvadeMode();
                     return;
                 }
-                
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -1479,18 +1537,42 @@ class npc_master_cannoneer_dagryn : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_DAGRYN_SHOOT:
-                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
                                 DoCast(pTarget, SPELL_DAGRYN_SHOOT);
-                            events.ScheduleEvent(EVENT_DAGRYN_SHOOT, 2000);
+                            events.ScheduleEvent(EVENT_DAGRYN_SHOOT, 1500);
                             break;
-                        case EVENT_MUZZLE_SPRAY:
-                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 15.0f, true))
+                        case EVENT_MUZZLE_SPRAY_START:
+                            me->SetReactState(REACT_PASSIVE);
+                            me->AttackStop();
+                            me->GetMotionMaster()->MoveTargetedHome();
+                            events.CancelEvent(EVENT_DAGRYN_SHOOT);
+                            events.ScheduleEvent(EVENT_MUZZLE_SPRAY_START, 30000);
+                            break;
+                        case EVENT_TOWER_KNOCK_BACK:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+                            {
+                                me->SetFacingToObject(pTarget);
                                 DoCast(pTarget, SPELL_MUZZLE_SPRAY);
-                            events.ScheduleEvent(EVENT_MUZZLE_SPRAY, 5000);
+                            }
+                            events.ScheduleEvent(EVENT_TOWER_KNOCK_BACK, 4000);
+                            break;
+                        case EVENT_MUZZLE_SPRAY_STOP:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            events.CancelEvent(EVENT_TOWER_KNOCK_BACK);
+                            events.ScheduleEvent(EVENT_DAGRYN_SHOOT, 2000);
                             break;
                     }
                 }
                 DoMeleeAttackIfReady();
+            }
+
+            void JustReachedHome()
+            {
+                if (me->isInCombat())
+                {
+                    events.ScheduleEvent(EVENT_TOWER_KNOCK_BACK, 500);
+                    events.ScheduleEvent(EVENT_MUZZLE_SPRAY_STOP, 9000);
+                }
             }
 
             void JustDied(Unit* /*killer*/)
