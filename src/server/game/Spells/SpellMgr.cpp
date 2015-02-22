@@ -5436,6 +5436,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 147514: // Galakras: Anti-Air Cannon
                     spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
+                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
                     break;
                 default:
                     break;

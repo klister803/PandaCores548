@@ -55,40 +55,12 @@ enum ScriptedTexts
 
 enum eSpells
 {
+    //Galakras
     SPELL_PULSING_FLAMES                 = 147042,
     SPELL_FLAMES_OF_GALAKROND            = 147068,
+
+    //FriendlyForces
     SPELL_ENABLE_UNIT_FRAME              = 147233,
-    SPELL_GOT_THE_BOMB_VISUAL            = 147966,
-    SPELL_MOST_COMPLICATED_BOMB_SOUTH    = 147897,
-    SPELL_MOST_COMPLICATED_BOMB_NORTH    = 147916,
-    SPELL_FLAME_ARROWS_EVENT             = 146763,
-    SPELL_FLAME_ARROWS_COMBAT            = 147552,
-    SPELL_BOMBARD                        = 148301,
-    SPELL_IN_A_TOWER                     = 147317,
-    SPELL_FLAME_BREATH                   = 146776,
-    SPELL_DRAKEFIRE                      = 148352,
-    SPELL_ANTIAIR_CANNON                 = 147514,
-    SPELL_CHAIN_HEAL                     = 146757,
-    SPELL_TIDAL_WAVE                     = 148522,
-    SPELL_HEALING_TIDE_TOTEM             = 146753,
-    SPELL_WAR_BANNER                     = 147176,
-    SPELL_THROW_AXE                      = 147669,
-    SPELL_SHATTERING_ROAR                = 147204,
-    SPELL_FRACTURE                       = 146744,
-    SPELL_FRACTURE_PEREODIC              = 146899,
-    SPELL_PING_BOSS                      = 144037,
-    SPELL_CRUSHER_CALL                   = 146769,
-    SPELL_SHATTERING_CLEAVE              = 146849,
-    SPELL_SKULL_CRACKER                  = 146848,
-    SPELL_POISONTIPPED_BLADES            = 146902,
-    SPELL_CURSE_OF_VENOM                 = 147711,
-    SPELL_VENOM_BOLT_VOLLEY              = 147713,
-    SPELL_DAGRYN_SHOOT                   = 146773,
-    SPELL_MUZZLE_SPRAY                   = 147825,
-    SPELL_ARCING_SMASH                   = 147688,
-    SPELL_THUNDER_CLAP                   = 147683,
-    SPELL_SHADOW_STALK                   = 146864,
-    SPELL_SHADOW_ASSAULT                 = 146868,
     SPELL_JAINA_FROSTBOLT                = 146781,
     SPELL_JAINA_BLIZZARD                 = 146782,
     SPELL_JAINA_SUMMON_WATER_ELEMENTAL   = 146783,
@@ -97,14 +69,69 @@ enum eSpells
     SPELL_SYLVANA_SUMMON_SKELETON        = 146770,
     SPELL_AETHAS_FIREBALL                = 146786,
     SPELL_AETHAS_FLAMESTRIKE             = 146787,
+    SPELL_VISUAL_TELEPORT                = 149498,
+
+    //Tower events
+    SPELL_GOT_THE_BOMB_VISUAL            = 147966,
+    SPELL_MOST_COMPLICATED_BOMB_SOUTH    = 147897,
+    SPELL_MOST_COMPLICATED_BOMB_NORTH    = 147916,
+    SPELL_IN_A_TOWER                     = 147317,
+    SPELL_ANTIAIR_CANNON                 = 147514,
+    SPELL_EFFECTIVE_TEAM_E               = 148248,
+    SPELL_EFFECTIVE_TEAM_A               = 148249,
+    SPELL_BANTER_E                       = 148041,
+    SPELL_BANTER_A                       = 148042,
+    SPELL_BOMBARD                        = 148301,
+
+    //Dragonmaw Flameslinger
+    SPELL_FLAME_ARROWS_EVENT             = 146763,
+    SPELL_FLAME_ARROWS_COMBAT            = 147552,
+
+    //Dragonmaw Proto-Drake
+    SPELL_FLAME_BREATH                   = 146776,
+    SPELL_DRAKEFIRE                      = 148352,
+
+    //Dragonmaw Tidal Shaman
+    SPELL_CHAIN_HEAL                     = 146757,
+    SPELL_TIDAL_WAVE                     = 148522,
+    SPELL_HEALING_TIDE_TOTEM             = 146753,
+
+    //Dragonmaw War Banner
+    SPELL_WAR_BANNER                     = 147176,
+    SPELL_THROW_AXE                      = 147669,
+
+    //Dragonmaw Bonecrusher
+    SPELL_SHATTERING_ROAR                = 147204,
+    SPELL_FRACTURE                       = 146744,
+    SPELL_FRACTURE_PEREODIC              = 146899,
+    SPELL_PING_BOSS                      = 144037,
+
+    //High Enforcer Thranok
+    SPELL_CRUSHER_CALL                   = 146769,
+    SPELL_SHATTERING_CLEAVE              = 146849,
+    SPELL_SKULL_CRACKER                  = 146848,
+
+    //Poison-Tipped Blades
+    SPELL_POISONTIPPED_BLADES            = 146902,
+    SPELL_CURSE_OF_VENOM                 = 147711,
+    SPELL_VENOM_BOLT_VOLLEY              = 147713,
+
+    //Master Cannoneer Dagryn
+    SPELL_DAGRYN_SHOOT                   = 146773,
+    SPELL_MUZZLE_SPRAY                   = 147825,
+
+    //Lieutenant Krugruk
+    SPELL_ARCING_SMASH                   = 147688,
+    SPELL_THUNDER_CLAP                   = 147683,
+
+    //Dragonmaw Ebon Stalker
+    SPELL_SHADOW_STALK                   = 146864,
+    SPELL_SHADOW_ASSAULT                 = 146868,
+
+    //Dragonmaw Grunt
     SPELL_DRAGON_CLEAVE                  = 148025,
     SPELL_FIXATE                         = 148243,
     SPELL_KNOCKED_OVER                   = 148030,
-    SPELL_BANTER_E                       = 148041,
-    SPELL_BANTER_A                       = 148042,
-    SPELL_VISUAL_TELEPORT                = 149498,
-    SPELL_EFFECTIVE_TEAM_E               = 148248,
-    SPELL_EFFECTIVE_TEAM_A               = 148249,
 };
 
 enum sEvents
@@ -322,8 +349,8 @@ class boss_galakras : public CreatureScript
                     return;
 
                 events.Reset();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                 instance->SetBossState(DATA_GALAKRAS, NOT_STARTED);
                 EntryCheckPredicate pred1(NPC_TOWER_SOUTH);
                 EntryCheckPredicate pred2(NPC_TOWER_NORTH);
@@ -558,7 +585,7 @@ class boss_galakras : public CreatureScript
                             break;
                         case EVENT_GALAKRAS_EXECUTE_1:
                             me->GetMotionMaster()->MovePoint(1, ExecutePos[0]);
-                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             if (Creature* Zaela = instance->instance->GetCreature(instance->GetData64(NPC_WARLORD_ZAELA)))
                             {
                                 Zaela->AI()->Talk(SAY_GALAKRAS_6);
@@ -752,6 +779,9 @@ class npc_jaina_or_sylvana : public CreatureScript
             void UpdateAI(uint32 diff)
             {
                 UpdateVictim();
+                
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
@@ -771,8 +801,9 @@ class npc_jaina_or_sylvana : public CreatureScript
                         case EVENT_JAINAORSYLVANA_COMBAT_2:
                             if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
                             {
-                                if (Unit* Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))                               
-                                    DoCast(Target, SPELL_JAINA_BLIZZARD, true);
+                                me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                                if (Unit* Target = me->getVictim())
+                                    DoCast(Target, SPELL_JAINA_BLIZZARD);
                                 uint8 chance = urand(0, 50);
                                 if (chance > 25)
                                     Talk(SAY_BATTLE_1);
@@ -843,6 +874,10 @@ class npc_verees_or_aethas : public CreatureScript
             void UpdateAI(uint32 diff)
             {
                 UpdateVictim();
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 events.Update(diff);
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -860,8 +895,9 @@ class npc_verees_or_aethas : public CreatureScript
                                 DoCast(me->getVictim(), SPELL_WINDRUNNER_MULTISHOT);
                             else
                             {
-                                if (Unit* Target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))                               
-                                    DoCast(Target, SPELL_AETHAS_FLAMESTRIKE, true);
+                                me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                                if (Unit* Target = me->getVictim())
+                                    DoCast(Target, SPELL_AETHAS_FLAMESTRIKE);
                                 uint8 chance = urand(0, 50);
                                 if (chance > 25)
                                     Talk(SAY_BATTLE_1);
@@ -1096,6 +1132,7 @@ class npc_galakras_south_tower : public CreatureScript
                         EntryCheckPredicate pred(NPC_DRAGONMAW_FLAMESLINGER);
                         summons.DoAction(ACTION_TOWER_GUARDS, pred);
                         ZoneTalk(TEXT_GENERIC_0, 0);
+                        events.ScheduleEvent(EVENT_SUMMON_DEMOLISHER, 20000);
                         events.ScheduleEvent(EVENT_SUMMON_FLY_PROTODRAKE_1, 1000);
                         break;
                     }
@@ -1103,7 +1140,6 @@ class npc_galakras_south_tower : public CreatureScript
                     {
                         EntryCheckPredicate pred(NPC_ANTIAIR_TURRET);
                         summons.DoAction(ACTION_TOWER_GUARDS, pred);
-                        events.ScheduleEvent(EVENT_SUMMON_DEMOLISHER, 20000);
                         break;
                     }
                     case ACTION_TOWER_DESPAWN:
@@ -1203,13 +1239,13 @@ class npc_galakras_north_tower : public CreatureScript
                         EntryCheckPredicate pred(NPC_DRAGONMAW_FLAMESLINGER);
                         summons.DoAction(ACTION_TOWER_GUARDS, pred);
                         ZoneTalk(TEXT_GENERIC_0, 0);
+                        events.ScheduleEvent(EVENT_SUMMON_DEMOLISHER, 20000);
                         break;
                     }
                     case ACTION_TOWER_TURRET:
                     {
                         EntryCheckPredicate pred(NPC_ANTIAIR_TURRET);
                         summons.DoAction(ACTION_TOWER_GUARDS, pred);
-                        events.ScheduleEvent(EVENT_SUMMON_DEMOLISHER, 20000);
                         break;
                     }
                     case ACTION_TOWER_DESPAWN:
@@ -1249,10 +1285,15 @@ class npc_antiair_turret : public CreatureScript
             npc_antiair_turretAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
                 instance = creature->GetInstanceScript();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
             }
 
             InstanceScript* instance;
 
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
+            }
 
             void DoAction(int32 const action)
             {
@@ -1861,8 +1902,10 @@ class npc_dragonmaw_flameslinger : public CreatureScript
                     {
                         case EVENT_FLAMESLINGER_ATTACK:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            {
                                 if (me->GetDistance(pTarget) >= 20.0f)
-                                    DoCast(SPELL_FLAME_ARROWS_EVENT);
+                                    DoCast(pTarget, SPELL_FLAME_ARROWS_EVENT);
+                            }
                             else
                                 DoCast(me->getVictim(), SPELL_FLAME_ARROWS_COMBAT);
                             events.ScheduleEvent(EVENT_FLAMESLINGER_ATTACK, 2000);

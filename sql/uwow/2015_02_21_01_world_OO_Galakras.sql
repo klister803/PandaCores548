@@ -19,12 +19,12 @@ update creature_template set flags_extra = 2 where entry = 72248;
 update creature_template set minlevel = 90, maxlevel = 90, ScriptName = 'npc_demolitions' where entry in (73550,73552,73493,73495);
 update creature_template set spell1 = 146488 where entry = 72408;
 update creature_template set minlevel = 90, maxlevel = 90 where entry in (73493,73494,73495,73496,73550,73551,73552,73553);
-update creature_template set gossip_menu_id = 15992, ScriptName = 'npc_jaina_or_sylvana' where entry = 72302;
-update creature_template set gossip_menu_id = 15803, npcflag = 1, ScriptName = 'npc_varian_or_lorthemar' where entry = 72311;
-update creature_template set gossip_menu_id = 72560, npcflag = 1, ScriptName = 'npc_varian_or_lorthemar' where entry = 72560;
+update creature_template set gossip_menu_id = 15992, RegenHealth = 0, ScriptName = 'npc_jaina_or_sylvana' where entry = 72302;
+update creature_template set gossip_menu_id = 15803, npcflag = 1, RegenHealth = 0, ScriptName = 'npc_varian_or_lorthemar' where entry = 72311;
+update creature_template set gossip_menu_id = 72560, npcflag = 1, RegenHealth = 0, ScriptName = 'npc_varian_or_lorthemar' where entry = 72560;
 update creature_template set spell1 = 147328 where entry = 73310;
-update creature_template set ScriptName = 'npc_jaina_or_sylvana' where entry = 72561;
-update creature_template set ScriptName = 'npc_verees_or_aethas' where entry in (73910, 73909);
+update creature_template set RegenHealth = 0, ScriptName = 'npc_jaina_or_sylvana' where entry = 72561;
+update creature_template set RegenHealth = 0, ScriptName = 'npc_verees_or_aethas' where entry in (73910, 73909);
 update creature_template set ScriptName = 'npc_korkron_demolisher' where entry = 72947;
 update creature_template set ScriptName = 'npc_high_enforcer_thranok' where entry = 72355;
 update creature_template set ScriptName = 'npc_korgra_the_snake' where entry = 72456;
@@ -60,7 +60,7 @@ INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
 (9361, 'at_galakras_towers'),
 (9357, 'at_siege_of_orgrimmar_sniper_shoot_me');
 
-delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry in (146899,148243,148041,148042,147814,145752,148506,149467);
+delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry in (146899,148243,148041,148042,147814,145752,148506,149467,147204);
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 (13, 3, 146899, 0, 0, 31, 0, 3, 72302, 0, 0, 0, '', NULL),
 (13, 3, 146899, 0, 1, 31, 0, 3, 72561, 0, 0, 0, '', NULL),
@@ -78,7 +78,9 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (13, 4, 145752, 0, 0, 31, 0, 3, 72358, 0, 0, 0, '', NULL),
 (13, 16, 145752, 0, 0, 31, 0, 3, 72656, 0, 0, 0, '', NULL),
 (13, 4, 148506, 0, 0, 31, 0, 3, 72910, 0, 0, 0, '', NULL),
-(13, 1, 149467, 0, 0, 31, 0, 3, 72358, 0, 0, 0, '', NULL);
+(13, 1, 149467, 0, 0, 31, 0, 3, 72358, 0, 0, 0, '', NULL),
+(13, 2, 147204, 0, 0, 31, 0, 4, 0, 0, 0, 0, '', NULL),
+(13, 1, 147204, 0, 0, 31, 0, 3, 0, 0, 0, 0, '', NULL);
 
 delete from gossip_menu where entry in (15803,15992,72560);
 INSERT INTO `gossip_menu` (`entry`, `text_id`) VALUES 
@@ -135,10 +137,6 @@ INSERT INTO `spell_trigger_dummy` (`spell_id`, `spell_trigger`, `option`, `targe
 (147438, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Flame Arrows'),
 (148520, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Tidal Wave'),
 (148522, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Tidal Wave');
-
-delete from spell_target_filter where spellId = 147438;
-INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
-(147438, 15, 3, 0, 16, 0, 0, 0, 7, 2, 1, 0, 0, 0, 'Flame Arrows');
 
 delete from creature_equip_template where entry = 73530;
 INSERT INTO `creature_equip_template` (`entry`, `itemEntry1`, `itemEntry2`, `itemEntry3`) VALUES 
