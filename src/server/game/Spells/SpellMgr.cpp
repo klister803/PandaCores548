@@ -5434,10 +5434,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
                     break;
-                case 147514: // Galakras: Anti-Air Cannon
-                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNELED_1;
-                    spellInfo->AttributesEx3 &= ~SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
-                    break;
                 default:
                     break;
             }

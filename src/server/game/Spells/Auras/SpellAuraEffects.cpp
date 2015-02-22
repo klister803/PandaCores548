@@ -1423,6 +1423,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             }
             break;
         }
+        case SPELL_AURA_STRANGULATE:
+        {
+            // Hack. OO Galakras: Anti-Air Cannon
+            if (Aura* aura = target->GetAura(147514))
+                if (aura->GetStackAmount() < 2)
+                    aura->SetStackAmount(aura->GetStackAmount() + 1);
+            break;
+        }
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         {
             if (caster)

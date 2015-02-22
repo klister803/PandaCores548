@@ -672,6 +672,12 @@ class npc_varian_or_lorthemar : public CreatureScript
                 if (!instance)
                     return;
 
+                if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+                {
+                    EnterEvadeMode();
+                    return;
+                }
+                
                 switch (action)
                 {
                     case ACTION_VARIAN_OR_LORTHEMAR_EVENT:
@@ -1096,6 +1102,7 @@ class npc_galakras_south_tower : public CreatureScript
             npc_galakras_south_towerAI(Creature* creature) : ScriptedAI(creature), summons(me)
             {
                 instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
             }
 
             InstanceScript* instance;
@@ -1147,6 +1154,11 @@ class npc_galakras_south_tower : public CreatureScript
                         summons.DespawnAll();
                         break;
                 }
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
             }
 
             void UpdateAI(uint32 diff)
@@ -1203,6 +1215,7 @@ class npc_galakras_north_tower : public CreatureScript
             npc_galakras_north_towerAI(Creature* creature) : ScriptedAI(creature), summons(me)
             {
                 instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
             }
 
             InstanceScript* instance;
@@ -1252,6 +1265,11 @@ class npc_galakras_north_tower : public CreatureScript
                         summons.DespawnAll();
                         break;
                 }
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                damage = 0;
             }
 
             void UpdateAI(uint32 diff)
@@ -1360,6 +1378,12 @@ class npc_lieutenant_krugruk : public CreatureScript
             {
                 UpdateVictim();
 
+                if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+                {
+                    EnterEvadeMode();
+                    return;
+                }
+                
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -1442,6 +1466,12 @@ class npc_master_cannoneer_dagryn : public CreatureScript
             {
                 UpdateVictim();
 
+                if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+                {
+                    EnterEvadeMode();
+                    return;
+                }
+                
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
