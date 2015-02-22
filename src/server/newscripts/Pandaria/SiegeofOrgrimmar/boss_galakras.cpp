@@ -604,6 +604,7 @@ class boss_galakras : public CreatureScript
                         case EVENT_GALAKRAS_EXECUTE_3:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                 DoCast(pTarget, SPELL_FLAMES_OF_GALAKROND);
+                            events.ScheduleEvent(EVENT_GALAKRAS_EXECUTE_3, 6000);
                             break;
                         case EVENT_GALAKRAS_EXECUTE_4:
                             DoCast(SPELL_PULSING_FLAMES);

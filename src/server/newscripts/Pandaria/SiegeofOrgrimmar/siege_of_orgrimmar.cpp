@@ -295,6 +295,9 @@ class npc_korkron_cannon : public CreatureScript
                 if (!instance)
                     return;
 
+                if (Unit* mine = FindNearestCreature(72656, 15.0f))
+                    mine->Respawn();
+
                 if (reset)
                 {
                     uint32 CannonCount = instance->GetData(DATA_GALAKRAS_PRE_EVENT_COUNT) + 1;
