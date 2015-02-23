@@ -111,15 +111,16 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 (147916, 'spell_most_complicated_bomb'),
 (146991, 'spell_galakras_flames_of_galakrond');
 
-delete from areatrigger_data where entry in (1259,1283,1287,1340,1203);
+delete from areatrigger_data where entry in (1259,1283,1287,1340,1203,1301);
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `isMoving`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
 (1259, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'OO: Flame Arrows'),
 (1283, 30, 0, 0, 0, 0, 0, 0, 0, 0, 'OO War Banner'),
 (1287, 12, 0, 0, 0, 0, 0, 0, 0, 0, 'OO Jaina Blizzard'),
 (1340, 12, 0, 0, 0, 0, 0, 0, 0, 0, 'OO Sylvana Flamestrike'),
-(1203, 1, 0, 0, 0, 0, 0, 1, 0, 0, 'OO: Spike Mine');
+(1203, 1, 0, 0, 0, 0, 0, 1, 0, 0, 'OO: Spike Mine'),
+(1301, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'OO: Poison Cloud');
 
-delete from areatrigger_actions where entry in (1259,1259,1283,1283,1287,1287,1340,1340,1203);
+delete from areatrigger_actions where entry in (1259,1259,1283,1283,1287,1287,1340,1340,1203,1301);
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `comment`) VALUES 
 (1259, 0, 1, 0, 2, 146765, 0, 0, 0, 0, 'OO: Flame Arrows on enter cast'),
 (1259, 1, 42, 1, 2, 146765, 0, 0, 0, 0, 'OO: Flame Arrows on exit remove'),
@@ -129,14 +130,22 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 (1287, 1, 42, 1, 2, 147431, 0, 0, 0, 0, 'OO Jaina Blizzard exit enemy'),
 (1340, 0, 1, 0, 2, 147431, 0, 0, 0, 0, 'OO Sylvana Flamestrike on enter enemy'),
 (1340, 1, 42, 1, 2, 147431, 0, 0, 0, 0, 'OO Sylvana Flamestrike exit enemy'),
-(1203, 0, 1, 0, 8, 148506, 0, 0, 0, 0, 'OO: Spike Mine Detonation on player entry');
+(1203, 0, 1, 0, 8, 148506, 0, 0, 0, 0, 'OO: Spike Mine Detonation on player entry'),
+(1301, 0, 1, 0, 2, 147705, 0, 0, 0, 0, 0, 'OO: Poison Cloud on enter'),
+(1301, 1, 42, 1, 2, 147705, 0, 0, 0, 0, 0, 'OO: Poison Cloud on exit');
 
-delete from spell_trigger_dummy where spell_id in (144037, 147438, 148520, 148522);
+delete from spell_trigger_dummy where spell_id in (144037,147438,148520,148522,146769,146775);
 INSERT INTO `spell_trigger_dummy` (`spell_id`, `spell_trigger`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `check_spell_id`, `comment`) VALUES 
 (144037, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Ping Boss'),
 (147438, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Flame Arrows'),
 (148520, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Tidal Wave'),
-(148522, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Tidal Wave');
+(148522, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Tidal Wave'),
+(146769, 0, 14, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Crusher\'s Call'),
+(146775, 0, 15, 0, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 'OO: Crusher\'s Call');
+
+delete from spell_target_filter where spellId = 146769;
+INSERT INTO `spell_target_filter` (`spellId`, `targetId`, `option`, `param1`, `param2`, `param3`, `aura`, `chance`, `effectMask`, `resizeType`, `count`, `maxcount`, `addcount`, `addcaster`, `comments`) VALUES 
+(146769, 15, 0, 0, 0, 0, 0, 0, 7, 0, 5, 10, 0, 0, 'OO: Crusher\'s Call');
 
 delete from creature_equip_template where entry = 73530;
 INSERT INTO `creature_equip_template` (`entry`, `itemEntry1`, `itemEntry2`, `itemEntry3`) VALUES 

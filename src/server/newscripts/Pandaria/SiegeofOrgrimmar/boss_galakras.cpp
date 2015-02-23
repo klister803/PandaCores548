@@ -115,8 +115,9 @@ enum eSpells
     SPELL_SHATTERING_CLEAVE              = 146849,
     SPELL_SKULL_CRACKER                  = 146848,
 
-    //Poison-Tipped Blades
+    //Korgra the Snake
     SPELL_POISONTIPPED_BLADES            = 146902,
+    SPELL_POISON_CLOUD                   = 147706,
     SPELL_CURSE_OF_VENOM                 = 147711,
     SPELL_VENOM_BOLT_VOLLEY              = 147713,
 
@@ -213,6 +214,7 @@ enum sEvents
     EVENT_TOWER_KNOCK_BACK             = 44,
     EVENT_ARCING_SMASH_STOP            = 45,
     EVENT_MUZZLE_SPRAY_STOP            = 46,
+    EVENT_POISON_CLOUD                 = 47,
 };
 
 Position const CannonPos[7]
@@ -424,7 +426,7 @@ class boss_galakras : public CreatureScript
                     instance->SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
 
                 for (uint8 n = 0; n < 7; n++)
-                    me->SummonCreature(NPC_KORKRON_CANNON, CannonPos[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 0);
+                    me->SummonCreature(NPC_KORKRON_CANNON, CannonPos[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                 
                 for (uint8 n = 0; n < 21; n++)
                     me->SummonCreature(NPC_SPIKE_MINE, MinePos[n]);
@@ -2420,6 +2422,7 @@ class npc_korgra_the_snake : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 12000);
+                events.ScheduleEvent(EVENT_POISON_CLOUD, 18000);
                 events.ScheduleEvent(EVENT_CURSE_OF_VENOM, 20000);
                 events.ScheduleEvent(EVENT_VENOM_BOLT_VOLLEY, 25000);
                 DoZoneInCombat(me, 30.0f);
@@ -2445,8 +2448,13 @@ class npc_korgra_the_snake : public CreatureScript
                                 DoCast(me->getVictim(), SPELL_POISONTIPPED_BLADES);
                             events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 6000);
                             break;
+                        case EVENT_POISON_CLOUD:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                                DoCast(pTarget, SPELL_POISON_CLOUD);
+                            break;
                         case EVENT_CURSE_OF_VENOM:
                             DoCast(SPELL_CURSE_OF_VENOM);
+                            events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 60000);
                             break;
                         case EVENT_VENOM_BOLT_VOLLEY:
                             DoCast(SPELL_VENOM_BOLT_VOLLEY);
