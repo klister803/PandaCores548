@@ -8925,9 +8925,6 @@ uint32 Player::GetLevelFromDB(uint64 guid)
 
 void Player::UpdateArea(uint32 newArea)
 {
-    if (m_areaUpdateId != newArea)
-        SendInitWorldStates(m_zoneUpdateId, newArea);
-
     // FFA_PVP flags are area and not zone id dependent
     // so apply them accordingly
     m_areaUpdateId    = newArea;
@@ -8943,6 +8940,10 @@ void Player::UpdateArea(uint32 newArea)
         newArea != 6081 && newArea != 6526 && newArea != 6527 
         && m_zoneUpdateId == 5841 && !isGameMaster())
         TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
+    
+    //Hack OO: Galakras. Fix me
+    if (GetMapId() == 1136)
+        SendInitWorldStates(m_zoneUpdateId, newArea);
 
     UpdateAreaDependentAuras(newArea);
 
@@ -8983,7 +8984,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         sOutdoorPvPMgr->HandlePlayerEnterZone(this, newZone);
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
-        //SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
+        SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
     }
 
     // group update
