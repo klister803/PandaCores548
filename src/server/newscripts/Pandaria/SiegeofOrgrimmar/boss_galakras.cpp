@@ -2451,10 +2451,10 @@ class npc_korgra_the_snake : public CreatureScript
                         case EVENT_POISON_CLOUD:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
                                 DoCast(pTarget, SPELL_POISON_CLOUD);
+                            events.ScheduleEvent(EVENT_POISON_CLOUD, 60000);
                             break;
                         case EVENT_CURSE_OF_VENOM:
                             DoCast(SPELL_CURSE_OF_VENOM);
-                            events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 60000);
                             break;
                         case EVENT_VENOM_BOLT_VOLLEY:
                             DoCast(SPELL_VENOM_BOLT_VOLLEY);
