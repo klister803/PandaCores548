@@ -11232,11 +11232,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                FillInitialWorldState(data, 4903, 0);              // 9  WORLDSTATE_SHOW_TIMER (Blood Quickening weekly)
-                FillInitialWorldState(data, 4904, 30);             // 10 WORLDSTATE_EXECUTION_TIME
-                FillInitialWorldState(data, 4940, 0);              // 11 WORLDSTATE_SHOW_ATTEMPTS
-                FillInitialWorldState(data, 4941, 50);             // 12 WORLDSTATE_ATTEMPTS_REMAINING
-                FillInitialWorldState(data, 4942, 50);             // 13 WORLDSTATE_ATTEMPTS_MAX
+                FillInitialWorldState(data, 0, 4903);              // 9  WORLDSTATE_SHOW_TIMER (Blood Quickening weekly)
+                FillInitialWorldState(data, 30, 4904);             // 10 WORLDSTATE_EXECUTION_TIME
+                FillInitialWorldState(data, 0, 4940);              // 11 WORLDSTATE_SHOW_ATTEMPTS
+                FillInitialWorldState(data, 50, 4941);             // 12 WORLDSTATE_ATTEMPTS_REMAINING
+                FillInitialWorldState(data, 50, 4942);             // 13 WORLDSTATE_ATTEMPTS_MAX
             }
             break;
         // The Culling of Stratholme
@@ -11245,11 +11245,11 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                FillInitialWorldState(data, 3479, 0);              // 9  WORLDSTATE_SHOW_CRATES
-                FillInitialWorldState(data, 3480, 0);              // 10 WORLDSTATE_CRATES_REVEALED
-                FillInitialWorldState(data, 3504, 0);              // 11 WORLDSTATE_WAVE_COUNT
-                FillInitialWorldState(data, 3931, 25);             // 12 WORLDSTATE_TIME_GUARDIAN
-                FillInitialWorldState(data, 3932, 0);              // 13 WORLDSTATE_TIME_GUARDIAN_SHOW
+                FillInitialWorldState(data, 0, 3479);              // 9  WORLDSTATE_SHOW_CRATES
+                FillInitialWorldState(data, 0, 3480);              // 10 WORLDSTATE_CRATES_REVEALED
+                FillInitialWorldState(data, 0, 3504);              // 11 WORLDSTATE_WAVE_COUNT
+                FillInitialWorldState(data, 25, 3931);             // 12 WORLDSTATE_TIME_GUARDIAN
+                FillInitialWorldState(data, 0, 3932);              // 13 WORLDSTATE_TIME_GUARDIAN_SHOW
             }
             break;
         // Ulduar
@@ -11258,8 +11258,8 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                 instance->FillInitialWorldStates(data);
             else
             {
-                FillInitialWorldState(data, 4132, 0);              // 9  WORLDSTATE_SHOW_CRATES
-                FillInitialWorldState(data, 4131, 0);              // 10 WORLDSTATE_CRATES_REVEALED
+                FillInitialWorldState(data, 0, 4132);              // 9  WORLDSTATE_SHOW_CRATES
+                FillInitialWorldState(data, 0, 4131);              // 10 WORLDSTATE_CRATES_REVEALED
             }
             break;
         // Twin Peaks

@@ -116,16 +116,16 @@ public:
 
         void FillInitialWorldStates(WorldPacket& data)
         {
-            data << uint32(ShowSouthTower == IN_PROGRESS)        << uint32(WS_SHOW_SOUTH_TOWER);
-            data << uint32(ShowNorthTower == IN_PROGRESS)        << uint32(WS_SHOW_NORTH_TOWER);
-            data << uint32(ShowSouthTower == SPECIAL)            << uint32(WS_SHOW_CAPTURE_SOUTH_TOWER);
-            data << uint32(ShowNorthTower == SPECIAL)            << uint32(WS_SHOW_CAPTURE_NORTH_TOWER);
-            data << uint32(SouthTowerCount)                      << uint32(WS_SOUTH_TOWER);
-            data << uint32(NorthTowerCount)                      << uint32(WS_NORTH_TOWER);
-            data << uint32(SouthTowerCount)                      << uint32(WS_CAPTURE_SOUTH_TOWER);
-            data << uint32(NorthTowerCount)                      << uint32(WS_CAPTURE_NORTH_TOWER);
-            data << uint32(ShowCannon == IN_PROGRESS)            << uint32(WS_SHOW_KORKRON_CANNON);
-            data << uint32(CannonCount)                          << uint32(WS_KORKRON_CANNON_COUNT);
+            data << uint32(ShowSouthTower == IN_PROGRESS)    << uint32(WS_SHOW_SOUTH_TOWER);
+            data << uint32(ShowNorthTower == IN_PROGRESS)    << uint32(WS_SHOW_NORTH_TOWER);
+            data << uint32(ShowSouthTower == SPECIAL)        << uint32(WS_SHOW_CAPTURE_SOUTH_TOWER);
+            data << uint32(ShowNorthTower == SPECIAL)        << uint32(WS_SHOW_CAPTURE_NORTH_TOWER);
+            data << uint32(SouthTowerCount)                  << uint32(WS_SOUTH_TOWER);
+            data << uint32(NorthTowerCount)                  << uint32(WS_NORTH_TOWER);
+            data << uint32(SouthTowerCount)                  << uint32(WS_CAPTURE_SOUTH_TOWER);
+            data << uint32(NorthTowerCount)                  << uint32(WS_CAPTURE_NORTH_TOWER);
+            data << uint32(ShowCannon == IN_PROGRESS)        << uint32(WS_SHOW_KORKRON_CANNON);
+            data << uint32(CannonCount)                      << uint32(WS_KORKRON_CANNON_COUNT);
         }
 
         void OnPlayerEnter(Player* player)

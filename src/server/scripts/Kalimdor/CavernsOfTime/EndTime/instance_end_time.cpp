@@ -235,8 +235,8 @@ class instance_end_time : public InstanceMapScript
 
             void FillInitialWorldStates(WorldPacket& data)
             {
-                data << uint32(WORLDSTATE_SHOW_FRAGMENTS) << uint32(jaina_event == IN_PROGRESS);
-                data << uint32(WORLDSTATE_FRAGMENTS_COLLECTED) << uint32(uiFragmentsCollected);
+                data << uint32(jaina_event == IN_PROGRESS) << uint32(WORLDSTATE_SHOW_FRAGMENTS);
+                data << uint32(uiFragmentsCollected)       << uint32(WORLDSTATE_FRAGMENTS_COLLECTED);
             }
 
             std::string GetSaveData()

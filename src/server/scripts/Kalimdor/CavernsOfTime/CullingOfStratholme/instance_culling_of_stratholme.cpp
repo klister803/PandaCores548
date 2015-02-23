@@ -78,11 +78,11 @@ class instance_culling_of_stratholme : public InstanceMapScript
 
             void FillInitialWorldStates(WorldPacket& data)
             {
-                data << uint32(WORLDSTATE_SHOW_CRATES) << uint32(1);
-                data << uint32(WORLDSTATE_CRATES_REVEALED) << uint32(_crateCount);
-                data << uint32(WORLDSTATE_WAVE_COUNT) << uint32(0);
-                data << uint32(WORLDSTATE_TIME_GUARDIAN) << uint32(25);
-                data << uint32(WORLDSTATE_TIME_GUARDIAN_SHOW) << uint32(0);
+                data << uint32(1) << uint32(WORLDSTATE_SHOW_CRATES);
+                data << uint32(_crateCount) << uint32(WORLDSTATE_CRATES_REVEALED);
+                data << uint32(0) << uint32(WORLDSTATE_WAVE_COUNT);
+                data << uint32(25) << uint32(WORLDSTATE_TIME_GUARDIAN);
+                data << uint32(0) << uint32(WORLDSTATE_TIME_GUARDIAN_SHOW);
             }
 
             void OnCreatureCreate(Creature* creature)

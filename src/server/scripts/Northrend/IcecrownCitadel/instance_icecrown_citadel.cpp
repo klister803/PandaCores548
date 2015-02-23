@@ -170,11 +170,11 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void FillInitialWorldStates(WorldPacket& data)
             {
-                data << uint32(WORLDSTATE_SHOW_TIMER)         << uint32(BloodQuickeningState == IN_PROGRESS);
-                data << uint32(WORLDSTATE_EXECUTION_TIME)     << uint32(BloodQuickeningMinutes);
-                data << uint32(WORLDSTATE_SHOW_ATTEMPTS)      << uint32(instance->IsHeroic());
-                data << uint32(WORLDSTATE_ATTEMPTS_REMAINING) << uint32(HeroicAttempts);
-                data << uint32(WORLDSTATE_ATTEMPTS_MAX)       << uint32(MaxHeroicAttempts);
+                data << uint32(BloodQuickeningState == IN_PROGRESS) << uint32(WORLDSTATE_SHOW_TIMER);
+                data << uint32(BloodQuickeningMinutes)              << uint32(WORLDSTATE_EXECUTION_TIME);
+                data << uint32(instance->IsHeroic())                << uint32(WORLDSTATE_SHOW_ATTEMPTS);
+                data << uint32(HeroicAttempts)                      << uint32(WORLDSTATE_ATTEMPTS_REMAINING);
+                data << uint32(MaxHeroicAttempts)                   << uint32(WORLDSTATE_ATTEMPTS_MAX);
             }
 
             void OnPlayerEnter(Player* player)
