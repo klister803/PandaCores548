@@ -430,7 +430,7 @@ public:
 
                 if (DeepBreathTimer <= Diff)
                 {
-                    if (!IsMoving)
+                    if (!IsMoving && PointData)
                     {
                         if (me->IsNonMeleeSpellCasted(false))
                             me->InterruptNonMeleeSpells(false);

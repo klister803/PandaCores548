@@ -749,7 +749,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
-                    caster->m_SpecialTarget = GetUnitOwner();
+                    caster->m_SpecialTarget = GetUnitOwner()->GetGUID();
             }
 
             void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -757,7 +757,7 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     caster->RemoveAura(122470);
-                    caster->m_SpecialTarget = NULL;
+                    caster->m_SpecialTarget = 0;
                 }
             }
 
@@ -769,9 +769,12 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
 
             void AfterAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
             {
+                if(!caster->m_SpecialTarget)
+                    return;
+
                 if (Unit* caster = dmgInfo.GetVictim())
                 {
-                    if (Unit* target = caster->m_SpecialTarget)
+                    if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->m_SpecialTarget))
                     {
                         int32 bp = int32(dmgInfo.GetAbsorb() / 6);
 
