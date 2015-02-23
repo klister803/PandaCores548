@@ -744,10 +744,7 @@ public:
                             teron->AI()->ZoneTalk(TEXT_GENERIC_3, 0);
                         break;
                     case EVENT_14:
-                        if (Creature * c = instance->instance->GetCreature(instance->GetData64(NPC_PORTAL_TO_ORGRIMMAR)))
-                        {
-                            c->SetVisible(true);
-                        }
+                        instance->SetData(DATA_SHA_OF_PRIDE, DONE);
                         if (Creature* jaina = instance->instance->GetCreature(instance->GetData64(NPC_SHA_OF_PRIDE_END_LADY_JAINA)))
                         {
                             jaina->AI()->ZoneTalk(TEXT_GENERIC_4, 0);

@@ -684,7 +684,7 @@ class npc_varian_or_lorthemar : public CreatureScript
             {
                 instance = creature->GetInstanceScript();
                 group_member = sFormationMgr->CreateCustomFormation(me);
-                bool startEvent = false;
+                startEvent = false;
             }
 
             InstanceScript* instance;

@@ -113,7 +113,7 @@ INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 
 delete from areatrigger_data where entry in (1259,1283,1287,1340,1203);
 INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `isMoving`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `customVisualId`, `customEntry`, `comment`) VALUES 
-(1259, 2, 0, 0, 0, 0, 2000, 0, 0, 0, 'OO: Flame Arrows'),
+(1259, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'OO: Flame Arrows'),
 (1283, 30, 0, 0, 0, 0, 0, 0, 0, 0, 'OO War Banner'),
 (1287, 12, 0, 0, 0, 0, 0, 0, 0, 0, 'OO Jaina Blizzard'),
 (1340, 12, 0, 0, 0, 0, 0, 0, 0, 0, 'OO Sylvana Flamestrike'),
@@ -121,8 +121,8 @@ INSERT INTO `areatrigger_data` (`entry`, `radius`, `radius2`, `isMoving`, `speed
 
 delete from areatrigger_actions where entry in (1259,1259,1283,1283,1287,1287,1340,1340,1203);
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `comment`) VALUES 
-(1259, 0, 1, 0, 2, 146764, 0, 0, 0, 0, 'OO: Flame Arrows on enter cast'),
-(1259, 1, 34, 1, 0, 146764, 0, 0, 0, 0, 'OO: Flame Arrows on exit remove'),
+(1259, 0, 1, 0, 2, 146765, 0, 0, 0, 0, 'OO: Flame Arrows on enter cast'),
+(1259, 1, 42, 1, 2, 146765, 0, 0, 0, 0, 'OO: Flame Arrows on exit remove'),
 (1283, 0, 1, 0, 1, 146735, 0, 0, 0, 0, 'OO War Banner spawn cast friendly'),
 (1283, 1, 40, 1, 1, 146735, 0, 0, 0, 0, 'OO War Banner despawn remove friendly'),
 (1287, 0, 1, 0, 2, 147431, 0, 0, 0, 0, 'OO Jaina Blizzard on enter enemy'),

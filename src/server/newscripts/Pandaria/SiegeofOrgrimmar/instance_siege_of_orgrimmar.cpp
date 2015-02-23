@@ -56,6 +56,7 @@ public:
         
         //Creature
         std::set<uint64> shaSlgGUID;
+        std::vector<uint64> PortalOrgrimmarGUID;
         uint64 LorewalkerChoGUIDtmp;
         uint64 fpGUID[3];
         uint64 WrynOrLorthemarGUID;
@@ -306,7 +307,7 @@ public:
                     shaSlgGUID.insert(creature->GetGUID());
                     break;
                 case NPC_PORTAL_TO_ORGRIMMAR:
-                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
+                    PortalOrgrimmarGUID.push_back(creature->GetGUID());
                     creature->SetVisible((GetBossState(DATA_SHA_OF_PRIDE)==DONE) ? true : false);
                     break;
 
@@ -535,6 +536,17 @@ public:
                     {
                         if (data == IN_PROGRESS) slg->AddAura(SPELL_SHA_VORTEX, slg);
                         else slg->RemoveAura(SPELL_SHA_VORTEX);
+                    }
+                }
+            }
+            if (type == DATA_SHA_OF_PRIDE)
+            {
+                if (data == DONE)
+                {
+                    for (std::vector<uint64>::iterator itr = PortalOrgrimmarGUID.begin(); itr != PortalOrgrimmarGUID.end(); ++itr)
+                    {
+                        if (Creature* c = instance->GetCreature(*itr))
+                            c->SetVisible(true);
                     }
                 }
             }
