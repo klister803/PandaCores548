@@ -5591,8 +5591,8 @@ uint32 Player::GetRoleForGroup(uint32 specializationId)
         case SPEC_SHAMAN_ENHANCEMENT:
         case SPEC_WARRIOR_ARMS:
         case SPEC_WARRIOR_FURY:
-        case SPEC_DROOD_BALANCE:
-        case SPEC_DROOD_CAT:
+        case SPEC_DRUID_BALANCE:
+        case SPEC_DRUID_CAT:
             roleId = ROLES_DPS;
             break;
         case SPEC_MONK_MISTWEAVER:
@@ -5600,13 +5600,13 @@ uint32 Player::GetRoleForGroup(uint32 specializationId)
         case SPEC_PRIEST_DISCIPLINE:
         case SPEC_PRIEST_HOLY:
         case SPEC_SHAMAN_RESTORATION:
-        case SPEC_DROOD_RESTORATION:
+        case SPEC_DRUID_RESTORATION:
             roleId = ROLES_HEALER;
             break;
         case SPEC_MONK_BREWMASTER:
         case SPEC_DK_BLOOD:
         case SPEC_WARRIOR_PROTECTION:
-        case SPEC_DROOD_BEAR:
+        case SPEC_DRUID_BEAR:
         case SPEC_PALADIN_PROTECTION:
             roleId = ROLES_TANK;
             break;
@@ -5625,7 +5625,7 @@ bool Player::isInTankSpec()
         case SPEC_MONK_BREWMASTER:
         case SPEC_DK_BLOOD:
         case SPEC_WARRIOR_PROTECTION:
-        case SPEC_DROOD_BEAR:
+        case SPEC_DRUID_BEAR:
         case SPEC_PALADIN_PROTECTION:
             return true;
     }

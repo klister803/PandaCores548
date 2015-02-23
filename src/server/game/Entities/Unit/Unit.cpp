@@ -6247,7 +6247,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             }
                             case CLASS_DRUID:
                             {
-                                if (spec == SPEC_DROOD_BALANCE || spec == SPEC_DROOD_RESTORATION)
+                                if (spec == SPEC_DRUID_BALANCE || spec == SPEC_DRUID_RESTORATION)
                                     triggered_spell_id = 146158;
                                 break;
                             }
@@ -6326,7 +6326,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                             }
                             case CLASS_DRUID:
                             {
-                                if (spec == SPEC_DROOD_BALANCE || spec == SPEC_DROOD_RESTORATION)
+                                if (spec == SPEC_DRUID_BALANCE || spec == SPEC_DRUID_RESTORATION)
                                     triggered_spell_id = 146064;
                                 break;
                             }

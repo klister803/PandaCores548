@@ -649,13 +649,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_DEATH_KNIGHT;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110570;   // Anti-Magic Shell
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 122285;   // Bone Shield
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 122282;   // Death Coil
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110575;   // Icebound Fortitude
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_TANK)
@@ -670,13 +670,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                     bpTarget = 113073;          // Dash
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_HUNTER;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110588;   // Misdirection
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 110600;   // Ice Trap
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110597;   // Play Dead
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110617;   // Deterrence
 
                                     break;
@@ -686,13 +686,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                     bpTarget = 113074;          // Healing Touch
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_MAGE;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110621;   // Mirror Image
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 110694;   // Frost Armor
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110693;   // Frost Nova
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110696;   // Ice Block
 
                                     break;
@@ -701,13 +701,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_MONK;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 126458;   // Grapple Weapon
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 126453;   // Elusive Brew
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 126449;   // Clash
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 126456;   // Fortifying Brew
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_TANK)
@@ -723,13 +723,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_PALADIN;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110698;   // Hammer of Justice
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 110701;   // Consecration
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110700;   // Divine Shield
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 122288;   // Cleanse
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_TANK)
@@ -745,13 +745,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_PRIEST;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110707;   // Mass Dispel
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 110717;   // Fear Ward
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110715;   // Dispersion
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110718;   // Leap of Faith
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_DPS)
@@ -766,13 +766,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                     bpTarget = 113613;          // Growl
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_ROGUE;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110788;   // Cloak of Shadows
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 122289;   // Feint
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110730;   // Redirect
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110791;   // Evasion
 
                                     break;
@@ -781,13 +781,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_SHAMAN;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 110802;   // Purge
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 110803;   // Lightning Shield
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110807;   // Feral Spirit
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 110806;   // Spiritwalker's Grace
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_HEALER)
@@ -802,13 +802,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                     bpTarget = 113295;      // Rejuvenation
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_WARLOCK;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 122291;   // Unending Resolve
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 122290;   // Life Tap
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 110810;   // Soul Swap
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 112970;   // Demonic Circle : Teleport
 
                                     break;
@@ -817,13 +817,13 @@ class spell_dru_symbiosis : public SpellScriptLoader
                                 {
                                     spellTarget = SPELL_DRUID_SYMBIOSIS_WARRIOR;
 
-                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                                         spellCaster = 122292;   // Intervene
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                                         spellCaster = 113002;   // Spell Reflection
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_CAT)
                                         spellCaster = 112997;   // Shattering Blow
-                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                                         spellCaster = 113004;   // Intimidating Roar
 
                                     if (target->GetRoleForGroup(target->GetSpecializationId(target->GetActiveSpec())) == ROLES_TANK)
@@ -1214,7 +1214,7 @@ class spell_dru_ferocious_bite : public SpellScriptLoader
                 SetHitDamage(int32(damageN * perc));
 
                 // Soul of the Forest
-                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_CAT)
                 {
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
@@ -1273,7 +1273,7 @@ class spell_dru_rip : public SpellScriptLoader
                     return;
 
                 // Soul of the Forest
-                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_CAT)
+                if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_CAT)
                 {
                     // energize
                     if (SpellInfo const* info = sSpellMgr->GetSpellInfo(114113))
@@ -2291,7 +2291,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_BALANCE)
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_BALANCE)
                         {
                             if (GetSpell()->IsCritForTarget(target))
                             {
@@ -2317,7 +2317,7 @@ class spell_dru_eclipse : public SpellScriptLoader
                                 }
                             }
                         }
-                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION && GetSpellInfo()->Id == SPELL_DRUID_WRATH)
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION && GetSpellInfo()->Id == SPELL_DRUID_WRATH)
                         {
                             if (_player->HasAura(108373))
                                 SetHitDamage(int32(GetHitDamage() * 1.2f));
@@ -2629,7 +2629,7 @@ class spell_druid_rejuvenation : public SpellScriptLoader
                 Player* _player = caster->ToPlayer();
                 if(!_player)
                     return;
-                if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DROOD_RESTORATION)
+                if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_DRUID_RESTORATION)
                 {
                     Creature* summon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_TOTEM]);
                     int32 maxhealth = caster->GetMaxHealth();
@@ -3143,7 +3143,7 @@ class spell_dru_healing_ouch : public SpellScriptLoader
 
                 if (AuraEffect const* eff = player->GetAuraEffect(108373, EFFECT_2))
                 {
-                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                    if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                         SetHitHeal(int32(GetHitHeal() * eff->GetAmount() / 100.0f));
                 }
             }

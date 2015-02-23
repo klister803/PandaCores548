@@ -395,6 +395,13 @@ void AddSC_boss_murozond();
 void AddSC_boss_perotharn();                 //CoT Well of Eternity
 void AddSC_boss_queen_azshara();
 void AddSC_instance_well_of_eternity();
+
+void AddSC_instance_hour_of_twilight(); // Hour of Twilight
+void AddSC_hour_of_twilight();
+void AddSC_boss_arcurion();
+void AddSC_boss_asira_dawnslayer();
+void AddSC_boss_archbishop_benedictus();
+
 void AddSC_boss_epoch();                     //CoT Culling Of Stratholme
 void AddSC_boss_infinite_corruptor();
 void AddSC_boss_salramm();
@@ -1238,6 +1245,13 @@ void AddKalimdorScripts()
     AddSC_boss_perotharn();                 //CoT Well of Eternity
     AddSC_boss_queen_azshara();
     AddSC_instance_well_of_eternity();
+
+    AddSC_instance_hour_of_twilight();      // Hour of Twilight
+    AddSC_hour_of_twilight();
+    AddSC_boss_arcurion();
+    AddSC_boss_asira_dawnslayer();
+    AddSC_boss_archbishop_benedictus();
+
     AddSC_boss_epoch();                     //CoT Culling Of Stratholme
     AddSC_boss_infinite_corruptor();
     AddSC_boss_salramm();

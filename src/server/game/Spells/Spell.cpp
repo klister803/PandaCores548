@@ -6486,7 +6486,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 if (Player* player = m_caster->ToPlayer())
                     // only Guardian spec is allowed to cast Rejuvenation in any form
-                    if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_DROOD_BEAR)
+                    if (player->GetSpecializationId(player->GetActiveSpec()) != SPEC_DRUID_BEAR)
                         checkForm = true;
             }
             break;

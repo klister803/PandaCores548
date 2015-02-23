@@ -813,7 +813,7 @@ class spell_ultraxion_fading_light : public SpellScriptLoader
                             case SPEC_PRIEST_HOLY:
                             case SPEC_DK_BLOOD:
                             case SPEC_SHAMAN_RESTORATION:
-                            case SPEC_DROOD_RESTORATION:
+                            case SPEC_DRUID_RESTORATION:
                                 return true;
                             default:
                                 return false;
@@ -871,7 +871,7 @@ class spell_ultraxion_last_defender_of_azeroth : public SpellScriptLoader
                             case SPEC_WARRIOR_PROTECTION:
                             case SPEC_PALADIN_PROTECTION:
                             case SPEC_DK_BLOOD:
-                            case SPEC_DROOD_BEAR:
+                            case SPEC_DRUID_BEAR:
                                 return false;
                             default:
                                 return true;
@@ -917,7 +917,7 @@ class spell_ultraxion_last_defender_of_azeroth_dummy : public SpellScriptLoader
                     case SPEC_DK_BLOOD:
                         GetHitUnit()->CastSpell(GetHitUnit(), SPELL_LAST_DEFENDER_OF_AZEROTH_DK, true);
                         break;
-                    case SPEC_DROOD_BEAR:
+                    case SPEC_DRUID_BEAR:
                         GetHitUnit()->CastSpell(GetHitUnit(), SPELL_LAST_DEFENDER_OF_AZEROTH_DRUID, true);
                         break;
                 }

@@ -82,6 +82,10 @@ enum eSpells
     SPELL_BANTER_E                       = 148041,
     SPELL_BANTER_A                       = 148042,
     SPELL_BOMBARD                        = 148301,
+    SPELL_TOWER_JUMP_1                   = 148845,
+    SPELL_TOWER_JUMP_2                   = 148878,
+    SPELL_TOWER_JUMP_3                   = 148879,
+    SPELL_TOWER_JUMP_4                   = 148880,
 
     //Dragonmaw Flameslinger
     SPELL_FLAME_ARROWS_EVENT             = 146763,
@@ -1417,7 +1421,7 @@ class npc_lieutenant_krugruk : public CreatureScript
                     EnterEvadeMode();
                     return;
                 }
-                
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -2553,84 +2557,132 @@ public:
 
 class spell_most_complicated_bomb : public SpellScriptLoader
 {
-    public:
-        spell_most_complicated_bomb() : SpellScriptLoader("spell_most_complicated_bomb") { }
+public:
+    spell_most_complicated_bomb() : SpellScriptLoader("spell_most_complicated_bomb") { }
 
-        class spell_most_complicated_bomb_AuraScript : public AuraScript
+    class spell_most_complicated_bomb_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_most_complicated_bomb_AuraScript);
+
+        void OnPeriodic(AuraEffect const* aurEff)
         {
-            PrepareAuraScript(spell_most_complicated_bomb_AuraScript);
-
-            void OnPeriodic(AuraEffect const* aurEff)
+            if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
             {
-                if (InstanceScript* pInstance = GetCaster()->GetInstanceScript())
-                {
-                    if (!pInstance)
-                        return;
+                if (!pInstance)
+                    return;
 
-                    if (GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_SOUTH)
-                    {                    
-                        uint32 southTower = pInstance->GetData(DATA_SOUTH_COUNT) + 1;
-                        pInstance->SetData(DATA_SOUTH_COUNT, southTower);
-                    }
+                if (GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_SOUTH)
+                {                    
+                    uint32 southTower = pInstance->GetData(DATA_SOUTH_COUNT) + 1;
+                    pInstance->SetData(DATA_SOUTH_COUNT, southTower);
+                }
 
-                    if (GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_NORTH)
-                    {                    
-                        uint32 northTower = pInstance->GetData(DATA_NORTH_COUNT) + 1;
-                        pInstance->SetData(DATA_NORTH_COUNT, northTower);
-                    }
+                if (GetSpellInfo()->Id == SPELL_MOST_COMPLICATED_BOMB_NORTH)
+                {                    
+                    uint32 northTower = pInstance->GetData(DATA_NORTH_COUNT) + 1;
+                    pInstance->SetData(DATA_NORTH_COUNT, northTower);
                 }
             }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_most_complicated_bomb_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_most_complicated_bomb_AuraScript();
         }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_most_complicated_bomb_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_most_complicated_bomb_AuraScript();
+    }
 };
 
 // Flames of Galakrond - 146991
 class spell_galakras_flames_of_galakrond : public SpellScriptLoader
 {
-    public:
-        spell_galakras_flames_of_galakrond() : SpellScriptLoader("spell_galakras_flames_of_galakrond") { }
+public:
+    spell_galakras_flames_of_galakrond() : SpellScriptLoader("spell_galakras_flames_of_galakrond") { }
 
-        class spell_galakras_flames_of_galakrond_SpellScript : public SpellScript
+    class spell_galakras_flames_of_galakrond_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_galakras_flames_of_galakrond_SpellScript);
+
+        void HandleBeforeCast()
         {
-            PrepareSpellScript(spell_galakras_flames_of_galakrond_SpellScript);
-
-            void HandleBeforeCast()
-            {
-                GetSpell()->destAtTarget = *GetExplTargetDest();
-            }
-
-            void HandleOnHit(SpellEffIndex /*effIndex*/)
-            {
-                if(Unit* caster = GetCaster())
-                {
-                    Position pos;
-                    WorldLocation destPos = *GetExplTargetDest();
-                    caster->GetPosition(&pos);
-                    destPos.Relocate(pos);
-                    GetSpell()->destTarget = &destPos;
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_galakras_flames_of_galakrond_SpellScript::HandleBeforeCast);
-                OnEffectHit += SpellEffectFn(spell_galakras_flames_of_galakrond_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_CREATE_AREATRIGGER);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_galakras_flames_of_galakrond_SpellScript();
+            GetSpell()->destAtTarget = *GetExplTargetDest();
         }
+
+        void HandleOnHit(SpellEffIndex /*effIndex*/)
+        {
+            if(Unit* caster = GetCaster())
+            {
+                Position pos;
+                WorldLocation destPos = *GetExplTargetDest();
+                caster->GetPosition(&pos);
+                destPos.Relocate(pos);
+                GetSpell()->destTarget = &destPos;
+            }
+        }
+
+        void Register()
+        {
+            BeforeCast += SpellCastFn(spell_galakras_flames_of_galakrond_SpellScript::HandleBeforeCast);
+            OnEffectHit += SpellEffectFn(spell_galakras_flames_of_galakrond_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_CREATE_AREATRIGGER);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_galakras_flames_of_galakrond_SpellScript();
+    }
+};
+
+class spell_galakras_tower_rope_jump : public SpellScriptLoader
+{
+public:
+    spell_galakras_tower_rope_jump() : SpellScriptLoader("spell_galakras_tower_rope_jump") { }
+
+    class spell_galakras_tower_rope_jump_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_galakras_tower_rope_jump_AuraScript);
+
+        void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+        {
+            GetCaster()->GetMotionMaster()->MoveJump(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ() + 15, 10.0f, 20.0f);
+        }
+
+        void HandlePeriodicTick(AuraEffect const* aurEff)
+        {
+            uint32 ticks = aurEff->GetTickNumber();
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            switch (ticks)
+            {
+                case 1:
+                    caster->GetMotionMaster()->MoveJump(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 15, 10.0f, 20.0f);
+                    break;
+                case 2:
+                    caster->GetMotionMaster()->MoveJump(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 18, 10.0f, 20.0f);
+                    break;
+                case 3:
+                    if (Unit* target = caster->FindNearestCreature(12999, 20.0f))
+                        caster->CastSpell(target, SPELL_TOWER_JUMP_4);
+                    break;
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_galakras_tower_rope_jump_AuraScript::HandlePeriodicTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_galakras_tower_rope_jump_AuraScript();
+    }
 };
 
 void AddSC_boss_galakras()
@@ -2659,4 +2711,5 @@ void AddSC_boss_galakras()
     new at_galakras_towers();
     new spell_most_complicated_bomb();
     new spell_galakras_flames_of_galakrond();
+    new spell_galakras_tower_rope_jump();
 }

@@ -32,6 +32,12 @@ set(scripts_STAT_SRCS
   Kalimdor/CavernsOfTime/WellofEternity/boss_varothen.cpp
   Kalimdor/CavernsOfTime/WellofEternity/instance_well_of_eternity.cpp
   Kalimdor/CavernsOfTime/WellofEternity/well_of_eternity.h
+  Kalimdor/CavernsOfTime/HourofTwilight/boss_arcurion.cpp
+  Kalimdor/CavernsOfTime/HourofTwilight/boss_asira_dawnslayer.cpp
+  Kalimdor/CavernsOfTime/HourofTwilight/boss_archbishop_benedictus.cpp
+  Kalimdor/CavernsOfTime/HourofTwilight/instance_hour_of_twilight.cpp
+  Kalimdor/CavernsOfTime/HourofTwilight/hour_of_twilight.cpp
+  Kalimdor/CavernsOfTime/HourofTwilight/hour_of_twilight.h
   Kalimdor/CavernsOfTime/BattleForMountHyjal/boss_archimonde.cpp
   Kalimdor/CavernsOfTime/BattleForMountHyjal/hyjalAI.h
   Kalimdor/CavernsOfTime/BattleForMountHyjal/hyjal_trash.h

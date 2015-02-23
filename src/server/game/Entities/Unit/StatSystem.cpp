@@ -1724,7 +1724,7 @@ void Player::UpdatePvPPower()
         case SPEC_WARRIOR_FURY:
         case SPEC_WARRIOR_PROTECTION:
         case SPEC_PALADIN_PROTECTION:
-        case SPEC_DROOD_BEAR:
+        case SPEC_DRUID_BEAR:
         case SPEC_DK_BLOOD:
         case SPEC_DK_FROST:
         case SPEC_DK_UNHOLY:
@@ -1746,8 +1746,8 @@ void Player::UpdatePvPPower()
         case SPEC_SHAMAN_ELEMENTAL:
         case SPEC_SHAMAN_ENHANCEMENT:
         case SPEC_PALADIN_RETRIBUTION:
-        case SPEC_DROOD_BALANCE:
-        case SPEC_DROOD_CAT:
+        case SPEC_DRUID_BALANCE:
+        case SPEC_DRUID_CAT:
         case SPEC_PRIEST_SHADOW:
         case SPEC_MONK_WINDWALKER:
         {
@@ -1756,7 +1756,7 @@ void Player::UpdatePvPPower()
             break;
         }
         case SPEC_PALADIN_HOLY:
-        case SPEC_DROOD_RESTORATION:
+        case SPEC_DRUID_RESTORATION:
         case SPEC_PRIEST_DISCIPLINE:
         case SPEC_PRIEST_HOLY:
         case SPEC_SHAMAN_RESTORATION:

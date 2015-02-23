@@ -3054,7 +3054,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             if (Player* player = m_caster->ToPlayer())
             {
                 // check Soul of the Forest for guardian druids
-                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DROOD_BEAR)
+                if (player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_BEAR)
                     if (AuraEffect const* aura = player->GetAuraEffect(114107, EFFECT_2))
                         damage += aura->GetAmount() * 10;
             }
