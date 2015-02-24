@@ -44,6 +44,8 @@ enum eSpells
     SPELL_CONGEALING            = 143540,//slow, self buff
     SPELL_ERUPTING_WATER        = 145377,
     SPELL_PURIFIED_RESIDUE      = 143524,//buff
+    
+    SPELL_ACHIEV_CREDIT         = 145889,
 };
 
 enum Events
@@ -502,6 +504,7 @@ class boss_immerseus : public CreatureScript
                 {
                     _JustDied();
                     me->setFaction(35);
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
                     me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
                     Map::PlayerList const& players = me->GetMap()->GetPlayers();
                     if (!players.isEmpty())

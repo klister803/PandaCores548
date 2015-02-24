@@ -2343,7 +2343,7 @@ class npc_high_enforcer_thranok : public CreatureScript
             {
                 events.ScheduleEvent(EVENT_CRUSHER_CALL, 15000);
                 events.ScheduleEvent(EVENT_SHATTERING_CLEAVE, 5000);
-                events.ScheduleEvent(EVENT_SKULL_CRACKER, 15000);
+                events.ScheduleEvent(EVENT_SKULL_CRACKER, 16000);
                 DoZoneInCombat(me, 30.0f);
             }
 
@@ -2444,8 +2444,7 @@ class npc_korgra_the_snake : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_POISONTIPPED_BLADES:
-                            if (!me->HasAura(SPELL_CURSE_OF_VENOM))
-                                DoCast(me->getVictim(), SPELL_POISONTIPPED_BLADES);
+                            DoCast(me->getVictim(), SPELL_POISONTIPPED_BLADES);
                             events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 6000);
                             break;
                         case EVENT_POISON_CLOUD:
@@ -2454,6 +2453,7 @@ class npc_korgra_the_snake : public CreatureScript
                             events.ScheduleEvent(EVENT_POISON_CLOUD, 60000);
                             break;
                         case EVENT_CURSE_OF_VENOM:
+                            events.CancelEvent(EVENT_POISONTIPPED_BLADES);
                             DoCast(SPELL_CURSE_OF_VENOM);
                             break;
                         case EVENT_VENOM_BOLT_VOLLEY:
