@@ -221,7 +221,7 @@ public:
                 creature->GetEntry() == 33526 ||
                 creature->GetEntry() == 33527 ||
                 creature->GetEntry() == 33528)
-                DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21597);
+                DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21597);
             
 
             if (ApplyAchiv)

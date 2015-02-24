@@ -362,7 +362,7 @@ class boss_algalon_the_observer : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         break;
                     case ACTION_BLACK_HOLE_VAL:
-                        instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21697);
+                        instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, EVENT_ID_SUPERMASSIVE_START);
                         instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65312);
                         me->MonsterTextEmote("BlackHole Despawn", 0, true);
                         break;

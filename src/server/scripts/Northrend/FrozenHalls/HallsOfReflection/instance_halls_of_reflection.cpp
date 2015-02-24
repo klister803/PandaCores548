@@ -292,7 +292,7 @@ public:
                                 jaina_or_sylvanas->AI()->DoAction(ACTION_START_ESCAPING);
                     }
                     if (data == FAIL)
-                        DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_NOT_RETREATING_EVENT);
+                        DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_NOT_RETREATING_EVENT);
                      _escapeevent = data;
                     break;
                 case DATA_SUMMONS:

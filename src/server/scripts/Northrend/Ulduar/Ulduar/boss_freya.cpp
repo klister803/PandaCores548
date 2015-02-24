@@ -669,7 +669,7 @@ public:
             DoScriptText(SAY_BRIGHTLEAF_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21686);
+                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* IR = me->GetCreature(*me, pInstance->GetData64(DATA_IRONBRANCH)))
                     if (Creature* ST = me->GetCreature(*me, pInstance->GetData64(DATA_STONEBARK)))
                         if (!IR->isAlive()) 
@@ -820,7 +820,7 @@ public:
             DoScriptText(SAY_IRONBRANCH_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21686);
+                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, pInstance->GetData64(DATA_BRIGHTLEAF)))
                     if (Creature* ST = me->GetCreature(*me, pInstance->GetData64(DATA_STONEBARK)))
                         if (!BR->isAlive())
@@ -945,7 +945,7 @@ public:
             DoScriptText(SAY_STONEBARK_DEATH, me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21686);
+                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, pInstance->GetData64(DATA_BRIGHTLEAF)))
                     if (Creature* IR = me->GetCreature(*me, pInstance->GetData64(DATA_IRONBRANCH)))
                         if (!BR->isAlive())

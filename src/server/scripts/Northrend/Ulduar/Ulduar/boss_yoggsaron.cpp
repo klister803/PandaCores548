@@ -421,7 +421,7 @@ class boss_sara : public CreatureScript
         {
             if (pInstance)
             {
-                pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21001);
+                pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21001);
                 pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SANITY);
                 // Reset Yogg-Saron
                 for (uint8 data = DATA_YOGGSARON_BRAIN; data <= DATA_YOGGSARON; ++data)
@@ -488,7 +488,7 @@ class boss_sara : public CreatureScript
             DoScriptText(RAND(SAY_SARA_AGGRO_1,SAY_SARA_AGGRO_2,SAY_SARA_AGGRO_3), me);
             if (pInstance)
             {
-                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, 21001);
+                pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, 21001);
                 // 100% Sanity
                 Map::PlayerList const &players = pInstance->instance->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)

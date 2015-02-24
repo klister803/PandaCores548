@@ -88,7 +88,7 @@ public:
             if (instance)
             {
                 instance->SetData(DATA_MAIDEN_OF_GRIEF_EVENT, NOT_STARTED);
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
+                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_GOOD_GRIEF_START_EVENT);
             }
         }
 
@@ -106,7 +106,7 @@ public:
                     }
 
                 instance->SetData(DATA_MAIDEN_OF_GRIEF_EVENT, IN_PROGRESS);
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_GOOD_GRIEF_START_EVENT);
+                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_GOOD_GRIEF_START_EVENT);
             }
         }
 

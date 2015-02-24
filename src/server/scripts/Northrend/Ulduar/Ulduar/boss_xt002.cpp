@@ -116,7 +116,7 @@ enum Yells
 #define EMOTE_HEART       "XT-002 Deconstructor's heart is exposed and leaking energy."
 #define EMOTE_REPAIR      "XT-002 Deconstructor consumes a scrap bot to repair himself!"
 
-#define ACHIEV_TIMED_START_EVENT                RAID_MODE(21027, 21027)
+#define ACHIEV_TIMED_START_EVENT                21027
 #define ACHIEVEMENT_HEARTBREAKER                RAID_MODE(3058, 3059)
 #define ACHIEVEMENT_NERF_ENG                    RAID_MODE(2931, 2932)
 #define ACHIEVEMENT_NERF_SCRAPBOTS              RAID_MODE(65037, 65037)
@@ -190,7 +190,7 @@ public:
             gbfail = false;
             
             if (instance)
-                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
+                instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -205,7 +205,7 @@ public:
             events.ScheduleEvent(EVENT_TYMPANIC_TANTRUM, 40000, 0, 1);
 
             if (instance)
-                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
+                instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, ACHIEV_TIMED_START_EVENT);
         }
 
         bool isgbfail()
