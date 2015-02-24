@@ -555,8 +555,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     }
                 }
 
-            SendOponentSpecialization(ALLIANCE);
-            SendOponentSpecialization(HORDE);
+            SendOpponentSpecialization(ALLIANCE);
+            SendOpponentSpecialization(HORDE);
 
             CheckArenaWinConditions();
         }
@@ -1238,8 +1238,8 @@ void Battleground::AddPlayer(Player* player)
         //op1.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(petGUID);
 
         //not shure if we should to it at join.
-        SendOponentSpecialization(team);
-        SendOponentSpecialization(GetOtherTeam(team));
+        SendOpponentSpecialization(team);
+        SendOpponentSpecialization(GetOtherTeam(team));
     }
     else
     {
@@ -2091,7 +2091,7 @@ void Battleground::SendFlagsPositionsUpdate(uint32 diff)
     SendPacketToAll(&packet);
 }
 
-void Battleground::SendOponentSpecialization(uint32 team)
+void Battleground::SendOpponentSpecialization(uint32 team)
 {
     uint32 opCoun = 0;
     ByteBuffer dataBuffer;
@@ -2099,13 +2099,15 @@ void Battleground::SendOponentSpecialization(uint32 team)
     spec.WriteBits(opCoun, 21);
 
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-        if (Player* opponent = _GetPlayerForTeam(team, itr, "SemdOponentSpecialization"))
+    {
+        if (Player* opponent = _GetPlayerForTeam(team, itr, "SendOponentSpecialization"))
         {
-            ++opCoun;
             spec.WriteGuidMask<7, 1, 2, 3, 5, 4, 6, 0>(opponent->GetObjectGuid());
             dataBuffer << uint32(opponent->GetSpecializationId(opponent->GetActiveSpec()));
-            dataBuffer.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(opponent->GetObjectGuid());
+            dataBuffer.WriteGuidBytes<5, 1, 6, 3, 7, 4, 0, 2>(opponent->GetObjectGuid());
+            ++opCoun;
         }
+    }
 
     spec.FlushBits();
     spec.append(dataBuffer);
