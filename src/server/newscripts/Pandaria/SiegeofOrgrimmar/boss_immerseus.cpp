@@ -535,7 +535,6 @@ class boss_immerseus : public CreatureScript
                         berserk -= diff;
                 }
 
-
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -546,16 +545,10 @@ class boss_immerseus : public CreatureScript
                     switch (eventId)
                     {
                     case EVENT_CORROSIVE_BLAST:
-                        if (me->getVictim())
+                        if (Unit* target = me->getVictim())
                         {
-                            uint64 vG = me->getVictim()->GetGUID();
-                            me->AttackStop();
-                            me->SetReactState(REACT_PASSIVE);
-                            if (Unit* target = me->GetUnit(*me, vG))
-                            {
-                                me->SetFacingToObject(target);
-                                DoCastAOE(SPELL_CORROSIVE_BLAST);
-                            }
+                            me->SetFacingToObject(target);
+                            me->CastSpell(target, SPELL_CORROSIVE_BLAST);
                         }
                         events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
                         break;
@@ -982,34 +975,6 @@ class npc_contaminated_puddle : public CreatureScript
         }
 };
 
-//143436
-class spell_corrosive_blast : public SpellScriptLoader
-{
-    public:
-        spell_corrosive_blast() : SpellScriptLoader("spell_corrosive_blast") { }
-        
-        class spell_corrosive_blast_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_corrosive_blast_SpellScript);
-            
-            void OnAfterCast()
-            {
-                if (GetCaster() && GetCaster()->ToCreature())
-                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
-            }
-
-            void Register()
-            {
-                AfterCast += SpellCastFn(spell_corrosive_blast_SpellScript::OnAfterCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_corrosive_blast_SpellScript();
-        }
-};
-
 //143309
 class spell_swirl : public SpellScriptLoader
 {
@@ -1170,7 +1135,6 @@ void AddSC_boss_immerseus()
     new npc_sha_pool();
     new npc_sha_puddle();
     new npc_contaminated_puddle();
-    new spell_corrosive_blast();
     new spell_swirl();
     new spell_swirl_searcher();
     new spell_sha_pool();
