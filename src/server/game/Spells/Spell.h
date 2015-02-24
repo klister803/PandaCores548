@@ -104,6 +104,7 @@ struct TargetInfo
     bool   crit:1;
     bool   scaleAura:1;
     int32  damage;
+    int32  damageBeforeHit;
 };
 
 enum WeightType

@@ -7933,7 +7933,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
     caster->DealDamageMods(target, damage, &absorb);
 
-    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, damage);
     dmgInfoProc.AbsorbDamage(absorb);
     dmgInfoProc.ResistDamage(resist);
 
@@ -8035,7 +8035,7 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
 
     caster->SendSpellNonMeleeDamageLog(target, GetId(), damage, GetSpellInfo()->GetSchoolMask(), absorb, resist, false, 0, crit);
 
-    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, damage);
     dmgInfoProc.AbsorbDamage(absorb);
     dmgInfoProc.ResistDamage(resist);
 
@@ -8222,7 +8222,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
             GetBase()->m_aura_amount = 0;
     }
 
-    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    DamageInfo dmgInfoProc = DamageInfo(caster, target, damage, GetSpellInfo(), GetSpellInfo() ? SpellSchoolMask(GetSpellInfo()->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, damage);
     dmgInfoProc.AbsorbDamage(absorb);
 
     SpellPeriodicAuraLogInfo pInfo(this, heal, heal - gain, absorb, 0, 0.0f, crit);

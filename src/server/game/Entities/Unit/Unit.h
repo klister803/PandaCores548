@@ -940,7 +940,7 @@ private:
     int32 m_addpower;
     int32 m_addptype;
 public:
-    explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType);
+    explicit DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType, uint32 m_damageBeforeHit);
     explicit DamageInfo(CalcDamageInfo& dmgInfo);
     explicit DamageInfo(SpellNonMeleeDamage& dmgInfo);
 
@@ -1988,6 +1988,7 @@ class Unit : public WorldObject
 
         int32 GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
         float GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
+        float GetTotalPositiveAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
         int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, AuraEffect const* except = NULL) const;
         int32 GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
 
@@ -2239,6 +2240,9 @@ class Unit : public WorldObject
 
         uint32 MeleeDamageBonusDone(Unit *pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL, uint32 effectMask = 0);
         uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage,WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+
+        uint32 MeleeDamageBonusForDamageBeforeHit(Unit* attacker, uint32 damageBeforeHit, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+        uint32 SpellDamageBonusForDamageBeforeHit(Unit* caster, SpellInfo const *spellProto, uint32 damageBeforeHit);
 
         void SetDelayIterruptFlag(uint32 flag) { _delayInterruptFlag = flag; }
         uint32 GetDelayIterruptFlag() { return _delayInterruptFlag; }
