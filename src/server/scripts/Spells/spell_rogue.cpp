@@ -1218,7 +1218,8 @@ class spell_rog_killing_spree : public SpellScriptLoader
 
                 std::list<uint64> targetList;
                 for (std::list<WorldObject*>::iterator itr = targetTemp.begin(); itr != targetTemp.end(); ++itr)
-                    targetList.push_back((*itr)->GetGUID());
+                    if(WorldObject* object = (*itr))
+                        targetList.push_back(object->GetGUID());
 
                 GetSpell()->SetEffectTargets(targetList);
             }
