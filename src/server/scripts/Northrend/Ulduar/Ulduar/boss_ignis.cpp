@@ -254,7 +254,7 @@ public:
                     case EVENT_CHANGE_POT:
                         if (Unit* SlagPotTarget = Unit::GetUnit(*me, SlagPotGUID))
                         {
-                            SlagPotTarget->AddAura(SPELL_SLAG_POT, SlagPotTarget);
+                            me->CastSpell(SlagPotTarget, SPELL_SLAG_POT, true);
                             SlagPotTarget->ChangeSeat(1);
                             events.ScheduleEvent(EVENT_END_POT, 10000);
                         }
