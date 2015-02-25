@@ -374,6 +374,7 @@ class boss_algalon_the_observer : public CreatureScript
             void EnterCombat(Unit* /*target*/)
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_NPC);
+                instance->SetBossState(BOSS_ALGALON, IN_PROGRESS);
                 events.Reset();
                 phase = PHASE_ONE;
 
