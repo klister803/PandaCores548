@@ -149,6 +149,8 @@ enum Events
     // Living Constellation
     EVENT_ARCANE_BARRAGE            = 39,
     EVENT_LIVING_CONSTELLATION      = 40,
+    
+    EVENT_CHECK_EQUIP               = 41,
 };
 
 enum Actions
@@ -399,12 +401,13 @@ class boss_algalon_the_observer : public CreatureScript
                 me->setActive(true);
                 DoZoneInCombat();
                 events.ScheduleEvent(EVENT_QUANTUM_STRIKE, 3500);
-                events.ScheduleEvent(EVENT_PHASE_PUNCH, 15500 );
+                events.ScheduleEvent(EVENT_PHASE_PUNCH, 15500);
                 events.ScheduleEvent(EVENT_SUMMON_COLLAPSING_STAR, 18000);
                 events.ScheduleEvent(EVENT_BIG_BANG, 90000);
                 events.ScheduleEvent(EVENT_ASCEND_TO_THE_HEAVENS, 360000);
                 events.ScheduleEvent(EVENT_COSMIC_SMASH, 25000);
                 events.ScheduleEvent(EVENT_LIVING_CONSTELLATION , 50000);
+                events.ScheduleEvent(EVENT_CHECK_EQUIP, 15000);
             }
             
             void JustSummoned(Creature* summon)
@@ -523,9 +526,12 @@ class boss_algalon_the_observer : public CreatureScript
                             events.ScheduleEvent(EVENT_COSMIC_SMASH, 25500);
                             break;
                         }
+                        case EVENT_CHECK_EQUIP
+                            instance->SetData(DATA_ALGALON, 0);
+                            events.ScheduleEvent(EVENT_CHECK_EQUIP, 30000);
+                            break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
 

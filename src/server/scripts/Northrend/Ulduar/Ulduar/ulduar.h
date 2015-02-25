@@ -75,6 +75,7 @@ enum Data64
     DATA_RIGHT_ARM,  
     DATA_LEFT_ARM,
     DATA_SARA,
+    DATA_ALGALON,
 };
 
 enum Data

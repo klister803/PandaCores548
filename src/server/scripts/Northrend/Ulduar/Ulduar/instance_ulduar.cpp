@@ -552,6 +552,37 @@ public:
                 case DATA_THREE_KNOCK:
                     threeknock = (value == 0) ? true : false;
                     break;
+                case DATA_ALGALON:
+                    {
+                        if (Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY)
+                        {
+                            // get item level (armor cannot be swapped in combat)
+                            Map::PlayerList const& players = instance->GetPlayers();
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                            {
+                                if (Player* player = itr->getSource())
+                                {
+                                    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                                    {
+                                        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
+                                            continue;
+        
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                        {
+                                            if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
+                                            {
+                                                if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
+                                                    _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                            }
+                                            else if (item->GetTemplate()->ItemLevel > _maxArmorItemLevel)
+                                                    _maxArmorItemLevel = item->GetTemplate()->ItemLevel;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                break;
             }
         }
 
