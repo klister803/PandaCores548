@@ -76,6 +76,8 @@ public:
             Immortal = true;
             ironDefTimer = 0;
             count = 0;
+            _maxArmorItemLevel = 0;
+            _maxWeaponItemLevel = 0;
         }
 
         uint64 uiLeviathan;
@@ -128,6 +130,9 @@ public:
         uint8 count;
         uint32 ironDefTimer;
         uint32 ShieldCheck;
+        
+        uint32 _maxArmorItemLevel;
+        uint32 _maxWeaponItemLevel;
 
         bool Immortal;
         bool _unbroken;
@@ -615,6 +620,45 @@ public:
                             pHodir->SetVisible(true);
                     }
                     break;
+                case BOSS_ALGALON:
+                    if (state == DONE)
+                    {
+                        //Achievement Herald of the Titans
+                        if (Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY)
+                        {
+                            Map::PlayerList const& players = instance->GetPlayers();
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                            {
+                                if (Player* player = itr->getSource())
+                                {
+                                    if (player->getLevel() != 80)
+                                        return false;
+    
+                                    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                                    {
+                                        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
+                                            continue;
+    
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                        {
+                                            if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
+                                            {
+                                                if (item->GetTemplate()->ItemLevel > 232)
+                                                    return false;
+                                            }
+                                            else if (slot != EQUIPMENT_SLOT_MAINHAND && slot != EQUIPMENT_SLOT_RANGED)
+                                            {
+                                                if (item->GetTemplate()->ItemLevel > 226)
+                                                    return false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            DoCompleteAchievement(3316);
+                        }
+                    }
+                    break;
             }
             
             if (state == IN_PROGRESS && id != BOSS_LEVIATHAN)
@@ -648,7 +692,7 @@ public:
             }
             return true;
         }
-        
+
         bool IsWipe()
         {
             Map::PlayerList const& PlayerList = instance->GetPlayers();
@@ -722,7 +766,6 @@ public:
             return true;
         }
     };
-
 };
 
 class go_call_tram : public GameObjectScript

@@ -363,7 +363,7 @@ class boss_algalon_the_observer : public CreatureScript
                         break;
                     case ACTION_BLACK_HOLE_VAL:
                         instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT2, EVENT_ID_SUPERMASSIVE_START);
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65312);
+                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_BLACK_HOLE_CREDIT);
                         me->MonsterTextEmote("BlackHole Despawn", 0, true);
                         break;
 
@@ -453,7 +453,7 @@ class boss_algalon_the_observer : public CreatureScript
             {
                 _JustDied();
                 if (instance)
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65184, 0, me); //Observed
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_CREDIT, 0, me); //Observed
 
                 me->setFaction(35);
                 me->SetPhaseMask(65535, true);
