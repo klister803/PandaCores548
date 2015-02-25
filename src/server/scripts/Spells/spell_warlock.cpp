@@ -980,7 +980,7 @@ class spell_warl_soul_swap : public SpellScriptLoader
                             caster->CastSpell(caster, WARLOCK_SOUL_SWAP_AURA, true);
                             caster->RemoveSoulSwapDOT(target);
                             target->CastSpell(caster, WARLOCK_SOUL_SWAP_VISUAL, true);
-                            caster->m_SpecialTarget = target;
+                            caster->m_SpecialTarget = target->GetGUID();
                         }
                         else if (GetSpellInfo()->Id == 86213)
                         {

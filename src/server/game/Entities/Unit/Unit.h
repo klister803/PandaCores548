@@ -2450,7 +2450,7 @@ class Unit : public WorldObject
         }
         Unit* GetTargetUnit() const;
 
-        Unit* m_SpecialTarget;
+        uint64 m_SpecialTarget;
 
         float  m_baseRHastRatingPct;
         float  m_baseMHastRatingPct;

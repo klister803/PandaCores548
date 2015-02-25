@@ -293,7 +293,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_VisibilityUpdScheduled = false;
     m_VisibilityUpdateTask = false;
     m_diffMode = GetMap() ? GetMap()->GetSpawnMode() : 0;
-    m_SpecialTarget = NULL;
+    m_SpecialTarget = 0;
 
     m_damage_counter_timer = 1 * IN_MILLISECONDS;
     for (int i = 0; i < MAX_DAMAGE_COUNTERS; ++i)

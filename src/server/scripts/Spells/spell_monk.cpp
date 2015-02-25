@@ -769,11 +769,10 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
 
             void AfterAbsorb(AuraEffect* /*aurEff*/, DamageInfo& dmgInfo, uint32& /*absorbAmount*/)
             {
-                if(!caster->m_SpecialTarget)
-                    return;
-
                 if (Unit* caster = dmgInfo.GetVictim())
                 {
+                    if(!caster->m_SpecialTarget)
+                        return;
                     if (Unit* target = ObjectAccessor::GetUnit(*caster, caster->m_SpecialTarget))
                     {
                         int32 bp = int32(dmgInfo.GetAbsorb() / 6);

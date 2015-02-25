@@ -6820,7 +6820,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     {
                         if (Unit * target = m_targets.GetUnitTarget())
                         {
-                            if (m_caster->m_SpecialTarget == target)
+                            if (m_caster->m_SpecialTarget == target->GetGUID())
                             {
                                 return SPELL_FAILED_BAD_TARGETS;
                             }
