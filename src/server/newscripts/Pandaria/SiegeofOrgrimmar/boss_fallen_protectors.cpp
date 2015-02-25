@@ -127,7 +127,8 @@ struct boss_fallen_protectors : public BossAI
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
         instance->DoRemoveAurasDueToSpellOnPlayers(143564);
-
+        
+        instance->SetBossState(DATA_F_PROTECTORS, FAIL);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
@@ -563,17 +564,20 @@ class boss_sun_tenderheart : public CreatureScript
 
         struct boss_sun_tenderheartAI : public boss_fallen_protectors
         {
-            boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature)
+            boss_sun_tenderheartAI(Creature* creature) : boss_fallen_protectors(creature), summons(me)
             {
                 SetCombatMovement(false);
                 measureVeh = NPC_GOLD_LOTOS_SUN;
             }
 
+            SummonList summons;
             uint32 shadow_word_count;
             void Reset()
             {
                 boss_fallen_protectors::Reset();
                 shadow_word_count = 0;
+                summons.DespawnAll();
+                me->SummonCreature(NPC_GOLD_LOTOS_MAIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             }
@@ -605,9 +609,15 @@ class boss_sun_tenderheart : public CreatureScript
                 boss_fallen_protectors::DoAction(action);
             }
 
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+            }
+
             void JustDied(Unit* /*killer*/)
             {
                 boss_fallen_protectors::JustDied(NULL);
+                summons.DespawnAll();
                 sCreatureTextMgr->SendChat(me, TEXT_GENERIC_6, me->GetGUID());
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SHADOW_WORD_BANE);
             }

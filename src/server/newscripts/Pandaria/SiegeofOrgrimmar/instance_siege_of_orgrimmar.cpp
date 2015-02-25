@@ -57,6 +57,7 @@ public:
         //Creature
         std::set<uint64> shaSlgGUID;
         std::vector<uint64> PortalOrgrimmarGUID;
+        std::vector<uint64> MeasureGUID;
         uint64 LorewalkerChoGUIDtmp;
         uint64 fpGUID[3];
         uint64 WrynOrLorthemarGUID;
@@ -245,11 +246,6 @@ public:
                 case NPC_GOLD_LOTOS_HE:
                 case NPC_GOLD_LOTOS_SUN:
                 case NPC_GOLD_LOTOS_ROOK:
-                case NPC_EMBODIED_ANGUISH_OF_HE:
-                case NPC_EMBODIED_DESPIRE_OF_SUN:
-                case NPC_EMBODIED_MISERY_OF_ROOK:
-                case NPC_EMBODIED_GLOOM_OF_ROOK:
-                case NPC_EMBODIED_SORROW_OF_ROOK:
                 case NPC_SHA_NORUSHEN:
                 case NPC_SHA_TARAN_ZHU:
                 case NPC_SHA_OF_PRIDE_END_LADY_JAINA:
@@ -291,6 +287,15 @@ public:
                     break;
                 case NPC_HE_SOFTFOOT:
                     fpGUID[2] = creature->GetGUID();
+                    break;
+                case NPC_EMBODIED_ANGUISH_OF_HE:
+                case NPC_EMBODIED_DESPERATION_OF_SUN:
+                case NPC_EMBODIED_DESPIRE_OF_SUN:
+                case NPC_EMBODIED_MISERY_OF_ROOK:
+                case NPC_EMBODIED_GLOOM_OF_ROOK:
+                case NPC_EMBODIED_SORROW_OF_ROOK:
+                    MeasureGUID.push_back(creature->GetGUID());
+                    easyGUIDconteiner[creature->GetEntry()] =creature->GetGUID();
                     break;
 
                 //Sha
@@ -430,10 +435,24 @@ public:
                 break;
             case DATA_F_PROTECTORS:
             {
+                if (state == FAIL)
+                {
+                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                    {
+                        if (Creature* mes = instance->GetCreature(*itr))
+                            mes->DespawnOrUnsummon();
+                    }
+                }
                 if (state == DONE)
                 {
                     if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
                         bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
+
+                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                    {
+                        if (Creature* mes = instance->GetCreature(*itr))
+                            mes->DespawnOrUnsummon();
+                    }
                 }
                 break;
             }

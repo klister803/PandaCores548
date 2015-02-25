@@ -443,7 +443,6 @@ class boss_immerseus : public CreatureScript
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
                     me->AddAura(SPELL_SUBMERGE, me);
-                    me->AddAura(SPELL_SUBMERGE_2, me);
                     me->SetFullHealth();
                     if (!shapoollist.empty())
                     {
@@ -483,7 +482,6 @@ class boss_immerseus : public CreatureScript
                     lasthppct = me->GetHealthPct();
                     me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
                     me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-                    me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
@@ -500,11 +498,11 @@ class boss_immerseus : public CreatureScript
             void JustDied(Unit* killer)
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
                 if (killer == me)
                 {
                     _JustDied();
                     me->setFaction(35);
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
                     me->SummonGameObject(221776, 1441.22f, 821.749f, 246.836f, 4.727f, 0.0f, 0.0f, 0.701922f, -0.712254f, 604800);
                     Map::PlayerList const& players = me->GetMap()->GetPlayers();
                     if (!players.isEmpty())
