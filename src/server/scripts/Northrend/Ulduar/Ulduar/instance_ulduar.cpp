@@ -623,37 +623,46 @@ public:
                 {
                     if (state == DONE)
                     {
-                        // get item level (recheck weapons)
-                        Map::PlayerList const& players = instance->GetPlayers();
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                            if (Player* player = itr->getSource())
-                                for (uint8 slot = EQUIPMENT_SLOT_MAINHAND; slot <= EQUIPMENT_SLOT_RANGED; ++slot)
-                                    if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-                                        if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
-                                            _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                        //Achievement Herald of the Titans
+                       if (Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY)
+                       {
+                            // get item level (recheck weapons)
+                            Map::PlayerList const& players = instance->GetPlayers();
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                                if (Player* player = itr->getSource())
+                                {
+                                    for (uint8 slot = EQUIPMENT_SLOT_MAINHAND; slot <= EQUIPMENT_SLOT_RANGED; ++slot)
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                            if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
+                                                _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                }
+                       }
                     }
                     else if (state == IN_PROGRESS)
                     {
-                        // get item level (armor cannot be swapped in combat)
-                        Map::PlayerList const& players = instance->GetPlayers();
-                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY)
                         {
-                            if (Player* player = itr->getSource())
+                            // get item level (armor cannot be swapped in combat)
+                            Map::PlayerList const& players = instance->GetPlayers();
+                            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             {
-                                for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+                                if (Player* player = itr->getSource())
                                 {
-                                    if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
-                                        continue;
-    
-                                    if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
                                     {
-                                        if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
+                                        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
+                                            continue;
+        
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                                         {
-                                            if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
-                                                _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                            if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
+                                            {
+                                                if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
+                                                    _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
+                                            }
+                                            else if (item->GetTemplate()->ItemLevel > _maxArmorItemLevel)
+                                                    _maxArmorItemLevel = item->GetTemplate()->ItemLevel;
                                         }
-                                        else if (item->GetTemplate()->ItemLevel > _maxArmorItemLevel)
-                                            _maxArmorItemLevel = item->GetTemplate()->ItemLevel;
                                     }
                                 }
                             }
@@ -695,12 +704,12 @@ public:
             return true;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteriaId, Player const*, Unit const* /* = NULL */, uint32 /* = 0 */) override
+        bool CheckAchievementCriteriaMeet(uint32 criteriaId, Player const* player, Unit const* /* = NULL */, uint32 /* = 0 */) override
         {
             switch (criteriaId)
             {
                 case CRITERIA_HERALD_OF_TITANS:
-                    return _maxArmorItemLevel <= MAX_HERALD_ARMOR_ITEMLEVEL && _maxWeaponItemLevel <= MAX_HERALD_WEAPON_ITEMLEVEL;
+                    return _maxArmorItemLevel <= MAX_HERALD_ARMOR_ITEMLEVEL && _maxWeaponItemLevel <= MAX_HERALD_WEAPON_ITEMLEVEL && player->getLevel() == 80;
             }
 
             return false;
