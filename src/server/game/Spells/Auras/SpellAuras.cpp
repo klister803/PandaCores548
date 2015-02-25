@@ -2624,7 +2624,7 @@ bool Aura::CanStackWith(Aura const* existingAura) const
         {
             switch (m_spellInfo->Effects[i].ApplyAuraName)
             {
-                // DOT or HOT from different casters will stack
+                // DOT or HOT or frame from different casters will stack
                 case SPELL_AURA_PERIODIC_DAMAGE:
                 case SPELL_AURA_PERIODIC_DUMMY:
                 case SPELL_AURA_PERIODIC_HEAL:
@@ -2639,6 +2639,8 @@ bool Aura::CanStackWith(Aura const* existingAura) const
                     // periodic auras which target areas are not allowed to stack this way (replenishment for example)
                     if (m_spellInfo->Effects[i].IsTargetingArea() || existingSpellInfo->Effects[i].IsTargetingArea())
                         break;
+                    return true;
+                case SPELL_AURA_ENABLE_BOSS1_UNIT_FRAME:
                     return true;
                 default:
                     break;

@@ -219,44 +219,6 @@ public:
 
     static bool HandleResetAllCommand(ChatHandler* handler, char const* args)
     {
-        if (!*args)
-            return false;
-
-        std::string caseName = args;
-
-        AtLoginFlags atLogin;
-
-        // Command specially created as single command to prevent using short case names
-        if (caseName == "spells")
-        {
-            atLogin = AT_LOGIN_RESET_SPELLS;
-            sWorld->SendWorldText(LANG_RESETALL_SPELLS);
-            if (!handler->GetSession())
-                handler->SendSysMessage(LANG_RESETALL_SPELLS);
-        }
-        else if (caseName == "talents")
-        {
-            atLogin = AtLoginFlags(AT_LOGIN_RESET_TALENTS | AT_LOGIN_RESET_PET_TALENTS);
-            sWorld->SendWorldText(LANG_RESETALL_TALENTS);
-            if (!handler->GetSession())
-               handler->SendSysMessage(LANG_RESETALL_TALENTS);
-        }
-        else
-        {
-            handler->PSendSysMessage(LANG_RESETALL_UNKNOWN_CASE, args);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ALL_AT_LOGIN_FLAGS);
-        stmt->setUInt16(0, uint16(atLogin));
-        CharacterDatabase.Execute(stmt);
-
-        TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType const& plist = sObjectAccessor->GetPlayers();
-        for (HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
-            itr->second->SetAtLoginFlag(atLogin);
-
         return true;
     }
 };

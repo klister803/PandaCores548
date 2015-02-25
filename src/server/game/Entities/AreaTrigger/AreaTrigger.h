@@ -39,12 +39,13 @@ enum AreaTriggerActionMoment
 
 enum AreaTriggerActionType
 {
-    AT_ACTION_TYPE_CAST_SPELL   = 0,
-    AT_ACTION_TYPE_REMOVE_AURA  = 1,
-    AT_ACTION_TYPE_ADD_STACK    = 2,
-    AT_ACTION_TYPE_REMOVE_STACK = 3,
-    AT_ACTION_TYPE_CHANGE_SCALE = 4,
-    AT_ACTION_TYPE_MAX          = 5,
+    AT_ACTION_TYPE_CAST_SPELL   = 0, // hit mask 0x001
+    AT_ACTION_TYPE_REMOVE_AURA  = 1, // hit mask 0x002
+    AT_ACTION_TYPE_ADD_STACK    = 2, // hit mask 0x004
+    AT_ACTION_TYPE_REMOVE_STACK = 3, // hit mask 0x008
+    AT_ACTION_TYPE_CHANGE_SCALE = 4, // hit mask 0x010
+    AT_ACTION_TYPE_SHARE_DAMAGE = 5, // hit mask 0x020
+    AT_ACTION_TYPE_MAX          = 6,
 };
 
 enum AreaTriggerTargetFlags
@@ -79,6 +80,7 @@ struct AreaTriggerAction
     int32 aura;
     int32 hasspell;
     float scale;
+    int32 hitMaxCount;
 };
 
 typedef std::list<AreaTriggerAction> AreaTriggerActionList;
@@ -86,7 +88,7 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 struct AreaTriggerInfo
 {
     AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0){}
+        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0) {}
 
     bool isMoving;
     float radius;
@@ -99,6 +101,7 @@ struct AreaTriggerInfo
     AreaTriggerActionList actions;
     float speed;
     uint32 moveType;
+    uint32 hitType;
 };
 
 class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
@@ -106,10 +109,11 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
     private:
         struct ActionInfo
         {
-            ActionInfo() : charges(0), recoveryTime(0), action(NULL) { }
+            ActionInfo() : charges(0), recoveryTime(0), action(NULL), hitCount(0) { }
             ActionInfo(AreaTriggerAction const* _action) :
-                charges(_action->maxCharges), recoveryTime(0), action(_action) { }
+                charges(_action->maxCharges), recoveryTime(0), action(_action), hitCount(0) { }
 
+            uint32 hitCount;
             uint8 charges;
             uint32 recoveryTime;
             AreaTriggerAction const* action;
@@ -183,6 +187,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         uint32 _moveTime;
         bool _on_unload;
         bool _on_despawn;
+        uint32 _hitCount;
 
         SpellInfo const* m_spellInfo;
 };
