@@ -76,8 +76,6 @@ public:
             Immortal = true;
             ironDefTimer = 0;
             count = 0;
-            _maxArmorItemLevel = 0;
-            _maxWeaponItemLevel = 0;
         }
 
         uint64 uiLeviathan;
@@ -130,9 +128,6 @@ public:
         uint8 count;
         uint32 ironDefTimer;
         uint32 ShieldCheck;
-        
-        uint32 _maxArmorItemLevel;
-        uint32 _maxWeaponItemLevel;
 
         bool Immortal;
         bool _unbroken;

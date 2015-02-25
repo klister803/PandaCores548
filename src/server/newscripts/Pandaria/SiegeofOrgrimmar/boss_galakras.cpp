@@ -384,6 +384,7 @@ class boss_galakras : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_PASSIVE);
                 instance->SetBossState(DATA_GALAKRAS, NOT_STARTED);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ENABLE_UNIT_FRAME);
                 EntryCheckPredicate pred1(NPC_TOWER_SOUTH);
                 EntryCheckPredicate pred2(NPC_TOWER_NORTH);
                 EntryCheckPredicate pred3(instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_DEMOLITIONS_EXPERT_S_H : NPC_DEMOLITIONS_EXPERT_S_A);
@@ -492,6 +493,7 @@ class boss_galakras : public CreatureScript
             {
                 instance->SetBossState(DATA_GALAKRAS, DONE);
                 instance->SetData(DATA_GALAKRAS, DONE);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ENABLE_UNIT_FRAME);
             }
 
             void UpdateAI(uint32 diff)
@@ -813,7 +815,10 @@ class npc_jaina_or_sylvana : public CreatureScript
             void DoAction(int32 const action)
             {
                 if (ACTION_FRIENDLY_BOSS)
+                {
+                    DoCast(SPELL_ENABLE_UNIT_FRAME);
                     events.ScheduleEvent(EVENT_JAINAORSYLVANA_SAY, 10000);
+                }
             }
 
             void SpellHit(Unit* pCaster, SpellInfo const* spell)
@@ -904,7 +909,13 @@ class npc_verees_or_aethas : public CreatureScript
 
                 instance->SetBossState(DATA_GALAKRAS, NOT_STARTED);
             }
-            
+
+            void DoAction(int32 const action)
+            {
+                if (ACTION_FRIENDLY_BOSS)
+                    DoCast(SPELL_ENABLE_UNIT_FRAME);
+            }
+
             void EnterCombat(Unit* who)
             {
                 events.ScheduleEvent(EVENT_VEREESORAETHAS_COMBAT_1, 1000);
@@ -1343,7 +1354,7 @@ class npc_antiair_turret : public CreatureScript
             npc_antiair_turretAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
                 instance = creature->GetInstanceScript();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_SELECTABLE);
             }
 
             InstanceScript* instance;
