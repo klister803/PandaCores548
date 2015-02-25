@@ -110,7 +110,7 @@ struct boss_fallen_protectors : public BossAI
     boss_fallen_protectors(Creature* creature) : BossAI(creature, DATA_F_PROTECTORS)
     {
         measureVeh = 0;
-        measureSummonedCount = 0;
+        //measureSummonedCount = 0;
     }
 
     int8 _healthPhase;
@@ -127,8 +127,8 @@ struct boss_fallen_protectors : public BossAI
         instance->DoRemoveAurasDueToSpellOnPlayers(143239); // Remove AT dots
         instance->DoRemoveAurasDueToSpellOnPlayers(143959);
         instance->DoRemoveAurasDueToSpellOnPlayers(143564);
-        
-        instance->SetBossState(DATA_F_PROTECTORS, FAIL);
+        measureSummonedCount = 0;
+
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
     }
 
@@ -137,6 +137,7 @@ struct boss_fallen_protectors : public BossAI
         InitBattle();
 
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
+        instance->SetBossState(DATA_F_PROTECTORS, IN_PROGRESS);
         DoZoneInCombat(me, 150.0f);
         
         for (int32 i = 0; i < 3; ++i)

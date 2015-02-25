@@ -435,13 +435,14 @@ public:
                 break;
             case DATA_F_PROTECTORS:
             {
-                if (state == FAIL)
+                if (state == NOT_STARTED)
                 {
                     for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
                     {
                         if (Creature* mes = instance->GetCreature(*itr))
                             mes->DespawnOrUnsummon();
                     }
+                    SetData(DATA_FP_EVADE, true);
                 }
                 if (state == DONE)
                 {
