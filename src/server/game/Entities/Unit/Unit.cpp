@@ -1177,7 +1177,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
     else
     {
         damageInfo->damageBeforeHit = SpellDamageBonusForDamageBeforeHit(this, spellInfo, damageInfo->damageBeforeHit);
-        victim->SpellDamageBonusTaken(this, spellInfo, (uint32)damage);
+        damage = victim->SpellDamageBonusTaken(this, spellInfo, (uint32)damage);
     }
 
     bool blocked = false;
