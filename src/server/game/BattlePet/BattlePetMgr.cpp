@@ -44,41 +44,60 @@
 
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner), m_petBattleWild(NULL)
 {
+    // clear journal
     m_PetJournal.clear();
-    memset(m_battleSlots, 0, sizeof(PetBattleSlot*)*MAX_ACTIVE_BATTLE_PETS);
+    // clear slots
+    m_battleSlots.clear();
 }
 
-void BattlePetMgr::AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, uint8 state)
+void BattlePetMgr::AddPetToList(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName, int16 breedID, uint8 state)
 {
     m_PetJournal[guid] = new PetJournalInfo(speciesID, creatureEntry, level, display, power, speed, health, maxHealth, quality, xp, flags, spellID, customName, breedID, state);
 }
 
-void BattlePetMgr::AddPetBattleSlot(uint64 guid, uint8 slotID)
+void BattlePetMgr::InitBattleSlot(uint64 guid, uint8 index)
 {
-    m_battleSlots[slotID] = new PetBattleSlot(guid);
+    m_battleSlots[index] = new PetBattleSlot(guid);
 }
 
-void BattlePetMgr::BuildPetJournal(WorldPacket *data)
+bool BattlePetMgr::SlotIsLocked(uint8 index)
 {
-    ObjectGuid placeholderPet;
+    bool locked = true;
+
+    switch (index)
+    {
+        case 0: locked = !m_player->HasSpell(119467); break;
+        case 1: locked = /*!m_player->GetAchievementMgr().HasAchieved(7433)*/false; break;
+        case 2: locked = /*!m_player->GetAchievementMgr().HasAchieved(6566)*/false; break;
+        default: break;
+    }
+
+    return locked;
+}
+
+bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
+{
+    ObjectGuid unknownPet;
     uint32 count = 0;
-    data->Initialize(SMSG_BATTLE_PET_JOURNAL, 400);
+    uint32 count2 = 0;
+
+    data->Initialize(SMSG_BATTLE_PET_JOURNAL);
     uint32 bit_pos = data->bitwpos();
     data->WriteBits(count, 19);
 
-    for (PetJournal::const_iterator journal = m_PetJournal.begin(); journal != m_PetJournal.end(); ++journal)
+    for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
     {
-        PetJournalInfo* petInfo = journal->second;
+        PetJournalInfo* petInfo = itr->second;
 
         // prevent crash
         if (!petInfo)
-            continue;
+            return false;
 
         // prevent loading deleted pet
         if (petInfo->GetInternalState() == STATE_DELETED)
             continue;
 
-        ObjectGuid guid = journal->first;
+        ObjectGuid guid = itr->first;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
 
         data->WriteBit(!petInfo->GetBreedID());     // hasBreed, inverse
@@ -91,77 +110,58 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteBits(len, 7);                    // custom name length
         data->WriteGuidMask<2>(guid);
         data->WriteBit(1);                          // hasUnk (bool noRename?), inverse
+
+        ++count;
     }
 
     data->WriteBits(MAX_ACTIVE_BATTLE_PETS, 25);
 
-    for (uint32 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+    // fill battle slots data
+    for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
     {
-        PetBattleSlot * slot = GetPetBattleSlot(i);
+        uint8 slotIndex = itr->first;
+        PetBattleSlot* slot = itr->second;
 
         if (!slot)
-        {
-            data->WriteBit(!i);                                          // hasSlotIndex
-            data->WriteBit(1);                                           // hasCollarID, inverse
-            data->WriteBit(1);                                           // empty slot, inverse
-            data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(placeholderPet); // pet guid in slot
-            data->WriteBit(1);                                           // locked slot
-            continue;
-        }
+            return false;
 
-        // check slot locked conditions
-        bool locked = true;
-
-        switch (i)
-        {
-            case 0: locked = !m_player->HasSpell(119467); break;
-            case 1: locked = /*!m_player->GetAchievementMgr().HasAchieved(7433)*/false; break;
-            case 2: locked = /*!m_player->GetAchievementMgr().HasAchieved(6566)*/false; break;
-            default: break;
-        }
-
-        data->WriteBit(!i);                                              // hasSlotIndex
+        data->WriteBit(!slotIndex);                                      // hasSlotIndex
         data->WriteBit(1);                                               // hasCollarID, inverse
         data->WriteBit(!slot->IsEmpty());                                // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot->GetPet());     // pet guid in slot
-        data->WriteBit(locked);                                          // locked slot
+        data->WriteBit(SlotIsLocked(slotIndex));                         // locked slot
     }
 
     data->WriteBit(1);                      // !hasJournalLock
 
-    for (uint32 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
+    for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
     {
-        PetBattleSlot * slot = GetPetBattleSlot(i);
+        uint8 slotIndex = itr->first;
+        PetBattleSlot* slot = itr->second;
 
         if (!slot)
-        {
-            data->WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(placeholderPet);
-            if (i)
-                *data << uint8(i);             // SlotIndex
-
-            continue;
-        }
+            return false;
 
         //if (!bit)
-            //*data << uint32(0);
+            //*data << uint32(0);             // CollarID
         data->WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot->GetPet());
-        if (i)
-            *data << uint8(i);             // SlotIndex
+        if (slotIndex)
+            *data << uint8(slotIndex);        // SlotIndex
     }
 
-    for (PetJournal::const_iterator journal = m_PetJournal.begin(); journal != m_PetJournal.end(); ++journal)
+    for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
     {
-        PetJournalInfo* petInfo = journal->second;
+        PetJournalInfo* petInfo = itr->second;
 
         // prevent crash
         if (!petInfo)
-            continue;
+            return false;
 
         // prevent loading deleted pet
         if (petInfo->GetInternalState() == STATE_DELETED)
             continue;
 
-        ObjectGuid guid = journal->first;
+        ObjectGuid guid = itr->first;
         uint8 len = petInfo->GetCustomName() == "" ? 0 : petInfo->GetCustomName().length();
 
         if (petInfo->GetBreedID())
@@ -186,11 +186,28 @@ void BattlePetMgr::BuildPetJournal(WorldPacket *data)
             *data << uint16(petInfo->GetFlags());              // flags
         data->WriteGuidBytes<5>(guid);
 
-        count++;
+        ++count2;
     }
 
     *data << uint16(0);                                        // trapLevel
+
+    // some check - rewrite in future
+    if (count != count2)
+        return false;
+
     data->PutBits<uint8>(bit_pos, count, 19);
+    return true;
+}
+
+void BattlePetMgr::SendEmptyPetJournal()
+{
+    WorldPacket data(SMSG_BATTLE_PET_JOURNAL);
+    data.WriteBits(0, 19);
+    data.WriteBits(0, 25);
+    data.WriteBit(0);
+    data << uint16(0);
+
+    m_player->GetSession()->SendPacket(&data);
 }
 
 void BattlePetMgr::CloseWildPetBattle()
@@ -554,6 +571,10 @@ void PetBattleWild::SendFullUpdate(ObjectGuid creatureGuid)
                 data << uint8(0);
                 data << uint16(0);
                 data << uint32(battleInfo[i][j]->GetAbilityInfoByIndex(k)->GetID());
+                /*if (i == 0)
+                    data << uint32(204);
+                else
+                    data << uint32(battleInfo[i][j]->GetAbilityInfoByIndex(k)->GetID());*/
             }
 
             data << uint16(battleInfo[i][j]->GetXP());
@@ -1679,13 +1700,12 @@ void PetBattleWild::UpdateLoadout()
                 uint32 speed = accumulator->CalculateSpeed();
                 delete accumulator;
 
-                m_player->GetBattlePetMgr()->AddPetInJournal(petguid, battleInfo->GetSpeciesID(), battleInfo->GetCreatureEntry(), battleInfo->GetLevel(), battleInfo->GetDisplayID(), power, speed, battleInfo->GetHealth(), health, battleInfo->GetQuality(), 0, 0, battleInfo->GetSummonSpell(), "", battleInfo->GetBreedID());
+                m_player->GetBattlePetMgr()->AddPetToList(petguid, battleInfo->GetSpeciesID(), battleInfo->GetCreatureEntry(), battleInfo->GetLevel(), battleInfo->GetDisplayID(), power, speed, battleInfo->GetHealth(), health, battleInfo->GetQuality(), 0, 0, battleInfo->GetSummonSpell(), "", battleInfo->GetBreedID());
                 // hack, fix it!
                 m_player->learnSpell(battleInfo->GetSummonSpell(), false);
 
                 std::list<uint64> newPets;
                 newPets.clear();
-
                 newPets.push_back(petguid);
 
                 m_player->GetBattlePetMgr()->SendUpdatePets(newPets, true);

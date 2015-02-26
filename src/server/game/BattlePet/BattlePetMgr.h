@@ -472,6 +472,7 @@ struct PetBattleRoundResults
 };
 
 typedef std::map<uint64, PetJournalInfo*> PetJournal;
+typedef std::map<uint8, PetBattleSlot*> PetBattleSlots;
 
 class PetBattleWild
 {
@@ -651,14 +652,15 @@ public:
         for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
             delete itr->second;
 
-        for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-            delete m_battleSlots[i];
+        for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
+            delete itr->second;
     }
 
-    void BuildPetJournal(WorldPacket *data);
+    bool BuildPetJournal(WorldPacket *data);
+    void SendEmptyPetJournal();
 
-    void AddPetInJournal(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, uint8 state = STATE_NORMAL);
-    void AddPetBattleSlot(uint64 guid, uint8 slotID);
+    void AddPetToList(uint64 guid, uint32 speciesID, uint32 creatureEntry, uint8 level, uint32 display, uint16 power, uint16 speed, uint32 health, uint32 maxHealth, uint8 quality, uint16 xp, uint16 flags, uint32 spellID, std::string customName = "", int16 breedID = 0, uint8 state = STATE_NORMAL);
+    void InitBattleSlot(uint64 guid, uint8 slotID);
 
     void CloseWildPetBattle();
     void SendUpdatePets(std::list<uint64> &updates, bool added = false);
@@ -720,12 +722,18 @@ public:
         return NULL;
     }
 
-    PetBattleSlot* GetPetBattleSlot(uint8 slotID) { return m_battleSlots[slotID]; }
-    uint64 GetPetGUIDBySlot(uint8 slotID)
+    PetBattleSlot* GetPetBattleSlot(uint8 index) { return m_battleSlots[index]; }
+
+    uint64 GetPetGUIDBySlot(uint8 index)
     {
-        if (m_battleSlots[slotID])
-            return m_battleSlots[slotID]->GetPet();
+        PetBattleSlots::const_iterator itr = m_battleSlots.find(index);
+        if (itr != m_battleSlots.end())
+            return itr->first;
+
+        return 0;
     }
+
+    bool SlotIsLocked(uint8 index);
 
     ObjectGuid InverseGuid(ObjectGuid guid)
     {
@@ -740,7 +748,7 @@ public:
 private:
     Player* m_player;
     PetJournal m_PetJournal;
-    PetBattleSlot* m_battleSlots[MAX_ACTIVE_BATTLE_PETS];
+    PetBattleSlots m_battleSlots;
     PetBattleWild* m_petBattleWild;
 };
 

@@ -4412,7 +4412,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             uint32 power = accumulator->CalculatePower();
                             uint32 speed = accumulator->CalculateSpeed();
                             delete accumulator;
-                            GetBattlePetMgr()->AddPetInJournal(petguid, spEntry->ID, petEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, spellInfo->Id, "", breedID);
+                            GetBattlePetMgr()->AddPetToList(petguid, spEntry->ID, petEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, spellInfo->Id, "", breedID);
                         }
                     }
                 }
@@ -4562,8 +4562,10 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
     {
         WorldPacket data;
-        GetBattlePetMgr()->BuildPetJournal(&data);
-        GetSession()->SendPacket(&data);
+        if (GetBattlePetMgr()->BuildPetJournal(&data))
+            GetSession()->SendPacket(&data);
+        else
+            GetBattlePetMgr()->SendEmptyPetJournal();
     }
 
     // update used talent points count
@@ -20347,7 +20349,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         uint16 flags = fields[13].GetUInt16();
         int16 breedID = fields[14].GetUInt16();
 
-        GetBattlePetMgr()->AddPetInJournal(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
+        GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
     }
     while (result->NextRow());
 }
@@ -20358,7 +20360,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     {
         // initial first
         for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-            GetBattlePetMgr()->AddPetBattleSlot(0, i);
+            GetBattlePetMgr()->InitBattleSlot(0, i);
         return;
     }
 
@@ -20372,7 +20374,7 @@ void Player::_LoadBattlePetSlots(PreparedQueryResult result)
     petGUIDs[2]  = fields[2].GetUInt64();
 
     for (int i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-        GetBattlePetMgr()->AddPetBattleSlot(petGUIDs[i], i);
+        GetBattlePetMgr()->InitBattleSlot(petGUIDs[i], i);
 }
 
 void Player::_LoadGroup(PreparedQueryResult result)
@@ -25505,8 +25507,10 @@ void Player::SendInitialPacketsAfterAddToMap()
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty();
 
-    GetBattlePetMgr()->BuildPetJournal(&data);
-    GetSession()->SendPacket(&data);
+    if (GetBattlePetMgr()->BuildPetJournal(&data))
+        GetSession()->SendPacket(&data);
+    else
+        GetBattlePetMgr()->SendEmptyPetJournal();
 
     // send timers if already start challenge for example
     SendInitWorldTimers();
@@ -28677,7 +28681,7 @@ void Player::ActivateSpec(uint8 spec)
     //Arena Update
     if (Battleground* bg = GetBattleground())
         if (bg->isArena())
-            bg->SendOponentSpecialization(GetTeam());
+            bg->SendOpponentSpecialization(GetTeam());
 }
 
 void Player::ResetTimeSync()
