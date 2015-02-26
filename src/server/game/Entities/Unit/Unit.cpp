@@ -100,9 +100,9 @@ static bool isDamageCapAura[TOTAL_AURAS];
 // Prepare lists
 static bool procPrepared = InitTriggerAuraData();
 
-DamageInfo::DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType)
+DamageInfo::DamageInfo(Unit* _attacker, Unit* _victim, uint32 _damage, SpellInfo const* _spellInfo, SpellSchoolMask _schoolMask, DamageEffectType _damageType, uint32 m_damageBeforeHit)
 : m_attacker(_attacker), m_victim(_victim), m_damage(_damage), m_spellInfo(_spellInfo), m_schoolMask(_schoolMask),
-m_damageType(_damageType), m_attackType(BASE_ATTACK)
+m_damageType(_damageType), m_attackType(BASE_ATTACK), m_damageBeforeHit(m_damageBeforeHit)
 {
     m_absorb = 0;
     m_resist = 0;
@@ -114,12 +114,12 @@ m_damageType(_damageType), m_attackType(BASE_ATTACK)
 DamageInfo::DamageInfo(CalcDamageInfo& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.damageSchoolMask)),
 m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked_amount), m_cleanDamage(dmgInfo.cleanDamage)
-,m_addptype(-1), m_addpower(0)
+, m_damageBeforeHit(dmgInfo.damageBeforeHit), m_addptype(-1), m_addpower(0)
 {
 }
 DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
-m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage)
+m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage), m_damageBeforeHit(dmgInfo.damageBeforeHit)
 {
 }
 
@@ -1300,6 +1300,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     damageInfo->attackType       = attackType;
     damageInfo->damage           = 0;
     damageInfo->cleanDamage      = 0;
+    damageInfo->damageBeforeHit  = 0;
     damageInfo->absorb           = 0;
     damageInfo->resist           = 0;
     damageInfo->blocked_amount   = 0;
@@ -1349,6 +1350,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
 
     // Add melee damage bonus
     damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
+    damageInfo->damageBeforeHit = MeleeDamageBonusForDamageBeforeHit(this, damage, damageInfo->attackType);
     damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
 
     // Calculate armor reduction
@@ -1390,6 +1392,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             damageInfo->procEx         |= PROC_EX_CRITICAL_HIT;
             // Crit bonus calc
             damageInfo->damage += damageInfo->damage;
+            damageInfo->damageBeforeHit += damageInfo->damageBeforeHit;
             float mod = 0.0f;
             // Apply SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE or SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE
             if (damageInfo->attackType == RANGED_ATTACK)
@@ -1617,7 +1620,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
             if (Unit* caster = (*dmgShieldItr)->GetCaster())
             {
                 damage = caster->SpellDamageBonusDone(this, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
-                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) (*dmgShieldItr)->GetEffIndex());
+                damage = this->SpellDamageBonusTaken(caster, i_spellProto, damage);
             }
 
             // No Unit::CalcAbsorbResist here - opcode doesn't send that data - this damage is probably not affected by that
@@ -1763,7 +1766,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
     if (!victim || !victim->isAlive() || !damage)
         return;
 
-    DamageInfo dmgInfo = DamageInfo(this, victim, damage, spellInfo, schoolMask, damagetype);
+    DamageInfo dmgInfo = DamageInfo(this, victim, damage, spellInfo, schoolMask, damagetype, damage);
 
     // Magic damage, check for resists
     // Ignore spells that cant be resisted
@@ -5024,6 +5027,23 @@ float Unit::GetTotalAuraMultiplier(AuraType auratype) const
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
             AddPct(multiplier, (*i)->GetAmount());
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        AddPct(multiplier, itr->second);
+
+    return multiplier;
+}
+
+float Unit::GetTotalPositiveAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const
+{
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
+    float multiplier = 1.0f;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if (((*i)->GetMiscValue() & misc_mask) && (*i)->GetAmount() > 0)
+            if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                AddPct(multiplier, (*i)->GetAmount());
 
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         AddPct(multiplier, itr->second);
@@ -12171,14 +12191,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
-uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage, DamageEffectType damagetype, SpellEffIndex effIndex, uint32 stack)
+uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 pdamage)
 {
-    if (!spellProto || damagetype == DIRECT_DAMAGE)
-        return pdamage;
-
-    // small exception for Stagger Amount, can't find any general rules
-    // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
-    if (spellProto->Id == 115080)
+    if (!spellProto)
         return pdamage;
 
     // Some spells don't benefit from done mods
@@ -12216,35 +12231,7 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
                 AddPct(TakenTotalMod, (*i)->GetAmount());
     }
 
-    int32 TakenAdvertisedBenefit = SpellBaseDamageBonusTaken(spellProto->GetSchoolMask());
-
-    // Check for table values
-    float dbccoeff = spellProto->GetEffect(effIndex, m_diffMode).BonusMultiplier;
-    if(!dbccoeff)
-        dbccoeff = spellProto->SpellAPBonusMultiplier;
-    float coeff = 0;
-    SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
-    if (bonus)
-        coeff = (damagetype == DOT) ? bonus->dot_damage : bonus->direct_damage;
-    else
-        coeff = dbccoeff;
-
-    // Default calculation
-    if (TakenAdvertisedBenefit)
-    {
-        if ((!bonus && !dbccoeff) || coeff < 0)
-            coeff = CalculateDefaultCoefficient(spellProto, damagetype);
-
-        float factorMod = CalculateLevelPenalty(spellProto);
-        // level penalty still applied on Taken bonus - is it blizzlike?
-        if (Player* modOwner = GetSpellModOwner())
-        {
-            coeff *= 100.0f;
-            modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_BONUS_MULTIPLIER, coeff);
-            coeff /= 100.0f;
-        }
-        TakenTotal+= int32(TakenAdvertisedBenefit * coeff * factorMod * stack);
-    }
+    TakenTotal += SpellBaseDamageBonusTaken(spellProto->GetSchoolMask());
 
     float tmpDamage = 0.0f;
 
@@ -12264,6 +12251,34 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
 
     return uint32(std::max(tmpDamage, 0.0f));
+}
+
+uint32 Unit::SpellDamageBonusForDamageBeforeHit(Unit* caster, SpellInfo const* spellProto, uint32 damageBeforeHit)
+{
+    if (!spellProto)
+        return damageBeforeHit;
+
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+        return damageBeforeHit;
+
+    damageBeforeHit *= GetTotalPositiveAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, spellProto->GetSchoolMask());
+
+    AuraEffectList const& mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
+    for (AuraEffectList::const_iterator i = mOwnerTaken.begin(); i != mOwnerTaken.end(); ++i)
+        if ((*i)->GetCasterGUID() == caster->GetGUID() && (*i)->IsAffectingSpell(spellProto))
+            if ((*i)->GetAmount() > 0)
+                AddPct(damageBeforeHit, (*i)->GetAmount());
+
+    if (uint32 mechanicMask = spellProto->GetAllEffectsMechanicMask())
+    {
+        AuraEffectList const& mDamageDoneMechanic = GetAuraEffectsByType(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT);
+        for (AuraEffectList::const_iterator i = mDamageDoneMechanic.begin(); i != mDamageDoneMechanic.end(); ++i)
+            if (mechanicMask & uint32(1 << ((*i)->GetMiscValue())))
+                if ((*i)->GetAmount() > 0)
+                    AddPct(damageBeforeHit, (*i)->GetAmount());
+    }
+
+    return uint32(std::max(float(damageBeforeHit), 0.0f));
 }
 
 int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, int32 baseBonus)
@@ -13501,6 +13516,59 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
 
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
+}
+
+uint32 Unit::MeleeDamageBonusForDamageBeforeHit(Unit* attacker, uint32 damageBeforeHit, WeaponAttackType attType, SpellInfo const* spellProto)
+{
+    if (damageBeforeHit == 0)
+        return 0;
+
+    damageBeforeHit *= GetTotalPositiveAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, GetMeleeDamageSchoolMask());
+
+    if (spellProto)
+    {
+        AuraEffectList const& mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
+        for (AuraEffectList::const_iterator i = mOwnerTaken.begin(); i != mOwnerTaken.end(); ++i)
+            if ((*i)->GetCasterGUID() == attacker->GetGUID() && (*i)->IsAffectingSpell(spellProto))
+                if ((*i)->GetAmount() > 0)
+                    AddPct(damageBeforeHit, (*i)->GetAmount());
+
+        uint32 mechanicMask = spellProto->GetAllEffectsMechanicMask();
+
+        if (mechanicMask)
+        {
+            AuraEffectList const& mDamageDoneMechanic = GetAuraEffectsByType(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT);
+            for (AuraEffectList::const_iterator i = mDamageDoneMechanic.begin(); i != mDamageDoneMechanic.end(); ++i)
+                if (mechanicMask & uint32(1 << ((*i)->GetMiscValue())))
+                    if ((*i)->GetAmount() > 0)
+                        AddPct(damageBeforeHit, (*i)->GetAmount());
+        }
+    }
+    else
+    {
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
+            if ((*i)->GetCasterGUID() == attacker->GetGUID())
+                if ((*i)->GetAmount() > 0)
+                    AddPct(damageBeforeHit, (*i)->GetAmount());
+    }
+
+    if (attType != RANGED_ATTACK)
+    {
+        AuraEffectList const& mModMeleeDamageTakenPercent = GetAuraEffectsByType(SPELL_AURA_MOD_MELEE_DAMAGE_TAKEN_PCT);
+        for (AuraEffectList::const_iterator i = mModMeleeDamageTakenPercent.begin(); i != mModMeleeDamageTakenPercent.end(); ++i)
+            if ((*i)->GetAmount() > 0)
+                AddPct(damageBeforeHit, (*i)->GetAmount());
+    }
+    else
+    {
+        AuraEffectList const& mModRangedDamageTakenPercent = GetAuraEffectsByType(SPELL_AURA_MOD_RANGED_DAMAGE_TAKEN_PCT);
+        for (AuraEffectList::const_iterator i = mModRangedDamageTakenPercent.begin(); i != mModRangedDamageTakenPercent.end(); ++i)
+            if ((*i)->GetAmount() > 0)
+                AddPct(damageBeforeHit, (*i)->GetAmount());
+    }
+
+    return uint32(std::max(float(damageBeforeHit), 0.0f));
 }
 
 void Unit::ApplyUberImmune(uint32 spellid, bool apply)
@@ -17260,7 +17328,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: doing %u damage from spell id %u (triggered by %s aura of spell %u)", triggeredByAura->GetAmount(), spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                         SpellNonMeleeDamage damageInfo(this, target, spellInfo->Id, spellInfo->SchoolMask);
                         uint32 newDamage = SpellDamageBonusDone(target, spellInfo, triggeredByAura->GetAmount(), SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
-                        newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage, SPELL_DIRECT_DAMAGE, (SpellEffIndex) effIndex);
+                        newDamage = target->SpellDamageBonusTaken(this, spellInfo, newDamage);
                         CalculateSpellDamageTaken(&damageInfo, newDamage, spellInfo, (1 << effIndex));
                         DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb);
                         SendSpellNonMeleeDamageLog(&damageInfo);
@@ -18879,40 +18947,76 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         if (!HasAura(itr->aura))
                             return false;
 
+                    if (!dmgInfoProc->GetDamageBeforeHit())
+                        return false;
+
+                    Creature* creature = target->ToCreature();
+
+                    if (!creature)
+                        return false;
+
+                    uint64 creatureGUID = creature->GetGUID();
+                     int32 alldamage = dmgInfoProc->GetDamageBeforeHit();
+                     uint32 count = 1;
+                    float creatureThreat = 0.0f;
+                    ThreatContainer& _threatContainer = getThreatManager().getOnlineContainer();
+
+                    if (!_threatContainer.empty())
+                    {
+                        HostileReference* refer = _threatContainer.getReferenceByTarget(creature);
+
+                        if (!refer)
+                            getThreatManager().resetAllAggro();
+                    }
+
+                    getThreatManager().addThreat(creature, float(alldamage), procSpell ? procSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL, procSpell);
+
+                    std::list<HostileReference*>& _threatList = getThreatManager().getThreatList();
+
+                    for (std::list<HostileReference*>::const_iterator _iter = _threatList.begin(); _iter != _threatList.end(); ++_iter)
+                        if ((*_iter) && (*_iter)->getUnitGuid() == creatureGUID)
+                        {
+                            creatureThreat = (*_iter)->getThreat();
+                            break;
+                        }
+
+                    for (std::list<HostileReference*>::const_iterator _iter = _threatList.begin(); _iter != _threatList.end(); ++_iter)
+                    {
+                        if ((*_iter)->getUnitGuid() == creatureGUID)
+                            continue;
+
+                        if ((*_iter)->getThreat() > creatureThreat)
+                            count++;
+                    }
+
                     triggered_spell_id = itr->spell_trigger;
 
-                    if (int32 alldamage = dmgInfoProc->GetDamage() + dmgInfoProc->GetCleanDamage() + dmgInfoProc->GetAbsorb())
+                    float _percent = (triggerAmount / 100.0f);
+                    int32 minBp = CalculatePct(alldamage, _percent * 5.0f);
+
+                    int32 bp = 0;
+
+                    if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
                     {
-                        uint32 count = getThreatManager().getThreatList().size();
-                        float _percent = triggerAmount / 100.0f;
-                        if(count > 1)
-                            _percent -= float((float(count * 5) / 100.0f) * _percent);
-
-                        int32 bp = CalculatePct(alldamage, _percent);
-
-                        if (Aura* oldAura = GetAura(triggered_spell_id, GetGUID()))
-                            if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
-                            {
-                                int32 oldamount = oldEff->GetAmount();
-                                if(oldAura->GetAllDuration() > 20000)
-                                {
-                                    float dur = oldAura->GetDuration() > 1000 ? (oldAura->GetDuration() / 1000) : 1.0f;
-                                    int32 amout = int32(oldamount / dur);
-                                    oldamount -= amout;
-                                    oldEff->SetAmount(oldamount);
-                                }
-
-                                bp += oldamount;
-                            }
-
-                        int32 maxVal = int32(GetMaxHealth() * 0.5f);
-
-                        if (bp > maxVal)
-                            bp = maxVal;
-
-                        basepoints0 = bp;
-                        basepoints1 = bp;
+                        if (AuraEffect* oldEff = oldAura->GetEffect(EFFECT_0))
+                        {
+                            int32 oldamount = oldEff->GetAmount() * float(oldAura->GetDuration()) / float(oldAura->GetMaxDuration());
+                            bp = CalculatePct(alldamage, _percent / count);
+                            bp += oldamount;
+                        }
                     }
+
+                    if (bp < minBp)
+                        bp = minBp;
+
+                    int32 maxVal = int32(GetMaxHealth() * 0.5f);
+
+                    if (bp > maxVal)
+                        bp = maxVal;
+
+                    basepoints0 = bp;
+                    basepoints1 = bp;
+
                     _caster->CastCustomSpell(target, triggered_spell_id, &basepoints0, &basepoints1, &basepoints2, true, castItem, triggeredByAura, originalCaster);
                     if(itr->target == 6)
                     {
@@ -20437,18 +20541,18 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
     if (isPet() || isTotem())
         if (Unit* owner = GetOwner())
         {
-            DamageInfo dmgInfoProc = DamageInfo(owner, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+            DamageInfo dmgInfoProc = DamageInfo(owner, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, 0);
             owner->ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, &dmgInfoProc);
         }
 
     if (victim->GetCreatureType() != CREATURE_TYPE_CRITTER)
     {
-        DamageInfo dmgInfoProc = DamageInfo(this, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+        DamageInfo dmgInfoProc = DamageInfo(this, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, 0);
         ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, &dmgInfoProc, BASE_ATTACK, spellProto ? spellProto : NULL, NULL);
     }
 
     // Proc auras on death - must be before aura/combat remove
-    DamageInfo dmgInfoProc = DamageInfo(this, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
+    DamageInfo dmgInfoProc = DamageInfo(this, victim, 0, spellProto ? spellProto : NULL, spellProto ? SpellSchoolMask(spellProto->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, 0);
     victim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, &dmgInfoProc, BASE_ATTACK, spellProto ? spellProto : NULL);
 
     // update get killing blow achievements, must be done before setDeathState to be able to require auras on target

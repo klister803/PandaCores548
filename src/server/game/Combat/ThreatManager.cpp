@@ -82,7 +82,7 @@ bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellIn
     if (threatSpell && threatSpell->AttributesEx & SPELL_ATTR1_NO_THREAT)
         return false;
 
-    ASSERT(hatingUnit->GetTypeId() == TYPEID_UNIT);
+    ASSERT(hatingUnit->GetTypeId() == TYPEID_UNIT || hatingUnit->GetTypeId() == TYPEID_PLAYER);
 
     return true;
 }
