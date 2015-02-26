@@ -185,15 +185,17 @@ void HostileReference::updateOnlineStatus()
         && getTarget()->InSamePhase(getSourceUnit())
         )
     {
-        Creature* creature = getSourceUnit()->ToCreature();
-        online = getTarget()->isInAccessiblePlaceFor(creature);
-        if (!online)
+        if(Creature* creature = getSourceUnit()->ToCreature())
         {
-            if (creature->IsWithinCombatRange(getTarget(), creature->m_CombatDistance))
-                online = true;                              // not accessible but stays online
+            online = getTarget()->isInAccessiblePlaceFor(creature);
+            if (!online)
+            {
+                if (creature->IsWithinCombatRange(getTarget(), creature->m_CombatDistance))
+                    online = true;                              // not accessible but stays online
+            }
+            else
+                accessible = true;
         }
-        else
-            accessible = true;
     }
     setAccessibleState(accessible);
     setOnlineOfflineState(online);
