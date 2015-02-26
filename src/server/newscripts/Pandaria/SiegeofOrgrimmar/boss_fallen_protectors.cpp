@@ -1514,7 +1514,7 @@ class spell_fallen_protectors_mark_of_anguish : public SpellScriptLoader
                     //By normal way should prock from our proc system... but where is caster and target is channel target... so this is custom prock reason.
                     if (SpellInfo const* m_spellInfo = sSpellMgr->GetSpellInfo(SPELL_MARK_OF_ANGUISH_DAMAGE))
                     {
-                        DamageInfo dmgInfoProc = DamageInfo(caster, target, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, 0);
+                        DamageInfo dmgInfoProc = DamageInfo(caster, target, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
                         caster->ProcDamageAndSpell(target, PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG, 0, PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, aurEff->GetSpellInfo());
                     }
                 }

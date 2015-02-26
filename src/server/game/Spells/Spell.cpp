@@ -2346,15 +2346,14 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 
     // Get spell hit result on target
     TargetInfo targetInfo;
-    targetInfo.targetGUID       = targetGUID;                         // Store target GUID
-    targetInfo.timeDelay        = 0LL;
-    targetInfo.effectMask       = effectMask;                         // Store all effects not immune
-    targetInfo.processed        = false;                              // Effects not apply on target
-    targetInfo.alive            = target->isAlive();
-    targetInfo.damage           = 0;
-    targetInfo.damageBeforeHit  = 0;
-    targetInfo.crit             = false;
-    targetInfo.scaleAura        = false;
+    targetInfo.targetGUID = targetGUID;                         // Store target GUID
+    targetInfo.timeDelay = 0LL;
+    targetInfo.effectMask = effectMask;                         // Store all effects not immune
+    targetInfo.processed  = false;                              // Effects not apply on target
+    targetInfo.alive      = target->isAlive();
+    targetInfo.damage     = 0;
+    targetInfo.crit       = false;
+    targetInfo.scaleAura  = false;
 
     if (m_auraScaleMask && targetInfo.effectMask == m_auraScaleMask && m_caster != target)
     {
@@ -2454,7 +2453,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         // process reflect removal (not delayed)
         if (!targetInfo.timeDelay)
         {
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, target, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, targetInfo.damageBeforeHit);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, target, 1, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
             m_caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
         }
 
@@ -2795,7 +2794,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, unitTarget, addhealth, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, unitTarget, addhealth, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
         }
     }
@@ -2805,7 +2804,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
             procEx |= PROC_EX_NORMAL_HIT;
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
             dmgInfoProc.SetAddPower(m_addpower);
             dmgInfoProc.SetAddPType(m_addptype);
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
@@ -2862,12 +2861,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-        damageInfo.damageBeforeHit = target->damageBeforeHit;
         procEx |= createProcExtendMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, damageInfo.damageBeforeHit);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 0, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell);
         }
 
@@ -2886,7 +2884,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     // process reflect removal (delayed)
     if (missInfo == SPELL_MISS_REFLECT && target->timeDelay)
     {
-        DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, target->damageBeforeHit);
+        DamageInfo dmgInfoProc = DamageInfo(m_caster, unit, 1, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
         caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG, PROC_EX_REFLECT, &dmgInfoProc, BASE_ATTACK, m_spellInfo);
     }
 
@@ -3878,7 +3876,7 @@ void Spell::cast(bool skipCheck)
                 }
                 else
                 {
-                    DamageInfo dmgInfoProc = DamageInfo(caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE, procDamage);
+                    DamageInfo dmgInfoProc = DamageInfo(caster, procTarget, procDamage, m_spellInfo, SpellSchoolMask(m_spellInfo->SchoolMask), SPELL_DIRECT_DAMAGE);
                     caster->ProcDamageAndSpell(procTarget, procAttacker, procVictim, procEx, &dmgInfoProc, m_attackType, m_spellInfo, m_triggeredByAuraSpell, GetSpellMods());
                 }
             }
@@ -4078,7 +4076,7 @@ void Spell::_handle_immediate_phase()
         if (m_targets.HasDst())
         {
             // Proc the spells that have DEST target
-            DamageInfo dmgInfoProc = DamageInfo(m_caster, NULL, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE, 0);
+            DamageInfo dmgInfoProc = DamageInfo(m_caster, NULL, 0, m_spellInfo, m_spellInfo ? SpellSchoolMask(m_spellInfo->SchoolMask) : SPELL_SCHOOL_MASK_NORMAL, SPELL_DIRECT_DAMAGE);
             m_originalCaster->ProcDamageAndSpell(NULL, procAttacker, 0, m_procEx | PROC_EX_NORMAL_HIT, &dmgInfoProc, BASE_ATTACK, m_spellInfo, m_triggeredByAuraSpell);
         }
     }
@@ -8814,9 +8812,8 @@ void Spell::HandleLaunchPhase()
 void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
 {
     Unit* unit = NULL;
-    TargetInfo sourceTargetInfo = targetInfo;
     // In case spell hit target, do all effect on that target
-    if (targetInfo.missCondition == SPELL_MISS_NONE || targetInfo.missCondition == SPELL_MISS_PARRY || targetInfo.missCondition == SPELL_MISS_DODGE)
+    if (targetInfo.missCondition == SPELL_MISS_NONE)
         unit = m_caster->GetGUID() == targetInfo.targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, targetInfo.targetGUID);
     // In case spell reflect from target, do all effect on caster (if hit)
     else if (targetInfo.missCondition == SPELL_MISS_REFLECT && targetInfo.reflectResult == SPELL_MISS_NONE)
@@ -8883,16 +8880,6 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
             }
             targetInfo.damage += m_damage;
         }
-    }
-
-    if (targetInfo.missCondition == SPELL_MISS_PARRY || targetInfo.missCondition == SPELL_MISS_DODGE)
-    {
-        if (m_damage > 0)
-            sourceTargetInfo.damageBeforeHit = targetInfo.damage;
-
-        m_damage = 0;
-        targetInfo = sourceTargetInfo;
-        return;
     }
 
     float critChance = 0.0f;

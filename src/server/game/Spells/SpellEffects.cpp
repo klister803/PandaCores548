@@ -822,6 +822,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
         if (m_originalCaster && damage > 0)
         {
             damage = m_originalCaster->SpellDamageBonusDone(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
+            damage = unitTarget->SpellDamageBonusTaken(m_originalCaster, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE, effIndex);
         }
 
         m_damage += damage;
@@ -2306,6 +2307,7 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
 
     // add spell damage bonus
     damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
+    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
 
     int32 newDamage = -(unitTarget->ModifyPower(powerType, -damage));
 
@@ -2712,6 +2714,7 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
         return;
 
     damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
+    damage = unitTarget->SpellDamageBonusTaken(m_caster, m_spellInfo, uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "HealthLeech :%i", damage);
 
@@ -4766,7 +4769,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     // Add melee damage bonuses (also check for negative)
     uint32 damage = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo, (1<<effIndex));
 
-    m_damage += damage;
+    m_damage += unitTarget->MeleeDamageBonusTaken(m_caster, damage, m_attackType, m_spellInfo);
 
     switch (m_spellInfo->Id)
     {
