@@ -843,13 +843,19 @@ class npc_jaina_or_sylvana : public CreatureScript
                             Talk(SAY_BATTLE_INTO);
                             break;
                         case EVENT_JAINAORSYLVANA_COMBAT_1:
-                            if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
-                                DoCast(me->getVictim(), SPELL_JAINA_FROSTBOLT);
-                            else
-                                DoCast(me->getVictim(), SPELL_WINDRUNNER_SHOOT);
+                        {
+                            if (Unit* Target = me->getVictim())
+                            {
+                                if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
+                                    DoCast(Target, SPELL_JAINA_FROSTBOLT);
+                                else
+                                    DoCast(Target, SPELL_WINDRUNNER_SHOOT);
+                            }
+                        }
                         events.ScheduleEvent(EVENT_JAINAORSYLVANA_COMBAT_1, 2000);
                             break;
                         case EVENT_JAINAORSYLVANA_COMBAT_2:
+                        {
                             if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
                             {
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
@@ -859,15 +865,21 @@ class npc_jaina_or_sylvana : public CreatureScript
                                 if (chance > 25)
                                     Talk(SAY_BATTLE_1);
                             }
-                        events.ScheduleEvent(EVENT_JAINAORSYLVANA_COMBAT_2, 20000);
+                            events.ScheduleEvent(EVENT_JAINAORSYLVANA_COMBAT_2, 20000);
                             break;
+                        }
                         case EVENT_JAINAORSYLVANA_COMBAT_3:
-                            if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
-                                DoCast(me->getVictim(), SPELL_JAINA_SUMMON_WATER_ELEMENTAL, true);
-                            else
-                                DoCast(me->getVictim(), SPELL_SYLVANA_SUMMON_SKELETON, true);
-                        events.ScheduleEvent(EVENT_JAINAORSYLVANA_COMBAT_3, 30000);
+                        {
+                            if (Unit* Target = me->getVictim())
+                            {
+                                if (me->GetEntry() == NPC_LADY_JAINA_PROUDMOORE_A)
+                                    DoCast(Target, SPELL_JAINA_SUMMON_WATER_ELEMENTAL, true);
+                                else
+                                    DoCast(Target, SPELL_SYLVANA_SUMMON_SKELETON, true);
+                            }
+                            events.ScheduleEvent(EVENT_JAINAORSYLVANA_COMBAT_3, 30000);
                             break;
+                        }
                     }
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
                     DoMeleeAttackIfReady();
@@ -941,26 +953,35 @@ class npc_verees_or_aethas : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_VEREESORAETHAS_COMBAT_1:
-                            if (me->GetEntry() == NPC_VEREESA_WINDRUNNER_A)
-                                DoCast(me->getVictim(), SPELL_WINDRUNNER_SHOOT);
-                            else
-                                DoCast(me->getVictim(), SPELL_AETHAS_FIREBALL);
-                        events.ScheduleEvent(EVENT_VEREESORAETHAS_COMBAT_1, 2000);
-                            break;
-                        case EVENT_VEREESORAETHAS_COMBAT_2:
-                            if (me->GetEntry() == NPC_VEREESA_WINDRUNNER_A)
-                                DoCast(me->getVictim(), SPELL_WINDRUNNER_MULTISHOT);
-                            else
+                        {
+                            if (Unit* Target = me->getVictim())
                             {
-                                me->InterruptSpell(CURRENT_GENERIC_SPELL);
-                                if (Unit* Target = me->getVictim())
-                                    DoCast(Target, SPELL_AETHAS_FLAMESTRIKE);
-                                uint8 chance = urand(0, 50);
-                                if (chance > 25)
-                                    Talk(SAY_BATTLE_1);
+                                if (me->GetEntry() == NPC_VEREESA_WINDRUNNER_A)
+                                    DoCast(Target, SPELL_WINDRUNNER_SHOOT);
+                                else
+                                    DoCast(Target, SPELL_AETHAS_FIREBALL);
                             }
-                        events.ScheduleEvent(EVENT_VEREESORAETHAS_COMBAT_2, 20000);
+                            events.ScheduleEvent(EVENT_VEREESORAETHAS_COMBAT_1, 2000);
                             break;
+                        }
+                        case EVENT_VEREESORAETHAS_COMBAT_2:
+                        {
+                            if (Unit* Target = me->getVictim())
+                            {
+                                if (me->GetEntry() == NPC_VEREESA_WINDRUNNER_A)
+                                    DoCast(Target, SPELL_WINDRUNNER_MULTISHOT);
+                                else
+                                {
+                                    me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                                    DoCast(Target, SPELL_AETHAS_FLAMESTRIKE);
+                                    uint8 chance = urand(0, 50);
+                                    if (chance > 25)
+                                        Talk(SAY_BATTLE_1);
+                                }
+                            }
+                            events.ScheduleEvent(EVENT_VEREESORAETHAS_COMBAT_2, 20000);
+                            break;
+                        }
                     }
                 if (!me->HasUnitState(UNIT_STATE_CASTING))
                     DoMeleeAttackIfReady();
@@ -1371,10 +1392,12 @@ class npc_antiair_turret : public CreatureScript
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (me->ToTempSummon() && me->ToTempSummon()->GetSummoner())
                         if (Creature* Summoner = me->ToTempSummon()->GetSummoner()->ToCreature())
+                        {
                             if (Summoner->GetEntry() == NPC_TOWER_SOUTH)
                                 ZoneTalk(TEXT_GENERIC_0, 0);
                             else if (Summoner->GetEntry() == NPC_TOWER_NORTH)
                                 ZoneTalk(TEXT_GENERIC_1, 0);
+                        }
                 }
             }
         };
@@ -1768,9 +1791,12 @@ class npc_dragonmaw_proto_drake : public CreatureScript
                             events.ScheduleEvent(EVENT_DRAKE_DRAKEFIRE, 7000);
                             break;
                         case EVENT_DRAKE_FLAME_BREATH:
-                            DoCast(me->getVictim(), SPELL_FLAME_BREATH);
+                        {
+                            if (Unit* Target = me->getVictim())
+                                DoCast(Target, SPELL_FLAME_BREATH);
                             events.ScheduleEvent(EVENT_DRAKE_FLAME_BREATH, 25000);
                             break;
+                        }
                         case EVENT_DRAKE_DRAKEFIRE:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(pTarget, SPELL_DRAKEFIRE);
@@ -1917,8 +1943,9 @@ class npc_dragonmaw_grunt_h : public CreatureScript
 
             void SpellHit(Unit* dTarget, SpellInfo const* spell)
             {
-                if(spell->Id == SPELL_BANTER_E || spell->Id == SPELL_BANTER_A)
-                    dTarget->CastSpell(dTarget, SPELL_KNOCKED_OVER);
+                if(dTarget)
+                    if(spell->Id == SPELL_BANTER_E || spell->Id == SPELL_BANTER_A)
+                        dTarget->CastSpell(dTarget, SPELL_KNOCKED_OVER);
             }
 
             void UpdateAI(uint32 diff)
@@ -1932,9 +1959,9 @@ class npc_dragonmaw_grunt_h : public CreatureScript
                     {
                         case EVENT_DRAGON_CLEAVE:
                         {
-                            Unit* dTarget = me->getVictim();
-                            if (me->GetDistance(dTarget) <= 5.0f)
-                                DoCast(dTarget, SPELL_DRAGON_CLEAVE);
+                            if (Unit* dTarget = me->getVictim())
+                                if (me->GetDistance(dTarget) <= 5.0f)
+                                    DoCast(dTarget, SPELL_DRAGON_CLEAVE);
                             events.ScheduleEvent(EVENT_DRAGON_CLEAVE, 10000);
                             break;
                         }
@@ -2034,7 +2061,8 @@ class npc_dragonmaw_flameslinger : public CreatureScript
                                     DoCast(pTarget, SPELL_FLAME_ARROWS_EVENT);
                             }
                             else
-                                DoCast(me->getVictim(), SPELL_FLAME_ARROWS_COMBAT);
+                                if (Unit* Target = me->getVictim())
+                                    DoCast(Target, SPELL_FLAME_ARROWS_COMBAT);
                             events.ScheduleEvent(EVENT_FLAMESLINGER_ATTACK, 2000);
                             break;
                     }
@@ -2212,12 +2240,14 @@ class npc_dragonmaw_bonecrusher : public CreatureScript
                             events.ScheduleEvent(EVENT_FRACTURE, 16000);
                             break;
                         case EVENT_BONECRUSHER_FRACTURE:
-                            Unit* bTarget = me->getVictim();
-                            if (me->GetDistance(bTarget) <= 5.0f)
+                            if(Unit* bTarget = me->getVictim())
                             {
-                                DoCast(bTarget, SPELL_FRACTURE_PEREODIC);
-                                me->SetReactState(REACT_AGGRESSIVE);
-                                FractureEvent = false;
+                                if (me->GetDistance(bTarget) <= 5.0f)
+                                {
+                                    DoCast(bTarget, SPELL_FRACTURE_PEREODIC);
+                                    me->SetReactState(REACT_AGGRESSIVE);
+                                    FractureEvent = false;
+                                }
                             }
                             else
                             {
@@ -2378,9 +2408,12 @@ class npc_high_enforcer_thranok : public CreatureScript
                             events.ScheduleEvent(EVENT_CRUSHER_CALL, 30000);
                             break;
                         case EVENT_SHATTERING_CLEAVE:
-                            DoCast(me->getVictim(), SPELL_SHATTERING_CLEAVE);
+                        {
+                            if (Unit* Target = me->getVictim())
+                                DoCast(Target, SPELL_SHATTERING_CLEAVE);
                             events.ScheduleEvent(EVENT_SHATTERING_CLEAVE, 7000);
                             break;
+                        }
                         case EVENT_SKULL_CRACKER:
                             DoCast(SPELL_SKULL_CRACKER);
                             events.ScheduleEvent(EVENT_SKULL_CRACKER, 30000);
@@ -2455,9 +2488,12 @@ class npc_korgra_the_snake : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_POISONTIPPED_BLADES:
-                            DoCast(me->getVictim(), SPELL_POISONTIPPED_BLADES);
+                        {
+                            if (Unit* Target = me->getVictim())
+                                DoCast(Target, SPELL_POISONTIPPED_BLADES);
                             events.ScheduleEvent(EVENT_POISONTIPPED_BLADES, 6000);
                             break;
+                        }
                         case EVENT_POISON_CLOUD:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
                                 DoCast(pTarget, SPELL_POISON_CLOUD);
