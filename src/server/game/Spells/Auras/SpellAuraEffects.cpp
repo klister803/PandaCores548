@@ -7680,7 +7680,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     // Reget trigger spell proto
     triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
 
-    if (triggeredSpellInfo)
+    if (triggeredSpellInfo && caster)
     {
         Position pos;
         target->GetPosition(&pos);

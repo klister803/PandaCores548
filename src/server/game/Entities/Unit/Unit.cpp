@@ -3446,6 +3446,9 @@ bool Unit::isInBackInMap(Unit const* target, float distance, float arc) const
 
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 {
+    if(!c)
+        return false;
+
     if (IsInWater())
         return c->canSwim();
     else
