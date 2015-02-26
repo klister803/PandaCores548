@@ -488,8 +488,8 @@ class boss_immerseus : public CreatureScript
                     phase_two = false;
                     if (me->GetMap()->IsHeroic())
                         events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
-                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
-                    events.ScheduleEvent(EVENT_SWIRL, 14000);
+                    events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 10000);
+                    events.ScheduleEvent(EVENT_SWIRL, 20000);
                     events.ScheduleEvent(EVENT_SHA_BOLT, 6000);
                     break;
                 }
@@ -548,7 +548,7 @@ class boss_immerseus : public CreatureScript
                             me->SetFacingToObject(target);
                             me->CastSpell(target, SPELL_CORROSIVE_BLAST);
                         }
-                        events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 35000);
+                        events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 20000);
                         break;
                     case EVENT_SHA_BOLT:
                         {
@@ -572,7 +572,7 @@ class boss_immerseus : public CreatureScript
                             me->SetFacingToObject(target);
                             DoCast(me, SPELL_SWIRL);
                         }
-                        events.ScheduleEvent(EVENT_SWIRL, 48500);
+                        events.ScheduleEvent(EVENT_SWIRL, 48000);
                         break;
                     //HM
                     case EVENT_SWELLING_CORRUPTION:
