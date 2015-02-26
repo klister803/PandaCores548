@@ -2342,6 +2342,39 @@ class spell_item_book_of_the_ages : public SpellScriptLoader
         }
 };
 
+// http://www.wowhead.com/spell=87649 Item: Chocolate Cookie
+class spell_item_chocolate_cookie : public SpellScriptLoader
+{
+public:
+    spell_item_chocolate_cookie() : SpellScriptLoader("spell_item_chocolate_cookie") { }
+
+    class spell_item_chocolate_cookie_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_item_chocolate_cookie_AuraScript);
+
+        void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Player* caster = GetCaster()->ToPlayer();
+            if (!caster)
+                return;
+
+            // Achiev: You'll Feel Right as Rain
+            if (GetStackAmount() == 91)
+                caster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 99041);
+        }
+
+        void Register()
+        {
+            AfterEffectApply += AuraEffectApplyFn(spell_item_chocolate_cookie_AuraScript::OnStackChange, EFFECT_0, SPELL_AURA_DUMMY, AuraEffectHandleModes(AURA_EFFECT_HANDLE_REAL | AURA_EFFECT_HANDLE_REAPPLY));
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_item_chocolate_cookie_AuraScript();
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2399,4 +2432,5 @@ void AddSC_item_spell_scripts()
     new spell_item_ai_li_skymirror();
     new spell_item_eye_of_the_black_prince();
     new spell_item_book_of_the_ages();
+    new spell_item_chocolate_cookie();
 }

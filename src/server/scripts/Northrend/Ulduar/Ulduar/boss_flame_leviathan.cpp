@@ -893,19 +893,19 @@ public:
 };
 
 
-class spell_pool_of_tar : public CreatureScript
+class npc_pool_of_tar : public CreatureScript
 {
 public:
-    spell_pool_of_tar() : CreatureScript("spell_pool_of_tar") { }
+    npc_pool_of_tar() : CreatureScript("npc_pool_of_tar") { }
 
     CreatureAI* GetAI(Creature* pCreature) const
     {
-        return new spell_pool_of_tarAI (pCreature);
+        return new npc_pool_of_tarAI (pCreature);
     }
 
-    struct spell_pool_of_tarAI : public PassiveAI
+    struct npc_pool_of_tarAI : public PassiveAI
     {
-        spell_pool_of_tarAI(Creature* pCreature) : PassiveAI(pCreature)
+        npc_pool_of_tarAI(Creature* pCreature) : PassiveAI(pCreature)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->AddAura(SPELL_TAR_PASSIVE, me);
@@ -1504,7 +1504,7 @@ void AddSC_boss_flame_leviathan()
     new boss_flame_leviathan_overload_device();
     new boss_flame_leviathan_safety_container();
     new npc_mechanolift();
-    new spell_pool_of_tar();
+    new npc_pool_of_tar();
     new npc_colossus();
     new npc_thorims_hammer();
     new npc_mimirons_inferno();
