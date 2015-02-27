@@ -3875,6 +3875,52 @@ class spell_gen_battle_guild_standart : public SpellScriptLoader
         }
 };
 
+enum MineSpells
+{
+    SPELL_ACHIEV_MINE_KNOCKBACK = 54402,
+    SPELL_ACHIEV_MINE_STACK     = 57099,
+    SPELL_ACHIEV_MINE_CREDIT    = 57064,
+};
+// Achiev Mine Sweeper http://www.wowhead.com/achievement=1428
+// http://www.wowhead.com/spell=54355
+class spell_gen_landmine_knockback : public SpellScriptLoader
+{
+    public:
+        spell_gen_landmine_knockback() : SpellScriptLoader("spell_gen_landmine_knockback") { }
+
+        class spell_gen_landmine_knockback_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_landmine_knockback_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                Unit* target = GetHitUnit();
+                if (!target)
+                    return;
+
+                caster->CastSpell(target, SPELL_ACHIEV_MINE_KNOCKBACK, true);
+
+                if (Aura* aur = target->GetAura(SPELL_ACHIEV_MINE_STACK))
+                    if (aur->GetStackAmount() == 10)
+                        caster->CastSpell(target, SPELL_ACHIEV_MINE_CREDIT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_gen_landmine_knockback_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_landmine_knockback_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_battle_fatigue();
@@ -3959,4 +4005,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_orb_of_power();
     new spell_gen_drums_of_rage();
     new spell_gen_battle_guild_standart();
+    new spell_gen_landmine_knockback();
 }

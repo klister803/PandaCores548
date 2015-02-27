@@ -5434,6 +5434,11 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_IGNORE_HIT_RESULT;
                     break;
+                case 54355: // Achiev Mine Sweeper
+                case 54402:
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
+                    break;
                 default:
                     break;
             }
