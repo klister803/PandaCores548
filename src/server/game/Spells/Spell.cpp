@@ -7798,7 +7798,7 @@ SpellCastResult Spell::CheckRange(bool strict)
         range_type = m_spellInfo->RangeEntry->type;
     }
 
-    Unit* target = m_targets.GetUnitTarget();
+    Unit* target = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_originalTarget;
     float max_range = m_caster->GetSpellMaxRangeForTarget(target, m_spellInfo);
     float min_range = m_caster->GetSpellMinRangeForTarget(target, m_spellInfo);
 
@@ -7807,13 +7807,13 @@ SpellCastResult Spell::CheckRange(bool strict)
 
     if (target && target != m_caster)
     {
-        if (range_type == SPELL_RANGE_MELEE)
+        /*if (range_type == SPELL_RANGE_MELEE)
         {
             // Because of lag, we can not check too strictly here.
             if (!m_caster->IsWithinMeleeRange(target, max_range))
                 return !(_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_OUT_OF_RANGE : SPELL_FAILED_DONT_REPORT;
         }
-        else if (!m_caster->IsWithinCombatRange(target, max_range))
+        else */if (!m_caster->IsWithinCombatRange(target, max_range))
             return !(_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_OUT_OF_RANGE : SPELL_FAILED_DONT_REPORT; //0x5A;
 
         if (range_type == SPELL_RANGE_RANGED)
@@ -7829,7 +7829,7 @@ SpellCastResult Spell::CheckRange(bool strict)
             return !(_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_UNIT_NOT_INFRONT : SPELL_FAILED_DONT_REPORT;
     }
 
-    if (m_targets.HasDst() && !m_targets.HasTraj())
+    if (!target && m_targets.HasDst() && !m_targets.HasTraj())
     {
         if (!m_caster->IsWithinDist3d(m_targets.GetDstPos(), max_range))
             return SPELL_FAILED_OUT_OF_RANGE;
