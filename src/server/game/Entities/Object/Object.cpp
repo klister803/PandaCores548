@@ -397,26 +397,26 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
 
-        data->WriteBit(0);  //byte284
-        //if (byte284)
+        data->WriteBit(0);  // areaTriggerPolygon
+        //if (areaTriggerPolygon)
         //{
-        //    dword25C = p.ReadBits(21);
-        //    dword26C = p.ReadBits(21);
+        //    dword25C = p.ReadBits(21); // VerticesCount
+        //    dword26C = p.ReadBits(21); // VerticesTargetCount
         //}
-        data->WriteBit(0);              //byte20C
-        data->WriteBit(0);              //byte210
-        data->WriteBit(t->GetVisualScale());//byte23C
-        data->WriteBit(t->isMoving());  //byte298 areatrigger movement
-        data->WriteBit(0);              //byte20F
-        data->WriteBit(0);              //byte20E
-        data->WriteBit(0);              //byte218
-        data->WriteBit(0);              //byte220
+        data->WriteBit(0);              // HasAbsoluteOrientation?
+        data->WriteBit(0);              // HasFollowsTerrain?
+        data->WriteBit(t->GetVisualScale()); // areaTriggerSphere
+        data->WriteBit(t->isMoving());  // areaTriggerSpline
+        data->WriteBit(0);              // HasFaceMovementDir?
+        data->WriteBit(0);              // HasAttached?
+        data->WriteBit(0);              // hasScaleCurveID?
+        data->WriteBit(0);              // hasMorphCurveID?
         if (t->isMoving())
-            data->WriteBits(t->GetObjectMovementParts(), 20); // count areatrigger movement point dword288
-        data->WriteBit(0);              //byte228
-        data->WriteBit(0);              //byte20D
-        data->WriteBit(0);              //byte230
-        data->WriteBit(0);              //byte258
+            data->WriteBits(t->GetObjectMovementParts(), 20); // splinePointsCount
+        data->WriteBit(0);              // hasFacingCurveID?
+        data->WriteBit(0);              // HasDynamicShape?
+        data->WriteBit(0);              // hasMoveCurveID
+        data->WriteBit(0);              // areaTriggerCylinder
     }
 
     if (flags & UPDATEFLAG_LIVING)
@@ -520,16 +520,58 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
-        if (t->GetVisualScale())                //byte23C
-        {          
-            *data << t->GetVisualScale(true);
-            *data << t->GetVisualScale();
+
+        /*if (areaTriggerCylinder)
+        {
+            data << float(1.0f); // Float4 (float250)
+            data << float(1.0f); // Float5 (float254)
+            data << float(1.0f); // Height (float248)
+            data << float(1.0f); // HeightTarget (float24C)
+            data << float(1.0f); // Radius (float240)
+            data << float(1.0f); // RadiusTarget (float244)
+        }*/
+
+        /*if (areaTriggerPolygon)
+        {
+            data << float(1.0f); // HeightTarget? (float280)
+
+            for (uint8 i = 0; i < dword26C; ++i)
+            {
+                data << float(1.0f); // Y
+                data << float(1.0f); // X
+            }
+
+            data << float(1.0f); // Height? (float27C)
+
+            for (uint8 i = 0; i < dword25C; ++i)
+            {
+                data << float(1.0f); // X
+                data << float(1.0f); // Y
+            }
         }
 
-        if (t->isMoving())                      //byte298
-            t->PutObjectUpdateMovement(data);  //dword288
+        if (hasMoveCurveID)
+            data << uint32(0);
 
-        *data << uint32(1);
+        if (hasMorphCurveID)
+            data << uint32(0);*/
+
+        if (t->GetVisualScale())                // areaTriggerSphere
+        {          
+            *data << t->GetVisualScale(true);   // Radius
+            *data << t->GetVisualScale();       // RadiusTarget
+        }
+
+        if (t->isMoving())                      // areaTriggerSpline
+            t->PutObjectUpdateMovement(data);   // Points
+
+        *data << uint32(1);                     // Elapsed Time Ms
+
+        /*if (hasFacingCurveID)
+            data << uint32(0);
+
+        if (hasScaleCurveID)
+            data << uint32(0);*/
     }
 
     if (flags & UPDATEFLAG_LIVING)
