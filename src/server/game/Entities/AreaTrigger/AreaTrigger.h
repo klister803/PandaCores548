@@ -87,12 +87,14 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 
 struct AreaTriggerInfo
 {
-    AreaTriggerInfo() : radius(1.0f), radius2(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0) {}
+    AreaTriggerInfo() : sphereScale(1.0f), sphereScaleMax(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
+        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0),
+        Height(0.0f), RadiusTarget(0.0f), Float5(0.0f), Float4(0.0f), Radius(0.0f), HeightTarget(0.0f),
+        MoveCurveID(0), ElapsedTime(0) {}
 
     bool isMoving;
-    float radius;
-    float radius2;
+    float sphereScale;
+    float sphereScaleMax;
     uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
     uint32 activationDelay;
     uint32 updateDelay;
@@ -102,6 +104,14 @@ struct AreaTriggerInfo
     float speed;
     uint32 moveType;
     uint32 hitType;
+    float Height;
+    float RadiusTarget;
+    float Float5;
+    float Float4;
+    float Radius;
+    float HeightTarget;
+    uint32 MoveCurveID;
+    uint32 ElapsedTime;
 };
 
 class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
@@ -153,6 +163,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         void DoAction(Unit* unit, ActionInfo& action);
         bool CheckActionConditions(AreaTriggerAction const& action, Unit* unit);
         void UpdateActionCharges(uint32 p_time);
+        bool GetAreaTriggerCylinder() const { return _areaTriggerCylinder; }
+        AreaTriggerInfo GetAreaTriggerInfo() const { return atInfo; }
 
         void BindToCaster();
         void UnbindFromCaster();
@@ -188,6 +200,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         bool _on_unload;
         bool _on_despawn;
         uint32 _hitCount;
+        bool _areaTriggerCylinder;
 
         SpellInfo const* m_spellInfo;
 };

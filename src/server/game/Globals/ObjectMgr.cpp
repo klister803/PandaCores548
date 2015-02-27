@@ -9445,8 +9445,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
 
-    //                                               0         1              2        3            4          5             6          7           8         9       10       11
-    QueryResult result = WorldDatabase.Query("SELECT entry, customVisualId, radius, radius2, activationDelay, updateDelay, maxCount, customEntry, isMoving, speed, moveType, hitType FROM areatrigger_data");
+    //                                                  0            1                2              3                   4                5            6             7             8         9        10          11         12           13           14        15        16         17                18            19
+    QueryResult result = WorldDatabase.Query("SELECT `entry`, `customVisualId`, `sphereScale`, `sphereScaleMax`, `activationDelay`, `updateDelay`, `maxCount`, `customEntry`, `isMoving`, `speed`, `moveType`, `hitType`, `Height`, `RadiusTarget`, `Float5`, `Float4`, `Radius`, `HeightTarget`, `MoveCurveID`, `ElapsedTime` FROM areatrigger_data");
     if (result)
     {
         uint32 counter = 0;
@@ -9458,8 +9458,8 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             uint32 id = fields[i++].GetUInt32();
             AreaTriggerInfo& info = _areaTriggerData[id];
             info.visualId = fields[i++].GetUInt32();
-            info.radius = fields[i++].GetFloat();
-            info.radius2 = fields[i++].GetFloat();
+            info.sphereScale = fields[i++].GetFloat();
+            info.sphereScaleMax = fields[i++].GetFloat();
             info.activationDelay = fields[i++].GetUInt32();
             info.updateDelay = fields[i++].GetUInt32();
             info.maxCount = fields[i++].GetUInt8();
@@ -9468,6 +9468,14 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             info.speed = fields[i++].GetFloat();
             info.moveType = fields[i++].GetUInt32();
             info.hitType = fields[i++].GetUInt32();
+            info.Height = fields[i++].GetFloat();
+            info.RadiusTarget = fields[i++].GetFloat();
+            info.Float5 = fields[i++].GetFloat();
+            info.Float4 = fields[i++].GetFloat();
+            info.Radius = fields[i++].GetFloat();
+            info.HeightTarget = fields[i++].GetFloat();
+            info.MoveCurveID = fields[i++].GetUInt32();
+            info.ElapsedTime = fields[i++].GetUInt32();
             ++counter;
         }
         while (result->NextRow());

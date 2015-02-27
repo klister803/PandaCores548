@@ -24,7 +24,7 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1)
+    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1), _areaTriggerCylinder(false)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -116,14 +116,19 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     // overwrite by radius from spell if exist.
     bool find = false;
     for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
+    {
         if (float r = info->Effects[j].CalcRadius(caster))
         {
             _radius = r * (spell ? spell->m_spellValue->RadiusMod : 1.0f);
             find = true;
         }
+    }
 
-    if (!find && atInfo.radius)
-        _radius = atInfo.radius;
+    if (!find && atInfo.sphereScale)
+        _radius = atInfo.sphereScale;
+
+    if (atInfo.Height)
+        _areaTriggerCylinder = true;
 
     SetUInt64Value(AREATRIGGER_CASTER, caster->GetGUID());
     SetUInt32Value(AREATRIGGER_SPELLID, info->Id);
@@ -581,8 +586,8 @@ void AreaTrigger::Remove(bool duration)
 
 float AreaTrigger::GetVisualScale(bool max /*=false*/) const
 {
-    if (max) return atInfo.radius2;
-    return atInfo.radius;
+    if (max) return atInfo.sphereScaleMax;
+    return atInfo.sphereScale;
 }
 
 Unit* AreaTrigger::GetCaster() const

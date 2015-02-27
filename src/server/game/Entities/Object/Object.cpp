@@ -415,8 +415,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteBits(t->GetObjectMovementParts(), 20); // splinePointsCount
         data->WriteBit(0);              // hasFacingCurveID?
         data->WriteBit(0);              // HasDynamicShape?
-        data->WriteBit(0);              // hasMoveCurveID
-        data->WriteBit(0);              // areaTriggerCylinder
+        data->WriteBit(t->GetAreaTriggerInfo().MoveCurveID);      // hasMoveCurveID
+        data->WriteBit(t->GetAreaTriggerCylinder());              // areaTriggerCylinder
     }
 
     if (flags & UPDATEFLAG_LIVING)
@@ -521,15 +521,15 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
 
-        /*if (areaTriggerCylinder)
+        if (t->GetAreaTriggerCylinder())                // areaTriggerCylinder
         {
-            data << float(1.0f); // Float4 (float250)
-            data << float(1.0f); // Float5 (float254)
-            data << float(1.0f); // Height (float248)
-            data << float(1.0f); // HeightTarget (float24C)
-            data << float(1.0f); // Radius (float240)
-            data << float(1.0f); // RadiusTarget (float244)
-        }*/
+            *data << t->GetAreaTriggerInfo().Float4; // Float4 (float250)
+            *data << t->GetAreaTriggerInfo().Float5; // Float5 (float254)
+            *data << t->GetAreaTriggerInfo().Height; // Height (float248)
+            *data << t->GetAreaTriggerInfo().HeightTarget; // HeightTarget (float24C)
+            *data << t->GetAreaTriggerInfo().Radius; // Radius (float240)
+            *data << t->GetAreaTriggerInfo().RadiusTarget; // RadiusTarget (float244)
+        }
 
         /*if (areaTriggerPolygon)
         {
@@ -548,16 +548,16 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
                 data << float(1.0f); // X
                 data << float(1.0f); // Y
             }
-        }
+        }*/
 
-        if (hasMoveCurveID)
-            data << uint32(0);
+        if (t->GetAreaTriggerInfo().MoveCurveID)
+            *data << uint32(t->GetAreaTriggerInfo().MoveCurveID);
 
-        if (hasMorphCurveID)
-            data << uint32(0);*/
+        //if (hasMorphCurveID)
+            //data << uint32(0);
 
         if (t->GetVisualScale())                // areaTriggerSphere
-        {          
+        {
             *data << t->GetVisualScale(true);   // Radius
             *data << t->GetVisualScale();       // RadiusTarget
         }
@@ -565,7 +565,10 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         if (t->isMoving())                      // areaTriggerSpline
             t->PutObjectUpdateMovement(data);   // Points
 
-        *data << uint32(1);                     // Elapsed Time Ms
+        if(t->GetAreaTriggerInfo().ElapsedTime)
+            *data << uint32(t->GetAreaTriggerInfo().ElapsedTime);                     // Elapsed Time Ms
+        else
+            *data << uint32(1);                     // Elapsed Time Ms
 
         /*if (hasFacingCurveID)
             data << uint32(0);
