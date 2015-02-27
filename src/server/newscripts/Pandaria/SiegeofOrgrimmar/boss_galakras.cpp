@@ -68,7 +68,7 @@ enum eSpells
     SPELL_WINDRUNNER_MULTISHOT           = 146772,
     SPELL_SYLVANA_SUMMON_SKELETON        = 146770,
     SPELL_AETHAS_FIREBALL                = 146786,
-    SPELL_AETHAS_FLAMESTRIKE             = 146787,
+    SPELL_AETHAS_FLAMESTRIKE             = 148849,
     SPELL_VISUAL_TELEPORT                = 149498,
 
     //Tower events
