@@ -2188,11 +2188,12 @@ class npc_dragonmaw_bonecrusher : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             bool FractureEvent;
-            int8 count = 1;
+            int8 count;
 
             void Reset()
             {
                 events.Reset();
+                count = 1;
             }
 
             void EnterCombat(Unit* who)
