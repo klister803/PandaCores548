@@ -570,11 +570,11 @@ class boss_the_lich_king : public CreatureScript
                 events.ScheduleEvent(EVENT_SUMMON_SHAMBLING_HORROR, 20000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_SUMMON_DRUDGE_GHOUL, 10000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_INFEST, 5000, 0, PHASE_ONE);
-                events.ScheduleEvent(EVENT_NECROTIC_PLAGUE, urand(30000, 33000), 0, PHASE_ONE);
+                //events.ScheduleEvent(EVENT_NECROTIC_PLAGUE, urand(30000, 33000), 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_BERSERK, 1200000, EVENT_GROUP_BERSERK);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-                //if (IsHeroic())
-                    //events.ScheduleEvent(EVENT_SHADOW_TRAP, 15500, 0, PHASE_ONE);
+                if (IsHeroic())
+                    events.ScheduleEvent(EVENT_SHADOW_TRAP, 15500, 0, PHASE_ONE);
             }
 
             void JustReachedHome()
