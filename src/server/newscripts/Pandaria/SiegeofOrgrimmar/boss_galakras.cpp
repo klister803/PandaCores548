@@ -2248,11 +2248,11 @@ class npc_dragonmaw_bonecrusher : public CreatureScript
                                     me->SetReactState(REACT_AGGRESSIVE);
                                     FractureEvent = false;
                                 }
-                            }
-                            else
-                            {
-                                me->GetMotionMaster()->MoveCharge(bTarget->GetPositionX(), bTarget->GetPositionY(), bTarget->GetPositionZ(), 30.0f);
-                                events.ScheduleEvent(EVENT_BONECRUSHER_FRACTURE, 500);
+                                else
+                                {
+                                    me->GetMotionMaster()->MoveCharge(bTarget->GetPositionX(), bTarget->GetPositionY(), bTarget->GetPositionZ(), 30.0f);
+                                    events.ScheduleEvent(EVENT_BONECRUSHER_FRACTURE, 500);
+                                }
                             }
                             break;
                     }

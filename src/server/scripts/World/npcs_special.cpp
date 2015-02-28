@@ -4492,6 +4492,6 @@ void AddSC_npcs_special()
     new npc_spectral_guise();
     new npc_bloodworm();
     new npc_past_self();
-	new npc_guild_battle_standard();
+    new npc_guild_battle_standard();
     new npc_riggle_bassbait();
 }
