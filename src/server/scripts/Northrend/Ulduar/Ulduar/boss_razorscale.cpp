@@ -47,7 +47,8 @@ enum Spells
     SPELL_FIREBALL                  = 62796,
     SPELL_FLAME_GROUND              = 64709,
     SPELL_WINGBUFFET                = 62666,
-    SPELL_FLAMEBREATH               = 63317,
+    SPELL_FLAMEBREATH_10            = 63317,
+    SPELL_FLAMEBREATH_25            = 64021,
     SPELL_FUSEARMOR                 = 64771,
     SPELL_DEVOURING_FLAME           = 63236,
     SPELL_HARPOON                   = 54933,
@@ -290,7 +291,7 @@ public:
                             return;
                         case EVENT_BREATH:
                             me->MonsterTextEmote(EMOTE_BREATH, 0, true);
-                            DoCastAOE(SPELL_FLAMEBREATH);
+                            DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
                             //events.CancelEvent(EVENT_HARPOON);
                             events.CancelEvent(EVENT_BREATH);
                             return;
@@ -317,7 +318,7 @@ public:
                             return;
                         case EVENT_BREATH:
                             me->MonsterTextEmote(EMOTE_BREATH, 0, true);
-                            DoCastVictim(SPELL_FLAMEBREATH);
+                            DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
                             events.ScheduleEvent(EVENT_BREATH, 20000, 0, PHASE_PERMAGROUND);
                             return;
                         case EVENT_FIREBALL:
@@ -389,7 +390,7 @@ public:
             me->RemoveAurasDueToSpell(SPELL_STUN);
             me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
             PermaGround = true;
-            DoCastAOE(SPELL_FLAMEBREATH);
+            DoCastAOE(RAID_MODE(SPELL_FLAMEBREATH_10, SPELL_FLAMEBREATH_25));
             events.ScheduleEvent(EVENT_FLAME, 15000, 0, PHASE_PERMAGROUND);
             events.RescheduleEvent(EVENT_DEVOURING, 15000, 0, PHASE_PERMAGROUND);
             events.RescheduleEvent(EVENT_BREATH, 20000, 0, PHASE_PERMAGROUND);
@@ -761,7 +762,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit * killer)
+        void JustDied(Unit* killer)
         {
             if (killer && killer->GetTypeId() == TYPEID_UNIT && killer->GetEntry() == NPC_RAZORSCALE)
             {

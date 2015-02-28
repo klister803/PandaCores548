@@ -46,7 +46,8 @@ enum Spells
     SPELL_FLAME_JETS                            = 62680,
     SPELL_SCORCH                                = 62546,
     SPELL_SLAG_POT                              = 62717,
-    SPELL_SLAG_IMBUED                           = 62836,
+    SPELL_SLAG_IMBUED_10                        = 62836,
+    SPELL_SLAG_IMBUED_25                        = 63536,
     SPELL_SLAG_POT_DAMAGE                       = 65722,
     SPELL_ACTIVATE_CONSTRUCT                    = 62488,
     SPELL_STRENGHT                              = 64473,
@@ -455,7 +456,9 @@ class spell_ignis_slag_pot : public SpellScriptLoader
                     return false;
                 if (!sSpellStore.LookupEntry(SPELL_SLAG_POT))
                     return false;
-                if (!sSpellStore.LookupEntry(SPELL_SLAG_IMBUED))
+                if (!sSpellStore.LookupEntry(SPELL_SLAG_IMBUED_10))
+                    return false;
+                if (!sSpellStore.LookupEntry(SPELL_SLAG_IMBUED_25))
                     return false;
                 return true;
             }
@@ -469,7 +472,12 @@ class spell_ignis_slag_pot : public SpellScriptLoader
                 Unit * target = GetTarget();
                 aurEffCaster->CastSpell(target, SPELL_SLAG_POT_DAMAGE, true);
                 if (target->isAlive() && !GetDuration())
-                     target->CastSpell(target, SPELL_SLAG_IMBUED, true);
+                {
+                    if (aurEffCaster->GetMap()->GetDifficulty() == MAN10_DIFFICULTY)
+                        target->CastSpell(target, SPELL_SLAG_IMBUED_10, true);
+                    else if (aurEffCaster->GetMap()->GetDifficulty() == MAN25_DIFFICULTY)
+                        target->CastSpell(target, SPELL_SLAG_IMBUED_25, true);
+                }
             }
 
             void Register()

@@ -2384,7 +2384,7 @@ class npc_high_enforcer_thranok : public CreatureScript
             {
                 events.ScheduleEvent(EVENT_CRUSHER_CALL, 15000);
                 events.ScheduleEvent(EVENT_SHATTERING_CLEAVE, 5000);
-                events.ScheduleEvent(EVENT_SKULL_CRACKER, 16000);
+                events.ScheduleEvent(EVENT_SKULL_CRACKER, 17000);
                 DoZoneInCombat(me, 30.0f);
             }
 
