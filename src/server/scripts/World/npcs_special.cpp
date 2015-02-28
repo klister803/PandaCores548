@@ -59,6 +59,7 @@ EndContentData */
 #include "SpellAuras.h"
 #include "Vehicle.h"
 #include "Player.h"
+#include "CreatureTextMgr.h"
 
 /*########
 # npc_air_force_bots
@@ -4344,6 +4345,104 @@ class npc_guild_battle_standard : public CreatureScript
         }
 };
 
+enum MiscData
+{
+    QUEST_GRAND_PRIZE   = 8193,
+    QUEST_SECOND_PLACE  = 32435,
+    QUEST_THIRD_PLACE   = 32436,
+    
+    DATA_CHECK          = 0,
+    
+    Quest1              = 0,
+    Quest2              = 1,
+    Quest3              = 2,
+    QuestEnd            = 3,
+};
+class npc_riggle_bassbait : public CreatureScript
+{
+    public:
+        npc_riggle_bassbait() : CreatureScript("npc_riggle_bassbait") {}
+
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    {
+        QuestMenu& questMenu = pPlayer->PlayerTalkClass->GetQuestMenu();
+        if (pCreature->AI()->GetData(DATA_CHECK) == Quest1)
+            questMenu.AddMenuItem(QUEST_GRAND_PRIZE, 4);
+
+        if (pCreature->AI()->GetData(DATA_CHECK) == Quest2)
+            questMenu.AddMenuItem(QUEST_SECOND_PLACE, 4);
+
+        if (pCreature->AI()->GetData(DATA_CHECK) == Quest3)
+            questMenu.AddMenuItem(QUEST_THIRD_PLACE, 4);
+
+        pPlayer->SEND_GOSSIP_MENU(6421, pCreature->GetGUID());
+
+        return true;
+    }
+
+    struct npc_riggle_bassbaitAI : public ScriptedAI
+    {
+        npc_riggle_bassbaitAI(Creature* creature) : ScriptedAI(creature) 
+        {
+            count = 0;
+            StartEvent = true;
+        }
+
+        uint32 count;
+        bool StartEvent;
+
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_CHECK)
+                count = data;
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            if (type == DATA_CHECK)
+                return count;
+            return 0;
+        }
+
+        void Reset()
+        {
+            if (StartEvent)
+            {
+                ZoneTalk(TEXT_GENERIC_0, 0);
+                StartEvent = false;
+            }
+        }
+
+        void OnQuestReward(Player* player, Quest const* quest)
+        {
+            if (quest->GetQuestId() == QUEST_GRAND_PRIZE)
+            {
+                me->AI()->SetData(DATA_CHECK, Quest2);
+                ZoneTalk(TEXT_GENERIC_1, player->GetGUID());
+            }
+
+            if (quest->GetQuestId() == QUEST_SECOND_PLACE)
+            {
+                me->AI()->SetData(DATA_CHECK, Quest3);
+                ZoneTalk(TEXT_GENERIC_2, player->GetGUID());
+            }
+            
+            if (quest->GetQuestId() == QUEST_THIRD_PLACE)
+            {
+                me->AI()->SetData(DATA_CHECK, QuestEnd);
+                ZoneTalk(TEXT_GENERIC_3, player->GetGUID());
+                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+                me->DespawnOrUnsummon(30000);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_riggle_bassbaitAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -4394,4 +4493,5 @@ void AddSC_npcs_special()
     new npc_bloodworm();
     new npc_past_self();
 	new npc_guild_battle_standard();
+    new npc_riggle_bassbait();
 }
