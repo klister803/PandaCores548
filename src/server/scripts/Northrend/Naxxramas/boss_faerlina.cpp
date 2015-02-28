@@ -194,18 +194,19 @@ class mob_faerlina_add : public CreatureScript
 
         struct mob_faerlina_addAI : public ScriptedAI
         {
-            mob_faerlina_addAI(Creature* creature) : ScriptedAI(creature),
-                _instance(creature->GetInstanceScript())
-            {}
+            mob_faerlina_addAI(Creature* creature) : ScriptedAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_BIND, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+            }
+
+            InstanceScript* instance;
+            EventMap events;
 
             void Reset()
             {
                 events.Reset();
-                if (GetDifficulty() == MAN10_DIFFICULTY)
-                {
-                    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_BIND, true);
-                    me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
-                }
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -215,8 +216,8 @@ class mob_faerlina_add : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                if (_instance && GetDifficulty() == MAN10_DIFFICULTY)
-                    if (Creature* faerlina = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_FAERLINA)))
+                if (instance)
+                    if (Creature* faerlina = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_FAERLINA)))
                         DoCast(faerlina, SPELL_WIDOWS_EMBRACE);
             }
 
@@ -238,10 +239,6 @@ class mob_faerlina_add : public CreatureScript
                     }
                 }
             }
-
-        private:
-            InstanceScript* const _instance;
-            EventMap events;
         };
 
         CreatureAI* GetAI(Creature* creature) const
