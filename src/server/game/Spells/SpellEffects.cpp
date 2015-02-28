@@ -3681,8 +3681,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             default:
                                 break;
                         }
-                        if (m_spellInfo->Id == 62618) //Power Word: Barrier. Aura need cast for correct Visual Show Effect
-                            summon->CastSpell(summon, 81781, true);
 
                         if (properties->Category == SUMMON_CATEGORY_ALLY)
                         {
