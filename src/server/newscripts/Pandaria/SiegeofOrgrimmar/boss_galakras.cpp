@@ -755,7 +755,7 @@ class npc_varian_or_lorthemar : public CreatureScript
             void SpellHit(Unit* pCaster, SpellInfo const* spell)
             {
                 if(spell->Id == SPELL_FRACTURE)
-                    DoCast(pCaster, SPELL_PING_BOSS);
+                    DoCast(pCaster, SPELL_PING_BOSS, true);
             }
 
             /*void UpdateAI(uint32 diff)
@@ -824,7 +824,7 @@ class npc_jaina_or_sylvana : public CreatureScript
             void SpellHit(Unit* pCaster, SpellInfo const* spell)
             {
                 if(spell->Id == SPELL_FRACTURE)
-                    DoCast(pCaster, SPELL_PING_BOSS);
+                    DoCast(pCaster, SPELL_PING_BOSS, true);
             }
 
             void UpdateAI(uint32 diff)
@@ -2188,6 +2188,7 @@ class npc_dragonmaw_bonecrusher : public CreatureScript
             InstanceScript* instance;
             EventMap events;
             bool FractureEvent;
+            int8 count = 1;
 
             void Reset()
             {
@@ -2211,11 +2212,17 @@ class npc_dragonmaw_bonecrusher : public CreatureScript
             {
                 if(spell->Id == SPELL_PING_BOSS && !FractureEvent)
                 {
-                    FractureEvent = true;
-                    me->SetReactState(REACT_PASSIVE);
-                    AttackStart(bTarget);
-                    me->GetMotionMaster()->MoveCharge(bTarget->GetPositionX(), bTarget->GetPositionY(), bTarget->GetPositionZ(), 30.0f);
-                    events.ScheduleEvent(EVENT_BONECRUSHER_FRACTURE, 0);
+                    if(roll_chance_i(35 * count))
+                    {
+                        FractureEvent = true;
+                        me->SetReactState(REACT_PASSIVE);
+                        AttackStart(bTarget);
+                        me->GetMotionMaster()->MoveCharge(bTarget->GetPositionX(), bTarget->GetPositionY(), bTarget->GetPositionZ(), 30.0f);
+                        events.ScheduleEvent(EVENT_BONECRUSHER_FRACTURE, 0);
+                        count = 1;
+                    }
+                    else
+                        count++;
                 }
             }
 
