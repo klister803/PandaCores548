@@ -798,20 +798,20 @@ class custum_trainer : public CreatureScript
         }
 
         void spellDonate(Player* player, Creature* creature, uint32 spellid, uint32 caseid)
-                    {
-                    if (player->HasSpell(spellid) || player->GetItemCount(38186) < 25)
-                        {
-                            creature->MonsterSay("You already know this spell or you don't have enough Ethereal Credits to buy it", LANG_UNIVERSAL, NULL);
-                            player->CLOSE_GOSSIP_MENU();
-                        }
-                    else
-                        {
-                            player->DestroyItemCount(38186, 25, true); //true has to be here
-                            player->learnSpell(spellid, false);
-                            CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='BYU_SPELL %u', `cost`='%u', `targetguid`='%u'", player->GetSession()->GetAccountId(), player->GetGUIDLow(), spellid, 25, player->GetGUIDLow());
-                            OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, caseid);
-                        }
-                     } 
+        {
+            if (player->HasSpell(spellid) || player->GetItemCount(38186) < 25)
+            {
+                creature->MonsterSay("You already know this spell or you don't have enough Ethereal Credits to buy it", LANG_UNIVERSAL, NULL);
+                player->CLOSE_GOSSIP_MENU();
+            }
+            else
+            {
+                player->DestroyItemCount(38186, 25, true); //true has to be here
+                player->learnSpell(spellid, false);
+                CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='BYU_SPELL %u', `cost`='%u', `targetguid`='%u'", player->GetSession()->GetAccountId(), player->GetGUIDLow(), spellid, 25, player->GetGUIDLow());
+                OnGossipSelect(player, creature, GOSSIP_SENDER_MAIN, caseid);
+            }
+        } 
 };
 
 

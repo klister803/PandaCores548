@@ -15,7 +15,6 @@ enum Spells
 	SPELL_QUICKSILVER_ARMOR					= 75842,
 	SPELL_HEAT_WAVE							= 75851,
 	SPELL_SUPERHEATED_QUICKSILVER_ARMOR		= 75846,
-	SPELL_SUPERHEATED_QUICKSILVER_ARMOR_H	= 93567,
 	SPELL_SUPERHEATED_QUICKSILVER_ARMOR_0	= 76015,
 
     SPELL_BURNING                           = 77490,
@@ -94,9 +93,9 @@ class boss_karsh_steelbender : public CreatureScript
 			    else
 				    bHeat = false;
 
-			    if (!me->HasAura(SPELL_QUICKSILVER_ARMOR) && !me->HasAura(DUNGEON_MODE(SPELL_SUPERHEATED_QUICKSILVER_ARMOR, SPELL_SUPERHEATED_QUICKSILVER_ARMOR_H)))
+			    if (!me->HasAura(SPELL_QUICKSILVER_ARMOR) && !me->HasAura(SPELL_SUPERHEATED_QUICKSILVER_ARMOR))
 				    DoCast(me, SPELL_QUICKSILVER_ARMOR);
-			    if (me->HasAura(DUNGEON_MODE(SPELL_SUPERHEATED_QUICKSILVER_ARMOR, SPELL_SUPERHEATED_QUICKSILVER_ARMOR_H)))
+			    if (me->HasAura(SPELL_SUPERHEATED_QUICKSILVER_ARMOR))
 				    me->RemoveAurasDueToSpell(SPELL_QUICKSILVER_ARMOR);
 
                 events.Update(diff);
@@ -116,7 +115,7 @@ class boss_karsh_steelbender : public CreatureScript
 					    if (bHeat)
 					    {
 						    DoCast(me, SPELL_HEAT_WAVE);
-						    DoCast(me, DUNGEON_MODE(SPELL_SUPERHEATED_QUICKSILVER_ARMOR, SPELL_SUPERHEATED_QUICKSILVER_ARMOR_H));
+						    DoCast(me, SPELL_SUPERHEATED_QUICKSILVER_ARMOR);
 					    }
 					    events.ScheduleEvent(EVENT_HEAT_ARMOR, 1000);
 					    break;
@@ -139,8 +138,24 @@ class boss_karsh_steelbender : public CreatureScript
             }
         };
 };
- 
+
+class achievement_too_hot_to_handle : public AchievementCriteriaScript
+{
+    public:
+        achievement_too_hot_to_handle() : AchievementCriteriaScript("achievement_too_hot_to_handle") { }
+
+        bool OnCheck(Player* source, Unit* creature)
+        {
+            if (Aura* aura = creature->GetAura(SPELL_SUPERHEATED_QUICKSILVER_ARMOR))
+                if (aura->GetStackAmount() >= 15)
+                    return true;
+
+            return false;
+        }
+};
+
 void AddSC_boss_karsh_steelbender()
 {
     new boss_karsh_steelbender();
+    new achievement_too_hot_to_handle();
 }

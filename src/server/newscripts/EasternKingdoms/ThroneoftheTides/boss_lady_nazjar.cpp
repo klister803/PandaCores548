@@ -41,6 +41,8 @@ enum Spells
     SPELL_LIGHTNING_SURGE       = 75992,
     SPELL_LIGHTNING_SURGE_DMG   = 75993,
     SPELL_LIGHTNING_SURGE_DMG_H = 91451,
+    
+    SPELL_ACHIEV_CREDIT         = 94042,
 };
 
 enum Events
@@ -333,10 +335,12 @@ class npc_lady_nazjar_honnor_guard : public CreatureScript
         {
             npc_lady_nazjar_honnor_guardAI(Creature* creature) : ScriptedAI(creature)
             {
+                instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
             }
 
             EventMap events;
+            InstanceScript* instance;
             bool bEnrage;
 
             void Reset()
@@ -378,6 +382,13 @@ class npc_lady_nazjar_honnor_guard : public CreatureScript
                 }
                 DoMeleeAttackIfReady();                
             }
+
+            void JustDied(Unit* killer)
+            {
+                if (instance)
+                    if (killer && killer->GetTypeId() == TYPEID_UNIT && killer->GetEntry() == NPC_GEYSER)
+                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
+            }
         };
 };
 
@@ -395,10 +406,12 @@ class npc_lady_nazjar_tempest_witch : public CreatureScript
         {
             npc_lady_nazjar_tempest_witchAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
+                instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
             }
 
             EventMap events;
+            InstanceScript* instance;
 
             void Reset()
             {
@@ -435,6 +448,13 @@ class npc_lady_nazjar_tempest_witch : public CreatureScript
                         break;
                     }
                 }
+            }
+            
+            void JustDied(Unit* killer)
+            {
+                if (instance)
+                    if (killer && killer->GetTypeId() == TYPEID_UNIT && killer->GetEntry() == NPC_GEYSER)
+                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me); 
             }
         };
 };

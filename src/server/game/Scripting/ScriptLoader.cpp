@@ -28,6 +28,7 @@ void AddSC_bracket_commandscript();
 void AddSC_multi_vendor();
 void AddSC_traffic_commandscript();
 void AddSC_custom_reward();
+void AddSC_custum_trainer();
 void AddSC_command_donate();
 void AddSC_command_arena();
 void AddSC_npc_profession();
@@ -864,6 +865,7 @@ void AddScripts()
 void AddExampleScripts()
 {
     AddSC_custom_reward();
+    AddSC_custum_trainer();
     AddSC_command_donate();
     AddSC_command_arena();
     AddSC_npc_profession();
