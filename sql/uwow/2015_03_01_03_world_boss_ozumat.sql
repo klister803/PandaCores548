@@ -10,5 +10,5 @@ update creature_template set flags_extra = 130, ScriptName = 'npc_blight_of_ozum
 
 delete from spell_linked_spell where spell_trigger in (-76133, 76133);
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `caster`, `target`, `hastalent`, `hastalent2`, `chance`, `cooldown`, `type2`, `hitmask`, `learnspell`, `removeMask`, `comment`) VALUES 
-(-76133, -76155, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Remove Tidal Surge'),
-(76133, 76155, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Add Tidal Surge');
+(-76133, -76155, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Remove Tidal Surge'),
+(76133, 76155, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Add Tidal Surge');

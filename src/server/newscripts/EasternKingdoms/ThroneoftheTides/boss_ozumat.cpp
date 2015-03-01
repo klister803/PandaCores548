@@ -226,7 +226,10 @@ class npc_neptulon : public CreatureScript
                         events.ScheduleEvent(EVENT_SUMMON_OZUMAT, 10000);
                 }
                 if (pCreature->GetEntry() == NPC_BOSS_OZUMAT)
+                {
                     CompleteEncounter();
+                    Talk(SAY_PHASE_3_1);
+                }
             }
 
             void CompleteEncounter()

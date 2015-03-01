@@ -5439,6 +5439,12 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;
+                case 93957: // Achiev Headed South
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->SetDurationIndex(21);
+                    break;
                 default:
                     break;
             }
