@@ -84,7 +84,6 @@ enum Actions
 {
     ACTION_NEPTULON_START_EVENT = 1,
     ACTION_NEPTULON_START       = 2,
-    ACTION_OZUMAT_FORFEIT       = 3,
 };
 
 enum Achievement
@@ -194,12 +193,6 @@ class npc_neptulon : public CreatureScript
                     events.ScheduleEvent(EVENT_SUMMON_MURLOC, urand(5000, 8000));
                     events.ScheduleEvent(EVENT_SUMMON_MINDLASHER, 10000);
                     events.ScheduleEvent(EVENT_SUMMON_BEHEMOTH, 20000);
-                }
-                if (action == ACTION_OZUMAT_FORFEIT)
-                {
-                    bActive = false;
-                    Talk(SAY_PHASE_3_1);
-                    CompleteEncounter();
                 }
             }
 
