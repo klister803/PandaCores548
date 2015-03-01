@@ -30,15 +30,13 @@ enum Spells
     SPELL_BLIGHT_OF_OZUMAT_DUMMY        = 83672,
     SPELL_BLIGHT_OF_OZUMAT_AURA         = 83525,
     SPELL_BLIGHT_OF_OZUMAT_DMG          = 83561,
-    SPELL_BLIGHT_OF_OZUMAT_DMG_H        = 91495,
     SPELL_BLIGHT_OF_OZUMAT_AOE          = 83607,
     SPELL_BLIGHT_OF_OZUMAT_AOE_DMG      = 83608,
-    SPELL_BLIGHT_OF_OZUMAT_AOE_DMG_H    = 91494,
     SPELL_TIDAL_SURGE                   = 76133,
+    SPELL_REMOVE_TIDAL_SURGE            = 83909,
         
     // Vicious Mindslasher
     SPELL_BRAIN_SPIKE                   = 83915,
-    SPELL_BRAIN_SPIKE_H                 = 91497,
     SPELL_VEIL_OF_SHADOW                = 83926,
     SPELL_SHADOW_BOLT                   = 83914,
 
@@ -67,10 +65,12 @@ enum Events
     EVENT_VEIL_OF_SHADOW        = 12,
     EVENT_BLIGHT_SPRAY          = 13,
     EVENT_PHASE_2_2             = 14,
+    EVENT_SUMMON_OZUMAT         = 15,
 };
 
 enum Adds
 {
+    NPC_BOSS_OZUMAT             = 44566,
     NPC_DEEP_MURLOC_INVADER     = 44658,
     NPC_VICIOUS_MINDLASHER      = 44715,
     NPC_UNYIELDING_BEHEMOTH     = 44648,
@@ -84,6 +84,7 @@ enum Actions
 {
     ACTION_NEPTULON_START_EVENT = 1,
     ACTION_NEPTULON_START       = 2,
+    ACTION_OZUMAT_FORFEIT       = 3,
 };
 
 enum Achievement
@@ -194,6 +195,12 @@ class npc_neptulon : public CreatureScript
                     events.ScheduleEvent(EVENT_SUMMON_MINDLASHER, 10000);
                     events.ScheduleEvent(EVENT_SUMMON_BEHEMOTH, 20000);
                 }
+                if (action == ACTION_OZUMAT_FORFEIT)
+                {
+                    bActive = false;
+                    Talk(SAY_PHASE_3_1);
+                    CompleteEncounter();
+                }
             }
 
             void JustSummoned(Creature* summon)
@@ -223,12 +230,10 @@ class npc_neptulon : public CreatureScript
                 {
                     uiSapperCount++;
                     if (uiSapperCount > 2)
-                    {
-                        bActive = false;
-                        Talk(SAY_PHASE_3_1);
-                        CompleteEncounter();
-                    }
+                        events.ScheduleEvent(EVENT_SUMMON_OZUMAT, 10000);
                 }
+                if (pCreature->GetEntry() == NPC_BOSS_OZUMAT)
+                    CompleteEncounter();
             }
 
             void CompleteEncounter()
@@ -256,6 +261,7 @@ class npc_neptulon : public CreatureScript
                     me->GetMap()->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, SPELL_ENCOUNTER_COMPLETE, me); 
                     pInstance->SetBossState(DATA_OZUMAT, DONE);
                 }
+                DoCast(SPELL_REMOVE_TIDAL_SURGE);
                 EnterEvadeMode();
             }
 
@@ -346,6 +352,11 @@ class npc_neptulon : public CreatureScript
                         if (Player* pTarget = GetRandomPlayer())
                             DoCast(pTarget, SPELL_BLIGHT_OF_OZUMAT_MISSILE);
                         events.ScheduleEvent(EVENT_BLIGHT_OF_OZUMAT, urand(10000, 18000));
+                        break;
+                    case EVENT_SUMMON_OZUMAT:
+                        DoCast(SPELL_BLIGHT_OF_OZUMAT_SUMMON_2);
+                        DoCast(SPELL_TIDAL_SURGE);
+                        me->SummonCreature(NPC_BOSS_OZUMAT, -92.70f, 916.18f, 273.14f, 2.23f);
                         break;
                     }
                 }
@@ -584,6 +595,56 @@ class npc_blight_of_ozumat : public CreatureScript
         };
 };
 
+class npc_ozumat : public CreatureScript
+{
+    public:
+        npc_ozumat() : CreatureScript("npc_ozumat") { }
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_ozumatAI>(pCreature);
+        }
+
+        struct npc_ozumatAI : public Scripted_NoMovementAI
+        {
+            npc_ozumatAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                DoCast(me, SPELL_BLIGHT_OF_OZUMAT_DUMMY);
+            }
+        };
+};
+
+class npc_blight_of_ozumat_final : public CreatureScript
+{
+    public:
+        npc_blight_of_ozumat_final() : CreatureScript("npc_blight_of_ozumat_final") { }
+
+        CreatureAI* GetAI(Creature* pCreature) const
+        {
+            return GetInstanceAI<npc_blight_of_ozumat_finalAI>(pCreature);
+        }
+
+        struct npc_blight_of_ozumat_finalAI : public Scripted_NoMovementAI
+        {
+            npc_blight_of_ozumat_finalAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                DoCast(me, SPELL_BLIGHT_OF_OZUMAT_AOE);
+            }
+        };
+};
+
 class at_tott_ozumat : public AreaTriggerScript
 {
     public:
@@ -615,5 +676,7 @@ void AddSC_boss_ozumat()
     new npc_unyielding_behemoth();
     new npc_faceless_sapper();
     new npc_blight_of_ozumat();
+    new npc_ozumat();
+    new npc_blight_of_ozumat_final();
     new at_tott_ozumat();
 }
