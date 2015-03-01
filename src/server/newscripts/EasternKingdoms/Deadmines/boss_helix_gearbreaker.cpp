@@ -31,6 +31,8 @@ enum Spells
     SPELL_CHARGE                = 88288,
     SPELL_FORCE_PLAYER_RIDE_OAF = 88278,
     SPELL_RIDE_OAF              = 88277,
+    
+    SPELL_ACHIEV_CREDIT         = 88337,
 };
 
 enum Adds
@@ -77,12 +79,23 @@ const Position helixcrewPos[4] =
     {-295.26f,-503.38f,60.16f, 0.0f},
     {-280.85f,-503.98f,60.16f, 0.0f},
     {-291.45f,-503.37f,60.16f, 0.0f},
-    {-285.63f,-504.04f,60.16f, 0.0f}
+    {-285.63f,-504.04f,60.16f, 0.0f},
 };
 
 const Position oafPos[1] = 
 {
     {-302.361f, -516.346f, 52.0315f, 0.174533f},
+};
+const Position RatPos[8] = 
+{
+    {-290.90f, -486.49f, 49.88f},
+    {-288.98f, -483.20f, 49.88f},
+    {-293.78f, -483.81f, 49.15f},
+    {-286.94f, -482.96f, 49.88f},
+    {-288.16f, -484.81f, 49.88f},
+    {-291.99f, -486.26f, 49.88f},
+    {-289.67f, -487.22f, 49.88f},
+    {-290.44f, -484.32f, 49.88f},
 };
 
 class boss_helix_gearbreaker : public CreatureScript
@@ -222,7 +235,7 @@ class npc_lumbering_oaf : public CreatureScript
      
         struct npc_lumbering_oafAI : public ScriptedAI
         {
-            npc_lumbering_oafAI(Creature *c) : ScriptedAI(c) 
+            npc_lumbering_oafAI(Creature *c) : ScriptedAI(c), summons(me)
             {
                 me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
@@ -236,11 +249,13 @@ class npc_lumbering_oaf : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+                pInstance = c->GetInstanceScript();
                 me->setActive(true);
             }
 
             InstanceScript* pInstance;
             EventMap events;
+            SummonList summons;
 
             void Reset()
             {
@@ -289,6 +304,12 @@ class npc_lumbering_oaf : public CreatureScript
                 }
             }
 
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+                summon->GetMotionMaster()->MoveRandom(10.0f);
+            }
+
             void UpdateAI(uint32 diff)
             {
 
@@ -327,11 +348,13 @@ class npc_lumbering_oaf : public CreatureScript
                             if (me->getVictim())
                                 me->GetMotionMaster()->MoveChase(me->getVictim());
                             me->RemoveAurasDueToSpell(SPELL_RIDE_OAF);
+                            pInstance->DoCastSpellOnPlayers(SPELL_ACHIEV_CREDIT);
+                            for (uint8 i = 0; i < 9; i++)
+                                me->SummonCreature(NPC_MINE_RAT, RatPos[i], TEMPSUMMON_CORPSE_DESPAWN, 5000);
                             events.ScheduleEvent(EVENT_CHARGE_OAF0, 30000);
                             break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         };

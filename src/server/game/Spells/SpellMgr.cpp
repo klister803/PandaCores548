@@ -5436,6 +5436,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 54355: // Achiev Mine Sweeper
                 case 54402:
+                case 88337:
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;

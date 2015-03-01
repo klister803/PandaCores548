@@ -16,6 +16,7 @@ enum NPCs
     NPC_GLUBTOK              = 47162,
     NPC_HELIX_GEARBREAKER    = 47296,
     NPC_LUMBERING_OAF        = 47297,
+    NPC_MINE_RAT             = 51462,
     NPC_FOE_REAPER_5000      = 43778,
     NPC_ADMIRAL_RIPSNARL     = 47626,
     NPC_CAPTAIN_COOKIE       = 47739,
