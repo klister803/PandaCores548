@@ -78,6 +78,10 @@ enum Events
 
     EVENT_PHASE,
     EVENT_REQUEST_AID,
+    
+    EVENT_MORTAL_WOUND,
+    
+    ACTION_ABOMCOUNT,
 };
 
 enum Spells
@@ -125,6 +129,9 @@ enum Spells
     //death knight
     SPELL_PLAGUE_STRIKE                                    = 49921,
     SPELL_HOWLING_BLAST                                    = 51411,
+    // Abomination spells
+    SPELL_FRENZY                                           = 28468,
+    SPELL_MORTAL_WOUND                                     = 28467,
 };
 
 enum Creatures
@@ -291,9 +298,10 @@ public:
 
         SummonList spawns; // adds spawn by the trigger. kept in separated list (i.e. not in summons)
 
-        void DoAction(const int32 param)
+        void DoAction(const int32 action)
         {
-            ++uiAbominationCounter;
+            if (action == ACTION_ABOMCOUNT)
+                ++uiAbominationCounter;
         }
 
         void Reset()
@@ -411,13 +419,13 @@ public:
                     switch(eventId)
                     {
                         case EVENT_WASTE:
-                            DoSummon(NPC_WASTE, Pos[RAND(0,3,6,9)]);
+                            DoSummon(NPC_WASTE, Pos[RAND(0,3,6,9)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                             events.RepeatEvent(urand(2000,5000));
                             break;
                         case EVENT_ABOMIN:
                             if (nAbomination < 8)
                             {
-                                DoSummon(NPC_ABOMINATION, Pos[RAND(1,4,7,10)]);
+                                DoSummon(NPC_ABOMINATION, Pos[RAND(1,4,7,10)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                                 nAbomination++;
                                 events.RepeatEvent(20000);
                             }
@@ -427,7 +435,7 @@ public:
                         case EVENT_WEAVER:
                             if (nWeaver < 8)
                             {
-                                DoSummon(NPC_WEAVER, Pos[RAND(0,3,6,9)]);
+                                DoSummon(NPC_WEAVER, Pos[RAND(0,3,6,9)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                                 nWeaver++;
                                 events.RepeatEvent(25000);
                             }
@@ -491,7 +499,7 @@ public:
                 {
                     if (uiGuardiansOfIcecrownTimer <= diff)
                     {
-                        if (Creature* pGuardian = DoSummon(NPC_ICECROWN, Pos[RAND(2,5,8,11)]))
+                        if (Creature* pGuardian = DoSummon(NPC_ICECROWN, Pos[RAND(2,5,8,11)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN))
                         {
                             pGuardian->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
                             DoScriptText(EMOTE_GUARDIAN, me);
@@ -664,7 +672,6 @@ public:
                             break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         }
@@ -674,6 +681,65 @@ public:
     {
         return new boss_kelthuzadAI (pCreature);
     }
+};
+
+class npc_kelthuzad_abomination : public CreatureScript
+{
+    public:
+        npc_kelthuzad_abomination() : CreatureScript("npc_kelthuzad_abomination") { }
+
+        struct npc_kelthuzad_abominationAI : public ScriptedAI
+        {
+            npc_kelthuzad_abominationAI(Creature* creature) : ScriptedAI(creature)
+            {
+                _instance = creature->GetInstanceScript();
+            }
+
+            void Reset()
+            {
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_MORTAL_WOUND, urand(2000, 5000));
+                DoCast(me, SPELL_FRENZY, true);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                _events.Update(diff);
+
+                while (uint32 eventId = _events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_MORTAL_WOUND:
+                            DoCastVictim(SPELL_MORTAL_WOUND, true);
+                            _events.ScheduleEvent(EVENT_MORTAL_WOUND, urand(10000, 15000));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                if (_instance)
+                    if (Creature* KelThuzad = _instance->instance->GetCreature(_instance->GetData64(DATA_KELTHUZAD)))
+                        KelThuzad->AI()->DoAction(ACTION_ABOMCOUNT);
+            }
+
+        private:
+            InstanceScript* _instance;
+            EventMap _events;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_kelthuzad_abominationAI(creature);
+        }
 };
 
 class at_kelthuzad_center : public AreaTriggerScript
@@ -698,7 +764,7 @@ public:
         if (!pKelthuzadAI)
             return false;
 
-        pKelthuzadAI->EnterCombat(pPlayer);
+        //pKelthuzadAI->EnterCombat(pPlayer);
         pKelthuzadAI->AttackStart(pPlayer);
 
         if (GameObject* trigger = pInstance->instance->GetGameObject(pInstance->GetData64(DATA_KELTHUZAD_TRIGGER)))
@@ -710,7 +776,7 @@ public:
             // Otherwise, they attack immediately as KT is in combat.
             for (uint8 i = 0; i < MAX_ABOMINATIONS; ++i)
             {
-                if (Creature* sum = trigger->SummonCreature(NPC_ABOMINATION, PosAbominations[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_ABOMINATION, PosAbominations[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(6.0f);
@@ -719,7 +785,7 @@ public:
             }
             for (uint8 i = 0; i < MAX_WASTES; ++i)
             {
-                if (Creature* sum = trigger->SummonCreature(NPC_WASTE, PosWastes[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_WASTE, PosWastes[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(4.0f);
@@ -728,7 +794,7 @@ public:
             }
             for (uint8 i = 0; i < MAX_WEAVERS; ++i)
             {
-                if (Creature* sum = trigger->SummonCreature(NPC_WEAVER, PosWeavers[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_WEAVER, PosWeavers[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(7.0f);
@@ -739,12 +805,12 @@ public:
 
         return true;
     }
-
 };
 
 
 void AddSC_boss_kelthuzad()
 {
     new boss_kelthuzad();
+    new npc_kelthuzad_abomination();
     new at_kelthuzad_center();
 }
