@@ -589,7 +589,7 @@ public:
             {
                 if (m_pInstance)
                 {
-                    m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, ACHIEVEMENT_NERF_SCRAPBOTS);
+                    m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, ACHIEVEMENT_NERF_SCRAPBOTS);
                     m_pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_NERF_SCRAPBOTS);
                 }
                     

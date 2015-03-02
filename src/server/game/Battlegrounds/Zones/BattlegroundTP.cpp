@@ -537,7 +537,7 @@ void BattlegroundTP::EventPlayerClickedOnFlag(Player* source, GameObject* target
                     source->CastSpell(source, team == TEAM_ALLIANCE ? BG_TP_SPELL_HORDE_FLAG : BG_TP_SPELL_ALLIANCE_FLAG , true);
 
                     /// Start achievement criteria
-                    // source->StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, TEAM_ALLIANCE ? BG_TP_SPELL_HORDE_FLAG_PICKED : BG_TP_SPELL_ALLIANCE_FLAG_PICKED);
+                    source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, TEAM_ALLIANCE ? BG_TP_SPELL_ALLIANCE_FLAG_PICKED : BG_TP_SPELL_HORDE_FLAG_PICKED);
 
                     /// Verify if both flag are carried
                     if (_flagKeepers[team])

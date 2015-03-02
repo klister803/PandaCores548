@@ -5,17 +5,13 @@ enum Spells
 {
     SPELL_WHO_IS_THAT                       = 89339,
     SPELL_SETIATED                          = 89267,
-    SPELL_SETIATED_H                        = 92834,
     SPELL_NAUSEATED                         = 89732,
-    SPELL_NAUSEATED_H                       = 92066,
     SPELL_ROTTEN_AURA                       = 89734,
-    SPELL_ROTTEN_AURA_H                     = 95513,
-    SPELL_ROTTEN_AURA_DMG                   = 89734,
-    SPELL_ROTTEN_AURA_DMG_H                 = 92065,
     SPELL_CAULDRON                          = 89250,
     SPELL_CAULDRON_VISUAL                   = 89251,
     SPELL_CAULDRON_FIRE                     = 89252,
-
+    SPELL_ACHIEV_CREDIT                     = 95650,
+    SPELL_REMOVE_ACHIEV_CREDIT              = 95651,
 
     SPELL_THROW_FOOD_TARGETING_CORN         = 89268,
     SPELL_THROW_FOOD_TARGETING_ROTTEN_CORN  = 89740,
@@ -29,7 +25,6 @@ enum Spells
     SPELL_THROW_FOOD_TARGETING_ROTTEN_LOAF  = 90585,
     SPELL_THROW_FOOD_TARGETING_BUN          = 90565,
     SPELL_THROW_FOOD_TARGETING_ROTTEN_BUN   = 90586,
-
 
     SPELL_THROW_FOOD        = 89263,
     SPELL_THROW_FOOD_FORCE  = 89269,
@@ -154,6 +149,8 @@ class boss_captain_cookie : public CreatureScript
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
+                DoCast(SPELL_ACHIEV_CREDIT);
+
                 events.ScheduleEvent(EVENT_MOVE, 1000);
 
                 DoZoneInCombat();
@@ -257,7 +254,7 @@ class npc_captain_cookie_good_food : public CreatureScript
             if (pInstance->GetBossState(DATA_CAPTAIN) != IN_PROGRESS)
                 return true;
 
-            pPlayer->CastSpell(pPlayer, (pPlayer->GetMap()->IsHeroic() ? SPELL_SETIATED_H : SPELL_SETIATED), true);
+            pPlayer->CastSpell(pPlayer, SPELL_SETIATED, true);
 
             pCreature->DespawnOrUnsummon();
             return true;
@@ -308,7 +305,7 @@ class npc_captain_cookie_bad_food : public CreatureScript
             if (pInstance->GetBossState(DATA_CAPTAIN) != IN_PROGRESS)
                 return true;
 
-            pPlayer->CastSpell(pPlayer, (pPlayer->GetMap()->IsHeroic() ? SPELL_NAUSEATED_H : SPELL_NAUSEATED), true);
+            pPlayer->CastSpell(pPlayer, SPELL_NAUSEATED, true);
             
             pCreature->DespawnOrUnsummon();
             return true;
@@ -324,6 +321,11 @@ class npc_captain_cookie_bad_food : public CreatureScript
             void JustDied(Unit* killer)
             {
                 me->DespawnOrUnsummon();
+            }
+
+            void Reset()
+            {
+                DoCast(SPELL_ROTTEN_AURA);
             }
 
             void UpdateAI(uint32 diff)
@@ -355,7 +357,6 @@ class spell_captain_cookie_setiated : public SpellScriptLoader
                 if (!GetCaster() || !GetHitUnit())
                     return;
                 GetHitUnit()->RemoveAuraFromStack(SPELL_NAUSEATED);
-                GetHitUnit()->RemoveAuraFromStack(SPELL_NAUSEATED_H);
             }
 
             void Register()
@@ -380,13 +381,17 @@ class spell_captain_cookie_nauseated : public SpellScriptLoader
         {
             PrepareSpellScript(spell_captain_cookie_nauseated_SpellScript);
 
-
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (!GetCaster() || !GetHitUnit())
+                Unit* caster = GetCaster();
+                if (!caster)
                     return;
-                GetHitUnit()->RemoveAuraFromStack(SPELL_SETIATED);
-                GetHitUnit()->RemoveAuraFromStack(SPELL_SETIATED_H);
+
+                caster->RemoveAuraFromStack(SPELL_SETIATED);
+
+                if (Aura* aura = caster->GetAura(SPELL_NAUSEATED))
+                    if (aura->GetStackAmount() > 1)
+                        caster->CastSpell(caster, SPELL_REMOVE_ACHIEV_CREDIT, true);
             }
 
             void Register()

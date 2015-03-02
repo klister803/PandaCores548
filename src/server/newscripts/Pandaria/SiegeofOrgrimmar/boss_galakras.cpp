@@ -57,6 +57,7 @@ enum eSpells
 {
     //Galakras
     SPELL_PULSING_FLAMES                 = 147042,
+    SPELL_PULSING_FLAMES_AURA            = 147043,
     SPELL_FLAMES_OF_GALAKROND            = 147068,
 
     //FriendlyForces
@@ -383,6 +384,7 @@ class boss_galakras : public CreatureScript
                 events.Reset();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_PASSIVE);
+                me->RemoveAurasDueToSpell(SPELL_PULSING_FLAMES_AURA);
                 instance->SetBossState(DATA_GALAKRAS, NOT_STARTED);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ENABLE_UNIT_FRAME);
                 EntryCheckPredicate pred1(NPC_TOWER_SOUTH);

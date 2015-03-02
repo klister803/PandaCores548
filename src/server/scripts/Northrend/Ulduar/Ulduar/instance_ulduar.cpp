@@ -235,7 +235,7 @@ public:
             {
                 if (!ironDefTimer)
                 {
-                    DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, CRITERIA_DWARFGEDDON);
+                    DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                     ironDefTimer = 10*IN_MILLISECONDS;
                 }
 
@@ -247,7 +247,7 @@ public:
                     ApplyAchiv = true;
                     ironDefTimer = 0;
                     count = 0;
-                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, CRITERIA_DWARFGEDDON);
+                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                 }
             }
         }
@@ -260,7 +260,7 @@ public:
                 {
                     ironDefTimer = 0;
                     count = 0;
-                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, CRITERIA_DWARFGEDDON);
+                    DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, CRITERIA_DWARFGEDDON);
                 } else ironDefTimer -= diff;
             }
 

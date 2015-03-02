@@ -1444,6 +1444,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
             case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
             case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
+            case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -1680,7 +1681,6 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
 
             // FIXME: not triggered in code as result, need to implement
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_RAID:
-            case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
             case ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA:
             case ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK:
             case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
@@ -1908,6 +1908,8 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
         case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
             return progress->counter >= criteriaTree->requirement_count; // currencyGain.count;
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
+            return progress->counter >= criteriaTree->requirement_count;
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
         case ACHIEVEMENT_CRITERIA_TYPE_DEATH_AT_MAP:
@@ -3161,6 +3163,9 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         if (!miscValue1 || miscValue1 != achievementCriteria->finish_instance.mapID)
             return false;
         break;
+    case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
+        if (miscValue1 != achievementCriteria->win_arena.mapID)
+            return false;
     default:
         break;
         }
