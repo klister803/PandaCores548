@@ -2110,9 +2110,8 @@ class spell_pri_divine_star : public SpellScriptLoader
 
                 if(tick == 5)
                 {
-                    //retunr effect
-                    if (Creature* trigger = caster->SummonTrigger(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 0, 1000))
-                        trigger->CastSpell(_ownPos.GetPositionX(), _ownPos.GetPositionY(), _ownPos.GetPositionZ(), GetSpellInfo()->Effects[1].TriggerSpell, true);
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[1].TriggerSpell);
+                    GetAura()->ClearEffectTarget();
                 }
 
                 //uint32 _countTick = uint32(1000.0f / 250);
@@ -2130,7 +2129,7 @@ class spell_pri_divine_star : public SpellScriptLoader
                 Trinity::NormalizeMapCoord(x);
                 Trinity::NormalizeMapCoord(y);
 
-                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true);
+                caster->CastSpell(x, y, _ownPos.GetPositionZ(), GetSpellInfo()->Effects[0].TriggerSpell, true, NULL, aurEff);
             }
 
             void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
@@ -2148,16 +2147,112 @@ class spell_pri_divine_star : public SpellScriptLoader
                 _ownPos.Relocate(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation());
             }
 
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* caster = GetCaster())
+                    caster->SendMissileCancel(GetSpellInfo()->Effects[1].TriggerSpell, false);
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_divine_star_AuraScript::OnPereodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
                 OnEffectApply += AuraEffectApplyFn(spell_pri_divine_star_AuraScript::HandleApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_pri_divine_star_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
             return new spell_pri_divine_star_AuraScript();
+        }
+};
+
+// Divine Star 110745 122128
+class spell_pri_divine_star_filter : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_star_filter() : SpellScriptLoader("spell_pri_divine_star_filter") { }
+
+        class spell_pri_divine_star_filter_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_star_filter_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                if (targets.empty())
+                    return;
+
+                Unit* caster = GetCaster();
+                if (!caster)
+                    return;
+
+                AuraEffect const* aurEff = GetSpell()->GetTriggeredAuraEff();
+                if (!aurEff)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                uint32 tick = aurEff->GetTickNumber();
+                Aura* auraTrigger = aurEff->GetBase();
+                Position const* pos = auraTrigger->GetDstPos();
+
+                float distanceintick = 6.0f * tick;
+                if(distanceintick > 24.0f)
+                    distanceintick = (24.0f * 2) - distanceintick;
+
+                if(distanceintick < 0.0f)
+                {
+                    targets.clear();
+                    return;
+                }
+
+                float angle = caster->GetAngle(pos);
+
+                // expload at tick
+                float x = caster->GetPositionX() + (caster->GetObjectSize() + distanceintick) * std::cos(angle);
+                float y = caster->GetPositionY() + (caster->GetObjectSize() + distanceintick) * std::sin(angle);
+                Trinity::NormalizeMapCoord(x);
+                Trinity::NormalizeMapCoord(y);
+
+                std::list<uint64> saveTargets = auraTrigger->GetEffectTargets();
+
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                {
+                    uint64 guid = (*itr)->GetGUID();
+                    bool find = false;
+                    if(!saveTargets.empty())
+                    {
+                        for (std::list<uint64>::iterator itrGuid = saveTargets.begin(); itrGuid != saveTargets.end();)
+                        {
+                            if(guid == (*itrGuid))
+                            {
+                                find = true;
+                                break;
+                            }
+                            ++itrGuid;
+                        }
+                    }
+                    if(find || ((*itr)->GetDistance2d(x, y) > 4.0f))
+                        targets.erase(itr++);
+                    else
+                    {
+                        auraTrigger->AddEffectTarget(guid);
+                        ++itr;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_divine_star_filter_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_divine_star_filter_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ALLY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_star_filter_SpellScript();
         }
 };
 
@@ -2685,4 +2780,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_hymn_of_hope();
     new spell_pri_mind_blast();
     new spell_pri_void_tendrils_grasp();
+    new spell_pri_divine_star_filter();
 }

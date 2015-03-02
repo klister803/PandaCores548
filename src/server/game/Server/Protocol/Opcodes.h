@@ -1128,7 +1128,7 @@ enum Opcodes
     SMSG_MINIGAME_SETUP                               = 0x9D3,  // 5.0.5 16048
     SMSG_MINIGAME_STATE                               = 0xC57,  // 5.0.5 16048
     SMSG_MIRRORIMAGE_DATA                             = 0x146D, // 5.4.1 17538
-    SMSG_MISSILE_CANCEL                               = 0xFD1,  // 5.0.5 16048
+    SMSG_MISSILE_CANCEL                               = 0x596,  // 5.4.1 17538
     SMSG_MODIFY_COOLDOWN                              = 0x0084, // 5.4.1 17538
     SMSG_MONSTER_MOVE                                 = 0x0216, // 5.4.1 17538
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0,      // 5.4.1 17538 obsolete

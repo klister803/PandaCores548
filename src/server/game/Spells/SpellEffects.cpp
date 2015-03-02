@@ -3658,7 +3658,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             // randomize position for multiple summons
                             m_caster->GetRandomPoint(*destTarget, radius, pos);
 
-                        summon = m_originalCaster->SummonCreature(entry, *destTarget, m_targets.GetUnitTargetGUID(), summonType, duration, m_spellInfo->Id, properties);
+                        summon = m_originalCaster->SummonCreature(entry, *destTarget, m_originalTarget ? m_originalTarget->GetGUID() : m_targets.GetUnitTargetGUID(), summonType, duration, m_spellInfo->Id, properties);
                         if (!summon)
                             continue;
 

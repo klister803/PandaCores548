@@ -1699,7 +1699,7 @@ class spell_monk_soothing_mist : public SpellScriptLoader
                     if(caster->m_SummonSlot[i])
                     {
                         if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
-                            if(summon->GetEntry() == 60849 && caster->GetExactDist2d(target) < 40.0f)
+                            if(summon->GetEntry() == 60849 && summon->GetExactDist2d(target) < 40.0f)
                             {
                                 if(caster->IsInRaidWith(target))
                                 {
@@ -2651,7 +2651,7 @@ class spell_monk_touch_of_death : public SpellScriptLoader
 
                 if (caster->HasAura(124490))
                 {
-                    if (target->GetTypeId() == TYPEID_PLAYER)
+                    if (target->GetTypeId() == TYPEID_PLAYER || target->isPet())
                         if (target->GetHealthPct() > 10)
                             return SPELL_FAILED_BAD_TARGETS;
                 }
@@ -2660,7 +2660,7 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     if (target->GetTypeId() == TYPEID_PLAYER)
                         return SPELL_FAILED_BAD_TARGETS;
 
-                    if (Unit* owner = target->GetOwner())
+                    if (Unit* owner = target->GetAnyOwner())
                         if (owner->GetTypeId() == TYPEID_PLAYER)
                             return SPELL_FAILED_BAD_TARGETS;
                 }

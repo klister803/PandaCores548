@@ -3866,7 +3866,7 @@ void Spell::cast(bool skipCheck)
 
             SpellNonMeleeDamage damageInfo(caster, procTarget, m_spellInfo->Id, m_spellSchoolMask);
 
-            if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
+            //if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
                 procEx |= PROC_EX_ON_CAST;
 
             if(procAttacker)
@@ -7807,13 +7807,13 @@ SpellCastResult Spell::CheckRange(bool strict)
 
     if (target && target != m_caster)
     {
-        /*if (range_type == SPELL_RANGE_MELEE)
+        if (range_type == SPELL_RANGE_MELEE)
         {
             // Because of lag, we can not check too strictly here.
-            if (!m_caster->IsWithinMeleeRange(target, max_range))
+            if (!m_caster->IsWithinMeleeRange(target, max_range)) //Fix range hack
                 return !(_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_OUT_OF_RANGE : SPELL_FAILED_DONT_REPORT;
         }
-        else */if (!m_caster->IsWithinCombatRange(target, max_range))
+        else if (!m_caster->IsWithinCombatRange(target, max_range))
             return !(_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_OUT_OF_RANGE : SPELL_FAILED_DONT_REPORT; //0x5A;
 
         if (range_type == SPELL_RANGE_RANGED)

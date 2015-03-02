@@ -2077,6 +2077,7 @@ class Unit : public WorldObject
         void SendFakeAuraUpdate(uint32 auraId, uint32 flags, uint32 diration, uint32 _slot, bool remove);
         bool GetFreeAuraSlot(uint32& slot);
         void SendSpellScene(uint32 miscValue, Position* pos);
+        void SendMissileCancel(uint32 spellId, bool cancel = true);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);

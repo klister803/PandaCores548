@@ -19640,7 +19640,6 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                         procCheck = false;
                     else
                         procCheck = true;
-
                     break;
                 }
             }
@@ -20200,6 +20199,36 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
             active = true;
     }
 
+    bool alredyCheck = false;
+    //Spell can proc from HOT
+    if (procFlag & PROC_FLAG_DONE_PERIODIC && EventProcFlag & PROC_FLAG_DONE_PERIODIC)
+    {
+        switch(spellProto->Id)
+        {
+            case 48544: // Revitalize
+            case 70664: // Item - Druid T10 Restoration 4P Bonus (Rejuvenation)
+            case 99013: // Item - Druid T12 Restoration 2P Bonus
+            case 99190: // Item - Shaman T12 Restoration 2P Bonus
+            case 144869: // Item - Druid T16 Restoration 2P Bonus
+            case 145449: // Item - Monk T16 Mistweaver 4P Bonus
+                if (procExtra & PROC_EX_INTERNAL_HOT)
+                    alredyCheck = true;
+                break;
+        }
+    }
+    //Spell can`t proc from HOT
+    if (procFlag & PROC_FLAG_TAKEN_PERIODIC && EventProcFlag & PROC_FLAG_TAKEN_PERIODIC)
+    {
+        switch(spellProto->Id)
+        {
+            case 33076: // Prayer of Mending
+            case 41635: // Prayer of Mending
+                if (procExtra & PROC_EX_INTERNAL_HOT)
+                    return false;
+                break;
+        }
+    }
+
     // Aura added by spell can`t trigger from self (prevent drop charges/do triggers)
     // But except periodic and kill triggers (can triggered from self)
     if (procSpell && procSpell->Id == spellProto->Id && !(spellProto->ProcFlags & (PROC_FLAG_KILL)))
@@ -20211,7 +20240,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
                 return false;
 
     // Check spellProcEvent data requirements
-    if (!sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
+    if (!alredyCheck && !sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
         return false;
 
     // In most cases req get honor or XP from kill
@@ -20347,6 +20376,8 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura)
                 if (aura != NULL)
                     aura->SetCharges(jumps);
             }
+            if(caster->HasAura(55685) && jumps == 3) // Glyph of Prayer of Mending
+                heal *= 1.6f;
         }
     }
 
@@ -24237,3 +24268,19 @@ void Unit::SendSpellScene(uint32 miscValue, Position* /*pos*/)
     }
 }
 
+void Unit::SendMissileCancel(uint32 spellId, bool cancel)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    ObjectGuid guid = GetObjectGuid();
+
+    WorldPacket data(SMSG_MISSILE_CANCEL, 13);
+    data.WriteGuidMask<6, 0, 3, 7, 5, 1, 4>(guid);
+    data.WriteBit(cancel);            // Reverse
+    data.WriteGuidMask<2>(guid);
+    data.WriteGuidBytes<4, 5, 7, 6, 1, 3>(guid);
+    data << uint32(spellId);
+    data.WriteGuidBytes<0, 2>(guid);
+    ToPlayer()->GetSession()->SendPacket(&data);
+}

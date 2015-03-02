@@ -3292,6 +3292,9 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
             //dismount polymorphed target (after patch 2.4.2)
             if (target->IsMounted())
                 target->RemoveAurasByType(SPELL_AURA_MOUNTED);
+            //remove fly aura Zen Flight
+            if (target->HasAura(125883))
+                target->RemoveAurasDueToSpell(125883);
         }
     }
     else

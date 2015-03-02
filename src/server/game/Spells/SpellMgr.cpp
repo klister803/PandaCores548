@@ -4298,6 +4298,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].MiscValue = SPELL_SCHOOL_MASK_ALL;
                     break;
                 case 44457: // Living Bomb
+                case 124081: // Zen Sphere
                     spellInfo->AttributesEx5 &= ~SPELL_ATTR5_SINGLE_TARGET_SPELL;
                     break;
                 case 44461: // Living Bomb
@@ -5184,13 +5185,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
                     spellInfo->Effects[EFFECT_0].BasePoints = 1;
                     spellInfo->Effects[EFFECT_0].MiscValue = 0;
-                    break;
-                case 110745: // Divine Star
-                case 122128: // Divine Star
-                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_DEST_DEST;
-                    spellInfo->Effects[EFFECT_1].TargetA = TARGET_DEST_DEST;
-                    spellInfo->Effects[EFFECT_0].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
-                    spellInfo->Effects[EFFECT_1].RadiusEntry = sSpellRadiusStore.LookupEntry(26); // 4m
                     break;
                 case 119914: //Felstorm
                 case 119915: //Felstorm
