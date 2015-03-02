@@ -2087,14 +2087,12 @@ void WorldSession::HandleSetTaxiBenchmarkOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleQueryInspectAchievements(WorldPacket& recvData)
 {
-    uint64 guid;
-    recvData.readPackGUID(guid);
+    ObjectGuid guid;
+    recvData.ReadGuidMask<4, 3, 5, 7, 6, 2, 0, 1>(guid);
+    recvData.ReadGuidBytes<3, 6, 7, 0, 1, 2, 4, 5>(guid);
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
-    if (!player)
-        return;
-
-    player->GetAchievementMgr().SendAchievementInfo(_player);
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
+        player->GetAchievementMgr().SendAchievementInfo(_player);
 }
 
 void WorldSession::HandleGuildAchievementProgressQuery(WorldPacket& recvData)
