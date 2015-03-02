@@ -1260,11 +1260,14 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         buffer << uint8(0);
         uint64 auramask = player->GetAuraUpdateMaskForRaid();
         buffer << uint64(auramask);
-        buffer << uint32(MAX_AURAS); // count
+        size_t countPos = buffer.wpos();
+        uint32 count = 0
+        buffer << uint32(count); // count
         for (uint32 i = 0; i < MAX_AURAS; ++i)
         {
             if (auramask & (uint64(1) << i))
             {
+                ++count;
                 AuraApplication const* aurApp = player->GetVisibleAura(i);
                 if (!aurApp)
                 {
@@ -1281,7 +1284,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                 if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                 {
                     size_t pos = buffer.wpos();
-                    uint8 count = 0;
+                    uint8 count2 = 0;
 
                     buffer << uint8(0);
                     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -1289,13 +1292,14 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                         if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                         {
                             buffer << float(eff->GetAmount());
-                            ++count;
+                            ++count2;
                         }
                     }
-                    buffer.put(pos, count);
+                    buffer.put(pos, count2);
                 }
             }
         }
+        buffer.put<uint32>(countPos, count);
     }
 
     Pet* pet = player->GetPet();
@@ -1370,11 +1374,14 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             buffer << uint8(0);
             uint64 auramask = pet->GetAuraUpdateMaskForRaid();
             buffer << uint64(auramask);
+            size_t countPos = buffer.wpos();
+            uint32 count = 0
             buffer << uint32(MAX_AURAS); // count
             for (uint32 i = 0; i < MAX_AURAS; ++i)
             {
                 if (auramask & (uint64(1) << i))
                 {
+                    ++count;
                     AuraApplication const* aurApp = pet->GetVisibleAura(i);
                     if (!aurApp)
                     {
@@ -1391,7 +1398,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                     if (aurApp->GetFlags() & AFLAG_ANY_EFFECT_AMOUNT_SENT)
                     {
                         size_t pos = buffer.wpos();
-                        uint8 count = 0;
+                        uint8 count2 = 0;
 
                         buffer << uint8(0);
                         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -1399,13 +1406,14 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                             if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                             {
                                 buffer << float(eff->GetAmount());
-                                ++count;
+                                ++count2;
                             }
                         }
-                        buffer.put(pos, count);
+                        buffer.put(pos, count2);
                     }
                 }
             }
+            buffer.put<uint32>(countPos, count);
         }
         else
         {
@@ -1463,11 +1471,10 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
         data.WriteBit(1);                                   // full
         data.WriteGuidMask<1, 7, 3, 2, 0>(Guid);
         data.FlushBits();
-        data << uint32(2);
-        data << (uint16) MEMBER_STATUS_OFFLINE;
         data.WriteGuidBytes<2, 1, 7>(Guid);
         data << uint32(GROUP_UPDATE_FLAG_STATUS);
         data.WriteGuidBytes<4, 3, 5, 0, 6>(Guid);
+        data << (uint16) MEMBER_STATUS_OFFLINE;
         SendPacket(&data);
         return;
     }
