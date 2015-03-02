@@ -1261,7 +1261,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         uint64 auramask = player->GetAuraUpdateMaskForRaid();
         buffer << uint64(auramask);
         size_t countPos = buffer.wpos();
-        uint32 count = 0
+        uint32 count = 0;
         buffer << uint32(count); // count
         for (uint32 i = 0; i < MAX_AURAS; ++i)
         {
@@ -1375,7 +1375,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             uint64 auramask = pet->GetAuraUpdateMaskForRaid();
             buffer << uint64(auramask);
             size_t countPos = buffer.wpos();
-            uint32 count = 0
+            uint32 count = 0;
             buffer << uint32(MAX_AURAS); // count
             for (uint32 i = 0; i < MAX_AURAS; ++i)
             {
