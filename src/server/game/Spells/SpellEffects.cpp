@@ -405,6 +405,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
 
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectSchoolDMG %i, m_diffMode %i, effIndex %i, spellId %u, damage %i", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage);
+
     if (unitTarget && unitTarget->isAlive())
     {
         // Meteor like spells (divided damage to targets)
@@ -680,10 +682,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             damage += int32(hunter->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.168f);
 
                             // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
-                            if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                            if (m_caster->GetPower(POWER_FOCUS) >= 50)
                             {
                                 damage *= 2;
-                                m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                                m_caster->ModifyPower(POWER_FOCUS, -25, true);
                             }
                         }
                         break;
@@ -825,6 +827,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
         }
 
         m_damage += damage;
+
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "EffectSchoolDMG end %i, m_diffMode %i, effIndex %i, spellId %u, damage %i", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage);
 
         switch (m_spellInfo->Id)
         {
@@ -6439,6 +6443,10 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     if (target->IsRessurectRequested())       // already have one active request
         return;
+
+    if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_BATTLE_RESURRECTION)
+        if (InstanceScript* pInstance = target->GetInstanceScript())
+            pInstance->SetResurectSpell();
 
     int32 hpPerc = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
     if(!hpPerc)

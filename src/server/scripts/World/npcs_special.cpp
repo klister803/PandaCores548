@@ -3628,10 +3628,18 @@ class npc_guardian_of_ancient_kings : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (me->GetOwner())
-                    if (Unit* newVictim = me->GetOwner()->getVictim())
+                if (me->getVictim() && me->getVictim()->HasCrowdControlAura(me))
+                {
+                    me->InterruptNonMeleeSpells(false);
+                    return;
+                }
+
+                if (Unit* owner = me->GetOwner())
+                {
+                    if (Unit* newVictim = owner->getAttackerForHelper())
                         if (me->getVictim() != newVictim)
                             AttackStart(newVictim);
+                }
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;

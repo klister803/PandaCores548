@@ -71,7 +71,6 @@ enum PaladinSpells
     PALADIN_SPELL_GLYPH_OF_AVENGING_WRATH        = 54927,
     PALADIN_SPELL_AVENGING_WRATH_REGEN_BY_GLYPH  = 115547,
     PALADIN_SPELL_SACRED_CLEANSING               = 53551,
-    PALADIN_SPELL_LIGHT_OF_DAWN                  = 85222,
 };
 
 // Called by Avenging Wrath - 31884

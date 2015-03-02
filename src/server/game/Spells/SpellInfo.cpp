@@ -145,7 +145,7 @@ uint32 SpellImplicitTargetInfo::GetExplicitTargetMask(bool& srcSet, bool& dstSet
                 targetMask = TARGET_FLAG_DEST_LOCATION;
                 break;
             case TARGET_REFERENCE_TYPE_TARGET:
-            case TARGET_REFERENCE_TYPE_CASTER:
+            //case TARGET_REFERENCE_TYPE_CASTER:
                 switch (GetObjectType())
                 {
                     case TARGET_OBJECT_TYPE_GOBJ:

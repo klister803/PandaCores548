@@ -1464,11 +1464,9 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
 void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
+    m_targets.SetDst(*m_caster);
     switch (targetType.GetTarget())
     {
-        case TARGET_DEST_CASTER:
-            m_targets.SetDst(*m_caster);
-            return;
         case TARGET_DEST_HOME:
             if (Player* playerCaster = m_caster->ToPlayer())
                 m_targets.SetDst(playerCaster->m_homebindX, playerCaster->m_homebindY, playerCaster->m_homebindZ, playerCaster->GetOrientation(), playerCaster->m_homebindMapId);
@@ -1504,6 +1502,9 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             break;
     }
 
+    if(targetType.GetDirectionType() == TARGET_DIR_NONE)
+        return;
+
     float dist;
     float angle = targetType.CalcDirectionAngle();
     float objSize = m_caster->GetObjectSize();
@@ -1538,7 +1539,6 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             m_caster->GetNearPosition(pos, dist, angle);
             break;
     }
-    m_targets.SetDst(*m_caster);
     m_targets.ModDst(pos);
 }
 
@@ -1582,6 +1582,11 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
             return;
         default:
             break;
+    }
+    if(targetType.GetDirectionType() == TARGET_DIR_NONE)
+    {
+        m_targets.SetDst(*target);
+        return;
     }
 
     float angle = targetType.CalcDirectionAngle();
@@ -1642,6 +1647,9 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
         default:
             break;
     }
+
+    if(targetType.GetDirectionType() == TARGET_DIR_NONE)
+        return;
 
     float angle = targetType.CalcDirectionAngle();
     float dist = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcRadius(m_caster);
@@ -3754,7 +3762,7 @@ void Spell::cast(bool skipCheck)
         m_caster->ToPlayer()->RemoveSpellMods(this, true);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 14157)
+    if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 14157 || m_spellInfo->Id == 54957)
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -7321,6 +7329,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
                 break;
             }
+            case SPELL_EFFECT_RESURRECT:
+            {
+                if (AttributesCustomEx8 & SPELL_ATTR8_BATTLE_RESURRECTION)
+                {
+                    if (InstanceScript* pInstance = m_caster->GetInstanceScript())
+                        if (!pInstance->GetResurectSpell())
+                            return SPELL_FAILED_IN_COMBAT_RES_LIMIT_REACHED;
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -7571,7 +7589,7 @@ SpellCastResult Spell::CheckCasterAuras() const
         prevented_reason = SPELL_FAILED_CONFUSED;
     else if (unitflag & UNIT_FLAG_FLEEING && !(AttributesCustomEx5 & SPELL_ATTR5_USABLE_WHILE_FEARED))
         prevented_reason = SPELL_FAILED_FLEEING;
-    else if (unitflag & UNIT_FLAG_SILENCED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+    else if (unitflag & UNIT_FLAG_SILENCED && (m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE || m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_UNK2))
         prevented_reason = SPELL_FAILED_SILENCED;
     else if (unitflag & UNIT_FLAG_PACIFIED && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY)
         prevented_reason = SPELL_FAILED_PACIFIED;

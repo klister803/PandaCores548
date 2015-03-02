@@ -396,12 +396,19 @@ void Unit::Update(uint32 p_time)
     // update combat timer only for players and pets (only pets with PetAI)
     if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->isPet() && IsControlledByPlayer())))
     {
+        //Don`t claer combat state if instance in progress
+        Map* map = GetMap();
+        InstanceScript* instance = GetInstanceScript();
+        bool leaveCombat = true;
+        if (map && map->IsRaid() && instance && instance->IsEncounterInProgress())
+            leaveCombat = false;
+
         // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
         if (m_CombatTimer <= p_time) // m_CombatTimer set at aura start and it will be freeze until aura removing
         {
-            if (m_HostileRefManager.isEmpty())
+            if (m_HostileRefManager.isEmpty() && leaveCombat)
                 ClearInCombat();
             else
                 m_CombatTimer = 0;
@@ -3648,7 +3655,7 @@ void Unit::DeMorph()
 Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount /*= NULL*/, Item* castItem /*= NULL*/, uint64 casterGUID /*= 0*/)
 {
     ASSERT(casterGUID || caster);
-    if (!casterGUID)
+    if (!casterGUID && !caster->ToCreature())
         casterGUID = caster->GetGUID();
 
     // passive and Incanter's Absorption and auras with different type can stack with themselves any number of times
@@ -4046,22 +4053,8 @@ void Unit::RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode)
 Aura* Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, Aura* except) const
 {
     for (AuraMap::const_iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId); ++itr)
-    {
-        switch (spellId)
-        {                //Immerseus
-            case 143459: //Sha residue
-            case 143524: //Purified residue
-            {
-                if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && casterGUID && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
-                    return itr->second;
-            }
-            default:
-            {
-                if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
-                    return itr->second;
-            }
-        }
-    }
+        if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
+            return itr->second;
     return NULL;
 }
 
@@ -17497,6 +17490,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     }
                     case SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS:
                     case SPELL_AURA_IGNORE_CD:
+                    case SPELL_AURA_MOD_HEALING_RECEIVED:
                     {
                         if (!triggeredByAura->IsAffectingSpell(procSpell) && !triggeredByAura->IsAffectingSpell(procAura))
                             break;
@@ -18606,6 +18600,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     continue;
             }
 
+            if(itr->target == 8 && target == this) //not trigger spell for self
+                continue;
             if(itr->target == 1 || itr->target == 6 || !target) //get target self
                 target = this;
             if(itr->target == 3 && ToPlayer()) //get target owner

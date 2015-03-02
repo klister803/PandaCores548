@@ -1386,6 +1386,10 @@ bool Aura::CanBeSaved() const
     if (m_fromAreatrigger)
         return false;
 
+    // don't save auras casted by summons
+    if (GetCaster() && GetCaster()->isAnySummons())
+        return false;
+
     switch (GetId())
     {
         // Incanter's Absorbtion - considering the minimal duration and problems with aura stacking

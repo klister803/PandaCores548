@@ -409,26 +409,21 @@ class spell_sha_spirit_link : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (caster->GetEntry() == 53006)
+                    std::list<TargetInfo>* memberList = GetSpell()->GetUniqueTargetInfo();
+                    if(memberList->empty())
+                        return;
+
+                    float totalRaidHealthPct = 0;
+                    for (std::list<TargetInfo>::iterator ihit = memberList->begin(); ihit != memberList->end(); ++ihit)
                     {
-                        if (caster->GetOwner())
-                        {
-                            if (Player* _player = caster->GetOwner()->ToPlayer())
-                            {
-                                std::list<Unit*> memberList;
-                                _player->GetPartyMembers(memberList);
-
-                                float totalRaidHealthPct = 0;
-
-                                for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
-                                    totalRaidHealthPct += (*itr)->GetHealthPct();
-
-                                totalRaidHealthPct /= memberList.size() * 100.0f;
-
-                                for (std::list<Unit*>::const_iterator itr = memberList.begin(); itr != memberList.end(); ++itr)
-                                    (*itr)->SetHealth(uint32(totalRaidHealthPct * (*itr)->GetMaxHealth()));
-                            }
-                        }
+                        if(Unit* member = ObjectAccessor::GetUnit(*caster, ihit->targetGUID))
+                            totalRaidHealthPct += member->GetHealthPct();
+                    }
+                    totalRaidHealthPct /= memberList->size() * 100.0f;
+                    for (std::list<TargetInfo>::iterator ihit = memberList->begin(); ihit != memberList->end(); ++ihit)
+                    {
+                        if(Unit* member = ObjectAccessor::GetUnit(*caster, ihit->targetGUID))
+                            member->SetHealth(uint32(totalRaidHealthPct * member->GetMaxHealth()));
                     }
                 }
             }
@@ -1533,7 +1528,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
-                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 250.0f);
+                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[2]))
@@ -1541,7 +1536,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(-3*M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
-                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 250.0f);
+                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[3]))
@@ -1549,7 +1544,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(3*M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
-                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 250.0f);
+                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
                 if(Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[4]))
@@ -1557,7 +1552,7 @@ class spell_shaman_totemic_projection : public SpellScriptLoader
                     Position pos;
                     summon->GetFirstCollisionPosition(pos, 2.5f, static_cast<float>(M_PI/4));
                     //totem->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), totem->GetOrientation());
-                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 250.0f);
+                    totem->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, 60.0f);
                     //totem->SendMovementFlagUpdate();
                 }
             }

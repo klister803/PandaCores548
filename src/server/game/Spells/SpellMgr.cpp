@@ -4390,9 +4390,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     // affect Ice Lance
                     spellInfo->Effects[EFFECT_0].SpellClassMask[0] |= 0x20000;
                     break;
-                case 85222: // Light of Dawn
-                    spellInfo->CustomMaxAffectedTargets = 6; //used if empty on dbc SpellTargetRestrictionsEntry
-                    break;
                 case 2641:  // Dismiss Pet
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_DEAD;
                     break;
@@ -5459,6 +5456,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = TARGET_GAMEOBJECT_SRC_AREA;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(28);
                     spellInfo->Effects[1].Effect = 0;
+                    break;
+                case 85222: // Light of Dawn
+                    spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                     break;
                 default:
                     break;

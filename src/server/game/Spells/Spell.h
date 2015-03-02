@@ -609,6 +609,7 @@ class Spell
         std::list<uint32>* GetSpellMods() { return &m_spell_mods; }
 
         uint32 GetTargetCount() const { return m_UniqueTargetInfo.size(); }
+        std::list<TargetInfo>* GetUniqueTargetInfo() { return &m_UniqueTargetInfo; }
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();

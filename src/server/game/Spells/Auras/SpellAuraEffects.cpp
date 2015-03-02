@@ -3583,15 +3583,18 @@ void AuraEffect::HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, 
         return;
 
     Unit* target = aurApp->GetTarget();
+    uint32 _flags = UNIT_FLAG_PACIFIED;;
+    if(m_spellInfo->Id == 51514) // Hack for Hex, sniff send both flags
+        _flags |= UNIT_FLAG_SILENCED;
 
     if (apply)
-        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+        target->SetFlag(UNIT_FIELD_FLAGS, _flags);
     else
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (target->HasAuraType(SPELL_AURA_MOD_PACIFY) || target->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
             return;
-        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+        target->RemoveFlag(UNIT_FIELD_FLAGS, _flags);
     }
 }
 
