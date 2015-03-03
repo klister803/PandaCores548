@@ -283,7 +283,7 @@ void AuraApplication::BuildByteUpdatePacket(ByteBuffer& data, bool remove, uint3
                 if (AuraEffect const* eff = aura->GetEffect(i))
                 {
                     if(eff->GetAmount() != eff->GetBaseSendAmount())
-                        data << float(eff->GetBaseSendAmount());
+                        data << float(eff->GetAmount());
                     else
                         data << float(0.0f);
                 }

@@ -864,7 +864,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, victim);
         }
 
-        Kill(victim, durabilityLoss, spellProto ? spellProto : NULL);
+        if (spellProto && (spellProto->AttributesEx9 & SPELL_ATTR9_UNK28))
+            victim->SetHealth(1);
+        else
+            Kill(victim, durabilityLoss, spellProto ? spellProto : NULL);
     }
     else
     {
@@ -958,50 +961,193 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     return damage;
 }
 
-uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto)
+uint32 Unit::CalcStaggerDamage(uint32 damage, SpellSchoolMask damageSchoolMask, SpellInfo const* spellInfo)
 {
-    // Custom MoP Script
-    // Stagger Amount
-    if (victim->GetTypeId() == TYPEID_PLAYER && victim->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && victim->HasAura(115069) && damage > 0)
+    if (GetTypeId() == TYPEID_PLAYER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && damage > 0)
     {
-        float stagger = 0.80f;
+        uint32 staggerBleed  = 124255;
+        uint32 staggerGreen  = 124275;
+        uint32 staggerYellow = 124274;
+        uint32 staggerRed    = 124273;
+        uint32 staggerDebuf  = 124275;
+        float stagger = 0.0f;
+        int32 bp0 = 0;
+        int32 bp1 = 0;
 
-        // Mastery: Elusive Brawler
-        if (AuraEffect const* aurEff = victim->GetAuraEffect(117906, EFFECT_0))
+        if (spellInfo && spellInfo->Id == staggerBleed)
         {
-            float masteryMod = aurEff->GetAmount() / 100.0f;
-            stagger = 0.80f - masteryMod;
-        }
+            if (Aura* staggerBleedAura = GetAura(staggerBleed))
+            {
+                AuraEffect* eff0 = staggerBleedAura->GetEffect(EFFECT_0);
+                AuraEffect* eff1 = staggerBleedAura->GetEffect(EFFECT_1);
+                bp0 = eff0->GetAmount();
+                bp1 = eff1->GetAmount() - damage;
 
-        // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
-        if (victim->HasAura(115203) && victim->HasAura(117967))
-            stagger -= 0.20f;
-        // Shuffle also increase stagger amount by 20%
-        if (victim->HasAura(115307))
-            stagger -= 0.20f;
+                if (bp1 <= 0)
+                {
+                    RemoveAurasDueToSpell(staggerBleed);
+                    return damage;
+                }
+                else
+                {
+                    eff1->SetAmount(bp1);
 
-        int32 bp1 = damage - (damage * stagger);
-        int32 bp0 = bp1 / 10;
+                    if (bp1 > int32(CountPctFromMaxHealth(60)))
+                        staggerDebuf = staggerRed;
+                    else if (bp1 > int32(CountPctFromMaxHealth(30)))
+                        staggerDebuf = staggerYellow;
+                }
+            }
 
-        if (AuraEffect const* aurEff = victim->GetAuraEffect(124255, EFFECT_0))
-        {
-            int32 amount = aurEff->GetAmount() + bp0;
-            if (amount < int32(victim->CountPctFromMaxHealth(3)))
-                victim->CastSpell(victim, 124275, true);
-            else if (amount < int32(victim->CountPctFromMaxHealth(6)))
-                victim->CastSpell(victim, 124274, true);
-            else
-                victim->CastSpell(victim, 124273, true);
+            if (Aura* staggerGreenAura = GetAura(staggerGreen))
+            {
+                if (staggerDebuf != staggerGreen || bp1 <= 0)
+                {
+                    int32 olddur = staggerGreenAura->GetDuration();
+                    RemoveAurasDueToSpell(staggerGreen);
+                    CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+
+                    if (Aura* staggerDebufAura = GetAura(staggerDebuf))
+                    {
+                        staggerDebufAura->SetDuration(olddur);
+                        staggerDebufAura->SetMaxDuration(olddur);
+                    }
+                }
+                else
+                {
+                    staggerGreenAura->GetEffect(EFFECT_1)->SetAmount(bp1);
+                }
+            }
+            else if (Aura* staggerYellowAura = GetAura(staggerYellow))
+            {
+                if (staggerDebuf != staggerYellow || bp1 <= 0)
+                {
+                    int32 olddur = staggerYellowAura->GetDuration();
+                    RemoveAurasDueToSpell(staggerYellow);
+                    CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+
+                    if (Aura* staggerDebufAura = GetAura(staggerDebuf))
+                    {
+                        staggerDebufAura->SetDuration(olddur);
+                        staggerDebufAura->SetMaxDuration(olddur);
+                    }
+                }
+                else
+                {
+                    staggerYellowAura->GetEffect(EFFECT_1)->SetAmount(bp1);
+                }
+            }
+            else if (Aura* staggerRedAura = GetAura(staggerRed))
+            {
+                if (staggerDebuf != staggerRed || bp1 <= 0)
+                {
+                    int32 olddur = staggerRedAura->GetDuration();
+                    RemoveAurasDueToSpell(staggerRed);
+                    CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+
+                    if (Aura* staggerDebufAura = GetAura(staggerDebuf))
+                    {
+                        staggerDebufAura->SetDuration(olddur);
+                        staggerDebufAura->SetMaxDuration(olddur);
+                    }
+                }
+                else
+                {
+                    staggerRedAura->GetEffect(EFFECT_1)->SetAmount(bp1);
+                }
+            }
         }
         else
-            victim->CastSpell(victim, 124275, true);
+        {
+            if (HasAura(117967))
+            {
+                if (Aura* Stance_of_the_Sturdy_OxAura = GetAura(115069))
+                    stagger += float(Stance_of_the_Sturdy_OxAura->GetSpellInfo()->Effects[EFFECT_7].BasePoints);
 
-        victim->CastCustomSpell(victim, 124255, &bp0, &bp1, NULL, true);
+                if (AuraEffect const* mastery = GetAuraEffect(117906, EFFECT_0))
+                    stagger += float(mastery->GetAmount());
 
-        return damage *= stagger;
+                if (AuraEffect const* Fortifying_Brew = GetAuraEffect(120954, EFFECT_4))
+                    stagger += float(Fortifying_Brew->GetAmount());
+
+                if (AuraEffect const* Shuffle = GetAuraEffect(115307, EFFECT_1))
+                    stagger += float(Shuffle->GetAmount());
+
+                if (stagger > 100.0f)
+                    stagger = 100.0f;
+
+                
+                bp0 = RoundingFloatValue(float(CalculatePct(damage, stagger) / 10.0f));
+                bp1 = bp0 * 10;
+
+                damage -= bp1;
+
+                if (Aura* staggerBleedAura = GetAura(staggerBleed))
+                {
+                    AuraEffect* eff0 = staggerBleedAura->GetEffect(EFFECT_0);
+                    AuraEffect* eff1 = staggerBleedAura->GetEffect(EFFECT_1);
+
+                    bp0 = RoundingFloatValue(float(bp1 + eff1->GetAmount()) / 10.0f);
+                    bp1 = bp0 * 10;
+
+                    if (bp1 > int32(CountPctFromMaxHealth(60)))
+                        staggerDebuf = staggerRed;
+                    else if (bp1 > int32(CountPctFromMaxHealth(30)))
+                        staggerDebuf = staggerYellow;
+
+                    eff0->SetAmount(bp0);
+                    eff1->SetAmount(bp1);
+
+                    if (HasAura(staggerGreen))
+                    {
+                        if (staggerDebuf != staggerGreen)
+                        {
+                            RemoveAurasDueToSpell(staggerGreen);
+                            CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+                        }
+                    }
+                    else if (HasAura(staggerYellow))
+                    {
+                        if (staggerDebuf != staggerYellow)
+                        {
+                            RemoveAurasDueToSpell(staggerYellow);
+                            CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+                        }
+                    }
+                    else if (HasAura(staggerRed))
+                    {
+                        if (staggerDebuf != staggerRed)
+                        {
+                            RemoveAurasDueToSpell(staggerRed);
+                            CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+                        }
+                    }
+
+                    if (Aura* staggerDebufAura = GetAura(staggerDebuf))
+                    {
+                        staggerDebufAura->GetEffect(EFFECT_0)->SetAmount(bp0);
+                        staggerDebufAura->GetEffect(EFFECT_1)->SetAmount(bp1);
+                        int32 dur = 10000 - eff0->GetAmplitude() + eff0->GetPeriodicTimer();
+                        staggerDebufAura->SetMaxDuration(dur);
+                        staggerDebufAura->SetDuration(dur);
+                    }
+                }
+                else
+                {
+                    if (bp1 > int32(CountPctFromMaxHealth(60)))
+                        staggerDebuf = staggerRed;
+                    else if (bp1 > int32(CountPctFromMaxHealth(30)))
+                        staggerDebuf = staggerYellow;
+
+                    if (bp0 > 0)
+                        CastCustomSpell(this, staggerBleed, &bp0, &bp1, NULL, true);
+
+                    CastCustomSpell(this, staggerDebuf, &bp0, &bp1, NULL, true);
+                }
+            }
+        }
     }
-    else
-        return damage;
+    return damage;
 }
 
 void Unit::CastStop(uint32 except_spellid)
@@ -1243,6 +1389,9 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
             break;
     }
 
+    if (victim->getClass() == CLASS_MONK)
+        damage = victim->CalcStaggerDamage(damage, damageSchoolMask, spellInfo);
+
     if (spellInfo && spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
     {
         if (sourceDamage > 0)
@@ -1461,6 +1610,9 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     resilienceReduction = damageInfo->damage - resilienceReduction;
     damageInfo->damage      -= resilienceReduction;
     damageInfo->cleanDamage += resilienceReduction;
+
+    if (victim->getClass() == CLASS_MONK)
+        damageInfo->damage = victim->CalcStaggerDamage(damageInfo->damage, SpellSchoolMask(damageInfo->damageSchoolMask));
 
     // Calculate absorb resist
     if (int32(damageInfo->damage) > 0)
@@ -2038,18 +2190,6 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
 
             CleanDamage cleanDamage = CleanDamage(splitted, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, splitted, &cleanDamage, DIRECT_DAMAGE, schoolMask, (*itr)->GetSpellInfo(), false);
-        }
-    }
-
-        // Stagger Amount
-    if (!spellInfo || (spellInfo && spellInfo->Id != 124255))
-    {
-        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK/* && dmgInfo.GetAbsorb() == 0*/)
-        {
-            int32 damageSave = damage - dmgInfo.GetAbsorb();
-            int32 staggerDamage = victim->CalcStaggerDamage(victim->ToPlayer(), damageSave, damagetype, schoolMask);
-            int32 staggerAbsorb = damageSave - staggerDamage;
-            dmgInfo.AbsorbDamage(staggerAbsorb);
         }
     }
 

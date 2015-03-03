@@ -2690,116 +2690,6 @@ class spell_monk_touch_of_death : public SpellScriptLoader
         }
 };
 
-// Stagger - 124255
-class spell_monk_stagger : public SpellScriptLoader
-{
-    public:
-        spell_monk_stagger() : SpellScriptLoader("spell_monk_stagger") { }
-
-        class spell_monk_stagger_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_monk_stagger_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    int32 bp0 = aurEff->GetAmount();
-                    int32 bp1 = 0;
-                    if (AuraEffect* aurEff1 = aurEff->GetBase()->GetEffect(EFFECT_1))
-                    {
-                        bp1 = aurEff1->GetAmount() - bp0;
-                        if(bp1 >= bp0)
-                            aurEff1->ChangeAmount(bp1);
-                        else
-                            Remove(AURA_REMOVE_BY_DEFAULT);
-                    }
-                    if (Aura* aura = caster->GetAura(124273))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(bp0);
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(bp1);
-                    }
-                    if (Aura* aura = caster->GetAura(124274))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(bp0);
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(bp1);
-                    }
-                    if (Aura* aura = caster->GetAura(124275))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(bp0);
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(bp1);
-                    }
-                }
-            }
-
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                amount += aurEff->GetOldBaseAmount();
-
-                if (Unit* caster = GetCaster())
-                {
-                    if (Aura* aura = caster->GetAura(124273))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(amount);
-                    }
-                    if (Aura* aura = caster->GetAura(124274))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(amount);
-                    }
-                    if (Aura* aura = caster->GetAura(124275))
-                    {
-                        if (AuraEffect* aurEffh0 = aura->GetEffect(EFFECT_0))
-                            aurEffh0->ChangeAmount(amount);
-                    }
-                }
-            }
-
-            void CalculateAmount1(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                amount += aurEff->GetOldBaseAmount();
-
-                if (Unit* caster = GetCaster())
-                {
-                    if (Aura* aura = caster->GetAura(124273))
-                    {
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(amount);
-                    }
-                    if (Aura* aura = caster->GetAura(124274))
-                    {
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(amount);
-                    }
-                    if (Aura* aura = caster->GetAura(124275))
-                    {
-                        if (AuraEffect* aurEffh1 = aura->GetEffect(EFFECT_1))
-                            aurEffh1->ChangeAmount(amount);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_stagger_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_stagger_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_stagger_AuraScript::CalculateAmount1, EFFECT_1, SPELL_AURA_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_monk_stagger_AuraScript();
-        }
-};
-
 // Dampen Harm - 122278
 class spell_monk_dampen_harm : public SpellScriptLoader
 {
@@ -3339,7 +3229,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_eminence();
     new spell_monk_guard_ox();
     new spell_monk_touch_of_death();
-    new spell_monk_stagger();
     new spell_monk_dampen_harm();
     new spell_monk_leer_of_the_ox();
     new spell_monk_clash_stun();

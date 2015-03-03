@@ -7938,6 +7938,9 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     if (!(GetSpellInfo()->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && m_spellInfo->Id != 110914)
         caster->ApplyResilience(target, &dmg, crit);
 
+    if (target->getClass() == CLASS_MONK)
+        dmg = target->CalcStaggerDamage(dmg, m_spellInfo->GetSchoolMask(), m_spellInfo);
+
     caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, dmg, &absorb, &resist, GetSpellInfo());
 
     damage = dmg;
@@ -8040,6 +8043,10 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
     GetBase()->CallScriptEffectChangeTickDamageHandlers(const_cast<AuraEffect const*>(this), dmg, target);
 
     caster->ApplyResilience(target, &dmg, crit);
+
+    if (target->getClass() == CLASS_MONK)
+        dmg = target->CalcStaggerDamage(dmg, m_spellInfo->GetSchoolMask(), m_spellInfo);
+
     damage = dmg;
     caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, m_spellInfo);
 
