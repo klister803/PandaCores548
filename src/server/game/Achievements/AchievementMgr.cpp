@@ -1261,18 +1261,15 @@ void AchievementMgr<Player>::SendCriteriaUpdate(AchievementCriteriaEntry const* 
 {
     WorldPacket data(SMSG_CRITERIA_UPDATE, 8 + 4 + 8);
     data << uint32(entry->ID);
-
-    data << uint32(secsToTimeBitFields(progress->date));
-    data << uint32(timeElapsed);                    // Unk timeElapsed 2??
-    // The counter is packed like a packed Guid
-    //data.appendPackGUID(progress->counter);
+    data << uint32(secsToTimeBitFields(progress->date)); // Date
+    data << uint32(timeElapsed);                    // TimeFromStart / TimeFromCreate
     data << uint64(progress->counter);
 
     if (!entry->timeLimit)
         data << uint32(0);
     else
-        data << uint32(timedCompleted ? 0 : 1);     // This are some flags, 1 is for keeping the counter at 0 in client
-    data << uint32(timeElapsed);                    // Time elapsed in seconds
+        data << uint32(timedCompleted ? 0 : 1);     // Flags, 1 is for keeping the counter at 0 in client
+    data << uint32(timeElapsed);                    // TimeFromStart / TimeFromCreate
 
     ObjectGuid guid = GetOwner()->GetGUID();
     data.WriteGuidMask<3, 0, 7, 6, 2, 1, 4, 5>(guid);
@@ -1303,19 +1300,19 @@ void AchievementMgr<Guild>::SendCriteriaUpdate(AchievementCriteriaEntry const* e
     data.WriteGuidMask<0, 6, 4>(counter);
 
     data.WriteGuidBytes<0>(counter);
-    data << uint32(secsToTimeBitFields(progress->date));
+    data << uint32(secsToTimeBitFields(progress->date)); // DateUpdated?
     data.WriteGuidBytes<2>(guid);
     data.WriteGuidBytes<1>(counter);
-    data << uint32(0);                      // flags?
+    data << uint32(0);                      // Flags
     data.WriteGuidBytes<7, 6>(counter);
     data.WriteGuidBytes<0>(guid);
-    data << uint32(progress->date);         // unknown date
+    data << uint32(progress->date);         // DateStarted / DateCreated
     data.WriteGuidBytes<6, 7>(guid);
     data.WriteGuidBytes<4>(counter);
     data.WriteGuidBytes<5>(guid);
     data << uint32(entry->ID);
     data.WriteGuidBytes<4, 1>(guid);
-    data << uint32(::time(NULL) - progress->date);
+    data << uint32(::time(NULL) - progress->date); // DateStarted / DateCreated
     data.WriteGuidBytes<5, 2>(counter);
     data.WriteGuidBytes<3>(guid);
     data.WriteGuidBytes<3>(counter);
@@ -2120,7 +2117,7 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     progress->changed = true;
     progress->date = time(NULL); // set the date to the latest update.
 
-   AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(treeEntry->parent));
+    AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(treeEntry->parent));
     uint32 timeElapsed = 0;
     bool criteriaComplete = IsCompletedCriteria(treeEntry, achievement);
 
@@ -2432,13 +2429,14 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     {
         ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+
         if(!criteriaTree)
             continue;
 
         data.WriteGuidBytes<5, 7>(counter);
         data.WriteGuidBytes<3, 4>(guid);
         data.WriteGuidBytes<1>(counter);
-        data << uint32(secsToTimeBitFields(now));       // TimeFromStart / TimeFromCreate
+        data << uint32(secsToTimeBitFields(itr->second.date));       // Date
         data.WriteGuidBytes<0>(guid);
         data.WriteGuidBytes<2>(counter);
         data.WriteGuidBytes<6>(guid);
@@ -2449,8 +2447,8 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data.WriteGuidBytes<3>(counter);
         data.WriteGuidBytes<7>(guid);
         data.WriteGuidBytes<0>(counter);
-        data << uint32(itr->second.date);               // TimeFromStart / TimeFromCreate
-        data << uint32(itr->second.date);               // TimeFromStart / TimeFromCreate
+        data << uint32(0);                              // TimeFromStart / TimeFromCreate - set NOT NULL if flags == 1, need research...
+        data << uint32(0);                              // TimeFromStart / TimeFromCreate
         data.WriteGuidBytes<1, 5>(guid);
     }
 
