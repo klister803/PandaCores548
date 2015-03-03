@@ -694,6 +694,7 @@ enum Opcodes
     SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0x0404, // 5.4.1 17538
     SMSG_RAID_TARGET_UPDATE_ALL                       = 0x0995, // 5.4.1 17538
     SMSG_CORPSE_QUERY                                 = 0x11BE, // 5.4.1 17538
+    SMSG_ACCOUNT_CRITERIA_UPDATE                      = 0x0C0D, // 5.4.1 17538
     SMSG_ACCOUNT_DATA_TIMES                           = 0x1486, // 5.4.1 17538
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048
     SMSG_ACCOUNT_RESTRICTED_WARNING                   = 0xB66,  // 5.0.5 16048
@@ -705,6 +706,7 @@ enum Opcodes
     SMSG_ADD_RUNE_POWER                               = 0x0926, // 5.4.1 17538
     SMSG_AI_REACTION                                  = 0x0997, // 5.4.1 17538
     SMSG_ALL_ACHIEVEMENT_DATA                         = 0x005,  // 5.4.1 17538
+    SMSG_ALL_ACCOUNT_CRITERIA_DATA                    = 0x100E, // 5.4.1 17538
     SMSG_AREA_SPIRIT_HEALER_TIME                      = 0x119C, // 5.4.1 17538
     SMSG_AREA_TRIGGER_MESSAGE                         = 0x1539, // 5.4.1 17538
     SMSG_AREA_TRIGGER_MOVEMENT_UPDATE                 = 0xFB8,  // 5.0.5 16048

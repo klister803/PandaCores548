@@ -1256,6 +1256,11 @@ void AchievementMgr<T>::SendCriteriaUpdate(AchievementCriteriaEntry const* /*ent
 {
 }
 
+template<class T>
+void AchievementMgr<T>::SendAccountCriteriaUpdate(AchievementCriteriaEntry const* /*entry*/, CriteriaProgress const* /*progress*/, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+{
+}
+
 template<>
 void AchievementMgr<Player>::SendCriteriaUpdate(AchievementCriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
 {
@@ -1274,6 +1279,39 @@ void AchievementMgr<Player>::SendCriteriaUpdate(AchievementCriteriaEntry const* 
     ObjectGuid guid = GetOwner()->GetGUID();
     data.WriteGuidMask<3, 0, 7, 6, 2, 1, 4, 5>(guid);
     data.WriteGuidBytes<4, 7, 1, 2, 6, 0, 5, 3>(guid);
+
+    SendPacket(&data);
+}
+
+template<>
+void AchievementMgr<Player>::SendAccountCriteriaUpdate(AchievementCriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
+{
+    WorldPacket data(SMSG_ACCOUNT_CRITERIA_UPDATE);
+    ObjectGuid guid = GetOwner()->GetGUID();         // needed send first completer criteria guid or else not found - then current player guid
+
+    data.WriteGuidMask<6, 7>(guid);
+    data.WriteGuidMask<6>(progress->counter);
+    data.WriteGuidMask<1>(guid);
+    data.WriteBits(0, 4);                         // Flags
+    data.WriteGuidMask<4, 5>(progress->counter);
+    data.WriteGuidMask<2, 5, 0>(guid);
+    data.WriteGuidMask<0, 3, 1, 2>(progress->counter);
+    data.WriteGuidMask<4, 3>(guid);
+    data.WriteGuidMask<7>(progress->counter);
+
+    data.WriteGuidBytes<0, 5, 3>(progress->counter);
+    data.WriteGuidBytes<7>(guid);
+    data.WriteGuidBytes<6, 1, 2>(progress->counter);
+    data.WriteGuidBytes<1>(guid);
+    data << uint32(0);
+    data << uint32(0);
+    data.WriteGuidBytes<2, 3>(guid);
+    data.WriteGuidBytes<4>(progress->counter);
+    data.WriteGuidBytes<6, 0, 4>(guid);
+    data << uint32(secsToTimeBitFields(progress->date));   // Date
+    data.WriteGuidBytes<7>(progress->counter);
+    data << uint32(entry->ID);
+    data.WriteGuidBytes<5>(guid);
 
     SendPacket(&data);
 }
@@ -2118,6 +2156,10 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     progress->date = time(NULL); // set the date to the latest update.
 
     AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(treeEntry->parent));
+
+    if (!achievement)
+        return;
+
     uint32 timeElapsed = 0;
     bool criteriaComplete = IsCompletedCriteria(treeEntry, achievement);
 
