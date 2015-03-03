@@ -1184,10 +1184,10 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
             void AchievementCredit(SpellEffIndex /*effIndex*/)
             {
                 // but in effect handling OriginalCaster can become NULL
-                if (Unit* originalCaster = GetOriginalCaster())
+                if (Player* originalCaster = GetOriginalCaster()->ToPlayer())
                     if (GameObject* go = GetHitGObj())
                         if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
-                            originalCaster->CastSpell(originalCaster, SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT, true);
+                            originalCaster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT);
             }
 
             void Register()
@@ -3921,6 +3921,61 @@ class spell_gen_landmine_knockback : public SpellScriptLoader
         }
 };
 
+enum ICSeaforiumSpells
+{
+    SPELL_BOMB_CREDIT_1 = 68366,
+    SPELL_BOMB_CREDIT_2 = 68367, // huge
+};
+//Isle of Conquest: A-bomb-inable
+class spell_gen_ic_seaforium_blast : public SpellScriptLoader
+{
+    public:
+        spell_gen_ic_seaforium_blast() : SpellScriptLoader("spell_gen_ic_seaforium_blast") {}
+
+        class spell_gen_ic_seaforium_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_ic_seaforium_blast_SpellScript);
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_BOMB_CREDIT_1))
+                    return false;
+                if (!sSpellMgr->GetSpellInfo(SPELL_BOMB_CREDIT_2))
+                    return false;
+                return true;
+            }
+
+            bool Load()
+            {
+                return GetOriginalCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void AchievementCredit(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* originalCaster = GetOriginalCaster())
+                    if (GameObject* go = GetHitGObj())
+                        if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
+                        {
+                            if (m_scriptSpellId == 66676 || m_scriptSpellId == 67814)
+                                originalCaster->CastSpell(originalCaster, SPELL_BOMB_CREDIT_1, true);
+                            else if (m_scriptSpellId == 66672 || m_scriptSpellId ==  67813)
+                                originalCaster->CastSpell(originalCaster, SPELL_BOMB_CREDIT_2, true);
+                        }
+
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_gen_ic_seaforium_blast_SpellScript::AchievementCredit, EFFECT_1, SPELL_EFFECT_GAMEOBJECT_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_ic_seaforium_blast_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_battle_fatigue();
@@ -4006,4 +4061,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_drums_of_rage();
     new spell_gen_battle_guild_standart();
     new spell_gen_landmine_knockback();
+    new spell_gen_ic_seaforium_blast();
 }

@@ -423,13 +423,13 @@ void BattlegroundTP::UpdatePlayerScore(Player* player, uint32 type, uint32 value
     {
         case SCORE_FLAG_CAPTURES:
             ((BattlegroundTPScore*)itr->second)->FlagCaptures += value;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, TP_OBJECTIVE_CAPTURE_FLAG);
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, TP_OBJECTIVE_CAPTURE_FLAG, 1);
             break;
         case SCORE_FLAG_RETURNS:
             ((BattlegroundTPScore*)itr->second)->FlagReturns += value;
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, TP_OBJECTIVE_RETURN_FLAG);
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, TP_OBJECTIVE_RETURN_FLAG, 1);
             break;
-        default:///< else only count another kill
+        default: ///< else only count another kill
             Battleground::UpdatePlayerScore(player, type, value, doAddHonor);
             break;
     }
@@ -537,7 +537,7 @@ void BattlegroundTP::EventPlayerClickedOnFlag(Player* source, GameObject* target
                     source->CastSpell(source, team == TEAM_ALLIANCE ? BG_TP_SPELL_HORDE_FLAG : BG_TP_SPELL_ALLIANCE_FLAG , true);
 
                     /// Start achievement criteria
-                    source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, TEAM_ALLIANCE ? BG_TP_SPELL_ALLIANCE_FLAG_PICKED : BG_TP_SPELL_HORDE_FLAG_PICKED);
+                    source->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET2, team == TEAM_ALLIANCE ? BG_TP_SPELL_HORDE_FLAG_PICKED : BG_TP_SPELL_ALLIANCE_FLAG_PICKED);
 
                     /// Verify if both flag are carried
                     if (_flagKeepers[team])
