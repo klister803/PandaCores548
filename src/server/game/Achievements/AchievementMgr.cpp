@@ -2176,7 +2176,11 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (criteriaComplete && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
-    SendCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
+    // testing
+    //if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+        //SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
+    //else
+        SendCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
 }
 
 template<class T>
