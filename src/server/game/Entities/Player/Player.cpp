@@ -29929,6 +29929,16 @@ void Player::LoadPetSlot(std::string const &data)
     uint8 index = 0;
     for (Tokenizer::const_iterator iter = tokens.begin(); index < PET_SLOT_LAST && iter != tokens.end(); ++iter, ++index)
         m_PetSlots[index] = uint32(atol(*iter));
+
+    //Clean bug slots
+    for (uint32 i = PET_SLOT_HUNTER_FIRST; i < PET_SLOT_STABLE_LAST; ++i)
+    {
+        for (uint32 j = PET_SLOT_HUNTER_FIRST; j < PET_SLOT_STABLE_LAST; ++j)
+        {
+            if (m_PetSlots[i] && i != j && m_PetSlots[i] == m_PetSlots[j]) //Clear duplicate pet
+                m_PetSlots[j]= 0;
+        }
+    }
 }
 
 void Player::cleanPetSlotForMove(PetSlot slot, uint32 petID)

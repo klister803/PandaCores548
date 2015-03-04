@@ -1029,7 +1029,15 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 break;
                 case SPELL_TRIGGER_DAM_HEALTH: //3
                 {
-                    basepoints0 = CalculatePct(basepoints0, bp0);
+                    int32 percent = basepoints0;
+                    if(bp0)
+                        percent += bp0;
+                    if(bp1)
+                        percent /= bp1;
+                    if(bp2)
+                        percent *= bp2;
+
+                    basepoints0 = CalculatePct(triggerTarget->GetHealth(), percent);
 
                     triggered_spell_id = abs(spell_trigger);
                     triggerCaster->CastCustomSpell(triggerTarget, triggered_spell_id, &basepoints0, &bp1, &bp2, true, m_CastItem, NULL, m_originalCasterGUID);
@@ -5799,6 +5807,14 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
     if (!m_caster->m_movedPlayer)
         return;
 
+    if (m_spellInfo->Id == 1752 && unitTarget->HasAura(84617, m_caster->GetGUID()) && roll_chance_i(20)) //Debuff Revealing Strike add CP Sinister Strike
+    {
+        if (m_caster->HasAura(114015) && m_caster->ToPlayer() && m_caster->ToPlayer()->GetComboPoints() >= 4)
+            m_caster->CastSpell(m_caster, 115189, true);
+        else
+            damage += 1;
+    }
+
     if (damage <= 0)
         return;
 
@@ -5819,7 +5835,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
         }
     }
 
-    if (m_spellInfo->AttributesEx4 & SPELL_ATTR4_TRIGGERED)
+    if (m_spellInfo->Id == 139546) //Add CP after use old CP
         m_caster->m_movedPlayer->SaveAddComboPoints(damage);
     else
         m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);

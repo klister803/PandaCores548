@@ -974,8 +974,9 @@ class spell_monk_thunder_focus_tea : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, caster->GetGUID()))
-                            aura->RefreshDuration();
+                        if (caster->HasAura(116680))
+                            if (Aura* aura = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, caster->GetGUID()))
+                                aura->RefreshDuration();
                     }
                 }
             }
@@ -3175,6 +3176,53 @@ class spell_monk_chi_wave : public SpellScriptLoader
         }
 };
 
+// Disable - 116095
+class spell_monk_disable : public SpellScriptLoader
+{
+    public:
+        spell_monk_disable() : SpellScriptLoader("spell_monk_disable") { }
+
+        class spell_monk_disable_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_disable_AuraScript);
+
+            void CalculateMaxDuration(int32& duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if(Unit* target = GetUnitOwner())
+                    {
+                        if(target->ToPlayer())
+                            duration = 8000;
+                        else
+                            duration = 15000;
+                    }
+            }
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                Unit* caster = GetCaster();
+                Unit* target = GetUnitOwner();
+                if (caster && target)
+                {
+                    if (aurEff->GetTickNumber() == aurEff->GetTotalTicks())
+                        if (target->IsInRange(caster, 0, 10))
+                            GetAura()->RefreshTimers();
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_disable_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_monk_disable_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_disable_AuraScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -3239,4 +3287,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave_filter();
     new spell_monk_chi_wave();
     new spell_monk_chi_wave_dummy();
+    new spell_monk_disable();
 }

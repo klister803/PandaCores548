@@ -8081,13 +8081,19 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                 }
                 case 51701: // Honor Among Thieves
                 {
-                    if (Unit * owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
+                    if (Unit* owner = (Unit *)(triggeredByAura->GetBase()->GetOwner()))
                     {
-                        if (Player * rogue = owner->ToPlayer())
+                        if (Player* rogue = owner->ToPlayer())
                         {
                             if (rogue->HasSpellCooldown(51699) || !rogue->isInCombat())
                                 break;
 
+                            if (rogue->GetComboPoints() >= 5 && owner->HasAura(114015))
+                            {
+                                owner->CastSpell(owner, 115189, true);
+                                rogue->AddSpellCooldown(51699, NULL, getPreciseTime() + cooldown);
+                                break;
+                            }
                             if (rogue->GetComboTarget())
                             {
                                 Unit * getComdoTarget = ObjectAccessor::GetUnit(*rogue, rogue->GetComboTarget());
@@ -8135,7 +8141,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (procSpell->Id == 115190)
                         return false;
 
-                    if (ToPlayer()->GetComboPoints() < 5)
+                    if (ToPlayer()->GetComboPoints() < 5 && procSpell->Id != 27576) //Mutilate add 2 KP
+                        return false;
+
+                    if (ToPlayer()->GetComboPoints() < 4 && procSpell->Id == 27576) //Mutilate add 2 KP
                         return false;
 
                     CastSpell(this,115189,true);
@@ -10448,10 +10457,14 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
         }
         // Finish movies that add combo
         case 14189: // Seal Fate (Netherblade set)
-        case 14157: // Ruthlessness
         {
             if (!victim || victim == this)
                 return false;
+            if (HasAura(114015) && ToPlayer()->GetComboPoints() >= 5)
+            {
+                CastSpell(this,115189,true);
+                return false;
+            }
             // Need add combopoint AFTER finish movie (or they dropped in finish phase)
             break;
         }
@@ -17223,11 +17236,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
-    // Revealing Strike - 84617
-    if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
-        if (roll_chance_i(20))
-            ToPlayer()->AddComboPoints(target, 1);
-
     // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
         if (Aura* aura = GetAura(53257))
@@ -17307,7 +17315,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
                 active = true;
             }
-            else if (procSpell && procSpell->Mechanic == MECHANIC_DISARM)
+            else if ((procSpell && procSpell->Mechanic == MECHANIC_DISARM) || (spellProto->AttributesEx3 & SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED))
                 active = true;
         }
 
@@ -19786,32 +19794,17 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
             //if this spell not exist not proc
             else if (itr->checkspell == spellProcId)
             {
-                if(itr->hastalent != 0)
+                if(itr->hastalent > 0 && !_checkTarget->HasAura(itr->hastalent, casterGUID))
                 {
-                    if(itr->hastalent > 0 && _checkTarget->HasAura(itr->hastalent, casterGUID))
-                    {
-                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                        {
-                            procCheck = true;
-                            continue;
-                        }
-                        procCheck = false;
-                        continue;
-                    }
-                    else if(itr->hastalent < 0 && !_checkTarget->HasAura(-(itr->hastalent), casterGUID))
-                    {
-                        if(itr->chance != 0 && !roll_chance_i(itr->chance))
-                        {
-                            procCheck = true;
-                            continue;
-                        }
-                        procCheck = false;
-                        continue;
-                    }
                     procCheck = true;
                     continue;
                 }
-                else if(itr->chance != 0 && !roll_chance_i(itr->chance))
+                else if(itr->hastalent < 0 && _checkTarget->HasAura(-(itr->hastalent), casterGUID))
+                {
+                    procCheck = true;
+                    continue;
+                }
+                if(itr->chance != 0 && !roll_chance_i(itr->chance))
                 {
                     procCheck = true;
                     continue;
@@ -19881,7 +19874,6 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
                     procCheck = true;
                     continue;
                 }
-
                 procCheck = false;
                 break;
             }
@@ -20381,7 +20373,10 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit* victim, SpellInfo const* spellProto
 
     // Check spellProcEvent data requirements
     if (!alredyCheck && !sSpellMgr->IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
+    {
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "IsTriggeredAtSpellProcEvent: false procSpell %i, EventProcFlag %i, active %i, procExtra %i, isVictim %i procFlag %u Id %u", procSpell ? procSpell->Id : 0, EventProcFlag, active, procExtra, isVictim, procFlag, spellProto->Id);
         return false;
+    }
 
     // In most cases req get honor or XP from kill
     if (EventProcFlag & PROC_FLAG_KILL && GetTypeId() == TYPEID_PLAYER)

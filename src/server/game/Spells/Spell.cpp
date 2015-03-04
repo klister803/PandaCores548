@@ -1337,17 +1337,6 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                                 itr = unitTargets.erase(itr);
                         break;
                     }
-                    case 116670: // Uplift
-                    {
-                        for (std::list<Unit*>::iterator itr = unitTargets.begin(); itr != unitTargets.end();)
-                        {
-                            if (!(*itr)->HasAura(119611, m_caster->GetGUID()))
-                                itr = unitTargets.erase(itr);
-                            else
-                                ++itr;
-                        }
-                        break;
-                    }
                     default:
                         break;
                 }
@@ -6191,6 +6180,8 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                     if(Player* _lplayer = _caster->ToPlayer())
                         _lplayer->learnSpell(i->effect, false);
                 }
+                else if (i->type2 == 7)
+                    _caster->CastSpell(_target ? _target : _caster, i->effect, false);
                 else if (i->type2 == 6)
                     _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
                 else

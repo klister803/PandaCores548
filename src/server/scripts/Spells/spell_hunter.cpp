@@ -189,6 +189,7 @@ class spell_hun_stampede : public SpellScriptLoader
                     Unit* target = GetExplTargetUnit();
                     WorldLocation* loc = GetHitDest();
                     Pet* curentPet = _player->GetPet();
+                    PetSlot saveSlot = _player->m_currentSummonedSlot;
 
                     if (target)
                     {
@@ -251,6 +252,7 @@ class spell_hun_stampede : public SpellScriptLoader
                             }
                         }
                     }
+                    _player->m_currentSummonedSlot = saveSlot;
                 }
             }
 

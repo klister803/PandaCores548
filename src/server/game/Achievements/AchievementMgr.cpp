@@ -471,14 +471,21 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
         if ((IsCompletedCriteria(criteriaTree, achievement) && !evenIfCriteriaComplete) || HasAchieved(achievement->ID))
             continue;
 
-        for (uint8 j = 0; j < MAX_CRITERIA_REQUIREMENTS; ++j)
-            if (achievementCriteria->additionalRequirements[j].additionalRequirement_type == miscValue1 &&
-                (!achievementCriteria->additionalRequirements[j].additionalRequirement_value ||
-                achievementCriteria->additionalRequirements[j].additionalRequirement_value == miscValue2))
-            {
+        if (achievementCriteria->timedCriteriaStartType == miscValue1 &&
+            (!achievementCriteria->timedCriteriaMiscId ||
+            achievementCriteria->timedCriteriaMiscId == miscValue2))
+        {
                 RemoveCriteriaProgress(criteriaTree);
                 break;
-            }
+        }
+
+        if (achievementCriteria->timedCriteriaFailType == miscValue1 &&
+            (!achievementCriteria->timedCriteriaMiscFailId ||
+            achievementCriteria->timedCriteriaMiscFailId == miscValue2))
+        {
+                RemoveCriteriaProgress(criteriaTree);
+                break;
+        }
     }
 }
 
@@ -2781,23 +2788,37 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Ac
 template<class T>
 bool AchievementMgr<T>::ConditionsSatisfied(AchievementCriteriaEntry const *criteria, Player* referencePlayer) const
 {
-    for (uint32 i = 0; i < MAX_CRITERIA_REQUIREMENTS; ++i)
+    if (criteria->timedCriteriaStartType)
     {
-        if (!criteria->additionalRequirements[i].additionalRequirement_type)
-            continue;
-
-        switch (criteria->additionalRequirements[i].additionalRequirement_type)
+        switch (criteria->timedCriteriaStartType)
         {
-        case ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP:
-            if (referencePlayer->GetMapId() != criteria->additionalRequirements[i].additionalRequirement_value)
-                return false;
-            break;
-        case ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP:
-            if (referencePlayer->GetGroup())
-                return false;
-            break;
-        default:
-            break;
+            case ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP:
+                if (referencePlayer->GetMapId() != criteria->timedCriteriaMiscId)
+                    return false;
+                break;
+            case ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP:
+                if (referencePlayer->GetGroup())
+                    return false;
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (criteria->timedCriteriaFailType)
+    {
+        switch (criteria->timedCriteriaFailType)
+        {
+            case ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP:
+                if (referencePlayer->GetMapId() != criteria->timedCriteriaMiscFailId)
+                    return false;
+                break;
+            case ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP:
+                if (referencePlayer->GetGroup())
+                    return false;
+                break;
+            default:
+                break;
         }
     }
 
@@ -3099,9 +3120,9 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             return false;
 
 
-        if (achievementCriteria->additionalRequirements[0].additionalRequirement_type == ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP)
+        if (achievementCriteria->timedCriteriaStartType == ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP)
         {
-            if (referencePlayer->GetMapId() != achievementCriteria->additionalRequirements[0].additionalRequirement_value)        
+            if (referencePlayer->GetMapId() != achievementCriteria->timedCriteriaMiscId)
                 return false;
             break;
             // map specific case (BG in fact) expected player targeted damage/heal

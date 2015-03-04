@@ -3294,7 +3294,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                 target->RemoveAurasByType(SPELL_AURA_MOUNTED);
             //remove fly aura Zen Flight
             if (target->HasAura(125883))
-                target->RemoveAurasDueToSpell(125883);
+                target->RemoveAurasDueToSpell(125883, 0, 0, AURA_REMOVE_BY_CANCEL);
         }
     }
     else
@@ -7221,14 +7221,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     if (Creature* crt = caster->ToCreature())
                         if (CreatureAI* ai = crt->AI())
                             ai->RecalcStats();
-                    break;
-                }
-                case 116095: // Disable : duration refresh every 14 second if target remains within 10 yards of the Monk
-                {
-                    if (GetTickNumber() == GetTotalTicks())
-                        if (target->IsInRange(caster, 0, 10))
-                            if (Aura* Disable = GetBase())
-                                Disable->RefreshTimers();
                     break;
                 }
                 case 125950: // Soothing Mist
