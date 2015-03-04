@@ -2423,13 +2423,14 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         return;
 
     VisibleAchievementPred isVisible;
-    size_t numCriteria = progressMap->size();
     size_t numAchievements = std::count_if(m_completedAchievements.begin(), m_completedAchievements.end(), isVisible);
+    uint32 criteriaCount = 0;
     ObjectGuid guid = GetOwner()->GetGUID();
 
     WorldPacket data(SMSG_ALL_ACHIEVEMENT_DATA);
 
-    data.WriteBits(numCriteria, 19);
+    uint32 bit_pos = data.bitwpos();
+    data.WriteBits(0, 19);
     data.WriteBits(numAchievements, 20);
 
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
@@ -2439,7 +2440,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         if (!criteriaTree)
             continue;
 
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
         // account criteria send in other packet
         if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
@@ -2495,7 +2496,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         if (!criteriaTree)
             continue;
 
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
         // account criteria send in other packet
         if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
@@ -2520,7 +2521,11 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data << uint32(0);                              // TimeFromStart / TimeFromCreate - set NOT NULL if flags == 1, need research...
         data << uint32(0);                              // TimeFromStart / TimeFromCreate
         data.WriteGuidBytes<1, 5>(guid);
+
+        ++criteriaCount;
     }
+
+    data.PutBits(bit_pos, criteriaCount, 19);
 
     SendPacket(&data);
 }
@@ -2552,7 +2557,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
         return;
 
     ObjectGuid guid = GetOwner()->GetGUID();
-    uint32 count = 0;
+    uint32 criteriaCount = 0;
     ByteBuffer criteriaData;
 
     WorldPacket data(SMSG_ALL_ACCOUNT_CRITERIA_DATA);
@@ -2567,7 +2572,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
         if (!criteriaTree)
             continue;
 
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
         if (!achievement || !(achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
             continue;
@@ -2604,7 +2609,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
         criteriaData.WriteGuidBytes<7>(guid);
         criteriaData << uint32(criteriaTree->criteria);
 
-        ++count;
+        ++criteriaCount;
     }
 
     data.FlushBits();
@@ -2612,7 +2617,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
     if (!criteriaData.empty())
         data.append(criteriaData);
 
-    data.PutBits(bit_pos, count, 19);
+    data.PutBits(bit_pos, criteriaCount, 19);
 
     SendPacket(&data);
 }
