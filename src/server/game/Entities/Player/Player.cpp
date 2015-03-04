@@ -25380,6 +25380,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     //SMSG_ALL_ACHIEVEMENT_DATA first send
+    m_achievementMgr.SendAllAccountCriteriaData(this);
     m_reputationMgr.SendInitialReputations();
     
     ResetTimeSync();

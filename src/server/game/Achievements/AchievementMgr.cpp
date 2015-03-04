@@ -2490,7 +2490,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     {
         ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->ID);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
 
         if(!criteriaTree)
             continue;
@@ -2559,7 +2559,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->ID);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
         ObjectGuid counter = uint64(itr->second.counter);
 
         if (!criteriaTree)
