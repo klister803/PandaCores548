@@ -248,6 +248,7 @@ class AchievementMgr
         bool IsCompletedAchievement(AchievementEntry const* entry);
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver);
+        void SendAllAccountCriteriaData(Player* receiver);
         void SendAchievementInfo(Player* receiver, uint32 achievementId = 0);
         bool HasAchieved(uint32 achievementId) const;
         bool HasAccountAchieved(uint32 achievementId) const;
