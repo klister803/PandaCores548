@@ -2183,10 +2183,9 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (criteriaComplete && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
-    // testing
-    //if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
-        //SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
-    //else
+    if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+        SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
+    else
         SendCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
 }
 
@@ -2436,6 +2435,15 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         ObjectGuid counter = uint64(itr->second.counter);
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->ID);
+
+        if (!criteriaTree)
+            continue;
+
+        // account criteria send in other packet
+        if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+            continue;
 
         data.WriteGuidMask<5>(counter);
         data.WriteBits(0, 4);            // Flags
@@ -2482,8 +2490,13 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     {
         ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->ID);
 
         if(!criteriaTree)
+            continue;
+
+        // account criteria send in other packet
+        if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
             continue;
 
         data.WriteGuidBytes<5, 7>(counter);
