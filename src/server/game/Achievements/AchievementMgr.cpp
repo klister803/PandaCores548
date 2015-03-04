@@ -2434,16 +2434,18 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
 
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
-        ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->ID);
 
         if (!criteriaTree)
             continue;
 
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+
         // account criteria send in other packet
         if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
             continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
 
         data.WriteGuidMask<5>(counter);
         data.WriteBits(0, 4);            // Flags
@@ -2488,16 +2490,18 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     time_t now = time(NULL);
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
-        ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
 
-        if(!criteriaTree)
+        if (!criteriaTree)
             continue;
+
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
 
         // account criteria send in other packet
         if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
             continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
 
         data.WriteGuidBytes<5, 7>(counter);
         data.WriteGuidBytes<3, 4>(guid);
@@ -2559,14 +2563,16 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
-        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
-        ObjectGuid counter = uint64(itr->second.counter);
 
         if (!criteriaTree)
             continue;
 
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+
         if (!achievement || !(achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
             continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
 
         data.WriteBits(0, 4);            // Flags
         data.WriteGuidMask<4>(counter);
