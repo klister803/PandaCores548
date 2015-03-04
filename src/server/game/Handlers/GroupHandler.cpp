@@ -1260,13 +1260,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         buffer << uint8(0);
         uint64 auramask = player->GetAuraUpdateMaskForRaid();
         buffer << uint64(auramask);
-<<<<<<< HEAD
-        size_t countPos = buffer.wpos();
-        uint32 count = 0;
-        buffer << uint32(count); // count
-=======
         buffer << uint32(MAX_AURAS); // count
->>>>>>> parent of aa50189... [Struct]: SMSG_PARTY_MEMBER_STATS_FULL fix typos & freezes.
         for (uint32 i = 0; i < MAX_AURAS; ++i)
         {
             if (auramask & (uint64(1) << i))
@@ -1376,11 +1370,6 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             buffer << uint8(0);
             uint64 auramask = pet->GetAuraUpdateMaskForRaid();
             buffer << uint64(auramask);
-<<<<<<< HEAD
-            size_t countPos = buffer.wpos();
-            uint32 count = 0;
-=======
->>>>>>> parent of aa50189... [Struct]: SMSG_PARTY_MEMBER_STATS_FULL fix typos & freezes.
             buffer << uint32(MAX_AURAS); // count
             for (uint32 i = 0; i < MAX_AURAS; ++i)
             {
