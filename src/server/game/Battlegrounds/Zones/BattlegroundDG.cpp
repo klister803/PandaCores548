@@ -82,17 +82,19 @@ void BattlegroundDG::UpdatePlayerScore(Player *player, uint32 type, uint32 addva
 
     switch (type)
     {
-        case SCORE_UPDATE_CARTS_CAPTURED:
+        case SCORE_CARTS_CAPTURED:
             ((BattlegroundDGScore*)itr->second)->cartsCaptured += addvalue;
             break;
-        case SCORE_UPDATE_CARTS_DEFENDED:
+        case SCORE_CARTS_DEFENDED:
             ((BattlegroundDGScore*)itr->second)->cartsDefended += addvalue;
             break;
-        case SCORE_UPDATE_POINTS_CAPTURED:
+        case SCORE_POINTS_CAPTURED:
             ((BattlegroundDGScore*)itr->second)->pointsCaptured += addvalue;
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_FLAG, 1);
             break;
-        case SCORE_UPDATE_POINTS_DEFENDED:
+        case SCORE_POINTS_DEFENDED:
             ((BattlegroundDGScore*)itr->second)->pointsCaptured += addvalue;
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_DEFENDED_FLAG, 1);
             break;
     }
 }
@@ -148,9 +150,13 @@ void BattlegroundDG::HandleKillPlayer(Player* player, Player* killer)
 
     for (uint8 i = 0; i < 2; ++i)
         if (m_carts[i]->TakePlayerWhoDroppedFlag() == player->GetGUID())
-            UpdatePlayerScore(killer, SCORE_UPDATE_CARTS_DEFENDED, 1, false);
+        {
+            UpdatePlayerScore(killer, SCORE_CARTS_DEFENDED, 1, false);
+            if (killer != player)
+                killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_RETURN_CART, 1);
+        }
 
-    if(player)
+    if (player)
         EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
@@ -464,7 +470,10 @@ void BattlegroundDG::Point::PointClicked(Player *player)
     if (newState == m_state || newState + 2 == m_state)
         return;
 
-    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_POINTS_CAPTURED, 1, false);
+    if (m_state == POINT_STATE_NEUTRAL || m_state == POINT_STATE_CAPTURED_ALLIANCE || m_state == POINT_STATE_CAPTURED_HORDE)
+        GetBg()->UpdatePlayerScore(player, SCORE_POINTS_CAPTURED, 1, false);
+    else
+        GetBg()->UpdatePlayerScore(player, SCORE_POINTS_DEFENDED, 1, false);
 
     UpdateState((PointStates)newState);
 }
@@ -717,10 +726,11 @@ Player *BattlegroundDG::Cart::ControlledBy()
 void BattlegroundDG::Cart::CartDelivered()
 {
     Player* player = ControlledBy();
-    GetBg()->UpdatePlayerScore(player, SCORE_UPDATE_CARTS_CAPTURED, 1, false);
+    GetBg()->UpdatePlayerScore(player, SCORE_CARTS_CAPTURED, 1, false);
     GetBg()->ModGold(player->GetBGTeamId(), m_stolenGold);
     m_stolenGold = 0;
     UnbindCartFromPlayer();
+    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE, DG_OBJECTIVE_CAPTURE_CART, 1);
 
     GetBg()->PlaySoundToAll(player->GetBGTeamId() == TEAM_ALLIANCE ? BG_DG_SOUND_NODE_CAPTURED_ALLIANCE : BG_DG_SOUND_NODE_CAPTURED_HORDE);
 }

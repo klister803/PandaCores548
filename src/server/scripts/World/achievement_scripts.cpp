@@ -327,6 +327,24 @@ class achievement_a_test_of_valor : public AchievementCriteriaScript
         }
 };
 
+//BG: Deepwind Gorge. Achiev: Weighed Down
+class achievement_weighed_down : public AchievementCriteriaScript
+{
+    public:
+        achievement_weighed_down() : AchievementCriteriaScript("achievement_weighed_down") {}
+
+        bool OnCheck(Player* player, Unit* target)
+        {
+            if (!player)
+                return false;
+
+            if (AchievementEntry const* achiev = sAchievementStore.LookupEntry(8355))
+                player->CompletedAchievement(achiev);
+
+            return false;
+        }
+};
+
 void AddSC_achievement_scripts()
 {
     new achievement_resilient_victory();
@@ -346,4 +364,5 @@ void AddSC_achievement_scripts()
     new achievement_tilted();
     new achievement_not_even_a_scratch();
     new achievement_a_test_of_valor();
+    new achievement_weighed_down();
 }

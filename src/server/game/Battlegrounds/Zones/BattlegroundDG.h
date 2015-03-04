@@ -123,6 +123,14 @@ enum BG_DG_SOUNDS
     BG_DG_SOUND_NODE_ASSAULTED_HORDE    = 8174
 };
 
+enum BG_DG_Objectives
+{
+    DG_OBJECTIVE_CAPTURE_CART               = 457,
+    DG_OBJECTIVE_RETURN_CART                = 458,
+    DG_OBJECTIVE_CAPTURE_FLAG               = 459,
+    DG_OBJECTIVE_DEFENDED_FLAG              = 460,
+};
+
 class BattlegroundDGScore : public BattlegroundScore
 {
     public:
@@ -133,15 +141,6 @@ class BattlegroundDGScore : public BattlegroundScore
         uint32 cartsDefended;
         uint32 pointsCaptured;
         uint32 pointsDefended;
-};
-
-enum ScoreUpdateType
-{
-    SCORE_UPDATE_CARTS_CAPTURED,
-    SCORE_UPDATE_CARTS_DEFENDED,
-
-    SCORE_UPDATE_POINTS_CAPTURED,
-    SCORE_UPDATE_POINTS_DEFENDED
 };
 
 class BattlegroundDG : public Battleground

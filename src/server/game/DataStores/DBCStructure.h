@@ -526,13 +526,10 @@ struct AchievementCriteriaEntry
     uint32  timedCriteriaStartType;                        // 3 m_timer_start_event
     uint32  timedCriteriaMiscId;                           // 4 m_timer_asset_id
     uint32  timeLimit;                                     // 5 m_timer_time
-    struct
-    {
-        uint32  additionalRequirement_type;               // 6 fail_event
-        uint32  additionalRequirement_value;              // 7 fail_asset_id
-    } additionalRequirements[MAX_CRITERIA_REQUIREMENTS];  // max count 1
-
+    uint32  timedCriteriaFailType;                         // 6 fail_event
+    uint32  timedCriteriaMiscFailId;                       // 7 fail_asset_id
     uint32  ModifyTree;                                    // 8
+
     //uint32  m_flags;                                     // 9 m_flags
     //uint32  m_eligibility_world_state_ID;                // 10 m_eligibility_world_state_ID
     //uint32  m_eligibility_world_state_value;             // 11 m_eligibility_world_state_value
