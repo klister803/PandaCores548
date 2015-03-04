@@ -1471,11 +1471,10 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
         data.WriteBit(1);                                   // full
         data.WriteGuidMask<1, 7, 3, 2, 0>(Guid);
         data.FlushBits();
-        data << uint32(2);                                  //size of imput data. Stupid Form.
-        data << (uint16) MEMBER_STATUS_OFFLINE;
         data.WriteGuidBytes<2, 1, 7>(Guid);
         data << uint32(GROUP_UPDATE_FLAG_STATUS);
         data.WriteGuidBytes<4, 3, 5, 0, 6>(Guid);
+        data << (uint16) MEMBER_STATUS_OFFLINE;
         SendPacket(&data);
         return;
     }
