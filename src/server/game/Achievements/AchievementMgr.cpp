@@ -475,16 +475,16 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
             (!achievementCriteria->timedCriteriaMiscId ||
             achievementCriteria->timedCriteriaMiscId == miscValue2))
         {
-                RemoveCriteriaProgress(criteriaTree);
-                break;
+            RemoveCriteriaProgress(criteriaTree);
+            break;
         }
 
         if (achievementCriteria->timedCriteriaFailType == miscValue1 &&
             (!achievementCriteria->timedCriteriaMiscFailId ||
             achievementCriteria->timedCriteriaMiscFailId == miscValue2))
         {
-                RemoveCriteriaProgress(criteriaTree);
-                break;
+            RemoveCriteriaProgress(criteriaTree);
+            break;
         }
     }
 }
@@ -2183,10 +2183,9 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (criteriaComplete && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
-    // testing
-    //if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
-        //SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
-    //else
+    if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+        SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
+    else
         SendCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
 }
 
@@ -2424,17 +2423,29 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         return;
 
     VisibleAchievementPred isVisible;
-    size_t numCriteria = progressMap->size();
     size_t numAchievements = std::count_if(m_completedAchievements.begin(), m_completedAchievements.end(), isVisible);
+    uint32 criteriaCount = 0;
     ObjectGuid guid = GetOwner()->GetGUID();
 
     WorldPacket data(SMSG_ALL_ACHIEVEMENT_DATA);
 
-    data.WriteBits(numCriteria, 19);
+    uint32 bit_pos = data.bitwpos();
+    data.WriteBits(0, 19);
     data.WriteBits(numAchievements, 20);
 
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+
+        if (!criteriaTree)
+            continue;
+
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
+
+        // account criteria send in other packet
+        if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+            continue;
+
         ObjectGuid counter = uint64(itr->second.counter);
 
         data.WriteGuidMask<5>(counter);
@@ -2480,11 +2491,18 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
     time_t now = time(NULL);
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
-        ObjectGuid counter = uint64(itr->second.counter);
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
 
-        if(!criteriaTree)
+        if (!criteriaTree)
             continue;
+
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
+
+        // account criteria send in other packet
+        if (!achievement || achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+            continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
 
         data.WriteGuidBytes<5, 7>(counter);
         data.WriteGuidBytes<3, 4>(guid);
@@ -2503,7 +2521,11 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data << uint32(0);                              // TimeFromStart / TimeFromCreate - set NOT NULL if flags == 1, need research...
         data << uint32(0);                              // TimeFromStart / TimeFromCreate
         data.WriteGuidBytes<1, 5>(guid);
+
+        ++criteriaCount;
     }
+
+    data.PutBits(bit_pos, criteriaCount, 19);
 
     SendPacket(&data);
 }
@@ -2524,6 +2546,80 @@ void AchievementMgr<Guild>::SendAllAchievementData(Player* receiver)
     }
 
     receiver->GetSession()->SendPacket(&data);
+}
+
+template<class T>
+void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
+{
+    const CriteriaProgressMap* progressMap = GetCriteriaProgressMap();
+
+    if (!progressMap)
+        return;
+
+    ObjectGuid guid = GetOwner()->GetGUID();
+    uint32 criteriaCount = 0;
+    ByteBuffer criteriaData;
+
+    WorldPacket data(SMSG_ALL_ACCOUNT_CRITERIA_DATA);
+
+    uint32 bit_pos = data.bitwpos();
+    data.WriteBits(0, 19);
+
+    for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+    {
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+
+        if (!criteriaTree)
+            continue;
+
+        AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
+
+        if (!achievement || !(achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
+            continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
+
+        data.WriteBits(0, 4);            // Flags
+        data.WriteGuidMask<4>(counter);
+        data.WriteGuidMask<3>(guid);
+        data.WriteGuidMask<6, 0, 3>(counter);
+        data.WriteGuidMask<2, 5>(guid);
+        data.WriteGuidMask<5>(counter);
+        data.WriteGuidMask<0, 1>(guid);
+        data.WriteGuidMask<2>(counter);
+        data.WriteGuidMask<4>(guid);
+        data.WriteGuidMask<1>(counter);
+        data.WriteGuidMask<6, 7>(guid);
+        data.WriteGuidMask<7>(counter);
+
+        criteriaData.WriteGuidBytes<0>(guid);
+        criteriaData.WriteGuidBytes<7>(counter);
+        criteriaData << uint32(0);
+        criteriaData << uint32(0);
+        criteriaData.WriteGuidBytes<2>(guid);
+        criteriaData.WriteGuidBytes<2>(counter);
+        criteriaData << uint32(secsToTimeBitFields(itr->second.date));
+        criteriaData.WriteGuidBytes<4>(counter);
+        criteriaData.WriteGuidBytes<6>(guid);
+        criteriaData.WriteGuidBytes<0>(counter);
+        criteriaData.WriteGuidBytes<4, 1>(guid);
+        criteriaData.WriteGuidBytes<1>(counter);
+        criteriaData.WriteGuidBytes<3, 5>(guid);
+        criteriaData.WriteGuidBytes<6, 5, 3>(counter);
+        criteriaData.WriteGuidBytes<7>(guid);
+        criteriaData << uint32(criteriaTree->criteria);
+
+        ++criteriaCount;
+    }
+
+    data.FlushBits();
+
+    if (!criteriaData.empty())
+        data.append(criteriaData);
+
+    data.PutBits(bit_pos, criteriaCount, 19);
+
+    SendPacket(&data);
 }
 
 template<class T>
