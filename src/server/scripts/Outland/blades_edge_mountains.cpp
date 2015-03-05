@@ -554,7 +554,7 @@ class go_thunderspike : public GameObjectScript
         bool OnGossipHello(Player* player, GameObject* go)
         {
             if (player->GetQuestStatus(QUEST_THUNDERSPIKE) == QUEST_STATUS_INCOMPLETE && !go->FindNearestCreature(NPC_GOR_GRIMGUT, 25.0f, true))
-                if (Creature* gorGrimgut = go->SummonCreature(NPC_GOR_GRIMGUT, -2413.4f, 6914.48f, 25.01f, 3.67f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000))
+                if (Creature* gorGrimgut = go->SummonCreature(NPC_GOR_GRIMGUT, 1331.05f, 6690.46f, -20.97f, 3.21f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000))
                     gorGrimgut->AI()->AttackStart(player);
 
             return true;

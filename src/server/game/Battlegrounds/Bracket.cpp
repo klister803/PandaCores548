@@ -19,6 +19,8 @@
 
 #include "Bracket.h"
 #include "DatabaseEnv.h"
+#include "Battleground.h"
+#include "BattlegroundMgr.h"
 
 Bracket::Bracket(uint64 guid, BracketType type) :
     m_owner(guid), m_Type(type), m_rating(0), m_state(BRACKET_NEW), m_ratingLastChange(0), m_mmr_lastChage(0)
@@ -172,6 +174,9 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
 
     if (m_rating > values[BRACKET_BEST])
         values[BRACKET_BEST] = m_rating;
+    
+    if (Player* player = ObjectAccessor::FindPlayer(m_owner))
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, m_rating, GetSlotByType());
 
     // this should be done at week reset
     //if (Player* player = ObjectAccessor::FindPlayer(m_owner))
@@ -186,6 +191,19 @@ uint16 Bracket::FinishGame(bool win, uint16 opponents_mmv)
     SaveStats();
 
     return m_ratingLastChange;
+}
+
+uint16 Bracket::GetSlotByType()
+{
+    switch (m_Type)
+    {
+        case BRACKET_TYPE_ARENA_2: return 2;
+        case BRACKET_TYPE_ARENA_3: return 3;
+        case BRACKET_TYPE_ARENA_5: return 5;
+        default:
+            break;
+    }
+    return 0xFF;
 }
 
 int16 Bracket::WonAgainst(uint16 opponents_mmv)

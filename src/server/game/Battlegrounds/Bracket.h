@@ -50,6 +50,7 @@ public:
 
     uint16 FinishGame(bool win, uint16 opponents_mmv);
     uint32 GetBracketInfo(BracketInfoType i) const { return values[i]; }
+    uint16 GetSlotByType();
 
     void SetState(uint8 s) { m_state = s; }
 private:

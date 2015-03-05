@@ -3848,7 +3848,7 @@ enum SkillType
     SKILL_NO_PLAYER				   = 999  // Last on DBC
 };
 
-#define MAX_SKILL_TYPE               825
+#define MAX_SKILL_TYPE               1000
 
 inline SkillType SkillByLockType(LockType locktype)
 {
