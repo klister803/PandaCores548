@@ -3976,6 +3976,37 @@ class spell_gen_ic_seaforium_blast : public SpellScriptLoader
         }
 };
 
+class spell_gen_cooking_way : public SpellScriptLoader
+{
+    public:
+        spell_gen_cooking_way() : SpellScriptLoader("spell_gen_cooking_way") { }
+
+        class spell_gen_cooking_way_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_cooking_way_SpellScript);
+
+            void HandleAfterCast()
+            {
+                Player* caster = GetCaster()->ToPlayer();
+                if (!caster)
+                    return;
+
+                uint32 skillid = GetSpellInfo()->Effects[1].MiscValue;
+                caster->SetSkill(skillid, GetSpellInfo()->Effects[1].CalcValue(), 525, 600);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_gen_cooking_way_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_cooking_way_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_battle_fatigue();
@@ -4062,4 +4093,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_battle_guild_standart();
     new spell_gen_landmine_knockback();
     new spell_gen_ic_seaforium_blast();
+    new spell_gen_cooking_way();
 }
