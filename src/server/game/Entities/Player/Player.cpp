@@ -25369,7 +25369,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     SendKnownSpells();
-    SendInitialCooldowns();
+    SendSpellHistoryData();
     SendSpellChargeData();
 
     SendInitialActionButtons();
@@ -25522,57 +25522,56 @@ void Player::SendInitialPacketsAfterAddToMap()
     SetMover(this);
 }
 
-void Player::SendInitialCooldowns()
+void Player::SendSpellHistoryData()
 {
     time_t curTime = time(NULL);
     time_t infTime = curTime + infinityCooldownDelayCheck;
     uint32 spellCount = 0;
 
     ByteBuffer buff;
-    WorldPacket data(SMSG_INITIAL_COOLDOWNS, 3 + 5 * (8 + 1) * m_spellCooldowns.size());
+    WorldPacket data(SMSG_SPELL_HISTORY_DATA);
     size_t count_pos = data.bitwpos();
     data.WriteBits(0, 19);
 
     for (SpellCooldowns::const_iterator itr = m_spellCooldowns.begin(); itr != m_spellCooldowns.end(); ++itr)
     {
         SpellInfo const *info = sSpellMgr->GetSpellInfo(itr->first);
+
         if(!info)
             continue;
 
-        ++spellCount;
+        bool onHold = itr->second.end >= infTime;
 
-        data.WriteBit(0);                                   // is pet
-        buff << uint32(itr->second.itemid);                 // cast item id
-        buff << uint32(info->Category);                     // spell category
+        data.WriteBit(onHold);                              // onHold
+        buff << uint32(itr->second.itemid);                 // ItemID
+        buff << uint32(info->Category);                     // Category
 
         // send infinity cooldown in special format
-        if (itr->second.end >= infTime)
+        if (onHold)
         {
-            buff << uint32(0x80000000);                     // category cooldown
-            buff << uint32(itr->first);
-            buff << uint32(1);                              // cooldown
+            buff << uint32(1);                              // RecoveryTime
+            buff << uint32(itr->first);                     // SpellID
+            buff << uint32(0);                              // CategoryRecoveryTime
             continue;
         }
 
         time_t cooldown = itr->second.end > curTime ? (itr->second.end - curTime) * IN_MILLISECONDS : 0;
 
-        //if (info->Category)                                 // may be wrong, but anyway better than nothing...
-        {
-            buff << uint32(cooldown);                       // category cooldown
-            buff << uint32(itr->first);
-            buff << uint32(0);                              // cooldown
-        }
-        /*else
-        {
-            buff << uint32(0);                              // category cooldown
-            buff << uint32(itr->first);
-            buff << uint32(cooldown);                       // cooldown
-        }*/
+        buff << uint32(cooldown);                       // RecoveryTime
+        buff << uint32(itr->first);                     // SpellID
+        if (info->Category)
+            buff << uint32(cooldown);                   // CategoryRecoveryTime
+        else
+            buff << uint32(0);
+
+        ++spellCount;
     }
 
     data.FlushBits();
+
     if (!buff.empty())
         data.append(buff);
+
     data.PutBits(count_pos, spellCount, 19);
 
     GetSession()->SendPacket(&data);
@@ -25585,12 +25584,12 @@ void Player::SendSpellChargeData()
     for (SpellChargeDataMap::const_iterator itr = m_spellChargeData.begin(); itr != m_spellChargeData.end(); ++itr)
     {
         SpellChargeData const& chargeData = itr->second;
-        data << uint8(chargeData.maxCharges - chargeData.charges);  // charges on cd
+        data << uint8(chargeData.maxCharges - chargeData.charges);  // ConsumedCharges (on cd)
         int32 diff = int32(chargeData.categoryEntry->chargeRegenTime) - int32(chargeData.timer);
         if (diff < 0)
             diff = 0;
-        data << uint32(chargeData.charges != chargeData.maxCharges ? diff : 0); // recovery time
-        data << uint32(itr->first);             // category id
+        data << uint32(chargeData.charges != chargeData.maxCharges ? diff : 0); // NextRecoveryTime
+        data << uint32(itr->first);             // Category
     }
 
     SendDirectMessage(&data);

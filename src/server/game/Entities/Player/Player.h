@@ -2629,7 +2629,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendAurasForTarget(Unit* target);
         void SendVegnette(Creature *target);
-        void SendInitialCooldowns();
+        void SendSpellHistoryData();
         void SendSpellChargeData();
         void SendCategoryCooldownMods();
         void SendModifyCooldown(uint32 spellId, int32 value);

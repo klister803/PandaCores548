@@ -24309,43 +24309,43 @@ bool Unit::GetFreeAuraSlot(uint32& slot)
 
 void Unit::SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown)
 {
-
-
     Player* player = ToPlayer();
-    if(!player)
+
+    if (!player)
     {
         if(Unit* owner = GetAnyOwner())
             player = owner->ToPlayer();
     }
-    if(!player)
+
+    if (!player)
         return;
 
-    if(!cooldown)
+    if (!cooldown)
     {
         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_cooldown))
             cooldown = spellInfo->RecoveryTime;
     }
-    if(!cooldown)
+
+    if (!cooldown)
     {
         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
             cooldown = spellInfo->RecoveryTime;
     }
-    if(!cooldown)
+
+    if (!cooldown)
         return;
 
-
-
     ObjectGuid guid = player->GetGUID();
-    WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4); //visual cd
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8 + 1 + 3 + 4 + 4);
     data.WriteGuidMask<4, 7, 6>(guid);
     data.WriteBits(1, 21);
     data.WriteGuidMask<2, 3, 1, 0>(guid);
-    data.WriteBit(1);
+    data.WriteBit(1);                                  // !hasFlags
     data.WriteGuidMask<5>(guid);
-
     data.WriteGuidBytes<7, 2, 1, 6, 5, 4, 3, 0>(guid);
     data << uint32(cooldown);
     data << uint32(spellId);
+
     player->GetSession()->SendPacket(&data);
 }
 
