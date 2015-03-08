@@ -177,7 +177,7 @@ typedef std::list<uint64> WhisperListContainer;
 struct SpellCooldown
 {
     double end;
-    uint16 itemid;
+    uint32 itemid;
 };
 
 struct UncategorySpellChargeData
