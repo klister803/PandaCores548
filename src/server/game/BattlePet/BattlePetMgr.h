@@ -280,7 +280,8 @@ public:
 
     uint32 GetID() { return ID; }
     uint32 GetType() { return Type; }
-    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim);
+    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit);
+    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim);
     int32 GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx = 0, uint32 turnIndex = 1);
     uint32 GetEffectProperties(uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
     int8 GetRequiredLevel() { return requiredLevel; }
@@ -326,17 +327,8 @@ public:
     uint8 GetTeam() { return team; }
     void SetFrontPet(bool apply) { frontPet = apply; }
     bool IsFrontPet() { return frontPet; }
-    void SetAbilityInfo(PetBattleAbilityInfo* ability, uint8 index) { abilities[index] = ability; }
-    PetBattleAbilityInfo* GetAbilityInfoByIndex(uint8 index) { return abilities[index]; }
-    PetBattleAbilityInfo* GetAbilityInfoByID(uint32 abilityID) 
-    { 
-        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PET_ABILITIES; ++i)
-            if (abilities[i] && abilities[i]->GetID() == abilityID)
-                return abilities[i];
-
-        return NULL;
-    }
-    uint32 GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnIndex = 1);
+    void SetAbilityID(uint32 abilityID, uint8 index) { abilities[index] = abilityID; }
+    uint32 GetAbilityID(uint8 index) { return abilities[index]; }
     void SetCaptured(bool apply)
     {
         captured = apply;
@@ -390,7 +382,7 @@ public:
     bool HasAbility(uint32 abilityID)
     {
         for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PET_ABILITIES; ++i)
-            if (abilities[i] && abilities[i]->GetID() == abilityID)
+            if (abilities[i] == abilityID)
                 return true;
 
         return false;
@@ -416,7 +408,7 @@ private:
     int16 breedID;
     uint32 summonSpellID;
     std::string customName;
-    PetBattleAbilityInfo* abilities[MAX_ACTIVE_BATTLE_PET_ABILITIES];
+    uint32 abilities[MAX_ACTIVE_BATTLE_PET_ABILITIES];
     std::map<uint32, uint8> abilityCooldowns;
     std::map<uint32, PetBattleAura*> auras;
     std::map<uint32, PetBattleState*> states;
@@ -462,10 +454,11 @@ struct PetBattleRoundResults
     uint32 roundID;
     std::vector<uint8> petXDiedNumbers;
     uint8 trapStatus[2];
+    uint8 inputFlags[2];
 
     void AddEffect(PetBattleEffect* effect) { effects.push_back(effect); }
 
-    void ProcessAbilityDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 damage, uint16 flags, uint8 turnInstanceID);
+    void ProcessAbilityDamage(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint32 effectID, uint8 turnInstanceID);
     void ProcessPetSwap(uint8 oldPetNumber, uint8 newPetNumber);
     void ProcessSkipTurn(uint8 petNumber);
     void ProcessSetState(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint8 state);
@@ -594,6 +587,8 @@ public:
     void SetCurrentRoundID(uint32 roundID) { currentRoundID = roundID; }
     void SetBattleState(uint8 state) { petBattleState = state; }
     uint8 GetBattleState() { return petBattleState; }
+
+    uint32 GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnIndex = 1);
 
 private:
     Player* m_player;
