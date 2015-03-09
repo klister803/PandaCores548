@@ -420,12 +420,22 @@ private:
 
 struct PetBattleEffectTarget
 {
-    PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type), remainingHealth(0), status(0) {}
+    PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type), remainingHealth(0), status(0), stateID(0), stateValue(0),
+        auraAbilityID(0), auraInstanceID(0), roundsRemaining(0) {}
 
     uint8 type;
     int8 petX;
+    // type 6
     int32 remainingHealth;
-    int32 status;
+    // type 1
+    uint8 status;
+    // type 4
+    uint8 stateID;
+    uint32 stateValue;
+    // type 0
+    uint32 auraAbilityID;
+    uint32 auraInstanceID;
+    uint32 roundsRemaining;
 };
 
 struct PetBattleEffect
@@ -461,7 +471,7 @@ struct PetBattleRoundResults
     void ProcessAbilityDamage(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint32 effectID, uint8 turnInstanceID);
     void ProcessPetSwap(uint8 oldPetNumber, uint8 newPetNumber);
     void ProcessSkipTurn(uint8 petNumber);
-    void ProcessSetState(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint8 state);
+    void ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint8 stateID, uint32 stateValue, uint8 turnInstanceID);
     void AuraProcessingBegin();
     void AuraProcessingEnd();
 

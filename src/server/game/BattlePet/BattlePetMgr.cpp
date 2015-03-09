@@ -2010,10 +2010,13 @@ void PetBattleRoundResults::AddDeadPet(uint8 petNumber)
     petXDiedNumbers.push_back(petNumber);
 }
 
-void PetBattleRoundResults::ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint8 state, uint8 turnInstanceID)
+void PetBattleRoundResults::ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint8 stateID, uint32 stateValue, uint8 turnInstanceID)
 {
     PetBattleEffect* effect = new PetBattleEffect(caster->GetPetID(), effectID, 6, 0, 0, turnInstanceID, 1);
     PetBattleEffectTarget* t = new PetBattleEffectTarget(target->GetPetID(), 4);
+
+    t->stateID = stateID;
+    t->stateValue = stateValue;
 
     effect->AddTarget(t);
     AddEffect(effect);
