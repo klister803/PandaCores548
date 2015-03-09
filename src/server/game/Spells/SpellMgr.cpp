@@ -5001,6 +5001,20 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
+                //Iron Juggernaut
+                case 144458: //Scatter Laser
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[0].TargetB = NULL;
+                    spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                    spellInfo->Effects[1].TargetB = NULL;
+                    break;
+                case 144776: //Ground Pound
+                    spellInfo->Effects[1].TriggerSpell = NULL;
+                    break;
+                case 146325: //Cutter Laser Visual Target
+                case 144918: //Cutter Laser Dmg
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
+                    break;
                 
 
                 //World Bosses

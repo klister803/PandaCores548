@@ -1174,6 +1174,11 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144482: //Tear Reality
     case 145073: //Residual Corruption
     case 144628: //Titanic Smash
+    //Iron Juggernaut
+    case 144458: //Scatter Laser
+    case 144776: //Ground Pound
+    case 146325: //Cutter Laser Visual Target
+    case 144918: //Cutter Laser Dmg
         return Effects[effect];
     }
 

@@ -70,6 +70,9 @@ enum eCreatures
     NPC_SHA_PUDDLE                  = 71603,
     NPC_B_H_CONTROLLER              = 90008,
     NPC_BLIND_HATRED                = 72565,
+    NPC_CRAWLER_MINE                = 72050,
+    NPC_CUTTER_LASER                = 72026,
+    NPC_EXPLOSIVE_TAR               = 71950,
 
     NPC_IMMERSEUS                   = 71543,
 
@@ -172,9 +175,15 @@ enum eCreatures
     NPC_DRAGONMAW_TIDAL_SHAMAN      = 72958,
     NPC_KORKRON_CANNON              = 72358,
     NPC_SPIKE_MINE                  = 72656,
-
     //
+
     NPC_IRON_JUGGERNAUT             = 71466,
+    //Iron Juggernaut passenger              //Seat Id
+    NPC_TOP_CANNON                  = 71484, //0
+    NPC_SAWBLADE                    = 71469, //1
+    NPC_CANNON                      = 71468, //2, 3
+    NPC_TAIL_GUN                    = 71914, //4
+    //
     NPC_KORKRON_D_SHAMAN            = 71859,
     NPC_GENERAL_NAZGRIM             = 71515,
     NPC_MALKOROK                    = 71454,
@@ -268,6 +277,9 @@ enum eGameObjects
     //Galakras
     GO_SOUTH_DOOR                   = 221916,
     GO_NORTH_DOOR                   = 223044,
+
+    //Iron Juggernaut
+    GO_WIND_DOOR                    = 223219,
 };
 
 enum GalakrasEvent

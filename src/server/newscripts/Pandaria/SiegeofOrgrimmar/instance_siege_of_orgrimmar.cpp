@@ -53,6 +53,7 @@ public:
         uint64 immerseusexdoorGUID;
         uint64 chestShaVaultOfForbiddenTreasures;
         std::vector<uint64> lightqGUIDs;
+        uint64 winddoorGuid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -90,6 +91,7 @@ public:
             immerseusexdoorGUID     = 0;
             chestShaVaultOfForbiddenTreasures = 0;
             lightqGUIDs.clear();
+            winddoorGuid            = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -412,6 +414,9 @@ public:
                     if (EventfieldOfSha >= 3)
                         HandleGameObject(go->GetGUID(), true, go);
                     break;
+                case GO_WIND_DOOR:
+                    winddoorGuid = go->GetGUID();
+                    break;
             }
         }
 
@@ -423,7 +428,7 @@ public:
 
             if (!InstanceScript::SetBossState(id, state))
                 return false;
-
+            
             switch (id)
             {
             case DATA_IMMERSEUS:
@@ -458,30 +463,30 @@ public:
                 break;
             }
             case DATA_NORUSHEN:
+            {
+                switch (state)
                 {
-                    switch (state)
-                    {
-                    case NOT_STARTED:
-                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);
-                        break;
-                    case IN_PROGRESS:
-                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                            HandleGameObject(*guid, false);
-                        break;
-                    case DONE:
-                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                            HandleGameObject(*guid, true);
-                        if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
-                            norush->DespawnOrUnsummon();
-                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                            bq->DespawnOrUnsummon();
-                        break;
-                    }
+                case NOT_STARTED:
+                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                        HandleGameObject(*guid, true);
+                    break;
+                case IN_PROGRESS:
+                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                        HandleGameObject(*guid, false);
+                    break;
+                case DONE:
+                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                        HandleGameObject(*guid, true);
+                    if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
+                        norush->DespawnOrUnsummon();
+                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                        bq->DespawnOrUnsummon();
+                    break;
                 }
-                break;
+            }
+            break;
             case DATA_SHA_OF_PRIDE:
-                if(state == DONE)
+                if (state == DONE)
                 {
                     if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
                         pChest->SetRespawnTime(pChest->GetRespawnDelay());
@@ -494,33 +499,47 @@ public:
                 }
                 break;
             case DATA_GALAKRAS:
+            {
+                switch (state)
                 {
-                    switch (state)
+                case NOT_STARTED:
+                    SetData(DATA_SOUTH_TOWER, NOT_STARTED);
+                    SetData(DATA_NORTH_TOWER, NOT_STARTED);
+                    if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
+                        SouthDoor->SetGoState(GO_STATE_READY);
+                    if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
+                        NorthDoor->SetGoState(GO_STATE_READY);
+                    if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
                     {
-                        case NOT_STARTED:
-                            SetData(DATA_SOUTH_TOWER, NOT_STARTED);
-                            SetData(DATA_NORTH_TOWER, NOT_STARTED);
-                            if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
-                                SouthDoor->SetGoState(GO_STATE_READY);
-                            if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
-                                NorthDoor->SetGoState(GO_STATE_READY);
-                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
-                            {
-                                Galakras->AI()->Reset();
-                                Galakras->AI()->EnterEvadeMode();
-                            }
-                            break;
-                        case IN_PROGRESS:
-                            if (Creature* JainaOrSylvana = instance->GetCreature(JainaOrSylvanaGUID))
-                                JainaOrSylvana->AI()->DoAction(ACTION_FRIENDLY_BOSS);
-                            if (Creature* VereesOrAethas = instance->GetCreature(VereesaOrAethasGUID))
-                                VereesOrAethas->AI()->DoAction(ACTION_FRIENDLY_BOSS);
-                            break;
-                        case DONE:
-                            break;
+                        Galakras->AI()->Reset();
+                        Galakras->AI()->EnterEvadeMode();
                     }
+                    break;
+                case IN_PROGRESS:
+                    if (Creature* JainaOrSylvana = instance->GetCreature(JainaOrSylvanaGUID))
+                        JainaOrSylvana->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                    if (Creature* VereesOrAethas = instance->GetCreature(VereesaOrAethasGUID))
+                        VereesOrAethas->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                    break;
+                case DONE:
+                    break;
                 }
-                break;
+            }
+            break;
+            case DATA_IRON_JUGGERNAUT:
+            {
+                switch (state)
+                {
+                case NOT_STARTED:
+                case DONE:
+                    HandleGameObject(winddoorGuid, true);
+                    break;
+                case IN_PROGRESS:
+                    HandleGameObject(winddoorGuid, false);
+                    break;
+                }
+            }
+            break;
             }
 
             if (state == DONE)
