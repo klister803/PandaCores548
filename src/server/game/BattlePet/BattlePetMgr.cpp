@@ -858,8 +858,20 @@ void PetBattleWild::ForceReplacePetHandler(uint32 roundID, uint8 newFrontPet, ui
     if (!frontPet)
         return;
 
-    round->ProcessPetSwap(frontPet->GetPetID(), newFrontPet);
+    // paranoia check
+    if (GetTeamByPetID(newFrontPet) != team)
+        return;
 
+    round->ProcessPetSwap(frontPet->GetPetID(), newFrontPet);
+    SendForceReplacePet(round);
+
+    SetFrontPet(team, newFrontPet);
+
+    delete round;
+}
+
+void PetBattleWild::SendForceReplacePet(PetBattleRoundResults* round)
+{
     // send packet (testing!)
     WorldPacket data(SMSG_BATTLE_PET_REPLACEMENTS_MADE);
 
@@ -870,7 +882,7 @@ void PetBattleWild::ForceReplacePetHandler(uint32 roundID, uint8 newFrontPet, ui
         data << uint8(2);  // NextTrapStatus
     }
 
-    data << uint32(roundID);
+    data << uint32(round->roundID);
 
     // cooldowns count
     data.WriteBits(0, 20);
@@ -939,10 +951,6 @@ void PetBattleWild::ForceReplacePetHandler(uint32 roundID, uint8 newFrontPet, ui
     data << uint8(2); // NextPetBattleState
 
     m_player->GetSession()->SendPacket(&data);
-
-    SetFrontPet(team, newFrontPet);
-
-    delete round;
 }
 
 bool PetBattleWild::UseAbilityHandler(uint32 abilityID, uint32 roundID)

@@ -502,6 +502,7 @@ public:
     bool SwapPetHandler(uint8 newFrontPet, uint32 _roundID);
     void SendFirstRound(PetBattleRoundResults* firstRound);
     void SendRoundResults(PetBattleRoundResults* round, bool forceSwap = false);
+    void SendForceReplacePet(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
@@ -511,28 +512,6 @@ public:
 
     void FinishPetBattle(bool error = false);
     void SendFinishPetBattle();
-
-    PetBattleInfo* GetOpponentPet(uint8 team)
-    {
-        return team ? GetActivePet(TEAM_ALLY) : GetActivePet(TEAM_ENEMY);
-    }
-
-    PetBattleInfo* GetPetBattleInfo(uint8 team, uint8 index) { return battleInfo[team][index]; }
-    PetBattleInfo* GetPetBattleInfo(uint8 petNumber)
-    {
-        if (petNumber > 5)
-            return NULL;
-
-        uint8 index = petNumber;
-        uint8 team = TEAM_ALLY;
-        if (petNumber > 2)
-        {
-            index = petNumber - 3;
-            team = TEAM_ENEMY;
-        }
-
-        return battleInfo[team][index];
-    }
 
     PetBattleInfo* GetFrontPet(uint8 team);
     void SetFrontPet(uint8 team, uint8 petNumber);
@@ -591,6 +570,22 @@ public:
             case 3: return 0;
             case 4: return 1;
             case 5: return 2;
+            default: return 0;
+        }
+    }
+
+    uint8 GetTeamByPetID(uint8 petNumber)
+    {
+        switch (petNumber)
+        {
+            case 0:
+            case 1:
+            case 2:
+                return 0;
+            case 3:
+            case 4:
+            case 5:
+                return 1;
             default: return 0;
         }
     }
