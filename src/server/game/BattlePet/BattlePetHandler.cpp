@@ -371,24 +371,15 @@ void WorldSession::HandlePetBattleInputFirstPet(WorldPacket& recvData)
 
     if (!firstPetID)
     {
-        if (PetBattleRoundResults* firstRound = petBattle->PrepareFirstRound(firstPetID))
+        if (!petBattle->FirstRoundHandler(firstPetID, 3))
         {
-            petBattle->SendFirstRound(firstRound);
-
-            delete firstRound;
-            firstRound = NULL;
-        }
-        else
-        {
-            petBattle->FinishPetBattle();
-            // send error
+            petBattle->FinishPetBattle(true);
+            // error response
         }
     }
     // replace player pet if previous are DEAD!
     else
-    {
-        petBattle->ForceReplacePetHandler(firstPetID, petBattle->GetPetIndexByPetNumber(firstPetID), petBattle->GetCurrentRoundID());
-    }
+        petBattle->ForceReplacePetHandler(petBattle->GetCurrentRoundID(), firstPetID, TEAM_ALLY);
 }
 
 void WorldSession::HandlePetBattleRequestUpdate(WorldPacket& recvData)

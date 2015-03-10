@@ -132,6 +132,16 @@ enum TrapStatus
     PET_BATTLE_TRAP_ERR_8 = 8,  // "Can't trap twice in same battle"
 };
 
+// demo
+enum DeathPetResult
+{
+    HAVE_ALIVE_PETS_MORE_ONE_ALLY  = 0,
+    LAST_ALIVE_PET_ALLY            = 1,
+    HAVE_ALIVE_PETS_MORE_ONE_ENEMY = 2,
+    NO_ALIVE_PETS_ALLY             = 3,
+    NO_ALIVE_PETS_ENEMY            = 4
+};
+
 class PetJournalInfo
 {
 
@@ -471,7 +481,7 @@ struct PetBattleRoundResults
     void ProcessAbilityDamage(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint32 effectID, uint8 turnInstanceID);
     void ProcessPetSwap(uint8 oldPetNumber, uint8 newPetNumber);
     void ProcessSkipTurn(uint8 petNumber);
-    void ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint8 stateID, uint32 stateValue, uint8 turnInstanceID);
+    void ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 effectID, uint8 stateID, uint32 stateValue, uint8 turnInstanceID);
     void AuraProcessingBegin();
     void AuraProcessingEnd();
 
@@ -479,6 +489,8 @@ struct PetBattleRoundResults
 
     void SetTrapStatus(uint8 team, uint8 status) { trapStatus[team] = status; }
     uint8 GetTrapStatus(uint8 team) { return trapStatus[team]; }
+    void SetInputFlags(uint8 team, uint8 flags) { inputFlags[team] = flags; }
+    uint8 GetInputFlags(uint8 team) { return inputFlags[team]; }
 };
 
 typedef std::map<uint64, PetJournalInfo*> PetJournal;
@@ -504,14 +516,15 @@ public:
     bool UseTrapHandler(uint32 _roundID);
     bool SwapPetHandler(uint8 newFrontPet, uint32 _roundID);
     void SendFirstRound(PetBattleRoundResults* firstRound);
-    void SendRoundResults(PetBattleRoundResults* round, bool forceSwap = false);
+    void SendRoundResults(PetBattleRoundResults* round);
     void SendForceReplacePet(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
     void CheckTrapStatuses(PetBattleRoundResults* round);
-    void UpdateLoadout();
+    void CheckInputFlags(PetBattleRoundResults* round);
+    void UpdatePetsAfterBattle();
 
     void FinishPetBattle(bool error = false);
     void SendFinishPetBattle();
@@ -546,22 +559,7 @@ public:
     uint8 GetTotalPetCountInTeam(uint8 team, bool onlyActive = false);
 
     // only demo
-    int8 GetLastAlivePetID(uint8 team)
-    {
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            if (i == TEAM_ALLY)
-            {
-                for (uint8 j = 0; j < MAX_ACTIVE_BATTLE_PETS; ++j)
-                {
-                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead())
-                        return battleInfo[i][j]->GetPetNumber();
-                }
-            }
-        }
-
-        return -1;
-    }
+    int8 GetLastAlivePetID(uint8 team);
 
     uint8 GetTeamIndex(uint8 petNumber)
     {
