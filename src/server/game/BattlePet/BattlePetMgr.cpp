@@ -1069,6 +1069,7 @@ bool PetBattleWild::SkipTurnHandler(uint32 _roundID)
 
     round->ProcessSkipTurn(allyPet->GetPetID());
 
+    // response enemy after player pet skip turn
     uint32 castAbilityID = enemyPet->GetAbilityID(0);
 
     if (!castAbilityID)
@@ -1205,6 +1206,7 @@ bool PetBattleWild::SwapPetHandler(uint8 newFrontPet, uint32 _roundID)
     if (!allyPet)
         return false;
 
+    // response enemy after player pet swap
     uint32 castAbilityID = enemyPet->GetAbilityID(0);
 
     if (!castAbilityID)
@@ -1904,7 +1906,7 @@ void PetBattleRoundResults::ProcessAbilityDamage(PetBattleInfo* caster, PetBattl
         // added petID to died ID
         AddDeadPet(target->GetPetID());
         // set state DEAD (testing!)
-        ProcessSetState(caster, target, effectID, 1, 1, 1);
+        ProcessSetState(caster, target, effectID, 1, 1, turnInstanceID);
     }
 }
 
