@@ -437,13 +437,7 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
     for (uint8 i = 0; i < creatureCount; ++i)
     {
         // roll random quality
-        uint8 quality = 0;
-        if (roll_chance_i(10))
-            quality = 3;
-        else if (roll_chance_i(25))
-            quality = 2;
-        else if (roll_chance_i(60))
-            quality = 1;
+        uint8 quality = GetRandomQuailty();
 
         BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(s->ID, 12);
         accumulator->CalcQualityMultiplier(quality, wildPetLevel);
@@ -481,6 +475,38 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
     SetCurrentRoundID(0);
 
     return true;
+}
+
+uint8 PetBattleWild::GetRandomQuailty()
+{
+    // summ of all chances of quality, 60% - grey, 50% - white, 20% - green, 7% - rare
+    uint32 r = urand(0, 137);
+
+    uint8 quality = 0;
+    if (r >= 60 && r < 110)
+        quality = 1;
+    else if (r >= 110 && r < 130)
+        quality = 2;
+    else if (r >= 130 && r <= 137)
+        quality = 3;
+
+    return quality;
+}
+
+uint16 PetBattleWild::GetRandomBreedID()
+{
+    // summ of all chances of breed, 100% for "bad breed", 60% for "medium breed", 30% for "super breed"
+    uint32 r = urand(0, 137);
+
+    uint8 quality = 0;
+    if (r >= 60 && r < 110)
+        quality = 1;
+    else if (r >= 110 && r < 130)
+        quality = 2;
+    else if (r >= 130 && r <= 137)
+        quality = 3;
+
+    return quality;
 }
 
 uint8 PetBattleWild::GetTotalPetCountInTeam(uint8 team, bool onlyActive)

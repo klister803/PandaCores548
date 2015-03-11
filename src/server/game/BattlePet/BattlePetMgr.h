@@ -535,6 +535,9 @@ public:
     bool NextRoundFinal() { return nextRoundFinal; }
     void SetAbandoned(bool apply) { abandoned = apply; }
 
+    uint8 GetRandomQuailty();
+    uint16 GetRandomBreedID();
+
     void SetWinner(uint8 team) 
     {
         for (uint8 i = 0; i < 2; ++i)
