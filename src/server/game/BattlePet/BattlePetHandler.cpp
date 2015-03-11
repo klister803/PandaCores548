@@ -38,19 +38,37 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
 
     uint32 spellId = petInfo->GetSummonSpell();
 
-    if (!_player->HasActiveSpell(spellId))
+    if (spellId && !_player->HasActiveSpell(spellId))
         return;
+
+    bool trappedSummon = false;
+    if (!spellId)
+        trappedSummon = true;
+
+    int32 creatureEntry = petInfo->GetCreatureEntry();
+    int32 petGUID = guid;
 
     if (_player->m_SummonSlot[SUMMON_SLOT_MINIPET])
     {
         Creature* oldSummon = _player->GetMap()->GetCreature(_player->m_SummonSlot[SUMMON_SLOT_MINIPET]);
+
         if (oldSummon && oldSummon->isSummon() && oldSummon->GetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID) == guid)
             oldSummon->ToTempSummon()->UnSummon();
         else
-            _player->CastSpell(_player, spellId, true);
+        {
+            if (trappedSummon)
+                _player->CastCustomSpell(_player, 118301, &creatureEntry, &petGUID, NULL, true);
+            else
+                _player->CastSpell(_player, spellId, true);
+        }
     }
     else
-        _player->CastSpell(_player, spellId, true);
+    {
+        if (trappedSummon)
+            _player->CastCustomSpell(_player, 118301, &creatureEntry, &petGUID, NULL, true);
+        else
+            _player->CastSpell(_player, spellId, true);
+    }
 }
 
 // CMSG_BATTLE_PET_NAME_QUERY
