@@ -70,6 +70,11 @@ public:
         EventMap Events;
 
         bool onInitEnterState;
+        
+        bool STowerFull;
+        bool NTowerFull;
+        bool STowerNull;
+        bool NTowerNull;
 
         Transport* transport;
 
@@ -104,7 +109,10 @@ public:
             nExpertGUID             = 0;
 
             onInitEnterState = false;
-
+            STowerFull = false;
+            NTowerFull = false;
+            STowerNull = false;
+            NTowerNull = false;
             transport = NULL;
             
             //Galakras WorldState
@@ -431,115 +439,119 @@ public:
             
             switch (id)
             {
-            case DATA_IMMERSEUS:
-                if (state == DONE)
-                {
-                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                        bq->AI()->SetData(DATA_IMMERSEUS, DONE);
-                }
-                break;
-            case DATA_F_PROTECTORS:
-            {
-                if (state == NOT_STARTED)
-                {
-                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                case DATA_IMMERSEUS:
+                    if (state == DONE)
                     {
-                        if (Creature* mes = instance->GetCreature(*itr))
-                            mes->DespawnOrUnsummon();
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->AI()->SetData(DATA_IMMERSEUS, DONE);
                     }
-                    SetData(DATA_FP_EVADE, true);
-                }
-                if (state == DONE)
+                    break;
+                case DATA_F_PROTECTORS:
                 {
-                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                        bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
-
-                    for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                    if (state == NOT_STARTED)
                     {
-                        if (Creature* mes = instance->GetCreature(*itr))
-                            mes->DespawnOrUnsummon();
+                        for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                        {
+                            if (Creature* mes = instance->GetCreature(*itr))
+                                mes->DespawnOrUnsummon();
+                        }
+                        SetData(DATA_FP_EVADE, true);
                     }
-                }
-                break;
-            }
-            case DATA_NORUSHEN:
-            {
-                switch (state)
-                {
-                case NOT_STARTED:
-                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                        HandleGameObject(*guid, true);
-                    break;
-                case IN_PROGRESS:
-                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                        HandleGameObject(*guid, false);
-                    break;
-                case DONE:
-                    for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
-                        HandleGameObject(*guid, true);
-                    if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
-                        norush->DespawnOrUnsummon();
-                    if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
-                        bq->DespawnOrUnsummon();
-                    break;
-                }
-            }
-            break;
-            case DATA_SHA_OF_PRIDE:
-                if (state == DONE)
-                {
-                    if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
-                        pChest->SetRespawnTime(pChest->GetRespawnDelay());
-                    if (GetData(DATA_GALAKRAS_PRE_EVENT) != IN_PROGRESS)
+                    if (state == DONE)
                     {
-                        if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
-                            Galakras->AI()->DoAction(ACTION_PRE_EVENT);
-                        SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->AI()->SetData(DATA_F_PROTECTORS, DONE);
+    
+                        for (std::vector<uint64>::iterator itr = MeasureGUID.begin(); itr != MeasureGUID.end(); ++itr)
+                        {
+                            if (Creature* mes = instance->GetCreature(*itr))
+                                mes->DespawnOrUnsummon();
+                        }
+                    }
+                    break;
+                }
+                case DATA_NORUSHEN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator guid = lightqGUIDs.begin(); guid != lightqGUIDs.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        if (Creature* norush = instance->GetCreature(GetData64(NPC_NORUSHEN)))
+                            norush->DespawnOrUnsummon();
+                        if (Creature* bq = instance->GetCreature(LorewalkerChoGUIDtmp))
+                            bq->DespawnOrUnsummon();
+                        break;
                     }
                 }
                 break;
-            case DATA_GALAKRAS:
-            {
-                switch (state)
-                {
-                case NOT_STARTED:
-                    SetData(DATA_SOUTH_TOWER, NOT_STARTED);
-                    SetData(DATA_NORTH_TOWER, NOT_STARTED);
-                    if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
-                        SouthDoor->SetGoState(GO_STATE_READY);
-                    if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
-                        NorthDoor->SetGoState(GO_STATE_READY);
-                    if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                case DATA_SHA_OF_PRIDE:
+                    if (state == DONE)
                     {
-                        Galakras->AI()->Reset();
-                        Galakras->AI()->EnterEvadeMode();
+                        if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
+                            pChest->SetRespawnTime(pChest->GetRespawnDelay());
+                        if (GetData(DATA_GALAKRAS_PRE_EVENT) != IN_PROGRESS)
+                        {
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                                Galakras->AI()->DoAction(ACTION_PRE_EVENT);
+                            SetData(DATA_GALAKRAS_PRE_EVENT, IN_PROGRESS);
+                        }
                     }
                     break;
-                case IN_PROGRESS:
-                    if (Creature* JainaOrSylvana = instance->GetCreature(JainaOrSylvanaGUID))
-                        JainaOrSylvana->AI()->DoAction(ACTION_FRIENDLY_BOSS);
-                    if (Creature* VereesOrAethas = instance->GetCreature(VereesaOrAethasGUID))
-                        VereesOrAethas->AI()->DoAction(ACTION_FRIENDLY_BOSS);
-                    break;
-                case DONE:
-                    break;
-                }
-            }
-            break;
-            case DATA_IRON_JUGGERNAUT:
-            {
-                switch (state)
+                case DATA_GALAKRAS:
                 {
-                case NOT_STARTED:
-                case DONE:
-                    HandleGameObject(winddoorGuid, true);
-                    break;
-                case IN_PROGRESS:
-                    HandleGameObject(winddoorGuid, false);
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                            SetData(DATA_SOUTH_TOWER, NOT_STARTED);
+                            SetData(DATA_NORTH_TOWER, NOT_STARTED);
+                            STowerFull = false;
+                            STowerNull = false;
+                            NTowerFull = false;
+                            NTowerNull = false;
+                            if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
+                                SouthDoor->SetGoState(GO_STATE_READY);
+                            if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
+                                NorthDoor->SetGoState(GO_STATE_READY);
+                            if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
+                            {
+                                Galakras->AI()->Reset();
+                                Galakras->AI()->EnterEvadeMode();
+                            }
+                            break;
+                        case IN_PROGRESS:
+                            if (Creature* JainaOrSylvana = instance->GetCreature(JainaOrSylvanaGUID))
+                                JainaOrSylvana->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                            if (Creature* VereesOrAethas = instance->GetCreature(VereesaOrAethasGUID))
+                                VereesOrAethas->AI()->DoAction(ACTION_FRIENDLY_BOSS);
+                            break;
+                        case DONE:
+                            break;
+                    }
                     break;
                 }
-            }
-            break;
+                case DATA_IRON_JUGGERNAUT:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                        case DONE:
+                            HandleGameObject(winddoorGuid, true);
+                            break;
+                        case IN_PROGRESS:
+                            HandleGameObject(winddoorGuid, false);
+                            break;
+                    }
+                    break;
+                }
             }
 
             if (state == DONE)
@@ -687,11 +699,14 @@ public:
                 case DATA_SOUTH_COUNT:
                 {
                     SouthTowerCount = data;
+                    if (SouthTowerCount < 0)
+                        SouthTowerCount = 0;
                     DoUpdateWorldState(WS_SOUTH_TOWER, SouthTowerCount);
                     DoUpdateWorldState(WS_CAPTURE_SOUTH_TOWER, SouthTowerCount);
 
-                    if (SouthTowerCount >= 100)
+                    if (SouthTowerCount >= 100 && !STowerFull)
                     {
+                        STowerFull = true;
                         if (GameObject* SouthDoor = instance->GetGameObject(GetData64(GO_SOUTH_DOOR)))
                             SouthDoor->SetGoState(GO_STATE_ACTIVE);
                         if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))
@@ -703,8 +718,9 @@ public:
                         SetData(DATA_SOUTH_TOWER, SPECIAL);
                         SetData(DATA_NORTH_TOWER, IN_PROGRESS);
                     }
-                    if (SouthTowerCount == 0)
+                    if (SouthTowerCount == 0 && !STowerNull)
                     {
+                        STowerNull = true;
                         SetData(DATA_SOUTH_TOWER, NOT_STARTED);
                         if (Creature* STower = instance->GetCreature(GetData64(NPC_TOWER_SOUTH)))
                             STower->AI()->DoAction(ACTION_TOWER_TURRET);
@@ -714,11 +730,14 @@ public:
                 case DATA_NORTH_COUNT:
                 {
                     NorthTowerCount = data;
+                    if (NorthTowerCount < 0)
+                        NorthTowerCount = 0;
                     DoUpdateWorldState(WS_NORTH_TOWER, NorthTowerCount);
                     DoUpdateWorldState(WS_CAPTURE_NORTH_TOWER, NorthTowerCount);
 
-                    if (NorthTowerCount >= 100)
+                    if (NorthTowerCount >= 100 && !NTowerFull)
                     {
+                        NTowerFull = true;
                         if (GameObject* NorthDoor = instance->GetGameObject(GetData64(GO_NORTH_DOOR)))
                             NorthDoor->SetGoState(GO_STATE_ACTIVE);
                         if (Creature* NTower = instance->GetCreature(GetData64(NPC_TOWER_NORTH)))
@@ -727,8 +746,9 @@ public:
                             nDemo->AI()->DoAction(ACTION_DEMOLITIONS_COMPLETE);
                         SetData(DATA_NORTH_TOWER, SPECIAL);
                     }
-                    if (NorthTowerCount == 0)
+                    if (NorthTowerCount == 0 && !NTowerNull)
                     {
+                        NTowerNull = true;
                         SetData(DATA_NORTH_TOWER, NOT_STARTED);
                         if (Creature* NTower = instance->GetCreature(GetData64(NPC_TOWER_NORTH)))
                             NTower->AI()->DoAction(ACTION_TOWER_TURRET);

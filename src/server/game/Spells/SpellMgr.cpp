@@ -5450,6 +5450,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->SetDurationIndex(21);
                     break;
+                case 77569: // Release Aberrations
+                    spellInfo->Effects[0].TargetB = TARGET_GAMEOBJECT_SRC_AREA;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(28);
+                    break;
+                case 77991: // Release All
+                    spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_INTERRUPT;
+                    spellInfo->Effects[0].TargetB = TARGET_GAMEOBJECT_SRC_AREA;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(28);
+                    spellInfo->Effects[1].Effect = 0;
+                    break;
                 default:
                     break;
             }

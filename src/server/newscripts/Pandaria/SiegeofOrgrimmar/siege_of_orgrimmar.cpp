@@ -413,8 +413,8 @@ public:
     bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/, bool /*enter*/)
     {
         InstanceScript* instance = player->GetInstanceScript();
-        /*if (!instance || instance->GetBossState(DATA_GALAKRAS) == DONE)
-            return false;*/
+        if (!instance || instance->GetBossState(DATA_GALAKRAS) == DONE)
+            return false;
 
         player->CastSpell(player, SPELL_KORKRON_SNIPER_SHOOT_ME);
 

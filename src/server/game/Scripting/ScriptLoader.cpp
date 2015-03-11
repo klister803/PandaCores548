@@ -590,7 +590,7 @@ void AddSC_boss_archavon();              //Vault of Archavon
 void AddSC_boss_emalon();
 void AddSC_boss_koralon();
 void AddSC_boss_toravon();
-void AddSC_instance_archavon();
+void AddSC_instance_vault_of_archavon();
 void AddSC_boss_trollgore();             //Drak'Tharon Keep
 void AddSC_boss_novos();
 void AddSC_boss_king_dred();
@@ -1533,7 +1533,7 @@ void AddNorthrendScripts()
     AddSC_boss_emalon();
     AddSC_boss_koralon();
     AddSC_boss_toravon();
-    AddSC_instance_archavon();
+    AddSC_instance_vault_of_archavon();
     AddSC_boss_trollgore();             //Drak'Tharon Keep
     AddSC_boss_novos();
     AddSC_boss_king_dred();

@@ -382,6 +382,7 @@ class boss_galakras : public CreatureScript
                     return;
 
                 events.Reset();
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_PASSIVE);
                 me->RemoveAurasDueToSpell(SPELL_PULSING_FLAMES_AURA);
@@ -437,6 +438,7 @@ class boss_galakras : public CreatureScript
             
             void EnterCombat(Unit* who)
             {
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_SET_COMBAT_RES_LIMIT, me);
             }
 
             void DoAction(int32 const action)
@@ -494,6 +496,7 @@ class boss_galakras : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 instance->SetBossState(DATA_GALAKRAS, DONE);
+                instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
                 instance->SetData(DATA_GALAKRAS, DONE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ENABLE_UNIT_FRAME);
             }
@@ -2061,10 +2064,10 @@ class npc_dragonmaw_flameslinger : public CreatureScript
                             {
                                 if (me->GetDistance(pTarget) >= 20.0f)
                                     DoCast(pTarget, SPELL_FLAME_ARROWS_EVENT);
+                                else
+                                    if (Unit* Target = me->getVictim())
+                                        DoCast(Target, SPELL_FLAME_ARROWS_COMBAT);
                             }
-                            else
-                                if (Unit* Target = me->getVictim())
-                                    DoCast(Target, SPELL_FLAME_ARROWS_COMBAT);
                             events.ScheduleEvent(EVENT_FLAMESLINGER_ATTACK, 2000);
                             break;
                     }

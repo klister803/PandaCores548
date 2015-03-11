@@ -51,10 +51,11 @@ enum Spells
     //Whitemanes Spells
     SPELL_DEEPSLEEP              = 9256,
     SPELL_SCARLETRESURRECTION    = 9232,
-    SPELL_DOMINATEMIND           = 14515,
-    SPELL_HOLYSMITE              = 9481,
+    SPELL_HOLYSMITE              = 114848,
     SPELL_HEAL                   = 12039,
-    SPELL_POWERWORDSHIELD        = 22187
+    SPELL_POWERWORDSHIELD        = 127399,
+    
+    SPELL_ACHIEV_CREDIT          = 132022,
 };
 
 class boss_scarlet_commander_mograine : public CreatureScript
@@ -265,13 +266,13 @@ public:
                     instance->SetData(TYPE_MOGRAINE_AND_WHITE_EVENT, NOT_STARTED);
         }
 
-        void AttackStart(Unit* who)
+        /*void AttackStart(Unit* who)
         {
             if (instance && instance->GetData(TYPE_MOGRAINE_AND_WHITE_EVENT) == NOT_STARTED)
                 return;
 
             ScriptedAI::AttackStart(who);
-        }
+        }*/
 
         void EnterCombat(Unit* /*who*/)
         {
@@ -287,6 +288,11 @@ public:
         {
             if (!_bCanResurrectCheck && damage >= me->GetHealth())
                 damage = me->GetHealth() - 1;
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
         }
 
         void UpdateAI(uint32 diff)
@@ -312,12 +318,12 @@ public:
             //Cast Deep sleep when health is less than 50%
             if (!_bCanResurrectCheck && !HealthAbovePct(50))
             {
-                if (me->IsNonMeleeSpellCasted(false))
-                    me->InterruptNonMeleeSpells(false);
+                //if (me->IsNonMeleeSpellCasted(false))
+                //    me->InterruptNonMeleeSpells(false);
 
                 DoCast(me->getVictim(), SPELL_DEEPSLEEP);
                 _bCanResurrectCheck = true;
-                _bCanResurrect = true;
+                //_bCanResurrect = true;
                 return;
             }
 

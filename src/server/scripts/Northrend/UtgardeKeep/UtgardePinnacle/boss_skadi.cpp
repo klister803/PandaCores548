@@ -188,10 +188,18 @@ public:
         uint32 m_uiMountTimer;
         uint32 m_uiSummonTimer;
         uint8  m_uiSpellHitCount;
+        uint8  firsthit;
+        uint8  tryval;
         bool   m_bSaidEmote;
+        bool   skadiachiv;
 
         eCombatPhase Phase;
 
+        bool Getskadiachiv()
+        {
+            return skadiachiv;
+        }
+        
         void Reset()
         {
             triggersGUID.clear();
@@ -202,6 +210,9 @@ public:
             m_uiMountTimer = 3000;
             m_uiWaypointId = 0;
             m_bSaidEmote = false;
+            skadiachiv = false;
+            tryval = 0;
+            firsthit = 0;
             m_uiSpellHitCount = 0;
 
             Phase = SKADI;
@@ -282,9 +293,15 @@ public:
         {
             if (spell->Id == SPELL_HARPOON_DAMAGE)
             {
+                if (!firsthit && tryval)
+                {
+                    firsthit = tryval;
+                }
                 m_uiSpellHitCount++;
                 if (m_uiSpellHitCount >= 3)
                 {
+                    if (firsthit == tryval)
+                        skadiachiv = true;
                     Phase = SKADI;
                     me->SetCanFly(false);
                     me->Dismount();
@@ -485,8 +502,30 @@ public:
 
 };
 
+class achievement_my_girls_loves_to_skadi : public AchievementCriteriaScript
+{
+    public:
+        achievement_my_girls_loves_to_skadi() : AchievementCriteriaScript("achievement_my_girls_loves_to_skadi")
+        {
+        }
+
+        bool OnCheck(Player* player, Unit* target)
+        {
+            if (!target)
+                return false;
+
+            if (Creature * sk = target->ToCreature())
+                if (boss_skadi::boss_skadiAI* skAI = CAST_AI(boss_skadi::boss_skadiAI, sk->AI()))
+                    if (skAI->Getskadiachiv())
+                        return true;
+
+            return false;
+        }
+};
+
 void AddSC_boss_skadi()
 {
     new boss_skadi();
     new go_harpoon_launcher();
+    new achievement_my_girls_loves_to_skadi();
 }

@@ -1255,7 +1255,7 @@ public:
 
         void SpellHitTarget(Unit* target, SpellInfo const* spell)
         {
-            if (spell->Id == 63041 && target->GetTypeId() == TYPEID_PLAYER)
+            if (spell->Id == SPELL_ROCKET_STRIKE_DMG && target->GetTypeId() == TYPEID_PLAYER)
                 if (Creature* Mimiron = me->GetCreature(*me, instance->GetData64(DATA_MIMIRON)))
                     Mimiron->AI()->DoAction(ACTION_ROCKET_FAIL);
             
@@ -1569,10 +1569,10 @@ public:
         void SpellHit(Unit* caster, SpellInfo const* spell)
         {
             // Achievement Not-So-Friendly Fire
-            if (spell->Id == 63041 && pInstance)
+            if (spell->Id == SPELL_ROCKET_STRIKE_DMG && pInstance)
             {
+                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65040, 0, me);
                 me->Kill(me, true);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65040);
             }
         }
     };

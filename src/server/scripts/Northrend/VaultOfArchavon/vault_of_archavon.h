@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,33 +18,43 @@
 #ifndef DEF_ARCHAVON_H
 #define DEF_ARCHAVON_H
 
-enum Creatures
-{
-    CREATURE_ARCHAVON                           = 31125,
-    CREATURE_EMALON                             = 33993,
-    CREATURE_KORALON                            = 35013,
-    CREATURE_TORAVON                            = 38433
-};
+uint32 const EncounterCount = 4;
 
 enum Data
 {
-    DATA_ARCHAVON   = 0,
-    DATA_EMALON     = 1,
-    DATA_KORALON    = 2,
-    DATA_TORAVON    = 3
+    DATA_ARCHAVON       = 0,
+    DATA_EMALON         = 1,
+    DATA_KORALON        = 2,
+    DATA_TORAVON        = 3,
 };
 
-#define MAX_ENCOUNTER 4
+enum CreatureIds
+{
+    NPC_ARCHAVON        = 31125,
+    NPC_EMALON          = 33993,
+    NPC_KORALON         = 35013,
+    NPC_TORAVON         = 38433
+};
 
 enum AchievementCriteriaIds
 {
     CRITERIA_EARTH_WIND_FIRE_10 = 12018,
-    CRITERIA_EARTH_WIND_FIRE_25 = 12019
+    CRITERIA_EARTH_WIND_FIRE_25 = 12019,
 };
 
 enum AchievementSpells
 {
-    SPELL_EARTH_WIND_FIRE_ACHIEVEMENT_CHECK = 68308
+    SPELL_EARTH_WIND_FIRE_ACHIEVEMENT_CHECK = 68308,
 };
+
+template<class AI>
+CreatureAI* GetInstanceAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId("instance_vault_of_archavon"))
+                return new AI(creature);
+    return NULL;
+}
 
 #endif
