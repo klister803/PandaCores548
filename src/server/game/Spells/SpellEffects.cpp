@@ -3637,7 +3637,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
 
                     // handle unique pets with the only creatureEntry and existing summonSpellID
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id != 118301 && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
                     {
                         uint64 battlePetGUID = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetGUIDBySpell(m_spellInfo->Id);
                         if (battlePetGUID)
