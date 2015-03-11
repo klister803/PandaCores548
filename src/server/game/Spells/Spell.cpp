@@ -1661,7 +1661,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
     switch (targetType.GetTarget())
     {
         case TARGET_UNIT_CASTER:
-            target = m_targets.GetUnitTargetGUID() ? m_targets.GetUnitTarget() : m_caster;
+            target = m_caster;
             checkIfValid = false;
             break;
         case TARGET_UNIT_MASTER:
