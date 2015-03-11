@@ -118,7 +118,7 @@ class boss_iron_juggernaut : public CreatureScript
                 _EnterCombat();
                 SendActionForAllPassenger(true);
                 PowerTimer = 1100;
-                enrage = 300000;
+                enrage = 600000;
                 events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
                 events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
@@ -264,7 +264,7 @@ class boss_iron_juggernaut : public CreatureScript
                         events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                         break;
                     case EVENT_SUMMON_MINE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 60.0f, true))
                         {
                             float x, y, z;
                             x = target->GetPositionX();
@@ -312,7 +312,8 @@ class boss_iron_juggernaut : public CreatureScript
                         events.ScheduleEvent(EVENT_EXPLOSIVE_TAR, 15000, 0, PHASE_TWO);
                         break;
                     case EVENT_FLAME_VENTS:
-                        DoCast(me, SPELL_FLAME_VENTS);
+                        if (me->getVictim())
+                            DoCastVictim(SPELL_FLAME_VENTS, true);
                         events.ScheduleEvent(EVENT_FLAME_VENTS, 30000, 0, PHASE_ONE);
                         break;
                     case EVENT_SHOCK_PULSE:
