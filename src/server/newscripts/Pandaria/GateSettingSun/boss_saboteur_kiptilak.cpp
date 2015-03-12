@@ -31,6 +31,8 @@ enum eSpells
     SPELL_MUNITION_STABLE               = 109987,
     SPELL_MUNITION_EXPLOSION            = 107153,
     SPELL_MUNITION_EXPLOSION_AURA       = 120551,
+    
+    SPELL_ACHIEV_CREDIT                 = 119342,
 };
 
 enum eEvents
@@ -121,10 +123,9 @@ class boss_saboteur_kiptilak : public CreatureScript
             void JustSummoned(Creature* summoned)
             {
                 if (summoned->GetEntry() == NPC_STABLE_MUNITION)
-                {
                     summoned->AddAura(SPELL_MUNITION_STABLE, summoned);
-                    summoned->SetReactState(REACT_PASSIVE);
-                }
+
+                summoned->SetReactState(REACT_PASSIVE);
 
                 summons.Summon(summoned);
             }
@@ -141,19 +142,16 @@ class boss_saboteur_kiptilak : public CreatureScript
                     case EVENT_EXPLOSIVES:
                         for (uint8 i = 0; i < urand(1, 3); ++i)
                             me->CastSpell(frand(702, 740), frand(2292, 2320), 388.5f, SPELL_PLANT_EXPLOSIVE, true);
-
                         events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500, 12500));
                         break;
                     case EVENT_SABOTAGE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                             me->CastSpell(target, SPELL_SABOTAGE, true);
-
-                        events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
+                        events.ScheduleEvent(EVENT_SABOTAGE, urand(22500, 30000));
                         break;
                     default:
                         break;
                 }
-
                 DoMeleeAttackIfReady();
             }
 
@@ -176,8 +174,12 @@ public:
 
     struct npc_munition_explosion_bunnyAI : public ScriptedAI
     {
-        npc_munition_explosion_bunnyAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_munition_explosion_bunnyAI(Creature* creature) : ScriptedAI(creature) 
+        {
+            instance = creature->GetInstanceScript();
+        }
 
+        InstanceScript* instance;
         float orientation;
         uint32 checkTimer;
 
@@ -213,6 +215,7 @@ public:
             me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
 
             me->AddAura(SPELL_MUNITION_EXPLOSION_AURA, me);
+            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_ACHIEV_CREDIT, 0, me);
         }
 
         void DamageTaken(Unit* attacker, uint32& damage)

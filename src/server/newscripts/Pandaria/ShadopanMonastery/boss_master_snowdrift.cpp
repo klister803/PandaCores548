@@ -46,6 +46,8 @@ enum eSpells
 
     // Both
     SPELL_FLARE                 = 132951,
+    
+    SPELL_ENCOUNTER_CREDIT      = 123096,
 };
 
 enum eEvents
@@ -203,6 +205,7 @@ class boss_master_snowdrift : public CreatureScript
 
             void JustDied(Unit* killer)
             {
+                DoCast(SPELL_ENCOUNTER_CREDIT);
                 _JustDied();
             }
 
@@ -415,7 +418,6 @@ class boss_master_snowdrift : public CreatureScript
                     default:
                         break;
                 }
-                
                 DoMeleeAttackIfReady();
             }
         };

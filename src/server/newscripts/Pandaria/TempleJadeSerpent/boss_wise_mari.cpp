@@ -22,6 +22,7 @@ enum eSpells
     SPELL_HYDROLANCE_VISUAL         = 106055,
     SPELL_HYDROLANCE_DMG            = 106105,
     SPELL_WASH_AWAY                 = 106331,
+    SPELL_PURIFIED_WATER            = 118714,
 };
 
 enum eTexts
@@ -193,6 +194,7 @@ class boss_wase_mari : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 Talk(TEXT_DEATH);
+                DoCast(SPELL_PURIFIED_WATER);
                 _JustDied();
             }
 
