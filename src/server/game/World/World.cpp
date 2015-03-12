@@ -2050,6 +2050,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading archaeology digsite positions...");
     sObjectMgr->LoadDigSitePositions();
 
+    // Battle Pets some data
+    sObjectMgr->LoadBattlePetBreedsToSpecies();
+
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading realm name...");
 
     m_realmName = "Mist of Pandaria servers";

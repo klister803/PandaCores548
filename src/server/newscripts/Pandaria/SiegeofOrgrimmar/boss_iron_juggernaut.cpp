@@ -111,6 +111,7 @@ class boss_iron_juggernaut : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                SendActionForAllPassenger(false);
             }
 
             void EnterCombat(Unit* who)
@@ -122,14 +123,8 @@ class boss_iron_juggernaut : public CreatureScript
                 events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
                 events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
-                events.ScheduleEvent(EVENT_FLAME_VENTS, 10000, 0, PHASE_ONE);
+                events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
-            }
-
-            void EnterEvadeMode()
-            {
-                ScriptedAI::EnterEvadeMode();
-                SendActionForAllPassenger(false);
             }
 
             void DoAction(int32 const action)
@@ -145,7 +140,7 @@ class boss_iron_juggernaut : public CreatureScript
                     events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                     events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
                     events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
-                    events.ScheduleEvent(EVENT_FLAME_VENTS, 10000, 0, PHASE_ONE);
+                    events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
                     break;
                 case ACTION_PHASE_TWO:
@@ -314,7 +309,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_FLAME_VENTS:
                         if (me->getVictim())
                             DoCastVictim(SPELL_FLAME_VENTS, true);
-                        events.ScheduleEvent(EVENT_FLAME_VENTS, 30000, 0, PHASE_ONE);
+                        events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                         break;
                     case EVENT_SHOCK_PULSE:
                         DoCast(me, SPELL_SHOCK_PULSE);

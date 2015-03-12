@@ -4403,7 +4403,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                             // generate stats
                             // breedID, quality must be generated!
                             // level, depends of pet source
-                            uint16 breedID = 5;
+                            uint16 breedID = GetBattlePetMgr()->GetRandomBreedID(spEntry->ID);
                             uint8 quality = 2;
                             uint8 level = 1;
                             BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(spEntry->ID, breedID);
@@ -20348,6 +20348,33 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         uint16 xp = fields[12].GetUInt16();
         uint16 flags = fields[13].GetUInt16();
         int16 breedID = fields[14].GetUInt16();
+
+        // recalculate stats after change breed
+        if (!breedID)
+        {
+            breedID = GetBattlePetMgr()->GetRandomBreedID(speciesID);
+
+            if (!breedID)
+                continue;
+
+            float pct = float(health * 100.0f) / maxHealth;
+
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID);
+            accumulator->CalcQualityMultiplier(quality, level);
+            maxHealth = accumulator->CalculateHealth();
+            power = accumulator->CalculatePower();
+            speed = accumulator->CalculateSpeed();
+            delete accumulator;
+
+            if (pct != 100.0f)
+                health = int32(maxHealth * float(pct / 100.0f));
+            else
+                health = maxHealth;
+        }
+
+        // prevent some undefined behavoir
+        if (health > maxHealth)
+            health = maxHealth;
 
         GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
     }

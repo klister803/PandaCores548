@@ -19,10 +19,11 @@ Position const Sha_of_pride_Norushe  = {797.357f, 880.5637f, 371.1606f, 1.786108
 
 DoorData const doorData[] =
 {
-    {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
-    {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
-    {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE   },
-    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE   }, // END
+    {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+   // {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
 class instance_siege_of_orgrimmar : public InstanceMapScript
@@ -54,6 +55,7 @@ public:
         uint64 chestShaVaultOfForbiddenTreasures;
         std::vector<uint64> lightqGUIDs;
         uint64 winddoorGuid;
+        uint64 orgrimmargateGuid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -66,6 +68,10 @@ public:
         uint64 VereesaOrAethasGUID;
         uint64 sExpertGUID;
         uint64 nExpertGUID;
+        uint64 kardrisGuid;
+        uint64 harommGuid;
+        uint64 bloodclawGuid;
+        uint64 darkfangGuid;
 
         EventMap Events;
 
@@ -97,6 +103,7 @@ public:
             chestShaVaultOfForbiddenTreasures = 0;
             lightqGUIDs.clear();
             winddoorGuid            = 0;
+            orgrimmargateGuid       = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -107,6 +114,10 @@ public:
             VereesaOrAethasGUID     = 0;
             sExpertGUID             = 0;
             nExpertGUID             = 0;
+            kardrisGuid             = 0;
+            harommGuid              = 0;
+            bloodclawGuid           = 0;
+            darkfangGuid            = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -270,7 +281,6 @@ public:
                 case NPC_TOWER_NORTH:
                 case NPC_ANTIAIR_TURRET:
                 case NPC_IRON_JUGGERNAUT:
-                case NPC_KORKRON_D_SHAMAN:
                 case NPC_GENERAL_NAZGRIM:
                 case NPC_MALKOROK:
                 case NPC_THOK:
@@ -350,6 +360,20 @@ public:
                 case NPC_DEMOLITIONS_EXPERT_N_H:
                     nExpertGUID = creature->GetGUID();
                     break;
+                //Korkron Dark Shamans
+                case NPC_WAVEBINDER_KARDRIS:
+                    kardrisGuid = creature->GetGUID();
+                    break;
+                case NPC_EARTHBREAKER_HAROMM:
+                    harommGuid = creature->GetGUID();
+                    break;
+                case NPC_BLOODCLAW:
+                    bloodclawGuid = creature->GetGUID();
+                    break;
+                case NPC_DARKFANG:
+                    darkfangGuid = creature->GetGUID();
+                    break;
+                //
             }
         }
 
@@ -424,6 +448,10 @@ public:
                     break;
                 case GO_WIND_DOOR:
                     winddoorGuid = go->GetGUID();
+                    break;
+                case GO_ORGRIMMAR_GATE:
+                    AddDoor(go, true);
+                    orgrimmargateGuid = go->GetGUID();
                     break;
             }
         }
@@ -542,15 +570,17 @@ public:
                 {
                     switch (state)
                     {
-                        case NOT_STARTED:
-                        case DONE:
-                            HandleGameObject(winddoorGuid, true);
-                            break;
-                        case IN_PROGRESS:
-                            HandleGameObject(winddoorGuid, false);
-                            break;
+                    case NOT_STARTED:
+                        HandleGameObject(winddoorGuid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(winddoorGuid, true);
+                        //HandleGameObject(orgrimmargateGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(winddoorGuid, false);
+                        break;
                     }
-                    break;
                 }
             }
 
@@ -813,6 +843,16 @@ public:
                 case NPC_LOREWALKER_CHO:
                 case NPC_LOREWALKER_CHO3:
                     return LorewalkerChoGUIDtmp;
+                //Korkron Dark Shaman
+                case NPC_WAVEBINDER_KARDRIS:
+                    return kardrisGuid;
+                case NPC_EARTHBREAKER_HAROMM:
+                    return harommGuid;
+                case NPC_BLOODCLAW:
+                    return bloodclawGuid;
+                case NPC_DARKFANG:
+                    return darkfangGuid;
+                //
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);

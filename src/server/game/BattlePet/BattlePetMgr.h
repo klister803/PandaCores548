@@ -132,13 +132,23 @@ enum TrapStatus
     PET_BATTLE_TRAP_ERR_8 = 8,  // "Can't trap twice in same battle"
 };
 
+// demo
+enum DeathPetResult
+{
+    HAVE_ALIVE_PETS_MORE_ONE_ALLY  = 0,
+    LAST_ALIVE_PET_ALLY            = 1,
+    HAVE_ALIVE_PETS_MORE_ONE_ENEMY = 2,
+    NO_ALIVE_PETS_ALLY             = 3,
+    NO_ALIVE_PETS_ENEMY            = 4
+};
+
 class PetJournalInfo
 {
 
 public:
-    PetJournalInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, int32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, uint8 state) :
+    PetJournalInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, int32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
-        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), internalState(state) {}
+        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), internalState(STATE_NORMAL) {}
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
@@ -265,6 +275,10 @@ public:
             powerMod += value;
     }
 
+    int32 getHealthMod() { return healthMod; }
+    int32 getPowerMod() { return powerMod; }
+    int32 getSpeedMod() { return speedMod; }
+
 private:
     int32 healthMod;
     int32 powerMod;
@@ -280,7 +294,8 @@ public:
 
     uint32 GetID() { return ID; }
     uint32 GetType() { return Type; }
-    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim);
+    int32 CalculateDamage(PetBattleInfo* attacker, PetBattleInfo* victim, bool crit);
+    int16 CalculateHitResult(PetBattleInfo* attacker, PetBattleInfo* victim);
     int32 GetBaseDamage(PetBattleInfo* attacker, uint32 effectIdx = 0, uint32 turnIndex = 1);
     uint32 GetEffectProperties(uint8 properties, uint32 effectIdx = 0, uint32 turnIndex = 1);
     int8 GetRequiredLevel() { return requiredLevel; }
@@ -316,26 +331,18 @@ class PetBattleInfo
 {
 
 public:
-    PetBattleInfo() : petX(-1) {}
-
+    PetBattleInfo() {}
     void SetGUID(uint64 _guid) { guid = _guid; }
     uint64 GetGUID() { return guid; }
-    uint8 GetPetNumber() { return petX; }
-    void SetPetInfo(PetJournalInfo* petInfo);
-    void SetPetNumber(uint8 number) { petX = number; }
-    void SetActivePet(bool apply) { activePet = apply; }
-    bool IsActivePet() { return activePet; }
-    void SetAbilityInfo(PetBattleAbilityInfo* ability, uint8 index) { abilities[index] = ability; }
-    PetBattleAbilityInfo* GetAbilityInfoByIndex(uint8 index) { return abilities[index]; }
-    PetBattleAbilityInfo* GetAbilityInfoByID(uint32 abilityID) 
-    { 
-        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PET_ABILITIES; ++i)
-            if (abilities[i] && abilities[i]->GetID() == abilityID)
-                return abilities[i];
-
-        return NULL;
-    }
-    uint32 GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnIndex = 1);
+    void SetPetID(uint8 petNumber) { petX = petNumber; }
+    uint8 GetPetID() { return petX; }
+    void CopyPetInfo(PetJournalInfo* petInfo);
+    void SetTeam(uint8 _team) { team = _team; }
+    uint8 GetTeam() { return team; }
+    void SetFrontPet(bool apply) { frontPet = apply; }
+    bool IsFrontPet() { return frontPet; }
+    void SetAbilityID(uint32 abilityID, uint8 index) { abilities[index] = abilityID; }
+    uint32 GetAbilityID(uint8 index) { return abilities[index]; }
     void SetCaptured(bool apply)
     {
         captured = apply;
@@ -344,7 +351,6 @@ public:
 
     bool Captured() { return captured; }
     bool Caged() { return caged; }
-    bool Vaild() { return petX != -1; }
 
     void SetCustomName(std::string name) { customName = name; }
     std::string GetCustomName() { return customName; }
@@ -390,7 +396,7 @@ public:
     bool HasAbility(uint32 abilityID)
     {
         for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PET_ABILITIES; ++i)
-            if (abilities[i] && abilities[i]->GetID() == abilityID)
+            if (abilities[i] == abilityID)
                 return true;
 
         return false;
@@ -398,7 +404,8 @@ public:
 
 private:
     uint64 guid;
-    int8 petX;
+    uint8 petX;
+    uint8 team;
     uint32 speciesID;
     uint32 creatureEntry;
     uint32 displayID;
@@ -415,24 +422,34 @@ private:
     int16 breedID;
     uint32 summonSpellID;
     std::string customName;
-    PetBattleAbilityInfo* abilities[MAX_ACTIVE_BATTLE_PET_ABILITIES];
+    uint32 abilities[MAX_ACTIVE_BATTLE_PET_ABILITIES];
     std::map<uint32, uint8> abilityCooldowns;
     std::map<uint32, PetBattleAura*> auras;
     std::map<uint32, PetBattleState*> states;
     uint8 status;
-    bool activePet;
+    bool frontPet;
     bool captured;
     bool caged;
 };
 
 struct PetBattleEffectTarget
 {
-    PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type), remainingHealth(0), status(0) {}
+    PetBattleEffectTarget(int8 _petX, uint8 _type) : petX(_petX), type(_type), remainingHealth(0), status(0), stateID(0), stateValue(0),
+        auraAbilityID(0), auraInstanceID(0), roundsRemaining(0) {}
 
     uint8 type;
     int8 petX;
+    // type 6
     int32 remainingHealth;
-    int32 status;
+    // type 1
+    uint8 status;
+    // type 4
+    uint8 stateID;
+    uint32 stateValue;
+    // type 0
+    uint32 auraAbilityID;
+    uint32 auraInstanceID;
+    uint32 roundsRemaining;
 };
 
 struct PetBattleEffect
@@ -461,18 +478,28 @@ struct PetBattleRoundResults
     uint32 roundID;
     std::vector<uint8> petXDiedNumbers;
     uint8 trapStatus[2];
+    uint8 inputFlags[2];
 
     void AddEffect(PetBattleEffect* effect) { effects.push_back(effect); }
+
+    void ProcessAbilityDamage(PetBattleInfo* caster, PetBattleInfo* target, uint32 abilityID, uint32 effectID, uint8 turnInstanceID);
+    void ProcessPetSwap(uint8 oldPetNumber, uint8 newPetNumber);
+    void ProcessSkipTurn(uint8 petNumber);
+    void ProcessSetState(PetBattleInfo* caster, PetBattleInfo* target, uint32 effectID, uint8 stateID, uint32 stateValue, uint8 turnInstanceID);
     void AuraProcessingBegin();
     void AuraProcessingEnd();
-    void ProcessAbilityDamage(PetBattleInfo* attacker, PetBattleInfo* victim, uint32 abilityID, uint32 damage, uint8 turnInstanceID);
-    void ProcessSkipTurn(PetBattleInfo* attacker);
+
+    void AddDeadPet(uint8 petNumber);
+
     void SetTrapStatus(uint8 team, uint8 status) { trapStatus[team] = status; }
     uint8 GetTrapStatus(uint8 team) { return trapStatus[team]; }
+    void SetInputFlags(uint8 team, uint8 flags) { inputFlags[team] = flags; }
+    uint8 GetInputFlags(uint8 team) { return inputFlags[team]; }
 };
 
 typedef std::map<uint64, PetJournalInfo*> PetJournal;
 typedef std::map<uint8, PetBattleSlot*> PetBattleSlots;
+typedef std::list<PetBattleInfo*> BattleInfo;
 
 class PetBattleWild
 {
@@ -485,68 +512,29 @@ public:
 
     void SendFullUpdate(ObjectGuid creatureGuid);
 
-    void ForceReplacePetHandler(uint8 petNumberDest, uint8 index, uint32 roundID, bool enemy = false);
+    void ForceReplacePetHandler(uint32 roundID, uint8 newFrontPet, uint8 team);
 
-    PetBattleRoundResults* PrepareFirstRound(uint8 frontPet);
-    void SendFirstRound(PetBattleRoundResults* firstRound);
+    bool FirstRoundHandler(uint8 allyFrontPetID, uint8 enemyFrontPetID);
     bool UseAbilityHandler(uint32 abilityID, uint32 roundID);
     bool SkipTurnHandler(uint32 _roundID);
     bool UseTrapHandler(uint32 _roundID);
     bool SwapPetHandler(uint8 newFrontPet, uint32 _roundID);
-    void SendRoundResults(PetBattleRoundResults* round, bool forceSwap = false);
+    void SendFirstRound(PetBattleRoundResults* firstRound);
+    void SendRoundResults(PetBattleRoundResults* round);
+    void SendForceReplacePet(PetBattleRoundResults* round);
     bool FinalRoundHandler(bool abandoned);
     void SendFinalRound();
     //void SetCurrentRound(PetBattleRoundResults* round) { curRound = round; }
     //void SetFinalRound(PetBattleFinalRound* _finalRound) { finalRound = _finalRound; }
     void CheckTrapStatuses(PetBattleRoundResults* round);
-    void UpdateLoadout();
+    void CheckInputFlags(PetBattleRoundResults* round);
+    void UpdatePetsAfterBattle();
 
     void FinishPetBattle(bool error = false);
     void SendFinishPetBattle();
 
-    PetBattleInfo* GetOpponentPet(uint8 team)
-    {
-        return team ? GetActivePet(TEAM_ALLY) : GetActivePet(TEAM_ENEMY);
-    }
-
-    PetBattleInfo* GetPetBattleInfo(uint8 team, uint8 index) { return battleInfo[team][index]; }
-    PetBattleInfo* GetPetBattleInfo(uint8 petNumber)
-    {
-        if (petNumber > 5)
-            return NULL;
-
-        uint8 index = petNumber;
-        uint8 team = TEAM_ALLY;
-        if (petNumber > 2)
-        {
-            index = petNumber - 3;
-            team = TEAM_ENEMY;
-        }
-
-        return battleInfo[team][index];
-    }
-
-    PetBattleInfo* GetActivePet(uint8 team)
-    {
-        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-        {
-            if (battleInfo[team][i]->IsActivePet())
-                return battleInfo[team][i];
-        }
-
-        return NULL;
-    }
-
-    void SetActivePet(uint8 team, uint8 index)
-    {
-        // clear all
-        for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
-            battleInfo[team][i]->SetActivePet(false);
-
-        // set needed
-        if (!battleInfo[team][index]->IsDead() && battleInfo[team][index]->Vaild())
-            battleInfo[team][index]->SetActivePet(true);
-    }
+    PetBattleInfo* GetFrontPet(uint8 team);
+    void SetFrontPet(uint8 team, uint8 petNumber);
 
     bool NextRoundFinal() { return nextRoundFinal; }
     void SetAbandoned(bool apply) { abandoned = apply; }
@@ -571,44 +559,13 @@ public:
 
         return 0;
     }
-    uint8 GetPetCount(uint8 team) { return petsCount[team]; }
-    uint8 GetAlivePetCountInTeam(uint8 team)
-    {
-        uint8 count = 0;
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            if (i == team)
-            {
-                for (uint8 j = 0; j < MAX_ACTIVE_BATTLE_PETS; ++j)
-                {
-                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead() && !battleInfo[i][j]->Captured())
-                        count++;
-                }
-            }
-        }
 
-        return count;
-    }
+    uint8 GetTotalPetCountInTeam(uint8 team, bool onlyActive = false);
 
     // only demo
-    int8 GetLastAlivePetID()
-    {
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            if (i == TEAM_ALLY)
-            {
-                for (uint8 j = 0; j < MAX_ACTIVE_BATTLE_PETS; ++j)
-                {
-                    if (battleInfo[i][j] && battleInfo[i][j]->Vaild() && !battleInfo[i][j]->IsDead())
-                        return battleInfo[i][j]->GetPetNumber();
-                }
-            }
-        }
+    int8 GetLastAlivePetID(uint8 team);
 
-        return -1;
-    }
-
-    uint8 GetPetIndexByPetNumber(uint8 petNumber)
+    uint8 GetTeamIndex(uint8 petNumber)
     {
         switch (petNumber)
         {
@@ -622,19 +579,38 @@ public:
         }
     }
 
+    uint8 GetTeamByPetID(uint8 petNumber)
+    {
+        switch (petNumber)
+        {
+            case 0:
+            case 1:
+            case 2:
+                return 0;
+            case 3:
+            case 4:
+            case 5:
+                return 1;
+            default: return 0;
+        }
+    }
+
     uint32 GetCurrentRoundID();
     void SetCurrentRoundID(uint32 roundID) { currentRoundID = roundID; }
+    void SetBattleState(uint8 state) { petBattleState = state; }
+    uint8 GetBattleState() { return petBattleState; }
+
+    uint32 GetVisualEffectIDByAbilityID(uint32 abilityID, uint8 turnIndex = 1);
 
 private:
     Player* m_player;
 
 protected:
-    PetBattleInfo* battleInfo[2][MAX_ACTIVE_BATTLE_PETS];
+    BattleInfo battleInfo;
     //PetBattleRoundResults* curRound;
     //PetBattleFinalRound* finalRound;
     std::map<uint32, PetBattleEnviroment*> enviro;
     uint32 currentRoundID;
-    uint32 petsCount[2];
     uint64 teamGuids[2];
     uint8 winners[2];
     uint8 petBattleState;
@@ -668,6 +644,7 @@ public:
     void CreateWildBattle(Player* initiator, ObjectGuid wildCreatureGuid);
 
     Player* GetPlayer() const { return m_player; }
+
     PetJournalInfo* GetPetInfoByPetGUID(uint64 guid)
     {
         PetJournal::const_iterator pet = m_PetJournal.find(guid);
@@ -675,6 +652,24 @@ public:
             return pet->second;
 
         return NULL;
+    }
+
+    uint32 GetPetCount(uint32 creatureEntry)
+    {
+        uint32 count = 0;
+
+        for (PetJournal::const_iterator pet = m_PetJournal.begin(); pet != m_PetJournal.end(); ++pet)
+        {
+            PetJournalInfo * pi = pet->second;
+
+            if (!pi || pi->GetInternalState() == STATE_DELETED)
+                continue;
+
+            if (pi->GetCreatureEntry() == creatureEntry)
+                ++count;
+        }
+
+        return count;
     }
 
     void DeletePetByPetGUID(uint64 guid)
@@ -744,6 +739,38 @@ public:
     PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
 
     uint32 GetXPForNextLevel(uint8 level);
+
+    uint8 GetRandomQuailty();
+    uint16 GetRandomBreedID(uint32 speciesID);
+    uint8 GetWeightForBreed(uint16 breedID)
+    {
+        uint8 weight = 0;
+        switch (breedID)
+        {
+        case 3:
+            weight = 60;
+            break;
+        case 4:
+        case 5:
+        case 6:
+            weight = 10;
+            break;
+        case 7:
+        case 8:
+        case 9:
+            weight = 20;
+            break;
+        case 10:
+        case 11:
+        case 12:
+            weight = 30;
+            break;
+        default:
+            break;
+        }
+
+        return weight;
+    }
 
 private:
     Player* m_player;

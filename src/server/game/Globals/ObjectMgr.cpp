@@ -9441,6 +9441,56 @@ void ObjectMgr::LoadBattlePetXPForLevel()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battle pet xp for level definitions.", count);
 }
 
+void ObjectMgr::LoadBattlePetBreedsToSpecies()
+{
+    // Loading xp per level data
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Battle Pet Breeds For Species Data...");
+
+    // clear container
+    _battlePetPossibleBreedsToSpecies.clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT speciesID, possibleBreedMask FROM battle_pet_breed2species");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 possible breeds for species definitions. DB table `battle_pet_breed2species` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 speciesID = fields[0].GetUInt32();
+        uint32 possibleBreedMask = fields[1].GetUInt32();
+
+        std::vector<uint32> breeds;
+
+        // fill breed data
+        for (uint8 i = 3; i < 13; ++i)
+        {
+            bool allow = (possibleBreedMask & (1 << i));
+
+            if (allow)
+                breeds.push_back(i);
+        }
+
+        _battlePetPossibleBreedsToSpecies[speciesID] = breeds;
+        ++count;
+
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u possible breeds for species definitions.", count);
+}
+
+const std::vector<uint32>* ObjectMgr::GetPossibleBreedsForSpecies(uint32 speciesID) const
+{
+    BattlePetPossibleBreedsToSpecies::const_iterator itr = _battlePetPossibleBreedsToSpecies.find(speciesID);
+    return itr != _battlePetPossibleBreedsToSpecies.end() ? &(itr->second) : NULL;
+}
+
 void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
