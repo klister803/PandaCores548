@@ -184,7 +184,15 @@ enum eCreatures
     NPC_CANNON                      = 71468, //2, 3
     NPC_TAIL_GUN                    = 71914, //4
     //
-    NPC_KORKRON_D_SHAMAN            = 71859,
+
+    //Korkron Dark Shamans
+    NPC_WAVEBINDER_KARDRIS          = 71858,
+    NPC_EARTHBREAKER_HAROMM         = 71859,
+    //Wolf Mounts
+    NPC_BLOODCLAW                   = 71923,
+    NPC_DARKFANG                    = 71921,
+    //
+
     NPC_GENERAL_NAZGRIM             = 71515,
     NPC_MALKOROK                    = 71454,
     NPC_THOK                        = 71529,
@@ -280,6 +288,7 @@ enum eGameObjects
 
     //Iron Juggernaut
     GO_WIND_DOOR                    = 223219,
+    GO_ORGRIMMAR_GATE               = 223739,
 };
 
 enum GalakrasEvent
