@@ -20357,7 +20357,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
             if (!breedID)
                 continue;
 
-            float pct = health / maxHealth * 100.0f;
+            float pct = float(health * 100.0f) / maxHealth;
 
             BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID);
             accumulator->CalcQualityMultiplier(quality, level);
