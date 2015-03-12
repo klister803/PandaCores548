@@ -232,17 +232,10 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_DEMOLISHER_CANNON:
                         if (Unit* p = GetPassengerForCast(NPC_CANNON))
                         {
-                            std::set<uint64> pllist = GetUniqueTargetList(3);
-                            if (!pllist.empty())
+                            for (uint8 n = 0; n < 3; n++)
                             {
-                                for (std::set < uint64 > ::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                                {
-                                    if (Player* pl = me->GetPlayer(*me, *itr))
-                                    {
-                                        if (pl->isAlive())
-                                            p->CastSpell(pl, SPELL_DEMOLISHER_CANNON);
-                                    }
-                                }
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                                    p->CastSpell(target, SPELL_DEMOLISHER_CANNON);
                             }
                         }
                         events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
@@ -275,17 +268,10 @@ class boss_iron_juggernaut : public CreatureScript
                         break;
                     case EVENT_EXPLOSIVE_TAR:
                     {
-                        std::set<uint64> pllist = GetUniqueTargetList(5);
-                        if (!pllist.empty())
+                        for (uint8 n = 0; n < 5; n++)
                         {
-                            for (std::set < uint64 > ::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                            {
-                                if (Player* pl = me->GetPlayer(*me, *itr))
-                                {
-                                    if (pl->isAlive())
-                                        DoCast(pl, SPELL_EXPLOSIVE_TAR_SUMMON);
-                                }
-                            }
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                                DoCast(target, SPELL_EXPLOSIVE_TAR_SUMMON);
                         }
                         events.ScheduleEvent(EVENT_CUTTER_LASER, 10000, 0, PHASE_TWO);
                         break;
