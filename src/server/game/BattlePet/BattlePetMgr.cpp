@@ -325,6 +325,46 @@ uint32 BattlePetMgr::GetXPForNextLevel(uint8 level)
     }
 }
 
+uint8 BattlePetMgr::GetRandomQuailty()
+{
+    // 42% - grey, 33% - white, 19% - green, 6% - rare
+    uint32 r = urand(0, 1000);
+
+    uint8 quality = 0;
+    if (r >= 420 && r < 750)
+        quality = 1;
+    else if (r >= 750 && r < 940)
+        quality = 2;
+    else if (r >= 940 && r <= 1000)
+        quality = 3;
+
+    return quality;
+}
+
+uint16 BattlePetMgr::GetRandomBreedID(uint32 speciesID)
+{
+    if (std::vector<uint32> const* breeds = sObjectMgr->GetPossibleBreedsForSpecies(speciesID))
+    {
+        uint32 sum = 0;
+        for (std::vector<uint32>::const_iterator itr = breeds->begin(); itr != breeds->end(); ++itr)
+            sum += GetWeightForBreed((*itr));
+
+        uint32 r = urand(0, sum);
+        uint32 current_sum = 0;
+
+        for (std::vector<uint32>::const_iterator itr = breeds->begin(); itr != breeds->end(); ++itr)
+        {
+            uint16 breedID = (*itr);
+            if (current_sum <= r && r < current_sum + GetWeightForBreed(breedID))
+                return breedID;
+
+            current_sum += GetWeightForBreed(breedID);
+        }
+    }
+
+    return 0;
+}
+
 void BattlePetMgr::CreateWildBattle(Player* initiator, ObjectGuid wildCreatureGuid)
 {
     m_petBattleWild = new PetBattleWild(initiator);
@@ -436,10 +476,11 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
 
     for (uint8 i = 0; i < creatureCount; ++i)
     {
-        // roll random quality
-        uint8 quality = GetRandomQuailty();
+        // roll random quality and breed
+        uint8 quality = m_player->GetBattlePetMgr()->GetRandomQuailty();
+        uint16 breedID = m_player->GetBattlePetMgr()->GetRandomBreedID(s->ID);
 
-        BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(s->ID, 12);
+        BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(s->ID, breedID);
         accumulator->CalcQualityMultiplier(quality, wildPetLevel);
         uint32 health = accumulator->CalculateHealth();
         uint32 power = accumulator->CalculatePower();
@@ -447,7 +488,7 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
         delete accumulator;
 
         PetBattleSlot* slot = new PetBattleSlot(0);
-        PetJournalInfo* petInfo = new PetJournalInfo(s->ID, wildPet->GetEntry(), wildPetLevel, t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", 12);
+        PetJournalInfo* petInfo = new PetJournalInfo(s->ID, wildPet->GetEntry(), wildPetLevel, t->Modelid1, power, speed, health, health, quality, 0, 0, s->spellId, "", breedID);
         PetBattleInfo* pbInfo = new PetBattleInfo();
 
         pbInfo->SetPetID(petID);
@@ -475,38 +516,6 @@ bool PetBattleWild::PrepareBattleInfo(ObjectGuid creatureGuid)
     SetCurrentRoundID(0);
 
     return true;
-}
-
-uint8 PetBattleWild::GetRandomQuailty()
-{
-    // summ of all chances of quality, 60% - grey, 50% - white, 20% - green, 7% - rare
-    uint32 r = urand(0, 137);
-
-    uint8 quality = 0;
-    if (r >= 60 && r < 110)
-        quality = 1;
-    else if (r >= 110 && r < 130)
-        quality = 2;
-    else if (r >= 130 && r <= 137)
-        quality = 3;
-
-    return quality;
-}
-
-uint16 PetBattleWild::GetRandomBreedID()
-{
-    // summ of all chances of breed, 100% for "bad breed", 60% for "medium breed", 30% for "super breed"
-    uint32 r = urand(0, 137);
-
-    uint8 quality = 0;
-    if (r >= 60 && r < 110)
-        quality = 1;
-    else if (r >= 110 && r < 130)
-        quality = 2;
-    else if (r >= 130 && r <= 137)
-        quality = 3;
-
-    return quality;
 }
 
 uint8 PetBattleWild::GetTotalPetCountInTeam(uint8 team, bool onlyActive)
@@ -1481,7 +1490,7 @@ bool PetBattleWild::FinalRoundHandler(bool abandoned)
             allyPet->SetTotalXP(remXp);
 
             // recalculate stats
-            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(allyPet->GetSpeciesID(), BATTLE_PET_BREED_SS);
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(allyPet->GetSpeciesID(), allyPet->GetBreedID());
             accumulator->CalcQualityMultiplier(allyPet->GetQuality(), allyPet->GetNewLevel());
             uint32 health = accumulator->CalculateHealth();
             uint32 power = accumulator->CalculatePower();
@@ -1620,7 +1629,7 @@ void PetBattleWild::UpdatePetsAfterBattle()
                     continue;
 
                 // recalculate stats
-                BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(pb->GetSpeciesID(), BATTLE_PET_BREED_SS);
+                BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(pb->GetSpeciesID(), pb->GetBreedID());
                 accumulator->CalcQualityMultiplier(pb->GetQuality(), pb->GetNewLevel());
                 uint32 health = accumulator->CalculateHealth();
                 uint32 power = accumulator->CalculatePower();
@@ -1628,7 +1637,6 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 delete accumulator;
 
                 // update
-                loadoutInfo->SetBreedID(BATTLE_PET_BREED_SS);
                 loadoutInfo->SetLevel(pb->GetNewLevel());
                 if (pb->IsDead())
                     loadoutInfo->SetHealth(0);

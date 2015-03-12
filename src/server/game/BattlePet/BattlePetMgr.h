@@ -535,9 +535,6 @@ public:
     bool NextRoundFinal() { return nextRoundFinal; }
     void SetAbandoned(bool apply) { abandoned = apply; }
 
-    uint8 GetRandomQuailty();
-    uint16 GetRandomBreedID();
-
     void SetWinner(uint8 team) 
     {
         for (uint8 i = 0; i < 2; ++i)
@@ -738,6 +735,38 @@ public:
     PetBattleWild* GetPetBattleWild() { return m_petBattleWild; }
 
     uint32 GetXPForNextLevel(uint8 level);
+
+    uint8 GetRandomQuailty();
+    uint16 GetRandomBreedID(uint32 speciesID);
+    uint8 GetWeightForBreed(uint16 breedID)
+    {
+        uint8 weight = 0;
+        switch (breedID)
+        {
+        case 3:
+            weight = 60;
+            break;
+        case 4:
+        case 5:
+        case 6:
+            weight = 10;
+            break;
+        case 7:
+        case 8:
+        case 9:
+            weight = 20;
+            break;
+        case 10:
+        case 11:
+        case 12:
+            weight = 30;
+            break;
+        default:
+            break;
+        }
+
+        return weight;
+    }
 
 private:
     Player* m_player;
