@@ -1536,9 +1536,7 @@ void PetBattleWild::SendFinalRound()
 {
     WorldPacket data(SMSG_PET_BATTLE_FINAL_ROUND);
     // petsCount
-    uint8 totalPetsCount = 0;
-    uint32 bit_pos = data.bitwpos();
-    data.WriteBits(totalPetsCount, 20);
+    data.WriteBits(battleInfo.size(), 20);
 
     for (uint8 i = 0; i < 2; i++)
     {
@@ -1584,15 +1582,12 @@ void PetBattleWild::SendFinalRound()
             data << uint16(pb->GetNewLevel());  // NewLevel
             data << uint32(pb->GetMaxHealth()); // maxHealth
             data << uint16(pb->GetLevel()); // InitialLevel
-
-            totalPetsCount++;
         }
     }
 
     for (uint8 i = 0; i < 2; ++i)
         data << uint32(0); // NpcCreatureID
 
-    data.PutBits<uint8>(bit_pos, totalPetsCount, 20);
     m_player->GetSession()->SendPacket(&data);
 }
 
@@ -1667,7 +1662,8 @@ void PetBattleWild::UpdatePetsAfterBattle()
 
                 m_player->GetBattlePetMgr()->AddPetToList(petguid, pb->GetSpeciesID(), pb->GetCreatureEntry(), pb->GetLevel(), pb->GetDisplayID(), power, speed, pb->GetHealth(), health, pb->GetQuality(), 0, 0, pb->GetSummonSpell(), "", pb->GetBreedID());
                 // hack, fix it!
-                m_player->learnSpell(pb->GetSummonSpell(), false);
+                if (pb->GetSummonSpell())
+                    m_player->learnSpell(pb->GetSummonSpell(), false);
 
                 std::list<uint64> newPets;
                 newPets.clear();

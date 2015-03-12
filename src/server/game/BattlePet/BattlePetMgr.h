@@ -275,6 +275,10 @@ public:
             powerMod += value;
     }
 
+    int32 getHealthMod() { return healthMod; }
+    int32 getPowerMod() { return powerMod; }
+    int32 getSpeedMod() { return speedMod; }
+
 private:
     int32 healthMod;
     int32 powerMod;
