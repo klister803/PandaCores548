@@ -8455,7 +8455,8 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
         int32 healthPct = m_spellInfo->GetEffect(effIndex, m_diffMode).CalcValue(m_caster);
         if (petInfo->IsDead() || petInfo->IsHurt())
         {
-            petInfo->SetHealth(uint32(petInfo->GetMaxHealth() * healthPct / 100.0f));
+            int32 restoreHealth = int32(petInfo->GetMaxHealth() * healthPct / 100.0f);
+            petInfo->SetHealth(restoreHealth);
             updates.push_back(j->first);
         }
     }
