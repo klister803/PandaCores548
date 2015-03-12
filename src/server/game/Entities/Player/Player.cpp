@@ -20349,6 +20349,28 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         uint16 flags = fields[13].GetUInt16();
         int16 breedID = fields[14].GetUInt16();
 
+        // recalculate stats after change breed
+        if (!breedID)
+        {
+            float pct = health / maxHealth * 100.0f;
+            BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(speciesID, breedID);
+            accumulator->CalcQualityMultiplier(quality, level);
+            maxHealth = accumulator->CalculateHealth();
+            power = accumulator->CalculatePower();
+            speed = accumulator->CalculateSpeed();
+            delete accumulator;
+
+            if (pct != 100.0f)
+                health = uint32(maxHealth * pct / 100.0f);
+            else
+                health = maxHealth;
+
+            breedID = GetBattlePetMgr()->GetRandomBreedID(speciesID);
+        }
+
+        if (!breedID)
+            continue;
+
         GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
     }
     while (result->NextRow());
