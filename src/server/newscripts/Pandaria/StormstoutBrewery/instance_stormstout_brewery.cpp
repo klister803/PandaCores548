@@ -28,6 +28,7 @@ public:
         uint64 door4Guid;
         uint64 lastdoorGuid;
         uint64 carrotdoorGuid;
+        uint16 HoplingCount;
 
         instance_stormstout_brewery_InstanceMapScript(Map* map) : InstanceScript(map)
         {}
@@ -45,6 +46,7 @@ public:
             door4Guid = 0;
             lastdoorGuid = 0;
             carrotdoorGuid = 0;
+            HoplingCount = 0;
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -102,9 +104,9 @@ public:
                 {
                     if (state == DONE)
                     {
-                         HandleGameObject(ookexitdoorGuid, true);
-                         HandleGameObject(doorGuid, true);
-                         HandleGameObject(door2Guid, true);
+                        HandleGameObject(ookexitdoorGuid, true);
+                        HandleGameObject(doorGuid, true);
+                        HandleGameObject(door2Guid, true);
                     }
                 }
                 break;
@@ -149,10 +151,17 @@ public:
             return true;
         }
 
-        void SetData(uint32 type, uint32 data){}
+        void SetData(uint32 type, uint32 data)
+        {
+            if (type == DATA_GOLDEN_HOPLING)
+                HoplingCount = data;          
+        }
 
         uint32 GetData(uint32 type)
         {
+            if (type == DATA_GOLDEN_HOPLING)
+                return HoplingCount;
+
             return 0;
         }
 

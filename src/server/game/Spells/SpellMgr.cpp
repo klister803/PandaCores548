@@ -5460,6 +5460,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 85222: // Light of Dawn
                     spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                     break;
+                case 115037: // Ling-Ting's Herbal Journey
+                    spellInfo->Effects[0].MiscValue = 3;
+                    break;
                 default:
                     break;
             }

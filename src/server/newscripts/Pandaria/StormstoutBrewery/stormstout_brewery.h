@@ -17,7 +17,9 @@ enum DataTypes
 {
     DATA_OOK_OOK   = 0,
     DATA_HOPTALLUS = 1,
-    DATA_YAN_ZHU   = 2
+    DATA_YAN_ZHU   = 2,
+    
+    DATA_GOLDEN_HOPLING,
 };
 
 enum CreaturesIds
@@ -36,6 +38,25 @@ enum GameObjectIds
     GO_DOOR4         = 211137,
     GO_LAST_DOOR     = 211136,
     GO_CARROT_DOOR   = 211126
+};
+
+enum eMisc
+{
+    NPC_BARREL              = 56731,
+
+    //Pre event Hoptallus Summons (114363,114553)
+    NPC_HOPPER_HAMMER       = 59426,
+    NPC_BOPPER_EXPLOSIVE    = 56718,
+
+    //Hoptallus Summons
+    NPC_TRIGGER_SUMMONER    = 55091,
+    NPC_BOPPER_HAMMER       = 59551,
+    NPC_HOPPER_EXPLOSIVE    = 59464,
+
+    SPELL_PROC_EXPLOSION    = 106787,
+    SPELL_ACHIEV_CREDIT     = 116270,
+    SPELL_SMASH_OVERRIDE    = 111662,
+    SPELL_SMASH_DMG         = 111666,
 };
 
 #endif // STORMSTOUT_BREWERY_H_

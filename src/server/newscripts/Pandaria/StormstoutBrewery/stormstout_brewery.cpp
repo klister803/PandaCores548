@@ -6,11 +6,76 @@
 #include "NewScriptPCH.h"
 #include "stormstout_brewery.h"
 
-enum eHabaneroBeer
+class npc_golden_hopling : public CreatureScript
 {
-    NPC_BARREL              = 56731,
+    public:
+        npc_golden_hopling() : CreatureScript("npc_golden_hopling") {}
 
-    SPELL_PROC_EXPLOSION    = 106787
+        struct npc_golden_hoplingAI : public Scripted_NoMovementAI
+        {
+            npc_golden_hoplingAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                OneClick = false;
+            }
+
+            InstanceScript* instance;
+            bool OneClick;
+            
+            void OnSpellClick(Unit* /*clicker*/)
+            {
+                if (instance && !OneClick)
+                {
+                    OneClick = true;
+                    uint32 HoplingCount = instance->GetData(DATA_GOLDEN_HOPLING) + 1;
+                    instance->SetData(DATA_GOLDEN_HOPLING, HoplingCount);
+                    if (HoplingCount >= 30)
+                        DoCast(SPELL_ACHIEV_CREDIT);
+                    me->DespawnOrUnsummon();
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_golden_hoplingAI(creature);
+        }
+};
+
+class npc_big_ol_hammer : public CreatureScript
+{
+    public:
+        npc_big_ol_hammer() : CreatureScript("npc_big_ol_hammer") {}
+
+        struct npc_big_ol_hammerAI : public Scripted_NoMovementAI
+        {
+            npc_big_ol_hammerAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                OneClick = false;
+            }
+
+            InstanceScript* instance;
+            bool OneClick;
+            
+            void OnSpellClick(Unit* clicker)
+            {
+                if (instance && !OneClick)
+                {
+                    OneClick = true;
+
+                    for (uint8 i = 0; i < 3; ++i)
+                        clicker->CastSpell(clicker, SPELL_SMASH_OVERRIDE);
+
+                    me->DespawnOrUnsummon();
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_big_ol_hammerAI(creature);
+        }
 };
 
 class spell_stormstout_brewery_habanero_beer : public SpellScriptLoader
@@ -65,5 +130,7 @@ class spell_stormstout_brewery_habanero_beer : public SpellScriptLoader
 
 void AddSC_stormstout_brewery()
 {
+    new npc_golden_hopling();
+    new npc_big_ol_hammer();
     new spell_stormstout_brewery_habanero_beer();
 }

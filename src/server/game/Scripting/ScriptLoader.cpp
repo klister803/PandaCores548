@@ -241,6 +241,7 @@ void AddSC_instance_scarlet_monastery();     //Scarlet Monastery MoP 1004 ID
 void AddSC_boss_headless_horseman();
 void AddSC_boss_mograine_and_whitemane();
 void AddSC_instance_scholomance();           // Update in Mist of Pandaria
+void AddSC_scholomance();
 void AddSC_boss_instructor_chillheart();
 void AddSC_boss_jandice_barov();
 void AddSC_boss_rattlegore();
@@ -1089,6 +1090,7 @@ void AddEasternKingdomsScripts()
     AddSC_boss_jandice_barov();
     AddSC_boss_rattlegore();
     AddSC_boss_lilian_voss();
+    AddSC_scholomance();
     AddSC_boss_darkmaster_gandling();       
     AddSC_boss_baron_ashbury();             //Shadowfang keep
     AddSC_boss_baron_silverlaine();

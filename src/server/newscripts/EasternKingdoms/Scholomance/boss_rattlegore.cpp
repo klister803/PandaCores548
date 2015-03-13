@@ -166,7 +166,6 @@ class spell_bone_spike : public SpellScriptLoader
         }
 };
 
-
 void AddSC_boss_rattlegore()
 {
     new boss_rattlegore();

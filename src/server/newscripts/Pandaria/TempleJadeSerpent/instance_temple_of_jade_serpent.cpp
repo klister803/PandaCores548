@@ -448,6 +448,7 @@ public:
                     creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
                     summoner->CastSpell(creature, SPELL_COPY_WEAPON, false);
                     summoner->CastSpell(creature, SPELL_COPY_WEAPON_2, false);
+                    creature->setFaction(14);
 
                     Unit* caster = summoner;
                     Unit* target = creature;

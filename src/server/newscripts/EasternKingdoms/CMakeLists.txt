@@ -35,6 +35,7 @@ set(scripts_STAT_SRCS
   EasternKingdoms/Scholomance/boss_rattlegore.cpp
   EasternKingdoms/Scholomance/boss_lilian_voss.cpp
   EasternKingdoms/Scholomance/boss_darkmaster_gandling.cpp
+  EasternKingdoms/Scholomance/scholomance.cpp
   EasternKingdoms/Scholomance/scholomance.h
   EasternKingdoms/Scholomance/instance_scholomance.cpp
   EasternKingdoms/isle_of_queldanas.cpp

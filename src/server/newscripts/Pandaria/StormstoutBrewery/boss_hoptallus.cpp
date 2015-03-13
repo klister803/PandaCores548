@@ -10,10 +10,10 @@
 
 enum Spells
 {
-    SPELL_CARROT_BREATH  = 112944,
-    SPELL_FURL_WIND      = 112992, 
-    SPELL_EXPLOSIVE_BREW = 114291,
-
+    SPELL_CARROT_BREATH             = 112944,
+    SPELL_FURL_WIND                 = 112992, 
+    SPELL_EXPLOSIVE_BREW            = 114291,
+    SPELL_EXPLOSIVE_BREW_JUMP_DMG   = 116027,
 };
 
 class boss_hoptallus : public CreatureScript
@@ -117,10 +117,14 @@ class npc_hopper : public CreatureScript
             void Reset()
             {
                 explose = false;
+                me->SetReactState(REACT_AGGRESSIVE);
             }
 
             void UpdateAI(uint32 diff)
             {
+                if (!UpdateVictim())
+                    return;
+                
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
@@ -136,6 +140,18 @@ class npc_hopper : public CreatureScript
                     }
                 }
             }
+
+            void SpellHit(Unit* caster, SpellInfo const* spell)
+            {
+                if (spell->Id == SPELL_SMASH_DMG)
+                {
+                    me->SetReactState(REACT_PASSIVE);
+                    me->AttackStop();
+                    me->InterruptSpell(CURRENT_GENERIC_SPELL);
+                    me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 20, 10, 18);
+                    DoCast(SPELL_EXPLOSIVE_BREW_JUMP_DMG);
+                }
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -143,7 +159,6 @@ class npc_hopper : public CreatureScript
             return new npc_hopperAI(creature);
         }
 };
-
 
 void AddSC_boss_hoptallus()
 {
