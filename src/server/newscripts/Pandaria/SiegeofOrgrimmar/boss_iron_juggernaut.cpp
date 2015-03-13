@@ -31,6 +31,13 @@ enum eSpells
     SPELL_GROUND_POUND            = 144776,
     SPELL_ENGULFED_EXPLOSE        = 144791,
     SPELL_DEMOLISHER_CANNON       = 144153,
+    SPELL_BORER_DRILL_TR_VISUAL   = 144221,
+    SPELL_BORER_DRILL_B_VISUAL    = 144296,
+    SPELL_BORER_DRILL_DMG         = 144218,
+    //HM
+    SPELL_RICOCHET_TR_VISUAL      = 144375,
+    SPELL_RICOCHET_DMG            = 144327,
+    SPELL_RICOCHET_AT             = 144356,
     //Phase 2
     SPELL_SEISMIC_ACTIVITY        = 144483,
     SPELL_SEISMIC_ACTIVITY_VISUAL = 144557,
@@ -57,11 +64,12 @@ enum eEvents
     EVENT_EXPLOSIVE_TAR           = 6,
     EVENT_SHOCK_PULSE             = 7,
     EVENT_DEMOLISHER_CANNON       = 8,
+    EVENT_BORER_DRILL             = 9,
     //Mines
-    EVENT_ACTIVE_DETONATE         = 9,
-    EVENT_ENGULFED_EXPLOSE        = 10,
+    EVENT_ACTIVE_DETONATE         = 10,
+    EVENT_ENGULFED_EXPLOSE        = 11,
     //Cutter Laser
-    EVENT_FIND_PLAYERS            = 11,
+    EVENT_FIND_PLAYERS            = 12,
 };
 
 Position const modpos[3] = 
@@ -84,7 +92,6 @@ enum Actions
     ACTION_SET_TARGET_LASER       = 3,
 };
 
-//triggers - 71906(borer drill), 72026(laser), 71950(explosive tar)
 //71466
 class boss_iron_juggernaut : public CreatureScript
 {
@@ -111,6 +118,7 @@ class boss_iron_juggernaut : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
                 SendActionForAllPassenger(false);
             }
 
@@ -122,6 +130,7 @@ class boss_iron_juggernaut : public CreatureScript
                 enrage = 600000;
                 events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
+                events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
@@ -132,13 +141,17 @@ class boss_iron_juggernaut : public CreatureScript
                 switch (action)
                 {
                 case ACTION_PHASE_ONE:
+                    PowerTimer = 0;
                     events.Reset();
+                    phase = PHASE_ONE;
+                    events.SetPhase(PHASE_ONE);
                     me->SetPower(POWER_ENERGY, 0);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
                     PowerTimer = 1100;
                     events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                     events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
+                    events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                     events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
@@ -218,10 +231,27 @@ class boss_iron_juggernaut : public CreatureScript
                 {
                     switch (eventId)
                     {
+                    case EVENT_BORER_DRILL:
+                        DoCast(me, SPELL_BORER_DRILL_B_VISUAL, true);
+                        Position pos;
+                        me->GetNearPosition(pos, 12.5f, 5.32f);
+                        for (uint8 n = 0; n < 3; n++)
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                            {
+                                if (Creature* drill = me->SummonCreature(NPC_BORER_DRILL, pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                                {
+                                    drill->AddThreat(target, 50000000.0f);
+                                    drill->Attack(target, true);
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_BORER_DRILL, 20000, 0, PHASE_ONE);
+                        break;
                     case EVENT_MORTAR_BLAST:
                         if (Unit* p = GetPassengerForCast(NPC_TOP_CANNON))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_MORTAR_BLAST);
@@ -232,17 +262,10 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_DEMOLISHER_CANNON:
                         if (Unit* p = GetPassengerForCast(NPC_CANNON))
                         {
-                            std::set<uint64> pllist = GetUniqueTargetList(3);
-                            if (!pllist.empty())
+                            for (uint8 n = 0; n < 3; n++)
                             {
-                                for (std::set < uint64 > ::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                                {
-                                    if (Player* pl = me->GetPlayer(*me, *itr))
-                                    {
-                                        if (pl->isAlive())
-                                            p->CastSpell(pl, SPELL_DEMOLISHER_CANNON);
-                                    }
-                                }
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                                    p->CastSpell(target, SPELL_DEMOLISHER_CANNON);
                             }
                         }
                         events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
@@ -250,7 +273,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_SCATTER_LASER:
                         if (Unit* p = GetPassengerForCast(NPC_TAIL_GUN))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_SCATTER_LASER);
@@ -259,7 +282,7 @@ class boss_iron_juggernaut : public CreatureScript
                         events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                         break;
                     case EVENT_SUMMON_MINE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 80.0f, true))
                         {
                             float x, y, z;
                             x = target->GetPositionX();
@@ -275,23 +298,16 @@ class boss_iron_juggernaut : public CreatureScript
                         break;
                     case EVENT_EXPLOSIVE_TAR:
                     {
-                        std::set<uint64> pllist = GetUniqueTargetList(5);
-                        if (!pllist.empty())
+                        for (uint8 n = 0; n < 5; n++)
                         {
-                            for (std::set < uint64 > ::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                            {
-                                if (Player* pl = me->GetPlayer(*me, *itr))
-                                {
-                                    if (pl->isAlive())
-                                        DoCast(pl, SPELL_EXPLOSIVE_TAR_SUMMON);
-                                }
-                            }
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
+                                DoCast(target, SPELL_EXPLOSIVE_TAR_SUMMON);
                         }
                         events.ScheduleEvent(EVENT_CUTTER_LASER, 10000, 0, PHASE_TWO);
                         break;
                     }
                     case EVENT_CUTTER_LASER:                  
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 80.0f, true))
                         {
                             if (Creature* laser = me->SummonCreature(NPC_CUTTER_LASER, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 31000))
                             {
@@ -318,7 +334,6 @@ class boss_iron_juggernaut : public CreatureScript
                     default:
                         break;
                     }
-
                 }
                 DoMeleeAttackIfReady();
             }
@@ -349,27 +364,6 @@ class boss_iron_juggernaut : public CreatureScript
                         }
                     }
                 }
-            }
-
-            std::set<uint64> GetUniqueTargetList(uint8 size)
-            {
-                std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                std::set<uint64> pllist;
-                pllist.clear();
-                if (!tlist.empty() && tlist.size() > 1)
-                {
-                    if (tlist.size() <= size)
-                        size = tlist.size() - 1;
-                        
-                    while (pllist.size() < size)
-                    {
-                        std::list<HostileReference*>::const_iterator itr = tlist.begin();
-                        std::advance(itr, urand(1, tlist.size() - 1));
-                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                            pllist.insert((*itr)->getUnitGuid());
-                    }
-                }
-                return pllist;
             }
 
             Unit* GetPassengerForCast(uint32 entry)
@@ -629,7 +623,7 @@ public:
 
         void FindPlayers()
         {
-            if (Creature* laser = me->FindNearestCreature(NPC_CUTTER_LASER, 4.0f, true))
+            if (Creature* laser = me->FindNearestCreature(NPC_CUTTER_LASER, 5.0f, true))
             {
                 me->RemoveAurasDueToSpell(SPELL_EXPLOSIVE_TAR_VISUAL);
                 DoCastAOE(SPELL_TAR_EXPLOSION, true);
@@ -670,6 +664,68 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_explosive_tarAI(creature);
+    }
+};
+
+//71906
+class npc_borer_drill : public CreatureScript
+{
+public:
+    npc_borer_drill() : CreatureScript("npc_borer_drill") {}
+
+    struct npc_borer_drillAI : public ScriptedAI
+    {
+        npc_borer_drillAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+            me->AddAura(SPELL_BORER_DRILL_TR_VISUAL, me);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset()
+        {
+            events.Reset();
+            events.ScheduleEvent(EVENT_FIND_PLAYERS, 1000);
+        }
+
+        void FindPlayers()
+        {
+            std::list<Player*> pllist;
+            pllist.clear();
+            GetPlayerListInGrid(pllist, me, 2.0f);
+            if (!pllist.empty())
+            {
+                for (std::list < Player* >::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                {
+                    if ((*itr)->isAlive())
+                        (*itr)->AddAura(SPELL_BORER_DRILL_DMG, (*itr));
+                }
+            }
+            events.ScheduleEvent(EVENT_FIND_PLAYERS, 1000);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_FIND_PLAYERS)
+                    FindPlayers();
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_borer_drillAI(creature);
     }
 };
 
@@ -799,6 +855,39 @@ public:
     }
 };
 
+//144218
+class spell_borer_drill : public SpellScriptLoader
+{
+public:
+    spell_borer_drill() : SpellScriptLoader("spell_borer_drill") { }
+
+    class spell_borer_drill_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_borer_drill_AuraScript);
+
+        void HandlePeriodic(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+            {
+                if (Creature* npc_br = GetTarget()->FindNearestCreature(NPC_BORER_DRILL, 2.0f, true))
+                    return;
+
+                GetTarget()->RemoveAurasDueToSpell(SPELL_BORER_DRILL_DMG);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_borer_drill_AuraScript::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_borer_drill_AuraScript();
+    }
+};
+
 
 void AddSC_boss_iron_juggernaut()
 {
@@ -807,8 +896,10 @@ void AddSC_boss_iron_juggernaut()
     new npc_crawler_mine();
     new npc_cutter_laser();
     new npc_explosive_tar();
+    new npc_borer_drill();
     new spell_cutter_laser();
     new spell_cutter_laser_target();
     new spell_seismic_activity();
     new spell_explosive_tar();
+    new spell_borer_drill();
 }
