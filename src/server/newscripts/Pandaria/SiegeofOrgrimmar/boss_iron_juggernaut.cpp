@@ -111,6 +111,7 @@ class boss_iron_juggernaut : public CreatureScript
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
+                me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
                 SendActionForAllPassenger(false);
             }
 
@@ -270,14 +271,14 @@ class boss_iron_juggernaut : public CreatureScript
                     {
                         for (uint8 n = 0; n < 5; n++)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                                 DoCast(target, SPELL_EXPLOSIVE_TAR_SUMMON);
                         }
                         events.ScheduleEvent(EVENT_CUTTER_LASER, 10000, 0, PHASE_TWO);
                         break;
                     }
                     case EVENT_CUTTER_LASER:                  
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 60.0f, true))
                         {
                             if (Creature* laser = me->SummonCreature(NPC_CUTTER_LASER, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 31000))
                             {
@@ -304,7 +305,6 @@ class boss_iron_juggernaut : public CreatureScript
                     default:
                         break;
                     }
-
                 }
                 DoMeleeAttackIfReady();
             }
@@ -335,27 +335,6 @@ class boss_iron_juggernaut : public CreatureScript
                         }
                     }
                 }
-            }
-
-            std::set<uint64> GetUniqueTargetList(uint8 size)
-            {
-                std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                std::set<uint64> pllist;
-                pllist.clear();
-                if (!tlist.empty() && tlist.size() > 1)
-                {
-                    if (tlist.size() <= size)
-                        size = tlist.size() - 1;
-                        
-                    while (pllist.size() < size)
-                    {
-                        std::list<HostileReference*>::const_iterator itr = tlist.begin();
-                        std::advance(itr, urand(1, tlist.size() - 1));
-                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                            pllist.insert((*itr)->getUnitGuid());
-                    }
-                }
-                return pllist;
             }
 
             Unit* GetPassengerForCast(uint32 entry)
