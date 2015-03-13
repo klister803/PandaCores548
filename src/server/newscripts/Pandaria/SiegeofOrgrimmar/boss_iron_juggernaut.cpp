@@ -225,7 +225,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_MORTAR_BLAST:
                         if (Unit* p = GetPassengerForCast(NPC_TOP_CANNON))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_MORTAR_BLAST);
@@ -238,7 +238,7 @@ class boss_iron_juggernaut : public CreatureScript
                         {
                             for (uint8 n = 0; n < 3; n++)
                             {
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                                     p->CastSpell(target, SPELL_DEMOLISHER_CANNON);
                             }
                         }
@@ -247,7 +247,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_SCATTER_LASER:
                         if (Unit* p = GetPassengerForCast(NPC_TAIL_GUN))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_SCATTER_LASER);
@@ -256,7 +256,7 @@ class boss_iron_juggernaut : public CreatureScript
                         events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                         break;
                     case EVENT_SUMMON_MINE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 80.0f, true))
                         {
                             float x, y, z;
                             x = target->GetPositionX();
@@ -274,14 +274,14 @@ class boss_iron_juggernaut : public CreatureScript
                     {
                         for (uint8 n = 0; n < 5; n++)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 80.0f, true))
                                 DoCast(target, SPELL_EXPLOSIVE_TAR_SUMMON);
                         }
                         events.ScheduleEvent(EVENT_CUTTER_LASER, 10000, 0, PHASE_TWO);
                         break;
                     }
                     case EVENT_CUTTER_LASER:                  
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 60.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 80.0f, true))
                         {
                             if (Creature* laser = me->SummonCreature(NPC_CUTTER_LASER, target->GetPositionX() + 10.0f, target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 31000))
                             {
