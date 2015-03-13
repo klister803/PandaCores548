@@ -133,7 +133,10 @@ class boss_iron_juggernaut : public CreatureScript
                 switch (action)
                 {
                 case ACTION_PHASE_ONE:
+                    PowerTimer = 0;
                     events.Reset();
+                    phase = PHASE_ONE;
+                    events.SetPhase(PHASE_ONE);
                     me->SetPower(POWER_ENERGY, 0);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
@@ -594,7 +597,7 @@ public:
 
         void FindPlayers()
         {
-            if (Creature* laser = me->FindNearestCreature(NPC_CUTTER_LASER, 4.0f, true))
+            if (Creature* laser = me->FindNearestCreature(NPC_CUTTER_LASER, 5.0f, true))
             {
                 me->RemoveAurasDueToSpell(SPELL_EXPLOSIVE_TAR_VISUAL);
                 DoCastAOE(SPELL_TAR_EXPLOSION, true);
