@@ -73,6 +73,7 @@ enum eCreatures
     NPC_CRAWLER_MINE                = 72050,
     NPC_CUTTER_LASER                = 72026,
     NPC_EXPLOSIVE_TAR               = 71950,
+    NPC_BORER_DRILL                 = 71906,
 
     NPC_IMMERSEUS                   = 71543,
 
