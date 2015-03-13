@@ -222,7 +222,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_MORTAR_BLAST:
                         if (Unit* p = GetPassengerForCast(NPC_TOP_CANNON))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_MORTAR_BLAST);
@@ -235,7 +235,7 @@ class boss_iron_juggernaut : public CreatureScript
                         {
                             for (uint8 n = 0; n < 3; n++)
                             {
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                                     p->CastSpell(target, SPELL_DEMOLISHER_CANNON);
                             }
                         }
@@ -244,7 +244,7 @@ class boss_iron_juggernaut : public CreatureScript
                     case EVENT_SCATTER_LASER:
                         if (Unit* p = GetPassengerForCast(NPC_TAIL_GUN))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 60.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                             {
                                 p->SetFacingToObject(target);
                                 p->CastSpell(target, SPELL_SCATTER_LASER);
