@@ -418,6 +418,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (action.action->targetFlags & AT_TARGET_FLAG_HOSTILE)
         if (!caster || !caster->IsHostileTo(unit))
             return;
+    if (action.action->targetFlags & AT_TARGET_FLAG_VALIDATTACK)
+        if (!caster || !caster->IsValidAttackTarget(unit))
+            return;
     if (action.action->targetFlags & AT_TARGET_FLAG_OWNER)
     if (unit->GetGUID() != GetCasterGUID())
             return;

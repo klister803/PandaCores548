@@ -16,6 +16,24 @@ enum Spells
     SPELL_EXPLOSIVE_BREW_JUMP_DMG   = 116027,
 };
 
+enum eEvents
+{
+    EVENT_WP_1      = 1,
+    EVENT_WP_2      = 2,
+    EVENT_WP_3      = 3,
+    EVENT_WP_4      = 4,
+};
+
+const Position ePos[6] =
+{
+    {-711.41f, 1314.26f, 163.0f},
+    {-752.30f, 1326.73f, 163.0f},
+    {-769.08f, 1298.62f, 163.0f},
+    {-768.20f, 1273.40f, 163.0f},
+    {-758.04f, 1236.80f, 163.0f},
+    {-775.34f, 1215.79f, 169.0f},
+};
+
 class boss_hoptallus : public CreatureScript
 {
     public:
@@ -28,7 +46,6 @@ class boss_hoptallus : public CreatureScript
                 InstanceScript* instance = creature->GetInstanceScript();
             }
 
-            InstanceScript* instance;
             uint32 breathtimer;
             uint32 windtimer;
             uint32 summonadd;
@@ -110,9 +127,14 @@ class npc_hopper : public CreatureScript
 
         struct npc_hopperAI : public ScriptedAI
         {
-            npc_hopperAI(Creature* creature) : ScriptedAI(creature){}
+            npc_hopperAI(Creature* creature) : ScriptedAI(creature)
+            {
+                move = false;
+            }
 
             bool explose;
+            bool move;
+            EventMap events;
 
             void Reset()
             {
@@ -120,13 +142,75 @@ class npc_hopper : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
+            void EnterEvadeMode()
+            {
+                me->DespawnOrUnsummon();
+            }
+
+            void IsSummonedBy(Unit* owner)
+            {
+                if (owner->GetEntry() == NPC_TRIGGER_SUMMONER)
+                {
+                    move = true;
+                    me->setFaction(14);
+                    me->SetWalk(true);
+                    me->GetMotionMaster()->MovePoint(1, ePos[0]);
+                }
+            }
+
+            void MovementInform(uint32 type, uint32 id)
+            {
+                if (type == POINT_MOTION_TYPE)
+                {
+                    switch (id)
+                    {
+                        case 1:
+                            events.ScheduleEvent(EVENT_WP_1, 0);
+                            break;
+                        case 2:
+                            events.ScheduleEvent(EVENT_WP_2, 0);
+                            break;
+                        case 3:
+                            events.ScheduleEvent(EVENT_WP_3, 0);
+                            break;
+                        case 4:
+                            events.ScheduleEvent(EVENT_WP_4, 0);
+                            break;
+                        case 5:
+                            me->GetMotionMaster()->MoveJump(ePos[5].GetPositionX() + irand(-5, 5), ePos[5].GetPositionY() + irand(-5, 5), ePos[5].GetPositionZ(), 15, 15);
+                            me->DespawnOrUnsummon();
+                            break;
+                    }
+                }
+            }
+
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim())
+                if (!UpdateVictim() && !move)
                     return;
-                
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
+
+                events.Update(diff);
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_WP_1:
+                            me->GetMotionMaster()->MovePoint(2, ePos[1]);
+                            break;
+                        case EVENT_WP_2:
+                            me->GetMotionMaster()->MovePoint(3, ePos[2]);
+                            break;
+                        case EVENT_WP_3:
+                            me->GetMotionMaster()->MovePoint(4, ePos[3]);
+                            break;
+                        case EVENT_WP_4:
+                            me->GetMotionMaster()->MovePoint(5, ePos[4]);
+                            break;
+                    }
+                }
 
                 if (me->getVictim())
                 {
