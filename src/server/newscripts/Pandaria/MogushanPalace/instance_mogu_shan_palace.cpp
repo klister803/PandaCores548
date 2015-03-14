@@ -59,6 +59,8 @@ public:
         uint64 doorAfterTrialGuid;
         uint64 doorBeforeKingGuid;
         uint64 secretdoorGuid;
+        
+        uint8 JadeCount;
 
         instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
@@ -80,6 +82,14 @@ public:
             glintrok_skulker = 0;
             glintrok_oracle = 0;
             glintrok_hexxer = 0;
+            
+            JadeCount = 0;
+        }
+
+        void FillInitialWorldStates(WorldPacket& data)
+        {
+            data << uint32(JadeCount > 0 && JadeCount != 5)     << uint32(6761); // Show_Jade
+            data << uint32(JadeCount)                           << uint32(6748); // Jade_Count
         }
 
         bool SetBossState(uint32 id, EncounterState state)
@@ -158,6 +168,18 @@ public:
                         }
                     }
                     break;
+                case TYPE_JADECOUNT:
+                {
+                    JadeCount = data;
+                    DoUpdateWorldState(6761, 1);
+                    DoUpdateWorldState(6748, JadeCount);
+                    if (JadeCount == 5)
+                    {
+                        DoCastSpellOnPlayers(SPELL_ACHIEV_JADE_QUILEN);
+                        DoUpdateWorldState(6761, 0);
+                    }
+                    break;
+                }
             }
 
             SetData_trial_of_the_king(type, data);
@@ -166,6 +188,9 @@ public:
 
         uint32 GetData(uint32 type)
         {
+            if (type == TYPE_JADECOUNT)
+                return JadeCount;
+
             return 0;
         }
 
@@ -580,6 +605,7 @@ public:
                 {
                     chest->SetPhaseMask(1, true);
                     chest->SetRespawnTime(604800);
+                    instance->SummonCreature(CREATURE_JADE_QUILEN, SummonPositions);
                 }
                 
                 if (GameObject* go = instance->GetGameObject(secretdoorGuid))

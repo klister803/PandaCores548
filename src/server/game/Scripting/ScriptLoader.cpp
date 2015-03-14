@@ -760,6 +760,7 @@ void AddSC_boss_galion();
 void AddSC_boss_oondasta();
 void AddSC_boss_nalak();
 void AddSC_instance_mogu_shan_palace();             // Mogu'Shan Palace
+void AddSC_mogu_shan_palace();
 void AddSC_boss_trial_of_the_king();
 void AddSC_boss_gekkan();
 void AddSC_boss_xin_the_weaponmaster();
@@ -1614,6 +1615,7 @@ void AddPandarieScripts()
     AddSC_boss_hoptallus();
     AddSC_boss_yan_zhu();
     AddSC_instance_mogu_shan_palace();              // The Mogu'Shan Palace
+    AddSC_mogu_shan_palace();
     AddSC_boss_trial_of_the_king();
     AddSC_boss_gekkan();
     AddSC_boss_xin_the_weaponmaster();

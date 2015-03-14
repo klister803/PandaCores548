@@ -17,7 +17,7 @@ enum eData
     DATA_GEKKAN                 = 1,
     DATA_XIN_THE_WEAPONMASTER   = 2,
 
-    DATA_GEKKAN_ADDS            = 3
+    DATA_GEKKAN_ADDS            = 3,
 };
 
 enum eSpells
@@ -61,6 +61,9 @@ enum eSpells
     SPELL_WHIRLING_DERVISH_3        = 119994,
     SPELL_THROW                     = 120087,
     SPELL_THROW_2                   = 120035,
+    
+    //Achiev: Quarrelsome Quilen Quintet
+    SPELL_ACHIEV_JADE_QUILEN        = 124352,
 };
 
 enum eCreatures
@@ -88,6 +91,9 @@ enum eCreatures
     CREATURE_ANIMATED_STAFF                 = 61433,
     CREATURE_ANIMATED_AXE                   = 61451,
     CREATURE_LAUNCH_SWORD                   = 63808,
+    
+    //Achiev: Quarrelsome Quilen Quintet
+    CREATURE_JADE_QUILEN                    = 63091,
 };
 
 enum eTypes
@@ -118,6 +124,8 @@ enum eTypes
     TYPE_ACTIVATE_ANIMATED_STAFF, //18
     TYPE_ACTIVATE_ANIMATED_AXE, //19
     TYPE_ACTIVATE_SWORD, //20
+    
+    TYPE_JADECOUNT, //21
 };
 
 enum eGameObjects
@@ -129,5 +137,7 @@ enum eGameObjects
     GO_DOOR_BEFORE_KING     = 213596,
     GO_SECRET_DOOR          = 213810,
 };
+
+const Position SummonPositions = {-4222.63f, -2613.71f, 16.48f, 6.2f};
 
 #endif // MOGUSHAN_PALACE_H_

@@ -11298,6 +11298,16 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_TV)
                 bg->FillInitialWorldStates(data);
             break;
+        // Mogu'shan Palace
+         case 6182:
+            if (instance && mapid == 994)
+                instance->FillInitialWorldStates(data);
+            else
+            {
+                FillInitialWorldState(data, 0, 6761);              // WORLDSTATE_SHOW_JADECOUNT
+                FillInitialWorldState(data, 0, 6748);              // WORLDSTATE_JADECOUNT
+            }
+            break;
         // Siege Of Orgrimmar
         case 6738:
             if (instance && mapid == 1136)
