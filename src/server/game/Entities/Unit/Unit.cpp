@@ -1320,7 +1320,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
     int32 sourceDamage = damage;
 
-    if (IsDamageReducedByArmor(damageSchoolMask, spellInfo))
+    if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
 
     bool blocked = false;
@@ -1832,7 +1832,7 @@ void Unit::HandleEmoteCommand(uint32 anim_id)
     SendMessageToSet(&data, true);
 }
 
-bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* spellInfo)
+bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* spellInfo, uint32 effectMask)
 {
     // only physical spells damage gets reduced by armor
     if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0)
@@ -1842,6 +1842,16 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
         // there are spells with no specific attribute but they have "ignores armor" in tooltip
         if ((spellInfo->AttributesCu & SPELL_ATTR0_CU_IGNORE_ARMOR))
             return false;
+
+        for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if ((effectMask & (1 << i)) && (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                spellInfo->Effects[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE))
+            {
+                if (spellInfo->GetEffectMechanicMask(i) & (1 << MECHANIC_BLEED))
+                    return false;
+            }
+        }
     }
     return true;
 }
