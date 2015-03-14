@@ -7805,14 +7805,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage);
 
-        // Calculate armor mitigation
-        if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), (1 << effIndex)))
-        {
-            uint32 damageReductedArmor = caster->CalcArmorReducedDamage(target, damage, GetSpellInfo());
-            cleanDamage.mitigated_damage += damage - damageReductedArmor;
-            damage = damageReductedArmor;
-        }
-
         // Curse of Agony damage-per-tick calculation
         if (GetSpellInfo()->Id == 980 && m_tickNumber != 1) // Agony
             GetBase()->ModStackAmount(1);
@@ -8024,14 +8016,6 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster, S
     bool crit = roll_chance_f(GetCritChance());
     if (crit)
         damage = GetCritAmount();
-
-    // Calculate armor mitigation
-    if (Unit::IsDamageReducedByArmor(GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), (1 << effIndex)))
-    {
-        uint32 damageReductedArmor = caster->CalcArmorReducedDamage(target, damage, GetSpellInfo());
-        cleanDamage.mitigated_damage += damage - damageReductedArmor;
-        damage = damageReductedArmor;
-    }
 
     int32 dmg = damage;
 
