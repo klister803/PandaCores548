@@ -3874,7 +3874,7 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
 
     if (LastDispelEff && hasPredictedDispel == 1)
         if (Player* player = m_caster->ToPlayer())
-            if (m_spellInfo->RecoveryTime <= 8000)
+            if (m_spellInfo->RecoveryTime <= 8000 && m_spellInfo->IsPositive())
                 player->RemoveSpellCooldown(m_spellInfo->Id, true);
 
     if (dispel_list.empty())
