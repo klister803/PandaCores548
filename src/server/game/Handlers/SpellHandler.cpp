@@ -764,7 +764,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // ignore for remote control state (for player case)
     Unit* mover = _player->m_mover;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: mover != _player id %u", spellId);
         return;
+    }
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
@@ -794,11 +797,23 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
     else
     {
-        // not have spell in spellbook or spell passive and not casted by client
-        if ((mover->GetTypeId() == TYPEID_UNIT && !mover->ToCreature()->HasSpell(spellId)) || spellInfo->IsPassive())
+        // spell passive and not casted by client
+        if (spellInfo->IsPassive())
         {
-            //cheater? kick? ban?
+            sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: spell passive and not casted by client id %u", spellId);
             return;
+        }
+        // not have spell in spellbook or spell passive and not casted by client
+        if (mover->GetTypeId() == TYPEID_UNIT && !mover->ToCreature()->HasSpell(spellId))
+        {
+            if(_player->HasActiveSpell(spellId))
+                mover = (Unit*)_player;
+            else
+            {
+                //cheater? kick? ban?
+                sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: not have spell in spellbook id %u", spellId);
+                return;
+            }
         }
     }
 
@@ -870,7 +885,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // can't use our own spells when we're in possession of another unit,
     if (_player->isPossessing())
+    {
+        sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: can't use our own spells when we're in possession id %u", spellId);
         return;
+    }
 
     //HandleClientCastFlags(recvPacket, castFlags, targets);
 

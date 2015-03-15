@@ -9305,10 +9305,7 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 }
                 case SPELL_FILTER_BY_AURA: //1
                 {
-                    if(itr->param1 < 0.0f)
-                        targets.remove_if(Trinity::UnitAuraCheck(false, uint32(itr->param2)));
-                    else
-                        targets.remove_if(Trinity::UnitAuraCheck(true, uint32(itr->param2)));
+                    targets.remove_if(Trinity::UnitAuraAndCheck(itr->param1, itr->param2, itr->param3));
                     break;
                 }
                 case SPELL_FILTER_BY_DISTANCE: //2
@@ -9390,6 +9387,16 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
                 {
                     if(_target)
                         targets.remove_if(Trinity::UnitCheckInBetweenShift(false, _caster, _target, itr->param1, itr->param2, itr->param3));
+                    break;
+                }
+                case SPELL_FILTER_BY_AURA_OR: //13
+                {
+                    targets.remove_if(Trinity::UnitAuraOrCheck(itr->param1, itr->param2, itr->param3));
+                    break;
+                }
+                case SPELL_FILTER_BY_ENTRY: //14
+                {
+                    targets.remove_if(Trinity::UnitEntryCheck(itr->param1, itr->param2, itr->param3));
                     break;
                 }
             }

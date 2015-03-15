@@ -13366,10 +13366,14 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
         // Check for immune to application of harmful magical effects
         AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
         for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-            if ((spellInfo->Dispel == DISPEL_MAGIC || spellInfo->Dispel == DISPEL_DISEASE) &&                                      // Magic debuff
-                ((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&  // Check school
-                !spellInfo->IsPositiveEffect(index))                                  // Harmful
-                    return true;
+        if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) && !spellInfo->IsPositiveEffect(index))        // Harmful && Magic effects
+                return true;
+
+        AuraEffectList const& immuneMechanicAuraApply = GetAuraEffectsByType(SPELL_AURA_MECHANIC_IMMUNITY_MASK);
+        for(AuraEffectList::const_iterator i = immuneMechanicAuraApply.begin(); i != immuneMechanicAuraApply.end(); ++i)
+            if(spellInfo->GetEffect(index, GetSpawnMode()).Mechanic && spellInfo->Mechanic && ((1 << (spellInfo->GetEffect(index, GetSpawnMode()).Mechanic)) & (*i)->GetMiscValue() ||
+            (1 << (spellInfo->Mechanic)) & (*i)->GetMiscValue()))
+                return true;
     }
 
     return false;
@@ -20018,6 +20022,10 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
             if(itr->targetaura == 2 && victim) //get target aura
                 _targetAura = victim;
 
+            if(itr->caster == 3) //get caster owner
+                if (Unit* owner = GetAnyOwner())
+                    _caster = owner;
+
             switch (itr->option)
             {
                 case SPELL_DUMMY_CRIT_RESET: //5
@@ -20052,22 +20060,22 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
 
                     if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(itr->spellDummyId, itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(abs(itr->spellDummyId), itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -20085,22 +20093,22 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
 
                     if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(itr->spellDummyId, itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount += bp;
                             check = true;
                         }
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(abs(itr->spellDummyId), itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount -= bp;
                             check = true;
                         }
@@ -20118,22 +20126,22 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
 
                     if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(itr->spellDummyId, itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount += CalculatePct(amount, bp);
                             check = true;
                         }
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(abs(itr->spellDummyId), itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount -= CalculatePct(amount, bp);
                             check = true;
                         }
@@ -20151,22 +20159,22 @@ void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spel
 
                     if(itr->spellDummyId > 0 && _caster->HasAura(itr->spellDummyId))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(itr->spellDummyId))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(itr->spellDummyId, itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount += bp;
                             check = true;
                         }
                     }
                     if(itr->spellDummyId < 0 && _caster->HasAura(abs(itr->spellDummyId)))
                     {
-                        if(SpellInfo const* dummyInfo = sSpellMgr->GetSpellInfo(abs(itr->spellDummyId)))
+                        if(AuraEffect const* dummyEff = _caster->GetAuraEffect(abs(itr->spellDummyId), itr->effectDummy))
                         {
                             float bp = itr->custombp;
                             if(!bp)
-                                bp = dummyInfo->Effects[itr->effectDummy].BasePoints;
+                                bp = dummyEff->GetAmount();
                             amount -= bp;
                             check = true;
                         }

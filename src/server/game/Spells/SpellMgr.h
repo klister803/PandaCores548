@@ -177,6 +177,8 @@ enum SpellTargetFilterType
     SPELL_FILTER_TARGET_IN_LOS                  = 10,           // Select target in los
     SPELL_FILTER_TARGET_IS_IN_BETWEEN           = 11,           // Select target is in between
     SPELL_FILTER_TARGET_IS_IN_BETWEEN_SHIFT     = 12,           // Select target is in between and shift
+    SPELL_FILTER_BY_AURA_OR                     = 13,           // Remove target by any aura
+    SPELL_FILTER_BY_ENTRY                       = 14,           // Remove target by any entry
 };
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
@@ -271,7 +273,7 @@ enum ProcFlags
 
     REQ_SPELL_PHASE_PROC_FLAG_MASK             = SPELL_PROC_FLAG_MASK & DONE_HIT_PROC_FLAG_MASK,
 
-    SPELL_PROC_FROM_CAST_MASK                  = PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS,
+    SPELL_PROC_FROM_CAST_MASK                  = PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS | PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS,
 };
 
 #define MELEE_BASED_TRIGGER_MASK (PROC_FLAG_DONE_MELEE_AUTO_ATTACK      | \

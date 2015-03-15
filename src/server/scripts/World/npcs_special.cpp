@@ -4106,106 +4106,6 @@ class npc_spectral_guise : public CreatureScript
 };
 
 /*######
-## npc_bloodworm
-######*/
-
-#define BLOODWORM_BLOOD_GORGED  50453
-#define BLOODWORM_BLOOD_STACKS  81277
-#define BLOODWORM_BLOOD_BURST   81280
-
-class npc_bloodworm : public CreatureScript
-{
-    public:
-        npc_bloodworm() : CreatureScript("npc_bloodworm") { }
-
-        struct npc_bloodwormAI : public ScriptedAI
-        {
-            npc_bloodwormAI(Creature* c) : ScriptedAI(c)
-            {
-            }
-
-            uint32 uiBurstTimer;
-            uint32 uiCheckBloodChargesTimer;
-
-            void Burst()
-            {
-                if (Aura* bloodGorged = me->GetAura(BLOODWORM_BLOOD_STACKS))
-                {
-                    uint32 stacks = std::min<uint32>(bloodGorged->GetStackAmount(), 10);
-                    int32 damage = stacks * (me->GetMaxHealth() * 0.25f);
-                    me->CastCustomSpell(me, BLOODWORM_BLOOD_BURST, &damage, NULL, NULL, true);
-                    me->DespawnOrUnsummon(500);
-                }
-            }
-
-            void JustDied(Unit* killer)
-            {
-                Burst();
-            }
-
-            void Reset()
-            {
-                if (me->GetOwner())
-                {
-                    me->SetMaxHealth(0.15 * me->GetOwner()->GetHealth());
-                    me->SetHealth(0.15 * me->GetOwner()->GetHealth());
-                }
-                
-                DoCast(me, BLOODWORM_BLOOD_GORGED, true);
-
-                uiBurstTimer = 19000;
-                uiCheckBloodChargesTimer = 1500;
-            }
-
-            void UpdateAI(uint32 diff)
-            {
-                if (uiBurstTimer <= diff)
-                    Burst();
-                else
-                    uiBurstTimer -= diff;
-
-                if (uiCheckBloodChargesTimer <= diff)
-                {
-                    if (me->GetOwner())
-                    {
-                        if (Aura* bloodGorged = me->GetAura(BLOODWORM_BLOOD_STACKS))
-                        {
-                            // 10% per stack
-                            int32 stacks = bloodGorged->GetStackAmount() * 10;
-                            int32 masterPct = int32(100.0f - me->GetOwner()->GetHealthPct());
-                            AddPct(stacks, masterPct);
-
-                            if (stacks > 100)
-                                stacks = 100;
-
-                            if (roll_chance_i(stacks))
-                                Burst();
-                            else
-                                uiCheckBloodChargesTimer = 1500;
-                        }
-                    }
-                }
-                else
-                    uiCheckBloodChargesTimer -= diff;
-
-                if (!UpdateVictim())
-                {
-                    if (Unit* target = me->SelectVictim())
-                        me->Attack(target, true);
-                    return;
-                }
-
-                DoMeleeAttackIfReady();
-            }
-        };
-
-        CreatureAI* GetAI(Creature *creature) const
-        {
-            return new npc_bloodwormAI(creature);
-        }
-};
-
-/*######
 ## npc_past_self
 ######*/
 
@@ -4498,7 +4398,6 @@ void AddSC_npcs_special()
     new npc_brewfest_keg_receiver;
     new npc_brewfest_ram_master;
     new npc_spectral_guise();
-    new npc_bloodworm();
     new npc_past_self();
     new npc_guild_battle_standard();
     new npc_riggle_bassbait();

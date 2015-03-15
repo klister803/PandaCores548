@@ -3564,8 +3564,12 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
         for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL; ++i)
             if (Spell* spell = target->GetCurrentSpell(CurrentSpellTypes(i)))
                 if (spell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+                {
                     // Stop spells on prepare or casting state
                     target->InterruptSpell(CurrentSpellTypes(i), false);
+                    if(GetBase() && GetCaster() && GetCaster()->HasAura(58618)) // Glyph of Strangulate
+                        GetBase()->SetDuration(GetBase()->GetDuration() + 2000);
+                }
     }
     else
     {
@@ -7251,8 +7255,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                 // Death and Decay
                 case 43265:
                 {
-                    if (caster)
-                        caster->CastCustomSpell(target, 52212, &m_amount, NULL, NULL, true, 0, this);
+                    trigger_spell_id = 52212;
                     break;
                 }
                 default:
@@ -7702,7 +7705,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         else
         {
             if(triggeredSpellInfo->NeedsToBeTriggeredByCaster())
-                caster->CastSpell(target, triggeredSpellInfo, true, NULL, this);
+                target->CastSpell(target, triggeredSpellInfo, true, NULL, this);
             else
                 caster->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), triggerSpellId, true, NULL, this);
         }

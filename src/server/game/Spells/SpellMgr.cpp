@@ -4096,6 +4096,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 114083: // Ascendance
                 case 135703: // Static shock tr ef dmg
                 case 98474: // Flame Scythe
+                case 81280: // Blood Burst
                     // ONLY SPELLS WITH SPELLFAMILY_GENERIC and EFFECT_SCHOOL_DAMAGE
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;

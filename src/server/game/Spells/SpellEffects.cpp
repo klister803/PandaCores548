@@ -1565,10 +1565,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         }
         case 49998: // Death Strike
         {
-            if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100))
+            int32 countDamage = int32(m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) * 0.20f);
+
+            if (m_caster->CountPctFromMaxHealth(7) > countDamage)
                 bp = m_caster->CountPctFromMaxHealth(7);
             else
-                bp = (20 * m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) / 100);
+                bp = countDamage;
 
             // Item - Death Knight T14 Blood 4P bonus
             if (m_caster->HasAura(123080))
@@ -2605,6 +2607,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
         }
 
         m_damage -= addhealth;
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectHeal m_damage %i addhealth %i damage %i", m_damage, addhealth, damage);
     }
 }
 
@@ -5765,21 +5768,32 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
             if (m_spellInfo->SpellFamilyFlags[1]&0x10000)
             {
                 // Get diseases on target of spell
-                if (m_targets.GetUnitTarget() &&  // Glyph of Disease - cast on unit target too to refresh aura
-                    (m_targets.GetUnitTarget() != unitTarget || m_caster->GetAura(63334)))
+                if (m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != unitTarget)
                 {
                     // And spread them on target
                     // Blood Plague
                     if (m_targets.GetUnitTarget()->GetAura(55078))
                     {
-                        m_caster->CastSpell(unitTarget, 55078, true);
+                        if(Aura* aura = unitTarget->GetAura(55078)) // stop spamm update
+                        {
+                            if(aura->GetDuration() < aura->GetMaxDuration())
+                                m_caster->CastSpell(unitTarget, 55078, true);
+                        }
+                        else
+                            m_caster->CastSpell(unitTarget, 55078, true);
                         m_caster->CastSpell(unitTarget, 63687, true); // Cosmetic - Pestilence State
                         m_targets.GetUnitTarget()->CastSpell(unitTarget, 91939, true); // Cosmetic - Send Diseases on target
                     }
                     // Frost Fever
                     if (m_targets.GetUnitTarget()->GetAura(55095))
                     {
-                        m_caster->CastSpell(unitTarget, 55095, true);
+                        if(Aura* aura = unitTarget->GetAura(55095)) // stop spamm update
+                        {
+                            if(aura->GetDuration() < aura->GetMaxDuration())
+                                m_caster->CastSpell(unitTarget, 55078, true);
+                        }
+                        else
+                            m_caster->CastSpell(unitTarget, 55095, true);
                         m_caster->CastSpell(unitTarget, 63687, true); // Cosmetic - Pestilence State
                         m_targets.GetUnitTarget()->CastSpell(unitTarget, 91939, true); // Cosmetic - Send Diseases on target
                     }

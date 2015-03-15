@@ -577,7 +577,7 @@ enum SpellAttr5
     SPELL_ATTR5_UNK12                            = 0x00001000, // 12 Cleave related?
     SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME   = 0x00002000, // 13 haste effects decrease duration of this, amplitude modify
     SPELL_ATTR5_UNK14                            = 0x00004000, // 14
-    SPELL_ATTR5_UNK15                            = 0x00008000, // 15 Inflits on multiple targets?
+    SPELL_ATTR5_CANT_IMMUNITY_SPELL              = 0x00008000, // 15 Can`t mechanic immunity spell
     SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK         = 0x00010000, // 16 this allows spells with EquippedItemClass to affect spells from other items if the required item is equipped
     SPELL_ATTR5_USABLE_WHILE_FEARED              = 0x00020000, // 17 usable while feared
     SPELL_ATTR5_USABLE_WHILE_CONFUSED            = 0x00040000, // 18 usable while confused

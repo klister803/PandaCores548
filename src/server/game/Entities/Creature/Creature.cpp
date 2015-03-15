@@ -1819,6 +1819,9 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)
     if (!spellInfo)
         return false;
 
+    if (spellInfo->AttributesEx5 & SPELL_ATTR5_CANT_IMMUNITY_SPELL)
+        return false;
+
     // Creature is immune to main mechanic of the spell
     if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
         return true;
@@ -1844,6 +1847,9 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)
 
 bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
 {
+    if (spellInfo->AttributesEx5 & SPELL_ATTR5_CANT_IMMUNITY_SPELL)
+        return false;
+
     if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
         return true;
 
