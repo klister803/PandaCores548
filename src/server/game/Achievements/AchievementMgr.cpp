@@ -1581,7 +1581,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_QUEST_ABANDONED:
             case ACHIEVEMENT_CRITERIA_TYPE_FLIGHT_PATHS_TAKEN:
             case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
-            case ACHIEVEMENT_CRITERIA_TYPE_USE_LFG_TO_GROUP_WITH_PLAYERS:
+            case ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS:
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_DEATH:
@@ -2073,7 +2073,7 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
             return progress->counter >= criteriaTree->requirement_count; // learn_skill_line.spellCount;
         case ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS:
             return progress->counter >= 9000;
-        case ACHIEVEMENT_CRITERIA_TYPE_USE_LFG_TO_GROUP_WITH_PLAYERS:
+        case ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS:
             return progress->counter >= criteriaTree->requirement_count; // use_lfg.dungeonsComplete;
         case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
             return progress->counter >= criteriaTree->requirement_count; // get_killing_blow.killCount;
@@ -3113,7 +3113,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
     case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
     case ACHIEVEMENT_CRITERIA_TYPE_TOTAL_DAMAGE_RECEIVED:
     case ACHIEVEMENT_CRITERIA_TYPE_TOTAL_HEALING_RECEIVED:
-    case ACHIEVEMENT_CRITERIA_TYPE_USE_LFG_TO_GROUP_WITH_PLAYERS:
+    case ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS:
     case ACHIEVEMENT_CRITERIA_TYPE_VISIT_BARBER_SHOP:
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL:
     case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA:
@@ -3854,7 +3854,7 @@ CriteriaSort AchievementMgr<ScenarioProgress>::GetCriteriaSort() const
          return "ACCEPTED_SUMMONINGS";
      case ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS:
          return "EARN_ACHIEVEMENT_POINTS";
-     case ACHIEVEMENT_CRITERIA_TYPE_USE_LFG_TO_GROUP_WITH_PLAYERS:
+     case ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS:
          return "USE_LFG_TO_GROUP_WITH_PLAYERS";
      case ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS:
          return "SPENT_GOLD_GUILD_REPAIRS";

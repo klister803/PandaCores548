@@ -307,7 +307,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS           = 114,
     ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS       = 115,
     ACHIEVEMENT_CRITERIA_TYPE_COMPLETED_LFG_DUNGEONS        = 118, // Number of times the player completed an LFG dungeon
-    ACHIEVEMENT_CRITERIA_TYPE_USE_LFG_TO_GROUP_WITH_PLAYERS = 119,
+    ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS = 119,
     ACHIEVEMENT_CRITERIA_TYPE_INITIATED_KICK_IN_LFG         = 120, // Number of times the player kicked someone in LFG, initiating the kick
     ACHIEVEMENT_CRITERIA_TYPE_VOTED_KICK_IN_LFG             = 121, // Number of times the player kicked someone in LFG, voting, but not initiating
     ACHIEVEMENT_CRITERIA_TYPE_BEING_KICKED_IN_LFG           = 122, // Number of times the player has been kicked by someone in LFG
