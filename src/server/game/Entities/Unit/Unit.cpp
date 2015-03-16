@@ -21674,6 +21674,9 @@ void Unit::ApplyResilience(Unit const* victim, int32* damage, bool isCrit) const
     if (!GetCharmerOrOwnerPlayerOrPlayerItself())
         return;
 
+    if (victim->GetOwnerGUID() && victim->GetOwnerGUID() == GetGUID())
+        return;
+
     Unit const* target = NULL;
     if (victim->GetTypeId() == TYPEID_PLAYER)
         target = victim;
