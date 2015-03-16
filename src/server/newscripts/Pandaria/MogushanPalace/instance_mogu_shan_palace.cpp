@@ -61,6 +61,7 @@ public:
         uint64 secretdoorGuid;
         
         uint8 JadeCount;
+        uint8 GemCount;
 
         instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
@@ -84,6 +85,7 @@ public:
             glintrok_hexxer = 0;
             
             JadeCount = 0;
+            GemCount = 0;
         }
 
         void FillInitialWorldStates(WorldPacket& data)
@@ -180,6 +182,11 @@ public:
                     }
                     break;
                 }
+                case TYPE_GEMCOUNT:
+                {
+                    GemCount = data;
+                    break;
+                }
             }
 
             SetData_trial_of_the_king(type, data);
@@ -190,6 +197,8 @@ public:
         {
             if (type == TYPE_JADECOUNT)
                 return JadeCount;
+            if (type == TYPE_GEMCOUNT)
+                return GemCount;
 
             return 0;
         }
@@ -605,7 +614,7 @@ public:
                 {
                     chest->SetPhaseMask(1, true);
                     chest->SetRespawnTime(604800);
-                    instance->SummonCreature(CREATURE_JADE_QUILEN, SummonPositions);
+                    instance->SummonCreature(CREATURE_JADE_QUILEN, otherPos[0]);
                 }
                 
                 if (GameObject* go = instance->GetGameObject(secretdoorGuid))

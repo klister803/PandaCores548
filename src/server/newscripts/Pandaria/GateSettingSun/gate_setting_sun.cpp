@@ -13,6 +13,9 @@ enum spells
 
     SPELL_BOMB_CAST_VISUAL              = 106729,
     SPELL_BOMB_AURA                     = 106875,
+    
+    SPELL_RESIN_RESIDUE                 = 118795,
+    SPELL_ACHIEVEMENT_COMPLETE          = 118797,
 };
 
 
@@ -62,6 +65,74 @@ public:
     {
         return new npc_krikthik_bombarderAI (creature);
     }
+};
+
+class npc_krikthik_conscript : public CreatureScript
+{
+public:
+    npc_krikthik_conscript() : CreatureScript("npc_krikthik_conscript") { }
+
+    struct npc_krikthik_conscriptAI : public ScriptedAI
+    {
+        npc_krikthik_conscriptAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void Reset()
+        {
+        }
+        
+        void JustDied(Unit* killer)
+        {
+            me->CastSpell(killer, SPELL_RESIN_RESIDUE, true);
+        }
+        
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (attacker->ToCreature() && me->HealthBelowPct(85))
+                damage = 0;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_conscriptAI (creature);
+    }
+};
+
+class spell_resin_residue : public SpellScriptLoader
+{
+    public:
+        spell_resin_residue() : SpellScriptLoader("spell_resin_residue") { }
+
+        class spell_resin_residue_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_resin_residue_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                Unit* target = GetTarget();
+                if(!target)
+                    return;
+                
+                if (Aura* aura = target->GetAura(SPELL_RESIN_RESIDUE))
+                    if (aura->GetStackAmount() > 2)
+                        target->CastSpell(target, SPELL_ACHIEVEMENT_COMPLETE, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_resin_residue_AuraScript::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAPPLY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_resin_residue_AuraScript();
+        }
 };
 
 //8359
@@ -120,6 +191,8 @@ public:
 void AddSC_gate_setting_sun()
 {
     new npc_krikthik_bombarder();
+    new npc_krikthik_conscript();
+    new spell_resin_residue();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
     new go_setting_sun_temp_portal();

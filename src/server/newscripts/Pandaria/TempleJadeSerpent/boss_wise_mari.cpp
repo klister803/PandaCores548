@@ -23,6 +23,8 @@ enum eSpells
     SPELL_HYDROLANCE_DMG            = 106105,
     SPELL_WASH_AWAY                 = 106331,
     SPELL_PURIFIED_WATER            = 118714,
+    //Achiev: Hydrophobia
+    SPELL_ACHIEV_CREDIT_DRY         = 128437,
 };
 
 enum eTexts
@@ -138,6 +140,7 @@ class boss_wase_mari : public CreatureScript
                 phase = 0;
                 ennemyInArea= false;
                 intro = false;
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ACHIEV_CREDIT_DRY);
                 me->RemoveAurasDueToSpell(SPELL_WATER_BUBBLE);
 
                 _Reset();
@@ -171,6 +174,7 @@ class boss_wase_mari : public CreatureScript
 
                 me->SetInCombatWithZone();
                 me->CastSpell(me, SPELL_WATER_BUBBLE, true);
+                DoCast(SPELL_ACHIEV_CREDIT_DRY);
                 Talk(TEXT_AGGRO);
                 Talk(TEXT_BOSS_EMOTE_AGGRO);
                 intro = true;

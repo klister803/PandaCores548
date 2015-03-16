@@ -36,18 +36,25 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
         struct boss_xin_the_weaponmaster_AI : public BossAI
         {
-            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, DATA_XIN_THE_WEAPONMASTER)
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, DATA_XIN_THE_WEAPONMASTER), summons(me)
             {
                 pInstance = creature->GetInstanceScript();
             }
 
             InstanceScript* pInstance;
+            SummonList summons;
+            bool onegem;
+            bool twogem;
 
             void Reset()
             {
                 if (pInstance)
                     pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
+                
+                onegem = true;
+                twogem = true;
 
+                summons.DespawnAll();
                 events.Reset();
             }
 
@@ -58,6 +65,26 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 events.ScheduleEvent(EVENT_INCITING_ROAR, urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SWORD_THROWER, 30000);
                 events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (me->HealthBelowPctDamaged(66, damage) && onegem)
+                {
+                    onegem = false;
+                    me->SummonCreature(CREATURE_LAUNCH_SWORD, otherPos[2]);
+                }
+
+                if (me->HealthBelowPctDamaged(33, damage) && twogem)
+                {
+                    twogem = false;
+                    me->SummonCreature(CREATURE_LAUNCH_SWORD, otherPos[3]);
+                }
+            }
+
+            void JustSummoned(Creature* summoned)
+            {
+                summons.Summon(summoned);
             }
 
             void UpdateAI(uint32 diff)
@@ -100,13 +127,11 @@ class boss_xin_the_weaponmaster : public CreatureScript
                         case EVENT_AXES_ACTIVATE:
                             if (pInstance)
                                 pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 1);
-
                             events.ScheduleEvent(EVENT_AXES_DESACTIVATE, 10000);
                             break;
                         case EVENT_AXES_DESACTIVATE:
                             if (pInstance)
                                 pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 0);
-
                             events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
                             break;
                     }

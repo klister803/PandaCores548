@@ -376,7 +376,6 @@ class spell_captain_cookie_nauseated : public SpellScriptLoader
     public:
         spell_captain_cookie_nauseated() : SpellScriptLoader("spell_captain_cookie_nauseated") { }
 
-
         class spell_captain_cookie_nauseated_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_captain_cookie_nauseated_SpellScript);

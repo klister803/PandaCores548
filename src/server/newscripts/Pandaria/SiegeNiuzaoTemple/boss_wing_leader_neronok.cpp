@@ -24,6 +24,9 @@ enum eSpells
 {
     SPELL_HURL_BRICK          = 121762,
     SPELL_COUSTIC_PITCH       = 121442,
+    
+    //Hackfix achiev Run with the Wind
+    SPELL_TENWU_RESOLVE       = 125146,
 };
 
 class boss_wing_leader_neronok : public CreatureScript
@@ -54,6 +57,7 @@ class boss_wing_leader_neronok : public CreatureScript
                 _EnterCombat();
                 hurltimer = 3000;
                 coustictimer = 6000;
+                instance->DoCastSpellOnPlayers(SPELL_TENWU_RESOLVE);
             }
 
             void UpdateAI(uint32 diff)

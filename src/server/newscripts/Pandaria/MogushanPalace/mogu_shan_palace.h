@@ -64,6 +64,14 @@ enum eSpells
     
     //Achiev: Quarrelsome Quilen Quintet
     SPELL_ACHIEV_JADE_QUILEN        = 124352,
+    
+    //Achiev: Glintrok N' Roll
+    SPELL_GLINTROK_SCOUT_WARNING    = 119076,
+    SPELL_SAUROK_ACHIEV_AURA        = 118994,
+    
+    //Achiev: What Does This Button Do?
+    SPELL_SECRET_DEFENSE_MECHANISM  = 124527,
+    SPELL_TURN_OFF_BLADES           = 124531,
 };
 
 enum eCreatures
@@ -126,6 +134,7 @@ enum eTypes
     TYPE_ACTIVATE_SWORD, //20
     
     TYPE_JADECOUNT, //21
+    TYPE_GEMCOUNT, //22
 };
 
 enum eGameObjects
@@ -138,6 +147,12 @@ enum eGameObjects
     GO_SECRET_DOOR          = 213810,
 };
 
-const Position SummonPositions = {-4222.63f, -2613.71f, 16.48f, 6.2f};
+const Position otherPos[4] = 
+{
+    {-4222.63f, -2613.71f, 16.48f, 6.2f},
+    {-4326.13f, -2519.60f, -28.39f, 3.18f},
+    {-4653.52f, -2655.62f, 26.10f, 3.06f},
+    {-4612.78f, -2571.62f, 26.10f, 0.04f},
+};
 
 #endif // MOGUSHAN_PALACE_H_
