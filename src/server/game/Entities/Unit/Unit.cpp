@@ -1318,10 +1318,11 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
         return;
 
     SpellSchoolMask damageSchoolMask = SpellSchoolMask(damageInfo->schoolMask);
-    int32 sourceDamage = damage;
 
     if (IsDamageReducedByArmor(damageSchoolMask, spellInfo, effectMask))
         damage = CalcArmorReducedDamage(victim, damage, spellInfo, attackType);
+
+    int32 sourceDamage = damage;
 
     bool blocked = false;
     // Per-school calc
