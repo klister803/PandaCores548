@@ -2768,6 +2768,11 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
     SendPacket(&data);
 }
 
+template<>
+void AchievementMgr<ScenarioProgress>::SendAllAccountCriteriaData(Player* /*receiver*/)
+{
+}
+
 template<class T>
 void AchievementMgr<T>::SendAchievementInfo(Player* receiver, uint32 achievementId /*= 0*/)
 {

@@ -282,7 +282,6 @@ class AchievementMgr
         void SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
         void SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
 
-
         CriteriaProgress* GetCriteriaProgress(uint32 entry);
         CriteriaProgress* GetCriteriaProgress(CriteriaTreeEntry const* entry);
         void SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* entry, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
