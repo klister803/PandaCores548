@@ -129,7 +129,9 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     if (currentStep != oldStep && !loading)
     {
         SendStepUpdate();
-        SaveToDB(SQLTransaction(NULL));
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        SaveToDB(trans);
+        CharacterDatabase.CommitTransaction(trans);
 
         if (IsCompleted(false))
             Reward(false);
