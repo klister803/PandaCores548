@@ -102,7 +102,7 @@ public:
             scenario->m_name_lang, progress->GetScenarioId(), progress->GetCurrentStep(), progress->GetStepCount(false), progress->IsCompleted(false) ? "true" : "false",
             progress->GetBonusStepCount(), progress->IsCompleted(true) ? "true" : "false");
         handler->PSendSysMessage("Scenario Type: %s Difficulty: %s (%u)",
-            GetScenarioTypeString(progress->GetType()).c_str(), GetScenarioDifficultyString(map->GetDifficulty()), map->GetDifficulty());
+            GetScenarioTypeString(progress->GetType()).c_str(), GetScenarioDifficultyString(map->GetDifficulty()).c_str(), map->GetDifficulty());
         return true;
     }
 };
