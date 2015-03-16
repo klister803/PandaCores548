@@ -48,17 +48,7 @@ void ScenarioProgress::LoadFromDB()
 
 void ScenarioProgress::SaveToDB(SQLTransaction& trans)
 {
-    bool commit = false;
-    if (!trans)
-    {
-        trans = CharacterDatabase.BeginTransaction();
-        commit = true;
-    }
-
     m_achievementMgr.SaveToDB(trans);
-
-    if (commit)
-        CharacterDatabase.CommitTransaction(trans);
 }
 
 void ScenarioProgress::DeleteFromDB()

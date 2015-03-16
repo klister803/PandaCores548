@@ -54,7 +54,11 @@ void InstanceScript::SaveToDB()
     CharacterDatabase.Execute(stmt);
 
     if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instance->GetInstanceId()))
-        progress->SaveToDB(SQLTransaction(NULL));
+    {
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        progress->SaveToDB(trans);
+        CharacterDatabase.CommitTransaction(trans);
+    }
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)

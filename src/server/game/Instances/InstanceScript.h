@@ -37,7 +37,6 @@ class Unit;
 class Player;
 class GameObject;
 class Creature;
-class ScenarioProgress;
 
 typedef std::set<GameObject*> DoorSet;
 typedef std::set<Creature*> MinionSet;
