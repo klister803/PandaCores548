@@ -2532,3 +2532,64 @@ SMSG_LOSS_OF_CONTROL_AURA_UPDATE
         data << uint8(x); // auraSlot
     }
 }*/
+
+// Scenario
+// SMSG_SCENARIO_STATE
+/*{
+    WorldPacket data(SMSG_SCENARIO_STATE);
+    ByteBuffer criteriaData;
+    ObjectGuid guid = handler->GetSession()->GetPlayer()->GetObjectGuid();
+    data.WriteBit(0); // hasBonusStepComplete
+    data.WriteBit(0); // hasBonusStep
+    data.WriteBits(0, 19); // criteriaCount
+    // в цикле перебираем только нужные критерии для конкретного сценария, общий цикл приведен для примера
+    for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+    {
+        CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
+
+        if (!criteriaTree)
+            continue;
+
+        ObjectGuid counter = uint64(itr->second.counter);
+
+        data.WriteGuidMask<7, 6, 0, 4>(guid);
+        data.WriteGuidMask<7>(counter);
+        data.WriteGuidMask<5, 1>(guid);
+        data.WriteGuidMask<1, 3, 0, 2>(counter);
+        data.WriteGuidMask<3>(guid);
+        data.WriteGuidMask<5>(counter);
+        data.WriteBits(0, 4);          // flags
+        data.WriteGuidMask<4>(counter);
+        data.WriteGuidMask<2>(guid);
+        data.WriteGuidMask<6>(counter);
+
+        criteriaData.WriteGuidBytes<1>(counter);
+        criteriaData << uint32(0);
+        criteriaData.WriteGuidBytes<3>(counter);
+        criteriaData.WriteGuidBytes<3, 4, 0, 1>(guid);
+        criteriaData << uint32(secsToTimeBitFields(itr->second.date));
+        criteriaData.WriteGuidBytes<6, 7>(guid);
+        criteriaData.WriteGuidBytes<0>(counter);
+        criteriaData.WriteGuidBytes<5>(guid);
+        criteriaData.WriteGuidBytes<4, 5>(counter);
+        criteriaData << uint32(criteriaTree->criteria);
+        criteriaData.WriteGuidBytes<2>(counter);
+        criteriaData << uint32(0);
+        criteriaData.WriteGuidBytes<6, 7>(counter);
+        criteriaData.WriteGuidBytes<2>(guid);
+
+    }
+
+    data.FlushBits();
+
+    if (!criteriaData.empty())
+        data.append(criteriaData);
+
+    data << uint32(0); // waveMax (only for ProvingGrounds)
+    data << uint32(0); // difficultyID (only for ProvingGrounds)
+    data << uint32(44); // scenarioID low part (ID from Scenario.dbc)
+    data << uint32(0); // scenarioID high part (scenarioCompleted? LOL)
+    data << uint32(0); // waveCurrent (only for ProvingGrounds)
+    data << uint32(0); // timerDuration (only for ProvingGrounds)
+    data << uint32(0); // currentStep
+}*/

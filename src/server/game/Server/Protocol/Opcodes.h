@@ -1320,6 +1320,7 @@ enum Opcodes
     SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
     SMSG_PLAY_SCENE_DATA                              = 0x018E, // 5.4.1 17538
+    SMSG_SCENARIO_STATE                               = 0x0114, // 5.4.1 17538
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0x043E, // 5.4.1 17538
