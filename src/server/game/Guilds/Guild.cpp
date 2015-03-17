@@ -2152,7 +2152,7 @@ void Guild::SendBankLog(WorldSession* session, uint8 tabId) const
 void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, bool withTabInfo) const
 {
     ByteBuffer tabData;
-    WorldPacket data(SMSG_GUILD_BANK_LIST, 500);
+    WorldPacket data(SMSG_GUILD_BANK_LIST);
 
     data << int32(_GetMemberRemainingSlots(session->GetPlayer()->GetGUID(), 0));
     data << uint64(m_bankMoney);
@@ -2175,6 +2175,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
     uint32 itemCount = 0;
     uint32 bitpos = data.bitwpos();
     data.WriteBits(itemCount, 18);
+
     if (withContent && _MemberHasTabRights(session->GetPlayer()->GetGUID(), tabId, GUILD_BANK_RIGHT_VIEW_TAB))
     {
         if (BankTab const* tab = GetBankTab(tabId))
@@ -2192,19 +2193,23 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                     tabData << uint32(slotId);
                     tabItem->AppendDynamicInfo(tabData);
 
-                    uint32 enchants = 0;
-                    for (uint32 ench = 0; ench < MAX_ENCHANTMENT_SLOT; ++ench)
+                    uint32 socketEnchants = 0;
+                    uint32 socketIndex = 0;
+                    // only sockets
+                    for (uint32 enchSlot = SOCK_ENCHANTMENT_SLOT; enchSlot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS; ++enchSlot)
                     {
-                        if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(ench)))
+                        if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(enchSlot)))
                         {
                             tabData << uint32(enchantId);
-                            tabData << uint32(ench);
-                            ++enchants;
+                            tabData << uint32(socketIndex);
+                            ++socketEnchants;
                         }
+
+                        ++socketIndex;
                     }
 
-                    data.WriteBits(enchants, 21);
-                    data.WriteBit(0);
+                    data.WriteBits(socketEnchants, 21);
+                    data.WriteBit(tabItem->IsLocked());                     // Locked
 
                     tabData << uint32(0);
                     tabData << uint32(abs(tabItem->GetSpellCharges()));     // Spell charges
@@ -2215,7 +2220,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
         }
     }
 
-    data.WriteBit(0);
+    data.WriteBit(1);             // fullUpdate
 
     data.FlushBits();
     if (!tabData.empty())
@@ -3205,7 +3210,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
     if (BankTab const* tab = GetBankTab(tabId))
     {
         ByteBuffer tabData;
-        WorldPacket data(SMSG_GUILD_BANK_LIST, 1200);
+        WorldPacket data(SMSG_GUILD_BANK_LIST);
         size_t rempos = data.wpos();
         data << uint32(-1);                                      // Item withdraw amount, will be filled later
         data << uint64(m_bankMoney);
@@ -3223,6 +3228,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
             tabData << uint32(0);
             tabData << uint32(*itr);
+
             if (tabItem)
                 tabItem->AppendDynamicInfo(tabData);
             else
@@ -3232,21 +3238,26 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             }
 
             uint32 enchantCount = 0;
+
             if (tabItem)
             {
-                for (uint32 enchSlot = 0; enchSlot < MAX_ENCHANTMENT_SLOT; ++enchSlot)
+                uint32 socketIndex = 0;
+                // only sockets
+                for (uint32 enchSlot = SOCK_ENCHANTMENT_SLOT; enchSlot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS; ++enchSlot)
                 {
                     if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(enchSlot)))
                     {
                         tabData << uint32(enchantId);
-                        tabData << uint32(enchSlot);
+                        tabData << uint32(socketIndex);
                         ++enchantCount;
                     }
+
+                    ++socketIndex;
                 }
             }
 
             data.WriteBits(enchantCount, 21);                                       // enchantment count
-            data.WriteBit(0);
+            data.WriteBit(tabItem ? tabItem->IsLocked() : 0);                       // Locked
 
             tabData << uint32(0);
             tabData << uint32(tabItem ? abs(tabItem->GetSpellCharges()) : 0);       // Spell charges
@@ -3254,7 +3265,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             tabData << uint32(tabItem ? tabItem->GetCount() : 0);                   // ITEM_FIELD_STACK_COUNT
         }
 
-        data.WriteBit(0);
+        data.WriteBit(0);               // fullUpdate
 
         data.FlushBits();
         if (!tabData.empty())
