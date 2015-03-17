@@ -619,7 +619,7 @@ class spell_rog_crimson_tempest : public SpellScriptLoader
                             if(SpellInfo const* sinfo = sSpellMgr->GetSpellInfo(ROGUE_SPELL_CRIMSON_TEMPEST_DOT))
                                 percent = sinfo->Effects[0].BasePoints;
 
-                            int32 damage = int32(GetHitDamage() + GetHitAbsorb() / 6);
+                            int32 damage = int32((GetHitDamage() + GetHitAbsorb()) / 6);
                             AddPct(damage, percent);
                             _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
                         }
