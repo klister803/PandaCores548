@@ -22,13 +22,18 @@
 
 enum eSpells
 {
-    SPELL_BLADE_RUSH_CHARGE    = 124312,
-    SPELL_BLADE_RUSH_VISUAL    = 124307,
-    SPELL_BLADE_RUSH_TRDMG     = 124290,
-    SPELL_BLADE_RUSH_KNOCK     = 124317,
-    SPELL_BLADE_RUSH_DUMMY     = 124288,
-    SPELL_DISARM               = 124327,
-    SPELL_TEMPEST              = 119875,
+    SPELL_BLADE_RUSH_CHARGE      = 124312,
+    SPELL_BLADE_RUSH_VISUAL      = 124307,
+    SPELL_BLADE_RUSH_TRDMG       = 124290,
+    SPELL_BLADE_RUSH_KNOCK       = 124317,
+    SPELL_BLADE_RUSH_DUMMY       = 124288,
+    SPELL_DISARM                 = 124327,
+    SPELL_TEMPEST                = 119875,
+    SPELL_BULWARK                = 119476,
+    SPEL_SIEGE_EXPLOSIVES        = 119376,
+    SPEL_SIEGE_EXPLOSIVES_SUMMON = 119377,
+    SPEL_SIEGE_EXPLOSIVES_VISUAL = 119380, 
+    SPEL_SIEGE_EXPLOSIVES_CLICK  = 119388,
 };
 
 class boss_general_pavalak : public CreatureScript
@@ -48,7 +53,12 @@ class boss_general_pavalak : public CreatureScript
             uint32 bladeprepare;
             uint32 bladeprogress;
             uint32 tempest;
+            uint32 explosives;
             uint64 bladeguid;
+            
+            bool bulwark75;
+            bool bulwark35;
+            bool bulwarkCheck;
 
             void Reset()
             {
@@ -57,6 +67,10 @@ class boss_general_pavalak : public CreatureScript
                 bladeguid = 0;
                 bladeprepare = 0;
                 bladeprogress = 0;
+                explosives = 0;
+                bulwark75 = false;
+                bulwark35 = false;
+                bulwarkCheck = false;
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -91,10 +105,54 @@ class boss_general_pavalak : public CreatureScript
                 }
             }
 
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (me->HealthBelowPct(75) && !bulwark75)
+                {
+                    bulwark75 = true;
+                    bulwarkCheck = true;
+                    BulwarkEvent();
+                }
+                if (me->HealthBelowPct(35) && !bulwark35)
+                {
+                    bulwark35 = true;
+                    bulwarkCheck = true;
+                    BulwarkEvent();
+                }
+                if (!me->HasAura(SPELL_BULWARK) && !bulwarkCheck)
+                    me->SetReactState(REACT_AGGRESSIVE);
+            }
+
+            void BulwarkEvent()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->AttackStop();
+                me->GetMotionMaster()->MoveTargetedHome();
+            }
+
+            void JustReachedHome()
+            {
+                if (bulwark75 || bulwark35)
+                {
+                    DoCast(SPELL_BULWARK);
+                    explosives = 1000;
+                }
+                bulwarkCheck = false;
+            }
+
             void UpdateAI(uint32 diff)
             {
                 if (!UpdateVictim())
                     return;
+
+                if (explosives && me->HasAura(SPELL_BULWARK))
+                    if (explosives <= diff)
+                    {
+                        DoCast(me, SPEL_SIEGE_EXPLOSIVES_SUMMON, true);
+                        explosives = 3000;
+                    }
+                    else
+                        explosives -= diff;
 
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
@@ -141,7 +199,7 @@ class boss_general_pavalak : public CreatureScript
                     else
                         tempest -= diff;
                 }
-                
+
                 DoMeleeAttackIfReady();
             }
 
@@ -184,7 +242,6 @@ class npc_blade_rush : public CreatureScript
             void EnterCombat(Unit* who){}
 
             void UpdateAI(uint32 diff){}
-            
         };
 
         CreatureAI* GetAI(Creature* creature) const
@@ -193,8 +250,43 @@ class npc_blade_rush : public CreatureScript
         }
 };
 
+// Siege Explosives - 61452
+class npc_siege_explosive : public CreatureScript
+{
+    public:
+        npc_siege_explosive() : CreatureScript("npc_siege_explosive") {}
+
+        struct npc_siege_explosiveAI : public Scripted_NoMovementAI
+        {
+            npc_siege_explosiveAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            InstanceScript* instance;
+
+            void Reset()
+            {
+                me->AddAura(SPEL_SIEGE_EXPLOSIVES_VISUAL, me);
+                me->DespawnOrUnsummon(5000);
+            }
+
+            void OnSpellClick(Unit* clicker)
+            {
+                me->DespawnOrUnsummon();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_siege_explosiveAI(creature);
+        }
+};
+
 void AddSC_boss_general_pavalak()
 {
     new boss_general_pavalak();
+    new npc_siege_explosive();
     new npc_blade_rush();
 }

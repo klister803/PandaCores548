@@ -36,7 +36,6 @@ enum events
     EVENT_START_CHALLENGE = 1,
     EVENT_SAVE_CHALLENGE  = 2,
     EVENT_CHALLENGE_STOP  = 3,
-    EVENT_COMBAT_START    = 4,
     EVENT_CONTINUE_CHALLENGE
 };
 
@@ -251,15 +250,6 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
             ResurectCount = 0;
             bossInfo->state = state;
             SaveToDB();
-        }
-
-        switch(state)
-        {
-            case IN_PROGRESS:
-                _events.ScheduleEvent(EVENT_COMBAT_START, 1000);
-                break;
-            default:
-                _events.CancelEvent(EVENT_COMBAT_START);
         }
 
         for (uint32 type = 0; type < MAX_DOOR_TYPES; ++type)
@@ -723,19 +713,6 @@ void InstanceScript::Update(uint32 diff)
                 data.FlushBits();
                 data << uint32(LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE);
                 BroadcastPacket(data);
-                break;
-            }
-            case EVENT_COMBAT_START:
-            {
-                    Map::PlayerList const& lPlayers = instance->GetPlayers();
-                    if (!lPlayers.isEmpty())
-                    {
-                        for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                            if (Player* player = itr->getSource())
-                                if(!player->isInCombat())
-                                    player->SetInCombatState(false);
-                    }
-                _events.ScheduleEvent(EVENT_COMBAT_START, 1000);
                 break;
             }
             default:

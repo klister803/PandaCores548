@@ -5465,6 +5465,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 115037: // Ling-Ting's Herbal Journey
                     spellInfo->Effects[0].MiscValue = 3;
                     break;
+                case 119377: // Siege Explosive
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_RADIUS;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
                 default:
                     break;
             }

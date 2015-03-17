@@ -291,6 +291,8 @@ public:
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 if (Player* player = i->getSource())
                                 {
+                                    if (player->HasAura(SPELL_HAZE_OF_HATE))
+                                        player->CastSpell(player, SPELL_ACHIEVEMENT_CHECK, true);
                                     player->RemoveAurasDueToSpell(SPELL_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);

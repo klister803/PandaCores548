@@ -45,7 +45,9 @@ enum Spells
     SPELL_BLIZZARD                  = 49034,
     SPELL_FROSTBOLT                 = 49037,
     SPELL_WRATH_OF_MISERY           = 50089,
-    SPELL_SUMMON_MINIONS            = 59910
+    SPELL_SUMMON_MINIONS            = 59910,
+    
+    SPELL_FLASH_OF_DARKNESS         = 49668,
 };
 
 enum Misc
@@ -55,7 +57,8 @@ enum Misc
     ACTION_DEACTIVATE,
     EVENT_ATTACK,
     EVENT_SUMMON_MINIONS,
-    DATA_NOVOS_ACHIEV
+    DATA_NOVOS_ACHIEV,
+    ACTION_MINION_REACHED,
 };
 
 struct SummonerInfo
@@ -71,8 +74,6 @@ const SummonerInfo summoners[] =
     { DATA_NOVOS_SUMMONER_4, SPELL_SUMMON_CRYSTAL_HANDLER, 30000 }
 };
 
-#define MAX_Y_COORD_OH_NOVOS        -771.95f
-
 class boss_novos : public CreatureScript
 {
 public:
@@ -86,7 +87,7 @@ public:
         {
             _Reset();
 
-            _ohNovos = true;
+            ohNovos = true;
             _crystalHandlerCount = 0;
             SetCrystalsStatus(false);
             SetSummonerStatus(false);
@@ -120,6 +121,9 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
+            SetCrystalsStatus(false);
+            SetSummonerStatus(false);
+            SetBubbled(false);
             _JustDied();
             Talk(SAY_DEATH);
         }
@@ -157,23 +161,17 @@ public:
         {
             if (action == ACTION_CRYSTAL_HANDLER_DIED)
                 CrystalHandlerDied();
-        }
 
-        void MoveInLineOfSight(Unit* who)
-        {
-            BossAI::MoveInLineOfSight(who);
-
-            if (!_ohNovos || !who || who->GetTypeId() != TYPEID_UNIT || who->GetPositionY() > MAX_Y_COORD_OH_NOVOS)
-                return;
-
-            uint32 entry = who->GetEntry();
-            if (entry == NPC_HULKING_CORPSE || entry == NPC_RISEN_SHADOWCASTER || entry == NPC_FETID_TROLL_CORPSE)
-                _ohNovos = false;
+            if (action == ACTION_MINION_REACHED)
+                ohNovos = false;
         }
 
         uint32 GetData(uint32 type)
         {
-            return type == DATA_NOVOS_ACHIEV && _ohNovos ? 1 : 0;
+            if (type == DATA_NOVOS_ACHIEV)
+                return ohNovos ? 1 : 0;
+
+            return 0;
         }
 
         void JustSummoned(Creature* summon)
@@ -268,7 +266,7 @@ public:
         }
 
         uint8 _crystalHandlerCount;
-        bool _ohNovos;
+        bool ohNovos;
         bool _bubbled;
     };
 
@@ -328,6 +326,11 @@ public:
             if (_spell == SPELL_SUMMON_CRYSTAL_HANDLER)
                 Reset();
         }
+        
+        void DamageTaken(Unit* /*attacker*/, uint32& damage)
+        {
+            damage = 0;
+        }
 
     private:
         uint32 _spell;
@@ -363,7 +366,14 @@ public:
             switch (id)
             {
                 case 4:
-                    DoZoneInCombat();
+                {
+                    if (Creature* Novos = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_NOVOS) : 0))
+                    {
+                        Novos->AI()->DoAction(ACTION_MINION_REACHED);
+                        if (Unit* target = CAST_AI(boss_novos::boss_novosAI, Novos->AI())->GetRandomTarget())
+                            AttackStart(target);
+                    }
+                }
                 break;
             }
         }
@@ -375,15 +385,65 @@ public:
     }
 };
 
-class achievement_oh_novos : public AchievementCriteriaScript
+class npc_crystal_handler : public CreatureScript
 {
 public:
-    achievement_oh_novos() : AchievementCriteriaScript("achievement_oh_novos") { }
+    npc_crystal_handler() : CreatureScript("npc_crystal_handler") { }
 
-    bool OnCheck(Player* /*player*/, Unit* target)
+    struct npc_crystal_handlerAI : public ScriptedAI
     {
-        return target && target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->AI()->GetData(DATA_NOVOS_ACHIEV);
+        npc_crystal_handlerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        uint32 uiFlashOfDarknessTimer;
+
+        InstanceScript* instance;
+
+        void Reset()
+        {
+            uiFlashOfDarknessTimer = 5*IN_MILLISECONDS;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (uiFlashOfDarknessTimer <= diff)
+            {
+                if (Unit* target = me->getVictim())
+                    DoCast(target, SPELL_FLASH_OF_DARKNESS);
+                uiFlashOfDarknessTimer = 5*IN_MILLISECONDS;
+            } else uiFlashOfDarknessTimer -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_crystal_handlerAI(creature);
     }
+};
+
+class achievement_oh_novos : public AchievementCriteriaScript
+{
+    public:
+        achievement_oh_novos() : AchievementCriteriaScript("achievement_oh_novos") {}
+
+        bool OnCheck(Player* /*player*/, Unit* target)
+        {
+            if (!target)
+                return false;
+
+            if (Creature* Novos = target->ToCreature())
+                if (Novos->AI()->GetData(DATA_NOVOS_ACHIEV))
+                    return true;
+
+            return false;
+        }
 };
 
 class spell_novos_summon_minions : public SpellScriptLoader
@@ -425,6 +485,7 @@ void AddSC_boss_novos()
     new boss_novos();
     new npc_crystal_channel_target();
     new npc_novos_minion();
+    new npc_crystal_handler();
     new spell_novos_summon_minions();
     new achievement_oh_novos();
 }

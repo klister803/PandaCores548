@@ -51,6 +51,45 @@ class npc_krastinovian_carver : public CreatureScript
         }
 };
 
+class npc_professor_slate : public CreatureScript
+{
+    public:
+        npc_professor_slate() : CreatureScript("npc_professor_slate") {}
+
+        struct npc_professor_slateAI : public CreatureAI
+        {
+            npc_professor_slateAI(Creature* creature) : CreatureAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+
+            void Reset()
+            {
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                if (GameObject* go = me->FindNearestGameObject(211669, 60.0f))
+                    go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_professor_slateAI(creature);
+        }
+};
+
 class spell_boiling_bloodthirst : public SpellScriptLoader
 {
     public:
@@ -91,5 +130,6 @@ class spell_boiling_bloodthirst : public SpellScriptLoader
 void AddSC_scholomance()
 {
     new npc_krastinovian_carver();
+    new npc_professor_slate();
     new spell_boiling_bloodthirst();
 }

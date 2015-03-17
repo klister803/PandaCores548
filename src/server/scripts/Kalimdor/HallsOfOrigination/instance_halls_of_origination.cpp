@@ -157,6 +157,18 @@ class instance_halls_of_origination : public InstanceMapScript
                 if (!InstanceScript::SetBossState(type, state))
                     return false;
                 
+                if (type == DATA_EARTHRAGER_PTAH)
+                {
+                    if (state == DONE)
+                    {
+                        Map::PlayerList const& players = instance->GetPlayers();
+                        if (!players.isEmpty())
+                            if (Player* player = players.begin()->getSource())
+                                if (player->HasAura(SPELL_RIDE_VEHICLE))
+                                    DoCompleteAchievement(ACHIEV_STRAW_THAT_BROKE_CAMELS);
+                    }
+                }
+
                 return true;
             }
 

@@ -90,6 +90,7 @@ class boss_taran_zhu : public CreatureScript
             {
                 if (damage >= me->GetHealth())
                 {
+                    damage = 0;
                     if (instance)
                         instance->SetBossState(DATA_TARAN_ZHU, DONE);
                     me->setFaction(35);

@@ -12,15 +12,12 @@ enum Spells
 {
     SPELL_FLAME_BOLT                = 77370,
     SPELL_FLAME_BOLT_DMG            = 75540, 
-    SPELL_FLAME_BOLT_DMG_H          = 89881, 
     SPELL_RAGING_SMASH              = 83650,
     SPELL_EARTH_SPIKE               = 94974,
     SPELL_EARTH_SPIKE_DMG           = 75339,
-    SPELL_EARTH_SPIKE_DMG_H         = 89882,
     SPELL_EARTH_SPIKE_KILL          = 89398,
     SPELL_QUICKSAND                 = 75546,
     SPELL_QUICKSAND_AOE             = 75547,
-    SPELL_QUICKSAND_AOE_H           = 89880,
     SPELL_QUICKSAND_DIS             = 89396,
 
     SPELL_SAND_VORTEX_DUMMY1        = 79441,
@@ -179,12 +176,15 @@ class boss_earthrager_ptah : public CreatureScript
                             break;
                         case EVENT_EARTH_POINT:
                             if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM))
-                                DoCast(pTarget, SPELL_EARTH_SPIKE);
+                            {
+                                float x,y,z;
+                                pTarget->GetPosition(x, y, z);
+                                me->CastSpell(x, y, z, SPELL_EARTH_SPIKE, true);
+                            }
                             events.ScheduleEvent(EVENT_EARTH_POINT, urand(20000, 25000));
                             break;                            
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         };

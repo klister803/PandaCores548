@@ -82,7 +82,6 @@ enum AchievementFlags
     ACHIEVEMENT_FLAG_SHOW_GUILD_MEMBERS     = 0x00008000,    //
     ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS  = 0x00010000,    //
     ACHIEVEMENT_FLAG_ACCOUNT                = 0x00020000     //
-
 };
 
 enum

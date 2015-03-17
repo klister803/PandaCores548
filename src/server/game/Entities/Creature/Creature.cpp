@@ -1641,8 +1641,8 @@ float Creature::GetAttackDistance(Unit const* player) const
     // ToDo: UNIT_FIELD_COMBATREACH (or GetObjectSize) + self halfmodelze + target haldmodelsize
     // modelsize get from mdx, m2 file in client. See Ascent creature data extractor.
     float RetDistance = GetObjectSize() + GetCombatReach() + player->GetCombatReach();
-    if (RetDistance < 20.0f)
-        RetDistance = 20.0f;
+    if (RetDistance < 15.0f)
+        RetDistance = 15.0f;
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel

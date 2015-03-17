@@ -787,6 +787,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 mover->RemoveAurasDueToSpell(107837);
                 mover->RemoveAurasDueToSpell(101601);
             }
+            if(spellId == 119393)
+            {
+                mover->RemoveAurasDueToSpell(119388);
+                mover->RemoveAurasDueToSpell(119386);
+            }
             else
             {
                 //cheater? kick? ban?

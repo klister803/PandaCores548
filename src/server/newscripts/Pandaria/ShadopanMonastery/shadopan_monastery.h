@@ -102,6 +102,7 @@ enum SharedSpells
     SPELL_HATE                  = 107085,
     SPELL_HAZE_OF_HATE          = 107087,
     SPELL_HAZE_OF_HATE_VISUAL   = 107217,
+    SPELL_ACHIEVEMENT_CHECK     = 124979,
 };
 
 #endif // SHADOPAN_MONASTERY_H_
