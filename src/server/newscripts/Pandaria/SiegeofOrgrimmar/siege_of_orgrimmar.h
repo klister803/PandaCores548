@@ -74,6 +74,7 @@ enum eCreatures
     NPC_CUTTER_LASER                = 72026,
     NPC_EXPLOSIVE_TAR               = 71950,
     NPC_BORER_DRILL                 = 71906,
+    NPC_ASH_ELEMENTAL               = 71827,
 
     NPC_IMMERSEUS                   = 71543,
 
@@ -290,6 +291,7 @@ enum eGameObjects
     //Iron Juggernaut
     GO_WIND_DOOR                    = 223219,
     GO_ORGRIMMAR_GATE               = 223739,
+    GO_ORGRIMMAR_GATE2              = 223814,
 };
 
 enum GalakrasEvent

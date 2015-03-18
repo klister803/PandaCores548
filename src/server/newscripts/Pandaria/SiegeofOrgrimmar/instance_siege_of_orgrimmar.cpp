@@ -22,7 +22,7 @@ DoorData const doorData[] =
     {GO_IMMERSEUS_EX_DOOR,                   DATA_IMMERSEUS,              DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
-   // {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -56,6 +56,7 @@ public:
         std::vector<uint64> lightqGUIDs;
         uint64 winddoorGuid;
         uint64 orgrimmargateGuid;
+        uint64 orgrimmargate2Guid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -104,6 +105,7 @@ public:
             lightqGUIDs.clear();
             winddoorGuid            = 0;
             orgrimmargateGuid       = 0;
+            orgrimmargate2Guid      = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -453,6 +455,9 @@ public:
                     AddDoor(go, true);
                     orgrimmargateGuid = go->GetGUID();
                     break;
+                case GO_ORGRIMMAR_GATE2:
+                    orgrimmargate2Guid = go->GetGUID();
+                    break;
             }
         }
 
@@ -575,12 +580,27 @@ public:
                         break;
                     case DONE:
                         HandleGameObject(winddoorGuid, true);
-                        //HandleGameObject(orgrimmargateGuid, true);
+                        HandleGameObject(orgrimmargateGuid, true);
                         break;
                     case IN_PROGRESS:
                         HandleGameObject(winddoorGuid, false);
                         break;
                     }
+                    break;
+                }
+                case DATA_KORKRON_D_SHAMAN:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(orgrimmargate2Guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(orgrimmargate2Guid, false);
+                        break;
+                    }
+                    break;
                 }
             }
 
