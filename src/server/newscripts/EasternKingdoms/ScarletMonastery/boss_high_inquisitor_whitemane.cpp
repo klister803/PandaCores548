@@ -16,13 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: boss_high_inquisitor_whitemane
-SD%Complete: 90
-SDComment:
-SDCategory: Scarlet Monastery
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "scarlet_monastery.h"
@@ -83,19 +76,7 @@ public:
 
             _bCanResurrectCheck = false;
             _bCanResurrect = false;
-
-            if (instance)
-                if (me->isAlive())
-                    instance->SetData(TYPE_MOGRAINE_AND_WHITE_EVENT, NOT_STARTED);
         }
-
-        /*void AttackStart(Unit* who)
-        {
-            if (instance && instance->GetData(TYPE_MOGRAINE_AND_WHITE_EVENT) == NOT_STARTED)
-                return;
-
-            ScriptedAI::AttackStart(who);
-        }*/
 
         void EnterCombat(Unit* /*who*/)
         {
@@ -123,21 +104,6 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (_bCanResurrect)
-            {
-                //When casting resuruction make sure to delay so on rez when reinstate battle deepsleep runs out
-                if (instance && Wait_Timer <= diff)
-                {
-                    if (Unit* Mograine = Unit::GetUnit(*me, instance->GetData64(DATA_MOGRAINE)))
-                    {
-                        DoCast(Mograine, SPELL_SCARLETRESURRECTION);
-                        DoScriptText(SAY_WH_RESSURECT, me);
-                        _bCanResurrect = false;
-                    }
-                }
-                else Wait_Timer -= diff;
-            }
-
             //Cast Deep sleep when health is less than 50%
             if (!_bCanResurrectCheck && !HealthAbovePct(50))
             {
@@ -161,16 +127,6 @@ public:
 
                 if (!HealthAbovePct(75))
                     target = me;
-
-                if (instance)
-                {
-                    if (Creature* mograine = Unit::GetCreature((*me), instance->GetData64(DATA_MOGRAINE)))
-                    {
-                        // checking _bCanResurrectCheck prevents her healing Mograine while he is "faking death"
-                        if (_bCanResurrectCheck && mograine->isAlive() && !mograine->HealthAbovePct(75))
-                            target = mograine;
-                    }
-                }
 
                 if (target)
                     DoCast(target, SPELL_HEAL);

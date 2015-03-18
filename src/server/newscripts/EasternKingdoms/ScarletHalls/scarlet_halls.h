@@ -16,6 +16,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef DEF_SCARLET_H
+#define DEF_SCARLET_H 
+
 enum eEnums
 {
     

@@ -69,8 +69,6 @@ set(scripts_STAT_SRCS
   Pandaria/MogushanVault/boss_elegon.cpp
   Pandaria/MogushanVault/boss_will_of_emperor.cpp
   
-  Pandaria/ScarletHalls/instance_scarlet_halls.cpp
-  
   Pandaria/HeartFear/instance_heart_of_fear.cpp
   Pandaria/HeartFear/heart_of_fear.h
   Pandaria/HeartFear/boss_vizier_zorlok.cpp

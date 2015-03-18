@@ -18,7 +18,7 @@
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "scarlet_monastery.h"
+#include "scarlet_halls.h"
 
 enum Says
 {

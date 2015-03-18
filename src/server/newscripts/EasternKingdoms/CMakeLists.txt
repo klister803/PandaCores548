@@ -197,10 +197,10 @@ set(scripts_STAT_SRCS
   EasternKingdoms/ScarletMonastery/boss_headless_horseman.cpp
   EasternKingdoms/ScarletMonastery/instance_scarlet_monastery.cpp
   EasternKingdoms/ScarletMonastery/scarlet_monastery.h
-  EasternKingdoms/ScarletHalls/boss_armsmaster_harlan();
-  EasternKingdoms/ScarletHalls/boss_houndmaster_braun();
-  EasternKingdoms/ScarletHalls/boss_flameweaver_koegler();
-  EasternKingdoms/ScarletHalls/instance_scarlet_halls();
+  EasternKingdoms/ScarletHalls/boss_armsmaster_harlan.cpp
+  EasternKingdoms/ScarletHalls/boss_houndmaster_braun.cpp
+  EasternKingdoms/ScarletHalls/boss_flameweaver_koegler.cpp
+  EasternKingdoms/ScarletHalls/instance_scarlet_halls.cpp
   EasternKingdoms/ScarletHalls/scarlet_halls.h
   EasternKingdoms/undercity.cpp
   EasternKingdoms/silvermoon_city.cpp

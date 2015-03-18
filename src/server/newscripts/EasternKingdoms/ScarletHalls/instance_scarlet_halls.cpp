@@ -20,9 +20,6 @@
 #include "ScriptedCreature.h"
 #include "scarlet_halls.h"
 
-
-#define MAX_ENCOUNTER 3
-
 class instance_scarlet_halls : public InstanceMapScript
 {
 public:
@@ -37,14 +34,12 @@ public:
     {
         instance_scarlet_halls_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
-        uint32 encounter[MAX_ENCOUNTER];
         uint64 BraunGUID;
         uint64 HarlanGUID;
         uint64 KoeglerGUID;
 
         void Initialize()
         {
-            memset(&encounter, 0, sizeof(encounter));
             BraunGUID = 0;
             HarlanGUID = 0;
             KoeglerGUID = 0;
@@ -52,11 +47,11 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {
-            switch (go->GetEntry())
+            /*switch (go->GetEntry())
             {
                 default:
                     break;
-            }
+            }*/
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -77,11 +72,11 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            switch (type)
+            /*switch (type)
             {
                 default:
                     break;
-            }
+            }*/
         }
 
         uint64 GetData64(uint32 type)
@@ -101,6 +96,12 @@ public:
         uint32 GetData(uint32 type)
         {
             return 0;
+        }
+
+        void Update(uint32 diff) 
+        {
+            // Challenge
+            InstanceScript::Update(diff);
         }
     };
 };
