@@ -18,6 +18,15 @@
 #include "NewScriptPCH.h"
 #include "shadopan_monastery.h"
 
+enum eSay
+{
+    SAY_INTRO_1     = 0,
+    SAY_INTRO_2     = 1,
+    SAY_MOVE_HOME   = 8,
+    SAY_READY_FIGHT = 9,
+    SAY_AGGRO       = 11,
+};
+
 enum eSpells
 {
     // Snowdrift
@@ -31,6 +40,7 @@ enum eSpells
     SPELL_SMOKE_BOMB            = 110444,
 
     // Novices
+    SPELL_ACHIEV_RESPECT        = 118918,
 
     // Flagrant Lotus
     SPELL_BALL_OF_FIRE          = 113760,
@@ -75,7 +85,11 @@ enum eEvents
     
     EVENT_WHIRLING_STEEL_FOCUS  = 16,
     EVENT_WHIRLING_STEEL_CHANGE = 17,
-    EVENT_WHIRLING_STEEL_STOP   = 18
+    EVENT_WHIRLING_STEEL_STOP   = 18,
+    
+    EVENT_FORFEIT_JUMP          = 19,
+    
+    EVENT_INTRO                 = 20,
 };
 
 enum ePhases
@@ -133,22 +147,32 @@ class boss_master_snowdrift : public CreatureScript
             boss_master_snowdriftAI(Creature* creature) : BossAI(creature, DATA_MASTER_SNOWDRIFT)
             {
                 pInstance = creature->GetInstanceScript();
+                EncounterFinish = false;
             }
 
             InstanceScript* pInstance;
+            EventMap events;
+
             bool introStarted;
+            bool miniboss;
+            bool EncounterFinish;
 
             uint8 phase;
             uint8 eventPhase;
 
             void Reset()
             {
+                events.Reset();
                 _Reset();
                 introStarted = false;
+                miniboss = true;
                 phase = PHASE_FIRST_EVENT;
                 eventPhase = 0;
-                me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);
+                if (!EncounterFinish)
+                {
+                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);
+                }
                 me->setFaction(35);
                 me->SetReactState(REACT_PASSIVE);
                 SetCanSeeEvenInPassiveMode(true);
@@ -158,6 +182,7 @@ class boss_master_snowdrift : public CreatureScript
             {
                 pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, IN_PROGRESS);
                 initDefaultEventsForPhase();
+                Talk(SAY_AGGRO);
             }
 
             void initDefaultEventsForPhase()
@@ -186,7 +211,7 @@ class boss_master_snowdrift : public CreatureScript
 
             void MoveInLineOfSight(Unit* who)
             {
-                if (who->ToPlayer() && !introStarted)
+                if (who->ToPlayer() && !introStarted && !EncounterFinish)
                 {
                     if (who->ToPlayer()->isGameMaster())
                         return;
@@ -194,9 +219,11 @@ class boss_master_snowdrift : public CreatureScript
                     if (me->GetDistance(who) < 45.0f)
                     {
                         introStarted = true;
+                        Talk(SAY_INTRO_1);
                         pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, SPECIAL);
                         events.ScheduleEvent(EVENT_FIRST_EVENT, 1000);
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
+                        events.ScheduleEvent(EVENT_INTRO, 5000);
                         if (GameObject* endoor = me->FindNearestGameObject(213194, 80.0f))
                             endoor->SetGoState(GO_STATE_READY);
                     }
@@ -205,27 +232,27 @@ class boss_master_snowdrift : public CreatureScript
 
             void JustDied(Unit* killer)
             {
-                DoCast(SPELL_ENCOUNTER_CREDIT);
                 _JustDied();
             }
 
             void EnterEvadeMode()
             {
-                me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);//Events pos
-                if (pInstance)
-                    pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
+                if (!EncounterFinish)
+                {
+                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);//Events pos
+
+                    if (pInstance)
+                        pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
+                }
                 summons.DespawnAll();
             }
 
-           /* void JustReachedHome()
+            void JustReachedHome()
             {
-                me->GetMotionMaster()->Clear();
-                me->GetMotionMaster()->MovePoint(POINT_BEGIN_EVENT, 3680.56f, 3045.27f, 816.20f);//Events pos
-                if (pInstance)
-                    pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
-                summons.DespawnAll();
-            }*/
+                if (EncounterFinish)
+                    me->HandleEmoteCommand(EMOTE_STATE_SIT);
+            }
 
             void DoAction(const int32 action)
             {
@@ -258,6 +285,7 @@ class boss_master_snowdrift : public CreatureScript
                     case POINT_PHASE_FIGHT:
                         me->setFaction(14);
                         me->SetReactState(REACT_AGGRESSIVE);
+                        Talk(SAY_READY_FIGHT);
                         // No Break
                     case POINT_BEGIN_EVENT:
                         me->SetFacingTo(me->GetAngle(3659.08f, 3015.38f));
@@ -274,7 +302,6 @@ class boss_master_snowdrift : public CreatureScript
                     case 0:
                     case 1:
                     case 2:
-                        //Talk(eventPhase);
                         ++eventPhase;
                         events.ScheduleEvent(EVENT_FIRST_EVENT, 5000);
                         break;
@@ -301,14 +328,19 @@ class boss_master_snowdrift : public CreatureScript
                     }
                     case 8:
                     {
-                        me->SummonCreature(NPC_FLAGRANT_LOTUS, MinibossSpawnPos[0].GetPositionX(), MinibossSpawnPos[0].GetPositionY(), MinibossSpawnPos[0].GetPositionZ());
-                        me->SummonCreature(NPC_FLYING_SNOW,    MinibossSpawnPos[1].GetPositionX(), MinibossSpawnPos[1].GetPositionY(), MinibossSpawnPos[1].GetPositionZ());
+                        if (miniboss)
+                        {
+                            miniboss = false;
+                            me->SummonCreature(NPC_FLAGRANT_LOTUS, MinibossSpawnPos[0].GetPositionX(), MinibossSpawnPos[0].GetPositionY(), MinibossSpawnPos[0].GetPositionZ());
+                            me->SummonCreature(NPC_FLYING_SNOW,    MinibossSpawnPos[1].GetPositionX(), MinibossSpawnPos[1].GetPositionY(), MinibossSpawnPos[1].GetPositionZ());
+                        }
                         break;
                     }
                     case 9:
                     {
                         me->GetMotionMaster()->MovePoint(POINT_PHASE_FIGHT, 3713.60f, 3091.87f, 817.31f);//Pos in DoJo
                         phase = PHASE_FIGHT_1;
+                        Talk(SAY_MOVE_HOME);
                         break;
                     }
                     default:
@@ -316,9 +348,9 @@ class boss_master_snowdrift : public CreatureScript
                 }
             }
 
-           /* void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (phase == PHASE_FIGHT_1)
+                /*if (phase == PHASE_FIGHT_1)
                 {
                     if (me->HealthBelowPctDamaged(70, damage))
                     {
@@ -332,91 +364,113 @@ class boss_master_snowdrift : public CreatureScript
                         events.Reset();
                         events.ScheduleEvent(EVENT_DISAPPEAR, 2000);
                     }
+                }*/
+                if (damage >= me->GetHealth())
+                {
+                    damage = 0;
+                    if (!EncounterFinish)
+                    {
+                        EncounterFinish = true;
+                        me->setFaction(35);
+                        me->AttackStop();
+                        me->RemoveAllAuras();
+                        instance->SetBossState(DATA_MASTER_SNOWDRIFT, DONE);
+                        DoCast(SPELL_ENCOUNTER_CREDIT);
+                        me->CombatStop();
+                        EnterEvadeMode();
+                        me->GetMotionMaster()->MoveTargetedHome();
+                        me->DespawnOrUnsummon(10000);
+                    }
                 }
-            }*/
+            }
 
             void UpdateAI(uint32 diff)
             {
+                if (EncounterFinish)
+                    return;
+
                 events.Update(diff);
 
-                switch(uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    // Event Script
-                    case EVENT_FIRST_EVENT:
-                        DoEvent(); 
-                        break;
-                    case EVENT_CHECK_WIPE:
-                        if (pInstance->IsWipe())
-                            Reset();
-                        events.ScheduleEvent(EVENT_CHECK_WIPE, defaultrand);
-                        break;
-                    // Combat Script
-                    /// Phase 1
-                    case EVENT_TORNADO_KICK:
-                        me->CastSpell(me, SPELL_TORNADO_KICK, false);
-                        events.ScheduleEvent(EVENT_TORNADO_KICK, urand(7500, 12500));
-                        break;
-                    case EVENT_FIST_OF_FURY:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
-                            me->CastSpell(target, SPELL_FIST_OF_FURY, false);
-
-                        events.ScheduleEvent(EVENT_FIST_OF_FURY, urand(5000, 10000));
-                        break;
-                    case EVENT_CHASE_DOWN:
-                        // Todo
-                        events.ScheduleEvent(eventId, defaultrand);
-                        break;
-                    /// Phase 2
-                    case EVENT_DISAPPEAR:
+                    switch (eventId)
                     {
-                        std::vector<uint8> randomIndex;
-                        for (int i = 0; i < 3; ++i) randomIndex.push_back(i); // 0 1 2
-                        std::random_shuffle(randomIndex.begin(), randomIndex.end());
-
-                        bool isBoss = true;
-
-                        for (std::vector<uint8>::const_iterator index = randomIndex.begin(); index != randomIndex.end(); ++index)
+                        // Event Script
+                        case EVENT_FIRST_EVENT:
+                            DoEvent(); 
+                            break;
+                        case EVENT_CHECK_WIPE:
+                            if (pInstance->IsWipe())
+                                Reset();
+                            events.ScheduleEvent(EVENT_CHECK_WIPE, defaultrand);
+                            break;
+                        case EVENT_INTRO:
+                            Talk(SAY_INTRO_2);
+                            break;
+                        // Combat Script
+                        /// Phase 1
+                        case EVENT_TORNADO_KICK:
+                            me->CastSpell(me, SPELL_TORNADO_KICK, false);
+                            events.ScheduleEvent(EVENT_TORNADO_KICK, urand(7500, 12500));
+                            break;
+                        case EVENT_FIST_OF_FURY:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                                me->CastSpell(target, SPELL_FIST_OF_FURY, false);
+                            events.ScheduleEvent(EVENT_FIST_OF_FURY, urand(5000, 10000));
+                            break;
+                        case EVENT_CHASE_DOWN:
+                            // Todo
+                            events.ScheduleEvent(eventId, defaultrand);
+                            break;
+                        /// Phase 2
+                        case EVENT_DISAPPEAR:
                         {
-                            // The first random pos is for the boss, the two others are for his clones
-                            if (isBoss)
+                            std::vector<uint8> randomIndex;
+                            for (int i = 0; i < 3; ++i) randomIndex.push_back(i); // 0 1 2
+                            std::random_shuffle(randomIndex.begin(), randomIndex.end());
+    
+                            bool isBoss = true;
+    
+                            for (std::vector<uint8>::const_iterator index = randomIndex.begin(); index != randomIndex.end(); ++index)
                             {
-                                me->NearTeleportTo(ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation());
-                                me->SetVisible(true);
-                                me->CastSpell(me, SPELL_SMOKE_BOMB, true);
-                                isBoss = false;
+                                // The first random pos is for the boss, the two others are for his clones
+                                if (isBoss)
+                                {
+                                    me->NearTeleportTo(ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation());
+                                    me->SetVisible(true);
+                                    me->CastSpell(me, SPELL_SMOKE_BOMB, true);
+                                    isBoss = false;
+                                }
+                                else
+                                    if (Creature* clone = me->SummonCreature(NPC_SNOWDRIFT_CLONE, ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation()))
+                                        clone->CastSpell(clone, SPELL_SMOKE_BOMB, true);
                             }
-                            else
-                                if (Creature* clone = me->SummonCreature(NPC_SNOWDRIFT_CLONE, ClonePos[*index].GetPositionX(), ClonePos[*index].GetPositionY(), ClonePos[*index].GetPositionZ(), ClonePos[*index].GetOrientation()))
-                                    clone->CastSpell(clone, SPELL_SMOKE_BOMB, true);
+                            initDefaultEventsForPhase();
+                            break;
                         }
-
-                        initDefaultEventsForPhase();
-                        break;
+                        case EVENT_FIREBALL:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                me->CastSpell(target, SPELL_BALL_OF_FIRE, false);
+                            events.ScheduleEvent(EVENT_FIREBALL, urand(2500, 5000));
+                            break;
+                        /// Phase 3
+                        case EVENT_PHASE_3:
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            phase = PHASE_FIGHT_3;
+                            initDefaultEventsForPhase();
+                            break;
+                        case EVENT_PARRY_STANCE:
+                            me->CastSpell(me, SPELL_PARRY_STANCE, false);
+                            events.ScheduleEvent(EVENT_PARRY_STANCE, urand(10000, 15000));
+                            break;
+                        case EVENT_QUIVERING_PALM:
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                me->CastSpell(target, SPELL_QUIVERING_PALM, false);
+                            events.ScheduleEvent(EVENT_QUIVERING_PALM, urand(5000, 10000));
+                            break;
+                        default:
+                            break;
                     }
-                    case EVENT_FIREBALL:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                            me->CastSpell(target, SPELL_BALL_OF_FIRE, false);
-
-                        events.ScheduleEvent(EVENT_FIREBALL, urand(2500, 5000));
-                        break;
-                    /// Phase 3
-                    case EVENT_PHASE_3:
-                        me->SetReactState(REACT_AGGRESSIVE);
-                        phase = PHASE_FIGHT_3;
-                        initDefaultEventsForPhase();
-                        break;
-                    case EVENT_PARRY_STANCE:
-                        me->CastSpell(me, SPELL_PARRY_STANCE, false);
-                        events.ScheduleEvent(EVENT_PARRY_STANCE, urand(10000, 15000));
-                        break;
-                    case EVENT_QUIVERING_PALM:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                            me->CastSpell(target, SPELL_QUIVERING_PALM, false);
-
-                        events.ScheduleEvent(EVENT_QUIVERING_PALM, urand(5000, 10000));
-                        break;
-                    default:
-                        break;
                 }
                 DoMeleeAttackIfReady();
             }
@@ -446,10 +500,11 @@ class npc_snowdrift_novice : public CreatureScript
             EventMap events;
             bool jumpDone;
             bool stillInFight;
+            bool eventEmote;
 
             void Reset()
             {
-                events.Reset();
+                //events.Reset();
                 if (!jumpDone)
                 {
                     float x, y;
@@ -482,26 +537,39 @@ class npc_snowdrift_novice : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (!stillInFight)
-                    return;
-
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
-                    EnterEvadeMode();
                     me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
+                    me->AttackStop();
                     me->setFaction(35);
-                    stillInFight = false;
-                    if (pInstance)
-                        pInstance->SetData(DATA_DEFEATED_NOVICE, 1);
-
-                    if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_FIRST_POS)))
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+                    eventEmote = true;
+                    me->RemoveAllAuras();
+                    if (pInstance && stillInFight)
                     {
-                        me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED);
-                        me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
+                        stillInFight = false;
+                        pInstance->SetData(DATA_DEFEATED_NOVICE, 1);
                     }
-                    me->DespawnOrUnsummon();
+                    events.ScheduleEvent(EVENT_FORFEIT_JUMP, 2000);
+                }
+            }
+            
+            void JustReachedHome()
+            {
+                if (Creature* target = me->FindNearestCreature(56505, 30.0f))
+                {
+                    eventEmote = false;
+                    me->SetFacingToObject(target);
+                }
+            }
+
+            void ReceiveEmote(Player* player, uint32 emote)
+            {
+                if (emote == TEXT_EMOTE_BOW && eventEmote)
+                {
+                    eventEmote = false;
+                    DoCast(player, SPELL_ACHIEV_RESPECT, true);
                 }
             }
 
@@ -510,6 +578,23 @@ class npc_snowdrift_novice : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_FORFEIT_JUMP:
+                        if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_FIRST_POS)))
+                        {
+                            EnterEvadeMode();
+                            me->CombatStop();
+                            me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
+                            me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED);
+                        }
+                        break;
+                    }
+                }
                 DoMeleeAttackIfReady();
             }
         };
