@@ -239,7 +239,7 @@ enum Opcodes
     CMSG_GUILD_ADD_RANK                               = 0x1A4A, // 5.4.1 17538
     CMSG_GUILD_ASSIGN_MEMBER_RANK                     = 0x0762, // 5.4.1 17538
     CMSG_GUILD_AUTO_DECLINE                           = 0x174B, // 5.4.1 17538
-    CMSG_GUILD_BANKER_ACTIVATE                        = 0x03C6, // 5.4.1 17538
+    CMSG_GUILD_BANK_ACTIVATE                          = 0x03C6, // 5.4.1 17538
     CMSG_GUILD_BANK_BUY_TAB                           = 0x07E5, // 5.4.1 17538
     CMSG_GUILD_BANK_DEPOSIT_MONEY                     = 0x074C, // 5.4.1 17538
     CMSG_GUILD_BANK_LOG_QUERY                         = 0x0E6A, // 5.4.1 17538
@@ -973,8 +973,8 @@ enum Opcodes
     SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0x14D8, // 5.4.1 17538
     SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0x0051, // 5.4.1 17538
     SMSG_GUILD_ACHIEVEMENT_MEMBERS                    = 0xA62,  // 5.0.5 16048
-    SMSG_GUILD_BANK_LIST                              = 0x1858, // 5.4.1 17538
-    SMSG_GUILD_BANK_LOG_QUERY_RESULT                  = 0x0550, // 5.4.1 17538
+    SMSG_GUILD_BANK_QUERY_RESULTS                     = 0x1858, // 5.4.1 17538
+    SMSG_GUILD_BANK_LOG_QUERY_RESULTS                 = 0x0550, // 5.4.1 17538
     SMSG_GUILD_BANK_MONEY_WITHDRAWN                   = 0x0DD1, // 5.4.1 17538
     SMSG_GUILD_BANK_QUERY_TEXT_RESULT                 = 0x04D8, // 5.4.1 17538
     SMSG_GUILD_CANCEL                                 = 0,      // Not found in 4.3.4

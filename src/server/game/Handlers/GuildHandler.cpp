@@ -369,11 +369,11 @@ void WorldSession::HandleGuildPermissions(WorldPacket& /* recvData */)
 // Called when clicking on Guild bank gameobject
 void WorldSession::HandleGuildBankerActivate(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANKER_ACTIVATE)");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_ACTIVATE)");
 
     ObjectGuid GoGuid;
     recvData.ReadGuidMask<5, 2, 1, 0, 4>(GoGuid);
-    bool fullSlotList = recvData.ReadBit();
+    bool fullUpdate = recvData.ReadBit();
     recvData.ReadGuidMask<6, 3, 7>(GoGuid);
 
     recvData.ReadGuidBytes<3, 6, 1, 7, 0, 5, 2, 4>(GoGuid);
@@ -381,7 +381,7 @@ void WorldSession::HandleGuildBankerActivate(WorldPacket& recvData)
     if (GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
     {
         if (Guild* guild = _GetPlayerGuild(this))
-            guild->SendBankList(this, 0, true, true);
+            guild->SendBankList(this, 0, true, true, fullUpdate);
         else
             Guild::SendCommandResult(this, GUILD_UNK1, ERR_GUILD_PLAYER_NOT_IN_GUILD);
     }
@@ -397,14 +397,14 @@ void WorldSession::HandleGuildBankQueryTab(WorldPacket & recvData)
 
     recvData >> tabId;
     recvData.ReadGuidMask<6>(GoGuid);
-    bool fullSlotList = recvData.ReadBit(); // 0 = only slots updated in last operation are shown. 1 = all slots updated
+    bool fullUpdate = recvData.ReadBit();  // fullUpdate
     recvData.ReadGuidMask<5, 2, 1, 0, 4, 7, 3>(GoGuid);
 
     recvData.ReadGuidBytes<4, 6, 7, 3, 5, 0, 1, 2>(GoGuid);
 
     if (GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
         if (Guild* guild = _GetPlayerGuild(this))
-            guild->SendBankList(this, tabId, true, false);
+            guild->SendBankList(this, tabId, true, false, fullUpdate);
 }
 
 void WorldSession::HandleGuildBankDepositMoney(WorldPacket & recvData)

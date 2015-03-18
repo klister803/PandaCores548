@@ -2018,7 +2018,7 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint64 amount, bool 
     CharacterDatabase.CommitTransaction(trans);
 
     if (!cashFlow)
-        SendBankList(session, 0, false, false);
+        SendBankList(session, 0, false, false, false);
 }
 
 bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool repair)
@@ -2058,8 +2058,10 @@ bool Guild::HandleMemberWithdrawMoney(WorldSession* session, uint64 amount, bool
     CharacterDatabase.CommitTransaction(trans);
 
     SendMoneyInfo(session);
+
     if (!repair)
-        SendBankList(session, 0, false, false);
+        SendBankList(session, 0, false, false, false);
+
     return true;
 }
 
@@ -2128,7 +2130,7 @@ void Guild::SendBankLog(WorldSession* session, uint8 tabId) const
     if (tabId < GetPurchasedTabsSize() || tabId == GUILD_BANK_MAX_TABS)
     {
         LogHolder::GuildLog const* log = m_bankEventLog[tabId]->GetLog();
-        WorldPacket data(SMSG_GUILD_BANK_LOG_QUERY_RESULT, log->size() * (4 * 4 + 1) + 1 + 1);
+        WorldPacket data(SMSG_GUILD_BANK_LOG_QUERY_RESULTS, log->size() * (4 * 4 + 1) + 1 + 1);
 
         ByteBuffer buffer;
         data.WriteBits(log->size(), 21);
@@ -2149,16 +2151,17 @@ void Guild::SendBankLog(WorldSession* session, uint8 tabId) const
     }
 }
 
-void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, bool withTabInfo) const
+void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, bool withTabInfo, bool fullUpdate) const
 {
     ByteBuffer tabData;
-    WorldPacket data(SMSG_GUILD_BANK_LIST);
+    WorldPacket data(SMSG_GUILD_BANK_QUERY_RESULTS);
 
     data << int32(_GetMemberRemainingSlots(session->GetPlayer()->GetGUID(), 0));
     data << uint64(m_bankMoney);
     data << uint32(tabId);
 
     data.WriteBits(withTabInfo ? GetPurchasedTabsSize() : 0, 21);
+
     if (withTabInfo)
     {
         for (uint8 i = 0; i < GetPurchasedTabsSize(); ++i)
@@ -2220,7 +2223,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
         }
     }
 
-    data.WriteBit(1);             // fullUpdate
+    data.WriteBit(fullUpdate);             // fullUpdate
 
     data.FlushBits();
     if (!tabData.empty())
@@ -3210,7 +3213,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
     if (BankTab const* tab = GetBankTab(tabId))
     {
         ByteBuffer tabData;
-        WorldPacket data(SMSG_GUILD_BANK_LIST);
+        WorldPacket data(SMSG_GUILD_BANK_QUERY_RESULTS);
         size_t rempos = data.wpos();
         data << uint32(-1);                                      // Item withdraw amount, will be filled later
         data << uint64(m_bankMoney);
