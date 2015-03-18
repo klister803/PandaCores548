@@ -64,6 +64,11 @@ enum eSpells
 enum CreatureText
 {
     SAY_PULL                    = 0,
+    SAY_FIRSTATTACK             = 1,
+    SAY_POISONMIST_TOTEM        = 2,
+    SAY_ASHFLARE_TOTEM          = 3,
+    SAY_BLOODLUST               = 4,
+    SAY_FOULSTREAM_TOTEM        = 5,
 };
 
 enum sEvents
@@ -140,7 +145,7 @@ public:
         SummonList summon;
         EventMap events;
         uint8 phase;
-        bool firstpull;
+        bool firstpull, firstattack;
         
         void Reset()
         {
@@ -154,6 +159,7 @@ public:
                 if (firstpull)
                     SummonAndSeatOnMount(me->GetEntry());
                 phase = 0;
+                firstattack = false;
             }
         }
 
@@ -238,6 +244,7 @@ public:
                 switch (entry)
                 {
                 case NPC_WAVEBINDER_KARDRIS:
+                    me->AI()->Talk(SAY_POISONMIST_TOTEM);
                     DoCast(me, SPELL_POISONMIST_TOTEM, true);
                     events.ScheduleEvent(EVENT_TOXIC_STORM, 5000);
                     break;
@@ -256,6 +263,7 @@ public:
                     events.ScheduleEvent(EVENT_FOUL_GEYSER, 2000);
                     break;
                 case NPC_EARTHBREAKER_HAROMM:
+                    me->AI()->Talk(SAY_FOULSTREAM_TOTEM);
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 1000);
                     break;
                 }
@@ -266,6 +274,7 @@ public:
                 switch (entry)
                 {
                 case NPC_WAVEBINDER_KARDRIS:
+                    me->AI()->Talk(SAY_ASHFLARE_TOTEM);
                     DoCast(me, SPELL_ASHFLARE_TOTEM, true);
                     //events.ScheduleEvent(EVENT_FALLING_ASH, 20000); not works
                     break;
@@ -276,12 +285,11 @@ public:
             }
             break;
             case 4: //25pct
+                me->AI()->Talk(SAY_BLOODLUST);
                 me->AddAura(SPELL_BLOODLUST, me);
                 break;
             }
         }
-        
-        void DoAction(int32 const action){}
         
         void JustDied(Unit* killer)
         {
@@ -305,13 +313,27 @@ public:
                 //Kardris
                 case EVENT_FROSTSTORM_BOLT:
                     if (me->getVictim())
+                    {
+                        if (!firstattack)
+                        {
+                            firstattack = true;
+                            me->AI()->Talk(SAY_FIRSTATTACK);
+                        }
                         DoCastVictim(SPELL_FROSTSTORM_BOLT);
+                    }
                     events.ScheduleEvent(EVENT_FROSTSTORM_BOLT, 6000);
                     break;
                 //Haromm
                 case EVENT_FROSTSTORM_STRIKE:
                     if (me->getVictim())
+                    {
+                        if (!firstattack)
+                        {
+                            firstattack = true;
+                            me->AI()->Talk(SAY_FIRSTATTACK);
+                        }
                         DoCastVictim(SPELL_FROSTSTORM_STRIKE);
+                    }
                     events.ScheduleEvent(EVENT_FROSTSTORM_STRIKE, 6000);
                     break;
                 //Extra Events 85 pct
