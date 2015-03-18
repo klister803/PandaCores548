@@ -16,21 +16,46 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEF_SCARLET_M
-#define DEF_SCARLET_M
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 
-enum eEnums
+enum Spells
 {
-    DATA_HORSEMAN_EVENT             = 1,
-    GAMEOBJECT_PUMPKIN_SHRINE       = 2,
-};
-
-enum eEntry
-{
-    NPC_HORSEMAN          = 23682,
-    NPC_HEAD              = 23775,
-    NPC_PUMPKIN           = 23694,
     
-    GO_PUMPKIN_SHRINE    = 186267,
 };
-#endif
+
+class boss_flameweaver_koegler : public CreatureScript
+{
+public:
+    boss_flameweaver_koegler() : CreatureScript("boss_flameweaver_koegler") { }
+
+    struct boss_flameweaver_koeglerAI : public ScriptedAI
+    {
+        boss_flameweaver_koeglerAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset()
+        {
+            
+        }
+
+        void EnterCombat(Unit* /*who*/) {}
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_flameweaver_koeglerAI (creature);
+    }
+};
+
+void AddSC_boss_flameweaver_koegler()
+{
+    new boss_flameweaver_koegler();
+}

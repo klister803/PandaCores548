@@ -16,20 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEF_SCARLET_M
-#define DEF_SCARLET_M
-
 enum eEnums
 {
-    DATA_HORSEMAN_EVENT             = 1,
-    GAMEOBJECT_PUMPKIN_SHRINE       = 2,
+    
 };
 
 enum eEntry
 {
-    ENTRY_PUMPKIN_SHRINE    = 186267,
-    ENTRY_HORSEMAN          = 23682,
-    ENTRY_HEAD              = 23775,
-    ENTRY_PUMPKIN           = 23694
+    NPC_HOUNDMASTER_BRAUN    = 59303,
+    NPC_ARMSMASTER_HARLAN    = 58632,
+    NPC_FLAMEWEAVER_KOEGLER  = 59150,
 };
 #endif

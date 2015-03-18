@@ -16,13 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Headless_Horseman
-SD%Complete:
-SDComment:
-SDCategory: Scarlet Monastery
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "SpellMgr.h"
@@ -866,7 +859,7 @@ public:
         InstanceScript* instance = player->GetInstanceScript();
         if (instance)
         {
-            if (instance->GetData(DATA_HORSEMAN_EVENT) != NOT_STARTED || instance->GetData64(ENTRY_HORSEMAN))
+            if (instance->GetData(DATA_HORSEMAN_EVENT) != NOT_STARTED || instance->GetData64(NPC_HORSEMAN))
                 return true;
             instance->SetData(DATA_HORSEMAN_EVENT, IN_PROGRESS);
         }

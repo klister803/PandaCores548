@@ -81,9 +81,6 @@ set(scripts_STAT_SRCS
   EasternKingdoms/ScarletEnclave/chapter5.cpp
   EasternKingdoms/ScarletEnclave/chapter1.cpp
   EasternKingdoms/ScarletEnclave/the_scarlet_enclave.cpp
-  EasternKingdoms/ScarletMonasteryCathedralGY/instance_scarlet_monasrtery.cpp
-  EasternKingdoms/ScarletMonasteryCathedralGY/scarlet_monastery.h
-  EasternKingdoms/ScarletMonasteryCathedralGY/boss_headless_horseman.cpp
   EasternKingdoms/eastern_plaguelands.cpp
   EasternKingdoms/MoltenCore/boss_coren_direbrew.cpp
   EasternKingdoms/MoltenCore/boss_gehennas.cpp
@@ -194,17 +191,17 @@ set(scripts_STAT_SRCS
   EasternKingdoms/Deadmines/deadmines.cpp
   EasternKingdoms/Deadmines/instance_deadmines.cpp
   EasternKingdoms/duskwood.cpp
-  EasternKingdoms/ScarletMonastery/boss_azshir_the_sleepless.cpp
-  EasternKingdoms/ScarletMonastery/boss_mograine_and_whitemane.cpp
-  EasternKingdoms/ScarletMonastery/boss_bloodmage_thalnos.cpp
-  EasternKingdoms/ScarletMonastery/boss_interrogator_vishas.cpp
+  EasternKingdoms/ScarletMonastery/boss_thalnos_the_soulrender.cpp
+  EasternKingdoms/ScarletMonastery/boss_brother_korloff.cpp
+  EasternKingdoms/ScarletMonastery/boss_high_inquisitor_whitemane.cpp
+  EasternKingdoms/ScarletMonastery/boss_headless_horseman.cpp
   EasternKingdoms/ScarletMonastery/instance_scarlet_monastery.cpp
-  EasternKingdoms/ScarletMonastery/boss_houndmaster_loksey.cpp
   EasternKingdoms/ScarletMonastery/scarlet_monastery.h
-  EasternKingdoms/ScarletMonastery/boss_high_inquisitor_fairbanks.cpp
-  EasternKingdoms/ScarletMonastery/boss_arcanist_doan.cpp
-  EasternKingdoms/ScarletMonastery/boss_herod.cpp
-  EasternKingdoms/ScarletMonastery/boss_scorn.cpp
+  EasternKingdoms/ScarletHalls/boss_armsmaster_harlan();
+  EasternKingdoms/ScarletHalls/boss_houndmaster_braun();
+  EasternKingdoms/ScarletHalls/boss_flameweaver_koegler();
+  EasternKingdoms/ScarletHalls/instance_scarlet_halls();
+  EasternKingdoms/ScarletHalls/scarlet_halls.h
   EasternKingdoms/undercity.cpp
   EasternKingdoms/silvermoon_city.cpp
   EasternKingdoms/loch_modan.cpp

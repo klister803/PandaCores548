@@ -16,47 +16,52 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Houndmaster_Loksey
-SD%Complete: 100
-SDComment:
-SDCategory: Scarlet Monastery
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "scarlet_monastery.h"
 
-enum eEnums
+enum Says
 {
-    SAY_AGGRO                       = -1189021,
-    SPELL_SUMMONSCARLETHOUND        = 17164,
-    SPELL_BLOODLUST                 = 6742
+    
 };
 
-class boss_houndmaster_loksey : public CreatureScript
+enum Spells
+{
+    
+};
+
+class boss_brother_korloff : public CreatureScript
 {
 public:
-    boss_houndmaster_loksey() : CreatureScript("boss_houndmaster_loksey") { }
+    boss_brother_korloff() : CreatureScript("boss_brother_korloff") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    struct boss_brother_korloffAI : public ScriptedAI
     {
-        return new boss_houndmaster_lokseyAI (creature);
-    }
+        boss_brother_korloffAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = me->GetInstanceScript();
+        }
 
-    struct boss_houndmaster_lokseyAI : public ScriptedAI
-    {
-        boss_houndmaster_lokseyAI(Creature* creature) : ScriptedAI(creature) {}
-
-        uint32 BloodLust_Timer;
+        InstanceScript* instance;
 
         void Reset()
         {
-            BloodLust_Timer = 20000;
+            
         }
 
         void EnterCombat(Unit* /*who*/)
         {
-            DoScriptText(SAY_AGGRO, me);
+            
+        }
+
+        void KilledUnit(Unit* /*Victim*/)
+        {
+            
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            
         }
 
         void UpdateAI(uint32 diff)
@@ -64,19 +69,17 @@ public:
             if (!UpdateVictim())
                 return;
 
-            if (BloodLust_Timer <= diff)
-            {
-                DoCast(me, SPELL_BLOODLUST);
-                BloodLust_Timer = 20000;
-            }
-            else BloodLust_Timer -= diff;
-
             DoMeleeAttackIfReady();
         }
     };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_brother_korloffAI (creature);
+    }
 };
 
-void AddSC_boss_houndmaster_loksey()
+void AddSC_boss_brother_korloff()
 {
-    new boss_houndmaster_loksey();
+    new boss_brother_korloff();
 }

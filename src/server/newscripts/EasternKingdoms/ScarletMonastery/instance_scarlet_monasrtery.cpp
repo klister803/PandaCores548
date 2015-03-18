@@ -16,21 +16,12 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Instance_Scarlet_Monastery
-SD%Complete: 50
-SDComment:
-SDCategory: Scarlet Monastery
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "scarlet_monastery.h"
-//186269
-//186314
 
 
-#define MAX_ENCOUNTER 1
+#define MAX_ENCOUNTER 4
 
 class instance_scarlet_monastery : public InstanceMapScript
 {
@@ -67,7 +58,9 @@ public:
         {
             switch (go->GetEntry())
             {
-                case ENTRY_PUMPKIN_SHRINE: PumpkinShrineGUID = go->GetGUID();break;
+                case GO_PUMPKIN_SHRINE: 
+                    PumpkinShrineGUID = go->GetGUID();
+                    break;
                 default:
                     break;
             }
@@ -77,9 +70,15 @@ public:
         {
             switch (creature->GetEntry())
             {
-                case ENTRY_HORSEMAN:    HorsemanGUID = creature->GetGUID(); break;
-                case ENTRY_HEAD:        HeadGUID = creature->GetGUID(); break;
-                case ENTRY_PUMPKIN:     HorsemanAdds.insert(creature->GetGUID());break;
+                case NPC_HORSEMAN:
+                    HorsemanGUID = creature->GetGUID();
+                    break;
+                case NPC_HEAD:
+                    HeadGUID = creature->GetGUID();
+                    break;
+                case NPC_PUMPKIN:
+                    HorsemanAdds.insert(creature->GetGUID());
+                    break;
             }
         }
 
@@ -87,7 +86,7 @@ public:
         {
             switch (type)
             {
-            case GAMEOBJECT_PUMPKIN_SHRINE:
+            case GO_PUMPKIN_SHRINE:
                 HandleGameObject(PumpkinShrineGUID, false);
                 break;
             case DATA_HORSEMAN_EVENT:
@@ -111,9 +110,12 @@ public:
         {
             switch (type)
             {
-                case GAMEOBJECT_PUMPKIN_SHRINE:   return PumpkinShrineGUID;
-                case ENTRY_HORSEMAN:              return HorsemanGUID;
-                case ENTRY_HEAD:                  return HeadGUID;
+                case GO_PUMPKIN_SHRINE:
+                    return PumpkinShrineGUID;
+                case NPC_HORSEMAN:
+                    return HorsemanGUID;
+                case NPC_HEAD:
+                    return HeadGUID;
             }
             return 0;
         }
