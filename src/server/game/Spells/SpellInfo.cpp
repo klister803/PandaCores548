@@ -491,7 +491,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                     preciseBasePoints += frand(-delta, delta);
                 }
 
-                basePoints = int32(preciseBasePoints);
+                basePoints = RoundingFloatValue(preciseBasePoints);
 
                 if (ComboScalingMultiplier)
                     comboDamage = ComboScalingMultiplier * multiplier;
