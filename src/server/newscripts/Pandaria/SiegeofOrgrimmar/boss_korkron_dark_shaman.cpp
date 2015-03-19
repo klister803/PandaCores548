@@ -184,6 +184,17 @@ public:
             if (Creature* mount = me->SummonCreature(mauntentry, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
                 me->EnterVehicle(mount->ToUnit(), 0);
         }
+
+        void EnterEvadeMode()
+        {
+            summon.DespawnAll();
+            if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
+            {
+                if (oshaman->isAlive() && oshaman->isInCombat())
+                    oshaman->AI()->EnterEvadeMode();
+                ScriptedAI::EnterEvadeMode();
+            }
+        }
         
         void EnterCombat(Unit* who)
         {
