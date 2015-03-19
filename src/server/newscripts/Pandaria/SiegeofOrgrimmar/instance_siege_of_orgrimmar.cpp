@@ -594,9 +594,19 @@ public:
                     {
                     case NOT_STARTED:
                     case DONE:
+                        for (uint32 n = NPC_WAVEBINDER_KARDRIS; n <= NPC_EARTHBREAKER_HAROMM; n++)
+                        {
+                            if (Creature* shaman = instance->GetCreature(GetData64(n)))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, shaman);
+                        }
                         HandleGameObject(orgrimmargate2Guid, true);
                         break;
                     case IN_PROGRESS:
+                        for (uint32 n = NPC_WAVEBINDER_KARDRIS; n <= NPC_EARTHBREAKER_HAROMM; n++)
+                        {
+                            if (Creature* shaman = instance->GetCreature(GetData64(n)))
+                                SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, shaman);
+                        }
                         HandleGameObject(orgrimmargate2Guid, false);
                         break;
                     }

@@ -153,6 +153,7 @@ public:
             {
                 events.Reset();
                 summon.DespawnAll();
+                DespawnAllSummons();
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
@@ -160,6 +161,42 @@ public:
                     SummonAndSeatOnMount(me->GetEntry());
                 phase = 0;
                 firstattack = false;
+            }
+        }
+
+        Creature* GetOtherShaman()
+        {
+            if (instance)
+            { 
+                if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
+                {
+                    if (oshaman->isAlive())
+                        return oshaman;
+                }
+            }
+            return NULL;
+        }
+
+        bool IsShaman(Unit* who)
+        {
+            if (who->ToCreature())
+            {
+                if (who->GetEntry() == NPC_WAVEBINDER_KARDRIS || who->GetEntry() == NPC_EARTHBREAKER_HAROMM)
+                    return true;
+            }
+            return false;
+        }
+
+        void DespawnAllSummons()
+        {
+            std::list<Creature*> list;
+            list.clear();
+            me->GetCreatureListWithEntryInGrid(list, 71827, 200.0f); //ash elemental
+            me->GetCreatureListWithEntryInGrid(list, 71817, 200.0f); //toxic tornado
+            if (!list.empty())
+            {
+                for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
+                    (*itr)->DespawnOrUnsummon();
             }
         }
 
@@ -210,26 +247,30 @@ public:
 
         void EnterEvadeMode()
         {
-            summon.DespawnAll();
-            if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
+            ScriptedAI::EnterEvadeMode();
+            if (Creature* oshaman = GetOtherShaman())
             {
-                if (oshaman->isAlive() && oshaman->isInCombat())
+                if (oshaman->isInCombat())
                     oshaman->AI()->EnterEvadeMode();
             }
-            ScriptedAI::EnterEvadeMode();
         }
         
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
+            if (IsShaman(attacker))
+                me->SetHealth(me->GetHealth() - damage);
+            else
             {
-                if (damage >= me->GetHealth())
+                if (Creature* oshaman = GetOtherShaman())
                 {
-                    oshaman->Kill(oshaman, true);
-                    return;
+                    if (damage >= me->GetHealth())
+                    {
+                        oshaman->Kill(oshaman, true);
+                        return;
+                    }
+                    else
+                        oshaman->AI()->DamageTaken(me, damage);
                 }
-                else
-                    oshaman->SetHealth(oshaman->GetHealth() - damage);
             }
             CheckHealthForExtraEvents();
         }
@@ -305,6 +346,7 @@ public:
         void JustDied(Unit* killer)
         {
             summon.DespawnAll();
+            DespawnAllSummons();
             if (killer->ToCreature() && instance)
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
         }
@@ -350,7 +392,7 @@ public:
                 //Extra Events 85 pct
                 //Kardris
                 case EVENT_TOXIC_STORM:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                         DoCast(target, SPELL_TOXIC_STORM_SUM);
                     events.ScheduleEvent(EVENT_TOXIC_STORM, 25000);
                     break;
@@ -391,7 +433,7 @@ public:
                     break;
                 //Haromm
                 case EVENT_FOUL_STREAM:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 60.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 50.0f, true))
                         DoCast(target, SPELL_FOUL_STREAM);
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 30000);
                     break;
@@ -402,7 +444,7 @@ public:
                     break;
                 //Haromm
                 case EVENT_ASHEN_WALL:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     {
                         Position pos;
                         target->GetPosition(&pos);
@@ -421,6 +463,16 @@ public:
         void JustSummoned(Creature* sum)
         {
             summon.Summon(sum);
+            switch (sum->GetEntry())
+            {
+            //Totems
+            case 71915:
+            case 71916:
+            case 71917:
+                sum->SetReactState(REACT_PASSIVE);
+                sum->AttackStop();
+                break;
+            }
         }
 
         uint32 GetData(uint32 type)
@@ -527,12 +579,12 @@ public:
                 {
                 case EVENT_SWIPE:
                     if (me->getVictim())
-                        DoCastVictim(SPELL_SWIPE);
+                        DoCastVictim(SPELL_SWIPE, true);
                     events.ScheduleEvent(EVENT_SWIPE, 7000);
                     break;
                 case EVENT_REND:
                     if (me->getVictim())
-                        DoCastVictim(SPELL_REND);
+                        DoCastVictim(SPELL_REND, true);
                     events.ScheduleEvent(EVENT_REND, 4000);
                     break;
                 }
