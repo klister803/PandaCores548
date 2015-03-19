@@ -3456,181 +3456,181 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
     }
 
     return true;
- }
+}
 
- template<class T>
- bool AchievementMgr<T>::AdditionalRequirementsSatisfied(CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const
- {
+template<class T>
+bool AchievementMgr<T>::AdditionalRequirementsSatisfied(CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const
+{
     if(std::list<uint32> const* modifierList = GetModifierTreeList(criteria->ModifyTree))
-     for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
-     {
-         ModifierTreeEntry const* modifier = sModifierTreeStore.LookupEntry(*itr);
-         int32 const reqType = modifier->additionalConditionType;
-         uint32 const reqValue = modifier->additionalConditionValue;
+        for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
+        {
+            ModifierTreeEntry const* modifier = sModifierTreeStore.LookupEntry(*itr);
+            int32 const reqType = modifier->additionalConditionType;
+            uint32 const reqValue = modifier->additionalConditionValue;
 
-         switch (AchievementCriteriaAdditionalCondition(reqType))
-         {
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_ENTRY: // 4
-             if (!unit || unit->GetEntry() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_PLAYER: // 5
-             if (!unit || unit->GetTypeId() != TYPEID_PLAYER)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD: // 6
-             if (!unit || unit->isAlive())
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_ENEMY: // 7
-             if (!unit)
-                 return false;
-             if (const Player* player = unit->ToPlayer())
-                 if (player->GetTeam() == referencePlayer->GetTeam())
-                     return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_HAS_AURA: // 8
-             if (!referencePlayer->HasAura(reqValue))
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HAS_AURA: // 10
-             if (!unit || !unit->HasAura(reqValue))
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_MOUNTED: // 11
-             if (!unit || !unit->IsMounted())
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_MIN: // 14
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_EQUALS: // 15
-             {
-                 // miscValue1 is itemid
-                 ItemTemplate const * const item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
-                 if (!item || item->Quality < reqValue)
-                     return false;
+            switch (AchievementCriteriaAdditionalCondition(reqType))
+            {
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_ENTRY: // 4
+                    if (!unit || unit->GetEntry() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_PLAYER: // 5
+                    if (!unit || unit->GetTypeId() != TYPEID_PLAYER)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD: // 6
+                    if (!unit || unit->isAlive())
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_ENEMY: // 7
+                    if (!unit)
+                        return false;
+                    if (const Player* player = unit->ToPlayer())
+                        if (player->GetTeam() == referencePlayer->GetTeam())
+                            return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_HAS_AURA: // 8
+                    if (!referencePlayer->HasAura(reqValue))
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HAS_AURA: // 10
+                    if (!unit || !unit->HasAura(reqValue))
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_MOUNTED: // 11
+                    if (!unit || !unit->IsMounted())
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_MIN: // 14
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_EQUALS: // 15
+                    {
+                        // miscValue1 is itemid
+                        ItemTemplate const * const item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                        if (!item || item->Quality < reqValue)
+                            return false;
+        
+                        break;
+                    }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAP_DIFFICULTY: // 20
+                    if (sObjectMgr->GetDiffFromSpawn(referencePlayer->GetMap()->GetDifficulty()) != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
+                    if (!referencePlayer || referencePlayer->GetMapId() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
+                    if (!referencePlayer || referencePlayer->GetZoneId() != reqValue) // achievement=1291
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
+                {
+                    uint32 zoneId, areaId;
+                    referencePlayer->GetZoneAndAreaId(zoneId, areaId);
+                    if (zoneId != reqValue && areaId != reqValue)
+                        return false;
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE: // 18
+                {
+                    if (!unit)
+                        return false;
+                    uint32 zoneId, areaId;
+                    unit->GetZoneAndAreaId(zoneId, areaId);
+                    if (zoneId != reqValue && areaId != reqValue)
+                        return false;
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE: // 25
+                    if (referencePlayer->getRace() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_CLASS: // 26
+                    if (referencePlayer->getClass() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_RACE: // 27
+                    if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getRace() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CLASS: // 28
+                    if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getClass() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAX_GROUP_MEMBERS: // 29
+                    if (referencePlayer->GetGroup() && referencePlayer->GetGroup()->GetMembersCount() >= reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_TYPE: // 30
+                    {
+                        if (!unit)
+                            return false;
+                        Creature const * const creature = unit->ToCreature();
+                        if (!creature || creature->GetCreatureType() != reqValue)
+                            return false;
+                        break;
+                    }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TITLE_BIT_INDEX: // 38
+                    // miscValue1 is title's bit index
+                    if (miscValue1 != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL: // 40
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVLE: // 70
+                    if (!unit || unit->getLevel() != reqValue)
+                        return false;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW: // 46
+                    if (!unit || unit->GetHealthPct() >= reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY: // 65
+                {
+                    if (!miscValue1)
+                        return false;
+        
+                    ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+                    if (!rp)
+                        return false;
+        
+                    if (rp->rare != reqValue)
+                        return false;
+        
+                    if (referencePlayer->IsCompletedProject(rp->ID, false))
+                        return false;
 
-                 break;
-             }
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAP_DIFFICULTY: // 20
-             if (sObjectMgr->GetDiffFromSpawn(referencePlayer->GetMap()->GetDifficulty()) != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
-             if (!referencePlayer || referencePlayer->GetMapId() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE: // 41
-             if (!referencePlayer || referencePlayer->GetZoneId() != reqValue) // achievement=1291
-                 return false;
-             break;
-        case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE: // 17
-		{
-            uint32 zoneId, areaId;
-            referencePlayer->GetZoneAndAreaId(zoneId, areaId);
-            if (zoneId != reqValue && areaId != reqValue)
-                return false;
-            break;
-		}
-        case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE: // 18
-		{
-            if (!unit)
-                return false;
-            uint32 zoneId, areaId;
-            unit->GetZoneAndAreaId(zoneId, areaId);
-            if (zoneId != reqValue && areaId != reqValue)
-                return false;
-            break;
-		}
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE: // 25
-             if (referencePlayer->getRace() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_CLASS: // 26
-             if (referencePlayer->getClass() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_RACE: // 27
-             if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getRace() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CLASS: // 28
-             if (!unit || unit->GetTypeId() != TYPEID_PLAYER || unit->getClass() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAX_GROUP_MEMBERS: // 29
-             if (referencePlayer->GetGroup() && referencePlayer->GetGroup()->GetMembersCount() >= reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_TYPE: // 30
-             {
-                 if (!unit)
-                     return false;
-                 Creature const * const creature = unit->ToCreature();
-                 if (!creature || creature->GetCreatureType() != reqValue)
-                     return false;
-                 break;
-             }
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TITLE_BIT_INDEX: // 38
-             // miscValue1 is title's bit index
-             if (miscValue1 != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL: // 40
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVLE: // 70
-             if (!unit || unit->getLevel() != reqValue)
-                 return false;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW: // 46
-             if (!unit || unit->GetHealthPct() >= reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY: // 65
-         {
-             if (!miscValue1)
-                 return false;
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE: // 66
+                {
+                    if (!miscValue1)
+                        return false;
+        
+                    ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
+                    if (!rp)
+                        return false;
+        
+                    if (rp->branchId != reqValue)
+                        return false;
+        
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
+                    if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
+                        return false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE:
+                    if (!miscValue2)
+                        return false;
+                    if (reqValue > miscValue2)            // Medal check
+                        return false;
+                    break;
+                default:
+                    break;
+            }
+        }
 
-             ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
-             if (!rp)
-                 return false;
-
-             if (rp->rare != reqValue)
-                 return false;
-
-             if (referencePlayer->IsCompletedProject(rp->ID, false))
-                 return false;
-
-             break;
-         }
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE: // 66
-         {
-             if (!miscValue1)
-                return false;
-
-             ResearchProjectEntry const* rp = sResearchProjectStore.LookupEntry(miscValue1);
-             if (!rp)
-                 return false;
-
-             if (rp->branchId != reqValue)
-                 return false;
-
-             break;
-         }
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY: // 68
-             if (!unit || !unit->GetMap() || unit->GetMap()->GetSpawnMode() != reqValue)
-                 return false;
-             break;
-         case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE:
-             if (!miscValue2)
-                return false;
-             if (reqValue > miscValue2)            // Medal check
-                 return false;
-             break;
-         default:
-             break;
-         }
-     }
-
-     return true;
- }
+    return true;
+}
 
 template<class T>
 CriteriaSort AchievementMgr<T>::GetCriteriaSort() const

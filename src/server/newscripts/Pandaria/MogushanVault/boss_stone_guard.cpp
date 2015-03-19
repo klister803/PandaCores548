@@ -57,6 +57,8 @@ enum eSpells
     SPELL_ANIM_SIT                      = 128886,
     SPELL_ZERO_ENERGY                   = 72242,
     SPELL_TOTALY_PETRIFIED              = 115877,
+    
+    SPELL_ACHIEV_STONE_GUARD_KILL       = 128288,
 };
 
 enum eEvents
@@ -191,6 +193,7 @@ class boss_stone_guard_controler : public CreatureScript
                             }
                             pInstance->SetBossState(DATA_STONE_GUARD, DONE);
                             fightInProgress = false;
+                            DoCast(SPELL_ACHIEV_STONE_GUARD_KILL);
                             me->Kill(me, true);
                         }
                         break;

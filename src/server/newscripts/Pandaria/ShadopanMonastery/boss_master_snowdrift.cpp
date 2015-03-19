@@ -263,7 +263,10 @@ class boss_master_snowdrift : public CreatureScript
 
                     for (std::list<Creature*>::const_iterator itr = noviceList.begin(); itr != noviceList.end(); ++itr)
                         if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_SECOND_POS)))
+                        {
+                            (*itr)->GetMotionMaster()->Clear();
                             (*itr)->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 30.0f, POINT_NOVICE_DEFEATED_SECOND);
+                        }
 
                     ++eventPhase;
                     events.ScheduleEvent(EVENT_FIRST_EVENT, urand(1000, 2000));
@@ -591,7 +594,6 @@ class npc_snowdrift_novice : public CreatureScript
                             me->CombatStop();
                             me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
                             me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED);
-                            me->GetMotionMaster()->Clear();
                         }
                         break;
                     }
