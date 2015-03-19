@@ -591,6 +591,7 @@ class npc_snowdrift_novice : public CreatureScript
                             me->CombatStop();
                             me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
                             me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED);
+                            me->GetMotionMaster()->Clear();
                         }
                         break;
                     }

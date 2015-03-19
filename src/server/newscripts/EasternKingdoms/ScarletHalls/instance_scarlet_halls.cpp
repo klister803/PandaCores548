@@ -20,6 +20,12 @@
 #include "ScriptedCreature.h"
 #include "scarlet_halls.h"
 
+DoorData const doorData[] =
+{
+    {GO_HARLAN_DOOR,      DATA_HARLAN,        DOOR_TYPE_ROOM,       BOUNDARY_NONE},
+    {0,                   0,                  DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+};
+
 class instance_scarlet_halls : public InstanceMapScript
 {
 public:
@@ -32,7 +38,10 @@ public:
 
     struct instance_scarlet_halls_InstanceMapScript : public InstanceScript
     {
-        instance_scarlet_halls_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_scarlet_halls_InstanceMapScript(Map* map) : InstanceScript(map) 
+        {
+            SetBossNumber(MAX_ENCOUNTER);
+        }
 
         uint64 BraunGUID;
         uint64 HarlanGUID;
@@ -40,18 +49,30 @@ public:
 
         void Initialize()
         {
+            LoadDoorData(doorData);
             BraunGUID = 0;
             HarlanGUID = 0;
             KoeglerGUID = 0;
         }
 
+        bool SetBossState(uint32 type, EncounterState state)
+        {
+            if (!InstanceScript::SetBossState(type, state))
+                return false;
+            
+            return true;
+        }
+
         void OnGameObjectCreate(GameObject* go)
         {
-            /*switch (go->GetEntry())
+            switch (go->GetEntry())
             {
+                case GO_HARLAN_DOOR:
+                    AddDoor(go, true);
+                    break;
                 default:
                     break;
-            }*/
+            }
         }
 
         void OnCreatureCreate(Creature* creature)

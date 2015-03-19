@@ -19,15 +19,23 @@
 #ifndef DEF_SCARLET_H
 #define DEF_SCARLET_H 
 
-enum eEnums
+enum Data
 {
-    
+    DATA_BRAUN      = 0,
+    DATA_HARLAN     = 1,
+    DATA_KOEGLER    = 2,
+    MAX_ENCOUNTER,
 };
 
-enum eEntry
+enum eCreatures
 {
     NPC_HOUNDMASTER_BRAUN    = 59303,
     NPC_ARMSMASTER_HARLAN    = 58632,
     NPC_FLAMEWEAVER_KOEGLER  = 59150,
+};
+
+enum eGameObjects
+{
+    GO_HARLAN_DOOR      = 210480,
 };
 #endif

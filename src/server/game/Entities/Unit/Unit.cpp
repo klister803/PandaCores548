@@ -3655,8 +3655,13 @@ void Unit::DeMorph()
 Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount /*= NULL*/, Item* castItem /*= NULL*/, uint64 casterGUID /*= 0*/)
 {
     ASSERT(casterGUID || caster);
-    if (!casterGUID/* && !caster->ToCreature()*/)
-        casterGUID = caster->GetGUID();
+    if (!casterGUID)
+    {
+        if(!caster->ToCreature())
+            casterGUID = caster->GetGUID();
+        else if(!newAura->StackAmount)
+            casterGUID = caster->GetGUID();
+    }
 
     // passive and Incanter's Absorption and auras with different type can stack with themselves any number of times
     if (!newAura->IsMultiSlotAura())

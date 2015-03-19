@@ -35,9 +35,9 @@ class boss_houndmaster_braun : public CreatureScript
 public:
     boss_houndmaster_braun() : CreatureScript("boss_houndmaster_braun") { }
 
-    struct boss_houndmaster_braunAI : public ScriptedAI
+    struct boss_houndmaster_braunAI : public BossAI
     {
-        boss_houndmaster_braunAI(Creature* creature) : ScriptedAI(creature)
+        boss_houndmaster_braunAI(Creature* creature) : BossAI(creature, DATA_BRAUN)
         {
             instance = me->GetInstanceScript();
         }

@@ -30,9 +30,9 @@ class boss_flameweaver_koegler : public CreatureScript
 public:
     boss_flameweaver_koegler() : CreatureScript("boss_flameweaver_koegler") { }
 
-    struct boss_flameweaver_koeglerAI : public ScriptedAI
+    struct boss_flameweaver_koeglerAI : public BossAI
     {
-        boss_flameweaver_koeglerAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_flameweaver_koeglerAI(Creature* creature) : BossAI(creature, DATA_KOEGLER) {}
 
         void Reset()
         {
