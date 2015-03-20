@@ -350,9 +350,6 @@ class boss_deathbringer_saurfang : public CreatureScript
 
             void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
-                if (damage >= me->GetHealth())
-                    damage = me->GetHealth() - 1;
-
                 if (!_frenzied && HealthBelowPct(31)) // AT 30%, not below
                 {
                     _frenzied = true;
@@ -360,21 +357,20 @@ class boss_deathbringer_saurfang : public CreatureScript
                     Talk(SAY_FRENZY);
                 }
 
-                if (!_dead && me->GetHealth() < FightWonValue)
+                if (!_dead && damage >= me->GetHealth())
                 {
                     _dead = true;
-                    _JustDied();
-                    _EnterEvadeMode();
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
-
                     DoCastAOE(SPELL_REMOVE_MARKS_OF_THE_FALLEN_CHAMPION);
                     DoCast(me, SPELL_ACHIEVEMENT, true);
+                    DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
                     Talk(SAY_DEATH);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
 
-                    //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_THE_FALLEN_CHAMPION);
-                    DoCast(me, SPELL_PERMANENT_FEIGN_DEATH);
                     if (Creature* creature = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SAURFANG_EVENT_NPC)))
                         creature->AI()->DoAction(ACTION_START_OUTRO);
+
+                    _JustDied();
+                    me->CombatStop();
                 }
             }
 
