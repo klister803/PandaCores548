@@ -2532,22 +2532,6 @@ class spell_alexstrasza_gift_beam_visual : public SpellScriptLoader
         }
 };
 
-class achievement_denyin_the_scion : public AchievementCriteriaScript
-{
-    public:
-        achievement_denyin_the_scion() : AchievementCriteriaScript("achievement_denyin_the_scion") { }
-
-        bool OnCheck(Player* source, Unit* /*target*/)
-        {
-            // Only melee disks can be used
-            if (Unit* disk = source->GetVehicleBase())
-                if (disk->GetEntry() == NPC_HOVER_DISK_MELEE)
-                    return true;
-
-            return false;
-        }
-};
-
 void AddSC_boss_malygos()
 {
     new boss_malygos();
@@ -2577,5 +2561,4 @@ void AddSC_boss_malygos()
     new spell_malygos_surge_of_power_25();
     new spell_alexstrasza_gift_beam();
     new spell_alexstrasza_gift_beam_visual();
-    new achievement_denyin_the_scion();
 }
