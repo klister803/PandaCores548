@@ -143,6 +143,19 @@ public:
                         rewarded = true;
                     }
                     break;
+                    case 11: // Remove title from char
+                    {
+                        if(CharTitlesEntry const* titleInfo = sCharTitlesStore.LookupEntry(id))
+                        {
+                            char const* targetName = player->GetName();
+                            char titleNameStr[80];
+                            snprintf(titleNameStr, 80, titleInfo->name, targetName);
+                            player->SetTitle(titleInfo, true);
+                            chH.PSendSysMessage(LANG_TITLE_REMOVE_RES, id, titleNameStr, targetName);
+                            rewarded = true;
+                        }
+                    }
+                    break;
                     default:
                         break;
                 }

@@ -29171,7 +29171,7 @@ void Player::AddVoidStorageItemAtSlot(uint8 slot, const VoidStorageItem& item)
         return;
     }
 
-    _voidStorageItems[slot] = new VoidStorageItem(item.ItemId, item.ItemId,
+    _voidStorageItems[slot] = new VoidStorageItem(item.ItemId, item.ItemEntry,
         item.CreatorGuid, item.ItemRandomPropertyId, item.ItemSuffixFactor);
 }
 
