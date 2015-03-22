@@ -6352,6 +6352,20 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
+                case 137595: // Lightning Strike Charges Trigger
+                {
+                    triggered_spell_id = 137596;
+
+                    if (Aura* aura = GetAura(triggered_spell_id))
+                    {
+                        if (aura->GetStackAmount() > 3)
+                        {
+                            RemoveAurasDueToSpell(triggered_spell_id);
+                            triggered_spell_id = getClass() == CLASS_HUNTER ? 141004 : 137597;
+                        }
+                    }
+                    break;
+                }
                 case 146200: // Spirit of Chi-Ji
                 {
                     if(!target)
