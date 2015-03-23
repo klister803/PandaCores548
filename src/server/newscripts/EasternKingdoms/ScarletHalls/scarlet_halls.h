@@ -32,10 +32,13 @@ enum eCreatures
     NPC_HOUNDMASTER_BRAUN    = 59303,
     NPC_ARMSMASTER_HARLAN    = 58632,
     NPC_FLAMEWEAVER_KOEGLER  = 59150,
+    //Braun summons
+    NPC_OBEDIENT_HOUND       = 59309,
 };
 
 enum eGameObjects
 {
+    GO_BRAUN_DOOR       = 210097,
     GO_HARLAN_DOOR      = 210480,
 };
 #endif

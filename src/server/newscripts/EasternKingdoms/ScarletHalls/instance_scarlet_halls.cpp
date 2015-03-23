@@ -22,6 +22,7 @@
 
 DoorData const doorData[] =
 {
+    {GO_BRAUN_DOOR,       DATA_BRAUN,         DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_HARLAN_DOOR,      DATA_HARLAN,        DOOR_TYPE_ROOM,       BOUNDARY_NONE},
     {0,                   0,                  DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
@@ -68,6 +69,7 @@ public:
             switch (go->GetEntry())
             {
                 case GO_HARLAN_DOOR:
+                case GO_BRAUN_DOOR:
                     AddDoor(go, true);
                     break;
                 default:

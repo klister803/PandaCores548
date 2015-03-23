@@ -265,7 +265,7 @@ i_scriptLock(false)
         case 648: // start goblin
         case 654: // start worgen
         case 860: // start pandaren
-            m_VisibleDistance = MAX_VISIBILITY_DISTANCE;
+            m_VisibleDistance = 250.0f;
             break;
         default:
             break;
