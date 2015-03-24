@@ -978,8 +978,8 @@ enum Opcodes
     SMSG_GUILD_BANK_MONEY_WITHDRAWN                   = 0x0DD1, // 5.4.1 17538
     SMSG_GUILD_BANK_QUERY_TEXT_RESULT                 = 0x04D8, // 5.4.1 17538
     SMSG_GUILD_CANCEL                                 = 0,      // Not found in 4.3.4
-    SMSG_GUILD_CHALLENGE_COMPLETED                    = 0xA96,  // 5.0.5 16048
-    SMSG_GUILD_CHALLENGE_UPDATED                      = 0xEDC,  // 5.0.5 16048
+    SMSG_GUILD_CHALLENGE_COMPLETED                    = 0x11D1, // 5.4.1 17538
+    SMSG_GUILD_CHALLENGE_UPDATED                      = 0x958,  // 5.4.1 17538
     SMSG_GUILD_CHANGE_NAME_RESULT                     = 0xF07,  // 5.0.5 16048
     SMSG_GUILD_COMMAND_RESULT                         = 0x15D0, // 5.4.1 17538
     SMSG_GUILD_CRITERIA_UPDATE                        = 0x11D9, // 5.4.1 17538

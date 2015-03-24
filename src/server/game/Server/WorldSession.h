@@ -629,6 +629,8 @@ class WorldSession
         void HandleGuildQueryGuildMembersForRecipe(WorldPacket& recvPacket);
         void HandleGuildQueryGuildMembersRecipes(WorldPacket& recvPacket);
 
+        void HandleGuildRequestChallengeUpdate(WorldPacket& recvPacket);
+
         void HandleGuildFinderAddRecruit(WorldPacket& recvPacket);
         void HandleGuildFinderBrowse(WorldPacket& recvPacket);
         void HandleGuildFinderDeclineRecruit(WorldPacket& recvPacket);

@@ -2322,6 +2322,50 @@ void Guild::SendGuildReputationWeeklyCap(WorldSession* session) const
     }
 }
 
+void Guild::SendGuildChallengesInfo(WorldSession* session) const
+{
+    // Types: 1 - dungeon, 2 - raid, 3 - rated bg, 4 - scenario, 5 - challenge dungeon
+    if (Member const* member = GetMember(session->GetPlayer()->GetGUID()))
+    {
+        uint32 gold[5] = { 250, 1000, 500, 100, 400 };
+        uint32 goldMaxLevel[5] = { 0, 0, 0, 0, 0 };
+        uint32 count[5] = { 0, 0, 0, 0, 0 };
+        uint32 maxCount[5] = { 7, 1, 3, 15, 3 };
+        uint32 XP[5] = { 250000, 1000000, 400000, 150000, 500000 };
+
+        WorldPacket data(SMSG_GUILD_CHALLENGE_UPDATED);
+        for (uint8 i = 0; i < 5; ++i)
+            data << uint32(gold[i]);
+        for (uint8 i = 0; i < 5; ++i)
+            data << uint32(goldMaxLevel[i]);
+        for (uint8 i = 0; i < 5; ++i)
+            data << uint32(count[i]);
+        for (uint8 i = 0; i < 5; ++i)
+            data << uint32(XP[i]);
+        for (uint8 i = 0; i < 5; ++i)
+            data << uint32(maxCount[i]);
+
+        session->SendPacket(&data);
+    }
+}
+
+void Guild::SendGuildChallengeComplete(WorldSession* session) const
+{
+    if (Member const* member = GetMember(session->GetPlayer()->GetGUID()))
+    {
+        WorldPacket data(SMSG_GUILD_CHALLENGE_COMPLETED);
+
+        // example for dungeon
+        data << uint32(/*0+*/1);              // Count
+        data << uint32(1);                    // Type
+        data << uint32(250000);               // XP, if exists else 0
+        data << uint32(7);                    // MaxCount
+        data << uint32(250);                  // Gold, if exists else 0
+
+        session->SendPacket(&data);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Loading methods
 bool Guild::LoadFromDB(Field* fields)
