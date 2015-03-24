@@ -536,11 +536,10 @@ struct CriteriaEntry
     uint32  timeLimit;                                     // 5 m_timer_time
     uint32  timedCriteriaFailType;                         // 6 fail_event
     uint32  timedCriteriaMiscFailId;                       // 7 fail_asset_id
-    uint32  ModifyTree;                                    // 8
-
-    //uint32  m_flags;                                     // 9 m_flags
-    //uint32  m_eligibility_world_state_ID;                // 10 m_eligibility_world_state_ID
-    //uint32  m_eligibility_world_state_value;             // 11 m_eligibility_world_state_value
+    uint32  ModifyTree;                                    // 8 m_modifier_tree_id
+    uint32  operatorFlags;                                 // 9 m_flags
+    uint32  worldStateId;                                  // 10 m_eligibility_world_state_ID
+    uint32  worldStateValue;                               // 11 m_eligibility_world_state_value
 };
 
 struct CriteriaTreeEntry
@@ -557,13 +556,13 @@ struct CriteriaTreeEntry
 
 struct ModifierTreeEntry // additional Condition
 {
-    uint32  ID;                                            // 0
-    uint32  additionalConditionType;                       // 1 type
-    uint32  additionalConditionValue;                      // 2 requirement
-    //uint32 m_secondaryAsset                              // 3 m_secondaryAsset 5.4.1
-    uint32  flags;                                         // 4
-    //uint32  m_amount                                     // 5 m_amount 5.4.1
-    uint32  parent;                                        // 6 parent in m_id
+    uint32  ID;                                            // 0 m_ID
+    uint32  additionalConditionType;                       // 1 m_type
+    uint32  additionalConditionValue;                      // 2 m_asset
+    uint32  additionalConditionCount;                       // 3 m_secondaryAsset
+    uint32  operatorFlags;                                 // 4 m_operator
+    //uint32  m_amount                                     // 5 m_amount
+    uint32  parent;                                        // 6 m_parent in m_id
 };
 
 struct AreaTableEntry

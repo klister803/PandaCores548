@@ -1339,6 +1339,35 @@ class ObjectMgr
         // Battle Pets
         const std::vector<uint32>* GetPossibleBreedsForSpecies(uint32 speciesID) const;
 
+        //Get count from difficulty
+        uint8 GetCountFromDifficulty(uint8 spawnmode)
+        {
+            switch (spawnmode)
+            {
+                case NONE_DIFFICULTY:
+                case REGULAR_DIFFICULTY:
+                case HEROIC_DIFFICULTY:
+                case CHALLENGE_MODE_DIFFICULTY:
+                case HEROIC_SCENARIO_DIFFICULTY:
+                case NORMAL_SCENARIO_DIFFICULTY:
+                    return 3;
+                case MAN10_DIFFICULTY:
+                case MAN10_HEROIC_DIFFICULTY:
+                    return 8;
+                case MAN25_DIFFICULTY:
+                case MAN25_HEROIC_DIFFICULTY:
+                case FLEXIBLE_DIFFICULTY:
+                case RAID_TOOL_DIFFICULTY:
+                    return 20;
+                case MAN40_DIFFICULTY:
+                    return 32;
+                default:
+                    break;
+            }
+
+            return 5;
+        }
+
     private:
         // first free id for selected id type
         uint32 _auctionId;

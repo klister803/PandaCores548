@@ -295,7 +295,7 @@ class AchievementMgr
 
         bool ConditionsSatisfied(CriteriaEntry const *criteria, Player* referencePlayer) const;
         bool RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
-        bool AdditionalRequirementsSatisfied(CriteriaEntry const* criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
+        bool AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
 
         T* _owner;
         CriteriaProgressMap m_criteriaProgress;

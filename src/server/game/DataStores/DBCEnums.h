@@ -84,6 +84,14 @@ enum AchievementFlags
     ACHIEVEMENT_FLAG_ACCOUNT                = 0x00020000     //
 };
 
+enum ModifierTreeFlags
+{
+    MODIFIERTREE_FLAG_UNK                 = 0x00000001,    //
+    MODIFIERTREE_FLAG_CONDITION           = 0x00000002,    // Is condition
+    MODIFIERTREE_FLAG_MAIN                = 0x00000004,    // Is main and not condition
+    MODIFIERTREE_FLAG_PARENT              = 0x00000008,    // Is parent and not condition
+};
+
 enum
 {
     MAX_CRITERIA_REQUIREMENTS          = 1,
@@ -93,19 +101,21 @@ enum AchievementCriteriaCondition
 {
     ACHIEVEMENT_CRITERIA_CONDITION_NONE            = 0,
     ACHIEVEMENT_CRITERIA_CONDITION_NO_DEATH        = 1,    // reset progress on death
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK1            = 2,    // only used in "Complete a daily quest every day for five consecutive days"
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK2            = 2,    // only used in "Complete a daily quest every day for five consecutive days"
     ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP          = 3,    // requires you to be on specific map, reset at change
     ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE         = 4,    // only used in "Win 10 arenas without losing"
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK5            = 5,    // Have spell?
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK8            = 8,
     ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT    = 9,    // requires the player not to be hit by specific spell
     ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP    = 10,   // requires the player not to be in group
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK3            = 13    // unk
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK13           = 13    // unk
 };
 
 enum AchievementCriteriaAdditionalCondition
 {
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_DRUNK_VALUE          = 1, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_DRUNK_VALUE          = 1,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK2                        = 2,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_LEVEL                  = 3, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_LEVEL                  = 3,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_ENTRY       = 4,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_PLAYER       = 5,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD         = 6,
@@ -119,8 +129,8 @@ enum AchievementCriteriaAdditionalCondition
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_AREA_OR_ZONE         = 17,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_AREA_OR_ZONE         = 18,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAP_DIFFICULTY              = 20,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_YIELDS_XP   = 21, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_ARENA_TEAM_SIZE      = 24, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_YIELDS_XP   = 21,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_ARENA_TEAM_SIZE      = 24,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_RACE                 = 25,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_CLASS                = 26,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_RACE                 = 27,
@@ -128,61 +138,64 @@ enum AchievementCriteriaAdditionalCondition
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MAX_GROUP_MEMBERS           = 29,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_CREATURE_TYPE        = 30,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP                  = 32,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_CLASS                  = 33, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_SUBCLASS               = 34, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK35                       = 35, // related to timed completing-quests achievements
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MIN_PERSONAL_RATING         = 37, // NYI (when implementing don't forget about ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE)
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UPDATE_NEXT_VERSION         = 33, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT     = 34, // all battlepet level in slot
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_WITHOUT_GROUP               = 35,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MIN_PERSONAL_RATING         = 37,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TITLE_BIT_INDEX             = 38,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVEL                = 39,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_LEVEL                = 40,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE                 = 41, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_ZONE                 = 41,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_HEALTH_PERCENT_BELOW = 46,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK55                       = 55,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MIN_ACHIEVEMENT_POINTS      = 56, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REQUIRES_LFG_GROUP          = 58, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MIN_ACHIEVEMENT_POINTS      = 56,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REQUIRES_LFG_GROUP          = 58,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK60                       = 60,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REQUIRES_GUILD_GROUP        = 61, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION            = 62, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND          = 63, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REQUIRES_GUILD_GROUP        = 61,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION            = 62,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND          = 63,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY              = 65,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE                = 66,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK67                       = 67,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DUNGEON_FIFFICULTY          = 68,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK69                       = 69, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_LEVLE                = 70,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK71                       = 71, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK72                       = 72, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_AREA                        = 73, // ?
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MIN_LEVEL            = 70,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK73                       = 73, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK74                       = 74, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK75                       = 75, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ACHIEV_POINTS               = 76,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK77                       = 77, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY            = 78,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_HP_LOW_THAT                 = 79,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_HP_LOW_THAT       = 79,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK80                       = 80, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_MASTER_PET_TAMER            = 81,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER  = 81,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK82                       = 82, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE              = 83,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLE_PET_ID               = 84,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK85                       = 85, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK86                       = 86, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK87                       = 87, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK88                       = 88, // NYI
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_TYPE              = 89,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY           = 89,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_WIN_IN_PVP        = 90,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK91                       = 91,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_SPECIES           = 91,
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK92                       = 92, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK93                       = 93, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK94                       = 94, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REPUTATION                  = 95, // Reputation check
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_CLASS_AND_SUBCLASS     = 96,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK99                       = 99, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK112                      = 112, // NYI
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CURRENCY                    = 121, // Currency
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_DEATH_COUNTER               = 122, // Death instance counter
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ARENA_SEASON                = 125, // Arena season check
 };
 
 enum AchievementCriteriaFlags
 {
     ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR = 0x00000001,         // Show progress as bar
     ACHIEVEMENT_CRITERIA_FLAG_HIDDEN            = 0x00000002,         // Not show criteria in client
-    ACHIEVEMENT_CRITERIA_FLAG_UNK3              = 0x00000004,         // BG related??
-    ACHIEVEMENT_CRITERIA_FLAG_UNK4              = 0x00000008,         //
-    ACHIEVEMENT_CRITERIA_FLAG_UNK5              = 0x00000010,         // not used
+    ACHIEVEMENT_CRITERIA_FLAG_FAIL_ACHIEVEMENT  = 0x00000004,         // BG related??
+    ACHIEVEMENT_CRITERIA_FLAG_RESET_ON_START    = 0x00000008,         //
+    ACHIEVEMENT_CRITERIA_FLAG_IS_DATE           = 0x00000010,         // not used
     ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER     = 0x00000020          // Displays counter as money
 };
 
@@ -199,7 +212,7 @@ enum AchievementCriteriaTimedTypes
     ACHIEVEMENT_TIMED_TYPE_UNK11            = 11,   // Unknown
     ACHIEVEMENT_TIMED_TYPE_ITEM2            = 12,   // Timer is started by using item with entry in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_EVENT2           = 13,   // Timer is started by internal event with id in timerStartEvent
-    ACHIEVEMENT_TIMED_TYPE_UNK14            = 14,   // Unknown
+    ACHIEVEMENT_TIMED_TYPE_SCENARIO_STAGE   = 14,   // Timer is started by changing stages in a scenario
 
     ACHIEVEMENT_TIMED_TYPE_MAX,
 };
@@ -318,8 +331,8 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_BANK_SLOTS          = 128,
     ACHIEVEMENT_CRITERIA_TYPE_EARN_GUILD_ACHIEVEMENT_POINTS = 129,
     ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND        = 130,
-    ACHIEVEMENT_CRITERIA_TYPE_REACH_BG_RATING               = 132,
-    ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_TABARD              = 133,
+    ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING              = 132,
+    ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM              = 133,
     ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD         = 134,
     ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD         = 135,
     ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD      = 136,
@@ -341,8 +354,8 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY   = 152,
     ACHIEVEMENT_CRITERIA_TYPE_REACH_SCENARIO_BOSS           = 153,
     ACHIEVEMENT_CRITERIA_TYPE_UNK154                        = 154, //not found in dbc tree
-    ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET              = 155, //not found in dbc tree
-    ACHIEVEMENT_CRITERIA_TYPE_PLACE_FEAST                   = 156,
+    ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET              = 155,
+    ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET             = 156,
     ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE         = 157,
     ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN                 = 158,
     ACHIEVEMENT_CRITERIA_TYPE_UNK159                        = 159,
@@ -351,6 +364,12 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_UNK162                        = 162,
     // 0..162 => 163 criteria types total
     ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 163
+};
+
+enum AchievementCriteriaTreeOperator
+{
+    ACHIEVEMENT_CRITERIA_TREE_OPERATOR_ALL  = 4,
+    ACHIEVEMENT_CRITERIA_TREE_OPERATOR_ANY  = 8
 };
 
 enum ArchaeologyBranches
@@ -373,40 +392,43 @@ enum ArchaeologyBranches
 
 enum AreaFlags
 {
-    AREA_FLAG_SNOW             = 0x00000001,                // snow (only Dun Morogh, Naxxramas, Razorfen Downs and Winterspring)
-    AREA_FLAG_UNK1             = 0x00000002,                // Razorfen Downs, Naxxramas and Acherus: The Ebon Hold (3.3.5a)
-    AREA_FLAG_UNK2             = 0x00000004,                // Only used for areas on map 571 (development before)
-    AREA_FLAG_SLAVE_CAPITAL    = 0x00000008,                // city and city subsones
-    AREA_FLAG_UNK3             = 0x00000010,                // can't find common meaning
-    AREA_FLAG_SLAVE_CAPITAL2   = 0x00000020,                // slave capital city flag?
-    AREA_FLAG_ALLOW_DUELS      = 0x00000040,                // allow to duel here
-    AREA_FLAG_ARENA            = 0x00000080,                // arena, both instanced and world arenas
-    AREA_FLAG_CAPITAL          = 0x00000100,                // main capital city flag
-    AREA_FLAG_CITY             = 0x00000200,                // only for one zone named "City" (where it located?)
-    AREA_FLAG_OUTLAND          = 0x00000400,                // expansion zones? (only Eye of the Storm not have this flag, but have 0x00004000 flag)
-    AREA_FLAG_SANCTUARY        = 0x00000800,                // sanctuary area (PvP disabled)
-    AREA_FLAG_NEED_FLY         = 0x00001000,                // Respawn alive at the graveyard without corpse
-    AREA_FLAG_UNUSED1          = 0x00002000,                // Unused in 3.3.5a
-    AREA_FLAG_OUTLAND2         = 0x00004000,                // expansion zones? (only Circle of Blood Arena not have this flag, but have 0x00000400 flag)
-    AREA_FLAG_OUTDOOR_PVP      = 0x00008000,                // pvp objective area? (Death's Door also has this flag although it's no pvp object area)
-    AREA_FLAG_ARENA_INSTANCE   = 0x00010000,                // used by instanced arenas only
-    AREA_FLAG_UNUSED2          = 0x00020000,                // Unused in 3.3.5a
-    AREA_FLAG_CONTESTED_AREA   = 0x00040000,                // On PvP servers these areas are considered contested, even though the zone it is contained in is a Horde/Alliance territory.
-    AREA_FLAG_UNK6             = 0x00080000,                // Valgarde and Acherus: The Ebon Hold
-    AREA_FLAG_LOWLEVEL         = 0x00100000,                // used for some starting areas with area_level <= 15
-    AREA_FLAG_TOWN             = 0x00200000,                // small towns with Inn
-    AREA_FLAG_UNK7             = 0x00400000,                // Warsong Hold, Acherus: The Ebon Hold, New Agamand Inn, Vengeance Landing Inn, Sunreaver Pavilion (Something to do with team?)
-    AREA_FLAG_UNK8             = 0x00800000,                // Valgarde, Acherus: The Ebon Hold, Westguard Inn, Silver Covenant Pavilion (Something to do with team?)
-    AREA_FLAG_WINTERGRASP      = 0x01000000,                // Wintergrasp and it's subzones
-    AREA_FLAG_INSIDE           = 0x02000000,                // used for determinating spell related inside/outside questions in Map::IsOutdoors
-    AREA_FLAG_OUTSIDE          = 0x04000000,                // used for determinating spell related inside/outside questions in Map::IsOutdoors
-    AREA_FLAG_WINTERGRASP_2    = 0x08000000,                // Can Hearth And Resurrect From Area
-    AREA_FLAG_NO_FLY_ZONE      = 0x20000000,                // Marks zones where you cannot fly
-    AREA_FLAG_UNK9             = 0x40000000
+    AREA_FLAG_SNOW                  = 0x00000001,                // snow (only Dun Morogh, Naxxramas, Razorfen Downs and Winterspring)
+    AREA_FLAG_UNK1                  = 0x00000002,                // Razorfen Downs, Naxxramas and Acherus: The Ebon Hold (3.3.5a)
+    AREA_FLAG_UNK2                  = 0x00000004,                // Only used for areas on map 571 (development before)
+    AREA_FLAG_SLAVE_CAPITAL         = 0x00000008,                // city and city subsones
+    AREA_FLAG_UNK3                  = 0x00000010,                // can't find common meaning
+    AREA_FLAG_SLAVE_CAPITAL2        = 0x00000020,                // slave capital city flag?
+    AREA_FLAG_ALLOW_DUELS           = 0x00000040,                // allow to duel here
+    AREA_FLAG_ARENA                 = 0x00000080,                // arena, both instanced and world arenas
+    AREA_FLAG_CAPITAL               = 0x00000100,                // main capital city flag
+    AREA_FLAG_CITY                  = 0x00000200,                // only for one zone named "City" (where it located?)
+    AREA_FLAG_OUTLAND               = 0x00000400,                // expansion zones? (only Eye of the Storm not have this flag, but have 0x00004000 flag)
+    AREA_FLAG_SANCTUARY             = 0x00000800,                // sanctuary area (PvP disabled)
+    AREA_FLAG_NEED_FLY              = 0x00001000,                // Respawn alive at the graveyard without corpse
+    AREA_FLAG_UNUSED1               = 0x00002000,                // Unused in 3.3.5a
+    AREA_FLAG_OUTLAND2              = 0x00004000,                // expansion zones? (only Circle of Blood Arena not have this flag, but have 0x00000400 flag)
+    AREA_FLAG_OUTDOOR_PVP           = 0x00008000,                // pvp objective area? (Death's Door also has this flag although it's no pvp object area)
+    AREA_FLAG_ARENA_INSTANCE        = 0x00010000,                // used by instanced arenas only
+    AREA_FLAG_UNUSED2               = 0x00020000,                // Unused in 3.3.5a
+    AREA_FLAG_CONTESTED_AREA        = 0x00040000,                // On PvP servers these areas are considered contested, even though the zone it is contained in is a Horde/Alliance territory.
+    AREA_FLAG_UNK6                  = 0x00080000,                // Valgarde and Acherus: The Ebon Hold
+    AREA_FLAG_LOWLEVEL              = 0x00100000,                // used for some starting areas with area_level <= 15
+    AREA_FLAG_TOWN                  = 0x00200000,                // small towns with Inn
+    AREA_FLAG_REST_ZONE_HORDE       = 0x00400000,                // Warsong Hold, Acherus: The Ebon Hold, New Agamand Inn, Vengeance Landing Inn, Sunreaver Pavilion (Something to do with team?)
+    AREA_FLAG_REST_ZONE_ALLIANCE    = 0x00800000,                // Valgarde, Acherus: The Ebon Hold, Westguard Inn, Silver Covenant Pavilion (Something to do with team?)
+    AREA_FLAG_WINTERGRASP           = 0x01000000,                // Wintergrasp and it's subzones
+    AREA_FLAG_INSIDE                = 0x02000000,                // used for determinating spell related inside/outside questions in Map::IsOutdoors
+    AREA_FLAG_OUTSIDE               = 0x04000000,                // used for determinating spell related inside/outside questions in Map::IsOutdoors
+    AREA_FLAG_WINTERGRASP_2         = 0x08000000,                // Can Hearth And Resurrect From Area
+    AREA_FLAG_NO_FLY_ZONE           = 0x20000000,                // Marks zones where you cannot fly
+    AREA_FLAG_UNK9                  = 0x40000000
 };
 
 enum DifficultyFlag
 {
+    DIFFICULTY_FLAG_HEROIC          = 0x01,
+    DIFFICULTY_FLAG_DEFAULT         = 0x02,
+    DIFFICULTY_FLAG_CAN_SELECT      = 0x04, // Player can select this difficulty in dropdown menu
     DIFFICULTY_FLAG_CHALLENGE_MODE  = 0x8,
 };
 
@@ -660,6 +682,7 @@ enum VehicleSeatFlagsB
     VEHICLE_SEAT_FLAG_B_EJECTABLE                = 0x00000020,           // ejectable
     VEHICLE_SEAT_FLAG_B_USABLE_FORCED_2          = 0x00000040,
     VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3          = 0x00000100,
+    VEHICLE_SEAT_FLAG_B_KEEP_PET                 = 0x00020000,
     VEHICLE_SEAT_FLAG_B_USABLE_FORCED_4          = 0x02000000,
     VEHICLE_SEAT_FLAG_B_CAN_SWITCH               = 0x04000000,
     VEHICLE_SEAT_FLAG_B_VEHICLE_PLAYERFRAME_UI   = 0x80000000            // Lua_UnitHasVehiclePlayerFrameUI - actually checked for flagsb &~ 0x80000000

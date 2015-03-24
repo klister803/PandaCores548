@@ -3657,7 +3657,7 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint3
     ASSERT(casterGUID || caster);
     if (!casterGUID)
     {
-        if(!caster->ToCreature())
+        if(!caster->ToCreature() || caster->isAnySummons() || isAnySummons())
             casterGUID = caster->GetGUID();
         else if(!newAura->StackAmount)
             casterGUID = caster->GetGUID();

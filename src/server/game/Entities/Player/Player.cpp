@@ -6605,6 +6605,9 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
                     return TotalCost;
 
                 TotalCost = costs;
+
+                if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+                    guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS, costs);
             }
             else if (!HasEnoughMoney(uint64(costs)))
             {
@@ -8301,6 +8304,9 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, victim);
+
+            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+                guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD, 1, 0, victim);
 
             m_saveKills = true;
         }
@@ -17080,6 +17086,9 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST, quest->GetQuestId());
 
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD, 1);
+
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
 }
@@ -17890,6 +17899,13 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid)
         Creature* killed = GetMap()->GetCreature(guid);
         if (killed && killed->GetEntry())
             real_entry = killed->GetEntry();
+
+        if(killed)
+        {
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE, killed->GetCreatureType(), addkillcount, guid ? GetMap()->GetCreature(guid) : NULL);
+            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+                guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD, killed->GetCreatureType(), addkillcount, guid ? GetMap()->GetCreature(guid) : NULL);
+        }
     }
 
     GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, real_entry);   // MUST BE CALLED FIRST
@@ -27225,6 +27241,9 @@ void Player::SetTitle(CharTitlesEntry const* title, bool lost)
             return;
 
         SetFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
+
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK, title->ID);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE, title->bit_index);
     }
 
     WorldPacket data(lost ? SMSG_TITLE_REMOVED: SMSG_TITLE_EARNED, 4);
