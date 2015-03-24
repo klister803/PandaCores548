@@ -2223,7 +2223,8 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
         }
     }
 
-    data.WriteBit(fullUpdate);             // fullUpdate
+    //data.WriteBit(fullUpdate);             // fullUpdate
+    data.WriteBit(0);
 
     data.FlushBits();
     if (!tabData.empty())
