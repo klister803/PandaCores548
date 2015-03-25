@@ -3508,6 +3508,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
 
     int32 saveReqType = -1;
     bool saveCheck = false;
+    bool check = true;
     if(std::list<uint32> const* modifierList = GetModifierTreeList(ModifyTree))
     for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
     {
@@ -3515,7 +3516,6 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
         int32 const reqType = modifier->additionalConditionType;
         int32 const reqValue = modifier->additionalConditionValue;
         int32 const reqCount = modifier->additionalConditionCount;
-        bool check = true;
 
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AchievementMgr::AdditionalRequirementsSatisfied Modify %i, reqType %i reqValue %i reqCount %i saveCheck %i saveReqType %i operatorFlags %i", (*itr), reqType, reqValue, reqCount, saveCheck, saveReqType, modifier->operatorFlags);
 
@@ -3652,6 +3652,9 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_SOURCE_MAP: // 32
                     if (referencePlayer->GetMapId() != reqValue)
                         check = false;
+                    break;
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UPDATE_NEXT_VERSION: // 33
+                    check = false;
                     break;
                 /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
                 {
