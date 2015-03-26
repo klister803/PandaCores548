@@ -841,6 +841,7 @@ class boss_haiyan_the_unstoppable : public CreatureScript
                     me->AttackStop();
                     events.Reset();
                     events.ScheduleEvent(EVENT_BOSS_RETIRE, 4000);
+                    DoCast(SPELL_ACHIEVEMENT_CHECK);
                     if (me->GetInstanceScript())
                         me->GetInstanceScript()->SetData(TYPE_HAIYAN_RETIRED, 0);
                 }

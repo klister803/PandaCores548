@@ -72,6 +72,9 @@ enum eSpells
     //Achiev: What Does This Button Do?
     SPELL_SECRET_DEFENSE_MECHANISM  = 124527,
     SPELL_TURN_OFF_BLADES           = 124531,
+    
+    //Achiev: Polyformic Acid Science
+    SPELL_ACHIEVEMENT_CHECK         = 124356,
 };
 
 enum eCreatures
