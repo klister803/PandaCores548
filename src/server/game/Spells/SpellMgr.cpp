@@ -5468,6 +5468,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 119377: // Siege Explosive
                     spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_RADIUS;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
+                    break;
                 default:
                     break;
             }

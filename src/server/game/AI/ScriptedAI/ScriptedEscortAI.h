@@ -94,6 +94,7 @@ struct npc_escortAI : public ScriptedAI
 
         void SetDespawnAtEnd(bool despawn) { DespawnAtEnd = despawn; }
         void SetDespawnAtFar(bool despawn) { DespawnAtFar = despawn; }
+        void SetWPStarTimer(float SetWPStarTimer) { m_uiWPWaitTimer = SetWPStarTimer; }
         bool GetAttack() { return m_bIsActiveAttacker; }//used in EnterEvadeMode override
         void SetCanAttack(bool attack) { m_bIsActiveAttacker = attack; }
         uint64 GetEventStarterGUID() { return m_uiPlayerGUID; }

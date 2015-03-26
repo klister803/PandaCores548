@@ -34,6 +34,8 @@ enum eCreatures
     NPC_FLAMEWEAVER_KOEGLER  = 59150,
     //Braun summons
     NPC_OBEDIENT_HOUND       = 59309,
+    //Koegler summons
+    NPC_DRAGON_BREATH_TARGET = 59198,
 };
 
 enum eGameObjects
