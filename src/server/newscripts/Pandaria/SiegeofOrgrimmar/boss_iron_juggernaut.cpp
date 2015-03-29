@@ -352,7 +352,8 @@ class boss_iron_juggernaut : public CreatureScript
                         for (uint8 n = 0; n < 5; n++)
                         {
                             if (Unit* p = ij->GetPassenger(n))
-                                p->ToCreature()->AI()->DoZoneInCombat(p->ToCreature(), 158.0f);
+                                if(p->ToCreature() && p->ToCreature()->AI())
+                                    p->ToCreature()->AI()->DoZoneInCombat(p->ToCreature(), 158.0f);
                         }
                     }
                     else
