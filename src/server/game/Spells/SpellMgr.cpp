@@ -5014,7 +5014,23 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144918: //Cutter Laser Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
-                
+                //General Nazgrim
+                case 143872: //Ravager SUmmon
+                    spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
+                    break;
+                case 144278: //Generate rage
+                    spellInfo->Effects[0].TriggerSpell = NULL;
+                    break;
+                case 143597: //Generate rage energize
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
+                    break;
+                case 143716: //Heroic Shockwave
+                    spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
+                    spellInfo->Effects[1].TriggerSpell = 143715; //Summon
+                    break;
+                case 143420: //Ironstorm
+                    spellInfo->InterruptFlags = NULL;
+                    break;
 
                 //World Bosses
                 //Sha of Anger

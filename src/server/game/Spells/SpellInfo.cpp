@@ -1180,6 +1180,12 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144776: //Ground Pound
     case 146325: //Cutter Laser Visual Target
     case 144918: //Cutter Laser Dmg
+    //General Nazgrim
+    case 143872: //Ravager SUmmon
+    case 144278: //Generate rage
+    case 143597: //Generate rage energize
+    case 143716: //Heroic Shockwave
+    case 143420: //Ironstorm
         return Effects[effect];
     }
 

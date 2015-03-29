@@ -3105,6 +3105,9 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (power == POWER_RAGE && m_caster->HasAura(138222) && unitTarget->HasAura(5229)) // Item - Druid T15 Guardian 4P Bonus
         damage *= 1.5;
 
+    if (unitTarget->HasAura(143594)) //Berserker Stance - General Nazgrim
+        damage *= 2;
+
     if (unitTarget->GetMaxPower(power) == 0)
         return;
 

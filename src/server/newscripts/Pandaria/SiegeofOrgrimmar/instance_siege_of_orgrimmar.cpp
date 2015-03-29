@@ -23,6 +23,7 @@ DoorData const doorData[] =
     {GO_SHA_FIELD,                           DATA_F_PROTECTORS,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -57,6 +58,8 @@ public:
         uint64 winddoorGuid;
         uint64 orgrimmargateGuid;
         uint64 orgrimmargate2Guid;
+        uint64 rustybarsGuid;
+        uint64 nazgrimdoorGuid;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -73,6 +76,7 @@ public:
         uint64 harommGuid;
         uint64 bloodclawGuid;
         uint64 darkfangGuid;
+        uint64 gnazgrimGuid;
 
         EventMap Events;
 
@@ -106,6 +110,8 @@ public:
             winddoorGuid            = 0;
             orgrimmargateGuid       = 0;
             orgrimmargate2Guid      = 0;
+            rustybarsGuid           = 0;
+            nazgrimdoorGuid         = 0;
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -120,6 +126,7 @@ public:
             harommGuid              = 0;
             bloodclawGuid           = 0;
             darkfangGuid            = 0;
+            gnazgrimGuid            = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -283,7 +290,6 @@ public:
                 case NPC_TOWER_NORTH:
                 case NPC_ANTIAIR_TURRET:
                 case NPC_IRON_JUGGERNAUT:
-                case NPC_GENERAL_NAZGRIM:
                 case NPC_MALKOROK:
                 case NPC_THOK:
                 case NPC_BLACKFUSE:
@@ -376,6 +382,9 @@ public:
                     darkfangGuid = creature->GetGUID();
                     break;
                 //
+                case NPC_GENERAL_NAZGRIM:
+                    gnazgrimGuid = creature->GetGUID();
+                    break;
             }
         }
 
@@ -457,6 +466,12 @@ public:
                     break;
                 case GO_ORGRIMMAR_GATE2:
                     orgrimmargate2Guid = go->GetGUID();
+                    break;
+                case GO_RUSTY_BARS:
+                    rustybarsGuid = go->GetGUID();
+                    break;
+                case GO_NAZGRIM_DOOR:
+                    nazgrimdoorGuid = go->GetGUID();
                     break;
             }
         }
@@ -593,21 +608,45 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
-                    case DONE:
                         for (uint32 n = NPC_WAVEBINDER_KARDRIS; n <= NPC_EARTHBREAKER_HAROMM; n++)
-                        {
                             if (Creature* shaman = instance->GetCreature(GetData64(n)))
                                 SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, shaman);
-                        }
                         HandleGameObject(orgrimmargate2Guid, true);
+                        break;
+                    case DONE:
+                        for (uint32 n = NPC_WAVEBINDER_KARDRIS; n <= NPC_EARTHBREAKER_HAROMM; n++)
+                            if (Creature* shaman = instance->GetCreature(GetData64(n)))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, shaman);
+                        HandleGameObject(orgrimmargate2Guid, true);
+                        HandleGameObject(rustybarsGuid, true);
                         break;
                     case IN_PROGRESS:
                         for (uint32 n = NPC_WAVEBINDER_KARDRIS; n <= NPC_EARTHBREAKER_HAROMM; n++)
-                        {
                             if (Creature* shaman = instance->GetCreature(GetData64(n)))
                                 SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, shaman);
-                        }
                         HandleGameObject(orgrimmargate2Guid, false);
+                        break;
+                    }
+                    break;
+                }
+                case DATA_GENERAL_NAZGRIM:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        if (Creature* nazgrim = instance->GetCreature(gnazgrimGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, nazgrim);
+                        HandleGameObject(nazgrimdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        if (Creature* nazgrim = instance->GetCreature(gnazgrimGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, nazgrim);
+                        HandleGameObject(nazgrimdoorGuid, false);
+                        break;
+                    case DONE:
+                        if (Creature* nazgrim = instance->GetCreature(gnazgrimGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, nazgrim);
+                        HandleGameObject(nazgrimdoorGuid, true);
                         break;
                     }
                     break;

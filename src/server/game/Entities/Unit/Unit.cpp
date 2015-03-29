@@ -10620,6 +10620,16 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
             }
             break;
         }
+        //Generate Rage - General Nazgrim[SO]
+        case 144278:
+        {
+            if (victim->ToPlayer() && !victim->HasAura(143494)) //Sundering Blow
+            {
+                CastSpell(this, 143597, true); //Generate Rage - Energize
+                return true;
+            }
+            break;
+        }
     }
 
     if (G3D::fuzzyGt(cooldown, 0.0) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(trigger_spell_id))
