@@ -20,8 +20,11 @@
 #include "ScriptedCreature.h"
 #include "scarlet_monastery.h"
 
-
-#define MAX_ENCOUNTER 4
+DoorData const doorData[] =
+{
+    {GO_THALNOS_DOOR,     DATA_THALNOS,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {0,                   0,                  DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
+};
 
 class instance_scarlet_monastery : public InstanceMapScript
 {
@@ -35,23 +38,37 @@ public:
 
     struct instance_scarlet_monastery_InstanceMapScript : public InstanceScript
     {
-        instance_scarlet_monastery_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_scarlet_monastery_InstanceMapScript(Map* map) : InstanceScript(map) 
+        {
+            SetBossNumber(MAX_ENCOUNTER);
+        }
 
         uint64 PumpkinShrineGUID;
         uint64 HorsemanGUID;
         uint64 HeadGUID;
+        uint64 thalnosGUID;
         std::set<uint64> HorsemanAdds;
 
         uint32 encounter[MAX_ENCOUNTER];
 
         void Initialize()
         {
+            LoadDoorData(doorData);
             memset(&encounter, 0, sizeof(encounter));
 
             PumpkinShrineGUID  = 0;
             HorsemanGUID = 0;
             HeadGUID = 0;
+            thalnosGUID = 0;
             HorsemanAdds.clear();
+        }
+
+        bool SetBossState(uint32 type, EncounterState state)
+        {
+            if (!InstanceScript::SetBossState(type, state))
+                return false;
+            
+            return true;
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -60,6 +77,9 @@ public:
             {
                 case GO_PUMPKIN_SHRINE: 
                     PumpkinShrineGUID = go->GetGUID();
+                    break;
+                case GO_THALNOS_DOOR:
+                    AddDoor(go, true);
                     break;
                 default:
                     break;
@@ -78,6 +98,9 @@ public:
                     break;
                 case NPC_PUMPKIN:
                     HorsemanAdds.insert(creature->GetGUID());
+                    break;
+                case NPC_THALNOS:
+                    thalnosGUID = creature->GetGUID();
                     break;
             }
         }
@@ -116,6 +139,8 @@ public:
                     return HorsemanGUID;
                 case NPC_HEAD:
                     return HeadGUID;
+                case NPC_THALNOS:
+                    return thalnosGUID;
             }
             return 0;
         }

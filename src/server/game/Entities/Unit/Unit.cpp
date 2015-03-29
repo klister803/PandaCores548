@@ -4995,7 +4995,9 @@ bool Unit::HasAuraWithMechanic(uint32 mechanicMask)
 
 bool Unit::HasAuraCastWhileWalking(SpellInfo const* spellInfo)
 {
-    return HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellInfo) || HasAuraTypeWithAffectMask(SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING, spellInfo);
+    return HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellInfo) || 
+           HasAuraTypeWithAffectMask(SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING, spellInfo) || 
+           (spellInfo->AttributesEx5 & SPELL_ATTR5_USABLE_WHILE_MOVING);
 }
 
 AuraEffect* Unit::IsScriptOverriden(SpellInfo const* spell, int32 script) const

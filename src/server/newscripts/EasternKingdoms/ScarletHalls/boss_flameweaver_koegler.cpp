@@ -121,6 +121,12 @@ public:
             if (!UpdateVictim() && me->isInCombat())
                 return;
 
+            if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+            {
+                EnterEvadeMode();
+                return;
+            }
+
             events.Update(diff);
             
             if (Orient)

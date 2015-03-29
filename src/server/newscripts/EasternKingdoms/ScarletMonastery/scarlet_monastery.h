@@ -21,16 +21,31 @@
 
 enum eEnums
 {
-    DATA_HORSEMAN_EVENT             = 1,
-    GAMEOBJECT_PUMPKIN_SHRINE       = 2,
+    DATA_THALNOS                = 1,
+    DATA_KORLOFF                = 2,
+    DATA_WHITEMANE              = 3,
+    MAX_ENCOUNTER,
+
+    DATA_HORSEMAN_EVENT         = 4,
+    GAMEOBJECT_PUMPKIN_SHRINE   = 5,
 };
 
-enum eEntry
+enum eCreatures
 {
-    NPC_HORSEMAN          = 23682,
-    NPC_HEAD              = 23775,
-    NPC_PUMPKIN           = 23694,
+    NPC_HORSEMAN            = 23682,
+    NPC_HEAD                = 23775,
+    NPC_PUMPKIN             = 23694,
+    NPC_THALNOS             = 59789,
     
+    //Summons Thalnos
+    NPC_EVICTED_SOUL        = 59974,
+    NPC_EMPOWERING_SPIRIT   = 59893,
+    NPC_FALLEN_CRUSADER     = 59884,
+};
+
+enum eGameObects
+{
+    GO_THALNOS_DOOR      = 211844,
     GO_PUMPKIN_SHRINE    = 186267,
 };
 #endif

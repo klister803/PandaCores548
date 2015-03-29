@@ -8547,7 +8547,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
         case SPELL_AURA_MOD_CHARM:
         case SPELL_AURA_MOD_POSSESS_PET:
         case SPELL_AURA_AOE_CHARM:
-            if (target->GetTypeId() == TYPEID_UNIT && target->IsVehicle())
+            if (m_caster->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_UNIT && target->IsVehicle())
                 return false;
             if (target->IsMounted())
                 return false;
@@ -9264,6 +9264,8 @@ void Spell::CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex
         Unit* _target = m_targets.GetUnitTarget();
         if(!_target && m_caster->ToPlayer())
             _target = m_caster->ToPlayer()->GetSelectedUnit();
+        else if(!_target)
+            _target = m_caster->getVictim();
 
         for (std::vector<SpellTargetFilter>::const_iterator itr = spellTargetFilter->begin(); itr != spellTargetFilter->end(); ++itr)
         {
