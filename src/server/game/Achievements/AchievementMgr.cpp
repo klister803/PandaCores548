@@ -3801,10 +3801,6 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     if (referencePlayer->GetMapId() != reqValue)
                         check = false;
                     break;
-                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UPDATE_NEXT_VERSION: // 33
-                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_UNK67: // 67
-                    check = false;
-                    break;
                 /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
                 {
                     for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
