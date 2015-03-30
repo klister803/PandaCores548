@@ -4946,6 +4946,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                 }
                 ExecuteLogEffectGeneric(effIndex, unitTarget->GetGUID());
                 unitTarget->InterruptSpell(CurrentSpellTypes(i), false);
+                unitTarget->SendLossOfControl(m_caster, m_spellInfo->Id, m_spellInfo->GetDuration(), m_spellInfo->GetDuration(), m_spellInfo->GetEffectMechanic(effIndex), curSpellInfo->GetSchoolMask(), LOC_SCHOOL_INTERRUPT, true);
 
                 switch (m_spellInfo->Id)
                 {

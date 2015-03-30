@@ -265,15 +265,20 @@ class AchievementMgr
         uint32 GetAchievementPoints() const { return _achievementPoints; }
         uint32 GetParantTreeId(uint32 parent)
         {
-            CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(parent);
-            if(cTree && cTree->criteria == 0 && cTree->parent != 0)
-                return cTree->parent;
+            if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(parent))
+            {
+                if(pTree->parent == 0)
+                    return pTree->ID;
+                else
+                    return GetParantTreeId(pTree->parent);
+            }
 
             return parent;
         }
 
         CriteriaSort GetCriteriaSort() const;
         bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
+        bool IsCompletedCriteriaTree(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
         CriteriaProgressMap* GetCriteriaProgressMap();
 
     private:

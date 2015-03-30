@@ -35,6 +35,7 @@ public:
         static ChatCommand achievementCommandTable[] =
         {
             { "add",            SEC_ADMINISTRATOR,  false,  &HandleAchievementAddCommand,      "", NULL },
+            { "criteria",       SEC_ADMINISTRATOR,  false,  &HandleAchievementCriteriaCommand, "", NULL },
             { NULL,             0,                  false,  NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -69,6 +70,26 @@ public:
 
         if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievementId))
             target->CompletedAchievement(achievementEntry);
+
+        return true;
+    }
+
+    static bool HandleAchievementCriteriaCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        char* criteriatr = strtok((char*)args, " ");
+        char* miscValueStr1 = strtok(NULL, " ");
+        char* miscValueStr2 = strtok(NULL, " ");
+
+        uint32 criteriaType = criteriatr ? atoi(criteriatr) : 0;
+        uint32 miscValue1 = miscValueStr1 ? atoi(miscValueStr1) : 0;
+        uint32 miscValue2 = miscValueStr2 ? atoi(miscValueStr2) : 0;
+        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "HandleAchievementCriteriaCommand criteriaType %i miscValue1 %i miscValue2 %i", criteriaType, miscValue1, miscValue2);
+
+        if(Player* player = handler->GetSession()->GetPlayer())
+            player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, handler->getSelectedUnit());
 
         return true;
     }

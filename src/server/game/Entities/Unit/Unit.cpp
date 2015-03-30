@@ -24457,3 +24457,40 @@ void Unit::SendMissileCancel(uint32 spellId, bool cancel)
     data.WriteGuidBytes<0, 2>(guid);
     ToPlayer()->GetSession()->SendPacket(&data);
 }
+
+void Unit::SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply)
+{
+    if (GetTypeId() != TYPEID_PLAYER || !caster)
+        return;
+
+    ObjectGuid guid = caster->GetObjectGuid();
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SendLossOfControl GetEffectMechanic %i, apply %i, GetId %i duraction %i rmDuraction %i schoolMask %i", mechanic, apply, spellId, duraction, rmDuraction, schoolMask);
+
+    if(apply)
+    {
+        WorldPacket data(SMSG_ADD_LOSS_OF_CONTROL);
+        data.WriteBits(mechanic, 8);     // Mechanic
+        data.WriteBits(type, 8);     // Type (interrupt or some other) may be loss control = 0, silence = 0, interrupt = 1, disarm = 0, root = 0
+        data.WriteGuidMask<2, 1, 4, 3, 5, 6, 7, 0>(guid);
+        data.WriteGuidBytes<3, 1, 4>(guid);
+        data << uint32(rmDuraction);        // RemainingDuration (контролирует блокировку баров, скажем если duration = 40000, а это число 10000, то как только останется 10 секунд, на барах пойдет прокрутка, иначе просто затеменено)
+        data << uint32(duraction);        // Duration (время действия)
+        data.WriteGuidBytes<0>(guid);
+        data << uint32(spellId);     // SpellID
+        data.WriteGuidBytes<2, 5, 6, 7>(guid);
+        data << uint32(schoolMask);     // SchoolMask (для type == interrupt and other)
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+    /*else
+    {
+        WorldPacket data(SMSG_REMOVE_LOSS_OF_CONTROL);
+        data.WriteGuidMask<1, 7, 0, 6, 2, 4, 5>(guid);
+        data.WriteBits(type, 8); // Type
+        data.WriteGuidMask<3>(guid);
+        data.WriteGuidBytes<1, 0, 4, 6, 7>(guid);
+        data << uint32(spellId); // SpellID
+        data.WriteGuidBytes<3, 5, 2>(guid);
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }*/
+}

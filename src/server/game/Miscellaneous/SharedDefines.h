@@ -4658,4 +4658,22 @@ enum ChallengeTimerType
     LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE  = 1,
     LE_WORLD_ELAPSED_TIMER_TYPE_NONE            = 2
 };
+
+enum LossOfControlType
+{
+    LOC_POSSESS           = 1,
+    LOC_CONFUSE           = 2,
+    LOC_CHARM             = 3,
+    LOC_FEAR              = 4,
+    LOC_STUN              = 5,
+    LOC_PACIFY            = 6,
+    LOC_ROOT              = 7,
+    LOC_SILENCE           = 8,
+    LOC_PACIFYSILENCE     = 9,
+    LOC_DISARM            = 10,
+    LOC_SCHOOL_INTERRUPT  = 11,
+    LOC_STUN_MECHANIC     = 12,
+    LOC_FEAR_MECHANIC     = 13,
+    LOC_SILENCE_HARMFUL   = 14
+};
 #endif

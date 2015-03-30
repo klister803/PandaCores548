@@ -3323,6 +3323,14 @@ void Spell::DoAllEffectOnTarget(ItemTargetInfo* target)
 
 bool Spell::UpdateChanneledTargetList()
 {
+    // Automatically forces player to face target
+    if((m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET) && !m_caster->HasInArc(static_cast<float>(M_PI), m_targets.GetUnitTarget()))
+    {
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdateChanneledTargetList Spell %u o %f", m_spellInfo->Id, m_caster->GetOrientation());
+        m_caster->SetInFront(m_targets.GetUnitTarget());
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdateChanneledTargetList Spell %u o %f", m_spellInfo->Id, m_caster->GetOrientation());
+    }
+
     // Not need check return true
     if (m_channelTargetEffectMask == 0)
         return true;

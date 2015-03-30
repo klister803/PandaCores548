@@ -2078,6 +2078,7 @@ class Unit : public WorldObject
         bool GetFreeAuraSlot(uint32& slot);
         void SendSpellScene(uint32 miscValue, Position* pos);
         void SendMissileCancel(uint32 spellId, bool cancel = true);
+        void SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);

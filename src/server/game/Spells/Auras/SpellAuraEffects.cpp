@@ -3546,6 +3546,9 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
 
     if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->GetCurrentEquipmentId())
         target->UpdateDamagePhysical(attType);
+
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_DISARM, apply);
 }
 
 void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3579,6 +3582,9 @@ void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode,
 
         target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED);
     }
+
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_SILENCE, apply);
 }
 
 void AuraEffect::HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3600,6 +3606,8 @@ void AuraEffect::HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, 
             return;
         target->RemoveFlag(UNIT_FIELD_FLAGS, _flags);
     }
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_PACIFY, apply);
 }
 
 void AuraEffect::HandleAuraModPacifyAndSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -3617,14 +3625,26 @@ void AuraEffect::HandleAuraModPacifyAndSilence(AuraApplication const* aurApp, ui
         else
             target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
-    if (!(apply))
+
+    if (!apply)
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (target->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
             return;
     }
-    HandleAuraModPacify(aurApp, mode, apply);
-    HandleAuraModSilence(aurApp, mode, apply);
+
+    if (apply)
+        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED|UNIT_FLAG_SILENCED);
+    else
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (target->HasAuraType(SPELL_AURA_MOD_PACIFY) || target->HasAuraType(SPELL_AURA_MOD_PACIFY_SILENCE))
+            return;
+        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED|UNIT_FLAG_SILENCED);
+    }
+
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_PACIFYSILENCE, apply);
 }
 
 void AuraEffect::HandleAuraAllowOnlyAbility(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4051,6 +4071,8 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
         target->SetTimeForSpline(0);
 
     target->SetControlled(apply, UNIT_STATE_CONFUSED);
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_CONFUSE, apply);
 }
 
 void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4066,6 +4088,8 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         target->SetTimeForSpline(0);
 
     target->SetControlled(apply, UNIT_STATE_FLEEING);
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_FEAR, apply);
 }
 
 void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4076,6 +4100,8 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
     Unit* target = aurApp->GetTarget();
 
     target->SetControlled(apply, UNIT_STATE_STUNNED);
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_STUN, apply);
 }
 
 void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4098,6 +4124,8 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
     }
 
     target->SetControlled(apply, UNIT_STATE_ROOT);
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_ROOT, apply);
 }
 
 void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4135,6 +4163,9 @@ void AuraEffect::HandleModPossess(AuraApplication const* aurApp, uint8 mode, boo
         target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp);
     else
         target->RemoveCharmedBy(caster);
+
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_POSSESS, apply);
 }
 
 // only one spell has this aura
@@ -4195,6 +4226,9 @@ void AuraEffect::HandleModCharm(AuraApplication const* aurApp, uint8 mode, bool 
         target->SetCharmedBy(caster, CHARM_TYPE_CHARM, aurApp);
     else
         target->RemoveCharmedBy(caster);
+
+    if(GetBase()->GetDuration() > 0)
+        target->SendLossOfControl(GetCaster(), GetId(), GetBase()->GetDuration(), GetBase()->GetDuration(), GetSpellInfo()->GetEffectMechanic(GetEffIndex()), 0, LOC_CHARM, apply);
 }
 
 void AuraEffect::HandleCharmConvert(AuraApplication const* aurApp, uint8 mode, bool apply) const
