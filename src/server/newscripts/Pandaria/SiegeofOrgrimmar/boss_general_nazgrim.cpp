@@ -95,6 +95,15 @@ enum Actions
     ACTION_RE_ATTACK          = 2,
 };
 
+enum CreatureText
+{
+    SAY_PULL                  = 1,
+    SAY_SUMMON                = 2,
+    SAY_SUMMON_2              = 3,
+    SAY_SUMMON_3              = 4,
+    SAY_DIED                  = 5,
+};
+
 uint32 summonsentry[4] =
 {
     NPC_IRONBLADE,
@@ -209,6 +218,8 @@ class boss_general_nazgrim : public CreatureScript
                 }
                 if (!sumlist.empty())
                 {
+                    uint8 pos = urand(2, 4);
+                    Talk(pos);
                     uint8 mod;
                     for (std::vector<uint32>::const_iterator itr = sumlist.begin(); itr != sumlist.end(); itr++)
                     {
@@ -268,6 +279,7 @@ class boss_general_nazgrim : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                Talk(SAY_PULL);
                 _EnterCombat();
                 SetStance(0);
                 wavenum = 0;
@@ -364,7 +376,7 @@ class boss_general_nazgrim : public CreatureScript
                     //Default events
                     case EVENT_SUNDERING_BLOW:
                         if (me->getVictim())
-                            DoCastVictim(SPELL_SUNDERING_BLOW);
+                            DoCastVictim(SPELL_SUNDERING_BLOW, true);
                         events.ScheduleEvent(EVENT_SUNDERING_BLOW, 10000);
                         break;
                     case EVENT_BONECRACKER:
@@ -390,6 +402,7 @@ class boss_general_nazgrim : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
+                Talk(SAY_DIED);
                 _JustDied();
             }
         };

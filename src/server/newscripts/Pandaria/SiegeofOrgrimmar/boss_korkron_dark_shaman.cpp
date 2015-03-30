@@ -240,7 +240,7 @@ public:
                     break;
                 }
             }
-            me->AI()->Talk(SAY_PULL);
+            Talk(SAY_PULL);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
             events.ScheduleEvent(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? EVENT_FROSTSTORM_BOLT : EVENT_FROSTSTORM_STRIKE, 6000);
         }
@@ -296,7 +296,7 @@ public:
                 switch (entry)
                 {
                 case NPC_WAVEBINDER_KARDRIS:
-                    me->AI()->Talk(SAY_POISONMIST_TOTEM);
+                    Talk(SAY_POISONMIST_TOTEM);
                     DoCast(me, SPELL_POISONMIST_TOTEM, true);
                     events.ScheduleEvent(EVENT_TOXIC_STORM, 5000);
                     break;
@@ -315,7 +315,7 @@ public:
                     events.ScheduleEvent(EVENT_FOUL_GEYSER, 2000);
                     break;
                 case NPC_EARTHBREAKER_HAROMM:
-                    me->AI()->Talk(SAY_FOULSTREAM_TOTEM);
+                    Talk(SAY_FOULSTREAM_TOTEM);
                     events.ScheduleEvent(EVENT_FOUL_STREAM, 1000);
                     break;
                 }
@@ -326,7 +326,7 @@ public:
                 switch (entry)
                 {
                 case NPC_WAVEBINDER_KARDRIS:
-                    me->AI()->Talk(SAY_ASHFLARE_TOTEM);
+                    Talk(SAY_ASHFLARE_TOTEM);
                     DoCast(me, SPELL_ASHFLARE_TOTEM, true);
                     //events.ScheduleEvent(EVENT_FALLING_ASH, 20000); not works
                     break;
@@ -337,7 +337,7 @@ public:
             }
             break;
             case 4: //25pct
-                me->AI()->Talk(SAY_BLOODLUST);
+                Talk(SAY_BLOODLUST);
                 me->AddAura(SPELL_BLOODLUST, me);
                 break;
             }
@@ -370,7 +370,7 @@ public:
                         if (!firstattack)
                         {
                             firstattack = true;
-                            me->AI()->Talk(SAY_FIRSTATTACK);
+                            Talk(SAY_FIRSTATTACK);
                         }
                         DoCastVictim(SPELL_FROSTSTORM_BOLT);
                     }
@@ -383,7 +383,7 @@ public:
                         if (!firstattack)
                         {
                             firstattack = true;
-                            me->AI()->Talk(SAY_FIRSTATTACK);
+                            Talk(SAY_FIRSTATTACK);
                         }
                         DoCastVictim(SPELL_FROSTSTORM_STRIKE);
                     }
