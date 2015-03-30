@@ -25,6 +25,10 @@ delete from spell_linked_spell where spell_trigger = 115304;
 INSERT INTO `spell_linked_spell` (`spell_trigger`, `spell_effect`, `type`, `caster`, `target`, `hastalent`, `hastalent2`, `chance`, `cooldown`, `type2`, `hitmask`, `learnspell`, `removeMask`, `comment`) VALUES 
 (115304, 115305, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Evict Soul');
 
+delete from spell_proc_event where entry = 115306;
+INSERT INTO `spell_proc_event` (`entry`, `SchoolMask`, `SpellFamilyName`, `SpellFamilyMask0`, `SpellFamilyMask1`, `SpellFamilyMask2`, `SpellFamilyMask3`, `procFlags`, `procEx`, `ppmRate`, `CustomChance`, `Cooldown`, `effectmask`) VALUES 
+(115306, 0, 0, 0, 0, 0, 0, 4, 0, 0, 100, 0, 7);
+
 delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry = 115157;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 (13, 1, 115157, 0, 0, 31, 0, 3, 59884, 0, 0, 0, '', NULL);

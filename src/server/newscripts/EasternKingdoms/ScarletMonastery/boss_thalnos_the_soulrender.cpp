@@ -96,7 +96,6 @@ public:
             {
                 if (Unit* pTarget = summon->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 {
-                    summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
                     summon->CastSpell(summon, SPELL_SOUL_REND, true);
                     summon->AddThreat(pTarget, 150.0f);
                     summon->AI()->AttackStart(pTarget);
