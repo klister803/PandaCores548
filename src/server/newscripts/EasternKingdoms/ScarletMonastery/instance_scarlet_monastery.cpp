@@ -23,6 +23,7 @@
 DoorData const doorData[] =
 {
     {GO_THALNOS_DOOR,     DATA_THALNOS,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_KORLOFF_DOOR,     DATA_KORLOFF,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                   0,                  DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -79,6 +80,7 @@ public:
                     PumpkinShrineGUID = go->GetGUID();
                     break;
                 case GO_THALNOS_DOOR:
+                case GO_KORLOFF_DOOR:
                     AddDoor(go, true);
                     break;
                 default:
