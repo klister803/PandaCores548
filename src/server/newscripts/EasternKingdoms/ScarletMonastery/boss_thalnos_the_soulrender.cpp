@@ -68,9 +68,12 @@ public:
     struct boss_thalnos_the_soulrenderAI : public BossAI
     {
         boss_thalnos_the_soulrenderAI(Creature* creature) : BossAI(creature, DATA_THALNOS) {}
+        
+        uint8 EmpZombi;
 
         void Reset()
         {
+            EmpZombi = 0;
             summons.DespawnAll();
             events.Reset();
             _Reset();
@@ -108,7 +111,23 @@ public:
         void JustDied(Unit* /*Killer*/)
         {
             Talk(SAY_DEATH);
+            if (Creature* zombie = instance->instance->GetCreature(instance->GetData64(NPC_EMPOWERED_ZOMBIE)))
+                zombie->DespawnOrUnsummon();
             _JustDied();
+        }
+
+        bool AllowAchieve()
+        {
+            return EmpZombi >= 3;
+        }
+
+        void DoAction(const int32 action)
+        {
+            if (action == 1)
+                EmpZombi++;
+
+            if (action == 2)
+                EmpZombi--;
         }
 
         void UpdateAI(uint32 diff)
@@ -299,13 +318,27 @@ public:
 
     struct npc_empowered_zombieAI : public ScriptedAI
     {
-        npc_empowered_zombieAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_empowered_zombieAI(Creature* creature) : ScriptedAI(creature) 
+        {
+            instance = me->GetInstanceScript();
+        }
+
+        InstanceScript* instance;
 
         void Reset() {}
 
         void IsSummonedBy(Unit* owner)
         {
             DoZoneInCombat(me, 100.0f);
+
+            if (Creature* thalnos = instance->instance->GetCreature(instance->GetData64(DATA_THALNOS)))
+                thalnos->AI()->DoAction(1);
+        }
+
+        void JustDied(Unit* /*killer*/)
+        {
+            if (Creature* thalnos = instance->instance->GetCreature(instance->GetData64(DATA_THALNOS)))
+                thalnos->AI()->DoAction(2);
         }
 
         void EnterEvadeMode()
@@ -329,10 +362,30 @@ public:
     }
 };
 
+typedef boss_thalnos_the_soulrender::boss_thalnos_the_soulrenderAI ThalnosAI;
+
+class achievement_empowered_spiritualist : public AchievementCriteriaScript
+{
+public:
+    achievement_empowered_spiritualist() : AchievementCriteriaScript("achievement_empowered_spiritualist") { }
+
+    bool OnCheck(Player* source, Unit* target)
+    {
+        if (!target)
+            return false;
+
+        if (ThalnosAI* thalnosAI = CAST_AI(ThalnosAI, target->GetAI()))
+            return thalnosAI->AllowAchieve();
+
+        return false;
+    }
+};
+
 void AddSC_boss_thalnos_the_soulrender()
 {
     new boss_thalnos_the_soulrender();
     new npc_empowering_spirit();
     new npc_fallen_crusader();
     new npc_empowered_zombie();
+    new achievement_empowered_spiritualist();
 }

@@ -43,6 +43,7 @@ enum eCreatures
     NPC_EVICTED_SOUL        = 59974,
     NPC_EMPOWERING_SPIRIT   = 59893,
     NPC_FALLEN_CRUSADER     = 59884,
+    NPC_EMPOWERED_ZOMBIE    = 59930,
     //Summons Korloff
     NPC_TRAINING_DUMMY      = 64446,
     //Summons Whitemane

@@ -33,6 +33,10 @@ delete from conditions where SourceTypeOrReferenceId = 13 and SourceEntry = 1151
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 (13, 1, 115157, 0, 0, 31, 0, 3, 59884, 0, 0, 0, '', NULL);
 
+delete from achievement_criteria_data where criteria_id = 20063;
+INSERT INTO `achievement_criteria_data` (`criteria_id`, `type`, `value1`, `value2`, `ScriptName`) VALUES 
+(20063, 11, 0, 0, 'achievement_empowered_spiritualist');
+
 delete from creature_text where entry = 59789;
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (59789, 0, 0, 'Вы разделите мое вечное страдание!', 14, 0, 100, 0, 0, 27832, 'Талнос Воздаятель Душ to Player'),

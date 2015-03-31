@@ -51,6 +51,7 @@ public:
         uint64 thalnosGUID;
         uint64 durandGUID;
         uint64 whitemaneGUID;
+        uint64 zombieGUID;
         std::set<uint64> HorsemanAdds;
 
         uint32 encounter[MAX_ENCOUNTER];
@@ -116,6 +117,9 @@ public:
                 case NPC_WHITEMANE:
                     whitemaneGUID = creature->GetGUID();
                     break;
+                case NPC_EMPOWERED_ZOMBIE:
+                    zombieGUID = creature->GetGUID();
+                    break;
             }
         }
 
@@ -153,7 +157,9 @@ public:
                     return HorsemanGUID;
                 case NPC_HEAD:
                     return HeadGUID;
-                case NPC_THALNOS:
+                case NPC_EMPOWERED_ZOMBIE:
+                    return zombieGUID;
+                case DATA_THALNOS:
                     return thalnosGUID;
                 case DATA_DURAND:
                     return durandGUID;
