@@ -3249,6 +3249,9 @@ bool AchievementMgr<T>::ConditionsSatisfied(CriteriaEntry const *criteria, Playe
 template<class T>
 bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *achievementCriteria, uint64 miscValue1, uint64 miscValue2, Unit const *unit, Player* referencePlayer) const
 {
+    //if(achievementCriteria->worldStateId && GetMap()->getWorldState(achievementCriteria->worldStateId) != achievementCriteria->worldStateValue)
+        //return false;
+
     switch (AchievementCriteriaTypes(achievementCriteria->type))
     {
         case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
@@ -3801,7 +3804,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     if (referencePlayer->GetMapId() != reqValue)
                         check = false;
                     break;
-                /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_LEVEL_IN_SLOT: // 34
                 {
                     for (uint8 i = 0; i < MAX_ACTIVE_BATTLE_PETS; ++i)
                     {
@@ -3811,7 +3814,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                             {
                                 if (PetJournalInfo* petInfo = referencePlayer->GetBattlePetMgr()->GetPetInfoByPetGUID(_slot->GetPet()))
                                 {
-                                    if(petInfo-><GetLevel() < reqValue)
+                                    if(petInfo->GetLevel() < reqValue)
                                     {
                                         check = false;
                                         break;
@@ -3821,7 +3824,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                         }
                     }
                     break;
-                }*/
+                }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_WITHOUT_GROUP: // 35
                     if (Group const* group = referencePlayer->GetGroup())
                         check = false;
@@ -3950,17 +3953,17 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MIN_LEVEL: // 70
                     if (!unit || unit->getLevel() >= reqValue)
                         check = false;
-                /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
                 {
-                    BattlePetSpeciesStateEntry const* entry = sBattlePetSpeciesStateStore.LookupEntry(miscValue1);
+                    BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(miscValue1);
                     if (!entry || entry->petType != reqValue)
                         check = false;
-                }*/
-                /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER: // 81
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER: // 81
                 {
                     if (!miscValue2 || miscValue2 != reqValue)
                         check = false;
-                }*/
+                }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_CHALANGER_RATE: // 83
                 {
                     if (!miscValue2)
@@ -3969,28 +3972,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                         check = false;
                     break;
                 }
-                /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
-                {
-                    if (!unit)
-                        check = false;
-                    else
-                    {
-                        for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
-                        {
-                            BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
-
-                            if (!qEntry)
-                                continue;
-
-                            if (qEntry->ID == unit->GetQuality() && qEntry->ID != reqValue)
-                            {
-                                check = false;
-                                break;
-                            }
-                        }
-                    }
-                }*/
-                /*case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
                 {
                     if (!miscValue1)
                         check = false;
@@ -4000,7 +3982,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                         if (!bp || bp->ID != reqValue)
                             check = false;
                     }
-                }*/
+                }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REPUTATION: // 95
                 {
                     if (referencePlayer->GetReputationMgr().GetReputation(reqValue) < reqCount)

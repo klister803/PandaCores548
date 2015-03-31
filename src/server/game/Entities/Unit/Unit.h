@@ -1778,6 +1778,7 @@ class Unit : public WorldObject
 
         void SetInFront(Unit const* target);
         void SetFacingTo(float ori);
+        void SetFacingTo(Unit const* target);
         void SetFacingToObject(WorldObject* object);
 
         void SendChangeCurrentVictimOpcode(HostileReference* pHostileReference);

@@ -560,7 +560,8 @@ void Spell::InitExplicitTargets(SpellCastTargets const& targets)
             if (!unit && neededTargets & (TARGET_FLAG_UNIT_RAID | TARGET_FLAG_UNIT_PARTY | TARGET_FLAG_UNIT_ALLY))
                 unit = m_caster;
 
-            m_targets.SetUnitTarget(unit);
+            if(unit)
+                m_targets.SetUnitTarget(unit);
         }
     }
 
@@ -949,13 +950,18 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         return;
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets spell id %u caster %u target %u entry %i", m_spellInfo->Id,  m_caster->GetGUID(), target->GetGUID(), target->GetEntry());
+
     CallScriptObjectTargetSelectHandlers(target, effIndex);
 
     switch (targetType.GetObjectType())
     {
         case TARGET_OBJECT_TYPE_UNIT:
             if (Unit* unitTarget = target->ToUnit())
-                AddUnitTarget(unitTarget, effMask, true, false);
+            {
+                AddUnitTarget(unitTarget, effMask, condList ? false : true, false);
+                m_targets.SetUnitTarget(unitTarget);
+            }
             break;
         case TARGET_OBJECT_TYPE_GOBJ:
             if (GameObject* gobjTarget = target->ToGameObject())
@@ -3325,11 +3331,7 @@ bool Spell::UpdateChanneledTargetList()
 {
     // Automatically forces player to face target
     if((m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET) && !m_caster->HasInArc(static_cast<float>(M_PI), m_targets.GetUnitTarget()))
-    {
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdateChanneledTargetList Spell %u o %f", m_spellInfo->Id, m_caster->GetOrientation());
         m_caster->SetInFront(m_targets.GetUnitTarget());
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "UpdateChanneledTargetList Spell %u o %f", m_spellInfo->Id, m_caster->GetOrientation());
-    }
 
     // Not need check return true
     if (m_channelTargetEffectMask == 0)
@@ -5665,6 +5667,15 @@ void Spell::SendChannelStart(uint32 duration)
         if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
             if (!m_UniqueTargetInfo.empty())
                 channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().targetGUID : m_UniqueGOTargetInfo.front().targetGUID;
+
+    if(Unit* target = m_targets.GetUnitTarget())
+    {
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart target %u", target->GetGUID());
+        if(m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET)
+            m_caster->SetFacingTo(m_targets.GetUnitTarget());
+    }
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart id %u channelTarget %i dynObjGuid %i channelGuid %i ObjectTargetGUID %i", m_spellInfo->Id, channelTarget, dynObjGuid, channelGuid, m_targets.GetObjectTargetGUID());
 
     ObjectGuid casterGuid = m_caster->GetObjectGuid();
     WorldPacket data(SMSG_CHANNEL_START, (8+4+4));
@@ -9860,6 +9871,15 @@ WorldObjectSpellTargetCheck::~WorldObjectSpellTargetCheck()
 
 bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
 {
+    if (_condSrcInfo)
+    {
+        _condSrcInfo->mConditionTargets[0] = target;
+        bool check = sConditionMgr->IsObjectMeetToConditions(*_condSrcInfo, *_condList);
+        //if(check)
+            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::WorldObjectSpellTargetCheck spell id %u caster %u target %u entry %i", _spellInfo->Id,  _caster->GetGUID(), target->GetGUID(), target->GetEntry());
+        return check;
+    }
+
     uint8 res = _spellInfo->CheckTarget(_caster, target, true);
     if (res != SPELL_CAST_OK)
     {
@@ -9918,10 +9938,7 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
                 break;
         }
     }
-    if (!_condSrcInfo)
-        return true;
-    _condSrcInfo->mConditionTargets[0] = target;
-    return sConditionMgr->IsObjectMeetToConditions(*_condSrcInfo, *_condList);
+    return true;
 }
 
 WorldObjectSpellNearbyTargetCheck::WorldObjectSpellNearbyTargetCheck(float range, Unit* caster, SpellInfo const* spellInfo,

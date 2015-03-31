@@ -23442,6 +23442,8 @@ void Unit::SetInFront(Unit const* target)
 {
     if (!HasUnitState(UNIT_STATE_CANNOT_TURN))
         SetOrientation(GetAngle(target));
+    if(GetTypeId() != TYPEID_PLAYER)
+        SetFacingTo(GetAngle(target));
 }
 
 void Unit::SetFacingTo(float ori)
@@ -23449,6 +23451,14 @@ void Unit::SetFacingTo(float ori)
     Movement::MoveSplineInit init(*this);
     init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
     init.SetFacing(ori);
+    init.Launch();
+}
+
+void Unit::SetFacingTo(Unit const* target)
+{
+    Movement::MoveSplineInit init(*this);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
+    init.SetFacing(target);
     init.Launch();
 }
 
