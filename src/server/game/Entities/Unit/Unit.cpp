@@ -23442,8 +23442,6 @@ void Unit::SetInFront(Unit const* target)
 {
     if (!HasUnitState(UNIT_STATE_CANNOT_TURN))
         SetOrientation(GetAngle(target));
-    if(GetTypeId() != TYPEID_PLAYER)
-        SetFacingTo(GetAngle(target));
 }
 
 void Unit::SetFacingTo(float ori)
