@@ -439,7 +439,6 @@ class boss_blood_queen_lana_thel : public CreatureScript
                         }
                         case EVENT_AIR_PHASE:
                             DoStopAttack();
-                            me->SetReactState(REACT_PASSIVE);
                             events.DelayEvents(10000, EVENT_GROUP_NORMAL);
                             events.CancelEventGroup(EVENT_GROUP_CANCELLABLE);
                             me->GetMotionMaster()->MovePoint(POINT_CENTER, centerPos);

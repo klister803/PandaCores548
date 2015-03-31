@@ -170,7 +170,7 @@ public:
                         DoResetThreat();
                         break;
                 }
-                DoStopAttack();
+                me->AttackStop();
 
                 Blink_Timer= urand(20000, 40000);
             } else Blink_Timer -= diff;
@@ -256,7 +256,7 @@ public:
             me->SetPosition(bossc->x, bossc->y, bossc->z, bossc->r);
             Invisible = true;
             DoResetThreat();
-            DoStopAttack();
+            me->AttackStop();
 
             switch (atPercent)
             {

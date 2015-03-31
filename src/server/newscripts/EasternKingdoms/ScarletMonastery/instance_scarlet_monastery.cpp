@@ -24,6 +24,7 @@ DoorData const doorData[] =
 {
     {GO_THALNOS_DOOR,     DATA_THALNOS,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_KORLOFF_DOOR,     DATA_KORLOFF,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_WHITEMANE_DOOR,   DATA_WHITEMANE,     DOOR_TYPE_SPAWN_HOLE, BOUNDARY_NONE},
     {0,                   0,                  DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -48,6 +49,8 @@ public:
         uint64 HorsemanGUID;
         uint64 HeadGUID;
         uint64 thalnosGUID;
+        uint64 durandGUID;
+        uint64 whitemaneGUID;
         std::set<uint64> HorsemanAdds;
 
         uint32 encounter[MAX_ENCOUNTER];
@@ -61,6 +64,8 @@ public:
             HorsemanGUID = 0;
             HeadGUID = 0;
             thalnosGUID = 0;
+            durandGUID = 0;
+            whitemaneGUID = 0;
             HorsemanAdds.clear();
         }
 
@@ -81,6 +86,7 @@ public:
                     break;
                 case GO_THALNOS_DOOR:
                 case GO_KORLOFF_DOOR:
+                case GO_WHITEMANE_DOOR:
                     AddDoor(go, true);
                     break;
                 default:
@@ -103,6 +109,12 @@ public:
                     break;
                 case NPC_THALNOS:
                     thalnosGUID = creature->GetGUID();
+                    break;
+                case NPC_DURAND:
+                    durandGUID = creature->GetGUID();
+                    break;
+                case NPC_WHITEMANE:
+                    whitemaneGUID = creature->GetGUID();
                     break;
             }
         }
@@ -143,6 +155,10 @@ public:
                     return HeadGUID;
                 case NPC_THALNOS:
                     return thalnosGUID;
+                case DATA_DURAND:
+                    return durandGUID;
+                case DATA_WHITEMANE:
+                    return whitemaneGUID;
             }
             return 0;
         }

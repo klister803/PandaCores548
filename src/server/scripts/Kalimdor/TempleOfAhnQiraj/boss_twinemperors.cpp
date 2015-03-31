@@ -232,7 +232,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     void SetAfterTeleport()
     {
         me->InterruptNonMeleeSpells(false);
-        DoStopAttack();
+        me->AttackStop();
         DoResetThreat();
         DoCast(me, SPELL_TWIN_TELEPORT_VISUAL);
         me->AddUnitState(UNIT_STATE_STUNNED);

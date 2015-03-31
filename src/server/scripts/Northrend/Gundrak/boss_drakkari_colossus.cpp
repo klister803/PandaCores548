@@ -150,7 +150,6 @@ class boss_drakkari_colossus : public CreatureScript
                         me->GetMotionMaster()->Clear();
                         me->GetMotionMaster()->MoveIdle();
 
-                        me->SetReactState(REACT_PASSIVE);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         DoCast(me, SPELL_FREEZE_ANIM);
                         DoStopAttack();

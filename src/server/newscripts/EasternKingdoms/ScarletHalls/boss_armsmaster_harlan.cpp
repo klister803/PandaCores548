@@ -130,6 +130,7 @@ public:
             me->GetMotionMaster()->Clear(false);
             if (BladeHitCount >= 8)
                 DoCast(SPELL_ACHIEV_MOSH_PIT);
+            _JustDied();
         }
 
         void MovementInform(uint32 type, uint32 id)

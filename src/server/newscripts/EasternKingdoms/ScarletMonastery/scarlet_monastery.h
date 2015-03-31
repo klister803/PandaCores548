@@ -24,10 +24,11 @@ enum eEnums
     DATA_THALNOS                = 1,
     DATA_KORLOFF                = 2,
     DATA_WHITEMANE              = 3,
+    DATA_DURAND                 = 4,
     MAX_ENCOUNTER,
 
-    DATA_HORSEMAN_EVENT         = 4,
-    GAMEOBJECT_PUMPKIN_SHRINE   = 5,
+    DATA_HORSEMAN_EVENT         = 6,
+    GAMEOBJECT_PUMPKIN_SHRINE   = 7,
 };
 
 enum eCreatures
@@ -36,19 +37,24 @@ enum eCreatures
     NPC_HEAD                = 23775,
     NPC_PUMPKIN             = 23694,
     NPC_THALNOS             = 59789,
+    NPC_WHITEMANE           = 3977,
     
     //Summons Thalnos
     NPC_EVICTED_SOUL        = 59974,
     NPC_EMPOWERING_SPIRIT   = 59893,
     NPC_FALLEN_CRUSADER     = 59884,
-    //Summon korloff
+    //Summons Korloff
     NPC_TRAINING_DUMMY      = 64446,
+    //Summons Whitemane
+    NPC_DURAND              = 60040,
+    NPC_SCARLET_JUDICATOR   = 58605,
 };
 
 enum eGameObects
 {
     GO_THALNOS_DOOR      = 211844,
     GO_KORLOFF_DOOR      = 210564,
+    GO_WHITEMANE_DOOR    = 210563,
     GO_PUMPKIN_SHRINE    = 186267,
 };
 #endif

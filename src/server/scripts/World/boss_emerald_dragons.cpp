@@ -616,7 +616,6 @@ class boss_taerar : public CreatureScript
 
                     DoCast(SPELL_SHADE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE);
-                    me->SetReactState(REACT_PASSIVE);
 
                     ++_stage;
                 }

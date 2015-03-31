@@ -169,8 +169,8 @@ void ScriptedAI::DoStartNoMovement(Unit* victim)
 
 void ScriptedAI::DoStopAttack()
 {
-    if (me->getVictim())
-        me->AttackStop();
+    me->AttackStop();
+    me->SetReactState(REACT_PASSIVE);
 }
 
 void ScriptedAI::DoCastSpell(Unit* target, SpellInfo const* spellInfo, bool triggered)
