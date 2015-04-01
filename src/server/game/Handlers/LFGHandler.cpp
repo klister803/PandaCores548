@@ -57,7 +57,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     if (Group* group = _player->GetGroup())
     for (lfg::LfgDungeonSet::const_iterator itr = newDungeons.begin(); itr != newDungeons.end(); ++itr)
     {
-        lfg::LFGDungeonData const * entry = sLFGMgr->GetLFGDungeon(*newDungeons.begin() & 0xFFFFF);
+        lfg::LFGDungeonData const * entry = sLFGMgr->GetLFGDungeon(*newDungeons.begin() & 0xFFFFF, _player->GetTeam());
         if (!entry)
             return;
 

@@ -1502,7 +1502,7 @@ struct LFGDungeonEntry
     uint32  difficulty;                                     // 8
     uint32  flags;                                          // 9
     uint32  type;                                           // 10
-    int32 m_faction;                                        // 11
+    int32   faction;                                        // 11
     //char*   textureFileName;                              // 12 Name lite
     uint32  expansion;                                      // 13
     //uint32 orderIndex;                                    // 14
@@ -1579,9 +1579,9 @@ struct LFGDungeonEntry
 
     bool FitsTeam(uint32 team) const
     {
-        if (m_faction == -1)
+        if (faction == -1)
             return true;
-        else if (m_faction == 0)
+        else if (faction == 0)
             return team == HORDE;
         else
             return team == ALLIANCE;

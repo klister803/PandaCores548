@@ -176,6 +176,20 @@ LFGDungeonData const* LFGMgr::GetLFGDungeon(uint32 id)
     return NULL;
 }
 
+LFGDungeonData const* LFGMgr::GetLFGDungeon(uint32 id, uint32 team)
+{
+    LFGDungeonContainer::const_iterator itr = LfgDungeonStore.find(id);
+    if (itr != LfgDungeonStore.end())
+    {
+        LFGDungeonEntry const* dungeonEntry = itr->second.dbc;
+
+        if (dungeonEntry && dungeonEntry->FitsTeam(team))
+            return &itr->second;
+    }
+
+    return NULL;
+}
+
 LFGDungeonData const* LFGMgr::GetLFGDungeon(uint32 mapId, Difficulty diff, uint32 team)
 {
     for (LFGDungeonContainer::const_iterator itr = LfgDungeonStore.begin(); itr != LfgDungeonStore.end(); ++itr)
@@ -409,7 +423,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         LfgDungeonSet const& selectedDungeons = GetSelectedDungeons(player->GetGUID());
         if (!selectedDungeons.empty())
         {
-            LFGDungeonData const* rDungeonData = GetLFGDungeon(*selectedDungeons.begin() & 0xFFFFF);
+            LFGDungeonData const* rDungeonData = GetLFGDungeon(*selectedDungeons.begin() & 0xFFFFF, player->GetTeam());
             if (rDungeonData && rDungeonData->type == LFG_TYPE_RANDOM)
                 oldrDungeonId = rDungeonData->id;
         }
@@ -429,7 +443,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         // currently core cannot queue in LFG/Flex/Scenarios at the same time
         if (!dungeons.empty())
         {
-            LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*dungeons.begin() & 0xFFFFF);
+            LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*dungeons.begin() & 0xFFFFF, player->GetTeam());
             if (entry && queue.GetQueueType(groupGuid) != entry->internalType)
             {
                 ChatHandler(player).PSendSysMessage("You cannot queue in different type queues at the same time.");
@@ -481,7 +495,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         bool isRaid = false;
         for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end() && joinData.result == LFG_JOIN_OK; ++it)
         {
-            LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*it & 0xFFFFF);
+            LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*it & 0xFFFFF, player->GetTeam());
             if(!entry)
             {
                 joinData.result = LFG_JOIN_DUNGEON_INVALID;
@@ -1359,7 +1373,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
     Group* group = player->GetGroup();
 
     if (group && group->isLFGGroup())
-        dungeon = GetLFGDungeon(GetDungeon(group->GetGUID()));
+        dungeon = GetLFGDungeon(GetDungeon(group->GetGUID()), player->GetTeam());
 
     if (!dungeon)
     {
@@ -1579,8 +1593,15 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
 
         SetState(guid, LFG_STATE_FINISHED_DUNGEON);
 
+        Player* player = ObjectAccessor::FindPlayer(guid);
+        if (!player || !player->IsInWorld())
+        {
+            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] not found in world", guid);
+            continue;
+        }
+
         // Give rewards only if its a rewardable dungeon
-        LFGDungeonData const* rDungeon = GetLFGDungeon(rDungeonId);
+        LFGDungeonData const* rDungeon = GetLFGDungeon(rDungeonId, player->GetTeam());
         if (!rDungeon)
         {
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] dungeon %u does not exist", guid, rDungeonId);
@@ -1593,14 +1614,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
             continue;
         }
 
-        Player* player = ObjectAccessor::FindPlayer(guid);
-        if (!player || !player->IsInWorld())
-        {
-            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: [" UI64FMTD "] not found in world", guid);
-            continue;
-        }
-
-        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId);
+        LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId, player->GetTeam());
         if(!dungeonDone)
         {
             sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: dungeonDone %i not found or CanBeRewarded %i", dungeonId, dungeonDone->dbc->CanBeRewarded());
@@ -1782,7 +1796,7 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
 
     for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end(); ++it)
     {
-        LFGDungeonData const* dungeon = GetLFGDungeon(*it);
+        LFGDungeonData const* dungeon = GetLFGDungeon(*it, player->GetTeam());
         if (!dungeon) // should never happen - We provide a list from sLFGDungeonStore
             continue;
 

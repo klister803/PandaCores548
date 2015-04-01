@@ -1894,14 +1894,14 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     ByteBuffer lfgBuff;
     if (m_groupType & GROUPTYPE_LFG)
     {
-        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(m_guid, true));
+        lfg::LFGDungeonData const* dungeon = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(m_guid, true), player->GetTeam());
         lfg::LFGDungeonData const* rDungeon = NULL;
         if (dungeon)
         {
             lfg::LfgDungeonSet const& dungeons = sLFGMgr->GetSelectedDungeons(guid);
             if (!dungeons.empty())
             {
-                 rDungeon = sLFGMgr->GetLFGDungeon(*dungeons.begin());
+                 rDungeon = sLFGMgr->GetLFGDungeon(*dungeons.begin(), player->GetTeam());
                  if (rDungeon && rDungeon->type != LFG_TYPE_RANDOM)
                      rDungeon = NULL;
             }
