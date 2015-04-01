@@ -232,8 +232,8 @@ void ScenarioProgress::Reward(bool bonus)
 void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
     WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
-    data.WriteBit(0);                                           // unk not used
-    data.WriteBit(IsCompleted(true));                           // bonus step completed
+    data.WriteBit(IsCompleted(true));                           // hasBonusStepComplete
+    data.WriteBit(HasBonusStep());                              // hasBonusStep
     uint32 bitpos = data.bitwpos();
     data.WriteBits(0, 19);                                      // criteria data
 
@@ -288,12 +288,12 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
         data.PutBits(bitpos, count, 19);
     }
 
-    data << uint32(0);                          // proving grounds max wave
-    data << uint32(0);                          // proving grounds diff id
+    data << uint32(0);                          // waveMax (only for ProvingGrounds)
+    data << uint32(0);                          // difficultyID (only for ProvingGrounds)
     data << uint32(GetScenarioId());
-    data << uint32(GetBonusStepCount());
-    data << uint32(0);                          // proving grounds curr wave
-    data << uint32(0);                          // proving grounds duration
+    data << uint32(IsCompleted(false));         // scenarioCompleted?
+    data << uint32(0);                          // waveCurrent (only for ProvingGrounds)
+    data << uint32(0);                          // timerDuration (only for ProvingGrounds)
     data << uint32(currentStep);
 
     if (player)
