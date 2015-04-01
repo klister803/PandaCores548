@@ -234,7 +234,6 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
         ObjectGuid plSignGuid = MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER);
 
         data.WriteGuidMask<2, 0, 3, 6, 4, 5, 7, 1>(plSignGuid);
-        result->NextRow();
     }
 
     data.WriteGuidMask<4>(petitionguid);
@@ -248,7 +247,6 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
 
         data.WriteGuidBytes<6, 3, 0, 4, 7, 5, 1, 2>(plSignGuid);
         data << uint32(0);
-        result->NextRow();
     }
 
     data.WriteGuidBytes<2>(playerGUID);
@@ -672,7 +670,6 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
                 //SendPetitionSignResult(player->GetGUID(), petitionguid, PETITION_SIGN_ALREADY_SIGNED);
                 return;
             }
-            result->NextRow();
         }
     }
 
