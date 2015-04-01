@@ -16,30 +16,8 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Common.h"
-#include "DBCEnums.h"
-#include "ObjectMgr.h"
-#include "GuildMgr.h"
-#include "World.h"
 #include "WorldPacket.h"
-#include "DatabaseEnv.h"
-#include "AchievementMgr.h"
-#include "CellImpl.h"
-#include "GameEventMgr.h"
-#include "GridNotifiersImpl.h"
-#include "Guild.h"
-#include "Language.h"
 #include "Player.h"
-#include "SpellMgr.h"
-#include "DisableMgr.h"
-#include "ScriptMgr.h"
-#include "MapManager.h"
-#include "Battleground.h"
-#include "BattlegroundAB.h"
-#include "Map.h"
-#include "InstanceScript.h"
-#include "Group.h"
-#include "Item.h"
 #include "BattlePetMgr.h"
 
 BattlePetMgr::BattlePetMgr(Player* owner) : m_player(owner), m_petBattleWild(NULL)
