@@ -194,7 +194,8 @@ public:
             if ((spell->Id == SPELL_BURNING_MAN_1 || SPELL_BURNING_MAN_2) && !burn)
             {
                 burn = true;
-                attacker->ToCreature()->AI()->DoAction(true);
+                if (attacker->ToCreature())
+                    attacker->ToCreature()->AI()->DoAction(true);
             }
         }
 
