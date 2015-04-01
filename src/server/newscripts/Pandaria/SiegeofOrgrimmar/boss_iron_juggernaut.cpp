@@ -35,6 +35,7 @@ enum eSpells
     SPELL_BORER_DRILL_B_VISUAL    = 144296,
     SPELL_BORER_DRILL_DMG         = 144218,
     //HM
+    SPELL_MORTAR_BLAST_HM         = 148871,
     SPELL_RICOCHET_TR_VISUAL      = 144375,
     SPELL_RICOCHET_DMG            = 144327,
     SPELL_RICOCHET_AT             = 144356,
@@ -89,7 +90,6 @@ enum Actions
 {
     ACTION_PHASE_ONE              = 1,
     ACTION_PHASE_TWO              = 2,
-    ACTION_SET_TARGET_LASER       = 3,
 };
 
 //71466
@@ -134,6 +134,12 @@ class boss_iron_juggernaut : public CreatureScript
                 events.ScheduleEvent(EVENT_SCATTER_LASER, 11500, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_FLAME_VENTS, 12000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_MORTAR_BLAST, 30000, 0, PHASE_ONE);
+            }
+
+            void EnterEvadeMode()
+            {
+                me->NearTeleportTo(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation());
+                ScriptedAI::EnterEvadeMode();
             }
 
             void DoAction(int32 const action)
