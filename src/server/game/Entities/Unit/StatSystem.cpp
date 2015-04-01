@@ -854,7 +854,7 @@ void Unit::UpdateManaRegen()
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
     // percent of base mana per 5 sec
-    float manaMod = (getClass() == CLASS_MAGE || getClass() == CLASS_WARLOCK) ? 5.0f: 2.0f;
+    float manaMod = (getClass() == CLASS_WARLOCK) ? 5.0f: (getClass() == CLASS_MAGE) ? 1.0f : 2.0f;
 
     // manaMod% of base mana every 5 seconds is base for all classes
     float baseRegen = CalculatePct(GetCreateMana(), manaMod) / 5;
