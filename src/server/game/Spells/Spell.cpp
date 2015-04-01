@@ -5668,12 +5668,12 @@ void Spell::SendChannelStart(uint32 duration)
             if (!m_UniqueTargetInfo.empty())
                 channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().targetGUID : m_UniqueGOTargetInfo.front().targetGUID;
 
-    if(Unit* target = m_targets.GetUnitTarget())
+    /*if(Unit* target = m_targets.GetUnitTarget())
     {
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart target %u", target->GetGUID());
         if(m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET)
             m_caster->SetFacingTo(m_targets.GetUnitTarget());
-    }
+    }*/
 
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart id %u channelTarget %i dynObjGuid %i channelGuid %i ObjectTargetGUID %i", m_spellInfo->Id, channelTarget, dynObjGuid, channelGuid, m_targets.GetObjectTargetGUID());
 
