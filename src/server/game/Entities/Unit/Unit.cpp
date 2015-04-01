@@ -8619,27 +8619,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!procSpell)
                         return false;
 
-                    if (Player * player = this->ToPlayer())
+                    if (Player * player = ToPlayer())
                     {
                         int32 AP = player->GetTotalAttackPowerValue(BASE_ATTACK);
                         int32 spellPower = player->GetSpellPowerDamage();
                         basepoints0 = (AP > spellPower) ? int32(0.2f * AP) : int32(0.3f * spellPower);
-
-                        switch(procSpell->Id)
-                        {
-                            case 403:   // Lightning Bolt
-                            case 1120:  // Drain Soul
-                            case 51505: // Lava Burst
-                                basepoints0 *= 2;
-                                break;
-                            case 1752:  // Sinister Strike
-                                basepoints0 /= 2;
-                                break;
-                            default:
-                                break;
-                        }
                         triggered_spell_id = 120687;
-                        basepoints0 *= 5;
                         originalCaster = player->GetGUID();
                     }
                     break;
