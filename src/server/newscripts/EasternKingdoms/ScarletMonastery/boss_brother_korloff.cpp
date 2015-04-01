@@ -103,7 +103,7 @@ public:
 
         bool AllowAchieve()
         {
-            return dummieFire >=6;
+            return dummieFire >= 6;
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -195,7 +195,8 @@ public:
             {
                 burn = true;
                 if (attacker->ToCreature())
-                    attacker->ToCreature()->AI()->DoAction(true);
+                    if (attacker->ToCreature()->GetEntry() == NPC_BROTHER_KORLOFF)
+                        attacker->ToCreature()->AI()->DoAction(true);
             }
         }
 

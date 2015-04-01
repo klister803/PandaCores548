@@ -37,6 +37,7 @@ enum eCreatures
     NPC_HEAD                = 23775,
     NPC_PUMPKIN             = 23694,
     NPC_THALNOS             = 59789,
+    NPC_BROTHER_KORLOFF     = 59223,
     NPC_WHITEMANE           = 3977,
     
     //Summons Thalnos
