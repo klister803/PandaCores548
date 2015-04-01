@@ -381,7 +381,12 @@ void WorldSession::HandleGuildBankerActivate(WorldPacket& recvData)
     if (GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
     {
         if (Guild* guild = _GetPlayerGuild(this))
-            guild->SendBankList(this, 0, true, true, fullUpdate);
+        {
+            if (fullUpdate)
+                guild->SendBankList(this, 0, true, true);
+            else
+                guild->SendEmptyBankList(this, 0);
+        }
         else
             Guild::SendCommandResult(this, GUILD_UNK1, ERR_GUILD_PLAYER_NOT_IN_GUILD);
     }
@@ -397,14 +402,16 @@ void WorldSession::HandleGuildBankQueryTab(WorldPacket & recvData)
 
     recvData >> tabId;
     recvData.ReadGuidMask<6>(GoGuid);
-    bool fullUpdate = recvData.ReadBit();  // fullUpdate
+    bool fullUpdate = recvData.ReadBit();
     recvData.ReadGuidMask<5, 2, 1, 0, 4, 7, 3>(GoGuid);
 
     recvData.ReadGuidBytes<4, 6, 7, 3, 5, 0, 1, 2>(GoGuid);
 
     if (GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+    {
         if (Guild* guild = _GetPlayerGuild(this))
-            guild->SendBankList(this, tabId, true, false, fullUpdate);
+            guild->HandleQueryTab(this, tabId, fullUpdate);
+    }
 }
 
 void WorldSession::HandleGuildBankDepositMoney(WorldPacket & recvData)
@@ -492,6 +499,9 @@ void WorldSession::HandleGuildBankSwapItems(WorldPacket & recvData)
         recvData >> playerSlotId;
     if (hasTabId)
         recvData >> tabId;
+
+    // clear previous transaction
+    //guild->ClearAllLastOpSlots();
 
     if (bankToBank)
         guild->SwapItems(GetPlayer(), tabId, slotId, destTabId, destSlotId, splitedAmount);
