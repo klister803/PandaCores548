@@ -132,7 +132,7 @@ public:
 
         void DamageTaken(Unit* /*attacker*/, uint32& damage)
         {
-            if (damage >= me->GetHealth() && !Resurrect)
+            if ((damage >= me->GetHealth() && !Resurrect) || ResurrectCheck)
                 damage = 0;
 
             if (me->HealthBelowPct(50) && !Resurrect)
@@ -156,6 +156,7 @@ public:
                 {
                     DoCast(SPELL_SCARLET_RESURRECTION);
                     Talk(SAY_WH_RESSURECT);
+                    ResurrectCheck = false;
                     events.ScheduleEvent(EVENT_RESURRECT, 1000);
                 }
         }
@@ -221,7 +222,6 @@ public:
                         break;
                     case EVENT_RESURRECT:
                         me->SetReactState(REACT_AGGRESSIVE);
-                        ResurrectCheck = false;
                         break;
                     case EVENT_MASS_RESURRECTION:
                         if (!MassRes)

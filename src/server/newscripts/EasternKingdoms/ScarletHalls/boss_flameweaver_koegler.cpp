@@ -121,7 +121,7 @@ public:
             if (!UpdateVictim() && me->isInCombat())
                 return;
 
-            if (me->GetDistance(me->GetHomePosition()) > 20.0f)
+            if (me->GetDistance(me->GetHomePosition()) > 30.0f)
             {
                 EnterEvadeMode();
                 return;
@@ -129,7 +129,7 @@ public:
 
             events.Update(diff);
             
-            if (Orient)
+            /*if (Orient)
             {
                 if (Check_Timer <= diff)
                 {
@@ -139,7 +139,7 @@ public:
                     Check_Timer = 500;
                 }
                 else Check_Timer -= diff;
-            }
+            }*/
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
