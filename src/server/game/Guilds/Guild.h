@@ -689,12 +689,6 @@ private:
         inline Item* GetItem(uint8 slotId) const { return slotId < GUILD_BANK_MAX_SLOTS ?  m_items[slotId] : NULL; }
         bool SetItem(SQLTransaction& trans, uint8 slotId, Item* item);
 
-        void ClearOperations() { _lastOperations.clear(); }
-        void ClearLastOperation() { _lastOperations.pop_back(); }
-        void AddOperation(SlotIds& ids) { _lastOperations.push_back(ids); }
-        SlotIds& GetLastOperation() { return _lastOperations.back(); }
-        std::list<SlotIds> GetOperations() { return _lastOperations; }
-
     private:
         uint32 m_guildId;
         uint8 m_tabId;
@@ -703,8 +697,6 @@ private:
         std::string m_name;
         std::string m_icon;
         std::string m_text;
-
-        std::list<SlotIds> _lastOperations;
     };
 
     // Movement data
@@ -847,15 +839,11 @@ public:
     void HandleMemberLogout(WorldSession* session);
     void HandleDisband(WorldSession* session);
     void HandleGuildPartyRequest(WorldSession* session);
-    void HandleQueryTab(WorldSession* session, uint8 tabId, bool fullUpdate);
-    void HandleTabOperations(uint8 tabId);
 
     // Send info to client
     void SendEventLog(WorldSession* session) const;
     void SendBankLog(WorldSession* session, uint8 tabId) const;
-    void SendEmptyBankList(WorldSession* session, uint8 tabId) const;
-    void SendBankContentUpdate(WorldSession* session, uint8 tabId, SlotIds slots, bool fullUpdate) const;
-    void SendBankList(WorldSession* session, uint8 tabId, bool withContent, bool withTabInfo) const;
+    void SendBankList(WorldSession* session, uint8 tabId, bool withContent, bool withTabInfo, bool fullUpdate) const;
     void SendBankTabText(WorldSession* session, uint8 tabId) const;
     void SendPermissions(WorldSession* session) const;
     void SendMoneyInfo(WorldSession* session) const;
@@ -1043,7 +1031,8 @@ private:
     void _MoveItems(MoveItemData* pSrc, MoveItemData* pDest, uint32 splitedAmount);
     bool _DoItemsMove(MoveItemData* pSrc, MoveItemData* pDest, bool sendError, uint32 splitedAmount = 0);
 
-    void ProcessBankContentUpdate(MoveItemData* pSrc, MoveItemData* pDest);
+    void _SendBankContentUpdate(MoveItemData* pSrc, MoveItemData* pDest) const;
+    void _SendBankContentUpdate(uint8 tabId, SlotIds slots) const;
 
     void SendGuildRanksUpdate(uint64 setterGuid, uint64 targetGuid, uint32 rank);
 
