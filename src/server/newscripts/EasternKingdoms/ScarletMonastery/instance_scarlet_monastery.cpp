@@ -175,6 +175,12 @@ public:
                 return encounter[0];
             return 0;
         }
+
+        void Update(uint32 diff) 
+        {
+            // Challenge
+            InstanceScript::Update(diff);
+        }
     };
 };
 
