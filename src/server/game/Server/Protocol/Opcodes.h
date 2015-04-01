@@ -1314,7 +1314,7 @@ enum Opcodes
     SMSG_RWHOIS                                       = 0xDCA,  // 5.0.5 16048
     SMSG_SCENARIO_CRITERIA_UPDATE                     = 0x04A4, // 5.4.1 17538
     SMSG_SCENARIO_POI                                 = 0x0D2C, // 5.4.1 17538
-    SMSG_SCENARIO_PROGRESS_UPDATE                     = 0x0114, // 5.4.1 17538
+    SMSG_SCENARIO_STATE                               = 0x0114, // 5.4.1 17538
     SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
     SMSG_SEND_MAIL_RESULT                             = 0x0C8D, // 5.4.1 17538
     SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538
@@ -1324,7 +1324,6 @@ enum Opcodes
     SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538
     SMSG_SERVER_PERF                                  = 0xE8D,  // 5.0.5 16048
     SMSG_PLAY_SCENE_DATA                              = 0x018E, // 5.4.1 17538
-    SMSG_SCENARIO_STATE                               = 0x0114, // 5.4.1 17538
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
     SMSG_SET_DF_FAST_LAUNCH_RESULT                    = 0x043E, // 5.4.1 17538

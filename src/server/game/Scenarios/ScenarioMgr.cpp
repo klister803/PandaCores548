@@ -231,7 +231,7 @@ void ScenarioProgress::Reward(bool bonus)
 
 void ScenarioProgress::SendStepUpdate(Player* player, bool full)
 {
-    WorldPacket data(SMSG_SCENARIO_PROGRESS_UPDATE, 3 + 7 * 4);
+    WorldPacket data(SMSG_SCENARIO_STATE, 3 + 7 * 4);
     data.WriteBit(IsCompleted(true));                           // hasBonusStepComplete
     data.WriteBit(HasBonusStep());                              // hasBonusStep
     uint32 bitpos = data.bitwpos();
@@ -497,8 +497,8 @@ void WorldSession::HandleScenarioPOIQuery(WorldPacket& recvData)
         {
             buff << uint32(itr->Id);                // POI index
             buff << uint32(itr->MapId);             // mapid
-            buff << uint32(itr->Unk24);
-            buff << uint32(itr->Unk12);
+            buff << uint32(itr->WorldEffectID);
+            buff << uint32(itr->Floor);
             buff << uint32(itr->Unk16);
 
             data.WriteBits(itr->points.size(), 21); // POI points count
@@ -509,7 +509,7 @@ void WorldSession::HandleScenarioPOIQuery(WorldPacket& recvData)
             }
 
             buff << uint32(itr->WorldMapAreaId);
-            buff << uint32(itr->Unk28);
+            buff << uint32(itr->Unk28);             // PlayerConditionID?
             buff << uint32(itr->Unk20);
         }
 

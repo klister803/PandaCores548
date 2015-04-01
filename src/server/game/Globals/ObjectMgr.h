@@ -564,16 +564,16 @@ struct ScenarioPOI
     uint32 Id;
     uint32 MapId;
     uint32 WorldMapAreaId;
-    uint32 Unk12;
+    uint32 Floor;
     uint32 Unk16;
     uint32 Unk20;
-    uint32 Unk24;
+    uint32 WorldEffectID;
     uint32 Unk28;
     std::vector<ScenarioPOIPoint> points;
 
-    ScenarioPOI() : Id(0), MapId(0), WorldMapAreaId(0), Unk12(0), Unk16(0), Unk20(0), Unk24(0), Unk28(0) {}
-    ScenarioPOI(uint32 _Id, uint32 _MapId, uint32 _WorldMapAreaId, uint32 _Unk12, uint32 _Unk16, uint32 _Unk20, uint32 _Unk24, uint32 _Unk28) :
-        Id(_Id), MapId(_MapId), WorldMapAreaId(_WorldMapAreaId), Unk12(_Unk12), Unk16(_Unk16), Unk20(_Unk20), Unk24(_Unk24), Unk28(_Unk28) { }
+    ScenarioPOI() : Id(0), MapId(0), WorldMapAreaId(0), Floor(0), Unk16(0), Unk20(0), WorldEffectID(0), Unk28(0) {}
+    ScenarioPOI(uint32 _Id, uint32 _MapId, uint32 _WorldMapAreaId, uint32 _Floor, uint32 _Unk16, uint32 _Unk20, uint32 _WorldEffectID, uint32 _Unk28) :
+        Id(_Id), MapId(_MapId), WorldMapAreaId(_WorldMapAreaId), Floor(_Floor), Unk16(_Unk16), Unk20(_Unk20), WorldEffectID(_WorldEffectID), Unk28(_Unk28) { }
 };
 
 typedef std::vector<ScenarioPOI> ScenarioPOIVector;

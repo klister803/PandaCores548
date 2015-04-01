@@ -1180,7 +1180,7 @@ void InitOpcodes()
     //DEFINE_OPCODE_HANDLER(SMSG, SMSG_RWHOIS,                                  STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SCENARIO_CRITERIA_UPDATE,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SCENARIO_POI,                            STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
-    DEFINE_OPCODE_HANDLER(SMSG, SMSG_SCENARIO_PROGRESS_UPDATE,                STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_SCENARIO_STATE,                          STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SELL_ITEM,                               STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SEND_MAIL_RESULT,                        STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_SEND_UNLEARN_SPELLS,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               );
