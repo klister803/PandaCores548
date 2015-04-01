@@ -848,6 +848,7 @@ public:
     void HandleDisband(WorldSession* session);
     void HandleGuildPartyRequest(WorldSession* session);
     void HandleQueryTab(WorldSession* session, uint8 tabId, bool fullUpdate);
+    void HandleTabOperations(uint8 tabId);
 
     // Send info to client
     void SendEventLog(WorldSession* session) const;

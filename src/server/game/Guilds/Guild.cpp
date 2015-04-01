@@ -1680,6 +1680,12 @@ void Guild::HandleQueryTab(WorldSession* session, uint8 tabId, bool fullUpdate)
     }
 }
 
+void Guild::HandleTabOperations(uint8 tabId)
+{
+    if (BankTab* tab = GetBankTab(tabId))
+        tab->ClearOperations();
+}
+
 void Guild::HandleSpellEffectBuyBankTab(WorldSession* session, uint8 tabId)
 {
     if (tabId != GetPurchasedTabsSize())

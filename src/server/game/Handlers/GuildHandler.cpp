@@ -500,8 +500,9 @@ void WorldSession::HandleGuildBankSwapItems(WorldPacket & recvData)
     if (hasTabId)
         recvData >> tabId;
 
-    // clear previous transaction
-    //guild->ClearAllLastOpSlots();
+    // clear previous operation
+    guild->HandleTabOperations(tabId);
+    guild->HandleTabOperations(destTabId);
 
     if (bankToBank)
         guild->SwapItems(GetPlayer(), tabId, slotId, destTabId, destSlotId, splitedAmount);
