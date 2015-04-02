@@ -569,14 +569,14 @@ struct BfTBGameObjectBuilding
                 if(m_Build){
                     m_Build->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DAMAGED);
                     m_Build->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
-                    m_Build->SetDisplayId(m_Build->GetGOInfo()->building.destroyedDisplayId);
+                    m_Build->SetDisplayId(m_Build->GetGOInfo()->destructibleBuilding.destroyedDisplayId);
                 }
                 break;
             case BATTLEFIELD_TB_OBJECTSTATE_ALLIANCE_DAMAGE:
             case BATTLEFIELD_TB_OBJECTSTATE_HORDE_DAMAGE:
                 if(m_Build){
                     m_Build->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DAMAGED);
-                    m_Build->SetDisplayId(m_Build->GetGOInfo()->building.damagedDisplayId);
+                    m_Build->SetDisplayId(m_Build->GetGOInfo()->destructibleBuilding.damagedDisplayId);
                 }
                 break;
         }

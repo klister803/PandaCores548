@@ -10356,7 +10356,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                 loot->clear();
 
                 Group* group = GetGroup();
-                bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.groupLootRules);
+                bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules);
 
                 // check current RR player and get next if necessary
                 if (groupRules)
@@ -10376,7 +10376,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             if (loot_type == LOOT_FISHING)
                 go->getFishLoot(loot, this);
 
-            if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.groupLootRules)
+            if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules)
             {
                 if (Group* group = GetGroup())
                 {
@@ -10641,15 +10641,41 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         GameObject *go = GetMap()->GetGameObject(guid);
         if (go && go->GetGoType() == GAMEOBJECT_TYPE_CHEST)
         {
-            uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
-            uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
+            uint32 go_min = go->GetGOInfo()->chest.minRestock;
+            uint32 go_max = go->GetGOInfo()->chest.maxRestock;
             uint32 chestRestockTime = go->GetGOInfo()->chest.chestRestockTime;
             uint32 consumable = go->GetGOInfo()->chest.consumable;
-            uint32 data26 = go->GetGOInfo()->chest.data26;
+            uint32 spell = go->GetGOInfo()->chest.spell;
             uint32 questItems = go->GetGOInfo()->questItems[0];
             uint32 lootid =  go->GetGOInfo()->GetLootId();
 
-            if(go_min == 1 && go_max ==1 && consumable == 1 && chestRestockTime == 0 && data26 == 0 && questItems == 0 && lootid)
+            if(go->GetGOInfo()->chest.chestPersonalLoot)
+            {
+                if(TreasureData const* pData = sObjectMgr->GetTreasureData(go->GetGOInfo()->chest.chestPersonalLoot))
+                {
+                    if(pData->type == GO_TYPE_RESPAWN)
+                    {
+                        playerGOrespawn goRespawn;
+                        goRespawn.entry = go->GetGOInfo()->entry;
+                        goRespawn.respawnTime = time(NULL) + WEEK;
+                        goRespawn.state = true;
+                        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
+                    }
+                    else if(pData->type == GO_TYPE_DONTSPAWN)
+                    {
+                        playerGOrespawn goRespawn;
+                        goRespawn.entry = go->GetGOInfo()->entry;
+                        goRespawn.respawnTime = 0;
+                        goRespawn.state = true;
+                        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
+                    }
+                }
+            }
+
+            if (go->GetGOInfo()->chest.spell)
+                CastSpell(this, go->GetGOInfo()->chest.spell, false);
+
+            if(go_min == 1 && go_max ==1 && consumable == 1 && chestRestockTime == 0 && spell == 0 && questItems == 0 && lootid)
             {
                 AutoStoreLoot(lootid, LootTemplates_Gameobject);
                 loot->clear();
@@ -18755,6 +18781,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
 
     _LoadGroup(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGROUP));
+    _LoadGOrespawn(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_GORESPAWN));
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
 
@@ -20455,6 +20482,51 @@ void Player::_LoadGroup(PreparedQueryResult result)
     }
 }
 
+void Player::_LoadGOrespawn(PreparedQueryResult result)
+{
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT entry, respawnTime FROM character_gameobject WHERE guid = %u", GetGUIDLow());
+    if (!result)
+        return;
+    do
+    {
+        Field* fields = result->Fetch();
+        playerGOrespawn goRespawn;
+        goRespawn.entry = fields[0].GetInt32();
+        goRespawn.respawnTime = fields[1].GetInt32();
+        goRespawn.state = false;
+        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
+    }
+    while (result->NextRow());
+}
+
+void Player::_SaveOrespawn(SQLTransaction& trans)
+{
+    PreparedStatement* stmt = NULL;
+    for (PlayerGOrespawnMap::iterator itr = m_PlayerGOrespawn.begin(); itr != m_PlayerGOrespawn.end(); ++itr)
+    {
+        if(!itr->second.state)
+            continue;
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_GORESPAWN);
+        stmt->setUInt64(0, GetGUIDLow());
+        stmt->setUInt32(1, itr->second.entry);
+        stmt->setUInt32(2, itr->second.respawnTime);
+        itr->second.state = false;
+        trans->Append(stmt);
+    }
+}
+
+void Player::ResetGameObjectRespawn()
+{
+    for (PlayerGOrespawnMap::iterator itr = m_PlayerGOrespawn.begin(); itr != m_PlayerGOrespawn.end();)
+    {
+        if(itr->second.respawnTime)
+            m_PlayerGOrespawn.erase(itr++);
+        else
+            ++itr;
+    }
+}
+
 void Player::_LoadBoundInstances(PreparedQueryResult result)
 {
     for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
@@ -21286,6 +21358,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveBattlePets(trans);
     _SaveBattlePetSlots(trans);
     _SaveHonor();
+    _SaveOrespawn(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -27997,6 +28070,15 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 {
     GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
+
+    Map* map = GetMap();
+    // Update scenario/challenge criterias
+    if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
+        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
+            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
+
     // Update only individual achievement criteria here, otherwise we may get multiple updates
     // from a single boss kill
     if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
@@ -28005,15 +28087,6 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
     // Quest "A Test of Valor"
     if (GetAchievementMgr().HasAchieved(8030) || GetAchievementMgr().HasAchieved(8031))
         KilledMonsterCredit(69145, 0);
-
-    Map* map = GetMap();
-    // Update scenario/challenge criterias
-    if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
-        if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instanceId))
-            progress->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
-
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 }
 
 void Player::CompletedAchievement(AchievementEntry const* entry)

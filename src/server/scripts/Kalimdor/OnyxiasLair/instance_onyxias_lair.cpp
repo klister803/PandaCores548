@@ -84,7 +84,7 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {
-            if ((go->GetGOInfo()->displayId == 4392 || go->GetGOInfo()->displayId == 4472) && go->GetGOInfo()->trap.spellId == 17731)
+            if ((go->GetGOInfo()->displayId == 4392 || go->GetGOInfo()->displayId == 4472) && go->GetGOInfo()->trap.spell == 17731)
             {
                 FloorEruptionGUID[0].insert(std::make_pair(go->GetGUID(), 0));
                 return;
@@ -106,7 +106,7 @@ public:
 
         void OnGameObjectRemove(GameObject* go)
         {
-            if ((go->GetGOInfo()->displayId == 4392 || go->GetGOInfo()->displayId == 4472) && go->GetGOInfo()->trap.spellId == 17731)
+            if ((go->GetGOInfo()->displayId == 4392 || go->GetGOInfo()->displayId == 4472) && go->GetGOInfo()->trap.spell == 17731)
             {
                 FloorEruptionGUID[0].erase(go->GetGUID());
                 return;
@@ -120,7 +120,7 @@ public:
                 //THIS GOB IS A TRAP - What shall i do? =(
                 //Cast it spell? Copyed Heigan method
                 pFloorEruption->SendCustomAnim(pFloorEruption->GetGoAnimProgress());
-                pFloorEruption->CastSpell(NULL, Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY ? 17731 : 69294); //pFloorEruption->GetGOInfo()->trap.spellId
+                pFloorEruption->CastSpell(NULL, Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY ? 17731 : 69294); //pFloorEruption->GetGOInfo()->trap.spell
 
                 //Get all immediatly nearby floors
                 std::list<GameObject*> nearFloorList;
@@ -130,7 +130,7 @@ public:
                 //remove all that are not present on FloorEruptionGUID[1] and update treeLen on each GUID
                 for (std::list<GameObject*>::const_iterator itr = nearFloorList.begin(); itr != nearFloorList.end(); ++itr)
                 {
-                    if (((*itr)->GetGOInfo()->displayId == 4392 || (*itr)->GetGOInfo()->displayId == 4472) && (*itr)->GetGOInfo()->trap.spellId == 17731)
+                    if (((*itr)->GetGOInfo()->displayId == 4392 || (*itr)->GetGOInfo()->displayId == 4472) && (*itr)->GetGOInfo()->trap.spell == 17731)
                     {
                         uint64 nearFloorGUID = (*itr)->GetGUID();
                         if (FloorEruptionGUID[1].find(nearFloorGUID) != FloorEruptionGUID[1].end() && (*FloorEruptionGUID[1].find(nearFloorGUID)).second == 0)

@@ -24,13 +24,14 @@
 
 ScenarioProgress::ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData)
     : instanceId(_instanceId), dungeonData(_dungeonData),
-    m_achievementMgr(this), currentStep(0)
+    m_achievementMgr(this), currentStep(0), currentTree(0)
 {
     type = ScenarioMgr::GetScenarioType(GetScenarioId());
     ScenarioSteps const* _steps = sScenarioMgr->GetScenarioSteps(GetScenarioId());
     ASSERT(_steps);
 
     steps = *_steps;
+    currentTree = GetScenarioCriteriaByStep(currentStep);
 }
 
 void ScenarioProgress::LoadFromDB()
@@ -107,22 +108,19 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     uint8 oldStep = currentStep;
     for (ScenarioSteps::const_iterator itr = steps.begin(); itr != steps.end(); ++itr)
     {
-        // TODO: fix achievement mgr to consider parent criterias?
-        std::list<uint32> const* treeList = GetCriteriaTreeList(itr->second->m_criteriaTreeId);
-        if (!treeList)
+        //Not check if ctep already complete
+        if(currentStep > itr->second->m_orderIndex)
             continue;
 
-        for (std::list<uint32>::const_iterator itr2 = treeList->begin(); itr2 != treeList->end(); ++itr2)
-        {
-            CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr2);
-            if (!criteriaTree)
-                continue;
+        CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(itr->second->m_criteriaTreeId);
+        if (!criteriaTree)
+            continue;
 
-            if (GetAchievementMgr().IsCompletedCriteria(criteriaTree, NULL))
-            {
-                currentStep = itr->second->m_orderIndex + 1;
-                break;
-            }
+        if (GetAchievementMgr().IsCompletedScenarioTree(criteriaTree))
+        {
+            currentStep = itr->second->m_orderIndex + 1;
+            currentTree = GetScenarioCriteriaByStep(currentStep);;
+            continue;
         }
     }
 
@@ -139,11 +137,23 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
             Reward(true);
     }
 
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateCurrentStep currentStep %u oldStep %u loading %u", currentStep, oldStep, loading);
     return currentStep;
+}
+
+uint32 ScenarioProgress::GetScenarioCriteriaByStep(uint8 step)
+{
+    for (ScenarioSteps::const_iterator itr = steps.begin(); itr != steps.end(); ++itr)
+        if(step == itr->second->m_orderIndex)
+            return itr->second->m_criteriaTreeId;
+
+    return 0;
 }
 
 void ScenarioProgress::Reward(bool bonus)
 {
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "ScenarioProgress::Reward bonus %u rewarded %u bonusRewarded %u", bonus, rewarded, bonusRewarded);
+
     if (bonus && bonusRewarded)
         return;
 
@@ -339,10 +349,24 @@ void ScenarioProgress::BroadCastPacket(WorldPacket& data)
     map->SendToPlayers(&data);
 }
 
-bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId) const
+bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*=0*/) const
 {
-    // ......
-    return true;
+    std::list<uint32> const* cTreeList = GetCriteriaTreeList(recursTree ? recursTree : currentTree);
+    for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+    {
+        if(CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr))
+        {
+            if(criteriaTree->criteria == 0)
+            {
+                if(CanUpdateCriteria(criteriaId, *itr))
+                    return true;
+            }
+            else if(criteriaTree->ID == criteriaId)
+                return true;
+        }
+    }
+
+    return false;
 }
 
 ScenarioMgr::ScenarioMgr() : updateDiff(0)

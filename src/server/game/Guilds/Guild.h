@@ -929,6 +929,8 @@ public:
     void SendGuildMembersForRecipeResponse(WorldSession* session, uint32 skillId, uint32 spellId);
     void SendGuildMemberRecipesResponse(WorldSession* session, ObjectGuid playerGuid, uint32 skillId);
 
+    bool CanUpdateCriteria(uint32 criteriaTreeId, uint32 recursTree = 0) const { return true; }
+
 protected:
     uint32 m_id;
     std::string m_name;

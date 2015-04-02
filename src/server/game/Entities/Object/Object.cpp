@@ -366,14 +366,14 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             GameObjectTemplate const* goInfo = go->GetGOInfo();
             if (goInfo->type == GAMEOBJECT_TYPE_TRANSPORT)
             {
-                if (goInfo->transport.startFrame)
-                    transportFrames.push_back(goInfo->transport.startFrame);
-                if (goInfo->transport.nextFrame1)
-                    transportFrames.push_back(goInfo->transport.nextFrame1);
-                //if (goInfo->transport.nextFrame2)
-                //    transportFrames.push_back(goInfo->transport.nextFrame2);
-                //if (goInfo->transport.nextFrame3)
-                //    transportFrames.push_back(goInfo->transport.nextFrame3);
+                if (goInfo->transport.Timeto2ndfloor)
+                    transportFrames.push_back(goInfo->transport.Timeto2ndfloor);
+                if (goInfo->transport.Timeto3rdfloor)
+                    transportFrames.push_back(goInfo->transport.Timeto3rdfloor);
+                //if (goInfo->transport.Timeto4thfloor)
+                //    transportFrames.push_back(goInfo->transport.Timeto4thfloor);
+                //if (goInfo->transport.Timeto5thfloor)
+                //    transportFrames.push_back(goInfo->transport.Timeto5thfloor);
             }
         }
     }
@@ -758,7 +758,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 
             updateMask->SetBit(GAMEOBJECT_BYTES_1);
 
-            if (ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_CHEST && ToGameObject()->GetGOInfo()->chest.groupLootRules &&
+            if (ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_CHEST && ToGameObject()->GetGOInfo()->chest.usegrouplootrules &&
                 ToGameObject()->HasLootRecipient())
                 updateMask->SetBit(GAMEOBJECT_FLAGS);
         }
@@ -991,7 +991,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 {
                     uint32 flags = m_uint32Values[index];
                     if (ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_CHEST)
-                        if (ToGameObject()->GetGOInfo()->chest.groupLootRules && !ToGameObject()->IsLootAllowedFor(target))
+                        if (ToGameObject()->GetGOInfo()->chest.usegrouplootrules && !ToGameObject()->IsLootAllowedFor(target))
                             flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
 
                     *data << flags;
@@ -2304,6 +2304,13 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
         if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
             (!group || !obj->IsGroupInPersonnalVisibilityList(group->GetGUID())))
+            return false;
+    }
+
+    if (IS_PLAYER_GUID(GetGUID()) && IS_GAMEOBJECT_GUID(obj->GetGUID()))
+    {
+        Player const* thisPlayer = ToPlayer();
+        if (thisPlayer && thisPlayer->IsPlayerGOrespawned(obj->GetEntry()))
             return false;
     }
 

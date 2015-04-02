@@ -880,6 +880,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 41,
     PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 42,
     PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 43,
+    PLAYER_LOGIN_QUERY_LOAD_GORESPAWN               = 44,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -986,6 +987,16 @@ struct auraEffectData
     uint32 _amount;
     uint32 _baseamount;
 };
+
+struct playerGOrespawn
+{
+    uint64 goGuid;
+    uint32 entry;
+    uint32 respawnTime;
+    bool state;
+};
+
+typedef UNORDERED_MAP<uint64, playerGOrespawn> PlayerGOrespawnMap;
 
 class PlayerTaxi
 {
@@ -2552,6 +2563,8 @@ class Player : public Unit, public GridObject<Player>
 
         void ModifySkillBonus(uint32 skillid, int32 val, bool talent);
 
+        void ResetGameObjectRespawn();
+
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
         /*********************************************************/
@@ -2884,6 +2897,12 @@ class Player : public Unit, public GridObject<Player>
         template<class T>
         void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
+        uint32 GetPlayerGOrespawnCount() const { return m_PlayerGOrespawn.size(); }
+        bool IsPlayerGOrespawned(uint32 entry) const
+        {
+            return m_PlayerGOrespawn.find(entry) != m_PlayerGOrespawn.end();
+        }
+
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }
@@ -3021,6 +3040,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit* unit = NULL, bool ignoreGroup = false);
         void CompletedAchievement(AchievementEntry const* entry);
         uint32 GetAchievementPoints() const;
+        bool CanUpdateCriteria(uint32 criteriaTreeId, uint32 recursTree = 0) const { return true; }
 
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
@@ -3222,6 +3242,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadBattlePets(PreparedQueryResult result);
         void _LoadBattlePetSlots(PreparedQueryResult result);
         void _LoadHonor();
+        void _LoadGOrespawn(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -3251,6 +3272,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveBattlePets(SQLTransaction& trans);
         void _SaveBattlePetSlots(SQLTransaction& trans);
         void _SaveHonor();
+        void _SaveOrespawn(SQLTransaction& trans);
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
@@ -3542,6 +3564,8 @@ class Player : public Unit, public GridObject<Player>
         bool m_Store;
 
         BracketList m_BracketsList;
+
+        PlayerGOrespawnMap m_PlayerGOrespawn;
 
         bool m_watching_movie;
         bool plrUpdate;

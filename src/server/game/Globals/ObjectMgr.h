@@ -399,6 +399,7 @@ typedef UNORDERED_MAP<uint32, PageTextLocale> PageTextLocaleContainer;
 typedef UNORDERED_MAP<int32, TrinityStringLocale> TrinityStringLocaleContainer;
 typedef UNORDERED_MAP<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef UNORDERED_MAP<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
+typedef UNORDERED_MAP<uint32, TreasureData> TreasureDataContainer;
 
 typedef std::multiset<uint32> QuestObject;
 typedef std::map<uint32, QuestObject> QuestStarter;
@@ -941,6 +942,7 @@ class ObjectMgr
         void LoadMailLevelRewards();
         void LoadVehicleTemplateAccessories();
         void LoadVehicleAccessories();
+        void LoadTreasureData();
 
         void LoadGossipText();
 
@@ -1078,6 +1080,13 @@ class ObjectMgr
         {
             CreatureAIInstanceGoContainer::const_iterator itr = _creatureAIInstanceGo.find(entry);
             return itr != _creatureAIInstanceGo.end() ? &(itr->second) : NULL;
+        }
+
+        TreasureData const* GetTreasureData(uint32 id) const
+        {
+            TreasureDataContainer::const_iterator itr = _TreasureDataStore.find(id);
+            if (itr == _TreasureDataStore.end()) return NULL;
+            return &itr->second;
         }
 
         CreatureData& NewOrExistCreatureData(uint32 guid) { return _creatureDataStore[guid]; }
@@ -1507,6 +1516,7 @@ class ObjectMgr
         //GameObjectDataContainer _gameObjectDataStore;
         GameObjectLocaleContainer _gameObjectLocaleStore;
         GameObjectTemplateContainer _gameObjectTemplateStore;
+        TreasureDataContainer _TreasureDataStore;
 
         ItemTemplateContainer _itemTemplateStore;
         ItemLocaleContainer _itemLocaleStore;

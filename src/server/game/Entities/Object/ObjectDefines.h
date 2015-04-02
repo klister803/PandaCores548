@@ -46,7 +46,7 @@ enum HighGuid
     HIGHGUID_CORPSE         = 0xF101,                      // blizz F100
     HIGHGUID_AREATRIGGER    = 0xF1B,                       // blizz F100
     HIGHGUID_TYPE_BATTLEGROUND = 0x1F1,                    // new 4.x
-    HIGHGUID_MO_TRANSPORT   = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
+    HIGHGUID_MO_TRANSPORT   = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
     HIGHGUID_GROUP          = 0x1F5,
     HIGHGUID_GUILD          = 0x1FF,                       // new 4.x
     HIGHGUID_INSTANCE_SAVE  = 0x1F45,                      // new 5.x
@@ -76,7 +76,7 @@ enum HighGuid
 #define IS_AREATRIGGER_GUID(GUID)    (GUID_HIPART(Guid) == HIGHGUID_AREATRIGGER)
 
 // l - OBJECT_FIELD_GUID
-// e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MO_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets
+// e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets
 // h - OBJECT_FIELD_GUID + 1
 inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
 {

@@ -684,9 +684,9 @@ void Map::ScriptsProcess()
                     if (GameObject* pGO = target->ToGameObject())
                     {
                         //fix freeze
-                        if(pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER && pGO->GetGOInfo()->goober.spellId)
+                        if(pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER && pGO->GetGOInfo()->goober.spell)
                         {
-                            if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pGO->GetGOInfo()->goober.spellId))
+                            if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pGO->GetGOInfo()->goober.spell))
                             {
                                 for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
                                 {

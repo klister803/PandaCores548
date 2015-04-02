@@ -59,7 +59,7 @@ void MapManager::LoadTransports()
             continue;
         }
 
-        if (goinfo->type != GAMEOBJECT_TYPE_MO_TRANSPORT)
+        if (goinfo->type != GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
         {
             sLog->outError(LOG_FILTER_SQL, "Transport ID:%u, Name: %s, will not be loaded, gameobject_template type wrong", entry, name.c_str());
             continue;
@@ -70,10 +70,10 @@ void MapManager::LoadTransports()
         std::set<uint32> mapsUsed;
 
         Transport* t = new Transport(period, scriptId);
-        if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
+        if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathID, mapsUsed))
             // skip transports with empty waypoints list
         {
-            sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathId);
+            sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
             delete t;
             continue;
         }

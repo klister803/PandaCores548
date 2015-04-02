@@ -951,10 +951,10 @@ Transport* BattlegroundIC::CreateTransport(uint32 goEntry, uint32 period)
 
     std::set<uint32> mapsUsed;
 
-    if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
+    if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathID, mapsUsed))
         // skip transports with empty waypoints list
     {
-        sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathId);
+        sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
         delete t;
         return NULL;
     }

@@ -1632,6 +1632,7 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Data...");
     sObjectMgr->LoadCreatures();
+    sObjectMgr->LoadTreasureData();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet levelup spells...");
     sSpellMgr->LoadPetLevelupSpellMap();
@@ -2234,7 +2235,10 @@ void World::Update(uint32 diff)
         InstanceHalfWeekResetTime();
 
     if (m_gameTime > m_NextInstanceWeeklyReset)
+    {
         InstanceWeeklyResetTime();
+        ResetGameObjectRespawn();
+    }
 
     if (m_gameTime > m_NextServerRestart)
         AutoRestartServer();
@@ -3273,6 +3277,15 @@ void World::InstanceWeeklyResetTime()
 
     m_NextInstanceWeeklyReset = time_t(m_NextInstanceWeeklyReset + DAY * getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET));
     sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
+}
+
+void World::ResetGameObjectRespawn()
+{
+    CharacterDatabase.Execute("DELETE FROM character_gameobject WHERE respawnTime != 0");
+
+    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+        if (itr->second->GetPlayer())
+            itr->second->GetPlayer()->ResetGameObjectRespawn();
 }
 
 void World::LoadDBAllowedSecurityLevel()

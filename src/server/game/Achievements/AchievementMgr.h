@@ -279,6 +279,7 @@ class AchievementMgr
         CriteriaSort GetCriteriaSort() const;
         bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
         bool IsCompletedCriteriaTree(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
+        bool IsCompletedScenarioTree(CriteriaTreeEntry const* criteriaTree);
         CriteriaProgressMap* GetCriteriaProgressMap();
 
     private:

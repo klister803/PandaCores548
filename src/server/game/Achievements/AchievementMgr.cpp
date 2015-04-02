@@ -1530,7 +1530,7 @@ static const uint32 achievIdForDungeon[][4] =
 template<class T>
 void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit const* unit /*= NULL*/, Player* referencePlayer /*= NULL*/)
 {
-    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria(%u, %u, %u)", type, miscValue1, miscValue2);
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria(%u, %u, %u) CriteriaSort %u", type, miscValue1, miscValue2, GetCriteriaSort());
 
     // disable for gamemasters with GM-mode enabled
     if (referencePlayer->isGameMaster())
@@ -2141,11 +2141,13 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
             {
                 case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL:
                     check = count >= (criteriaTree->requirement_count * 75); // skillLevel * 75
+                    break;
                 case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
                 case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST:
                 case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SPELL:
                 case ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA:
                     check = count >= 1;
+                    break;
                 case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
                 case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
                 case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
@@ -2217,6 +2219,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
                     check = count >= criteriaTree->requirement_count;
+                    break;
                 // handle all statistic-only criteria here
                 case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
                 case ACHIEVEMENT_CRITERIA_TYPE_DEATH_AT_MAP:
@@ -2248,6 +2251,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_QUEST_ABANDONED:
                 case ACHIEVEMENT_CRITERIA_TYPE_FLIGHT_PATHS_TAKEN:
                 case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
+                    break;
                 default:
                     break;
             }
@@ -2278,6 +2282,161 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
 
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTree criteriaTree %u, achievement %u saveCheck %i count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, saveCheck, count, criteriaTree->requirement_count);
     return saveCheck;
+}
+
+template<class T>
+bool AchievementMgr<T>::IsCompletedScenarioTree(CriteriaTreeEntry const* criteriaTree)
+{
+    bool check = false;
+    std::list<uint32> const* cTreeList = GetCriteriaTreeList(criteriaTree->ID);
+    if(!cTreeList)
+        return false;
+
+    for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+    {
+        CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(*itr);
+        if(!cTree)
+            continue;
+
+        if(cTree->criteria == 0)
+        {
+            if(!IsCompletedScenarioTree(cTree))
+                return false;
+        }
+        else
+        {
+            CriteriaEntry const* achievementCriteria = sAchievementMgr->GetAchievementCriteria(cTree->criteria);
+            CriteriaProgress const* progress = GetCriteriaProgress(cTree);
+            if(!progress || !achievementCriteria)
+                return false;
+
+            switch (achievementCriteria->type)
+            {
+                case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL:
+                    check = progress->counter >= (criteriaTree->requirement_count * 75); // skillLevel * 75
+                    break;
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST:
+                case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SPELL:
+                case ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA:
+                    check = progress->counter >= 1;
+                    break;
+                case ACHIEVEMENT_CRITERIA_TYPE_WIN_BG:
+                case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
+                case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_RAID:
+                case ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA:
+                case ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK:
+                case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
+                case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE:
+                case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
+                case ACHIEVEMENT_CRITERIA_TYPE_CATCH_FROM_POOL:
+                case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
+                case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE:
+                case ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL:
+                case ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL:
+                case ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_IN_ZONE:
+                case ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE:
+                case ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST:
+                case ACHIEVEMENT_CRITERIA_TYPE_FALL_WITHOUT_DYING:
+                case ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET:
+                case ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL2:
+                case ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE:
+                case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
+                case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL:
+                case ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL:
+                case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILLS_GUILD:
+                case ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA:
+                case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING:
+                case ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_BUY_BANK_SLOT:
+                case ACHIEVEMENT_CRITERIA_TYPE_GAIN_REPUTATION:
+                case ACHIEVEMENT_CRITERIA_TYPE_GAIN_EXALTED_REPUTATION:
+                case ACHIEVEMENT_CRITERIA_TYPE_VISIT_BARBER_SHOP:
+                case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED_ON_LOOT:
+                case ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED_ON_LOOT:
+                case ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS:
+                case ACHIEVEMENT_CRITERIA_TYPE_HK_RACE:
+                case ACHIEVEMENT_CRITERIA_TYPE_DO_EMOTE:
+                case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_QUEST_REWARD:
+                case ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY:
+                case ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT:
+                case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
+                case ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT:
+                case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS:
+                case ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL:
+                case ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE:
+                case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LINE:
+                case ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS:
+                case ACHIEVEMENT_CRITERIA_TYPE_EARN_GUILD_ACHIEVEMENT_POINTS:
+                case ACHIEVEMENT_CRITERIA_TYPE_USE_LFD_TO_GROUP_WITH_PLAYERS:
+                case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
+                case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
+                case ACHIEVEMENT_CRITERIA_TYPE_INSTANSE_MAP_ID:
+                case ACHIEVEMENT_CRITERIA_TYPE_SPENT_GOLD_GUILD_REPAIRS:
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD:
+                case ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD:
+                case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_BANK_SLOTS:
+                case ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING:
+                case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
+                case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+                    check = progress->counter >= criteriaTree->requirement_count;
+                    break;
+                // handle all statistic-only criteria here
+                case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
+                case ACHIEVEMENT_CRITERIA_TYPE_DEATH_AT_MAP:
+                case ACHIEVEMENT_CRITERIA_TYPE_DEATH:
+                case ACHIEVEMENT_CRITERIA_TYPE_DEATH_IN_DUNGEON:
+                case ACHIEVEMENT_CRITERIA_TYPE_KILLED_BY_CREATURE:
+                case ACHIEVEMENT_CRITERIA_TYPE_KILLED_BY_PLAYER:
+                case ACHIEVEMENT_CRITERIA_TYPE_DEATHS_FROM:
+                case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_TEAM_RATING:
+                case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:
+                case ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TALENTS:
+                case ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS:
+                case ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_AT_BARBER:
+                case ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_MAIL:
+                case ACHIEVEMENT_CRITERIA_TYPE_LOSE_DUEL:
+                case ACHIEVEMENT_CRITERIA_TYPE_GOLD_EARNED_BY_AUCTIONS:
+                case ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION:
+                case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID:
+                case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_SOLD:
+                case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED:
+                case ACHIEVEMENT_CRITERIA_TYPE_WON_AUCTIONS:
+                case ACHIEVEMENT_CRITERIA_TYPE_GAIN_REVERED_REPUTATION:
+                case ACHIEVEMENT_CRITERIA_TYPE_GAIN_HONORED_REPUTATION:
+                case ACHIEVEMENT_CRITERIA_TYPE_KNOWN_FACTIONS:
+                case ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM:
+                case ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED:
+                case ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED:
+                case ACHIEVEMENT_CRITERIA_TYPE_QUEST_ABANDONED:
+                case ACHIEVEMENT_CRITERIA_TYPE_FLIGHT_PATHS_TAKEN:
+                case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
+                    break;
+                default:
+                    break;
+            }
+
+            //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedScenarioTree cTree %u, criteria %u check %i counter %i requirement_count %i", cTree->ID, cTree->criteria, check, progress->counter, criteriaTree->requirement_count);
+            if(!check)
+                return check;
+        }
+    }
+
+    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedScenarioTree criteriaTree %u, check %i", criteriaTree->ID, check);
+    return check;
 }
 
 template<class T>
@@ -2405,7 +2564,7 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (entry->timeLimit && timedIter == m_timedAchievements.end())
         return;
 
-    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "SetCriteriaProgress(%u, %u)", entry->ID, changeValue);
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "SetCriteriaProgress(%u, %u) CriteriaSort %u", entry->ID, changeValue, GetCriteriaSort());
 
     CriteriaProgress* progress = GetCriteriaProgress(treeEntry);
     if (!progress)
@@ -2454,8 +2613,8 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     progress->date = time(NULL); // set the date to the latest update.
 
     AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(treeEntry->parent));
-    if (!achievement)
-        return;
+    //if (!achievement)
+        //return;
 
     uint32 timeElapsed = 0;
     bool criteriaComplete = IsCompletedCriteria(treeEntry, achievement);
@@ -2473,10 +2632,10 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
     if (criteriaComplete && achievement && achievement->flags & ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS && !progress->CompletedGUID)
         progress->CompletedGUID = referencePlayer->GetGUID();
 
-    if (achievement->parent && !HasAchieved(achievement->parent)) //Don`t send update criteria to client if parent achievment not complete
+    if (achievement && achievement->parent && !HasAchieved(achievement->parent)) //Don`t send update criteria to client if parent achievment not complete
         return;
 
-    if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
+    if (achievement && achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
         SendAccountCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
     else
         SendCriteriaUpdate(entry, progress, timeElapsed, criteriaComplete);
@@ -3196,12 +3355,12 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Cr
         return false;
     }
 
-    /*if (GetCriteriaSort() == SCENARIO_CRITERIA && !GetOwner()->CanUpdateCriteria(treeEntry))
+    if (!GetOwner()->CanUpdateCriteria(treeEntry->ID))
     {
-        sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Scenario condition can not be updated at current scenario stage",
-            treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
+        //sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Scenario condition can not be updated at current scenario stage",
+            //treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
         return false;
-    }*/
+    }
 
     return true;
 }

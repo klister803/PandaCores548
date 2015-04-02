@@ -550,7 +550,7 @@ void BattlegroundSA::EventPlayerDamagedGO(Player* /*player*/, GameObject* go, ui
     if (!go || !go->GetGOInfo())
         return;
 
-    if (eventType == go->GetGOInfo()->building.damagedEvent)
+    if (eventType == go->GetGOInfo()->destructibleBuilding.damagedEvent)
     {
         uint32 i = getGateIdFromDamagedOrDestroyEventId(eventType);
         GateStatus[i] = BG_SA_GATE_DAMAGED;
@@ -559,15 +559,15 @@ void BattlegroundSA::EventPlayerDamagedGO(Player* /*player*/, GameObject* go, ui
             UpdateWorldState(uws, GateStatus[i]);
     }
 
-    if (eventType == go->GetGOInfo()->building.destroyedEvent)
+    if (eventType == go->GetGOInfo()->destructibleBuilding.destroyedEvent)
     {
-        if (go->GetGOInfo()->building.destroyedEvent == BG_SA_EVENT_ANCIENT_GATE_DESTROYED)
+        if (go->GetGOInfo()->destructibleBuilding.destroyedEvent == BG_SA_EVENT_ANCIENT_GATE_DESTROYED)
             SendWarningToAll(LANG_BG_SA_CHAMBER_BREACHED);
         else
             SendWarningToAll(LANG_BG_SA_WAS_DESTROYED, go->GetGOInfo()->name.c_str());
     }
 
-    if (eventType == go->GetGOInfo()->building.damageEvent)
+    if (eventType == go->GetGOInfo()->destructibleBuilding.damageEvent)
         SendWarningToAll(LANG_BG_SA_IS_UNDER_ATTACK, go->GetGOInfo()->name.c_str());
 }
 
@@ -621,7 +621,7 @@ void BattlegroundSA::DemolisherStartState(bool start)
 
 void BattlegroundSA::DestroyGate(Player* player, GameObject* go)
 {
-    uint32 i = getGateIdFromDamagedOrDestroyEventId(go->GetGOInfo()->building.destroyedEvent);
+    uint32 i = getGateIdFromDamagedOrDestroyEventId(go->GetGOInfo()->destructibleBuilding.destroyedEvent);
     if (!GateStatus[i])
         return;
 

@@ -362,8 +362,8 @@ void WorldSession::DoLootRelease(uint64 lguid)
             // GO is mineral vein? so it is not removed after its looted
             if (go->GetGoType() == GAMEOBJECT_TYPE_CHEST)
             {
-                uint32 go_min = go->GetGOInfo()->chest.minSuccessOpens;
-                uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
+                uint32 go_min = go->GetGOInfo()->chest.minRestock;
+                uint32 go_max = go->GetGOInfo()->chest.maxRestock;
 
                 // only vein pass this check
                 if (go_min != 0 && go_max > go_min)
@@ -382,7 +382,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
                             float chance_rate = sWorld->getRate(RATE_MINING_NEXT);
 
                             int32 ReqValue = 175;
-                            LockEntry const* lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->chest.lockId);
+                            LockEntry const* lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->GetLockId());
                             if (lockInfo)
                                 ReqValue = lockInfo->Skill[0];
                             float skill = float(player->GetSkillValue(SKILL_MINING))/(ReqValue+25);
@@ -406,7 +406,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
             else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
             {                                               // The fishing hole used once more
                 go->AddUse();                               // if the max usage is reached, will be despawned in next tick
-                if (go->GetUseCount() >= urand(go->GetGOInfo()->fishinghole.minSuccessOpens, go->GetGOInfo()->fishinghole.maxSuccessOpens))
+                if (go->GetUseCount() >= urand(go->GetGOInfo()->fishingHole.minRestock, go->GetGOInfo()->fishingHole.maxRestock))
                 {
                     go->SetLootState(GO_JUST_DEACTIVATED);
                 }
