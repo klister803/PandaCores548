@@ -537,8 +537,7 @@ void WorldSession::HandleLeaveBattlefieldOpcode(WorldPacket& recvData)
             if (bg->GetStatus() != STATUS_WAIT_LEAVE)
                 return;
 
-    if (!_player->InArena())
-        _player->LeaveBattleground();
+    _player->LeaveBattleground();
 }
 
 void WorldSession::HandleBattlefieldStatusOpcode(WorldPacket & /*recvData*/)
