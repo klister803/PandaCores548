@@ -1955,9 +1955,9 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
     if (!CanCompleteCriteria(achievement))
         return false;
 
-    if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
-        if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
-            return IsCompletedCriteriaTree(pTree, achievement);
+    //if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
+        //if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
+            //return IsCompletedCriteriaTree(pTree, achievement);
 
     CriteriaEntry const* achievementCriteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
     if (!achievementCriteria)
