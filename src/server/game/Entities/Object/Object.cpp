@@ -353,7 +353,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(flags & UPDATEFLAG_AREA_TRIGGER);// byte29C
     data->WriteBit(0);                              // byte1
     data->WriteBit(flags & UPDATEFLAG_TRANSPORT);
-    data->WriteBit(0);                              // byte2A4
+    data->WriteBit(flags & UPDATEFLAG_HAS_WORLDEFFECTID); // WorldEffectID
     data->WriteBit(flags & UPDATEFLAG_SELF);
     data->WriteBit(0);                              // byte0
     data->WriteBit(flags & UPDATEFLAG_HAS_TARGET);
@@ -718,6 +718,14 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << float(self->GetOrientation());
     }
 
+    if (flags & UPDATEFLAG_HAS_WORLDEFFECTID)
+    {
+        if(GameObject const* go = ToGameObject())
+            *data << uint32(go->GetGOInfo()->WorldEffectID);
+        else
+            *data << uint32(0);
+    }
+
     if (flags & UPDATEFLAG_LIVING)
     {
         Unit const* self = ToUnit();
@@ -887,7 +895,11 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                     {
                         if (creature->hasLootRecipient())
                         {
-                            if (creature->isTappedBy(target))
+                            if(creature->IsPersonalLoot())
+                            {
+                                dynamicFlags |= (UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER | UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST);
+                            }
+                            else if (creature->isTappedBy(target))
                             {
                                 dynamicFlags |= (UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
                             }
@@ -903,7 +915,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                             dynamicFlags &= ~UNIT_DYNFLAG_TAPPED_BY_PLAYER;
                         }
 
-                        if (!target->isAllowedToLoot(creature))
+                        if (!target->isAllowedToLoot(const_cast<Creature*>(creature)))
                             dynamicFlags &= ~UNIT_DYNFLAG_LOOTABLE;
                     }
 
@@ -959,7 +971,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 // send in current format (float as float, uint32 as uint32)
                 if (index == OBJECT_FIELD_DYNAMIC_FLAGS)
                 {
-                    if (IsActivateToQuest || ToGameObject()->isDynActive() || target->isGameMaster())
+                    if (IsActivateToQuest || target->isGameMaster())
                     {
                         switch (ToGameObject()->GetGoType())
                         {

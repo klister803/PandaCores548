@@ -2175,7 +2175,7 @@ uint32 GameObjectUpdateFieldFlags[GAMEOBJECT_END] =
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_FACTION
     UF_FLAG_PUBLIC,                                         // GAMEOBJECT_LEVEL
     UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_BYTES_1
-    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_DYNAMIC
+    UF_FLAG_PUBLIC | UF_FLAG_UNK_100,                       // GAMEOBJECT_SPELL_VISUAL_ID
 };
 
 uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END] =

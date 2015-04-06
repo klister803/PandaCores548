@@ -1603,6 +1603,7 @@ class Player : public Unit, public GridObject<Player>
         bool AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false);
         bool AutoStoreLoot(uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false) { return AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, filterLevel, broadcast); }
         void StoreLootItem(uint8 lootSlot, Loot* loot);
+        Loot personalLoot;
 
         InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
         InventoryResult CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item* pItem = NULL, bool swap = false, uint32* no_space_count = NULL) const;

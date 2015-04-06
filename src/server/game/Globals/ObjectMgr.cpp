@@ -240,7 +240,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiBattlePetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
-    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _hiAreaTriggerGuid(1), _skipUpdateCount(1)
+    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _hiAreaTriggerGuid(1), _skipUpdateCount(1), _hiLootGuid(1)
 {}
 
 ObjectMgr::~ObjectMgr()
@@ -6232,6 +6232,11 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
             ASSERT(_hiMoTransGuid < 0xFFFFFFFE && "MO Transport guid overflow!");
             return _hiMoTransGuid++;
         }
+        case HIGHGUID_LOOT:
+        {
+            ASSERT(_hiLootGuid < 0xFFFFFFFE && "MO Transport guid overflow!");
+            return _hiLootGuid++;
+        }
         default:
             ASSERT(false && "ObjectMgr::GenerateLowGuid - Unknown HIGHGUID type");
             return 0;
@@ -6339,8 +6344,8 @@ void ObjectMgr::LoadGameObjectTemplate()
                                              "questItem4, questItem5, questItem6, data0, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, "
     //                                          29      30      31      32      33      34      35      36      37      38      39      40      41      42      43      44
                                              "data13, data14, data15, data16, data17, data18, data19, data20, data21, data22, data23, data24, data25, data26, data27, data28, "
-    //                                          45      46      47       48       49        50
-                                             "data29, data30, data31, unkInt32, AIName, ScriptName "
+    //                                          45      46      47       48       49        50            51            52
+                                             "data29, data30, data31, unkInt32, AIName, ScriptName, WorldEffectID, SpellVisualID "
                                              "FROM gameobject_template");
 
     if (!result)
@@ -6381,6 +6386,8 @@ void ObjectMgr::LoadGameObjectTemplate()
         got.unkInt32 = fields[48].GetInt32();
         got.AIName = fields[49].GetString();
         got.ScriptId = GetScriptId(fields[50].GetCString());
+        got.WorldEffectID = fields[51].GetInt32();
+        got.SpellVisualID = fields[52].GetInt32();
 
         // Checks
 

@@ -321,12 +321,13 @@ struct Loot
 
     uint32 objEntry;
     uint64 objGuid;
+    uint64 m_guid;
     uint8 objType;
     uint8 spawnMode;
     uint32 specId;
     uint32 itemLevel;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), loot_type(LOOT_CORPSE), spawnMode(0), m_lootOwner(NULL), objType(0), specId(0), itemLevel(0), objGuid(0), objEntry(0)  {}
+    explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -371,6 +372,8 @@ struct Loot
     void NotifyMoneyRemoved(uint64);
     void AddLooter(uint64 GUID) { PlayersLooting.insert(GUID); }
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
+    uint64 GetGUID() { return m_guid; }
+    uint32 GetGUIDLow() { return GUID_LOPART(m_guid); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false);

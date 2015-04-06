@@ -127,7 +127,7 @@ void Battleground::BroadcastWorker(Do& _do)
 
 Battleground::Battleground()
 {
-    m_Guid              = MAKE_NEW_GUID(m_TypeID, 0, HIGHGUID_TYPE_BATTLEGROUND);
+    m_Guid              = MAKE_NEW_GUID(m_TypeID, 0, HIGHGUID_BATTLEGROUND);
     m_TypeID            = BATTLEGROUND_TYPE_NONE;
     m_RandomTypeID      = BATTLEGROUND_TYPE_NONE;
     m_InstanceID        = 0;

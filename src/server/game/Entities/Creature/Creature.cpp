@@ -1296,6 +1296,22 @@ float Creature::_GetHealthMod(int32 Rank)
     }
 }
 
+float Creature::_GetHealthModPersonal()
+{
+    switch (GetCreatureTemplate()->rank)
+    {
+        case CREATURE_ELITE_NORMAL:
+        case CREATURE_ELITE_ELITE:
+        case CREATURE_ELITE_RAREELITE:
+        case CREATURE_ELITE_RARE:
+            return 0.7f;
+        case CREATURE_ELITE_WORLDBOSS:
+            return 1.0f;
+        default:
+            return 0.7f;
+    }
+}
+
 float Creature::_GetDamageMod(int32 Rank)
 {
     switch (Rank)                                           // define rates for each elite rank
@@ -2863,4 +2879,9 @@ bool Creature::SetHover(bool enable, bool packetOnly)
     }
 
     return true;
+}
+
+bool Creature::IsPersonalLoot() const
+{
+    return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_PERSONAL_LOOT);
 }

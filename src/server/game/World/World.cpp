@@ -1632,7 +1632,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Data...");
     sObjectMgr->LoadCreatures();
-    sObjectMgr->LoadTreasureData();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading pet levelup spells...");
     sSpellMgr->LoadPetLevelupSpellMap();
@@ -1642,6 +1641,9 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Creature Addon Data...");
     sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Treasure Data...");
+    sObjectMgr->LoadTreasureData();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Gameobject Data...");
     sObjectMgr->LoadGameobjects();

@@ -327,7 +327,7 @@ enum EGameObjectFields
     GAMEOBJECT_FACTION                               = OBJECT_END + 0x8,    // Size: 0x1
     GAMEOBJECT_LEVEL                                 = OBJECT_END + 0x9,    // Size: 0x1
     GAMEOBJECT_BYTES_1                               = OBJECT_END + 0xA,    // Size: 0x1
-    GAMEOBJECT_DYNAMIC                               = OBJECT_END + 0xB,    // Size: 0x1
+    GAMEOBJECT_SPELL_VISUAL_ID                       = OBJECT_END + 0xB,    // Size: 0x1
     GAMEOBJECT_END                                   = OBJECT_END + 0xC
 };
 

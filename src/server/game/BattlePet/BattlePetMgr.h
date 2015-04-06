@@ -166,8 +166,8 @@ public:
     int32 GetHealth() { return health; }
     float GetHealthPct() { return maxHealth ? 100.f * health / maxHealth : 0.0f; }
     void SetHealth(int32 _health) { health = _health; }
-    uint32 GetMaxHealth() { return maxHealth; }
-    void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
+    int32 GetMaxHealth() { return maxHealth; }
+    void SetMaxHealth(int32 _maxHealth) { maxHealth = _maxHealth; }
     void SetPower(uint16 _power) { power = _power; }
     void SetSpeed(uint16 _speed) { speed = _speed; }
     uint16 GetSpeed() { return speed; }
@@ -200,7 +200,7 @@ private:
     uint16 power;
     uint16 speed;
     int32 health;
-    uint32 maxHealth;
+    int32 maxHealth;
     uint8 quality;
     uint16 xp;
     uint8 level;
@@ -369,8 +369,8 @@ public:
     int32 GetHealth() { return health; }
     float GetHealthPct() { return maxHealth ? 100.f * health / maxHealth : 0.0f; }
     void SetHealth(int32 _health) { health = _health; }
-    uint32 GetMaxHealth() { return maxHealth; }
-    void SetMaxHealth(uint32 _maxHealth) { maxHealth = _maxHealth; }
+    int32 GetMaxHealth() { return maxHealth; }
+    void SetMaxHealth(int32 _maxHealth) { maxHealth = _maxHealth; }
     void SetPower(uint16 _power) { power = _power; }
     void SetSpeed(uint16 _speed) { speed = _speed; }
     uint16 GetSpeed() { return speed; }
@@ -412,7 +412,7 @@ private:
     uint16 power;
     uint16 speed;
     int32 health;
-    uint32 maxHealth;
+    int32 maxHealth;
     uint8 quality;
     uint16 xp;
     uint16 totalXP;

@@ -1213,7 +1213,22 @@ void Creature::UpdateArmor()
 void Creature::UpdateMaxHealth()
 {
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
+    float mod = 1.0f;
+    float percHealth = GetHealthPct();
+    uint32 count = getThreatManager().getThreatList().size();
+
+    if(IsPersonalLoot() && count)
+    {
+        mod += (count - 1) * _GetHealthModPersonal();
+        value *= mod;
+    }
     SetMaxHealth((uint32)value);
+
+    if(IsPersonalLoot() && count)
+    {
+        int32 health = CalculatePct(GetMaxHealth(), percHealth);;
+        SetHealth(health);
+    }
 }
 
 void Creature::UpdateMaxPower(Powers power)

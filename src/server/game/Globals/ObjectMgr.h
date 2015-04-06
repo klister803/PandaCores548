@@ -1397,6 +1397,7 @@ class ObjectMgr
         uint32 _hiCorpseGuid;
         uint32 _hiAreaTriggerGuid;
         uint32 _hiMoTransGuid;
+        uint32 _hiLootGuid;
 
         uint64 _hiBattlePetGuid;
 

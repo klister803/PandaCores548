@@ -26,6 +26,7 @@
 #include "SpellInfo.h"
 #include "Group.h"
 #include "DBCStores.h"
+#include "ObjectMgr.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -458,6 +459,21 @@ void LootItem::AddAllowedLooter(const Player* player)
 //
 // --------- Loot ---------
 //
+
+Loot::Loot(uint32 _gold)
+{
+    gold = _gold;
+    unlootedCount = 0;
+    loot_type = LOOT_CORPSE;
+    spawnMode = 0;
+    m_lootOwner = NULL;
+    objType = 0;
+    specId = 0;
+    itemLevel = 0;
+    objGuid = 0;
+    objEntry = 0;
+    m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_LOOT), 0, HIGHGUID_LOOT);
+}
 
 // Inserts the item into the loot (called by LootTemplate processors)
 void Loot::AddItem(LootStoreItem const & item)

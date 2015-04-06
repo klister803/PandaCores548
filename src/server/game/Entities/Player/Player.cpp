@@ -10323,6 +10323,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
     ItemQualities groupThreshold = ITEM_QUALITY_POOR;
 
     sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot guid %u, loot_type %u", guid, loot_type);
+
     if (IS_GAMEOBJECT_GUID(guid))
     {
         GameObject* go = GetMap()->GetGameObject(guid);
@@ -10337,7 +10338,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
         loot = &go->loot;
 
-        if (go->getLootState() == GO_READY)
+        bool personal = go->IsPersonalLoot();
+
+        if (go->getLootState() == GO_READY || (personal && personalLoot.GetGUID() != guid))
         {
             uint32 lootid = go->GetGOInfo()->GetLootId();
 
@@ -10353,30 +10356,45 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
             if (lootid)
             {
-                loot->clear();
+                if(personal)
+                {
+                    loot = &personalLoot;
+                    loot->clear();
+                    loot->objEntry = go->GetGOInfo()->entry;
+                    loot->objGuid = go->GetGUID();
+                    loot->objType = 3;
+                    loot->spawnMode = go->GetMap()->GetSpawnMode();
+                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, true);
+                }
+                else
+                {
+                    loot->clear();
 
-                Group* group = GetGroup();
-                bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules);
+                    Group* group = GetGroup();
+                    bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules);
 
-                // check current RR player and get next if necessary
-                if (groupRules)
-                    group->UpdateLooterGuid(go, true);
+                    // check current RR player and get next if necessary
+                    if (groupRules)
+                        group->UpdateLooterGuid(go, true);
 
-                loot->objEntry = go->GetGOInfo()->entry;
-                loot->objGuid = go->GetGUID();
-                loot->objType = 3;
-                loot->spawnMode = go->GetMap()->GetSpawnMode();
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false);
+                    loot->objEntry = go->GetGOInfo()->entry;
+                    loot->objGuid = go->GetGUID();
+                    loot->objType = 3;
+                    loot->spawnMode = go->GetMap()->GetSpawnMode();
+                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false);
 
-                // get next RR player (for next loot)
-                if (groupRules)
-                    group->UpdateLooterGuid(go);
+                    // get next RR player (for next loot)
+                    if (groupRules)
+                        group->UpdateLooterGuid(go);
+                }
+
+                sLog->outDebug(LOG_FILTER_LOOT, "Player::SendLoot guid %u, personal %u pguid %u lguid %u", guid, personal, personalLoot.GetGUID(), loot->GetGUID());
             }
 
             if (loot_type == LOOT_FISHING)
                 go->getFishLoot(loot, this);
 
-            if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules)
+            if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules && !personal)
             {
                 if (Group* group = GetGroup())
                 {
@@ -10404,7 +10422,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
         if (go->getLootState() == GO_ACTIVATED)
         {
-            if (Group* group = GetGroup())
+            if(personal)
+                permission = ALL_PERMISSION;
+            else if (Group* group = GetGroup())
             {
                 groupThreshold = group->GetThreshold();
                 switch (group->GetLootMethod())
@@ -10524,7 +10544,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             return;
         }
 
-        loot = &creature->loot;
+        loot = &personalLoot;
+        if(!creature->IsPersonalLoot() || loot->isLooted() || creature->GetGUID() != loot->objGuid)
+            loot = &creature->loot;
 
         if (loot_type == LOOT_PICKPOCKETING)
         {
@@ -10587,7 +10609,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             // set group rights only for loot_type != LOOT_SKINNING
             else
             {
-                if (Group* group = GetGroup())
+                if(creature->IsPersonalLoot())
+                    permission = OWNER_PERMISSION;
+                else if (Group* group = GetGroup())
                 {
                     groupThreshold = group->GetThreshold();
                     if (group == recipient->GetGroup())
@@ -19421,6 +19445,16 @@ bool Player::isAllowedToLoot(const Creature* creature)
 
     if (HasPendingBind())
         return false;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::isAllowedToLoot isLooted %i GetGUID %i objGuid %i IsPersonalLoot %i", personalLoot.isLooted(), creature->GetGUID(), personalLoot.objGuid, creature->IsPersonalLoot());
+
+    if(creature->IsPersonalLoot() && creature->GetGUID() == personalLoot.objGuid)
+    {
+        if(personalLoot.isLooted())
+            return false;
+        else
+            return true;
+    }
 
     const Loot* loot = &creature->loot;
     if (loot->isLooted()) // nothing to loot or everything looted.

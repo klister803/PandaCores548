@@ -1955,9 +1955,9 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
     if (!CanCompleteCriteria(achievement))
         return false;
 
-    //if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
-        //if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
-            //return IsCompletedCriteriaTree(pTree, achievement);
+    if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
+        if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
+            return IsCompletedCriteriaTree(pTree, achievement);
 
     CriteriaEntry const* achievementCriteria = sAchievementMgr->GetAchievementCriteria(criteriaTree->criteria);
     if (!achievementCriteria)
@@ -3298,6 +3298,9 @@ uint64 AchievementMgr<T>::GetFirstAchievedCharacterOnAccount(uint32 achievementI
 template<class T>
 bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer)
 {
+    if(!achievement && GetCriteriaSort() != SCENARIO_CRITERIA)
+        return false;
+
     if (DisableMgr::IsDisabledFor(DISABLE_TYPE_ACHIEVEMENT_CRITERIA, criteria->ID, NULL))
     {
         // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Disabled",
@@ -3844,7 +3847,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_LEVEL: // 3
                 {
                     // miscValue1 is itemid
-                    ItemTemplate const * const item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                    ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
                     if (!item || item->ItemLevel < reqValue)
                         check = false;
                     break;
@@ -3884,7 +3887,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_QUALITY_EQUALS: // 15
                 {
                     // miscValue1 is itemid
-                    ItemTemplate const * const item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                    ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
                     if (!item || item->Quality < reqValue)
                         check = false;
                     break;
@@ -4151,7 +4154,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_ITEM_CLASS_AND_SUBCLASS: // 96
                 {
                     // miscValue1 is itemid
-                    ItemTemplate const * const item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
+                    ItemTemplate const * item = sObjectMgr->GetItemTemplate(uint32(miscValue1));
                     if (!item || item->Class != reqValue || item->SubClass != reqCount)
                         check = false;
                     break;

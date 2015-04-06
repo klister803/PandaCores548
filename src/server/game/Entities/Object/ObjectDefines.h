@@ -33,25 +33,25 @@
 
 enum HighGuid
 {
-    HIGHGUID_ITEM           = 0x400,                       // blizz 4000
-    HIGHGUID_CONTAINER      = 0x400,                       // blizz 4000
-    HIGHGUID_PLAYER         = 0x000,                       // blizz 0018
-    HIGHGUID_PLAYER_MOP     = 0x078,
-    HIGHGUID_GAMEOBJECT     = 0xF11,                       // blizz F110
-    HIGHGUID_TRANSPORT      = 0xF12,                       // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
-    HIGHGUID_UNIT           = 0xF13,                       // blizz F130
-    HIGHGUID_PET            = 0xF14,                       // blizz F140
-    HIGHGUID_VEHICLE        = 0xF15,                       // blizz F550
-    HIGHGUID_DYNAMICOBJECT  = 0xF10,                       // blizz F100
-    HIGHGUID_CORPSE         = 0xF101,                      // blizz F100
-    HIGHGUID_AREATRIGGER    = 0xF1B,                       // blizz F100
-    HIGHGUID_TYPE_BATTLEGROUND = 0x1F1,                    // new 4.x
-    HIGHGUID_MO_TRANSPORT   = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
-    HIGHGUID_GROUP          = 0x1F5,
-    HIGHGUID_GUILD          = 0x1FF,                       // new 4.x
-    HIGHGUID_INSTANCE_SAVE  = 0x1F45,                      // new 5.x
-    HIGHGUID_LOOT           = 0xF19,                       // new 5.x
-    HIGHGUID_SCENARIO_CRITERIA = 0xF08,
+    HIGHGUID_ITEM               = 0x400,                       // blizz 4000
+    HIGHGUID_CONTAINER          = 0x400,                       // blizz 4000
+    HIGHGUID_PLAYER             = 0x000,                       // blizz 0018
+    HIGHGUID_PLAYER_MOP         = 0x078,
+    HIGHGUID_GAMEOBJECT         = 0xF11,                       // blizz F110
+    HIGHGUID_TRANSPORT          = 0xF12,                       // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
+    HIGHGUID_UNIT               = 0xF13,                       // blizz F130
+    HIGHGUID_PET                = 0xF14,                       // blizz F140
+    HIGHGUID_VEHICLE            = 0xF15,                       // blizz F550
+    HIGHGUID_DYNAMICOBJECT      = 0xF10,                       // blizz F100
+    HIGHGUID_CORPSE             = 0xF101,                      // blizz F100
+    HIGHGUID_AREATRIGGER        = 0xF1B,                       // blizz F100
+    HIGHGUID_BATTLEGROUND       = 0x1F1,                       // new 4.x
+    HIGHGUID_MO_TRANSPORT       = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT)
+    HIGHGUID_GROUP              = 0x1F5,
+    HIGHGUID_GUILD              = 0x1FF,                       // new 4.x
+    HIGHGUID_INSTANCE_SAVE      = 0x1F45,                      // new 5.x
+    HIGHGUID_LOOT               = 0xF19,                       // new 5.x
+    HIGHGUID_SCENARIO_CRITERIA  = 0xF08,                       // new 5.x
 };
 
 #define IS_EMPTY_GUID(Guid)          (Guid == 0)
@@ -73,7 +73,8 @@ enum HighGuid
 #define IS_MO_TRANSPORT(Guid)        (GUID_HIPART(Guid) == HIGHGUID_MO_TRANSPORT)
 #define IS_GROUP(Guid)               (GUID_HIPART(Guid) == HIGHGUID_GROUP)
 #define IS_GUILD(Guid)               (GUID_HIPART(Guid) == HIGHGUID_GUILD)
-#define IS_AREATRIGGER_GUID(GUID)    (GUID_HIPART(Guid) == HIGHGUID_AREATRIGGER)
+#define IS_AREATRIGGER_GUID(Guid)    (GUID_HIPART(Guid) == HIGHGUID_AREATRIGGER)
+#define IS_LOOT_GUID(Guid)           (GUID_HIPART(Guid) == HIGHGUID_LOOT)
 
 // l - OBJECT_FIELD_GUID
 // e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets
@@ -118,6 +119,7 @@ inline bool IsGuidHaveEnPart(uint64 guid)
         case HIGHGUID_PET:
         case HIGHGUID_VEHICLE:
         case HIGHGUID_AREATRIGGER:
+        case HIGHGUID_LOOT:
         case HIGHGUID_SCENARIO_CRITERIA:
         default:
             return true;
@@ -144,6 +146,7 @@ inline char const* GetLogNameForGuid(uint64 guid)
         case HIGHGUID_GROUP:        return "group";
         case HIGHGUID_GUILD:        return "guild";
         case HIGHGUID_AREATRIGGER:  return "areatrigger";
+        case HIGHGUID_LOOT:         return "loot";
         case HIGHGUID_SCENARIO_CRITERIA: return "scenario_criteria";
         default:
             return "<unknown>";

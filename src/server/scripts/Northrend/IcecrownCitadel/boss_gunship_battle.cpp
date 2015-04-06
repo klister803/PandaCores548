@@ -344,7 +344,7 @@ void StartFlyShip(Transport* t)
 {
     t->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
     t->SetGoState(GO_STATE_ACTIVE);
-    t->SetUInt32Value(GAMEOBJECT_DYNAMIC, 0x10830010); // Seen in sniffs
+    //t->SetUInt32Value(GAMEOBJECT_SPELL_VISUAL_ID, 0x10830010); // Seen in sniffs
     t->SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, 1.0f);
 
     Map* map = t->GetMap();
