@@ -2378,7 +2378,7 @@ void Spell::EffectSendEvent(SpellEffIndex effIndex)
     m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue, m_caster, target);
 
     if (Player* player = m_caster->ToPlayer())
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue, 1);
+        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue, 1);
 }
 
 void Spell::EffectPowerBurn(SpellEffIndex effIndex)
