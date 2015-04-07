@@ -2124,7 +2124,7 @@ class spell_hun_bestial_wrath  : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_hun_bestial_wrath_AuraScript::Absorb, EFFECT_3);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_hun_bestial_wrath_AuraScript::Absorb, EFFECT_3, SPELL_AURA_SCHOOL_ABSORB);
             }
         };
 

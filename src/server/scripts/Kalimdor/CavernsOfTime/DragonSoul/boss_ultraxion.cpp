@@ -1002,7 +1002,7 @@ class spell_ultraxion_time_loop : public SpellScriptLoader
             void Register()
             {
                  DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_ultraxion_time_loop_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_ultraxion_time_loop_AuraScript::Absorb, EFFECT_1);
+                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_ultraxion_time_loop_AuraScript::Absorb, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
             }
         };
 

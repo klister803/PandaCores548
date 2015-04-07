@@ -981,8 +981,8 @@ void AuraScript::EffectApplyHandler::Call(AuraScript* auraScript, AuraEffect con
         (auraScript->*pEffectHandlerScript)(_aurEff, _mode);
 }
 
-AuraScript::EffectAbsorbHandler::EffectAbsorbHandler(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex)
-    : AuraScript::EffectBase(_effIndex, SPELL_AURA_SCHOOL_ABSORB)
+AuraScript::EffectAbsorbHandler::EffectAbsorbHandler(AuraEffectAbsorbFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
+    : AuraScript::EffectBase(_effIndex, _effName)
 {
     pEffectHandlerScript = _pEffectHandlerScript;
 }

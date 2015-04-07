@@ -557,7 +557,7 @@ public:
         void Register()
         {
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_chimaeron_finkles_mixture_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-            OnEffectAbsorb += AuraEffectAbsorbFn(spell_chimaeron_finkles_mixture_AuraScript::Absorb, EFFECT_1);
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_chimaeron_finkles_mixture_AuraScript::Absorb, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_chimaeron_finkles_mixture_AuraScript::PeriodicTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
         }
     };
