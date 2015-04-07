@@ -15450,13 +15450,7 @@ void Unit::AddThreat(Unit* victim, float fThreat, SpellSchoolMask schoolMask, Sp
 {
     // Only mobs can manage threat lists
     if (CanHaveThreatList())
-    {
-        if(Creature* creature = ToCreature())
-            if(creature->IsPersonalLoot() && victim->GetTypeId() == TYPEID_PLAYER)
-                UpdateMaxHealth();
-
         m_ThreatManager.addThreat(victim, fThreat, schoolMask, threatSpell);
-    }
 }
 
 //======================================================================
@@ -15474,10 +15468,6 @@ void Unit::DeleteFromThreatList(Unit* victim)
 {
     if (CanHaveThreatList() && !m_ThreatManager.isThreatListEmpty())
     {
-        if(Creature* creature = ToCreature())
-            if(creature->IsPersonalLoot() && victim->GetTypeId() == TYPEID_PLAYER)
-                UpdateMaxHealth();
-
         // remove unreachable target from our threat list
         // next tick we will select next possible target
         m_HostileRefManager.deleteReference(victim);
@@ -15674,6 +15664,15 @@ Unit* Creature::SelectVictim()
     AI()->EnterEvadeMode();
 
     return NULL;
+}
+
+bool Unit::GetThreatTarget(uint64 targetGuid)
+{
+    for (std::list<uint64>::const_iterator itr = m_savethreatlist.begin(); itr != m_savethreatlist.end(); ++itr)
+        if ((*itr) == targetGuid)
+            return true;
+
+    return false;
 }
 
 //======================================================================
@@ -20750,10 +20749,18 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
             }
             else
             {
-                std::list<HostileReference*>& threatlist = creature->getThreatManager().getThreatList();
-                for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                Loot* cLoot = &creature->loot;
+                if (creature->lootForPickPocketed)
+                    creature->lootForPickPocketed = false;
+                cLoot->clear();
+                cLoot->unlootedCount = creature->GetSizeSaveThreat();
+
+                //sLog->outDebug(LOG_FILTER_LOOT, "Unit::Kill personal count %i", cLoot->unlootedCount);
+
+                std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
+                for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
                 {
-                    if (Player* lootPersonal = ObjectAccessor::GetPlayer(*creature, (*itr)->getUnitGuid()))
+                    if (Player* lootPersonal = ObjectAccessor::GetPlayer(*creature, (*itr)))
                     {
                         Loot* loot = &lootPersonal->personalLoot;
                         loot->clear();
@@ -24540,4 +24547,36 @@ void Unit::SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uin
         data.WriteGuidBytes<3, 5, 2>(guid);
         ToPlayer()->GetSession()->SendPacket(&data);
     }
+}
+
+void Unit::SendDisplayToast(uint32 entry, uint8 hasDisplayToastMethod, bool isBonusRoll, uint32 count, uint8 type, Item* item)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    ObjectGuid guid = GetObjectGuid();
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SendDisplayToast entry %i, hasDisplayToastMethod %i, isBonusRoll %i count %i type %i", entry, hasDisplayToastMethod, isBonusRoll, count, type);
+
+    WorldPacket data(SMSG_DISPLAY_TOAST);
+    data.WriteBit(isBonusRoll);
+    data.WriteBits(type, 2);
+    data.WriteBit(!hasDisplayToastMethod);
+    if (type == 1)
+    {
+        data.WriteBit(0); // Mailed?
+        data << uint32(0); // lootSpecID
+        data << uint32(item->GetUpgradeId()); // upgradeId
+        data << uint32(0); // Unk Int32_3
+        data << uint32(item->GetTemplate()->DisplayInfoID); // displayid
+        data << uint32(item->GetItemSuffixFactor()); // Suffix factor
+        data << uint32(entry); // itemId
+    }
+    data << uint32(count); // count
+    if (hasDisplayToastMethod)
+        data << uint8(hasDisplayToastMethod); // DisplayToastMethod - это принимает значения 1,2,3, 1 и 3 клиент запускает эвенты на лут и бонус лут ролл (EVENT_SHOW_LOOT_TOAST/EVENT_BONUS_ROLL_RESULT, на 2 - запускает чето связанное с батлпетами (EVENT_PET_BATTLE_LOOT_RECEIVED)
+    if (type == 2)
+        data << uint32(entry); // CurrencyID
+
+    ToPlayer()->GetSession()->SendPacket(&data);
 }

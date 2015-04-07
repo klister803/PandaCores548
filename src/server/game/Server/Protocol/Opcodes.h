@@ -1493,6 +1493,7 @@ enum Opcodes
     SMSG_ADD_LOSS_OF_CONTROL                          = 0x140C, // 5.4.1 17538
     SMSG_LOSS_OF_CONTROL_AURA_UPDATE                  = 0x0904, // 5.4.1 17538
     SMSG_REMOVE_LOSS_OF_CONTROL                       = 0x01A7, // 5.4.1 17538
+    SMSG_DISPLAY_TOAST                                = 0x10AD, // 5.4.1 17538
 };
 
 /// Player state

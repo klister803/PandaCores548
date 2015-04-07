@@ -472,6 +472,7 @@ Loot::Loot(uint32 _gold)
     itemLevel = 0;
     objGuid = 0;
     objEntry = 0;
+    personal = false;
     m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_LOOT), 0, HIGHGUID_LOOT);
 }
 
@@ -558,6 +559,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
                         if (!lootOwner->HasActiveSpell(*spellId))
                             lootOwner->learnSpell(*spellId, false);
     }
+    sLootMgr->AddLoot(this);
 
     return true;
 }
@@ -601,6 +603,34 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
 
             player->ModifyCurrency(i->CurrencyId, amount);
         }
+}
+
+void Loot::clear()
+{
+    for (QuestItemMap::const_iterator itr = PlayerCurrencies.begin(); itr != PlayerCurrencies.end(); ++itr)
+        delete itr->second;
+    PlayerCurrencies.clear();
+
+    for (QuestItemMap::const_iterator itr = PlayerQuestItems.begin(); itr != PlayerQuestItems.end(); ++itr)
+        delete itr->second;
+    PlayerQuestItems.clear();
+
+    for (QuestItemMap::const_iterator itr = PlayerFFAItems.begin(); itr != PlayerFFAItems.end(); ++itr)
+        delete itr->second;
+    PlayerFFAItems.clear();
+
+    for (QuestItemMap::const_iterator itr = PlayerNonQuestNonFFANonCurrencyConditionalItems.begin(); itr != PlayerNonQuestNonFFANonCurrencyConditionalItems.end(); ++itr)
+        delete itr->second;
+    PlayerNonQuestNonFFANonCurrencyConditionalItems.clear();
+
+    PlayersLooting.clear();
+    items.clear();
+    quest_items.clear();
+    gold = 0;
+    unlootedCount = 0;
+    roundRobinPlayer = 0;
+    i_LootValidatorRefManager.clearReferences();
+    sLootMgr->RemoveLoot(GetGUID());
 }
 
 QuestItemList* Loot::FillCurrencyLoot(Player* player)
@@ -731,7 +761,7 @@ void Loot::NotifyItemRemoved(uint8 lootIndex)
         i_next = i;
         ++i_next;
         if (Player* player = ObjectAccessor::FindPlayer(*i))
-            player->SendNotifyLootItemRemoved(lootIndex, objGuid);
+            player->SendNotifyLootItemRemoved(lootIndex, this);
         else
             PlayersLooting.erase(i);
     }
@@ -746,7 +776,7 @@ void Loot::NotifyMoneyRemoved(uint64 gold)
         i_next = i;
         ++i_next;
         if (Player* player = ObjectAccessor::FindPlayer(*i))
-            player->SendNotifyLootMoneyRemoved(gold, objGuid);
+            player->SendNotifyLootMoneyRemoved(gold, this);
         else
             PlayersLooting.erase(i);
     }
@@ -778,7 +808,7 @@ void Loot::NotifyQuestItemRemoved(uint8 questIndex)
                         break;
 
                 if (j < pql.size())
-                    player->SendNotifyLootItemRemoved(items.size()+j, objGuid);
+                    player->SendNotifyLootItemRemoved(items.size()+j, this);
             }
         }
         else
@@ -957,11 +987,11 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     bool byte50 = true;
 
     // not off-like, should have HIGHGUID_LOOT.
-    ObjectGuid GUID48 = lv._guid;                                                       //lootGUID
+    ObjectGuid lootGUID = l.personal ? lv.viewer->GetGUID() : l.GetGUID();                 //lootGUID
 
-    bitBuffer.WriteGuidMask<7, 1>(GUID48);
+    bitBuffer.WriteGuidMask<7, 1>(lootGUID);
     bitBuffer.WriteBit(lv.permission != NONE_PERMISSION);                               //permishin if 0 cannot loot
-    bitBuffer.WriteGuidMask<6>(GUID48);
+    bitBuffer.WriteGuidMask<6>(lootGUID);
     bitBuffer.WriteBit(!l.gold);
     size_t count_pos = bitBuffer.bitwpos();                                             // Placeholder
     bitBuffer.WriteBits(itemsShown, 19); 
@@ -1232,20 +1262,20 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
     bitBuffer.PutBits(count_pos, itemsShown, 19);
     bitBuffer.WriteGuidMask<3>(lv._guid);
-    bitBuffer.WriteGuidMask<3>(GUID48);
+    bitBuffer.WriteGuidMask<3>(lootGUID);
     bitBuffer.WriteBit(!byte34);
-    bitBuffer.WriteGuidMask<5>(GUID48);
+    bitBuffer.WriteGuidMask<5>(lootGUID);
     bitBuffer.WriteBit(!byte52);
     bitBuffer.WriteGuidMask<6>(lv._guid);
     bitBuffer.WriteBit(lv.pool);                            //1 not stack item in aoe
     bitBuffer.WriteGuidMask<5>(lv._guid);
     bitBuffer.WriteBit(!lv._loot_type);
     bitBuffer.WriteGuidMask<7, 4>(lv._guid);
-    bitBuffer.WriteGuidMask<0>(GUID48);
+    bitBuffer.WriteGuidMask<0>(lootGUID);
     bitBuffer.WriteBit(!byte50);
-    bitBuffer.WriteGuidMask<4>(GUID48);
+    bitBuffer.WriteGuidMask<4>(lootGUID);
     bitBuffer.WriteGuidMask<0>(lv._guid);
-    bitBuffer.WriteGuidMask<2>(GUID48);
+    bitBuffer.WriteGuidMask<2>(lootGUID);
     uint32 currencyPos = bitBuffer.bitwpos();
     bitBuffer.WriteBits(currenciesShown, 20);
     bitBuffer.WriteGuidMask<2>(lv._guid);
@@ -1278,31 +1308,31 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     b.append(bitBuffer);
 
     b.WriteGuidBytes<2, 1>(lv._guid);
-    b.WriteGuidBytes<5>(GUID48);
+    b.WriteGuidBytes<5>(lootGUID);
 
     b.append(dataBuffer);
 
     b.WriteGuidBytes<5>(lv._guid);
-    b.WriteGuidBytes<1>(GUID48);
+    b.WriteGuidBytes<1>(lootGUID);
     b.WriteGuidBytes<7>(lv._guid);
-    b.WriteGuidBytes<2>(GUID48);
+    b.WriteGuidBytes<2>(lootGUID);
 
     if (byte50)
         b << uint8(lv.permission);
 
-    b.WriteGuidBytes<7>(GUID48);
+    b.WriteGuidBytes<7>(lootGUID);
 
     if (lv._loot_type)
         b << uint8(lv._loot_type);
 
     b.WriteGuidBytes<4>(lv._guid);
-    b.WriteGuidBytes<6, 4>(GUID48);
+    b.WriteGuidBytes<6, 4>(lootGUID);
     b.WriteGuidBytes<3>(lv._guid);
-    b.WriteGuidBytes<3, 0>(GUID48);
+    b.WriteGuidBytes<3, 0>(lootGUID);
     b.WriteGuidBytes<6>(lv._guid);
 
     if(byte52)
-        b << uint8(22);                     // always 17
+        b << uint8(17);                     // always 17
 
     if (l.gold)
         b << uint32(l.gold);
@@ -2280,4 +2310,30 @@ void LoadLootTemplates_Reference()
     LootTemplates_Reference.ReportUnusedIds(lootIdSet);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded refence loot templates in %u ms", GetMSTimeDiffToNow(oldMSTime));
+}
+
+Loot* LootMgr::GetLoot(uint64 guid)
+{
+    Loot* loot = NULL;
+    LootsMap::iterator itr = m_Loots.find(guid);
+    if (itr != m_Loots.end())
+        loot = itr->second;
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::GetLoot loot %i guid %i size %i", loot ? loot->GetGUID() : 0, guid, m_Loots.size());
+    return loot;
+}
+
+void LootMgr::AddLoot(Loot* loot)
+{
+    m_Loots[loot->GetGUID()] = loot;
+    //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
+}
+
+void LootMgr::RemoveLoot(uint64 guid)
+{
+    LootsMap::iterator itr = m_Loots.find(guid);
+    if (itr == m_Loots.end())
+        return;
+
+    m_Loots.erase(itr);
 }

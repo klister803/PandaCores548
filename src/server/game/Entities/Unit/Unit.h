@@ -2080,6 +2080,7 @@ class Unit : public WorldObject
         void SendSpellScene(uint32 miscValue, Position* pos);
         void SendMissileCancel(uint32 spellId, bool cancel = true);
         void SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply);
+        void SendDisplayToast(uint32 entry, uint8 hasDisplayToastMethod, bool isBonusRoll, uint32 count, uint8 type, Item* item = NULL);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);
@@ -2171,6 +2172,13 @@ class Unit : public WorldObject
         void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReference* /*pHostileReference*/) { /* nothing to do yet */ }
         HostileRefManager& getHostileRefManager() { return m_HostileRefManager; }
+
+        std::list<uint64>* GetSaveThreatList() { return &m_savethreatlist; }
+        void ClearSaveThreatTarget() { m_savethreatlist.clear(); }
+        uint32 GetSizeSaveThreat() { return m_savethreatlist.size(); }
+        void AddThreatTarget(uint64 targetGuid) { m_savethreatlist.push_back(targetGuid); }
+        void RemoveThreatTarget(uint64 targetGuid) { m_savethreatlist.remove(targetGuid); }
+        bool GetThreatTarget(uint64 targetGuid);
 
         VisibleAuraMap const* GetVisibleAuras() { return &m_visibleAuras; }
         AuraApplication * GetVisibleAura(uint8 slot)
@@ -2571,6 +2579,7 @@ class Unit : public WorldObject
         bool isCasterPet;
         float m_attackDist;
 
+        std::list<uint64> m_savethreatlist;
         ThreatManager m_ThreatManager;
 
         Vehicle* m_vehicle;

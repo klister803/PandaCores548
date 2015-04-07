@@ -416,6 +416,18 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
 {
     uint32 reducedThreadPercent = victim->GetReducedThreatPercent();
 
+    if(threat > 0.0f)
+    {
+        if(Creature* creature = iOwner->ToCreature())
+        {
+            if(creature->IsPersonalLoot() && victim->GetTypeId() == TYPEID_PLAYER && !iOwner->GetThreatTarget(victim->GetGUID()))
+            {
+                iOwner->AddThreatTarget(victim->GetGUID());
+                iOwner->UpdateMaxHealth();
+            }
+        }
+    }
+
     // must check > 0.0f, otherwise dead loop
     if (threat > 0.0f && reducedThreadPercent)
     {

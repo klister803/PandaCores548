@@ -1215,7 +1215,7 @@ void Creature::UpdateMaxHealth()
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
     float mod = 1.0f;
     float percHealth = GetHealthPct();
-    uint32 count = getThreatManager().getThreatList().size();
+    uint32 count = GetSizeSaveThreat();
 
     if(IsPersonalLoot() && count)
     {

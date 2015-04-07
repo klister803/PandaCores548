@@ -1154,7 +1154,7 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
         {
             uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
             Roll* r = new Roll(newitemGUID, *i);
-            r->lootedGUID = pLootedObject->GetGUID();
+            r->lootedGUID = loot->GetGUID();
 
             //a vector is filled with only near party members
             for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
@@ -1240,7 +1240,7 @@ void Group::GroupLoot(Loot* loot, WorldObject* pLootedObject)
 
         uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
         Roll* r = new Roll(newitemGUID, *i);
-        r->lootedGUID = pLootedObject->GetGUID();
+        r->lootedGUID = loot->GetGUID();
 
         //a vector is filled with only near party members
         for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
@@ -1303,7 +1303,7 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
         {
             uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
             Roll* r = new Roll(newitemGUID, *i);
-            r->lootedGUID = lootedObject->GetGUID();
+            r->lootedGUID = loot->GetGUID();
 
             for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
             {
@@ -1381,7 +1381,7 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
         item = sObjectMgr->GetItemTemplate(i->itemid);
         uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
         Roll* r = new Roll(newitemGUID, *i);
-        r->lootedGUID = lootedObject->GetGUID();
+        r->lootedGUID = loot->GetGUID();
 
         for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
         {
@@ -1489,7 +1489,7 @@ void Group::DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*
 
     uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), 0, HIGHGUID_ITEM);
     Roll* r = new Roll(newitemGUID, item);
-    r->lootedGUID = guid;
+    r->lootedGUID = loot->GetGUID();
     WorldObject* pLootedObject = NULL;
 
     if (IS_CRE_OR_VEH_GUID(guid))

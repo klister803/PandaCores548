@@ -264,6 +264,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     RemoveAllAuras();
     UpdateObjectVisibility();
     loot.clear();
+    ClearSaveThreatTarget();
     uint32 respawnDelay = m_respawnDelay;
     if (IsAIEnabled)
         AI()->CorpseRemoved(respawnDelay);

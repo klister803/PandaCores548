@@ -1353,6 +1353,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_ADD_LOSS_OF_CONTROL,                     STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_LOSS_OF_CONTROL_AURA_UPDATE,             STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
     DEFINE_OPCODE_HANDLER(SMSG, SMSG_REMOVE_LOSS_OF_CONTROL,                  STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
+    DEFINE_OPCODE_HANDLER(SMSG, SMSG_DISPLAY_TOAST,                           STATUS_NEVER,     PROCESS_INPLACE,      &WorldSession::Handle_ServerSide);
 
     //------------                      M S G                   ------------//
 

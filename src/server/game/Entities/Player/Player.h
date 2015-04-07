@@ -1600,8 +1600,8 @@ class Player : public Unit, public GridObject<Player>
         Item* EquipItem(uint16 pos, Item* pItem, bool update);
         void AutoUnequipOffhandIfNeed(bool force = false);
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
-        bool AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false);
-        bool AutoStoreLoot(uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = false) { return AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, filterLevel, broadcast); }
+        bool AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = true);
+        bool AutoStoreLoot(uint32 loot_id, LootStore const& store, uint32 filterLevel = 0, bool broadcast = true) { return AutoStoreLoot(NULL_BAG, NULL_SLOT, loot_id, store, filterLevel, broadcast); }
         void StoreLootItem(uint8 lootSlot, Loot* loot);
         Loot personalLoot;
 
@@ -2653,8 +2653,8 @@ class Player : public Unit, public GridObject<Player>
 
         void SendLoot(uint64 guid, LootType loot_type, bool AoeLoot = false, uint8 pool = 0);
         void SendLootRelease(uint64 guid);
-        void SendNotifyLootItemRemoved(uint8 lootSlot, uint64 guid);
-        void SendNotifyLootMoneyRemoved(uint64 gold, uint64 guid);
+        void SendNotifyLootItemRemoved(uint8 lootSlot, Loot* loot);
+        void SendNotifyLootMoneyRemoved(uint64 gold, Loot* loot);
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
