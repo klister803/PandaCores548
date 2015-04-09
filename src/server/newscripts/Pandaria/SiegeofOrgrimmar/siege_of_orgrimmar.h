@@ -76,9 +76,11 @@ enum eCreatures
     NPC_BORER_DRILL                 = 71906,
     NPC_ASH_ELEMENTAL               = 71827,
     NPC_KORKRON_BANNER              = 71626,
-    //real name - General Nazgrim(trigger)
     NPC_AFTER_SHOCK                 = 71697,
     NPC_HEALING_TIDE_TOTEM          = 72563,
+    NPC_ARCING_SMASH                = 71455,
+    NPC_ANCIENT_MIASMA              = 71513,
+    NPC_IMPLOSION                   = 71470,
 
     NPC_IMMERSEUS                   = 71543,
 
@@ -306,6 +308,9 @@ enum eGameObjects
 
     GO_RUSTY_BARS                   = 223231,
     GO_NAZGRIM_DOOR                 = 223276,
+    GO_NAZGRIM_EX_DOOR              = 221793,
+    GO_MALKOROK_FENCH               = 221784,
+    GO_MALKOROK_FENCH_2             = 221785,
 };
 
 enum GalakrasEvent

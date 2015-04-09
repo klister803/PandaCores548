@@ -24,6 +24,7 @@ DoorData const doorData[] =
     {GO_NORUSHEN_EX_DOOR,                    DATA_SHA_OF_PRIDE,           DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_ORGRIMMAR_GATE,                      DATA_IRON_JUGGERNAUT,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {GO_RUSTY_BARS,                          DATA_KORKRON_D_SHAMAN,       DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
+    {GO_NAZGRIM_EX_DOOR,                     DATA_GENERAL_NAZGRIM,        DOOR_TYPE_PASSAGE,    BOUNDARY_NONE},
     {0,                                      0,                           DOOR_TYPE_ROOM,       BOUNDARY_NONE}, // END
 };
 
@@ -60,6 +61,8 @@ public:
         uint64 orgrimmargate2Guid;
         uint64 rustybarsGuid;
         uint64 nazgrimdoorGuid;
+        uint64 nazgrimexdoorGuid;
+        std::vector<uint64> malkorokfenchGuids;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -72,11 +75,13 @@ public:
         uint64 VereesaOrAethasGUID;
         uint64 sExpertGUID;
         uint64 nExpertGUID;
+        uint64 ironjuggGuid;
         uint64 kardrisGuid;
         uint64 harommGuid;
         uint64 bloodclawGuid;
         uint64 darkfangGuid;
         uint64 gnazgrimGuid;
+        uint64 amGuid;
 
         EventMap Events;
 
@@ -112,6 +117,8 @@ public:
             orgrimmargate2Guid      = 0;
             rustybarsGuid           = 0;
             nazgrimdoorGuid         = 0;
+            nazgrimexdoorGuid       = 0;
+            malkorokfenchGuids.clear();
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -122,11 +129,13 @@ public:
             VereesaOrAethasGUID     = 0;
             sExpertGUID             = 0;
             nExpertGUID             = 0;
+            ironjuggGuid            = 0;
             kardrisGuid             = 0;
             harommGuid              = 0;
             bloodclawGuid           = 0;
             darkfangGuid            = 0;
             gnazgrimGuid            = 0;
+            amGuid                  = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -289,8 +298,6 @@ public:
                 case NPC_TOWER_SOUTH:
                 case NPC_TOWER_NORTH:
                 case NPC_ANTIAIR_TURRET:
-                case NPC_IRON_JUGGERNAUT:
-                case NPC_MALKOROK:
                 case NPC_THOK:
                 case NPC_BLACKFUSE:
                 case NPC_KILRUK:
@@ -368,6 +375,9 @@ public:
                 case NPC_DEMOLITIONS_EXPERT_N_H:
                     nExpertGUID = creature->GetGUID();
                     break;
+                case NPC_IRON_JUGGERNAUT:
+                    ironjuggGuid = creature->GetGUID();
+                    break;
                 //Korkron Dark Shamans
                 case NPC_WAVEBINDER_KARDRIS:
                     kardrisGuid = creature->GetGUID();
@@ -382,8 +392,13 @@ public:
                     darkfangGuid = creature->GetGUID();
                     break;
                 //
+                //General Nazgrim
                 case NPC_GENERAL_NAZGRIM:
                     gnazgrimGuid = creature->GetGUID();
+                    break;
+                //Malkorok
+                case NPC_ANCIENT_MIASMA:
+                    amGuid = creature->GetGUID();
                     break;
             }
         }
@@ -472,6 +487,14 @@ public:
                     break;
                 case GO_NAZGRIM_DOOR:
                     nazgrimdoorGuid = go->GetGUID();
+                    break;
+                case GO_NAZGRIM_EX_DOOR:
+                    AddDoor(go, true);
+                    nazgrimexdoorGuid = go->GetGUID();
+                    break;
+                case GO_MALKOROK_FENCH:
+                case GO_MALKOROK_FENCH_2:
+                    malkorokfenchGuids.push_back(go->GetGUID());
                     break;
             }
         }
@@ -591,13 +614,19 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        if (Creature* ij = instance->GetCreature(ironjuggGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, ij);
                         HandleGameObject(winddoorGuid, true);
                         break;
                     case DONE:
+                        if (Creature* ij = instance->GetCreature(ironjuggGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, ij);
                         HandleGameObject(winddoorGuid, true);
                         HandleGameObject(orgrimmargateGuid, true);
                         break;
                     case IN_PROGRESS:
+                        if (Creature* ij = instance->GetCreature(ironjuggGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, ij);
                         HandleGameObject(winddoorGuid, false);
                         break;
                     }
@@ -647,6 +676,26 @@ public:
                         if (Creature* nazgrim = instance->GetCreature(gnazgrimGuid))
                             SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, nazgrim);
                         HandleGameObject(nazgrimdoorGuid, true);
+                        HandleGameObject(nazgrimexdoorGuid, true);
+                        break;
+                    }
+                    break;
+                }
+                case DATA_MALKOROK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
+                            HandleGameObject(*itr, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
+                            HandleGameObject(*itr, false);
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
+                            HandleGameObject(*itr, true);
                         break;
                     }
                     break;
@@ -922,6 +971,8 @@ public:
                 case NPC_DARKFANG:
                     return darkfangGuid;
                 //
+                case NPC_ANCIENT_MIASMA:
+                    return amGuid;
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);

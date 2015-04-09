@@ -5031,7 +5031,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143420: //Ironstorm
                     spellInfo->InterruptFlags = NULL;
                     break;
-
+                //Malkorok
+                case 142890: //Blood Rage Dmg
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+                    break;
+                    
                 //World Bosses
                 //Sha of Anger
                 case 119487: //Anger
