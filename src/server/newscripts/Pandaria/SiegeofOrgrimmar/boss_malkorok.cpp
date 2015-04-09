@@ -202,12 +202,22 @@ class boss_malkorok : public CreatureScript
                         if (Player* pl = itr->getSource())
                         {
                             if (pl->isAlive())
-                                state ? pl->AddAura(SPELL_ANCIENT_MIASMA_H_A, pl) : pl->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA_H_A);
+                            {
+                                if (state)
+                                    pl->AddAura(SPELL_ANCIENT_MIASMA_H_A, pl);
+                                else
+                                    pl->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA_H_A);
+                            }
                         }
                     }
                 }
                 if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
-                    state ? am->AddAura(SPELL_ANCIENT_MIASMA, am) : am->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA);
+                {
+                    if (state)
+                        am->AddAura(SPELL_ANCIENT_MIASMA, am);
+                    else
+                        am->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA);
+                }
             }
 
             void UpdateAI(uint32 diff)
