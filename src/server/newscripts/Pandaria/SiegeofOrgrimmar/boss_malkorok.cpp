@@ -76,6 +76,29 @@ enum Phase
     PHASE_TWO,
 };
 
+enum CreatureText
+{
+    SAY_PULL,
+    SAY_ARCING_SMASH,
+    SAY_ARSING_SMASH2,
+    SAY_BREATH_OF_YSHAARJ,
+    SAY_PHASE_TWO,
+    SAY_DIED,
+};
+
+struct _ang
+{
+    float minang;
+    float maxang;
+};
+
+_ang modang[3]
+{
+    {0.0f, 1.5f},
+    {2.0f, 3.5f},
+    {4.0f, 6.0f},
+};
+
 uint32 ancientbarrierbar[3] = 
 {
     SPEEL_WEAK_ANCIENT_BARRIER,
@@ -119,6 +142,7 @@ class boss_malkorok : public CreatureScript
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
                 powercheck = 1300;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
@@ -137,6 +161,7 @@ class boss_malkorok : public CreatureScript
                         me->SetFacingTo(ang);
                         if (Creature* as = me->SummonCreature(NPC_ARCING_SMASH, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), ang))
                         {
+                            Talk(urand(SAY_ARCING_SMASH, SAY_ARSING_SMASH2));
                             me->PlayOneShotAnimKit(4308);
                             as->CastSpell(as, SPELL_ARCING_SMASH);
                             asGuids.push_back(as->GetGUID());
@@ -155,6 +180,7 @@ class boss_malkorok : public CreatureScript
                     DoCast(me, SPELL_EXPEL_MIASMA);
                     asGuids.clear();
                     powercheck = 1300;
+                    DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
                     events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
                     events.ScheduleEvent(EVENT_PREPARE, 13000);
@@ -163,6 +189,7 @@ class boss_malkorok : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
                     events.CancelEvent(EVENT_PREPARE);
                     events.CancelEvent(EVENT_SEISMIC_SLAM);
+                    Talk(SAY_PHASE_TWO);
                     DoCast(me, SPELL_BLOOD_RAGE);
                     powercheck = 1000;
                     SetGasStateAndBuffPlayers(false);
@@ -173,9 +200,15 @@ class boss_malkorok : public CreatureScript
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
                             events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 10000);
-                    for (uint8 n = 0; n < 3; n++)
-                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 100.0f, true))
-                            me->SummonCreature(NPC_IMPLOSION, target->GetPositionX(), target->GetPositionY(), me->GetPositionZ());
+                    if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
+                    {
+                        float x, y;
+                        for (uint8 n = 0; n < 3; n++)
+                        {
+                            GetPositionWithDistInOrientation(am, float(urand(15, 30)), urand(modang[n].minang, modang[n].maxang), x, y);
+                            me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
+                        }
+                    }
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
                     events.ScheduleEvent(EVENT_PREPARE, 20000);
                     break;
@@ -193,30 +226,19 @@ class boss_malkorok : public CreatureScript
             {
                 if (!instance)
                     return;
-                
-                Map::PlayerList const& pllist = me->GetMap()->GetPlayers();
-                if (!pllist.isEmpty())
-                {
-                    for (Map::PlayerList::const_iterator itr = pllist.begin(); itr != pllist.end(); ++itr)
-                    {
-                        if (Player* pl = itr->getSource())
-                        {
-                            if (pl->isAlive())
-                            {
-                                if (state)
-                                    pl->AddAura(SPELL_ANCIENT_MIASMA_H_A, pl);
-                                else
-                                    pl->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA_H_A);
-                            }
-                        }
-                    }
-                }
+
                 if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                 {
                     if (state)
+                    {
                         am->AddAura(SPELL_ANCIENT_MIASMA, am);
+                        DoCast(me, SPELL_ANCIENT_MIASMA_H_A, true);
+                    }
                     else
+                    {
                         am->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA);
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_ANCIENT_MIASMA_H_A);
+                    }                
                 }
             }
 
@@ -294,6 +316,7 @@ class boss_malkorok : public CreatureScript
                         me->AttackStop();
                         me->StopMoving();
                         me->GetMotionMaster()->Clear(false);
+                        Talk(SAY_BREATH_OF_YSHAARJ);
                         DoCast(me, SPELL_BREATH_OF_YSHAARJD);
                         break;
                     case EVENT_RE_ATTACK:
@@ -323,6 +346,7 @@ class boss_malkorok : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
+                Talk(SAY_DIED);
                 _JustDied();
                 SetGasStateAndBuffPlayers(false);
             }
@@ -516,6 +540,28 @@ public:
             }
         }
 
+        void OnPeriodic(AuraEffect const* aurEff)
+        {
+            if (GetTarget())
+            {
+                if (GetCaster() && GetCaster()->isInCombat())
+                {
+                    //player revive in combat with boss
+                    if (!GetTarget()->HasAura(SPELL_ANCIENT_MIASMA_DMG))
+                        GetTarget()->AddAura(SPELL_ANCIENT_MIASMA_DMG, GetTarget());
+                }
+                else
+                {
+                    //for safe (buff in aura bar, but player not combat with boss)
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA_H_A);
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_ANCIENT_BARRIER);
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_ANCIENT_MIASMA_DMG);
+                    for (uint8 n = 0; n < 3; n++)
+                        GetTarget()->RemoveAurasDueToSpell(ancientbarrierbar[n]);
+                }
+            }
+        }
+
         void AfterAbsorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
         {
             if (!GetTarget()->HasAura(SPELL_ANCIENT_BARRIER))
@@ -559,6 +605,7 @@ public:
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_ancient_miasma_AuraScript::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_ancient_miasma_AuraScript::OnPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
             AfterEffectAbsorb += AuraEffectAbsorbFn(spell_ancient_miasma_AuraScript::AfterAbsorb, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB);
             OnEffectRemove += AuraEffectRemoveFn(spell_ancient_miasma_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
         }

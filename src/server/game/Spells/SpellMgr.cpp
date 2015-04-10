@@ -5035,6 +5035,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142890: //Blood Rage Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     break;
+                case 142906: //Ancient Miasma Dmg
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

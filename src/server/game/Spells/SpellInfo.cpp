@@ -1188,6 +1188,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143420: //Ironstorm
     //Malkorok
     case 142890: //Blood Rage Dmg
+    case 142906: //Ancient Miasma Dmg
         return Effects[effect];
     }
 
