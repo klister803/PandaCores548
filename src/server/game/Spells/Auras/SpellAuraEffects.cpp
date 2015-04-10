@@ -459,7 +459,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_399
     &AuraEffect::HandleAuraModSkill,                              //400 SPELL_AURA_MOD_SKILL_2
     &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_CART_AURA
-    &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_ENABLE_POWER_TYPE
+    &AuraEffect::HandleAuraeEablePowerType,                       //402 SPELL_AURA_ENABLE_POWER_TYPE
     &AuraEffect::HandleAuraModSpellVisual,                        //403 SPELL_AURA_MOD_SPELL_VISUAL
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
@@ -9047,4 +9047,20 @@ void AuraEffect::HandleAuraActivateScene(AuraApplication const* aurApp, uint8 mo
     target->GetPosition(&pos);
 
     target->SendSpellScene(GetMiscValue(), &pos);
+}
+
+
+void AuraEffect::HandleAuraeEablePowerType(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target)
+        return;
+
+    if(apply)
+        target->SetUInt32Value(UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID, GetMiscValue());
+    else
+        target->SetUInt32Value(UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID, 0);
 }

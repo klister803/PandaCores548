@@ -880,7 +880,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_ARCHAEOLOGY_FINDS       = 41,
     PLAYER_LOGIN_QUERY_LOAD_PERSONAL_RATE           = 42,
     PLAYER_LOGIN_QUERY_LOAD_VISUAL                  = 43,
-    PLAYER_LOGIN_QUERY_LOAD_GORESPAWN               = 44,
+    PLAYER_LOGIN_QUERY_LOAD_LOOTCOOLDOWN            = 44,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -988,15 +988,24 @@ struct auraEffectData
     uint32 _baseamount;
 };
 
-struct playerGOrespawn
+struct playerLootCooldown
 {
-    uint64 goGuid;
     uint32 entry;
+    uint8 type;
     uint32 respawnTime;
     bool state;
 };
 
-typedef UNORDERED_MAP<uint64, playerGOrespawn> PlayerGOrespawnMap;
+typedef UNORDERED_MAP<uint32, playerLootCooldown> PlayerLootCooldownMap;
+
+enum PlayerLootCooldownType
+{
+    TYPE_GO          = 0,
+    TYPE_CREATURE    = 1,
+    TYPE_SPELL       = 2,
+};
+
+#define MAX_LOOT_COOLDOWN_TYPE 3
 
 class PlayerTaxi
 {
@@ -2564,7 +2573,7 @@ class Player : public Unit, public GridObject<Player>
 
         void ModifySkillBonus(uint32 skillid, int32 val, bool talent);
 
-        void ResetGameObjectRespawn();
+        void ResetLootCooldown();
 
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
@@ -2898,10 +2907,22 @@ class Player : public Unit, public GridObject<Player>
         template<class T>
         void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
-        uint32 GetPlayerGOrespawnCount() const { return m_PlayerGOrespawn.size(); }
-        bool IsPlayerGOrespawned(uint32 entry) const
+        bool IsPlayerLootCooldown(uint32 entry, uint8 type = 0) const
         {
-            return m_PlayerGOrespawn.find(entry) != m_PlayerGOrespawn.end();
+            return m_playerLootCooldown[type].find(entry) != m_playerLootCooldown[type].end();
+        }
+        void AddPlayerLootCooldown(uint32 entry, uint8 type = 0, bool respawn = true)
+        {
+            PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[type].find(entry);
+            if(itr == m_playerLootCooldown[type].end())
+            {
+                playerLootCooldown lootCooldown;
+                lootCooldown.entry = entry;
+                lootCooldown.type = type;
+                lootCooldown.respawnTime = respawn ? time(NULL) + WEEK : 0;
+                lootCooldown.state = true;
+                m_playerLootCooldown[type][entry] = lootCooldown;
+            }
         }
 
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
@@ -3243,7 +3264,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadBattlePets(PreparedQueryResult result);
         void _LoadBattlePetSlots(PreparedQueryResult result);
         void _LoadHonor();
-        void _LoadGOrespawn(PreparedQueryResult result);
+        void _LoadLootCooldown(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -3273,7 +3294,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveBattlePets(SQLTransaction& trans);
         void _SaveBattlePetSlots(SQLTransaction& trans);
         void _SaveHonor();
-        void _SaveOrespawn(SQLTransaction& trans);
+        void _SaveLootCooldown(SQLTransaction& trans);
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
@@ -3566,7 +3587,7 @@ class Player : public Unit, public GridObject<Player>
 
         BracketList m_BracketsList;
 
-        PlayerGOrespawnMap m_PlayerGOrespawn;
+        PlayerLootCooldownMap m_playerLootCooldown[MAX_LOOT_COOLDOWN_TYPE];
 
         bool m_watching_movie;
         bool plrUpdate;

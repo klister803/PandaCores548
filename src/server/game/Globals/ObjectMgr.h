@@ -686,6 +686,17 @@ class ObjectMgr
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
 
+        typedef UNORDERED_MAP<uint32, uint32> CreatureSpellBonusList;
+        CreatureSpellBonusList _creatureSpellBonus;
+
+        uint32 GetEntryByBonusSpell(uint32 spellId) const
+        {
+            CreatureSpellBonusList::const_iterator itr = _creatureSpellBonus.find(spellId);
+            if (itr != _creatureSpellBonus.end())
+                return itr->second;
+            return 0;
+        }
+
         InstanceTemplate const* GetInstanceTemplate(uint32 mapId);
 
         PetStats const* GetPetStats(uint32 creature_id) const;

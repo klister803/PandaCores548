@@ -2239,7 +2239,7 @@ void World::Update(uint32 diff)
     if (m_gameTime > m_NextInstanceWeeklyReset)
     {
         InstanceWeeklyResetTime();
-        ResetGameObjectRespawn();
+        ResetLootCooldown();
     }
 
     if (m_gameTime > m_NextServerRestart)
@@ -3281,13 +3281,13 @@ void World::InstanceWeeklyResetTime()
     sWorld->setWorldState(WS_INSTANCE_WEEKLY_RESET_TIME, uint64(m_NextInstanceWeeklyReset));
 }
 
-void World::ResetGameObjectRespawn()
+void World::ResetLootCooldown()
 {
-    CharacterDatabase.Execute("DELETE FROM character_gameobject WHERE respawnTime != 0");
+    CharacterDatabase.Execute("DELETE FROM character_loot_cooldown WHERE respawnTime != 0");
 
     for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())
-            itr->second->GetPlayer()->ResetGameObjectRespawn();
+            itr->second->GetPlayer()->ResetLootCooldown();
 }
 
 void World::LoadDBAllowedSecurityLevel()

@@ -302,6 +302,7 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 eff
         case TARGET_SELECT_CATEGORY_AREA: // AREA
         case TARGET_SELECT_CATEGORY_BETWEEN: // AREA
         case TARGET_SELECT_CATEGORY_GOTOMOVE: // AREA
+        case TARGET_SELECT_CATEGORY_THREAD: // AREA
             return area;
         case TARGET_SELECT_CATEGORY_DEFAULT:
             switch (targetInfo.GetObjectType())

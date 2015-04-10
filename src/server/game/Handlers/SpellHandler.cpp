@@ -779,7 +779,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (mover->GetTypeId() == TYPEID_PLAYER)
     {
         // not have spell in spellbook or spell passive and not casted by client
-        if ((!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive()) && !spellInfo->ResearchProject && spellId != 101054 && !spellInfo->HasEffect(SPELL_EFFECT_OPEN_LOCK) &&
+        if ((!mover->ToPlayer()->HasActiveSpell(spellId) || spellInfo->IsPassive()) && !spellInfo->ResearchProject && spellId != 101054 && !spellInfo->HasEffect(SPELL_EFFECT_OPEN_LOCK) && !spellInfo->HasEffect(SPELL_EFFECT_LOOT_BONUS) &&
             !(spellInfo->AttributesEx8 & SPELL_ATTR8_RAID_MARKER))
         {
             if(spellId == 101603)

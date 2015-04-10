@@ -893,7 +893,7 @@ class World
         void InstanceDailyResetTime();
         void InstanceHalfWeekResetTime();
         void InstanceWeeklyResetTime();
-        void ResetGameObjectRespawn();
+        void ResetLootCooldown();
     private:
         static ACE_Atomic_Op<ACE_Thread_Mutex, bool> m_stopEvent;
         static uint8 m_ExitCode;

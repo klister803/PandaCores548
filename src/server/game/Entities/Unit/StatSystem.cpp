@@ -1219,7 +1219,7 @@ void Creature::UpdateMaxHealth()
 
     if(IsPersonalLoot() && count)
     {
-        mod += (count - 1) * _GetHealthModPersonal();
+        mod += _GetHealthModPersonal(count) * count;
         value *= mod;
     }
     SetMaxHealth((uint32)value);

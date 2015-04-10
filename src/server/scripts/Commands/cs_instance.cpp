@@ -149,6 +149,9 @@ public:
         }
         handler->PSendSysMessage("instances unbound: %d", counter);
 
+        player->ResetLootCooldown();
+        handler->PSendSysMessage("Reset personal loot cooldown");
+
         return true;
     }
 

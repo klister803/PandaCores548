@@ -260,7 +260,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::SendScene,                                      //186 SPELL_EFFECT_ACTIVATE_SCENE5
     &Spell::EffectRandomizeDigsites,                        //187 SPELL_EFFECT_RANDOMIZE_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_STAMPEDE
-    &Spell::EffectNULL,                                     //189 SPELL_EFFECT_LOOT_BONUS
+    &Spell::EffectBonusLoot,                                //189 SPELL_EFFECT_LOOT_BONUS
     &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
     &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
     &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET
@@ -8502,4 +8502,69 @@ void Spell::SendScene(SpellEffIndex effIndex)
         m_caster->GetPosition(&pos);
 
     m_caster->SendSpellScene(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue, &pos);
+}
+
+void Spell::EffectBonusLoot(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* player = unitTarget->ToPlayer();
+
+    uint32 lootId = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
+    if(!lootId)
+        return;
+
+    uint32 spellCooldownId = GetSpellByTrigger(m_spellInfo->Id);
+    if(!spellCooldownId)
+        spellCooldownId = m_spellInfo->Id;
+
+    if(unitTarget == m_caster)
+        player->RemoveAura(spellCooldownId); //Remove bonus aura
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot spellCooldownId %i", spellCooldownId);
+
+    if(player->IsPlayerLootCooldown(spellCooldownId, TYPE_SPELL))
+        return;
+
+    //Loot for boos
+    if(uint32 creatureId = sObjectMgr->GetEntryByBonusSpell(spellCooldownId))
+    {
+        //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot creatureId %i", creatureId);
+
+        Loot* loot = &player->personalLoot;
+        loot->clear();
+        loot->personal = true;
+        loot->isBoss = true;
+        loot->bonusLoot = unitTarget == m_caster;
+        loot->FillLoot(creatureId, LootTemplates_Creature, player, true);
+        loot->AutoStoreItems();
+        if(loot->gold)
+        {
+            //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot gold %i bonusLoot %i", loot->gold, loot->bonusLoot);
+            player->ModifyMoney(loot->gold);
+            player->SendDisplayToast(0, 1, 0/*loot->bonusLoot*/, loot->gold, 0);
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
+            loot->gold = 0;
+        }
+        if(IsTriggered())
+            TakeReagents();
+        player->AddPlayerLootCooldown(spellCooldownId, TYPE_SPELL, true);
+    }
+    else //Other loot for item and any
+    {
+        Loot* loot = &player->personalLoot;
+        loot->clear();
+        loot->personal = true;
+        loot->FillLoot(lootId, LootTemplates_Bonus, player, true);
+        loot->AutoStoreItems();
+        uint32 count = 1;
+
+        //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot Other loot for item and any lootId %i", lootId);
+        if(m_CastItem)
+            player->DestroyItemCount(m_CastItem, count, true);
+    }
 }

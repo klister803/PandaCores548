@@ -653,7 +653,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_PERSONAL_RATE,       "SELECT rate FROM character_rates WHERE guid=? LIMIT 1",                                         CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SEL_PLAYER_VISUAL,       "SELECT head, shoulders, chest, waist, legs, feet, wrists, hands, back, main, off, ranged, tabard, shirt FROM character_visuals WHERE guid = ?",  CONNECTION_ASYNC);
 
-    //Game Object re-spawn system
-    PREPARE_STATEMENT(CHAR_SEL_PLAYER_GORESPAWN,       "SELECT entry, respawnTime FROM character_gameobject WHERE guid = ?",  CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_INS_PLAYER_GORESPAWN,       "INSERT IGNORE INTO character_gameobject (`guid`, `entry`, `respawnTime`) VALUES (?, ?, ?)",  CONNECTION_ASYNC);
+    //Loot cooldown system
+    PREPARE_STATEMENT(CHAR_SEL_PLAYER_LOOTCOOLDOWN,       "SELECT entry, type, respawnTime FROM character_loot_cooldown WHERE guid = ?",  CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_INS_PLAYER_LOOTCOOLDOWN,       "INSERT IGNORE INTO character_loot_cooldown (`guid`, `entry`, `type`, `respawnTime`) VALUES (?, ?, ?, ?)",  CONNECTION_ASYNC);
 }

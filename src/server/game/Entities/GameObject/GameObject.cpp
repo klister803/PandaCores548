@@ -637,9 +637,9 @@ void GameObject::getFishLoot(Loot* fishloot, Player* loot_owner)
     fishloot->objGuid = GetGUID();
 
     // if subzone loot exist use it
-    if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true))
+    if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true, this))
         // else use zone loot (must exist in like case)
-        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true);
+        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true, false, this);
 }
 
 void GameObject::SaveToDB()

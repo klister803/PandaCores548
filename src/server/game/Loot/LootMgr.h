@@ -253,6 +253,7 @@ class LootTemplate
         void AddEntry(LootStoreItem& item);
         // Rolls for every item in the template and adds the rolled items the the loot
         void Process(Loot& loot, bool rate, uint8 groupId = 0) const;
+        void ProcessPersonal(Loot& loot) const;
         void CopyConditions(std::list<Condition*>  conditions);
 
         // True if template includes at least 1 quest drop entry
@@ -325,9 +326,10 @@ struct Loot
     uint64 m_guid;
     uint8 objType;
     uint8 spawnMode;
-    uint32 specId;
     uint32 itemLevel;
     bool personal;
+    bool bonusLoot;
+    bool isBoss;
 
     explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }
@@ -351,7 +353,8 @@ struct Loot
     uint32 GetGUIDLow() { return GUID_LOPART(m_guid); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false);
+    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool noGroup, bool noEmptyError = false, WorldObject const* lootFrom = NULL);
+    void AutoStoreItems();
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
@@ -406,6 +409,7 @@ extern LootStore LootTemplates_Skinning;
 extern LootStore LootTemplates_Disenchant;
 extern LootStore LootTemplates_Prospecting;
 extern LootStore LootTemplates_Spell;
+extern LootStore LootTemplates_Bonus;
 
 void LoadLootTemplates_Creature();
 void LoadLootTemplates_Fishing();
@@ -419,6 +423,7 @@ void LoadLootTemplates_Disenchant();
 void LoadLootTemplates_Prospecting();
 
 void LoadLootTemplates_Spell();
+void LoadLootTemplates_Bonus();
 void LoadLootTemplates_Reference();
 
 inline void LoadLootTables()
@@ -434,6 +439,7 @@ inline void LoadLootTables()
     LoadLootTemplates_Disenchant();
     LoadLootTemplates_Prospecting();
     LoadLootTemplates_Spell();
+    LoadLootTemplates_Bonus();
 
     LoadLootTemplates_Reference();
 }

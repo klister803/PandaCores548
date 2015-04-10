@@ -418,6 +418,7 @@ class Spell
         void EffectUnlockPetBattles(SpellEffIndex effIndex);
         void EffectHealBattlePetPct(SpellEffIndex effIndex);
         void SendScene(SpellEffIndex effIndex);
+        void EffectBonusLoot(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 
@@ -441,6 +442,7 @@ class Spell
         void SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void SelectImplicitTargetObjectTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, WorldObject* target, uint32 effMask);
+        void SelectImplicitTargetsFromThreadList(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask);
         void SelectImplicitTrajTargets();
 
         void SelectEffectTypeImplicitTargets(uint8 effIndex);

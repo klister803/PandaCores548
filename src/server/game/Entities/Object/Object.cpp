@@ -2322,7 +2322,7 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (IS_PLAYER_GUID(GetGUID()) && IS_GAMEOBJECT_GUID(obj->GetGUID()))
     {
         Player const* thisPlayer = ToPlayer();
-        if (thisPlayer && thisPlayer->IsPlayerGOrespawned(obj->GetEntry()))
+        if (thisPlayer && thisPlayer->IsPlayerLootCooldown(obj->GetEntry()))
             return false;
     }
 

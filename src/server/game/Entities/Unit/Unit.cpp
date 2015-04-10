@@ -14370,7 +14370,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     }
 
     Creature const* creatureAttacker = ToCreature();
-    if (creatureAttacker && creatureAttacker->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER)
+    if (creatureAttacker && creatureAttacker->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT)
         return false;
 
     Player const* playerAffectingAttacker = HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : NULL;
@@ -14457,7 +14457,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     // can't assist non-friendly targets
     if (GetReactionTo(target) <= REP_NEUTRAL
         && target->GetReactionTo(this) <= REP_NEUTRAL
-        && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER)))
+        && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT)))
         return false;
 
     // PvP case
@@ -14492,7 +14492,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
         && !((target->GetByteValue(UNIT_FIELD_BYTES_2, 1) & UNIT_BYTE2_FLAG_PVP)))
     {
         if (Creature const* creatureTarget = target->ToCreature())
-            return creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER || creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_AID_PLAYERS;
+            return creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT || creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_CAN_ASSIST;
     }
     return true;
 }
@@ -20729,55 +20729,20 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 
         if (creature)
         {
-            if(!creature->IsPersonalLoot())
+            if(creature->IsPersonalLoot())
+                GeneratePersonalLoot(creature, looter);
+            else
             {
                 Loot* loot = &creature->loot;
                 if (creature->lootForPickPocketed)
                     creature->lootForPickPocketed = false;
 
                 loot->clear();
+                loot->objType = 1;
                 if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                {
-                    loot->objEntry = creature->GetCreatureTemplate()->Entry;
-                    loot->objGuid = creature->GetGUID();
-                    loot->objType = 1;
-                    loot->spawnMode = creature->GetMap()->GetSpawnMode();
-                    loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false);
-                }
+                    loot->FillLoot(lootid, LootTemplates_Creature, looter, false, false, creature);
 
                 loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
-            }
-            else
-            {
-                Loot* cLoot = &creature->loot;
-                if (creature->lootForPickPocketed)
-                    creature->lootForPickPocketed = false;
-                cLoot->clear();
-                cLoot->unlootedCount = creature->GetSizeSaveThreat();
-
-                //sLog->outDebug(LOG_FILTER_LOOT, "Unit::Kill personal count %i", cLoot->unlootedCount);
-
-                std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
-                for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
-                {
-                    if (Player* lootPersonal = ObjectAccessor::GetPlayer(*creature, (*itr)))
-                    {
-                        Loot* loot = &lootPersonal->personalLoot;
-                        loot->clear();
-                        if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
-                        {
-                            loot->objEntry = creature->GetCreatureTemplate()->Entry;
-                            loot->objGuid = creature->GetGUID();
-                            loot->objType = 1;
-                            loot->spawnMode = creature->GetMap()->GetSpawnMode();
-                            loot->FillLoot(lootid, LootTemplates_Creature, lootPersonal, false, false);
-                        }
-
-                        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::Kill lootGUID %i", loot->GetGUID());
-
-                        loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
-                    }
-                }
             }
         }
 
@@ -21593,8 +21558,8 @@ bool Unit::IsInPartyWith(Unit const* unit) const
 
     if (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return u1->ToPlayer()->IsInSameGroupWith(u2->ToPlayer());
-    else if ((u2->GetTypeId() == TYPEID_PLAYER && u1->GetTypeId() == TYPEID_UNIT && u1->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER) ||
-        (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_UNIT && u2->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER))
+    else if ((u2->GetTypeId() == TYPEID_PLAYER && u1->GetTypeId() == TYPEID_UNIT && u1->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT) ||
+        (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_UNIT && u2->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT))
         return true;
     else
         return false;
@@ -21612,8 +21577,8 @@ bool Unit::IsInRaidWith(Unit const* unit) const
 
     if (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return u1->ToPlayer()->IsInSameRaidWith(u2->ToPlayer());
-    else if ((u2->GetTypeId() == TYPEID_PLAYER && u1->GetTypeId() == TYPEID_UNIT && u1->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER) ||
-            (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_UNIT && u2->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER))
+    else if ((u2->GetTypeId() == TYPEID_PLAYER && u1->GetTypeId() == TYPEID_UNIT && u1->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT) ||
+            (u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_UNIT && u2->ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT))
         return true;
     else
         return false;
@@ -24579,4 +24544,125 @@ void Unit::SendDisplayToast(uint32 entry, uint8 hasDisplayToastMethod, bool isBo
         data << uint32(entry); // CurrencyID
 
     ToPlayer()->GetSession()->SendPacket(&data);
+}
+
+void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
+{
+    Loot* cLoot = &creature->loot;
+    if (creature->lootForPickPocketed)
+        creature->lootForPickPocketed = false;
+    cLoot->clear();
+    uint32 lootid = creature->GetCreatureTemplate()->lootid;
+
+    Map* map = creature->GetMap();
+    uint32 spellForLoot = creature->m_temlate_spells[6];
+    uint32 spellForBonusLoot = creature->m_temlate_spells[7];
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot spellForLoot %i spellForBonusLoot %i lootid %i", spellForLoot, spellForBonusLoot, lootid);
+
+    //Generate loot for instance
+    if(creature->GetInstanceId())
+    {
+        //Loot for LFR and Flex is personal
+        if(map->IsLfrFlex())
+        {
+            Map::PlayerList const& playerList = map->GetPlayers();
+            if (playerList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                if (Player* player = itr->getSource())
+                {
+                    if(spellForBonusLoot)
+                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL)) //Bonus loot
+                            player->CastSpell(player, spellForBonusLoot, false);
+
+                    if(spellForLoot)
+                    {
+                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL))
+                            player->CastSpell(player, spellForLoot, false);
+                        continue;
+                    }
+
+                    if(player->IsPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE))
+                        continue;
+
+                    Loot* loot = &player->personalLoot;
+                    loot->clear();
+                    loot->personal = true;
+                    loot->objType = 1;
+
+                    //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot GetEntry %i GetGUID %i player %i", creature->GetEntry(), loot->GetGUID(), player->GetGUID());
+
+                    if (lootid)
+                        loot->FillLoot(lootid, LootTemplates_Creature, player, true, false, creature);
+
+                    if(creature->IsAutoLoot())
+                        loot->AutoStoreItems();
+
+                    player->AddPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE);
+                }
+            }
+            return;
+        }
+        else //Other difficulty is raid loot
+        {
+            //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot Other difficulty is raid loot");
+
+            cLoot->objType = 1;
+            if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                cLoot->FillLoot(lootid, LootTemplates_Creature, anyLooter, false, false, creature);
+
+            cLoot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+            return;
+        }
+    }
+
+    if(creature->isWorldBoss())
+    {
+        //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot isWorldBoss");
+
+        if(spellForBonusLoot)
+            creature->CastSpell(creature, spellForBonusLoot, false);
+        if(spellForLoot)
+        {
+            creature->CastSpell(creature, spellForLoot, false);
+            return;
+        }
+    }
+
+    cLoot->unlootedCount = creature->GetSizeSaveThreat();
+    std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
+    for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
+    {
+        if (Player* looter = ObjectAccessor::GetPlayer(*creature, (*itr)))
+        {
+            if(looter->IsPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE))
+            {
+                --cLoot->unlootedCount;
+                continue;
+            }
+
+            Loot* loot = &looter->personalLoot;
+            loot->clear();
+            loot->personal = true;
+            loot->objType = 1;
+
+            if (lootid)
+                loot->FillLoot(lootid, LootTemplates_Creature, looter, true, false, creature);
+
+            if(creature->IsAutoLoot())
+            {
+                //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot IsAutoLoot lootGUID %i", loot->GetGUID());
+                loot->AutoStoreItems();
+                --cLoot->unlootedCount;
+            }
+
+            if(creature->isWorldBoss())
+                looter->AddPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE);
+
+            //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot lootGUID %i", loot->GetGUID());
+        }
+    }
 }

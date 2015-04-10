@@ -1297,7 +1297,7 @@ float Creature::_GetHealthMod(int32 Rank)
     }
 }
 
-float Creature::_GetHealthModPersonal()
+float Creature::_GetHealthModPersonal(uint32 &count)
 {
     switch (GetCreatureTemplate()->rank)
     {
@@ -1305,12 +1305,28 @@ float Creature::_GetHealthModPersonal()
         case CREATURE_ELITE_ELITE:
         case CREATURE_ELITE_RAREELITE:
         case CREATURE_ELITE_RARE:
-            return 0.7f;
+        {
+            count -= 1; //first player
+            return 0.0f; //From WOD hp increment 70% by player
+        }
         case CREATURE_ELITE_WORLDBOSS:
-            return 1.0f;
-        default:
-            return 0.7f;
+        {
+            switch(GetMap()->GetDifficulty())
+            {
+                //case NONE_DIFFICULTY: //From WOD
+                case FLEXIBLE_DIFFICULTY: //For flex
+                {
+                    if(count > 10) //Base hp for 10 player if > 10 need increment hp
+                    {
+                        count -= 10;
+                        return 0.1f;
+                    }
+                }
+            }
+        }
     }
+
+    return 0.0f;
 }
 
 float Creature::_GetDamageMod(int32 Rank)
@@ -2885,4 +2901,9 @@ bool Creature::SetHover(bool enable, bool packetOnly)
 bool Creature::IsPersonalLoot() const
 {
     return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_PERSONAL_LOOT);
+}
+
+bool Creature::IsAutoLoot() const
+{
+    return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_AUTO_LOOT);
 }

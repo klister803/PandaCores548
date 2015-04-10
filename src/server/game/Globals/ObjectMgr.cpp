@@ -500,6 +500,15 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.flags_extra        = fields[index++].GetUInt32();
         creatureTemplate.ScriptID           = GetScriptId(fields[index++].GetCString());
 
+        if(creatureTemplate.type_flags & CREATURE_TYPEFLAGS_BOSS)
+        {
+            //Save loot spell
+            if(creatureTemplate.spells[6])
+                _creatureSpellBonus[creatureTemplate.spells[6]] = entry;
+            //Save bonus loot spell
+            if(creatureTemplate.spells[7])
+                _creatureSpellBonus[creatureTemplate.spells[7]] = entry;
+        }
         ++count;
     }
     while (result->NextRow());
@@ -4978,8 +4987,8 @@ void ObjectMgr::LoadInstanceTemplate()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                0     1       2        4
-    QueryResult result = WorldDatabase.Query("SELECT map, parent, script, allowMount FROM instance_template");
+    //                                                0     1       2        4             5
+    QueryResult result = WorldDatabase.Query("SELECT map, parent, script, allowMount, bonusChance FROM instance_template");
 
     if (!result)
     {
@@ -5002,9 +5011,10 @@ void ObjectMgr::LoadInstanceTemplate()
 
         InstanceTemplate instanceTemplate;
 
-        instanceTemplate.AllowMount = fields[3].GetBool();
-        instanceTemplate.Parent     = uint32(fields[1].GetUInt16());
-        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetCString());
+        instanceTemplate.AllowMount     = fields[3].GetBool();
+        instanceTemplate.Parent         = uint32(fields[1].GetUInt16());
+        instanceTemplate.ScriptId       = sObjectMgr->GetScriptId(fields[2].GetCString());
+        instanceTemplate.bonusChance    = fields[3].GetUInt32();
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 

@@ -10361,16 +10361,14 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                 {
                     loot = &personalLoot;
                     loot->clear();
-                    loot->objEntry = go->GetGOInfo()->entry;
-                    loot->objGuid = go->GetGUID();
-                    loot->objType = 3;
                     loot->personal = true;
-                    loot->spawnMode = go->GetMap()->GetSpawnMode();
-                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, true);
+                    loot->objType = 3;
+                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, true, false, go);
                 }
                 else
                 {
                     loot->clear();
+                    loot->objType = 3;
 
                     Group* group = GetGroup();
                     bool groupRules = (group && go->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST && go->GetGOInfo()->chest.usegrouplootrules);
@@ -10379,11 +10377,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                     if (groupRules)
                         group->UpdateLooterGuid(go, true);
 
-                    loot->objEntry = go->GetGOInfo()->entry;
-                    loot->objGuid = go->GetGUID();
-                    loot->objType = 3;
-                    loot->spawnMode = go->GetMap()->GetSpawnMode();
-                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false);
+                    loot->FillLoot(lootid, LootTemplates_Gameobject, this, !groupRules, false, go);
 
                     // get next RR player (for next loot)
                     if (groupRules)
@@ -10508,7 +10502,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             bones->loot.clear();
             if (Battleground* bg = GetBattleground())
                 if (bg->GetTypeID(true) == BATTLEGROUND_AV)
-                    loot->FillLoot(1, LootTemplates_Creature, this, true);
+                    loot->FillLoot(1, LootTemplates_Creature, this, true, false, bones);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = uint32(urand(50, 150) * 0.016f * pow(float(pLevel)/5.76f, 2.5f) * sWorld->getRate(RATE_DROP_MONEY));
@@ -10549,8 +10543,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         loot = &personalLoot;
         if(!creature->IsPersonalLoot() || loot->isLooted() || creature->GetGUID() != loot->objGuid)
             loot = &creature->loot;
-        else
-            loot->personal = true;
 
         /*if(creature->IsPersonalLoot())
         {
@@ -10566,7 +10558,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                 loot->clear();
 
                 if (uint32 lootid = creature->GetCreatureTemplate()->pickpocketLootId)
-                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, true);
+                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, true, false, creature);
 
                 // Generate extra money for pick pocket loot
                 const uint32 a = urand(0, creature->getLevel()/2);
@@ -10613,8 +10605,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             if (loot_type == LOOT_SKINNING)
             {
                 loot->clear();
-                loot->objGuid = creature->GetGUID();
-                loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, this, true);
+                loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, this, true, false, creature);
                 permission = OWNER_PERMISSION;
             }
             // set group rights only for loot_type != LOOT_SKINNING
@@ -10691,21 +10682,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                 if(TreasureData const* pData = sObjectMgr->GetTreasureData(go->GetGOInfo()->chest.chestPersonalLoot))
                 {
                     if(pData->type == GO_TYPE_RESPAWN)
-                    {
-                        playerGOrespawn goRespawn;
-                        goRespawn.entry = go->GetGOInfo()->entry;
-                        goRespawn.respawnTime = time(NULL) + WEEK;
-                        goRespawn.state = true;
-                        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
-                    }
+                        AddPlayerLootCooldown(go->GetGOInfo()->entry);
                     else if(pData->type == GO_TYPE_DONTSPAWN)
-                    {
-                        playerGOrespawn goRespawn;
-                        goRespawn.entry = go->GetGOInfo()->entry;
-                        goRespawn.respawnTime = 0;
-                        goRespawn.state = true;
-                        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
-                    }
+                        AddPlayerLootCooldown(go->GetGOInfo()->entry, TYPE_GO, false);
                 }
             }
 
@@ -18821,7 +18800,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
 
     _LoadGroup(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGROUP));
-    _LoadGOrespawn(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_GORESPAWN));
+    _LoadLootCooldown(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_LOOTCOOLDOWN));
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
 
@@ -20532,48 +20511,57 @@ void Player::_LoadGroup(PreparedQueryResult result)
     }
 }
 
-void Player::_LoadGOrespawn(PreparedQueryResult result)
+void Player::_LoadLootCooldown(PreparedQueryResult result)
 {
-    //QueryResult* result = CharacterDatabase.PQuery("SELECT entry, respawnTime FROM character_gameobject WHERE guid = %u", GetGUIDLow());
+    //QueryResult* result = CharacterDatabase.PQuery("SELECT entry, bonus, respawnTime FROM character_creature WHERE guid = %u", GetGUIDLow());
     if (!result)
         return;
     do
     {
         Field* fields = result->Fetch();
-        playerGOrespawn goRespawn;
-        goRespawn.entry = fields[0].GetInt32();
-        goRespawn.respawnTime = fields[1].GetInt32();
-        goRespawn.state = false;
-        m_PlayerGOrespawn[goRespawn.entry] = goRespawn;
+        playerLootCooldown lootCooldown;
+        lootCooldown.entry = fields[0].GetInt32();
+        lootCooldown.type = fields[1].GetInt8();
+        lootCooldown.respawnTime = fields[2].GetInt32();
+        lootCooldown.state = false;
+        m_playerLootCooldown[lootCooldown.type][lootCooldown.entry] = lootCooldown;
     }
     while (result->NextRow());
 }
 
-void Player::_SaveOrespawn(SQLTransaction& trans)
+void Player::_SaveLootCooldown(SQLTransaction& trans)
 {
     PreparedStatement* stmt = NULL;
-    for (PlayerGOrespawnMap::iterator itr = m_PlayerGOrespawn.begin(); itr != m_PlayerGOrespawn.end(); ++itr)
-    {
-        if(!itr->second.state)
-            continue;
 
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_GORESPAWN);
-        stmt->setUInt64(0, GetGUIDLow());
-        stmt->setUInt32(1, itr->second.entry);
-        stmt->setUInt32(2, itr->second.respawnTime);
-        itr->second.state = false;
-        trans->Append(stmt);
+    for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; i++)
+    {
+        for (PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[i].begin(); itr != m_playerLootCooldown[i].end(); ++itr)
+        {
+            if(!itr->second.state)
+                continue;
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PLAYER_LOOTCOOLDOWN);
+            stmt->setUInt64(0, GetGUIDLow());
+            stmt->setUInt32(1, itr->second.entry);
+            stmt->setUInt32(2, itr->second.type);
+            stmt->setUInt32(3, itr->second.respawnTime);
+            itr->second.state = false;
+            trans->Append(stmt);
+        }
     }
 }
 
-void Player::ResetGameObjectRespawn()
+void Player::ResetLootCooldown()
 {
-    for (PlayerGOrespawnMap::iterator itr = m_PlayerGOrespawn.begin(); itr != m_PlayerGOrespawn.end();)
+    for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; i++)
     {
-        if(itr->second.respawnTime)
-            m_PlayerGOrespawn.erase(itr++);
-        else
-            ++itr;
+        for (PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[i].begin(); itr != m_playerLootCooldown[i].end();)
+        {
+            if(itr->second.respawnTime)
+                m_playerLootCooldown[i].erase(itr++);
+            else
+                ++itr;
+        }
     }
 }
 
@@ -21408,7 +21396,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveBattlePets(trans);
     _SaveBattlePetSlots(trans);
     _SaveHonor();
-    _SaveOrespawn(trans);
+    _SaveLootCooldown(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -27713,8 +27701,7 @@ bool Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore cons
     loot.objType = 4;
     if(filterLevel > 399)
         loot.itemLevel = filterLevel;
-    loot.specId = GetLootSpecID();
-    loot.FillLoot (loot_id, store, this, true);
+    loot.FillLoot(loot_id, store, this, true);
 
     uint32 max_slot = loot.GetMaxSlotInLootFor(this);
     for (uint32 i = 0; i < max_slot; ++i)
@@ -27797,9 +27784,12 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
         SendNotifyLootItemRemoved(lootSlot, loot);
         currency->is_looted = true;
         --loot->unlootedCount;
-        SendDisplayToast(item->itemid, 3, 0, item->count, 2);
+        if(loot->personal)
+            SendDisplayToast(item->itemid, 3, 0/*loot->bonusLoot*/, item->count, 2);
         return;
     }
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "Player::StoreLootItem itemid %i count %i", item->itemid, item->count);
 
     ItemPosCountVec dest;
     InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
@@ -27846,8 +27836,8 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
                 if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
                     guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
 
-            if (proto->Quality >= uint32(ITEM_QUALITY_UNCOMMON))
-                SendDisplayToast(item->itemid, 1, 0, item->count, 1, newitem);
+            if (loot->personal && proto->Quality >= uint32(ITEM_QUALITY_UNCOMMON))
+                SendDisplayToast(item->itemid, 1, 0/*loot->bonusLoot*/, item->count, 1, newitem);
         }
 
         SendNewItem(newitem, uint32(item->count), false, false, true);

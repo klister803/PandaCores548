@@ -768,6 +768,9 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
         case TARGET_SELECT_CATEGORY_AREA:
             SelectImplicitAreaTargets(effIndex, targetType, effectMask);
             break;
+        case TARGET_SELECT_CATEGORY_THREAD:
+            SelectImplicitTargetsFromThreadList(effIndex, targetType, effectMask);
+            break;
         case TARGET_SELECT_CATEGORY_DEFAULT:
             switch (targetType.GetObjectType())
             {
@@ -976,6 +979,31 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
     }
 
     SelectImplicitChainTargets(effIndex, targetType, target, effMask);
+}
+
+void Spell::SelectImplicitTargetsFromThreadList(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask)
+{
+    if (targetType.GetReferenceType() != TARGET_REFERENCE_TYPE_CASTER)
+    {
+        ASSERT(false && "Spell::SelectImplicitTargetsFromThreadList: received not implemented target reference type");
+        return;
+    }
+
+    std::list<uint64>* savethreatlist = m_caster->GetSaveThreatList();
+    for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
+    {
+        if (Player* target = ObjectAccessor::GetPlayer(*m_caster, (*itr)))
+        {
+            if(target->IsPlayerLootCooldown(m_spellInfo->Id, TYPE_SPELL)) //Don`t add player if exist CD
+                continue;
+
+            if(m_caster->GetZoneId() == target->GetZoneId()) //Check target if this zone
+            {
+                AddUnitTarget((Unit*)target, effMask, false, false);
+                m_targets.SetUnitTarget((Unit*)target);
+            }
+        }
+    }
 }
 
 void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask)
