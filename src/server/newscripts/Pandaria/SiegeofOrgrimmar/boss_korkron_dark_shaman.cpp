@@ -347,8 +347,11 @@ public:
         {
             summon.DespawnAll();
             DespawnAllSummons();
-            if (killer->ToCreature() && instance)
+            if (IsShaman(killer) && instance)
+            {
+                me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
+            }
         }
         
         void UpdateAI(uint32 diff)
