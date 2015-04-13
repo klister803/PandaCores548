@@ -144,7 +144,7 @@ public:
         InstanceScript* instance;
         SummonList summon;
         EventMap events;
-        uint8 phase;
+        uint8 nextpct;
         bool firstpull, firstattack;
         
         void Reset()
@@ -159,7 +159,7 @@ public:
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
                 if (firstpull)
                     SummonAndSeatOnMount(me->GetEntry());
-                phase = 0;
+                nextpct = 85;
                 firstattack = false;
             }
         }
@@ -175,16 +175,6 @@ public:
                 }
             }
             return NULL;
-        }
-
-        bool IsShaman(Unit* who)
-        {
-            if (who->ToCreature())
-            {
-                if (who->GetEntry() == NPC_WAVEBINDER_KARDRIS || who->GetEntry() == NPC_EARTHBREAKER_HAROMM)
-                    return true;
-            }
-            return false;
         }
 
         void DespawnAllSummons()
@@ -257,43 +247,22 @@ public:
         
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (IsShaman(attacker))
-                me->SetHealth(me->GetHealth() - damage);
-            else
+            if (Creature* oshaman = GetOtherShaman())
             {
-                if (Creature* oshaman = GetOtherShaman())
-                {
-                    if (damage >= me->GetHealth())
-                    {
-                        oshaman->Kill(oshaman, true);
-                        return;
-                    }
-                    else
-                        oshaman->AI()->DamageTaken(me, damage);
-                }
-            }
-            CheckHealthForExtraEvents();
-        }
-
-        void CheckHealthForExtraEvents()
-        {
-            if (HealthBelowPct(85) && !phase ||
-                HealthBelowPct(65) && phase == 1 ||
-                HealthBelowPct(50) && phase == 2 ||
-                HealthBelowPct(25) && phase == 3)
-            {
-                phase++;
-                SetExtraEvents(me->GetEntry(), phase);
+                if (damage >= me->GetHealth())
+                    oshaman->Kill(oshaman, true);
+                else
+                    oshaman->SetHealth(oshaman->GetHealth() - damage);
             }
         }
-
-        void SetExtraEvents(uint32 entry, uint8 phase)
+        
+        void SetExtraEvents(uint8 phase)
         {
             switch (phase)
             {
-            case 1: //85pct
+            case 65: //85pct
             {
-                switch (entry)
+                switch (me->GetEntry())
                 {
                 case NPC_WAVEBINDER_KARDRIS:
                     Talk(SAY_POISONMIST_TOTEM);
@@ -306,9 +275,9 @@ public:
                 }
             }
             break;
-            case 2: //65pct
+            case 50: //65pct
             {
-                switch (entry)
+                switch (me->GetEntry())
                 {
                 case NPC_WAVEBINDER_KARDRIS:
                     DoCast(me, SPELL_FOULSTREAM_TOTEM, true);
@@ -321,9 +290,9 @@ public:
                 }
             }
             break;
-            case 3: //50pct
+            case 25: //50pct
             {
-                switch (entry)
+                switch (me->GetEntry())
                 {
                 case NPC_WAVEBINDER_KARDRIS:
                     Talk(SAY_ASHFLARE_TOTEM);
@@ -336,7 +305,7 @@ public:
                 }
             }
             break;
-            case 4: //25pct
+            case 0: //25pct
                 Talk(SAY_BLOODLUST);
                 me->AddAura(SPELL_BLOODLUST, me);
                 break;
@@ -347,7 +316,7 @@ public:
         {
             summon.DespawnAll();
             DespawnAllSummons();
-            if (IsShaman(killer) && instance)
+            if (killer == me && instance)
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, DONE);
@@ -356,7 +325,30 @@ public:
         
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (!UpdateVictim())
+                return;
+
+            if (HealthBelowPct(nextpct))
+            {
+                switch (nextpct)
+                {
+                case 85:
+                    nextpct = 65;
+                    break;
+                case 65:
+                    nextpct = 50;
+                    break;
+                case 50:
+                    nextpct = 25;
+                    break;
+                case 25:
+                    nextpct = NULL;
+                    break;
+                }
+                SetExtraEvents(nextpct);
+            }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
@@ -794,7 +786,6 @@ public:
                     DoCast(me, SPELL_ASH_ELEMENTAL_SPAWN, true);
                     me->SetReactState(REACT_AGGRESSIVE);
                     DoZoneInCombat(me, 150.0f);
-                    events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
                     break;
                 case EVENT_DESPAWN:
                     summon.DespawnAll();
