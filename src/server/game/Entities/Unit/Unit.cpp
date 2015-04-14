@@ -8671,6 +8671,27 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     triggered_spell_id = 101033;
+                    SpellInfo const* triggerEntry = sSpellMgr->GetSpellInfo(triggered_spell_id);
+                    float coeff = 1.0f;
+
+                    basepoints0 = triggerEntry->GetEffect(EFFECT_0).CalcValue(this);
+
+                    switch (procSpell->Id)
+                    {
+                        case 8004: case 61295: case 73685:
+                        {
+                            coeff = 0.6f;
+                            break;
+                        }
+                        case 1064:
+                        {
+                            coeff = 0.333f;
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    basepoints0 *= coeff;
 
                     break;
                 }
