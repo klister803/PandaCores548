@@ -418,6 +418,8 @@ public:
             {
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));
+                player->SaveToDB();
+                CharacterDatabase.PExecute("UPDATE character_donate SET state = 4, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), action);
                 chH.PSendSysMessage(20002, uint32(efircount * 0.8));
             }
         }
