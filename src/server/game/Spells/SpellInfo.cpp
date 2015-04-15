@@ -445,11 +445,14 @@ bool SpellEffectInfo::IsUnitOwnedAuraEffect() const
     return IsAreaAuraEffect() || Effect == SPELL_EFFECT_APPLY_AURA;
 }
 
-int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target, Item* m_castItem) const
+int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target, Item* m_castItem, bool lockBasePoints) const
 {
     float basePointsPerLevel = RealPointsPerLevel;
     int32 basePoints = bp ? *bp : BasePoints;
     float comboDamage = PointsPerComboPoint;
+
+    if (lockBasePoints)
+        return basePoints;
 
     // base amount modification based on spell lvl vs caster lvl
     if (ScalingMultiplier != 0.0f && !(_spellInfo->Attributes & SPELL_ATTR0_TRADESPELL) && !(_spellInfo->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS) && _spellInfo->Id != 79638)

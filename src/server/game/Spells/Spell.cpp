@@ -394,7 +394,10 @@ void SpellCastTargets::OutDebug() const
 SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
 {
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
         EffectBasePoints[i] = proto->GetEffect(i, diff).BasePoints;
+        LockBasePoints[i] = false;
+    }
     MaxAffectedTargets = proto->GetMaxAffectedTargets(diff);
     RadiusMod = 1.0f;
     AuraStackAmount = 1;
@@ -9076,27 +9079,33 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
     return SPELL_CAST_OK;
 }
 
-void Spell::SetSpellValue(SpellValueMod mod, int32 value)
+void Spell::SetSpellValue(SpellValueMod mod, int32 value, bool lockValue)
 {
     switch (mod)
     {
         case SPELLVALUE_BASE_POINT0:
             m_spellValue->EffectBasePoints[0] = m_spellInfo->GetEffect(EFFECT_0, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[0] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT1:
             m_spellValue->EffectBasePoints[1] = m_spellInfo->GetEffect(EFFECT_1, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[1] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT2:
             m_spellValue->EffectBasePoints[2] = m_spellInfo->GetEffect(EFFECT_2, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[2] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT3:
             m_spellValue->EffectBasePoints[3] = m_spellInfo->GetEffect(EFFECT_3, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[3] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT4:
             m_spellValue->EffectBasePoints[4] = m_spellInfo->GetEffect(EFFECT_4, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[4] = lockValue;
             break;
         case SPELLVALUE_BASE_POINT5:
             m_spellValue->EffectBasePoints[5] = m_spellInfo->GetEffect(EFFECT_5, m_diffMode).CalcBaseValue(value);
+            m_spellValue->LockBasePoints[5] = lockValue;
             break;
         case SPELLVALUE_RADIUS_MOD:
             m_spellValue->RadiusMod = (float)value / 10000;

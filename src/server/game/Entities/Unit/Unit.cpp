@@ -1180,7 +1180,7 @@ void Unit::CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo
 
     if (value)
         for (CustomSpellValues::const_iterator itr = value->begin(); itr != value->end(); ++itr)
-            spell->SetSpellValue(itr->first, itr->second);
+            spell->SetSpellValue(itr->first, itr->second, itr->second);
 
     spell->m_CastItem = castItem;
     spell->prepare(&targets, triggeredByAura);
@@ -15728,9 +15728,9 @@ float Unit::ApplyEffectModifiers(SpellInfo const* spellProto, uint8 effect_index
 }
 
 // function uses real base points (typically value - 1)
-int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints, Item* m_castitem) const
+int32 Unit::CalculateSpellDamage(Unit const* target, SpellInfo const* spellProto, uint8 effect_index, int32 const* basePoints, Item* m_castitem, bool lockBasePoints) const
 {
-    return spellProto->GetEffect(effect_index, GetSpawnMode()).CalcValue(this, basePoints, target, m_castitem);
+    return spellProto->GetEffect(effect_index, GetSpawnMode()).CalcValue(this, basePoints, target, m_castitem, lockBasePoints);
 }
 
 int32 Unit::CalcSpellDuration(SpellInfo const* spellProto)
