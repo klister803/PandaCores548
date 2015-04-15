@@ -211,7 +211,8 @@ class boss_tsulong : public CreatureScript
                         leishi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     }
                 }
-                me->SummonGameObject(212922, me->GetPositionX() + 6, me->GetPositionY(), me->GetPositionZ(), 0, 0, 0, 0, 0, 604800);
+                if(!me->GetMap()->IsLfr())
+                    me->SummonGameObject(212922, me->GetPositionX() + 6, me->GetPositionY(), me->GetPositionZ(), 0, 0, 0, 0, 0, 604800);
             }
 
             void JustDied(Unit* killer)

@@ -473,6 +473,7 @@ Loot::Loot(uint32 _gold)
     itemLevel = 0;
     objGuid = 0;
     objEntry = 0;
+    chance = 10; //Default chance for bonus roll
     personal = false;
     isBoss = false;
     bonusLoot = false;
@@ -651,8 +652,13 @@ void Loot::clear()
     gold = 0;
     unlootedCount = 0;
     roundRobinPlayer = 0;
+    objType = 0;
     i_LootValidatorRefManager.clearReferences();
     sLootMgr->RemoveLoot(GetGUID());
+    chance = 20;
+    personal = false;
+    isBoss = false;
+    bonusLoot = false;
 }
 
 QuestItemList* Loot::FillCurrencyLoot(Player* player)
@@ -1921,14 +1927,12 @@ void LootTemplate::Process(Loot& loot, bool rate, uint8 groupId) const
 // Rolls for every item in the template and adds the rolled items the the loot
 void LootTemplate::ProcessPersonal(Loot& loot) const
 {
-    InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(loot.GetLootOwner()->GetMapId());
-    uint32 uchance = mInstance ? mInstance->bonusChance : 25;//Base chance
-    bool chance = roll_chance_i(uchance);
+    bool chance = roll_chance_i(loot.chance);
     bool canGetInstItem = (chance && loot.isBoss) ? true : false; //Can get item or get gold
 
     uint16 diffMask = (1 << (sObjectMgr->GetDiffFromSpawn(loot.spawnMode)));
 
-    //sLog->outDebug(LOG_FILTER_LOOT, "LootTemplate::ProcessPersonal isBoss %i canGetInstItem %i diffMask %i chance %i uchance %u", loot.isBoss, canGetInstItem, diffMask, chance, uchance);
+    //sLog->outDebug(LOG_FILTER_LOOT, "LootTemplate::ProcessPersonal isBoss %i canGetInstItem %i diffMask %i chance %i loot.chance %u bonusLoot %i", loot.isBoss, canGetInstItem, diffMask, chance, loot.chance, loot.bonusLoot);
 
     // Now processing groups
     if(canGetInstItem)

@@ -692,7 +692,7 @@ namespace Trinity
                 if (go->GetGOInfo()->spellFocus.spellFocusType != i_focusId)
                     return false;
 
-                float dist = (float)((go->GetGOInfo()->spellFocus.radius)/2);
+                float dist = (float)(go->GetGOInfo()->spellFocus.radius);
 
                 return go->IsWithinDistInMap(i_unit, dist);
             }

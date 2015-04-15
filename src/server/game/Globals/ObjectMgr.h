@@ -387,6 +387,25 @@ struct TrinityStringLocale
     StringVector Content;
 };
 
+struct PersonalLootData
+{
+    uint32 entry;
+    uint8 type;
+    uint8 chance;
+    uint32 lootspellId;
+    uint32 bonusspellId;
+    uint32 cooldownid;
+    uint8 cooldowntype;
+    uint8 respawn;
+};
+
+enum PersonalRespawnType
+{
+    TYPE_NORESPAWN      = 0,
+    TYPE_RESPAWN        = 1,
+    TYPE_NODESPAWN      = 2
+};
+
 typedef std::map<uint64, uint64> LinkedRespawnContainer;
 typedef UNORDERED_MAP<uint32, CreatureData> CreatureDataContainer;
 typedef UNORDERED_MAP<uint32, GameObjectData> GameObjectDataContainer;
@@ -399,7 +418,7 @@ typedef UNORDERED_MAP<uint32, PageTextLocale> PageTextLocaleContainer;
 typedef UNORDERED_MAP<int32, TrinityStringLocale> TrinityStringLocaleContainer;
 typedef UNORDERED_MAP<uint32, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef UNORDERED_MAP<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
-typedef UNORDERED_MAP<uint32, TreasureData> TreasureDataContainer;
+typedef UNORDERED_MAP<uint32, PersonalLootData> PersonalLootContainer;
 
 typedef std::multiset<uint32> QuestObject;
 typedef std::map<uint32, QuestObject> QuestStarter;
@@ -686,17 +705,6 @@ class ObjectMgr
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
 
-        typedef UNORDERED_MAP<uint32, uint32> CreatureSpellBonusList;
-        CreatureSpellBonusList _creatureSpellBonus;
-
-        uint32 GetEntryByBonusSpell(uint32 spellId) const
-        {
-            CreatureSpellBonusList::const_iterator itr = _creatureSpellBonus.find(spellId);
-            if (itr != _creatureSpellBonus.end())
-                return itr->second;
-            return 0;
-        }
-
         InstanceTemplate const* GetInstanceTemplate(uint32 mapId);
 
         PetStats const* GetPetStats(uint32 creature_id) const;
@@ -953,7 +961,7 @@ class ObjectMgr
         void LoadMailLevelRewards();
         void LoadVehicleTemplateAccessories();
         void LoadVehicleAccessories();
-        void LoadTreasureData();
+        void LoadPersonalLootTemplate();
 
         void LoadGossipText();
 
@@ -1093,10 +1101,17 @@ class ObjectMgr
             return itr != _creatureAIInstanceGo.end() ? &(itr->second) : NULL;
         }
 
-        TreasureData const* GetTreasureData(uint32 id) const
+        PersonalLootData const* GetPersonalLootData(uint32 id, uint32 type = 0) const
         {
-            TreasureDataContainer::const_iterator itr = _TreasureDataStore.find(id);
-            if (itr == _TreasureDataStore.end()) return NULL;
+            PersonalLootContainer::const_iterator itr = _PersonalLootStore[type].find(id);
+            if (itr == _PersonalLootStore[type].end()) return NULL;
+            return &itr->second;
+        }
+
+        PersonalLootData const* GetPersonalLootDataBySpell(uint32 spellId) const
+        {
+            PersonalLootContainer::const_iterator itr = _PersonalLootBySpellStore.find(spellId);
+            if (itr == _PersonalLootBySpellStore.end()) return NULL;
             return &itr->second;
         }
 
@@ -1528,7 +1543,8 @@ class ObjectMgr
         //GameObjectDataContainer _gameObjectDataStore;
         GameObjectLocaleContainer _gameObjectLocaleStore;
         GameObjectTemplateContainer _gameObjectTemplateStore;
-        TreasureDataContainer _TreasureDataStore;
+        PersonalLootContainer _PersonalLootStore[MAX_LOOT_COOLDOWN_TYPE];
+        PersonalLootContainer _PersonalLootBySpellStore;
 
         ItemTemplateContainer _itemTemplateStore;
         ItemLocaleContainer _itemLocaleStore;

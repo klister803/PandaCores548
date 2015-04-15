@@ -2287,9 +2287,8 @@ uint32 GameObject::CalculateAnimDuration(GOState oldState, GOState newState) con
 bool GameObject::IsPersonalLoot() const
 {
     if(GetGOInfo()->chest.chestPersonalLoot)
-        if(TreasureData const* pData = sObjectMgr->GetTreasureData(GetGOInfo()->chest.chestPersonalLoot))
-            if(pData->type == GO_TYPE_RESPAWN || pData->type == GO_TYPE_DONTSPAWN)
-                return true;
+        if(sObjectMgr->GetPersonalLootData(GetEntry()))
+            return true;
 
     return false;
 }

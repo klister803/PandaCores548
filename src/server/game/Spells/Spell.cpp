@@ -997,7 +997,7 @@ void Spell::SelectImplicitTargetsFromThreadList(SpellEffIndex effIndex, SpellImp
     {
         if (Player* target = ObjectAccessor::GetPlayer(*m_caster, (*itr)))
         {
-            if(target->IsPlayerLootCooldown(m_spellInfo->Id, TYPE_SPELL)) //Don`t add player if exist CD
+            if(target->IsPlayerLootCooldown(m_spellInfo->Id, TYPE_SPELL, target->GetMap()->GetDifficulty())) //Don`t add player if exist CD
                 continue;
 
             if(m_caster->GetZoneId() == target->GetZoneId()) //Check target if this zone

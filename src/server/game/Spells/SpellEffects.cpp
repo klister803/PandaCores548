@@ -8515,32 +8515,70 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
     Player* player = unitTarget->ToPlayer();
 
     uint32 lootId = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
+    uint8 lootType = TYPE_CREATURE;
     if(!lootId)
         return;
 
-    uint32 spellCooldownId = GetSpellByTrigger(m_spellInfo->Id);
-    if(!spellCooldownId)
-        spellCooldownId = m_spellInfo->Id;
-
-    if(unitTarget == m_caster)
-        player->RemoveAura(spellCooldownId); //Remove bonus aura
+    uint32 spellCooldownId = m_spellInfo->Id;
+    PersonalLootData const* plData = sObjectMgr->GetPersonalLootDataBySpell(m_spellInfo->Id);
+    if(plData)
+    {
+        if(m_spellInfo->Id != plData->lootspellId)
+            spellCooldownId = plData->bonusspellId;
+        if(plData->cooldownid)
+        {
+            lootId = plData->cooldownid;
+            lootType = plData->cooldowntype;
+        }
+        else
+            lootId = plData->entry;
+    }
 
     //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot spellCooldownId %i", spellCooldownId);
 
-    if(player->IsPlayerLootCooldown(spellCooldownId, TYPE_SPELL))
+    uint32 difficulty = 0;
+    if(unitTarget == m_caster)
+    {
+        if (Aura* aura = unitTarget->GetAura(spellCooldownId))
+        {
+            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                difficulty = eff->GetAmount();
+            else
+            {
+                aura->Remove();
+                return;
+            }
+            aura->Remove();
+        }
+        else
+            return;
+    }
+
+    if(player->IsPlayerLootCooldown(spellCooldownId, TYPE_SPELL, difficulty))
         return;
 
     //Loot for boos
-    if(uint32 creatureId = sObjectMgr->GetEntryByBonusSpell(spellCooldownId))
+    if(plData)
     {
-        //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot creatureId %i", creatureId);
+        //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot lootId %i lootType %i", lootId, lootType);
 
         Loot* loot = &player->personalLoot;
         loot->clear();
         loot->personal = true;
         loot->isBoss = true;
+        loot->spawnMode = difficulty;
         loot->bonusLoot = unitTarget == m_caster;
-        loot->FillLoot(creatureId, LootTemplates_Creature, player, true);
+        if(plData)
+            loot->chance = plData->chance;
+        switch(lootType)
+        {
+            case TYPE_GO:
+                loot->FillLoot(lootId, LootTemplates_Gameobject, player, true);
+                break;
+            case TYPE_CREATURE:
+                loot->FillLoot(lootId, LootTemplates_Creature, player, true);
+                break;
+        }
         loot->AutoStoreItems();
         if(loot->gold)
         {
@@ -8552,7 +8590,7 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
         }
         if(IsTriggered())
             TakeReagents();
-        player->AddPlayerLootCooldown(spellCooldownId, TYPE_SPELL, true);
+        player->AddPlayerLootCooldown(spellCooldownId, TYPE_SPELL, true, difficulty);
     }
     else //Other loot for item and any
     {

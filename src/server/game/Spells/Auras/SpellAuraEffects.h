@@ -325,6 +325,7 @@ class AuraEffect
         void HandleAuraModSpellVisual(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraActivateScene(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraeEablePowerType(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleLootBonus(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
         void HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEffIndex effIndex) const;

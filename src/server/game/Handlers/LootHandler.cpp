@@ -66,9 +66,8 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
 
             loot = &go->loot;
             if(go->GetGOInfo()->chest.chestPersonalLoot)
-                if(TreasureData const* pData = sObjectMgr->GetTreasureData(go->GetGOInfo()->chest.chestPersonalLoot))
-                    if(pData->type == GO_TYPE_RESPAWN || pData->type == GO_TYPE_DONTSPAWN)
-                        loot = &player->personalLoot;
+                if(sObjectMgr->GetPersonalLootData(go->GetEntry()))
+                    loot = &player->personalLoot;
 
             //sLog->outDebug(LOG_FILTER_LOOT, "HandleAutostoreLootItemOpcode lguid %u, pguid %u lguid %u", lguid, player->personalLoot.GetGUID(), loot->GetGUID());
         }

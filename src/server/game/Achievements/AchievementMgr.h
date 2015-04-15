@@ -29,7 +29,7 @@
 
 typedef std::list<CriteriaTreeEntry const*> CriteriaTreeEntryList;
 typedef std::list<AchievementEntry const*>         AchievementEntryList;
-typedef std::map<uint32, AchievementEntryList>         AchievementListByReferencedId;
+typedef std::unordered_map<uint32, AchievementEntryList>         AchievementListByReferencedId;
 
 struct CriteriaProgress
 {
@@ -191,7 +191,7 @@ struct AchievementCriteriaDataSet
         Storage storage;
 };
 
-typedef std::map<uint32, AchievementCriteriaDataSet> AchievementCriteriaDataMap;
+typedef std::unordered_map<uint32, AchievementCriteriaDataSet> AchievementCriteriaDataMap;
 
 struct AchievementReward
 {
@@ -204,7 +204,7 @@ struct AchievementReward
     uint32 ScriptId;
 };
 
-typedef std::map<uint32, AchievementReward> AchievementRewards;
+typedef std::unordered_map<uint32, AchievementReward> AchievementRewards;
 
 struct AchievementRewardLocale
 {
@@ -212,7 +212,7 @@ struct AchievementRewardLocale
     StringVector text;
 };
 
-typedef std::map<uint32, AchievementRewardLocale> AchievementRewardLocales;
+typedef std::unordered_map<uint32, AchievementRewardLocale> AchievementRewardLocales;
 
 struct CompletedAchievementData
 {
@@ -265,13 +265,9 @@ class AchievementMgr
         uint32 GetAchievementPoints() const { return _achievementPoints; }
         uint32 GetParantTreeId(uint32 parent)
         {
-            if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(parent))
-            {
-                if(pTree->parent == 0)
-                    return pTree->ID;
-                else
-                    return GetParantTreeId(pTree->parent);
-            }
+            CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(parent);
+            if(cTree && cTree->criteria == 0 && cTree->parent != 0)
+                return cTree->parent;
 
             return parent;
         }
@@ -306,7 +302,7 @@ class AchievementMgr
         T* _owner;
         CriteriaProgressMap m_criteriaProgress;
         CompletedAchievementMap m_completedAchievements;
-        typedef std::map<uint32, uint32> TimedAchievementMap;
+        typedef std::unordered_map<uint32, uint32> TimedAchievementMap;
         TimedAchievementMap m_timedAchievements;      // Criteria id/time left in MS
         uint32 _achievementPoints;
 };

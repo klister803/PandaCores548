@@ -499,16 +499,6 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.MechanicImmuneMask = fields[index++].GetUInt32();
         creatureTemplate.flags_extra        = fields[index++].GetUInt32();
         creatureTemplate.ScriptID           = GetScriptId(fields[index++].GetCString());
-
-        if(creatureTemplate.type_flags & CREATURE_TYPEFLAGS_BOSS)
-        {
-            //Save loot spell
-            if(creatureTemplate.spells[6])
-                _creatureSpellBonus[creatureTemplate.spells[6]] = entry;
-            //Save bonus loot spell
-            if(creatureTemplate.spells[7])
-                _creatureSpellBonus[creatureTemplate.spells[7]] = entry;
-        }
         ++count;
     }
     while (result->NextRow());
@@ -1592,34 +1582,75 @@ void ObjectMgr::LoadCreatureAIInstance()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creature AI instance in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void ObjectMgr::LoadTreasureData()
+void ObjectMgr::LoadPersonalLootTemplate()
 {
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = WorldDatabase.Query("SELECT treasureID, type FROM treasure_template");
+    QueryResult result = WorldDatabase.Query("SELECT entry, `type`, `chance`, lootspellId, bonusspellId, cooldownid, cooldowntype, respawn  FROM personal_loot_template");
 
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 treasure. DB table `treasure_template` is empty.");
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 personal loot. DB table `personal_loot_template` is empty.");
         return;
     }
 
-    _TreasureDataStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
     do
     {
         Field* fields = result->Fetch();
-        uint32 treasureID = fields[0].GetUInt32();
+        uint32 entry = fields[0].GetUInt32();
+        uint32 type = fields[1].GetUInt8();
+        uint32 chance = fields[2].GetUInt8();
+        uint32 lootspellId = fields[3].GetUInt32();
+        uint32 bonusspellId = fields[4].GetUInt32();
+        uint32 cooldownid = fields[5].GetUInt32();
+        uint32 ccooldowntype = fields[6].GetUInt8();
+        uint32 respawn = fields[7].GetUInt8();
 
-        TreasureData& treasure = _TreasureDataStore[treasureID];
-        treasure.treasureID = treasureID;
-        treasure.type = fields[1].GetUInt8();
+        PersonalLootData& personalloot = _PersonalLootStore[type][entry];
+        personalloot.entry = entry;
+        personalloot.type = type;
+        personalloot.chance = chance;
+        personalloot.lootspellId = lootspellId;
+        personalloot.bonusspellId = bonusspellId;
+        personalloot.cooldownid = cooldownid;
+        personalloot.cooldowntype = ccooldowntype;
+        personalloot.respawn = respawn;
+
+        /*if(lootspellId)
+        {
+            PersonalLootData& personallootForSpell = _PersonalLootBySpellStore[lootspellId];
+            personallootForSpell.entry = entry;
+            personallootForSpell.type = type;
+            personallootForSpell.chance = chance;
+            personallootForSpell.lootspellId = lootspellId;
+            personallootForSpell.bonusspellId = bonusspellId;
+            personallootForSpell.cooldownid = cooldownid;
+            personallootForSpell.cooldowntype = ccooldowntype;
+            personallootForSpell.respawn = respawn;
+        }*/
+        if(bonusspellId)
+        {
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(bonusspellId);
+            if(!spellInfo || !spellInfo->Effects[0].TriggerSpell)
+                continue;
+
+            PersonalLootData& personallootForSpell = _PersonalLootBySpellStore[spellInfo->Effects[0].TriggerSpell];
+            personallootForSpell.entry = entry;
+            personallootForSpell.type = type;
+            personallootForSpell.chance = chance;
+            personallootForSpell.lootspellId = lootspellId;
+            personallootForSpell.bonusspellId = bonusspellId;
+            personallootForSpell.cooldownid = cooldownid;
+            personallootForSpell.cooldowntype = ccooldowntype;
+            personallootForSpell.respawn = respawn;
+        }
         ++count;
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u treasure in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u personal loot in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
@@ -4987,8 +5018,8 @@ void ObjectMgr::LoadInstanceTemplate()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                0     1       2        4             5
-    QueryResult result = WorldDatabase.Query("SELECT map, parent, script, allowMount, bonusChance FROM instance_template");
+    //                                                0     1       2        4
+    QueryResult result = WorldDatabase.Query("SELECT map, parent, script, allowMount FROM instance_template");
 
     if (!result)
     {
@@ -5014,7 +5045,6 @@ void ObjectMgr::LoadInstanceTemplate()
         instanceTemplate.AllowMount     = fields[3].GetBool();
         instanceTemplate.Parent         = uint32(fields[1].GetUInt16());
         instanceTemplate.ScriptId       = sObjectMgr->GetScriptId(fields[2].GetCString());
-        instanceTemplate.bonusChance    = fields[3].GetUInt32();
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 

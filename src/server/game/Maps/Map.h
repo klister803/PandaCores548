@@ -222,7 +222,6 @@ struct InstanceTemplate
     uint32 Parent;
     uint32 ScriptId;
     bool AllowMount;
-    uint32 bonusChance;
 };
 
 enum LevelRequirementVsMode
@@ -379,7 +378,7 @@ class Map : public GridRefManager<NGridType>
         bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
         bool IsChallenge() const { return i_difficulty == CHALLENGE_MODE_DIFFICULTY; }
-        bool IsLfrFlex() const { return i_difficulty == RAID_TOOL_DIFFICULTY || i_difficulty == FLEXIBLE_DIFFICULTY; }
+        bool IsLfr() const { return i_difficulty == RAID_TOOL_DIFFICULTY || i_difficulty == FLEXIBLE_DIFFICULTY || i_difficulty == HEROIC_SCENARIO_DIFFICULTY || i_difficulty == NORMAL_SCENARIO_DIFFICULTY; }
         bool IsScenario() const { return i_mapEntry && i_mapEntry->IsScenario(); }
         bool IsRaidOrHeroicDungeon() const { return IsRaid() || (i_difficulty == MAN25_DIFFICULTY || i_difficulty == MAN25_HEROIC_DIFFICULTY || i_difficulty == MAN10_DIFFICULTY || i_difficulty == MAN10_HEROIC_DIFFICULTY || i_difficulty == MAN40_DIFFICULTY || i_difficulty == HEROIC_DIFFICULTY); }
         bool IsHeroic() const {return ( i_difficulty == CHALLENGE_MODE_DIFFICULTY || i_difficulty == MAN25_HEROIC_DIFFICULTY || i_difficulty == MAN10_HEROIC_DIFFICULTY || i_difficulty == HEROIC_DIFFICULTY); }

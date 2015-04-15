@@ -992,6 +992,7 @@ struct playerLootCooldown
 {
     uint32 entry;
     uint8 type;
+    uint32 difficultyMask;
     uint32 respawnTime;
     bool state;
 };
@@ -1741,7 +1742,7 @@ class Player : public Unit, public GridObject<Player>
 
             return mainItem && ((mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON && !CanTitanGrip()) || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGED || mainItem->GetTemplate()->InventoryType == INVTYPE_THROWN || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGEDRIGHT);
         }
-        void SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast = false, PetJournalInfo * petInfo = NULL);
+        void SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast = false, PetJournalInfo * petInfo = NULL, bool bonusRoll = false);
         bool BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
         bool BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uint32 currency, uint32 count);
         bool _StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int64 price, ItemTemplate const* pProto, Creature* pVendor, VendorItem const* crItem, bool bStore);
@@ -2907,23 +2908,8 @@ class Player : public Unit, public GridObject<Player>
         template<class T>
         void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
-        bool IsPlayerLootCooldown(uint32 entry, uint8 type = 0) const
-        {
-            return m_playerLootCooldown[type].find(entry) != m_playerLootCooldown[type].end();
-        }
-        void AddPlayerLootCooldown(uint32 entry, uint8 type = 0, bool respawn = true)
-        {
-            PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[type].find(entry);
-            if(itr == m_playerLootCooldown[type].end())
-            {
-                playerLootCooldown lootCooldown;
-                lootCooldown.entry = entry;
-                lootCooldown.type = type;
-                lootCooldown.respawnTime = respawn ? time(NULL) + WEEK : 0;
-                lootCooldown.state = true;
-                m_playerLootCooldown[type][entry] = lootCooldown;
-            }
-        }
+        bool IsPlayerLootCooldown(uint32 entry, uint8 type = 0, uint8 diff = 0) const;
+        void AddPlayerLootCooldown(uint32 entry, uint8 type = 0, bool respawn = true, uint8 diff = 0);
 
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 

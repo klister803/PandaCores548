@@ -10363,6 +10363,11 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
                     loot->clear();
                     loot->personal = true;
                     loot->objType = 3;
+                    if(PersonalLootData const* plData = sObjectMgr->GetPersonalLootData(go->GetEntry()))
+                    {
+                        loot->chance = plData->chance;
+                        loot->isBoss = true;
+                    }
                     loot->FillLoot(lootid, LootTemplates_Gameobject, this, true, false, go);
                 }
                 else
@@ -10679,11 +10684,11 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
 
             if(go->GetGOInfo()->chest.chestPersonalLoot)
             {
-                if(TreasureData const* pData = sObjectMgr->GetTreasureData(go->GetGOInfo()->chest.chestPersonalLoot))
+                if(PersonalLootData const* plData = sObjectMgr->GetPersonalLootData(go->GetEntry()))
                 {
-                    if(pData->type == GO_TYPE_RESPAWN)
+                    if(plData->respawn == TYPE_RESPAWN)
                         AddPlayerLootCooldown(go->GetGOInfo()->entry);
-                    else if(pData->type == GO_TYPE_DONTSPAWN)
+                    else if(plData->respawn == TYPE_NORESPAWN)
                         AddPlayerLootCooldown(go->GetGOInfo()->entry, TYPE_GO, false);
                 }
             }
@@ -15949,7 +15954,7 @@ void Player::SendItemDurations()
         (*itr)->SendTimeUpdate(this);
 }
 
-void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast, PetJournalInfo * petInfo)
+void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast, PetJournalInfo * petInfo, bool bonusRoll)
 {
     if (!item)                                               // prevent crash
         return;
@@ -15958,13 +15963,13 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     ObjectGuid guid = GetObjectGuid();
     ObjectGuid guid2 = item->GetObjectGuid();
 
-    data.WriteBit(0);                                       // by bonus roll
+    data.WriteBit(bonusRoll);                                // by bonus roll
     data.WriteGuidMask<6>(guid2);
     data.WriteBit(received);
-    data.WriteGuidMask<5, 4>(guid2);
+    data.WriteGuidMask<5, 3>(guid2);
     data.WriteBit(created);
     data.WriteGuidMask<7>(guid2);
-    data.WriteGuidMask<5, 3, 2>(guid);
+    data.WriteGuidMask<5, 2, 3>(guid);
     data.WriteGuidMask<1, 4>(guid2);
     data.WriteGuidMask<4, 6, 0>(guid);
     data.WriteGuidMask<2>(guid2);
@@ -20522,7 +20527,8 @@ void Player::_LoadLootCooldown(PreparedQueryResult result)
         playerLootCooldown lootCooldown;
         lootCooldown.entry = fields[0].GetInt32();
         lootCooldown.type = fields[1].GetInt8();
-        lootCooldown.respawnTime = fields[2].GetInt32();
+        lootCooldown.difficultyMask = fields[2].GetInt8();
+        lootCooldown.respawnTime = fields[3].GetInt32();
         lootCooldown.state = false;
         m_playerLootCooldown[lootCooldown.type][lootCooldown.entry] = lootCooldown;
     }
@@ -20544,7 +20550,8 @@ void Player::_SaveLootCooldown(SQLTransaction& trans)
             stmt->setUInt64(0, GetGUIDLow());
             stmt->setUInt32(1, itr->second.entry);
             stmt->setUInt32(2, itr->second.type);
-            stmt->setUInt32(3, itr->second.respawnTime);
+            stmt->setUInt32(3, itr->second.difficultyMask);
+            stmt->setUInt32(4, itr->second.respawnTime);
             itr->second.state = false;
             trans->Append(stmt);
         }
@@ -20553,7 +20560,7 @@ void Player::_SaveLootCooldown(SQLTransaction& trans)
 
 void Player::ResetLootCooldown()
 {
-    for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; i++)
+    for(int i = 0; i < MAX_LOOT_COOLDOWN_TYPE; ++i)
     {
         for (PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[i].begin(); itr != m_playerLootCooldown[i].end();)
         {
@@ -20563,6 +20570,35 @@ void Player::ResetLootCooldown()
                 ++itr;
         }
     }
+}
+
+void Player::AddPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, bool respawn/* = true*/, uint8 diff/* = 0*/)
+{
+    PlayerLootCooldownMap::iterator itr = m_playerLootCooldown[type].find(entry);
+    if(itr == m_playerLootCooldown[type].end())
+    {
+        playerLootCooldown lootCooldown;
+        lootCooldown.entry = entry;
+        lootCooldown.type = type;
+        lootCooldown.difficultyMask |= (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
+        lootCooldown.respawnTime = respawn ? time(NULL) + WEEK : 0;
+        lootCooldown.state = true;
+        m_playerLootCooldown[type][entry] = lootCooldown;
+    }
+    else
+        itr->second.difficultyMask |= (1 << (sObjectMgr->GetDiffFromSpawn(diff)));
+}
+
+bool Player::IsPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, uint8 diff/* = 0*/) const
+{
+    PlayerLootCooldownMap::const_iterator itr = m_playerLootCooldown[type].find(entry);
+    if(itr == m_playerLootCooldown[type].end())
+        return false;
+
+    if(itr->second.difficultyMask & (1 << (sObjectMgr->GetDiffFromSpawn(diff))))
+        return true;
+
+    return false;
 }
 
 void Player::_LoadBoundInstances(PreparedQueryResult result)
@@ -27840,7 +27876,7 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
                 SendDisplayToast(item->itemid, 1, 0/*loot->bonusLoot*/, item->count, 1, newitem);
         }
 
-        SendNewItem(newitem, uint32(item->count), false, false, true);
+        SendNewItem(newitem, uint32(item->count), false, false, true, NULL, loot->bonusLoot);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item->itemid, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE, loot->loot_type, item->count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_EPIC_ITEM, item->itemid, item->count);
@@ -28116,9 +28152,6 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
 {
     GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 
-    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
-        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
-
     Map* map = GetMap();
     // Update scenario/challenge criterias
     if (uint32 instanceId =  map ? map->GetInstanceId() : 0)
@@ -28129,6 +28162,9 @@ void Player::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 mis
     // from a single boss kill
     if (!ignoreGroup && sAchievementMgr->IsGroupCriteriaType(type))
         return;
+
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GetAchievementMgr().UpdateAchievementCriteria(type, miscValue1, miscValue2, unit, this);
 
     // Quest "A Test of Valor"
     if (GetAchievementMgr().HasAchieved(8030) || GetAchievementMgr().HasAchieved(8031))

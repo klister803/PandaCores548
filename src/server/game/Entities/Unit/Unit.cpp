@@ -20750,9 +20750,10 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 
         if (creature)
         {
+            Map* map = creature->GetMap();
             if(creature->IsPersonalLoot())
                 GeneratePersonalLoot(creature, looter);
-            else
+            else if(!map->IsLfr()) //Don`t loot in LFG
             {
                 Loot* loot = &creature->loot;
                 if (creature->lootForPickPocketed)
@@ -24576,16 +24577,32 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
     uint32 lootid = creature->GetCreatureTemplate()->lootid;
 
     Map* map = creature->GetMap();
-    uint32 spellForLoot = creature->m_temlate_spells[6];
-    uint32 spellForBonusLoot = creature->m_temlate_spells[7];
+    uint32 spellForRep = 0;
+    uint32 spellForBonusLoot = 0;
+    uint32 cooldownid = creature->GetEntry();
+    uint32 cooldowntype = TYPE_CREATURE;
 
-    //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot spellForLoot %i spellForBonusLoot %i lootid %i", spellForLoot, spellForBonusLoot, lootid);
+    //Get boss personal loot template
+    PersonalLootData const* plData = sObjectMgr->GetPersonalLootData(creature->GetEntry(), TYPE_CREATURE);
+    if(plData)
+    {
+        spellForRep = plData->lootspellId;
+        spellForBonusLoot = plData->bonusspellId;
+        if(plData->cooldownid)
+        {
+            cooldownid = plData->cooldownid;
+            lootid = plData->cooldownid;
+            cooldowntype = plData->cooldowntype;
+        }
+    }
+
+    //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot spellForRep %i spellForBonusLoot %i lootid %i", spellForRep, spellForBonusLoot, lootid);
 
     //Generate loot for instance
     if(creature->GetInstanceId())
     {
         //Loot for LFR and Flex is personal
-        if(map->IsLfrFlex())
+        if(map->IsLfr())
         {
             Map::PlayerList const& playerList = map->GetPlayers();
             if (playerList.isEmpty())
@@ -24595,34 +24612,42 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             {
                 if (Player* player = itr->getSource())
                 {
-                    if(spellForBonusLoot)
-                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL)) //Bonus loot
+                    if(spellForBonusLoot) //Bonus roll
+                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL, creature->GetMap()->GetDifficulty())) //Bonus loot
                             player->CastSpell(player, spellForBonusLoot, false);
 
-                    if(spellForLoot)
-                    {
-                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL))
-                            player->CastSpell(player, spellForLoot, false);
+                    if(player->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()))
                         continue;
-                    }
 
-                    if(player->IsPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE))
-                        continue;
+                    if(spellForRep) //Gain reputation
+                        player->CastSpell(player, spellForRep, false);
 
                     Loot* loot = &player->personalLoot;
                     loot->clear();
                     loot->personal = true;
                     loot->objType = 1;
+                    if(plData)
+                        loot->chance = plData->chance;
 
                     //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot GetEntry %i GetGUID %i player %i", creature->GetEntry(), loot->GetGUID(), player->GetGUID());
 
                     if (lootid)
-                        loot->FillLoot(lootid, LootTemplates_Creature, player, true, false, creature);
+                    {
+                        switch(cooldowntype)
+                        {
+                            case TYPE_GO:
+                                loot->FillLoot(lootid, LootTemplates_Gameobject, player, true, false, creature);
+                                break;
+                            case TYPE_CREATURE:
+                                loot->FillLoot(lootid, LootTemplates_Creature, player, true, false, creature);
+                                break;
+                        }
+                    }
 
                     if(creature->IsAutoLoot())
                         loot->AutoStoreItems();
 
-                    player->AddPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE);
+                    player->AddPlayerLootCooldown(cooldownid, cooldowntype, true, creature->GetMap()->GetDifficulty());
                 }
             }
             return;
@@ -24630,6 +24655,19 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         else //Other difficulty is raid loot
         {
             //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot Other difficulty is raid loot");
+            Map::PlayerList const& playerList = map->GetPlayers();
+            if (playerList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+            {
+                if (Player* player = itr->getSource())
+                {
+                    if(spellForBonusLoot) //Bonus roll
+                        if(!player->IsPlayerLootCooldown(spellForBonusLoot, TYPE_SPELL, creature->GetMap()->GetDifficulty())) //Bonus loot
+                            player->CastSpell(player, spellForBonusLoot, false);
+                }
+            }
 
             cLoot->objType = 1;
             if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
@@ -24639,27 +24677,25 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             return;
         }
     }
-
-    if(creature->isWorldBoss())
+    else if(creature->isWorldBoss())
     {
         //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot isWorldBoss");
 
-        if(spellForBonusLoot)
+        if(spellForBonusLoot) //Bonus roll
             creature->CastSpell(creature, spellForBonusLoot, false);
-        if(spellForLoot)
-        {
-            creature->CastSpell(creature, spellForLoot, false);
-            return;
-        }
+        if(spellForRep) //Gain reputation
+            creature->CastSpell(creature, spellForRep, false);
     }
 
     cLoot->unlootedCount = creature->GetSizeSaveThreat();
+    //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot unlootedCount %i", cLoot->unlootedCount);
+
     std::list<uint64>* savethreatlist = creature->GetSaveThreatList();
     for (std::list<uint64>::const_iterator itr = savethreatlist->begin(); itr != savethreatlist->end(); ++itr)
     {
         if (Player* looter = ObjectAccessor::GetPlayer(*creature, (*itr)))
         {
-            if(looter->IsPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE))
+            if(looter->IsPlayerLootCooldown(cooldownid, cooldowntype, creature->GetMap()->GetDifficulty()) || creature->GetZoneId() != looter->GetZoneId())
             {
                 --cLoot->unlootedCount;
                 continue;
@@ -24669,9 +24705,21 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             loot->clear();
             loot->personal = true;
             loot->objType = 1;
+            if(plData)
+                loot->chance = plData->chance;
 
             if (lootid)
-                loot->FillLoot(lootid, LootTemplates_Creature, looter, true, false, creature);
+            {
+                switch(cooldowntype)
+                {
+                    case TYPE_GO:
+                        loot->FillLoot(lootid, LootTemplates_Gameobject, looter, true, false, creature);
+                        break;
+                    case TYPE_CREATURE:
+                        loot->FillLoot(lootid, LootTemplates_Creature, looter, true, false, creature);
+                        break;
+                }
+            }
 
             if(creature->IsAutoLoot())
             {
@@ -24681,7 +24729,7 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
             }
 
             if(creature->isWorldBoss())
-                looter->AddPlayerLootCooldown(creature->GetEntry(), TYPE_CREATURE);
+                looter->AddPlayerLootCooldown(cooldownid, cooldowntype, true, creature->GetMap()->GetDifficulty());
 
             //sLog->outDebug(LOG_FILTER_LOOT, "Unit::GeneratePersonalLoot lootGUID %i", loot->GetGUID());
         }

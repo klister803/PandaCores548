@@ -327,6 +327,7 @@ struct Loot
     uint8 objType;
     uint8 spawnMode;
     uint32 itemLevel;
+    uint32 chance;
     bool personal;
     bool bonusLoot;
     bool isBoss;

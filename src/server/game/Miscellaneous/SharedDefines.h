@@ -2058,13 +2058,6 @@ enum GameObjectDestructibleState
     GO_DESTRUCTIBLE_REBUILDING  = 3,
 };
 
-enum GameObjectReSpawnType
-{
-    GO_TYPE_NORESPAWN      = 0,
-    GO_TYPE_RESPAWN        = 1,
-    GO_TYPE_DONTSPAWN      = 2
-};
-
 // EmotesText.dbc
 enum TextEmotes
 {

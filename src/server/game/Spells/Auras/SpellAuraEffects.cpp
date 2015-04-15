@@ -451,7 +451,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391
     &AuraEffect::HandleNULL,                                      //392 SPELL_AURA_392
     &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_MOD_DEFLECT_SPELLS_FROM_FRONT
-    &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_LOOT_BONUS
+    &AuraEffect::HandleLootBonus,                                 //394 SPELL_AURA_LOOT_BONUS
     &AuraEffect::HandleCreateAreaTrigger,                         //395 SPELL_AURA_CREATE_AREATRIGGER
     &AuraEffect::HandleNoImmediateEffect,                         //396 SPELL_AURA_PROC_ON_POWER_AMOUNT_2 in Unit::VisualForPower
     &AuraEffect::HandleBattlegroundFlag,                          //397 SPELL_AURA_BATTLEGROUND_FLAG
@@ -1462,6 +1462,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     }
                 break;
             }
+        }
+        case SPELL_AURA_LOOT_BONUS:
+        {
+            if (target && target->GetMap())
+                amount = target->GetMap()->GetDifficulty();
+            break;
         }
         default:
             break;
@@ -9049,7 +9055,6 @@ void AuraEffect::HandleAuraActivateScene(AuraApplication const* aurApp, uint8 mo
     target->SendSpellScene(GetMiscValue(), &pos);
 }
 
-
 void AuraEffect::HandleAuraeEablePowerType(AuraApplication const* aurApp, uint8 mode, bool apply) const
 {
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
@@ -9063,4 +9068,16 @@ void AuraEffect::HandleAuraeEablePowerType(AuraApplication const* aurApp, uint8 
         target->SetUInt32Value(UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID, GetMiscValue());
     else
         target->SetUInt32Value(UNIT_FIELD_OVERRIDE_DISPLAY_POWER_ID, 0);
+}
+
+void AuraEffect::HandleLootBonus(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+    if (!target || !target->GetMap())
+        return;
+
+    //m_amount = target->GetMap()->GetDifficulty();
 }

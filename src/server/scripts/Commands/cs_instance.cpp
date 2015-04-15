@@ -150,6 +150,7 @@ public:
         handler->PSendSysMessage("instances unbound: %d", counter);
 
         player->ResetLootCooldown();
+        CharacterDatabase.PExecute("DELETE FROM character_loot_cooldown WHERE guid = %u", player->GetGUID());
         handler->PSendSysMessage("Reset personal loot cooldown");
 
         return true;
