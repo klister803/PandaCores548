@@ -2785,11 +2785,35 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 }
             break;
             case SPELL_DAMAGE_CLASS_NONE:
-                if (positive)
-                    procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+            {
+                if (m_spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC)
+                {
+                    if (positive)
+                    {
+                        procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+                    }
+                    else
+                    {
+                        procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    }
+                }
                 else
-                    procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
-            break;
+                {
+                    if (positive)
+                    {
+                        procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+                    }
+                    else
+                    {
+                        procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procVictim   |= PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    }
+                }
+                break;
+            }
             case SPELL_DAMAGE_CLASS_RANGED:
                 // Auto attack
                 if (AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG)
@@ -3895,10 +3919,20 @@ void Spell::cast(bool skipCheck)
                 }
                 case SPELL_DAMAGE_CLASS_NONE:
                 {
-                    if (positive)
-                        procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                    if (m_spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC)
+                    {
+                        if (!positive)
+                            procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        else
+                            procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                    }
                     else
-                        procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    {
+                        if (positive)
+                            procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        else
+                            procAttacker |= PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    }
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_RANGED:
