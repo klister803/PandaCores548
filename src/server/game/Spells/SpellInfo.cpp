@@ -1192,6 +1192,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     //Malkorok
     case 142890: //Blood Rage Dmg
     case 142906: //Ancient Miasma Dmg
+    case 143848: //Essence of yshaarj
         return Effects[effect];
     }
 

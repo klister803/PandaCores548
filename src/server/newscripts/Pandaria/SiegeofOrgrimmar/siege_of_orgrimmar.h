@@ -81,6 +81,8 @@ enum eCreatures
     NPC_ARCING_SMASH                = 71455,
     NPC_ANCIENT_MIASMA              = 71513,
     NPC_IMPLOSION                   = 71470,
+    NPC_ESSENCE_OF_YSHAARJ          = 63420,
+    NPC_LIVING_CORRUPTION           = 71644,
 
     NPC_IMMERSEUS                   = 71543,
 

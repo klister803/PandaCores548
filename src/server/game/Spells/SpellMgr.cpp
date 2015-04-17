@@ -5038,6 +5038,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 142906: //Ancient Miasma Dmg
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
+                case 143848: //Essence of yshaarj
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
+
                     
                 //World Bosses
                 //Sha of Anger
