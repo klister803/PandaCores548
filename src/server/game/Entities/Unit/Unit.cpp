@@ -17788,7 +17788,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                         if (HandleSpellModAuraProc(target, dmgInfoProc, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                         {
                             takeCharges = true;
-                            isModifier = true;
                         }
                         break;
                     }

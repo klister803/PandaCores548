@@ -1618,7 +1618,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             if(m_spellInfo->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL && GetBase()->GetMaxDuration() != -1 && caster)
             {
                 int32 tempAmount = GetTotalTicks() * (amount + m_aura_amount);
-                if(tempAmount <= caster->GetMaxHealth())
+                if(tempAmount <= int32(caster->GetMaxHealth()))
                 {
                     amount += m_aura_amount;
                     m_crit_amount = amount * 2;
