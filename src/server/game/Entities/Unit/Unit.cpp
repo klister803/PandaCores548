@@ -653,7 +653,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULL, GetGUID());
     }
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
-    if (GetOwner() && (GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
+    if (GetOwner() && (GetTypeId() == TYPEID_UNIT && (GetEntry() == 15438 || GetEntry() == 61029) && !spellProto) || (isTotem() && GetEntry() == 2523))
         if (GetOwner()->HasAura(77657))
             GetOwner()->CastSpell(GetOwner(), 77661, true);
 
