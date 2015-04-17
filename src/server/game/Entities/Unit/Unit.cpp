@@ -16719,7 +16719,8 @@ void Unit::RemoveFromWorld()
         UnsummonAllTotems();
         RemoveAllControlled();
 
-        RemoveAreaAurasDueToLeaveWorld();
+        if(!ToCreature())
+            RemoveAreaAurasDueToLeaveWorld();
 
         if (GetCharmerGUID())
         {
