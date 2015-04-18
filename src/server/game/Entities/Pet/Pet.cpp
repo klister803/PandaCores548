@@ -106,6 +106,9 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
         if (owner->HasAura(108503))
             owner->RemoveAura(108503);
 
+    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned())
+        owner->SetLastPetEntry(petentry);
+
     m_loading = true;
     m_Stampeded = stampeded;
     uint32 ownerid = owner->GetGUIDLow();
@@ -173,6 +176,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool s
 
     PetType pet_type = PetType(fields[14].GetUInt8());
     setPetType(pet_type);
+
+    if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned())
+        owner->SetLastPetEntry(petentry);
+
     if (pet_type == HUNTER_PET)
     {
         CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(petentry);

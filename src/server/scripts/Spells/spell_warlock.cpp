@@ -260,35 +260,26 @@ class spell_warl_flames_of_xoroth : public SpellScriptLoader
                     return;
 
                 Player* player = GetCaster()->ToPlayer();
-                if (player->GetLastPetNumber())
+                uint32 spellId = 0;
+                
+                switch(player->GetLastPetEntry())
                 {
-                    PetType newPetType = (player->getClass() == CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
-                    if (Pet* newPet = new Pet(player, newPetType))
-                    {
-                        if (newPet->LoadPetFromDB(player, 0, player->GetLastPetNumber(), true))
-                        {
-                            // revive the pet if it is dead
-                            if (newPet->getDeathState() == DEAD || newPet->getDeathState() == CORPSE)
-                                newPet->setDeathState(ALIVE);
-
-                            newPet->ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
-                            newPet->SetFullHealth();
-                            newPet->SetPower(newPet->getPowerType(), newPet->GetMaxPower(newPet->getPowerType()));
-
-                            switch (newPet->GetEntry())
-                            {
-                                case 11859: // Doomguard
-                                case 89:    // Inferno
-                                    newPet->SetEntry(416);
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        else
-                            delete newPet;
-                    }
+                    case   416: spellId = 95308; break;
+                    case   417: spellId = 95310; break;
+                    case  1860: spellId = 95307; break;
+                    case  1863: spellId = 95309; break;
+                    case 17252: spellId = 95312; break;
+                    case 58959: spellId = player->HasAura(108499) ? 128036 : 95308; break;
+                    case 58960: spellId = player->HasAura(108499) ? 128038 : 95307; break;
+                    case 58963: spellId = player->HasAura(108499) ? 128039 : 95309; break;
+                    case 58964: spellId = player->HasAura(108499) ? 128041 : 95310; break;
+                    case 58965: spellId = player->HasAura(108499) ? 128042 : 95312; break;
+                    default:
+                        break;
                 }
+
+                if (spellId)
+                    player->CastSpell(player, spellId, true);
             }
 
             void Register()
@@ -2299,7 +2290,7 @@ class spell_warl_felsteed : public SpellScriptLoader
                     float angle = caster->GetAngle(&savePos);
                     if(count > 0)
                     {
-                        for(int32 j = 0; j < count + 2; ++j)
+                        for(uint32 j = 0; j < count + 2; ++j)
                         {
                             int32 distanceNext = j * 2;
                             float destx = caster->GetPositionX() + distanceNext * std::cos(angle);

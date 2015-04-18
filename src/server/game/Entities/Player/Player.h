@@ -2982,6 +2982,9 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetLastPetNumber() const { return m_lastpetnumber; }
         void SetLastPetNumber(uint32 petnumber) { m_lastpetnumber = petnumber; }
 
+        uint32 GetLastPetEntry() const { return m_LastPetEntry; }
+        void SetLastPetEntry(uint32 entry) { m_LastPetEntry = entry; }
+
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
         /*********************************************************/
@@ -3467,6 +3470,7 @@ class Player : public Unit, public GridObject<Player>
 
         // last used pet number (for BG's)
         uint32 m_lastpetnumber;
+        uint32 m_LastPetEntry;
 
         // Player summoning
         time_t m_summon_expire;

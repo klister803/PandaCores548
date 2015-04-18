@@ -838,6 +838,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     //when dying/logging out
     m_oldpetspell = 0;
     m_lastpetnumber = 0;
+    m_LastPetEntry = 0;
 
     ////////////////////Rest System/////////////////////
     time_inn_enter=0;
