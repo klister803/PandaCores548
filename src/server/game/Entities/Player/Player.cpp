@@ -9843,6 +9843,7 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
             }
         }
         CastSpell(this, spellInfo, true, item);
+        HandleItemSpellList(spellInfo->Id, true);
     }
     else
     {
@@ -9852,6 +9853,8 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
             if (spellInfo->CheckShapeshift(GetShapeshiftForm()) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
+
+        HandleItemSpellList(spellInfo->Id, false);
 
         if (item)
             RemoveAurasDueToItemSpell(item, spellInfo->Id);  // un-apply all spells, not only at-equipped

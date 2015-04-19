@@ -170,6 +170,7 @@ struct PlayerCurrency
 typedef UNORDERED_MAP<uint32, PlayerTalent*> PlayerTalentMap;
 typedef UNORDERED_MAP<uint32, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
+typedef std::list<uint32> ItemSpellList;
 typedef UNORDERED_MAP<uint32, PlayerCurrency> PlayerCurrenciesMap;
 
 typedef std::list<uint64> WhisperListContainer;
@@ -2162,6 +2163,15 @@ class Player : public Unit, public GridObject<Player>
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
         PlayerSpellMap      & GetSpellMap()       { return m_spells; }
 
+        const ItemSpellList & GetItemSpellList() { return m_itemSpellList; }
+        void HandleItemSpellList(uint32 spellId, bool apply)
+        {
+            if (apply)
+                m_itemSpellList.push_back(spellId);
+            else
+                m_itemSpellList.remove(spellId);
+        }
+
         void AddSpellMountReplacelist(uint32 spellId, uint32 replaseId)
         {
             spellMountReplacelist[replaseId] = spellId;
@@ -3345,6 +3355,7 @@ class Player : public Unit, public GridObject<Player>
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
+        ItemSpellList m_itemSpellList;
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
         std::map<uint32, uint32> spellMountReplacelist;
 

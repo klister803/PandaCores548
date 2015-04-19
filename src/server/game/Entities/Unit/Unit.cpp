@@ -3828,6 +3828,8 @@ void Unit::_ApplyAuraEffect(Aura* aura, uint32 effIndex)
 void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
 {
     Aura* aura = aurApp->GetBase();
+    Unit* caster = aura->GetCaster();
+    SpellInfo const* spellInfo = aura->GetSpellInfo();
 
     _RemoveNoStackAurasDueToAura(aura);
 
@@ -3835,17 +3837,18 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         return;
 
     // Update target aura state flag
-    if (AuraStateType aState = aura->GetSpellInfo()->GetAuraState())
+    if (AuraStateType aState = spellInfo->GetAuraState())
         ModifyAuraState(aState, true);
+
+    if (caster)
+        caster->ModifyExcludeCasterAuraSpell(spellInfo->Id, true);
 
     if (aurApp->GetRemoveMode())
         return;
 
     // Sitdown on apply aura req seated
-    if (aura->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED && !IsSitState())
+    if (spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED && !IsSitState())
         SetStandState(UNIT_STAND_STATE_SIT);
-
-    Unit* caster = aura->GetCaster();
 
     if (aurApp->GetRemoveMode())
         return;
@@ -3858,11 +3861,11 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
         getRace() == RACE_PANDAREN_HORDE ||
         getRace() == RACE_PANDAREN_NEUTRAL)
     {
-        if (aura->GetSpellInfo()->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
+        if (spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD_BUFF)
         {
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 if (aura->GetEffect(i))
-                    aura->GetEffect(i)->SetAmount(aura->GetSpellInfo()->GetEffect(i, GetSpawnMode()).BasePoints * 2);
+                    aura->GetEffect(i)->SetAmount(spellInfo->GetEffect(i, GetSpawnMode()).BasePoints * 2);
         }
     }
 
@@ -3945,6 +3948,9 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     // Remove aurastates only if were not found
     if (!auraStateFound)
         ModifyAuraState(auraState, false);
+
+    if (caster)
+        caster->ModifyExcludeCasterAuraSpell(aura->GetId(), false);
 
     aura->HandleAuraSpecificMods(aurApp, caster, false, false);
 
@@ -11199,6 +11205,72 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                     RemoveAura(itr);
                 else
                     ++itr;
+            }
+        }
+    }
+}
+
+void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
+{
+    if (Player* plr = ToPlayer())
+    {
+        if (apply)
+        {
+            std::list<uint32> removeAuraList;
+            Unit::AuraApplicationMap& auras = GetAppliedAuras();
+            for (Unit::AuraApplicationMap::iterator itr = auras.begin(); itr != auras.end(); ++itr)
+            {
+                SpellInfo const* spellProto = (*itr).second->GetBase()->GetSpellInfo();
+
+                if (spellProto->Id == auraId)
+                    continue;
+
+                if (spellProto->ExcludeCasterAuraSpell == auraId)
+                    removeAuraList.push_back(spellProto->Id);
+            }
+
+            ItemSpellList itmSpells = plr->GetItemSpellList();
+            for (ItemSpellList::iterator itr = itmSpells.begin(); itr != itmSpells.end(); ++itr)
+            {
+                SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(*itr);
+
+                if (spellProto->Id == auraId)
+                    continue;
+
+                if (spellProto->ExcludeCasterAuraSpell == auraId)
+                    removeAuraList.push_back(spellProto->Id);
+            }
+
+            for (std::list<uint32>::iterator itr = removeAuraList.begin(); itr != removeAuraList.end(); ++itr)
+                RemoveAurasDueToSpell(*itr);
+        }
+        else
+        {
+            PlayerSpellMap const& sp_list = plr->GetSpellMap();
+            for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+            {
+                if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
+                    continue;
+
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+
+                if (!spellInfo)
+                    continue;
+
+                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id))
+                    CastSpell(this, spellInfo->Id, true);
+            }
+
+            ItemSpellList itmSpells = plr->GetItemSpellList();
+            for (ItemSpellList::iterator itr = itmSpells.begin(); itr != itmSpells.end(); ++itr)
+            {
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(*itr);
+
+                if (!spellInfo)
+                    continue;
+
+                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id))
+                    CastSpell(this, spellInfo->Id, true);
             }
         }
     }
