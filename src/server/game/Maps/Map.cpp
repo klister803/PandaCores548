@@ -2476,9 +2476,13 @@ bool InstanceMap::AddPlayerToMap(Player* player)
                     // set up a solo bind or continue using it
                     if (!playerBind)
                         player->BindToInstance(mapSave, false);
-                    else
+                    else if(playerBind->save != mapSave)
+                    {
                         // cannot jump to a different instance without resetting it
-                        ASSERT(playerBind->save == mapSave);
+                        //ASSERT(playerBind->save == mapSave);
+                        sLog->outError(LOG_FILTER_MAPS, "InstanceMap::Add: player %s(%d) is permanently bound to instance %d, %d, %d, %d, %d, %d but he is being put into instance %d, %d, %d, %d, %d, %d", player->GetName(), player->GetGUIDLow(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
+                        return false;
+                    }
                 }
             }
         }
