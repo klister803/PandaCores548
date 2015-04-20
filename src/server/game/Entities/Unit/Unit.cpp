@@ -11225,7 +11225,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
                 if (spellProto->Id == auraId)
                     continue;
 
-                if (spellProto->ExcludeCasterAuraSpell == auraId)
+                if (spellProto->ExcludeCasterAuraSpell == auraId && spellProto->IsPassive())
                     removeAuraList.push_back(spellProto->Id);
             }
 
@@ -11237,7 +11237,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
                 if (spellProto->Id == auraId)
                     continue;
 
-                if (spellProto->ExcludeCasterAuraSpell == auraId)
+                if (spellProto->ExcludeCasterAuraSpell == auraId && spellProto->IsPassive())
                     removeAuraList.push_back(spellProto->Id);
             }
 
@@ -11257,7 +11257,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
                 if (!spellInfo)
                     continue;
 
-                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id))
+                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id) && spellInfo->IsPassive())
                     CastSpell(this, spellInfo->Id, true);
             }
 
@@ -11269,7 +11269,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
                 if (!spellInfo)
                     continue;
 
-                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id))
+                if (spellInfo->ExcludeCasterAuraSpell == auraId && !HasAura(spellInfo->Id) && spellInfo->IsPassive())
                     CastSpell(this, spellInfo->Id, true);
             }
         }
