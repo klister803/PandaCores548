@@ -5590,7 +5590,7 @@ void Unit::RemoveAreaObject(uint32 spellId)
         AreaTrigger* areaObj = *i;
         if (areaObj->GetSpellId() == spellId)
         {
-            areaObj->Remove();
+            areaObj->Despawn();
             i = m_AreaObj.begin();
         }
         else
@@ -5601,7 +5601,7 @@ void Unit::RemoveAreaObject(uint32 spellId)
 void Unit::RemoveAllAreaObjects()
 {
     while (!m_AreaObj.empty())
-        m_AreaObj.front()->Remove();
+        m_AreaObj.front()->Despawn();
 }
 
 GameObject* Unit::GetGameObject(uint32 spellId) const

@@ -587,6 +587,22 @@ void AreaTrigger::Remove(bool duration)
     }
 }
 
+void AreaTrigger::Despawn()
+{
+    _on_unload = true;
+
+    if (IsInWorld())
+    {
+        // Possibly this?
+        if (!IsInWorld())
+            return;
+
+        SendObjectDeSpawnAnim(GetGUID());
+        RemoveFromWorld();
+        AddObjectToRemoveList();
+    }
+}
+
 float AreaTrigger::GetVisualScale(bool max /*=false*/) const
 {
     if (max) return atInfo.sphereScaleMax;
