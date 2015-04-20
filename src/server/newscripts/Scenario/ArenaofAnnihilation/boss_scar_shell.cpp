@@ -125,6 +125,7 @@ public:
                     case EVENT_STONE_SPIN:
                         DoStopAttack();
                         DoCast(SPELL_STONE_SPIN);
+                        events.ScheduleEvent(EVENT_STONE_SPIN, 50000);
                         events.ScheduleEvent(EVENT_STONE_SPIN2, 2000);
                         events.ScheduleEvent(EVENT_STONE_SPIN3, 14000);
                         break;

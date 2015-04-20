@@ -137,7 +137,11 @@ public:
         InstanceScript* instance;
         EventMap events;
 
-        void Reset() {}
+        void Reset() 
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+            me->SetReactState(REACT_PASSIVE);
+        }
 
         void EnterCombat(Unit* /*who*/) 
         {

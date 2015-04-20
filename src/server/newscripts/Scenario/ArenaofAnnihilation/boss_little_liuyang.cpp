@@ -69,7 +69,7 @@ public:
             _EnterCombat();
             events.ScheduleEvent(EVENT_FIREBALL, 1000);
             events.ScheduleEvent(EVENT_FLAMELINE, 30000);
-            events.ScheduleEvent(EVENT_FLAME_WALL, 40000);
+            //events.ScheduleEvent(EVENT_FLAME_WALL, 40000);
         }
 
         void EnterEvadeMode()
