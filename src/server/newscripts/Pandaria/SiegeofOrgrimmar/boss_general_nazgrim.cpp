@@ -44,6 +44,8 @@ enum Spells
     SPELL_BERSERK              = 26662,
     //
     SPELL_AFTERSHOCK           = 143712,
+    //HM
+    SPELL_EXECUTE              = 143502,
     //His summons
     //Warrior
     SPELL_IRONSTORM            = 143420,
@@ -973,8 +975,11 @@ public:
 
         void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
-                GetCaster()->ToCreature()->AI()->DoAction(ACTION_SET_NEXT_STANCE);
+            if (GetCaster() && GetCaster()->isAlive())
+            {
+               if (GetCaster()->ToCreature())
+                   GetCaster()->ToCreature()->AI()->DoAction(ACTION_SET_NEXT_STANCE);
+            }
         }
 
         void Register()
