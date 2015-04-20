@@ -606,6 +606,7 @@ class Spell
         void ClearEffectTarget () { m_effect_targets.clear(); }
         uint64 GetRndEffectTarget () { return Trinity::Containers::SelectRandomContainerElement(m_effect_targets); }
         AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
+        void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
 
         // Spell mod
         void AddSpellModId (uint32 spellId) { m_spell_mods.push_back(spellId); }
@@ -734,7 +735,6 @@ class Spell
         void AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid = true, bool implicit = true);
         void AddGOTarget(GameObject* target, uint32 effectMask);
         void AddItemTarget(Item* item, uint32 effectMask);
-        void AddDestTarget(SpellDestination const& dest, uint32 effIndex);
         void AddTargetVisualHit(Unit* target);
         WorldLocation* GetDestTarget(uint32 effIndex) { return &m_destTargets[effIndex]._position; }
 

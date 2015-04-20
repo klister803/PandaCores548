@@ -2860,7 +2860,10 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                 mask = UNIT_MASK_PUPPET;
                 break;
             case SUMMON_CATEGORY_VEHICLE:
-                mask = UNIT_MASK_MINION;
+                if (properties->Id == 3384) //hardfix despawn npc 63872
+                    mask = UNIT_MASK_SUMMON;
+                else
+                    mask = UNIT_MASK_MINION;
                 break;
             case SUMMON_CATEGORY_WILD:
             case SUMMON_CATEGORY_ALLY:
@@ -2894,7 +2897,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
                             properties->Id == 3459 ||
                             properties->Id == 3097) // Mirror Image, Summon Gargoyle
                             mask = UNIT_MASK_GUARDIAN;
-                        break;
+                            break;
                     }
                 }
                 break;

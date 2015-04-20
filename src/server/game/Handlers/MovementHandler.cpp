@@ -182,7 +182,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // mount allow check
-    if (!allowMount)
+    if (!allowMount || (GetPlayer()->GetMapId() == 530 && GetPlayer()->GetZoneId() == 0)) //530 - uwow event map
         _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     // update zone immediately, otherwise leave channel will cause crash in mtmap

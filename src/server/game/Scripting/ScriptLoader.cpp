@@ -830,6 +830,14 @@ void AddSC_krasarang_wilds();
 void AddSC_kun_lai_summit();
 
 void AddSC_WanderingIsland();
+
+// Scenario
+void AddSC_instance_arena_of_annihilation();     // ArenaofAnnihilation
+void AddSC_boss_scar_shell();
+void AddSC_boss_jolgrum();
+void AddSC_boss_little_liuyang();
+void AddSC_boss_chagan_firehoof();
+void AddSC_arena_of_annihilation();
 // battlegrounds
 
 // outdoor pvp
@@ -1693,6 +1701,14 @@ void AddPandarieScripts()
     AddSC_kun_lai_summit();
 
     AddSC_WanderingIsland();
+    
+    //Scenario
+    AddSC_instance_arena_of_annihilation();     // ArenaofAnnihilation
+    AddSC_boss_scar_shell();
+    AddSC_boss_jolgrum();
+    AddSC_boss_little_liuyang();
+    AddSC_boss_chagan_firehoof();
+    AddSC_arena_of_annihilation();
 #endif
 }
 

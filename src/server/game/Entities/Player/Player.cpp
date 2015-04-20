@@ -1574,9 +1574,9 @@ void Player::HandleDrowning(uint32 time_diff)
     if (m_MirrorTimerFlags & UNDERWATER_INWATER)
     {
         // Vash'jir zones
-        if (m_zoneUpdateId == 4815 || m_zoneUpdateId == 4816 || m_zoneUpdateId == 5144 || m_zoneUpdateId == 5145|| m_zoneUpdateId == 5146)
+        if (m_zoneUpdateId == 4815 || m_zoneUpdateId == 4816 || m_zoneUpdateId == 5144 || m_zoneUpdateId == 5145 || m_zoneUpdateId == 5146)
             return;
-        
+
         // Breath timer not activated - activate it
         if (m_MirrorTimer[BREATH_TIMER] == DISABLED_MIRROR_TIMER)
         {
@@ -1613,6 +1613,9 @@ void Player::HandleDrowning(uint32 time_diff)
     // In dark water
     if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle())
     {
+        if (GetMapId() == 530 && GetZoneId() == 3455) // uwow event map
+            return;
+
         // Fatigue timer not activated - activate it
         if (m_MirrorTimer[FATIGUE_TIMER] == DISABLED_MIRROR_TIMER)
         {
