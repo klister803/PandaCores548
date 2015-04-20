@@ -3267,21 +3267,6 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
     // TODO: move this code to scripts
     if (m_preCastSpell)
     {
-        // Custom MoP Script
-        // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
-        if ((m_spellInfo->Id == 115072 || m_spellInfo->Id == 147489) && m_preCastSpell == 101545)
-            return;
-        // Incanter's Ward (passive) - 118858 apply wrong aura (Incanter's Ward (cooldown marker) - 118859)
-        if (m_spellInfo->Id == 118858 && m_preCastSpell == 118859)
-            return;
-        // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
-        if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
-            return;
-        if (m_spellInfo->Id == 117050 && m_preCastSpell == 117050)
-            return;
-        if (m_preCastSpell == 114736)
-            return;
-
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
             // Blizz seems to just apply aura without bothering to cast
             m_caster->AddAura(m_preCastSpell, unit);
@@ -9560,9 +9545,6 @@ void Spell::PrepareTriggersExecutedOnHit()
     // todo: move this to scripts
     if (m_spellInfo->SpellFamilyName)
     {
-        SpellInfo const* excludeCasterSpellInfo = sSpellMgr->GetSpellInfo(m_spellInfo->ExcludeCasterAuraSpell);
-        if (excludeCasterSpellInfo && !excludeCasterSpellInfo->IsPositive())
-            m_preCastSpell = m_spellInfo->ExcludeCasterAuraSpell;
         SpellInfo const* excludeTargetSpellInfo = sSpellMgr->GetSpellInfo(m_spellInfo->ExcludeTargetAuraSpell);
         if (excludeTargetSpellInfo && !excludeTargetSpellInfo->IsPositive())
             m_preCastSpell = m_spellInfo->ExcludeTargetAuraSpell;
