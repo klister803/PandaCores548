@@ -1120,7 +1120,7 @@ void Unit::UpdatePowerRegen(uint32 power)
         }
         case POWER_ENERGY: // Regenerate Energy
         {
-            addvalue += (0.01f * 1000) * m_baseMHastRatingPct;
+            addvalue += 0.01f * 1000;
             break;
         }
         case POWER_RUNIC_POWER: // Regenerate Runic Power

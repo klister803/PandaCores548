@@ -2960,6 +2960,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
     // Powers now benefit from haste.
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
+    float hastRegen = GetFloatValue(UNIT_MOD_HASTE_REGEN);
 
     switch (power)
     {
@@ -2990,8 +2991,8 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
         case POWER_ENERGY: // Regenerate Energy
         {
-            float defaultreg = 0.01f * saveTimer;
-            addvalue += defaultreg * m_baseMHastRatingPct * sWorld->getRate(RATE_POWER_ENERGY);
+            float defaultreg = 0.01f * (saveTimer / hastRegen);
+            addvalue += defaultreg * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         }
         case POWER_RUNIC_POWER: // Regenerate Runic Power
@@ -3050,7 +3051,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
     // Mana regen calculated in UpdateManaRegen()
     if (power > POWER_MANA)
     {
-        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * saveTimer) * regenType;
+        addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex) * (0.001f * (saveTimer / hastRegen)) * regenType;
         addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * saveTimer / (5 * IN_MILLISECONDS);
 
         //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::Regenerate addvalue %f, modify %f, powerIndex %i, power %i, saveCur %i", addvalue, GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex), powerIndex, power, saveCur);
