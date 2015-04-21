@@ -1156,8 +1156,7 @@ void Unit::UpdatePowerRegen(uint32 power)
             break;
     }
 
-    int32 perc = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
-    float val = CalculatePct(addvalue, perc);
+    float val = (addvalue * GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power) - addvalue);
 
     SetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, val);
     if(power < POWER_UNUSED)
