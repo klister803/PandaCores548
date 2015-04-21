@@ -24735,3 +24735,46 @@ void Unit::GeneratePersonalLoot(Creature* creature, Player* anyLooter)
         }
     }
 }
+
+void Unit::SendMovementForce(WorldObject* at, float x, float y, float z, float o, bool apply)
+{
+    if (GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    ObjectGuid guid = GetObjectGuid();
+    uint32 TriggerGUID = MAKE_PAIR32(at->GetGUID(), 0x1000);
+
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::SendMovementForce x %f, y %f, z %f o %f apply %i", x, y, z, o, apply);
+
+    if(apply)
+    {
+        WorldPacket data(SMSG_MOVE_APPLY_MOVEMENT_FORCE);
+        data.WriteGuidMask<6, 0, 1, 4, 3>(guid);
+        data.WriteBits(0, 2); //always 0
+        data.WriteGuidMask<5, 2, 7>(guid);
+        data << uint32(TriggerGUID); //guid AT
+        data << uint32(0); //Unk1 may TransportID
+        data << float(x);
+        data.WriteGuidBytes<3>(guid);
+        data << uint32(0); // Unk2 may be SequenceIndex
+        data.WriteGuidBytes<6, 4>(guid);
+        data << float(z);
+        data << float(y);
+        data.WriteGuidBytes<0, 7, 5, 1>(guid);
+        data << float(o);
+        data.WriteGuidBytes<2>(guid);
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+    else
+    {
+        WorldPacket data(SMSG_MOVE_REMOVE_MOVEMENT_FORCE);
+        data.WriteGuidMask<0, 6, 1, 3, 2, 5, 7, 4>(guid);
+        data.WriteGuidBytes<0, 5, 4>(guid);
+        data << uint32(TriggerGUID); // guid AT
+        data.WriteGuidBytes<2>(guid);
+        data << uint32(1); //Unk2 may be SequenceIndex
+        data.WriteGuidBytes<3, 6, 1, 7>(guid);
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+}
+

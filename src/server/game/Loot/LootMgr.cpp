@@ -477,6 +477,11 @@ Loot::Loot(uint32 _gold)
     personal = false;
     isBoss = false;
     bonusLoot = false;
+    m_guid = 0;
+}
+
+void Loot::GenerateLootGuid()
+{
     m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_LOOT), 0, HIGHGUID_LOOT);
 }
 
@@ -2569,6 +2574,8 @@ Loot* LootMgr::GetLoot(uint64 guid)
 
 void LootMgr::AddLoot(Loot* loot)
 {
+    if(!loot->GetGUID())
+        loot->GenerateLootGuid();
     m_Loots[loot->GetGUID()] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
 }

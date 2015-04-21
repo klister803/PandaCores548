@@ -567,8 +567,9 @@ public:
                 case DATA_SHA_OF_PRIDE:
                     if (state == DONE)
                     {
-                        if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
-                            pChest->SetRespawnTime(pChest->GetRespawnDelay());
+                        if(!instance->IsLfr())
+                            if (GameObject* pChest = instance->GetGameObject(chestShaVaultOfForbiddenTreasures))
+                                pChest->SetRespawnTime(pChest->GetRespawnDelay());
                         if (GetData(DATA_GALAKRAS_PRE_EVENT) != IN_PROGRESS)
                         {
                             if (Creature* Galakras = instance->GetCreature(GetData64(NPC_GALAKRAS)))

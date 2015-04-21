@@ -39,13 +39,15 @@ enum AreaTriggerActionMoment
 
 enum AreaTriggerActionType
 {
-    AT_ACTION_TYPE_CAST_SPELL   = 0, // hit mask 0x001
-    AT_ACTION_TYPE_REMOVE_AURA  = 1, // hit mask 0x002
-    AT_ACTION_TYPE_ADD_STACK    = 2, // hit mask 0x004
-    AT_ACTION_TYPE_REMOVE_STACK = 3, // hit mask 0x008
-    AT_ACTION_TYPE_CHANGE_SCALE = 4, // hit mask 0x010
-    AT_ACTION_TYPE_SHARE_DAMAGE = 5, // hit mask 0x020
-    AT_ACTION_TYPE_MAX          = 6,
+    AT_ACTION_TYPE_CAST_SPELL           = 0, // hit mask 0x001
+    AT_ACTION_TYPE_REMOVE_AURA          = 1, // hit mask 0x002
+    AT_ACTION_TYPE_ADD_STACK            = 2, // hit mask 0x004
+    AT_ACTION_TYPE_REMOVE_STACK         = 3, // hit mask 0x008
+    AT_ACTION_TYPE_CHANGE_SCALE         = 4, // hit mask 0x010
+    AT_ACTION_TYPE_SHARE_DAMAGE         = 5, // hit mask 0x020
+    AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE = 6, // hit mask 0x040
+    AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE= 7, // hit mask 0x080
+    AT_ACTION_TYPE_MAX                  = 8,
 };
 
 enum AreaTriggerTargetFlags
@@ -91,7 +93,7 @@ struct AreaTriggerInfo
     AreaTriggerInfo() : sphereScale(1.0f), sphereScaleMax(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
         visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0),
         Height(0.0f), RadiusTarget(0.0f), Float5(0.0f), Float4(0.0f), Radius(0.0f), HeightTarget(0.0f),
-        MoveCurveID(0), ElapsedTime(0) {}
+        MoveCurveID(0), ElapsedTime(0), x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
 
     bool isMoving;
     float sphereScale;
@@ -113,6 +115,10 @@ struct AreaTriggerInfo
     float HeightTarget;
     uint32 MoveCurveID;
     uint32 ElapsedTime;
+    float x;
+    float y;
+    float z;
+    float o;
 };
 
 class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
@@ -201,6 +207,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         uint32 _moveTime;
         bool _on_unload;
         bool _on_despawn;
+        bool _on_remove;
         uint32 _hitCount;
         bool _areaTriggerCylinder;
 

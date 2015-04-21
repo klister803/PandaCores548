@@ -921,7 +921,7 @@ enum Opcodes
     SMSG_EQUIPMENT_SET_USE_RESULT                     = 0x0516, // 5.4.1 17538
     SMSG_EXPECTED_SPAM_RECORDS                        = 0xC4D,  // 5.0.5 16048
     SMSG_EXPLORATION_EXPERIENCE                       = 0x092C, // 5.4.1 17538
-    SMSG_FAILED_PLAYER_CONDITION                      = 0xA46,  // 5.0.5 16048
+    SMSG_FAILED_PLAYER_CONDITION                      = 0x1114, // 5.4.1 17538
     SMSG_FEATURE_SYSTEM_STATUS                        = 0x142C, // 5.4.1 17538
     SMSG_FEIGN_DEATH_RESISTED                         = 0xD7D,  // 5.0.5 16048
     SMSG_FISH_ESCAPED                                 = 0x1087, // 5.4.1 17538
@@ -1494,6 +1494,8 @@ enum Opcodes
     SMSG_LOSS_OF_CONTROL_AURA_UPDATE                  = 0x0904, // 5.4.1 17538
     SMSG_REMOVE_LOSS_OF_CONTROL                       = 0x01A7, // 5.4.1 17538
     SMSG_DISPLAY_TOAST                                = 0x10AD, // 5.4.1 17538
+    SMSG_MOVE_APPLY_MOVEMENT_FORCE                    = 0x062A, // 5.4.1 17538
+    SMSG_MOVE_REMOVE_MOVEMENT_FORCE                   = 0x02B9, // 5.4.1 17538
 };
 
 /// Player state

@@ -24,7 +24,8 @@
 #include "Chat.h"
 
 AreaTrigger::AreaTrigger() : WorldObject(false), _duration(0), _activationDelay(0), _updateDelay(0), _on_unload(false), _caster(NULL),
-    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1), _areaTriggerCylinder(false)
+    _radius(1.0f), atInfo(), _on_despawn(false), m_spellInfo(NULL), _moveSpeed(0.0f), _moveTime(0), _realEntry(0), _hitCount(1), _areaTriggerCylinder(false),
+    _on_remove(false)
 {
     m_objectType |= TYPEMASK_AREATRIGGER;
     m_objectTypeId = TYPEID_AREATRIGGER;
@@ -124,8 +125,13 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         }
     }
 
-    if (!find && atInfo.sphereScale)
-        _radius = atInfo.sphereScale;
+    if (!find)
+    {
+        if(atInfo.sphereScale)
+            _radius = atInfo.sphereScale;
+        else if(atInfo.RadiusTarget)
+            _radius = atInfo.RadiusTarget;
+    }
 
     if (atInfo.Height)
         _areaTriggerCylinder = true;
@@ -483,6 +489,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     {
         case AT_ACTION_TYPE_CAST_SPELL:
         {
+            if(_on_remove)
+                return;
+
             if (caster)
             {
                 if (action.action->targetFlags & AT_TARGET_FLAG_CAST_AT_SRC)
@@ -542,6 +551,16 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             }
             break;
         }
+        case AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE:
+        {
+            unit->SendMovementForce(this, atInfo.x, atInfo.y, atInfo.z, atInfo.o, true);
+            break;
+        }
+        case AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE:
+        {
+            unit->SendMovementForce(this, atInfo.x, atInfo.y, atInfo.z, atInfo.o, false);
+            break;
+        }
     }
 
     action.hitCount++;
@@ -589,10 +608,15 @@ void AreaTrigger::Remove(bool duration)
 
 void AreaTrigger::Despawn()
 {
-    _on_unload = true;
+    if (_on_remove)
+        return;
+    _on_remove = true;
 
     if (IsInWorld())
     {
+        UpdateAffectedList(0, AT_ACTION_MOMENT_REMOVE);//any remove from world
+        UpdateAffectedList(0, AT_ACTION_MOMENT_DESPAWN);//remove from world with time
+
         // Possibly this?
         if (!IsInWorld())
             return;

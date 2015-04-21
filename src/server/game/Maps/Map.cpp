@@ -144,6 +144,9 @@ void Map::LoadVMap(int gx, int gy)
 
 void Map::LoadMMap(int gx, int gy)
 {
+    //if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP, GetId(), NULL, MMAP_DISABLE_PATHFINDING))
+        //return;
+
     // DONT CHANGE "gy" and "gx" - Its necessary !
     int mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld->GetDataPath() + "mmaps").c_str(), GetId(), gy, gx);
     switch (mmapLoadResult)
