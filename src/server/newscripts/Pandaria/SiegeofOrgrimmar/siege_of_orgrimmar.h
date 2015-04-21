@@ -209,6 +209,7 @@ enum eCreatures
     NPC_ARCHWEAVER                  = 71771,
     NPC_ASSASIN                     = 71518,
     NPC_WARSHAMAN                   = 71773,
+    NPC_SNIPER                      = 71656,
     //
 
     NPC_MALKOROK                    = 71454,

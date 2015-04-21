@@ -5015,7 +5015,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 //General Nazgrim
-                case 143872: //Ravager SUmmon
+                case 143872: //Ravager Summon
                     spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
                     break;
                 case 144278: //Generate rage
@@ -5030,6 +5030,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 143420: //Ironstorm
                     spellInfo->InterruptFlags = NULL;
+                    break;
+                case 143882: //Hunter's Mark
+                    spellInfo->ExcludeTargetAuraSpell = 0;
                     break;
                 //Malkorok
                 case 142890: //Blood Rage Dmg

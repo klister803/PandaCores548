@@ -356,7 +356,7 @@ class boss_malkorok : public CreatureScript
                         events.ScheduleEvent(EVENT_BLOOD_RAGE, 2000);
                         break;
                     case EVENT_SEISMIC_SLAM:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                         {
                             DoCast(target, SPELL_SEISMIC_SLAM, true);
                             if (me->GetMap()->IsHeroic())

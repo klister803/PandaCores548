@@ -1189,6 +1189,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143597: //Generate rage energize
     case 143716: //Heroic Shockwave
     case 143420: //Ironstorm
+    case 143882: //Hunter's Mark
     //Malkorok
     case 142890: //Blood Rage Dmg
     case 142906: //Ancient Miasma Dmg
