@@ -2261,13 +2261,6 @@ void Spell::EffectApplyAura(SpellEffIndex effIndex)
             }
             break;
         }
-        case 8122:      // Psychic Scream
-        {
-            // Not handle if no - Glyph of Psychic Scream
-            if (!m_caster->HasAura(55676))
-                return;
-            break;
-        }
     }
 
     ASSERT(unitTarget == m_spellAura->GetOwner());
