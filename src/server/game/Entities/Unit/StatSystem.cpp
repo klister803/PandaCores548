@@ -1118,7 +1118,7 @@ void Unit::UpdatePowerRegen(uint32 power)
         }
         case POWER_FOCUS: // Regenerate Focus
         {
-            addvalue += 1.0f * m_baseRHastRatingPct * 5;
+            addvalue += 1.0f * 5;
             break;
         }
         case POWER_ENERGY: // Regenerate Energy

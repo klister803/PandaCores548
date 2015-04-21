@@ -2851,7 +2851,7 @@ void Player::RegenerateAll()
     if (m_focusRegenTimerCount >= 200 && getClass() == CLASS_HUNTER)
     {
         Regenerate(POWER_FOCUS, m_focusRegenTimerCount);
-        m_focusRegenTimerCount -= 200;
+        m_focusRegenTimerCount = 0;
     }
 
     if (m_regenTimerCount >= 2000)
@@ -2986,7 +2986,8 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
         case POWER_FOCUS: // Regenerate Focus
         {
-            addvalue += 1.0f * m_baseRHastRatingPct * sWorld->getRate(RATE_POWER_FOCUS);
+            float defaultreg = 0.005f * (saveTimer / hastRegen);
+            addvalue += defaultreg * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         }
         case POWER_ENERGY: // Regenerate Energy
