@@ -1306,9 +1306,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             switch (m_spellInfo->Id)
             {
-                case 12975:// Last Stand
-                case 106922:// Might of Ursoc
-                case 113072:// Might of Ursoc (Symbiosis)
+                case 132413: // Shadow Bulwark
+                case 12975:  // Last Stand
+                case 106922: // Might of Ursoc
+                case 113072: // Might of Ursoc (Symbiosis)
                 {
                     amount = CalculatePct(caster->GetMaxHealth(), amount);
                     break;
