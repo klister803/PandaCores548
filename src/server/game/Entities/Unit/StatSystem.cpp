@@ -851,6 +851,9 @@ void Player::_RemoveAllStatBonuses()
 
 void Unit::UpdateManaRegen()
 {
+    if (!GetPower(POWER_MANA))
+        return;
+
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
     // percent of base mana per 5 sec
