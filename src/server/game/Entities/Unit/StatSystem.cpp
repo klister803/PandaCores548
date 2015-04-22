@@ -851,7 +851,9 @@ void Player::_RemoveAllStatBonuses()
 
 void Unit::UpdateManaRegen()
 {
-    if (!GetPower(POWER_MANA))
+    // Skip regeneration for power type we cannot have
+    uint32 powerIndex = GetPowerIndexByClass(POWER_MANA, getClass());
+    if (powerIndex == MAX_POWERS)
         return;
 
     // Mana regen from spirit
@@ -895,9 +897,9 @@ void Unit::UpdateManaRegen()
     //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateManaRegen pctRegenMod %f, regenFromHaste %f, manaRegen %f", pctRegenMod, regenFromHaste, manaRegen);
 
     // out of combar
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, manaRegen);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, manaRegen);
     // in combat
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, manaRegenInterupted);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, manaRegenInterupted);
 }
 
 void Unit::UpdateMeleeHastMod()
