@@ -362,7 +362,7 @@ class boss_general_nazgrim : public CreatureScript
                 switch (action)
                 { 
                 case ACTION_SET_NEXT_STANCE:
-                    if (me->isInCombat())
+                    if (me->isAlive() && me->isInCombat())
                         SetStance(GetNextStance());
                     break;
                 case ACTION_RE_ATTACK:
@@ -1151,11 +1151,8 @@ public:
 
         void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetCaster() && GetCaster()->isAlive())
-            {
-               if (GetCaster()->ToCreature())
-                   GetCaster()->ToCreature()->AI()->DoAction(ACTION_SET_NEXT_STANCE);
-            }
+            if (GetCaster() && GetCaster()->ToCreature())
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_SET_NEXT_STANCE);
         }
 
         void Register()
