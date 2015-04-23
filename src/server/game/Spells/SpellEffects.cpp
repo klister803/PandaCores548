@@ -1600,9 +1600,17 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             if (effect != effIndex)
                 break;
 
-            if (!m_caster->HasAura(spellid)) damage -= 1;
+            if (spellid == 125195)
+            {
+                for (uint32 i = 0; i < damage; ++i)
+                    m_caster->CastSpell(m_caster, spellid, true);
+            }
+            else
+            {
+                if (!m_caster->HasAura(spellid)) damage -= 1;
 
-            m_caster->SetAuraStack(spellid, m_caster, damage);
+                m_caster->SetAuraStack(spellid, m_caster, damage);
+            }
             break;
         }
         // Lunar Invitation
