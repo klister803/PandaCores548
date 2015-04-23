@@ -3969,7 +3969,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx3 = SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                     break;
                 case 53: // Backstab
-                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 0.845f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
                 case 127424:
