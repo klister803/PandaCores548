@@ -5014,6 +5014,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144918: //Cutter Laser Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                //Korkron Dark Shaman
+                case 144334: //Iron Tomb dmg
+                    spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
+                    break;
+                case 144331: //Iron Prison
+                    spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
+                    break;
                 //General Nazgrim
                 case 143872: //Ravager Summon
                     spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;

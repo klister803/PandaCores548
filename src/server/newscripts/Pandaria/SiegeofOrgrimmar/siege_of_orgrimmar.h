@@ -75,6 +75,7 @@ enum eCreatures
     NPC_EXPLOSIVE_TAR               = 71950,
     NPC_BORER_DRILL                 = 71906,
     NPC_ASH_ELEMENTAL               = 71827,
+    NPC_IRON_TOMB                   = 71941,
     NPC_KORKRON_BANNER              = 71626,
     NPC_AFTER_SHOCK                 = 71697,
     NPC_HEALING_TIDE_TOTEM          = 72563,

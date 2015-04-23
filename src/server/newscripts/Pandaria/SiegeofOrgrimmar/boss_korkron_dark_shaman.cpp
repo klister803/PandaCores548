@@ -31,6 +31,8 @@ enum eSpells
 
     //Kardris
     SPELL_FROSTSTORM_BOLT       = 144214,
+    //95pct HM
+    SPELL_IRON_PRISON           = 144330, 
     //85pct
     SPELL_TOXIC_STORM_SUM       = 144005,
     SPELL_TOXIC_STORM_TR_AURA   = 144006,
@@ -45,6 +47,9 @@ enum eSpells
 
     //Haromm
     SPELL_FROSTSTORM_STRIKE     = 144215,
+    //95pct HM
+    SPELL_IRON_TOMB_SUM         = 144329, 
+    SPELL_IRON_TOMB_DMG         = 144334,
     //85pct
     SPELL_TOXIC_MIST            = 144089,
     //65pct
@@ -79,21 +84,25 @@ enum sEvents
     EVENT_TOXIC_STORM           = 2,
     EVENT_FOUL_GEYSER           = 3,
     EVENT_FALLING_ASH           = 4,
+    //HM
+    EVENT_IRON_PRISON           = 5,
 
     //Haromm
-    EVENT_FROSTSTORM_STRIKE     = 5,
-    EVENT_TOXIC_MIST            = 6,
-    EVENT_FOUL_STREAM           = 7,
-    EVENT_ASHEN_WALL            = 8,
+    EVENT_FROSTSTORM_STRIKE     = 6,
+    EVENT_TOXIC_MIST            = 7,
+    EVENT_FOUL_STREAM           = 8,
+    EVENT_ASHEN_WALL            = 9,
+    //HM
+    EVENT_IRON_TOMB             = 10,
 
     //Mounts
-    EVENT_SWIPE                 = 9,
-    EVENT_REND                  = 10,
+    EVENT_SWIPE                 = 11,
+    EVENT_REND                  = 12,
 
-    EVENT_SUMMON_TORNADO        = 11,
-    EVENT_FIND_PLAYER           = 12,
-    EVENT_ACTIVE                = 13,
-    EVENT_DESPAWN               = 14,
+    EVENT_SUMMON_TORNADO        = 13,
+    EVENT_FIND_PLAYER           = 14,
+    EVENT_ACTIVE                = 15,
+    EVENT_DESPAWN               = 16,
 
     EVENT_BERSERK               = 15,
 };
@@ -159,7 +168,10 @@ public:
                 instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
                 if (firstpull)
                     SummonAndSeatOnMount(me->GetEntry());
-                nextpct = 85;
+                if (me->GetMap()->IsHeroic())
+                    nextpct = 95;
+                else
+                    nextpct = 85;
                 firstattack = false;
             }
         }
@@ -177,7 +189,7 @@ public:
             return NULL;
         }
 
-        void DespawnAllSummons()
+        void DespawnAllSummons() //Despawn special creature and gameobject(summons from triggers)
         {
             std::list<Creature*> list;
             list.clear();
@@ -187,6 +199,18 @@ public:
             {
                 for (std::list<Creature*>::const_iterator itr = list.begin(); itr != list.end(); itr++)
                     (*itr)->DespawnOrUnsummon();
+            }
+
+            if (me->GetMap()->IsHeroic())
+            {
+                std::list<GameObject*>glist;
+                glist.clear();
+                me->GetGameObjectListWithEntryInGrid(glist, 220864, 200.0f); //iron tomb
+                if (!glist.empty())
+                {
+                    for (std::list<GameObject*>::const_iterator itr = glist.begin(); itr != glist.end(); itr++)
+                        (*itr)->Delete();
+                }
             }
         }
 
@@ -260,6 +284,19 @@ public:
         {
             switch (phase)
             {
+            case 85: //95pct HM
+            {
+                switch (me->GetEntry())
+                {
+                case NPC_WAVEBINDER_KARDRIS:
+                    events.ScheduleEvent(EVENT_IRON_PRISON, 2000);
+                    break;
+                case NPC_EARTHBREAKER_HAROMM:
+                    events.ScheduleEvent(EVENT_IRON_TOMB, 2000);
+                    break;
+                }
+            }
+            break;
             case 65: //85pct
             {
                 switch (me->GetEntry())
@@ -332,6 +369,9 @@ public:
             {
                 switch (nextpct)
                 {
+                case 95:
+                    nextpct = 85;
+                    break;
                 case 85:
                     nextpct = 65;
                     break;
@@ -384,6 +424,58 @@ public:
                     }
                     events.ScheduleEvent(EVENT_FROSTSTORM_STRIKE, 6000);
                     break;
+                //Extra Events 95 pct HM
+                //Kardris
+                case EVENT_IRON_PRISON:
+                {
+                    std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                    if (!tlist.empty())
+                    {
+                        uint8 num = 0;
+                        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                        {
+                            if (itr != tlist.begin())
+                            {
+                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                {
+                                    if (!pl->HasAura(SPELL_IRON_PRISON))
+                                    {
+                                        pl->AddAura(SPELL_IRON_PRISON, pl);
+                                        num++;
+                                        if (num == 2)
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_IRON_PRISON, 31500);
+                    break;
+                }
+                //Haromm
+                case EVENT_IRON_TOMB:
+                {
+                    std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                    if (!tlist.empty())
+                    {
+                        uint8 num = 0;
+                        for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                        {
+                            if (itr != tlist.begin())
+                            {
+                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                {
+                                    DoCast(pl, SPELL_IRON_TOMB_SUM);
+                                    num++;
+                                    if (num == 3)
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    events.ScheduleEvent(EVENT_IRON_TOMB, 31500);
+                    break;
+                }
                 //Extra Events 85 pct
                 //Kardris
                 case EVENT_TOXIC_STORM:
@@ -803,6 +895,46 @@ public:
     }
 };
 
+//71941
+class npc_iron_tomb : public CreatureScript
+{
+public:
+    npc_iron_tomb() : CreatureScript("npc_iron_tomb") {}
+
+    struct npc_iron_tombAI : public ScriptedAI
+    {
+        npc_iron_tombAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            DoCast(me, SPELL_IRON_TOMB_DMG);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_iron_tombAI(creature);
+    }
+};
+
 
 void AddSC_boss_korkron_dark_shaman()
 {
@@ -812,4 +944,5 @@ void AddSC_boss_korkron_dark_shaman()
     new npc_toxic_tornado();
     new npc_foul_slime();
     new npc_ash_elemental();
+    new npc_iron_tomb();
 }
