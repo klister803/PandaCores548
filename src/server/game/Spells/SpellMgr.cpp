@@ -3962,7 +3962,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36);
                     break;
                 case 8676:   // Ambush
-                    spellInfo->Effects[EFFECT_0].ScalingMultiplier = 1.787f;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_REQ_CASTER_BEHIND_TARGET;
                     break;
                 case 124487: // Zen Focus
