@@ -182,7 +182,7 @@ public:
             me->SummonCreature(NPC_YULON, summonPos[2]);
             me->SummonCreature(NPC_NIUZAO, summonPos[3]);
 
-            events.ScheduleEvent(EVENT_CHIJI_START, 60000);
+            events.ScheduleEvent(urand(EVENT_CHIJI_START, EVENT_NIUZAO_START), 60000);
         }
 
         void DoAction(const int32 action)
@@ -850,6 +850,7 @@ public:
             bEvent_1 = false;
             bEvent_2 = false;
             ChargeEvent = false;
+            me->SetReactState(REACT_AGGRESSIVE);
             me->setFaction(35);
             me->RemoveAllAuras();
         }
