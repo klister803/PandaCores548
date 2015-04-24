@@ -151,9 +151,6 @@ void Player::UpdateSpellDamageAndHealingBonus()
             amount = int32(GetTotalAttackPowerValue(BASE_ATTACK) * (*itr)->GetAmount() / 100.0f);
 
         SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
-        if (getClass() == CLASS_MONK && GetSpecializationId(GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
-            UpdateAttackPowerAndDamage();
-
         SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, amount);
 
         for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
@@ -171,6 +168,9 @@ void Player::UpdateSpellDamageAndHealingBonus()
         for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
             SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i), amount));
     }
+
+    if (HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT))
+        UpdateAttackPowerAndDamage();
 }
 
 bool Player::UpdateAllStats()
@@ -433,6 +433,9 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         if (pet)
             pet->UpdateAttackPowerAndDamage();
     }
+
+    if (HasAuraType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT))
+        UpdateSpellDamageAndHealingBonus();
 }
 
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage)
