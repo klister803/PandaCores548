@@ -1276,6 +1276,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
                     break;
                 }
+                case 142530: // Bloody Dancing Steel
                 case 120032: // Dancing Steel
                 {
                     int32 str = caster->GetStat(STAT_STRENGTH);

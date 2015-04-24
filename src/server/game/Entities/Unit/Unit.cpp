@@ -6612,12 +6612,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     triggered_spell_id = 104993;
                     break;
                 }
-                case 142531: // Bloody Dancing Steel
-                case 118333: // Dancing Steel
-                {
-                    triggered_spell_id = 120032;
-                    break;
-                }
                 case 134732: // Battle Fatigue
                 {
                     if (Unit * owner = victim->GetOwner())
