@@ -12360,7 +12360,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             ApCoeffMod = damagetype == DOT ? bonus->ap_dot_bonus : bonus->ap_bonus;
         }
 
-		bool calcSPDBonus = SPDCoeffMod > 0;
+		bool calcSPDBonus = (SPDCoeffMod > 0) && getClass() != CLASS_MONK;
 
         if (ApCoeffMod > 0)
         {
