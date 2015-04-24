@@ -1561,8 +1561,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             continue;
         }
 
-        if (achievement && HasAchieved(achievement->ID)) //Don`t update complete achievement
-            continue;
+        //if (achievement && HasAchieved(achievement->ID)) //Don`t update complete achievement
+            //continue;
 
         if (!CanUpdateCriteria(criteriaTree, achievementCriteria, achievement, miscValue1, miscValue2, unit, referencePlayer))
             continue;
