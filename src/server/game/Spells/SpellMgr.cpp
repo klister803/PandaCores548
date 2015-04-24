@@ -3804,6 +3804,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 115176: // Zen Meditation
+                    spellInfo->ChannelInterruptFlags = 0;
+                    break;
                 case 146025: // Readiness (Prot)
                 case 145955: // Readiness (DD Plate)
                 case 146019: // Readiness (Other DD)
@@ -5033,7 +5036,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[1].TriggerSpell = 143715; //Summon
                     break;
-                case 143420: //Ironstorm
+                case 143420: // Ironstorm
+                case 105847: // Seal Armor Breach
+                case 105848:
                     spellInfo->InterruptFlags = NULL;
                     break;
                 case 143882: //Hunter's Mark
@@ -5453,10 +5458,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 58423: // Relentless Strikes
                     spellInfo->Effects[EFFECT_0].SpellClassMask[1] |= 8;
-                    break;
-                case 105847: // Seal Armor Breach
-                case 105848:
-                    spellInfo->InterruptFlags = 0;
                     break;
                 case 122355: // Molten Core
                     spellInfo->StackAmount = 10;
