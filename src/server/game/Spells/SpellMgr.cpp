@@ -3804,6 +3804,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137595: // Lightning Strike Charges Trigger
+                    spellInfo->AttributesEx4 |= SPELL_ATTR4_NOT_USABLE_IN_ARENA_OR_RATED_BG;
+                    break;
                 case 115176: // Zen Meditation
                     spellInfo->ChannelInterruptFlags = 0;
                     break;
