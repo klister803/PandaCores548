@@ -1618,7 +1618,7 @@ void ObjectMgr::LoadPersonalLootTemplate()
         personalloot.cooldowntype = ccooldowntype;
         personalloot.respawn = respawn;
 
-        /*if(lootspellId)
+        if(lootspellId)
         {
             PersonalLootData& personallootForSpell = _PersonalLootBySpellStore[lootspellId];
             personallootForSpell.entry = entry;
@@ -1629,7 +1629,7 @@ void ObjectMgr::LoadPersonalLootTemplate()
             personallootForSpell.cooldownid = cooldownid;
             personallootForSpell.cooldowntype = ccooldowntype;
             personallootForSpell.respawn = respawn;
-        }*/
+        }
         if(bonusspellId)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(bonusspellId);

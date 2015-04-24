@@ -8553,6 +8553,11 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
     //Loot for boos
     if(plData)
     {
+        if(m_spellInfo->Id == plData->lootspellId)
+        {
+            player->AddPlayerLootCooldown(plData->lootspellId, TYPE_SPELL, true, difficulty);
+            return;
+        }
         //sLog->outDebug(LOG_FILTER_LOOT, "Spell::EffectBonusLoot lootId %i lootType %i", lootId, lootType);
 
         Loot* loot = &player->personalLoot;
