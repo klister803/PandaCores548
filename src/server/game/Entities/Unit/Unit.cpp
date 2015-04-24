@@ -19150,7 +19150,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_CAST_SPELL: // 20
+                case SPELL_TRIGGER_CAST_OR_REMOVE: // 20
                 {
                     triggered_spell_id = abs(itr->spell_trigger);
 
@@ -19165,7 +19165,10 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         continue;
                     }
 
-                    _caster->CastSpell(target, triggered_spell_id, true);
+                    if (itr->spell_trigger > 0)
+                        _caster->CastSpell(target, triggered_spell_id, true);
+                    else
+                        _caster->RemoveAurasDueToSpell(triggered_spell_id);
 
                     check = true;
                     break;

@@ -124,7 +124,7 @@ enum SpellTriggeredType
     SPELL_TRIGGER_ADD_STACK                     = 17,           // add spell stack
     SPELL_TRIGGER_ADD_CHARGES                   = 18,           // add spell charges
     SPELL_TRIGGER_ADD_CHARGES_STACK             = 19,           // add spell charges and stack
-    SPELL_TRIGGER_CAST_SPELL                    = 20,           // cast spell without option
+    SPELL_TRIGGER_CAST_OR_REMOVE                = 20,           // cast spell without option
     SPELL_TRIGGER_UPDATE_DUR_TO_IGNORE_MAX      = 21,           // Update duration for select spell to ignore max duration
     SPELL_TRIGGER_ADD_DURATION                  = 22,           // Add duration for select spell
     SPELL_TRIGGER_MODIFY_COOLDOWN               = 23,           // Modify cooldown for trigger spell

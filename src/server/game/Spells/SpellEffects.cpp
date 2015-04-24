@@ -1234,7 +1234,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     check = true;
                 }
                 break;
-                case SPELL_TRIGGER_CAST_SPELL: // 20
+                case SPELL_TRIGGER_CAST_OR_REMOVE: // 20
                     {
                         triggered_spell_id = abs(itr->spell_trigger);
 
