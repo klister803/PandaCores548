@@ -2189,6 +2189,17 @@ class spell_monk_transcendence_transfer : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_transcendence_transfer_SpellScript);
 
+            SpellCastResult CheckDist()
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->m_SummonSlot[17])
+                        if (Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[17]))
+                            if (summon->IsWithinDistInMap(caster, 40.0f))
+                                return SPELL_CAST_OK;
+
+                return SPELL_FAILED_OUT_OF_RANGE;
+            }
+
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* caster = GetCaster())
@@ -2196,19 +2207,19 @@ class spell_monk_transcendence_transfer : public SpellScriptLoader
                     if(caster->m_SummonSlot[17])
                     {
                         if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[17]))
-                            if (summon->IsWithinDistInMap(caster, 40.0f))
-                            {
-                                float x, y, z, o;
-                                summon->GetPosition(x, y, z, o);
-                                summon->NearTeleportTo(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation());
-                                caster->NearTeleportTo(x, y, z, o);
-                            }
+                        {
+                            float x, y, z, o;
+                            summon->GetPosition(x, y, z, o);
+                            summon->NearTeleportTo(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation());
+                            caster->NearTeleportTo(x, y, z, o);
+                        }
                     }
                 }
             }
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_monk_transcendence_transfer_SpellScript::CheckDist);
                 OnEffectHitTarget += SpellEffectFn(spell_monk_transcendence_transfer_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
