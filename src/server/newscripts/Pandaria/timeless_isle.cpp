@@ -182,7 +182,7 @@ public:
             me->SummonCreature(NPC_YULON, summonPos[2]);
             me->SummonCreature(NPC_NIUZAO, summonPos[3]);
 
-            events.ScheduleEvent(EVENT_CHIJI_START, 6000);
+            events.ScheduleEvent(EVENT_CHIJI_START, 60000);
         }
 
         void DoAction(const int32 action)
@@ -238,7 +238,7 @@ public:
                     }
                     case EVENT_CHIJI_END:
                         Talk(SAY_CHIJI_FINISH);
-                        events.ScheduleEvent(EVENT_XUEN_START, 15000);
+                        events.ScheduleEvent(EVENT_XUEN_START, 60000);
                         break;
                     case EVENT_XUEN_START:
                     {
@@ -249,7 +249,7 @@ public:
                     }
                     case EVENT_XUEN_END:
                         Talk(SAY_XUEN_FINISH);
-                        events.ScheduleEvent(EVENT_YULON_START, 15000);
+                        events.ScheduleEvent(EVENT_YULON_START, 60000);
                         break;
                     case EVENT_YULON_START:
                     {
@@ -261,7 +261,7 @@ public:
                     case EVENT_YULON_END:
                     {
                         Talk(SAY_YULON_FINISH);
-                        events.ScheduleEvent(EVENT_NIUZAO_START, 15000);
+                        events.ScheduleEvent(EVENT_NIUZAO_START, 60000);
                         break;
                     }
                     case EVENT_NIUZAO_START:
@@ -274,7 +274,7 @@ public:
                     case EVENT_NIUZAO_END:
                     {
                         Talk(SAY_NIUZAO_FINISH);
-                        events.ScheduleEvent(EVENT_CHIJI_START, 15000);
+                        events.ScheduleEvent(EVENT_CHIJI_START, 60000);
                         break;
                     }
                 }
