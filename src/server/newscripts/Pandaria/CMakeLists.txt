@@ -120,6 +120,7 @@ set(scripts_STAT_SRCS
   Pandaria/SiegeofOrgrimmar/boss_garrosh_hellscream.cpp
   
   Pandaria/wandering_island.cpp
+  Pandaria/timeless_isle.cpp
 
   Pandaria/valley_of_the_four_winds.cpp
   Pandaria/krasarang_wilds.cpp

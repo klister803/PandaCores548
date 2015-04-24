@@ -270,6 +270,9 @@ i_scriptLock(false)
         case 860: // start pandaren
             m_VisibleDistance = 250.0f;
             break;
+        case 870: // Pandaria
+            m_VisibleDistance = 150.0f;
+            break;
         default:
             break;
     }

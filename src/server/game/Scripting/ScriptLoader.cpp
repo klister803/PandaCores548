@@ -830,6 +830,7 @@ void AddSC_krasarang_wilds();
 void AddSC_kun_lai_summit();
 
 void AddSC_WanderingIsland();
+void AddSC_timeless_isle();
 
 // Scenario
 void AddSC_instance_arena_of_annihilation();     // ArenaofAnnihilation
@@ -1701,6 +1702,7 @@ void AddPandarieScripts()
     AddSC_kun_lai_summit();
 
     AddSC_WanderingIsland();
+    AddSC_timeless_isle();
     
     //Scenario
     AddSC_instance_arena_of_annihilation();     // ArenaofAnnihilation

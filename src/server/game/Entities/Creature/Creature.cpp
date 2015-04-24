@@ -2274,6 +2274,17 @@ bool Creature::canCreatureAttack(Unit const* victim, bool /*force*/) const
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
     float dist = std::max(GetAttackDistance(victim), sWorld->getFloatConfig(CONFIG_THREAT_RADIUS)) + m_CombatDistance;
 
+    switch (GetEntry())
+    {
+        //The August Celestials
+        case 71952:
+        case 71953:
+        case 71955:
+        case 71954:
+            dist = 130.0f;
+            break;
+    }
+
     if (Unit* unit = GetCharmerOrOwner())
         return victim->IsWithinDist(unit, dist);
     else
