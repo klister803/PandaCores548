@@ -1699,40 +1699,42 @@ void TempSummon::CastPetAuras(bool apply, uint32 spellId)
                             break;
                         }
                         default:
-                            _target->RemoveAurasDueToSpell(itr->spellId);
                             break;
                     }
                     continue;
                 }
-                switch (itr->option)
+                else
                 {
-                    case 0: //cast spell without option
-                        _caster->CastSpell(_target, itr->spellId, true);
-                        break;
-                    case 1: //cast custom spell option
-                        _caster->CastCustomSpell(_target, itr->spellId, &bp0, &bp1, &bp2, true);
-                        break;
-                    case 2: //add aura
-                        if(Aura* aura = _caster->AddAura(itr->spellId, _target))
-                        {
-                            if(bp0 && aura->GetEffect(0))
-                                aura->GetEffect(0)->SetAmount(bp0);
-                            if(bp1 && aura->GetEffect(1))
-                                aura->GetEffect(1)->SetAmount(bp1);
-                            if(bp2 && aura->GetEffect(2))
-                                aura->GetEffect(2)->SetAmount(bp2);
-                        }
-                        break;
-                    case 3: //cast spell not triggered
-                        _caster->CastSpell(_target, itr->spellId, false);
-                        break;
-                    case 4: //learn spell
+                    switch (itr->option)
                     {
-                        if(Player* _lplayer = _target->ToPlayer())
-                            _lplayer->learnSpell(itr->spellId, false);
-                        else
-                            learnSpell(itr->spellId);
-                        break;
+                        case 0: //cast spell without option
+                            _caster->CastSpell(_target, itr->spellId, true);
+                            break;
+                        case 1: //cast custom spell option
+                            _caster->CastCustomSpell(_target, itr->spellId, &bp0, &bp1, &bp2, true);
+                            break;
+                        case 2: //add aura
+                            if (Aura* aura = _caster->AddAura(itr->spellId, _target))
+                            {
+                                if (bp0 && aura->GetEffect(0))
+                                    aura->GetEffect(0)->SetAmount(bp0);
+                                if (bp1 && aura->GetEffect(1))
+                                    aura->GetEffect(1)->SetAmount(bp1);
+                                if (bp2 && aura->GetEffect(2))
+                                    aura->GetEffect(2)->SetAmount(bp2);
+                            }
+                            break;
+                        case 3: //cast spell not triggered
+                            _caster->CastSpell(_target, itr->spellId, false);
+                            break;
+                        case 4: //learn spell
+                        {
+                            if (Player* _lplayer = _target->ToPlayer())
+                                _lplayer->learnSpell(itr->spellId, false);
+                            else
+                                learnSpell(itr->spellId);
+                            break;
+                        }
                     }
                 }
             }
