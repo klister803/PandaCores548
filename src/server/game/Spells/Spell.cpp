@@ -6891,37 +6891,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
-            case SPELL_EFFECT_SCHOOL_DAMAGE:
-            {
-                switch (m_spellInfo->Id)
-                {
-                    case 86121:  // Soul Swap
-                    {
-                        if (Unit* target = m_targets.GetUnitTarget())
-                        {
-                            if (!target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, 0x00000402, 0x00000112, 0, m_caster->GetGUID()))
-                            {
-                                return SPELL_FAILED_BAD_TARGETS;
-                            }
-                        }
-                        break;
-                    }
-                    case 86213:  // Soul Swap Exhale
-                    {
-                        if (Unit * target = m_targets.GetUnitTarget())
-                        {
-                            if (m_caster->m_SpecialTarget == target->GetGUID())
-                            {
-                                return SPELL_FAILED_BAD_TARGETS;
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        break;
-                }
-                break;
-            }
             case SPELL_EFFECT_APPLY_AURA:
             {
                 switch (m_spellInfo->Id)
@@ -6989,6 +6958,28 @@ SpellCastResult Spell::CheckCast(bool strict)
                 
                 switch (m_spellInfo->Id)
                 {
+                    case 86121:  // Soul Swap
+                    {
+                        if (Unit* target = m_targets.GetUnitTarget())
+                        {
+                            if (!target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, 0x00000402, 0x00000112, 0, m_caster->GetGUID()))
+                            {
+                                return SPELL_FAILED_BAD_TARGETS;
+                            }
+                        }
+                        break;
+                    }
+                    case 86213:  // Soul Swap Exhale
+                    {
+                        if (Unit * target = m_targets.GetUnitTarget())
+                        {
+                            if (m_caster->m_SpecialTarget == target->GetGUID())
+                            {
+                                return SPELL_FAILED_BAD_TARGETS;
+                            }
+                        }
+                        break;
+                    }
                     case 51640: // Taunt Flag Targeting
                     {
                         if (Unit* target = m_targets.GetUnitTarget())
