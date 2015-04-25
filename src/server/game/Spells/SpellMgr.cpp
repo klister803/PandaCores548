@@ -3804,6 +3804,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 122470: // Touch of Karma
+                    spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NOT_LIMIT_ABSORB;
+                    break;
                 case 137594: // Fortitude Trigger
                 case 137592: // Haste Trigger
                 case 137595: // Lightning Strike Charges Trigger
