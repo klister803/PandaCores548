@@ -775,7 +775,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_deep_wounds_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -791,7 +791,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_warr_deep_wounds_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_warr_deep_wounds_SpellScript::HandleAfterHit);
             }
         };
 
