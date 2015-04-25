@@ -1140,7 +1140,7 @@ class spell_warl_burning_embers : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_burning_embers_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
@@ -1156,7 +1156,7 @@ class spell_warl_burning_embers : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_warl_burning_embers_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_warl_burning_embers_SpellScript::HandleAfterHit);
             }
         };
 
