@@ -23750,14 +23750,35 @@ void Unit::RemoveSoulSwapDOT(Unit* target)
             (*iter)->GetCasterGUID() != GetGUID()) // only warlock spells
             continue;
 
-        _SoulSwapDOTList.push_back((*iter)->GetId());
+        if (Aura* aura = (*iter)->GetBase())
+        {
+            SoulSwapDOT auraStatus;
+
+            auraStatus.Id = aura->GetId();
+            auraStatus.duration = aura->GetDuration();
+            auraStatus.stackAmount = aura->GetStackAmount();
+            auraStatus.amount = (*iter)->GetAmount();
+            auraStatus.periodicTimer = (*iter)->GetPeriodicTimer();
+            _SoulSwapDOTList.push_back(auraStatus);
+        }
     }
 }
 
 void Unit::ApplySoulSwapDOT(Unit* target)
 {
-    for (AuraIdList::const_iterator iter = _SoulSwapDOTList.begin(); iter != _SoulSwapDOTList.end(); ++iter)
-        AddAura((*iter), target);
+    for (AuraIdList::iterator iter = _SoulSwapDOTList.begin(); iter != _SoulSwapDOTList.end(); ++iter)
+    {
+        AddAura((*iter).Id, target);
+
+        if (Aura* aura = target->GetAura((*iter).Id))
+        {
+            aura->SetStackAmount((*iter).stackAmount);
+            aura->SetMaxDuration((*iter).duration);
+            aura->SetDuration((*iter).duration);
+            aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
+            aura->GetEffect(EFFECT_0)->SetPeriodicTimer((*iter).periodicTimer);
+        }
+    }
 
     _SoulSwapDOTList.clear();
 }

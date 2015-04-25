@@ -846,6 +846,15 @@ struct DiminishingReturn
     uint32                  hitCount;
 };
 
+struct SoulSwapDOT
+{
+    uint32 Id;
+    uint32 amount;
+    uint32 duration;
+    uint8  stackAmount;
+    int32  periodicTimer;
+};
+
 enum MeleeHitOutcome
 {
     MELEE_HIT_EVADE, MELEE_HIT_MISS, MELEE_HIT_DODGE, MELEE_HIT_BLOCK, MELEE_HIT_PARRY,
@@ -1345,7 +1354,7 @@ class Unit : public WorldObject
         typedef std::list<AuraApplication *> AuraApplicationList;
         typedef std::list<DiminishingReturn> Diminishing;
         typedef std::set<uint32> ComboPointHolderSet;
-        typedef std::vector<uint32> AuraIdList;
+        typedef std::vector<SoulSwapDOT> AuraIdList;
 
         typedef std::map<uint8, AuraApplication*> VisibleAuraMap;
 
