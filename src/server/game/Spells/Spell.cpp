@@ -639,6 +639,10 @@ void Spell::SelectSpellTargets()
         if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
             continue;
 
+        if (m_spellMissMask & ((1 << SPELL_MISS_MISS) | (1 << SPELL_MISS_IMMUNE)))
+            if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CASTER)
+                continue;
+
         // set expected type of implicit targets to be sent to client
         uint32 implicitTargetMask = GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetObjectType()) | GetTargetFlagMask(m_spellInfo->GetEffect(i, m_diffMode).TargetB.GetObjectType());
         if (implicitTargetMask & TARGET_FLAG_UNIT)
@@ -8853,6 +8857,10 @@ void Spell::HandleLaunchPhase()
         // don't do anything for empty effect
         if (!m_spellInfo->GetEffect(i, m_diffMode).IsEffect())
             continue;
+
+        if (m_spellMissMask & ((1 << SPELL_MISS_MISS) | (1 << SPELL_MISS_IMMUNE)))
+            if (m_spellInfo->GetEffect(i, m_diffMode).TargetA.GetTarget() == TARGET_UNIT_CASTER)
+                continue;
 
         HandleEffects(NULL, NULL, NULL, i, SPELL_EFFECT_HANDLE_LAUNCH);
     }
