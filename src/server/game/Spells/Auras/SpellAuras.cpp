@@ -1272,10 +1272,6 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
 
     bool refresh = stackAmount >= GetStackAmount();
 
-    // Agony doesn't refresh itself every tick
-    if (m_spellInfo->Id == 980)
-        refresh = false;
-
     // Update stack amount
     SetStackAmount(stackAmount);
 
@@ -3447,4 +3443,21 @@ void Aura::SetAuraTimer(int32 time, uint64 guid)
         if(AuraApplication *aur = GetApplicationOfTarget(guid ? guid : m_casterGuid))
             aur->ClientUpdate();
     }
+}
+
+void Aura::CalcAgonyTickDamage()
+{
+    uint8 stack = GetStackAmount();
+
+    if (stack < GetSpellInfo()->StackAmount)
+        if (AuraEffect* eff = GetEffect(EFFECT_0))
+        {
+            uint32 damage = eff->GetAmount();
+            m_stackAmount = stack + 1;
+            eff->SetAmount((damage / stack) * (stack + 1));
+            eff->SetCritAmount(eff->GetAmount() * 2);
+
+            if (AuraEffect* eff1 = GetEffect(EFFECT_1))
+                eff1->SetAmount(eff->GetAmount());
+        }
 }

@@ -119,6 +119,7 @@ class Aura
         uint64 GetSpellAreaTrigger() const { return m_spellAreaTrGuid; }
         void SetTriggeredAuraEff(AuraEffect const* trigger) { m_triggeredByAura = trigger;}
         AuraEffect const* GetTriggeredAuraEff() const { return m_triggeredByAura; }
+        void CalcAgonyTickDamage();
 
         AuraObjectType GetType() const;
 

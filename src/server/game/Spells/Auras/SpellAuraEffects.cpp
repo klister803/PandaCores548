@@ -7856,65 +7856,24 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
 
         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage);
 
-        // Curse of Agony damage-per-tick calculation
-        if (GetSpellInfo()->Id == 980 && m_tickNumber != 1) // Agony
-            GetBase()->ModStackAmount(1);
-
-        // Malefic Grasp
-        if (GetSpellInfo()->Id == 103103)
+        switch (GetSpellInfo()->Id)
         {
-            int32 afflictionDamage = 0;
-
-            // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
-            // Corruption ...
-            if (Aura* corruption = target->GetAura(146739, caster->GetGUID()))
+            case 980: // Agony
             {
-                afflictionDamage = corruption->GetEffect(0)->GetAmount();
-                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
-
-                caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+                if (Aura* agony = GetBase())
+                    agony->CalcAgonyTickDamage();
+                break;
             }
-            // Unstable Affliction ...
-            if (Aura* unstableAffliction = target->GetAura(30108, caster->GetGUID()))
+            case 103103: // Malefic Grasp
             {
-                afflictionDamage = unstableAffliction->GetEffect(0)->GetAmount();
-                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
-
-                caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
-            }
-            // Agony ...
-            if (Aura* agony = target->GetAura(980, caster->GetGUID()))
-            {
-                afflictionDamage = agony->GetEffect(0)->GetAmount();
-                afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
-
-                caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
-            }
-        }
-        // Soul Drain
-        if (GetSpellInfo()->Id == 1120)
-        {
-            // Energize one soul shard every 2 ticks
-            if (m_tickNumber == 2 || m_tickNumber == 4 || m_tickNumber == 6)
-                caster->ModifyPower(POWER_SOUL_SHARDS, 100);
-
-            // if target is below 20% of life ...
-            if (target->GetHealthPct() <= 20)
-            {
-                // ... drain soul deal 100% more damage ...
-                damage *= 2;
-
                 int32 afflictionDamage = 0;
-                bool grimoireOfSacrifice = caster->HasAura(108503);
 
-                // ... and deals instantly 100% of tick-damage for each affliction effects on the target
+                // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
                 // Corruption ...
                 if (Aura* corruption = target->GetAura(146739, caster->GetGUID()))
                 {
                     afflictionDamage = corruption->GetEffect(0)->GetAmount();
-
-                    if (grimoireOfSacrifice)
-                        AddPct(afflictionDamage, 50);
+                    afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                     caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
                 }
@@ -7922,9 +7881,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                 if (Aura* unstableAffliction = target->GetAura(30108, caster->GetGUID()))
                 {
                     afflictionDamage = unstableAffliction->GetEffect(0)->GetAmount();
-
-                    if (grimoireOfSacrifice)
-                        AddPct(afflictionDamage, 50);
+                    afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                 }
@@ -7932,14 +7889,66 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                 if (Aura* agony = target->GetAura(980, caster->GetGUID()))
                 {
                     afflictionDamage = agony->GetEffect(0)->GetAmount();
-
-                    if (grimoireOfSacrifice)
-                        AddPct(afflictionDamage, 50);
+                    afflictionDamage = CalculatePct(afflictionDamage, GetSpellInfo()->Effects[2].BasePoints);
 
                     caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                    agony->CalcAgonyTickDamage();
                 }
+                break;
             }
+            case 1120: // Soul Drain
+            {
+                // Energize one soul shard every 2 ticks
+                if (m_tickNumber == 2 || m_tickNumber == 4 || m_tickNumber == 6)
+                    caster->ModifyPower(POWER_SOUL_SHARDS, 100);
+
+                // if target is below 20% of life ...
+                if (target->GetHealthPct() <= 20)
+                {
+                    // ... drain soul deal 100% more damage ...
+                    damage *= 2;
+
+                    int32 afflictionDamage = 0;
+                    bool grimoireOfSacrifice = caster->HasAura(108503);
+
+                    // ... and deals instantly 100% of tick-damage for each affliction effects on the target
+                    // Corruption ...
+                    if (Aura* corruption = target->GetAura(146739, caster->GetGUID()))
+                    {
+                        afflictionDamage = corruption->GetEffect(0)->GetAmount();
+
+                        if (grimoireOfSacrifice)
+                            AddPct(afflictionDamage, 50);
+
+                        caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+                    }
+                    // Unstable Affliction ...
+                    if (Aura* unstableAffliction = target->GetAura(30108, caster->GetGUID()))
+                    {
+                        afflictionDamage = unstableAffliction->GetEffect(0)->GetAmount();
+
+                        if (grimoireOfSacrifice)
+                            AddPct(afflictionDamage, 50);
+
+                        caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                    }
+                    // Agony ...
+                    if (Aura* agony = target->GetAura(980, caster->GetGUID()))
+                    {
+                        afflictionDamage = agony->GetEffect(0)->GetAmount();
+
+                        if (grimoireOfSacrifice)
+                            AddPct(afflictionDamage, 50);
+
+                        caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                    }
+                }
+                break;
+            }
+            default:
+                break;
         }
+        
         if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_GENERIC)
         {
             switch (GetId())
