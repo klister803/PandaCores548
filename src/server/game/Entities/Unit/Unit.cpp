@@ -23775,8 +23775,10 @@ void Unit::ApplySoulSwapDOT(Unit* target)
             aura->SetStackAmount((*iter).stackAmount);
             aura->SetMaxDuration((*iter).duration);
             aura->SetDuration((*iter).duration);
-            aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
             aura->GetEffect(EFFECT_0)->SetPeriodicTimer((*iter).periodicTimer);
+            aura->GetEffect(EFFECT_0)->SetCritAmount((*iter).amount * 2);
+            aura->GetEffect(EFFECT_1)->SetAmount((*iter).amount);
+            aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
         }
     }
 
