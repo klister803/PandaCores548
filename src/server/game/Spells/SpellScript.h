@@ -369,6 +369,7 @@ class SpellScript : public _SpellScript
         // methods useable only during spell hit on target, or during spell launch on target:
         // returns: target of current effect if it was Unit otherwise NULL
         Unit* GetHitUnit();
+        Unit* GetOriginalTarget();
         // returns: target of current effect if it was Creature otherwise NULL
         Creature* GetHitCreature();
         // returns: target of current effect if it was Player otherwise NULL

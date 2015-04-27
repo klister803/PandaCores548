@@ -490,6 +490,13 @@ Unit* SpellScript::GetHitUnit()
     return m_spell->unitTarget;
 }
 
+Unit* SpellScript::GetOriginalTarget()
+{
+    if (!IsInTargetHook())
+        return NULL;
+    return m_spell->m_originalTarget;
+}
+
 Creature* SpellScript::GetHitCreature()
 {
     if (!IsInTargetHook())
