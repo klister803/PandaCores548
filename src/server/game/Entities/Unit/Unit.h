@@ -2091,7 +2091,7 @@ class Unit : public WorldObject
         void SendLossOfControl(Unit* caster, uint32 spellId, uint32 duraction, uint32 rmDuraction, uint32 mechanic, uint32 schoolMask, LossOfControlType type, bool apply);
         void SendDisplayToast(uint32 entry, uint8 hasDisplayToastMethod, bool isBonusRoll, uint32 count, uint8 type, Item* item = NULL);
         void GeneratePersonalLoot(Creature* creature, Player* anyLooter);
-        void SendMovementForce(WorldObject* at, float x, float y, float z, float o, bool apply);
+        void SendMovementForce(WorldObject* at, float x, float y, float z, float o, uint32 windType, bool apply);
 
         bool CheckAndIncreaseCastCounter();
         bool RequiresCurrentSpellsToHolyPower(SpellInfo const* spellProto);

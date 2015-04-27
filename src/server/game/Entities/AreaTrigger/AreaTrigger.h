@@ -71,6 +71,14 @@ enum AreaTriggerTargetFlags
         AT_TARGET_FLAG_NOT_PET  | AT_TARGET_FLAG_CASTER_IS_TARGET | AT_TARGET_FLAG_NOT_FULL_HP | AT_TARGET_FLAG_ALWAYS_TRIGGER | AT_TARGET_FLAT_IN_FRONT,
 };
 
+struct PolygonPOI
+{
+    uint32 id;
+    float x;
+    float y;
+};
+typedef UNORDERED_MAP<uint32, PolygonPOI> PolygonPOIMap;
+
 struct AreaTriggerAction
 {
     uint32 id;
@@ -90,15 +98,14 @@ typedef std::list<AreaTriggerAction> AreaTriggerActionList;
 
 struct AreaTriggerInfo
 {
-    AreaTriggerInfo() : sphereScale(1.0f), sphereScaleMax(1.0f), activationDelay(0), updateDelay(0), maxCount(0), 
-        visualId(1), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0),
+    AreaTriggerInfo() : activationDelay(0), updateDelay(0), maxCount(0),
+        visualId(1), spellId(0), customEntry(0), isMoving(false), speed(0.0f), moveType(0), hitType(0),
         Height(0.0f), RadiusTarget(0.0f), Float5(0.0f), Float4(0.0f), Radius(0.0f), HeightTarget(0.0f),
-        MoveCurveID(0), ElapsedTime(0), x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
+        MoveCurveID(0), ElapsedTime(0), windX(0.0f), windY(0.0f), windZ(0.0f), windSpeed(0.0f), windType(0) {}
 
     bool isMoving;
-    float sphereScale;
-    float sphereScaleMax;
-    uint32 visualId;    //unk520 on 5.4.8 parse at SMSG_UPDATE_OBJECT
+    uint32 spellId;
+    uint32 visualId;
     uint32 activationDelay;
     uint32 updateDelay;
     uint32 customEntry;
@@ -107,18 +114,21 @@ struct AreaTriggerInfo
     float speed;
     uint32 moveType;
     uint32 hitType;
-    float Height;
-    float RadiusTarget;
-    float Float5;
-    float Float4;
     float Radius;
+    float RadiusTarget;
+    float Height;
     float HeightTarget;
+    float Float4;
+    float Float5;
     uint32 MoveCurveID;
     uint32 ElapsedTime;
-    float x;
-    float y;
-    float z;
-    float o;
+    uint32 windType;
+    float windX;
+    float windY;
+    float windZ;
+    float windSpeed;
+    uint32 polygon;
+    PolygonPOIMap polygonPoints;
 };
 
 class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
@@ -172,6 +182,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         bool CheckActionConditions(AreaTriggerAction const& action, Unit* unit);
         void UpdateActionCharges(uint32 p_time);
         bool GetAreaTriggerCylinder() const { return _areaTriggerCylinder; }
+        bool isPolygon() const { return atInfo.polygon && !atInfo.polygonPoints.empty(); }
         AreaTriggerInfo GetAreaTriggerInfo() const { return atInfo; }
 
         void BindToCaster();
@@ -185,6 +196,8 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         float getMoveSpeed() const { return _moveSpeed; }
         uint32 GetObjectMovementParts() const;
         void PutObjectUpdateMovement(ByteBuffer* data) const;
+        bool IsInPolygon(Unit* target, WorldObject const* obj);
+        float CalculateRadius();
 
     private:
         bool _HasActionsWithCharges(AreaTriggerActionMoment action = AT_ACTION_MOMENT_ENTER);

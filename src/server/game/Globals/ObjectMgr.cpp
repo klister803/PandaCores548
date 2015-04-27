@@ -9646,10 +9646,11 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
 {
     _areaTriggerData.clear();
 
-    //                                                  0            1                2              3                   4                5            6             7             8
-    QueryResult result = WorldDatabase.Query("SELECT `entry`, `customVisualId`, `sphereScale`, `sphereScaleMax`, `activationDelay`, `updateDelay`, `maxCount`, `customEntry`, `isMoving`,"
-    //  9        10          11         12           13           14        15        16         17                18            19        20   21   22   23
-    "`speed`, `moveType`, `hitType`, `Height`, `RadiusTarget`, `Float5`, `Float4`, `Radius`, `HeightTarget`, `MoveCurveID`, `ElapsedTime`, `x`, `y`, `z`, `o` FROM areatrigger_data");
+    //                                                  0         1            2                3            4            5            6            7            8          9
+    QueryResult result = WorldDatabase.Query("SELECT `entry`, `spellId`, `customEntry`, `customVisualId`, `Radius`, `RadiusTarget`, `Height`, `HeightTarget`, `Float4`, `Float5`,"
+    //    9          10        11            12                13           14         15           16             17           18      19       20         21           22         23
+    "`isMoving`, `moveType`, `speed`, `activationDelay`, `updateDelay`, `maxCount`, `hitType`, `MoveCurveID`, `ElapsedTime`, `windX`, `windY`, `windZ`, `windSpeed`, `windType`, `polygon` FROM areatrigger_data");
+
     if (result)
     {
         uint32 counter = 0;
@@ -9660,29 +9661,77 @@ void ObjectMgr::LoadAreaTriggerActionsAndData()
             uint8 i = 0;
             uint32 id = fields[i++].GetUInt32();
             AreaTriggerInfo& info = _areaTriggerData[id];
+            info.spellId = fields[i++].GetUInt32();
+            info.customEntry = fields[i++].GetUInt32();
             info.visualId = fields[i++].GetUInt32();
-            info.sphereScale = fields[i++].GetFloat();
-            info.sphereScaleMax = fields[i++].GetFloat();
+            info.Radius = fields[i++].GetFloat();
+            info.RadiusTarget = fields[i++].GetFloat();
+            info.Height = fields[i++].GetFloat();
+            info.HeightTarget = fields[i++].GetFloat();
+            info.Float4 = fields[i++].GetFloat();
+            info.Float5 = fields[i++].GetFloat();
+            info.isMoving = fields[i++].GetBool();
+            info.moveType = fields[i++].GetUInt32();
+            info.speed = fields[i++].GetFloat();
             info.activationDelay = fields[i++].GetUInt32();
             info.updateDelay = fields[i++].GetUInt32();
             info.maxCount = fields[i++].GetUInt8();
-            info.customEntry = fields[i++].GetUInt32();
-            info.isMoving = fields[i++].GetBool();
-            info.speed = fields[i++].GetFloat();
-            info.moveType = fields[i++].GetUInt32();
             info.hitType = fields[i++].GetUInt32();
-            info.Height = fields[i++].GetFloat();
-            info.RadiusTarget = fields[i++].GetFloat();
-            info.Float5 = fields[i++].GetFloat();
-            info.Float4 = fields[i++].GetFloat();
-            info.Radius = fields[i++].GetFloat();
-            info.HeightTarget = fields[i++].GetFloat();
             info.MoveCurveID = fields[i++].GetUInt32();
             info.ElapsedTime = fields[i++].GetUInt32();
-            info.x = fields[i++].GetFloat();
-            info.y = fields[i++].GetFloat();
-            info.z = fields[i++].GetFloat();
-            info.o = fields[i++].GetFloat();
+            info.windX = fields[i++].GetFloat();
+            info.windY = fields[i++].GetFloat();
+            info.windZ = fields[i++].GetFloat();
+            info.windSpeed = fields[i++].GetFloat();
+            info.windType = fields[i++].GetUInt32();
+            info.polygon = fields[i++].GetUInt32();
+            if(info.polygon && info.customEntry)
+            {
+                QueryResult resultPolygon = WorldDatabase.PQuery("SELECT `id`, `x`, `y` FROM areatrigger_polygon WHERE `entry` = '%u' AND `spellId` = '%u'", info.customEntry, info.spellId);
+                if (resultPolygon)
+                {
+                    do
+                    {
+                        Field* fieldP = resultPolygon->Fetch();
+                        PolygonPOI polygonPOI;
+                        polygonPOI.id = fieldP[0].GetUInt32();
+                        polygonPOI.x = fieldP[1].GetFloat();
+                        polygonPOI.y = fieldP[2].GetFloat();
+                        info.polygonPoints[polygonPOI.id] = polygonPOI;
+                    }
+                    while (resultPolygon->NextRow());
+                }
+            }
+            if(info.windSpeed)
+            {
+                AreaTriggerAction actionEnter;
+                actionEnter.id = 0;
+                actionEnter.moment = AT_ACTION_MOMENT_ENTER;
+                actionEnter.actionType = AT_ACTION_TYPE_APPLY_MOVEMENT_FORCE;
+                actionEnter.targetFlags = AreaTriggerTargetFlags(AT_TARGET_FLAG_PLAYER | AT_TARGET_FLAG_HOSTILE);
+                actionEnter.spellId = info.spellId;
+                actionEnter.maxCharges = 0;
+                actionEnter.chargeRecoveryTime = 0;
+                actionEnter.aura = 0;
+                actionEnter.hasspell = 0;
+                actionEnter.scale = 0;
+                actionEnter.hitMaxCount = 0;
+                info.actions.push_back(actionEnter);
+
+                AreaTriggerAction actionLeave;
+                actionLeave.id = 1;
+                actionLeave.moment = AreaTriggerActionMoment(AT_ACTION_MOMENT_LEAVE | AT_ACTION_MOMENT_DESPAWN | AT_ACTION_MOMENT_REMOVE);
+                actionLeave.actionType = AT_ACTION_TYPE_REMOVE_MOVEMENT_FORCE;
+                actionLeave.targetFlags = AreaTriggerTargetFlags(0);
+                actionLeave.spellId = info.spellId;
+                actionLeave.maxCharges = 0;
+                actionLeave.chargeRecoveryTime = 0;
+                actionLeave.aura = 0;
+                actionLeave.hasspell = 0;
+                actionLeave.scale = 0;
+                actionLeave.hitMaxCount = 0;
+                info.actions.push_back(actionLeave);
+            }
             ++counter;
         }
         while (result->NextRow());

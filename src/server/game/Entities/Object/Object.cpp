@@ -397,12 +397,14 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         AreaTrigger const* t = ToAreaTrigger();
         ASSERT(t);
 
-        data->WriteBit(0);  // areaTriggerPolygon
-        //if (areaTriggerPolygon)
-        //{
-        //    dword25C = p.ReadBits(21); // VerticesCount
-        //    dword26C = p.ReadBits(21); // VerticesTargetCount
-        //}
+        data->WriteBit(t->isPolygon());  // areaTriggerPolygon
+        if (t->isPolygon())
+        {
+            uint32 size = t->GetAreaTriggerInfo().polygonPoints.size();
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "_BuildMovementUpdate areaTriggerPolygon size %u", size);
+            data->WriteBits(size, 21); // VerticesCount dword25C
+            data->WriteBits(t->GetAreaTriggerInfo().polygon > 1 ? size : 0, 21); // VerticesTargetCount dword26C
+        }
         data->WriteBit(0);              // HasAbsoluteOrientation?
         data->WriteBit(0);              // HasFollowsTerrain?
         data->WriteBit(t->GetVisualScale()); // areaTriggerSphere
@@ -523,32 +525,35 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
         if (t->GetAreaTriggerCylinder())                // areaTriggerCylinder
         {
-            *data << t->GetAreaTriggerInfo().Float4; // Float4 (float250)
-            *data << t->GetAreaTriggerInfo().Float5; // Float5 (float254)
-            *data << t->GetAreaTriggerInfo().Height; // Height (float248)
-            *data << t->GetAreaTriggerInfo().HeightTarget; // HeightTarget (float24C)
-            *data << t->GetAreaTriggerInfo().Radius; // Radius (float240)
-            *data << t->GetAreaTriggerInfo().RadiusTarget; // RadiusTarget (float244)
+            *data << t->GetAreaTriggerInfo().Height; // Height (float250)
+            *data << t->GetAreaTriggerInfo().Float4; // Float4 (float254)
+            *data << t->GetAreaTriggerInfo().Float5; // Float5 (float248)
+            *data << t->GetAreaTriggerInfo().Radius; // Radius (float24C)
+            *data << t->GetAreaTriggerInfo().RadiusTarget; // RadiusTarget (float240)
+            *data << t->GetAreaTriggerInfo().HeightTarget; // HeightTarget (float244)
         }
 
-        /*if (areaTriggerPolygon)
+        if (t->isPolygon())
         {
-            data << float(1.0f); // HeightTarget? (float280)
+            *data << t->GetAreaTriggerInfo().HeightTarget; // HeightTarget (float280)
 
-            for (uint8 i = 0; i < dword26C; ++i)
+            for (uint16 i = 0; i < t->GetAreaTriggerInfo().polygonPoints.size(); ++i)
             {
-                data << float(1.0f); // Y
-                data << float(1.0f); // X
+                *data << t->GetAreaTriggerInfo().polygonPoints[i].y; // Y
+                *data << t->GetAreaTriggerInfo().polygonPoints[i].x; // X
             }
 
-            data << float(1.0f); // Height? (float27C)
+            *data << t->GetAreaTriggerInfo().Height; // Height (float27C)
 
-            for (uint8 i = 0; i < dword25C; ++i)
+            if(t->GetAreaTriggerInfo().polygon > 1)
             {
-                data << float(1.0f); // X
-                data << float(1.0f); // Y
+                for (uint16 i = 0; i < t->GetAreaTriggerInfo().polygonPoints.size(); ++i)
+                {
+                    *data << t->GetAreaTriggerInfo().polygonPoints[i].x; // X
+                    *data << t->GetAreaTriggerInfo().polygonPoints[i].y; // Y
+                }
             }
-        }*/
+        }
 
         if (t->GetAreaTriggerInfo().MoveCurveID)
             *data << uint32(t->GetAreaTriggerInfo().MoveCurveID);
@@ -558,8 +563,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
         if (t->GetVisualScale())                // areaTriggerSphere
         {
-            *data << t->GetVisualScale(true);   // Radius
-            *data << t->GetVisualScale();       // RadiusTarget
+            *data << t->GetVisualScale(true);   // Radius float238
+            *data << t->GetVisualScale();       // RadiusTarget float234
         }
 
         if (t->isMoving())                      // areaTriggerSpline
