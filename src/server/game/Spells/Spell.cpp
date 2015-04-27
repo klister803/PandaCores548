@@ -2781,14 +2781,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 if (positive)
                 {
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
-                    procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS;
+                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
                 }
                 else
                 {
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                    procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG;
-                    procVictim   |= PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG;
+                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
             break;
             case SPELL_DAMAGE_CLASS_NONE:
