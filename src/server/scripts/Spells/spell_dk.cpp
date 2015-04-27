@@ -1673,7 +1673,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
-                            std::list<uint64> targets = GetSpell()->GetEffectTargets();
+                            /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
                             if(!targets.empty())
                             {
                                 for (std::list<uint64>::iterator itr = targets.begin(); itr != targets.end();)
@@ -1685,14 +1685,14 @@ class spell_dk_blood_boil : public SpellScriptLoader
                                     }
                                     ++itr;
                                 }
-                            }
+                            }*/
                         }
                         else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
                         {
                             SetHitDamage(int32(damge * 1.223f));
 
                             // Roiling Blood
-                            std::list<uint64> targets = GetSpell()->GetEffectTargets();
+                            /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
                             if(!targets.empty())
                             {
                                 for (std::list<uint64>::iterator itr = targets.begin(); itr != targets.end();)
@@ -1704,7 +1704,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
                                     }
                                     ++itr;
                                 }
-                            }
+                            }*/
                         }
                         else if (_player->HasAura(146650))
                             SetHitDamage(int32(damge * 1.223f));
@@ -1734,7 +1734,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& unitList)
             {
-                Unit* caster = GetCaster();
+                /*Unit* caster = GetCaster();
                 if(!caster || !caster->HasAura(108170))
                     return;
 
@@ -1743,7 +1743,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
                     if (Unit* unit = (*itr)->ToUnit())
                     if (unit->HasAura(DK_SPELL_FROST_FEVER, caster->GetGUID()) || unit->HasAura(DK_SPELL_BLOOD_PLAGUE, caster->GetGUID()))
                         GetSpell()->AddEffectTarget(unit->GetGUID());
-                }
+                }*/
             }
 
             void HandleAfterCast()
