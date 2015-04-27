@@ -42,6 +42,7 @@ enum Spells
     //Maki
     SPELL_CRASHING_SLASH        = 125568,
     SPELL_WHIRLPOOL             = 125564,
+    SPELL_SAUROK_WATERFALL      = 125563,
 };
 
 enum Events
@@ -76,6 +77,17 @@ const Position CirclePos[4] =
     {3781.26f, 535.27f, 651.69f},
     {3797.82f, 548.70f, 651.69f},
     {3810.26f, 531.93f, 651.69f},
+};
+
+const Position WaterPos[7] =
+{
+    {3820.97f, 499.60f, 647.64f, 2.20f},
+    {3841.55f, 527.54f, 647.64f, 3.02f},
+    {3754.85f, 564.94f, 647.64f, 5.62f},
+    {3828.93f, 559.35f, 647.64f, 3.82f},
+    {3801.23f, 578.68f, 647.64f, 4.60f},
+    {3758.01f, 511.44f, 647.64f, 0.52f},
+    {3791.59f, 485.88f, 647.64f, 1.46f},
 };
 
 class npc_scenario_gurgthock : public CreatureScript
@@ -421,6 +433,11 @@ public:
             _JustDied();
         }
 
+        void JustSummoned(Creature* summon)
+        {
+            summon->AI()->DoCast(SPELL_SAUROK_WATERFALL);
+        }
+
         void MovementInform(uint32 type, uint32 id)
         {
             if (type == POINT_MOTION_TYPE && id == 1)
@@ -433,6 +450,8 @@ public:
             if (type == POINT_MOTION_TYPE && id == 2)
             {
                 DoCast(SPELL_WHIRLPOOL);
+                for(uint8 i = 0; i < 7; i++)
+                    me->SummonCreature(41206, WaterPos[i], TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 14000);
                 me->SetReactState(REACT_AGGRESSIVE);
             }
         }

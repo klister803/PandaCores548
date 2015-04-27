@@ -923,6 +923,7 @@ public:
                 if (EventProgress)
                 {
                     EventProgress = false;
+                    ChargeEvent = false;
                     me->setFaction(35);
                     me->RemoveAllAuras();
                     me->GeneratePersonalLoot(me, NULL);
