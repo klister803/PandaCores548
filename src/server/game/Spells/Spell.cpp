@@ -6127,11 +6127,19 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
 {
     if (const std::vector<SpellLinked> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + type))
     {
+        std::set<uint32>  spellBanList;
         for (std::vector<SpellLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
         {
             if (i->hitmask)
                 if (!(m_spellMissMask & i->hitmask))
                     continue;
+
+            if (!spellBanList.empty())
+            {
+                std::set<uint32>::iterator itr = spellBanList.find(abs(i->effect));
+                if (itr != spellBanList.end())
+                    continue;
+            }
 
             if(!_target)
                 _target = m_targets.GetUnitTarget();
@@ -6276,7 +6284,10 @@ void Spell::LinkedSpell(Unit* _caster, Unit* _target, SpellLinkedType type)
                 else if (i->type2 == 6)
                     _caster->SendSpellCooldown(i->effect, m_spellInfo->Id);
                 else
+                {
                     _caster->CastSpell(_target ? _target : _caster, i->effect, true);
+                    spellBanList.insert(i->effect); // Triggered once for a cycle
+                }
 
                 if(i->cooldown != 0 && _caster->GetTypeId() == TYPEID_PLAYER)
                     _caster->ToPlayer()->AddSpellCooldown(i->effect, 0, getPreciseTime() + (double)i->cooldown);
