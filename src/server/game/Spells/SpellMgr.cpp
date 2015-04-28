@@ -5023,6 +5023,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144918: //Cutter Laser Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
+                case 144555: //Mortar Barrage
+                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetB = 0;
+                    break;
                 //Korkron Dark Shaman
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;

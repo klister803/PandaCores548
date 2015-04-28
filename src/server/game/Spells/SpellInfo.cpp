@@ -1183,6 +1183,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144776: //Ground Pound
     case 146325: //Cutter Laser Visual Target
     case 144918: //Cutter Laser Dmg
+    case 144555: //Mortar Barrage
     //Korkron Dark Shaman
     case 144334: //Iron Tomb dmg
     case 144331: //Iron Prison

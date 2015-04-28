@@ -35,7 +35,7 @@ enum eSpells
     SPELL_BORER_DRILL_B_VISUAL    = 144296,
     SPELL_BORER_DRILL_DMG         = 144218,
     //HM
-    SPELL_MORTAR_BLAST_HM         = 148871,
+    SPELL_MORTAR_BARRAGE          = 144555,
     SPELL_RICOCHET_TR_VISUAL      = 144375,
     SPELL_RICOCHET_DMG            = 144327,
     SPELL_RICOCHET_AT             = 144356,
@@ -66,11 +66,12 @@ enum eEvents
     EVENT_SHOCK_PULSE             = 7,
     EVENT_DEMOLISHER_CANNON       = 8,
     EVENT_BORER_DRILL             = 9,
+    EVENT_MORTAR_BARRAGE          = 10,
     //Mines
-    EVENT_ACTIVE_DETONATE         = 10,
-    EVENT_ENGULFED_EXPLOSE        = 11,
+    EVENT_ACTIVE_DETONATE         = 11,
+    EVENT_ENGULFED_EXPLOSE        = 12,
     //Cutter Laser
-    EVENT_FIND_PLAYERS            = 12,
+    EVENT_FIND_PLAYERS            = 13,
 };
 
 Position const modpos[3] = 
@@ -335,7 +336,12 @@ class boss_iron_juggernaut : public CreatureScript
                         break;
                     case EVENT_SHOCK_PULSE:
                         DoCast(me, SPELL_SHOCK_PULSE);
+                        if (me->GetMap()->IsHeroic())
+                            events.ScheduleEvent(EVENT_MORTAR_BARRAGE, 4000);
                         events.ScheduleEvent(EVENT_SHOCK_PULSE, 16500, 0, PHASE_TWO);
+                        break;
+                    case EVENT_MORTAR_BARRAGE:
+                        DoCast(me, SPELL_MORTAR_BARRAGE);
                         break;
                     default:
                         break;
@@ -895,6 +901,43 @@ public:
     }
 };
 
+//144554
+class spell_mortar_barrage : public SpellScriptLoader
+{
+public:
+    spell_mortar_barrage() : SpellScriptLoader("spell_mortar_barrage") { }
+
+    class spell_mortar_barrage_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_mortar_barrage_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetCaster())
+            {
+                float x, y;
+                uint8 val = urand(3, 4);
+                for (uint8 n = 0; n < val; n++)
+                {
+                    GetPositionWithDistInOrientation(GetCaster(), urand(15, 30), urand(0, 6), x, y);
+                    if (Creature* mb = GetCaster()->SummonCreature(90002, x, y, GetCaster()->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 4000))
+                        GetCaster()->CastSpell(mb, SPELL_MORTAR_BLAST, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_mortar_barrage_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_mortar_barrage_AuraScript();
+    }
+};
+
 
 void AddSC_boss_iron_juggernaut()
 {
@@ -909,4 +952,5 @@ void AddSC_boss_iron_juggernaut()
     new spell_seismic_activity();
     new spell_explosive_tar();
     new spell_borer_drill();
+    new spell_mortar_barrage();
 }
