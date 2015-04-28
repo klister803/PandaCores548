@@ -193,25 +193,25 @@ public:
                     events.ScheduleEvent(EVENT_CHIJI_END, 10000);
                     break;
                 case ACTION_CHIJI_FAIL:
-                    events.ScheduleEvent(EVENT_CHIJI_START, 10000);
+                    events.ScheduleEvent(EVENT_CHIJI_START, 30000);
                     break;
                 case ACTION_XUEN_END:
                     events.ScheduleEvent(EVENT_XUEN_END, 10000);
                     break;
                 case ACTION_XUEN_FAIL:
-                    events.ScheduleEvent(EVENT_XUEN_START, 10000);
+                    events.ScheduleEvent(EVENT_XUEN_START, 30000);
                     break;
                 case ACTION_YULON_END:
                     events.ScheduleEvent(EVENT_YULON_END, 10000);
                     break;
                 case ACTION_YULON_FAIL:
-                    events.ScheduleEvent(EVENT_YULON_START, 10000);
+                    events.ScheduleEvent(EVENT_YULON_START, 30000);
                     break;
                 case ACTION_NIUZAO_END:
                     events.ScheduleEvent(EVENT_NIUZAO_END, 10000);
                     break; 
                 case ACTION_NIUZAO_FAIL:
-                    events.ScheduleEvent(EVENT_NIUZAO_START, 10000);
+                    events.ScheduleEvent(EVENT_NIUZAO_START, 30000);
                     break;
             }
         }
@@ -938,25 +938,28 @@ public:
 
         void MovementInform(uint32 type, uint32 id)
         {
-            if (type != POINT_MOTION_TYPE)
-                return;
-
-            if (id == 1)
+            if (type == POINT_MOTION_TYPE)
             {
-                Talk(SAY_ENTER_POS);
-                me->SetFacingTo(1.5f);
-                events.ScheduleEvent(EVENT_1, 5000);
+                if (id == 1)
+                {
+                    Talk(SAY_ENTER_POS);
+                    me->SetFacingTo(1.5f);
+                    events.ScheduleEvent(EVENT_1, 5000);
+                }
+                if (id == 2)
+                {
+                    DoCast(SPELL_CHARGE);
+                    events.ScheduleEvent(EVENT_MOVE_PATH_2, 3000);
+                }
             }
-            if (id == 2)
+            if (type == WAYPOINT_MOTION_TYPE)
             {
-                DoCast(SPELL_CHARGE);
-                events.ScheduleEvent(EVENT_MOVE_PATH_2, 3000);
-            }
-            if (id == 8)
-            {
-                ChargeEvent = false;
-                me->RemoveAura(SPELL_CHARGE);
-                me->SetReactState(REACT_AGGRESSIVE);
+                if (id == 7)
+                {
+                    ChargeEvent = false;
+                    me->RemoveAura(SPELL_CHARGE);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                }
             }
         }
 
