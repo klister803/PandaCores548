@@ -829,12 +829,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
         if (!itr->second.changed)
             continue;
 
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_ACHIEVEMENT);
-        stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt32(1, itr->first);
-        trans->Append(stmt);
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_ACHIEVEMENT);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_ACHIEVEMENT);
         stmt->setUInt32(0, GetOwner()->GetId());
         stmt->setUInt32(1, itr->first);
         stmt->setUInt32(2, itr->second.date);
@@ -857,12 +852,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
         if (!itr->second.changed)
             continue;
 
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_ACHIEVEMENT_CRITERIA);
-        stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt32(1, itr->first);
-        trans->Append(stmt);
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_ACHIEVEMENT_CRITERIA);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA);
         stmt->setUInt32(0, GetOwner()->GetId());
         stmt->setUInt32(1, itr->first);
         stmt->setUInt32(2, itr->second.counter);
