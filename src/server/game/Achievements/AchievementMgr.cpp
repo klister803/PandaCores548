@@ -1509,7 +1509,7 @@ void AchievementMgr<T>::CheckAllAchievementCriteria(Player* referencePlayer)
 {
     // suppress sending packets
     for (uint32 i = 0; i < ACHIEVEMENT_CRITERIA_TYPE_TOTAL; ++i)
-        UpdateAchievementCriteria(AchievementCriteriaTypes(i), 0, 0, NULL, referencePlayer);
+        UpdateAchievementCriteria(AchievementCriteriaTypes(i), 0, 0, NULL, referencePlayer, true);
 }
 
 static const uint32 achievIdByArenaSlot[MAX_ARENA_SLOT] = {1057, 1107, 1108};
@@ -1528,7 +1528,7 @@ static const uint32 achievIdForDungeon[][4] =
  * this function will be called whenever the user might have done a criteria relevant action
  */
 template<class T>
-void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit const* unit /*= NULL*/, Player* referencePlayer /*= NULL*/)
+void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit const* unit /*= NULL*/, Player* referencePlayer /*= NULL*/, bool init /*=false*/)
 {
     sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria(%u, %u, %u) CriteriaSort %u", type, miscValue1, miscValue2, GetCriteriaSort());
 
@@ -1625,7 +1625,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
             case ACHIEVEMENT_CRITERIA_TYPE_CATCH_FROM_POOL:
             case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM:
-                SetCriteriaProgress(criteriaTree, achievementCriteria, 1, referencePlayer, PROGRESS_ACCUMULATE);
+                SetCriteriaProgress(criteriaTree, achievementCriteria, init ? 0 : 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
             case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:

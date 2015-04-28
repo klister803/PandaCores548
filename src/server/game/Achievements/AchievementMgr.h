@@ -247,7 +247,7 @@ class AchievementMgr
         void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = NULL, PreparedQueryResult criteriaAccountResult = NULL);
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
-        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit const* unit = NULL, Player* referencePlayer = NULL);
+        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
         void CompletedAchievement(AchievementEntry const* entry, Player* referencePlayer);
         bool IsCompletedAchievement(AchievementEntry const* entry);
         void CheckAllAchievementCriteria(Player* referencePlayer);
