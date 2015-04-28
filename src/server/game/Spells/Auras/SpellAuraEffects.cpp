@@ -1627,7 +1627,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 if (oldBp)
                     getTicks++;
 
-                amount /= getTicks;
+                if (amount)
+                    amount /= getTicks;
+
                 amount += oldBp;
 
                 m_crit_amount = amount * 2;
