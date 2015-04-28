@@ -823,6 +823,9 @@ void LoadDBCStores(const std::string& dataPath)
                 bool ok = false;
                 for (TaxiPathSetForSource::const_iterator dest_i = src_i->second.begin(); dest_i != src_i->second.end(); ++dest_i)
                 {
+                    if (!dest_i->second.price)
+                        continue;
+
                     // not spell path
                     if (spellPaths.find(dest_i->second.ID) == spellPaths.end())
                     {
