@@ -23769,6 +23769,9 @@ void Unit::ApplySoulSwapDOT(Unit* target)
 {
     for (AuraIdList::iterator iter = _SoulSwapDOTList.begin(); iter != _SoulSwapDOTList.end(); ++iter)
     {
+        if (iter != _SoulSwapDOTList.end())
+            continue;
+
         AddAura((*iter).Id, target);
 
         if (Aura* aura = target->GetAura((*iter).Id))
@@ -23776,10 +23779,15 @@ void Unit::ApplySoulSwapDOT(Unit* target)
             aura->SetStackAmount((*iter).stackAmount);
             aura->SetMaxDuration((*iter).duration);
             aura->SetDuration((*iter).duration);
-            aura->GetEffect(EFFECT_0)->SetPeriodicTimer((*iter).periodicTimer);
-            aura->GetEffect(EFFECT_0)->SetCritAmount((*iter).amount * 2);
-            aura->GetEffect(EFFECT_1)->SetAmount((*iter).amount);
-            aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
+            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+            {
+                aura->GetEffect(EFFECT_0)->SetPeriodicTimer((*iter).periodicTimer);
+                aura->GetEffect(EFFECT_0)->SetCritAmount((*iter).amount * 2);
+                aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
+            }
+            
+            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                aura->GetEffect(EFFECT_1)->SetAmount((*iter).amount);
         }
     }
 
