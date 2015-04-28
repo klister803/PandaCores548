@@ -23781,13 +23781,13 @@ void Unit::ApplySoulSwapDOT(Unit* target)
             aura->SetDuration((*iter).duration);
             if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
             {
-                aura->GetEffect(EFFECT_0)->SetPeriodicTimer((*iter).periodicTimer);
-                aura->GetEffect(EFFECT_0)->SetCritAmount((*iter).amount * 2);
-                aura->GetEffect(EFFECT_0)->SetAmount((*iter).amount);
+                eff->SetPeriodicTimer((*iter).periodicTimer);
+                eff->SetCritAmount((*iter).amount * 2);
+                eff->SetAmount((*iter).amount);
             }
             
-            if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
-                aura->GetEffect(EFFECT_1)->SetAmount((*iter).amount);
+            if (AuraEffect* eff = aura->GetEffect(EFFECT_1))
+                eff->SetAmount((*iter).amount);
         }
     }
 
