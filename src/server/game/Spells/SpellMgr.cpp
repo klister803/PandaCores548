@@ -5010,6 +5010,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
                 //Iron Juggernaut
+                case 144218: //Borer Drill Dmg
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    break;
                 case 144458: //Scatter Laser
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                     spellInfo->Effects[0].TargetB = NULL;
@@ -5017,14 +5021,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetB = NULL;
                     break;
                 case 144776: //Ground Pound
-                    spellInfo->Effects[1].TriggerSpell = NULL;
+                    spellInfo->Effects[1].TriggerSpell = 0;
                     break;
                 case 146325: //Cutter Laser Visual Target
                 case 144918: //Cutter Laser Dmg
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE;
                     break;
                 case 144555: //Mortar Barrage
-                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Korkron Dark Shaman
@@ -5039,7 +5043,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
                     break;
                 case 144278: //Generate rage
-                    spellInfo->Effects[0].TriggerSpell = NULL;
+                    spellInfo->Effects[0].TriggerSpell = 0;
                     break;
                 case 143597: //Generate rage energize
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
@@ -5051,7 +5055,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 143420: // Ironstorm
                 case 105847: // Seal Armor Breach
                 case 105848:
-                    spellInfo->InterruptFlags = NULL;
+                    spellInfo->InterruptFlags = 0;
                     break;
                 case 143882: //Hunter's Mark
                     spellInfo->ExcludeTargetAuraSpell = 0;
@@ -5064,7 +5068,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS;
                     break;
                 case 143848: //Essence of yshaarj
-                    spellInfo->Effects[0].TargetA = 1;
+                    spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
 
