@@ -3804,6 +3804,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 86213: // Soul Swap Exhale
+                    spellInfo->Speed = 0;
+                    break;
                 case 122470: // Touch of Karma
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NOT_LIMIT_ABSORB;
                     break;
