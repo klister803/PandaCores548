@@ -89,6 +89,9 @@ enum Spells
     SPELL_OXEN_FORTITUDE        = 144606,
     SPELL_HEADBUTT              = 144610,
     SPELL_CHARGE                = 144608,
+    
+    //Ordos
+    SPELL_BANISHMENT            = 148705,
 };
 
 enum Events
@@ -446,7 +449,6 @@ public:
                 {
                     case EVENT_1:
                         me->setFaction(190);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         break;
                     case EVENT_FIRESTORM:
                         DoCast(SPELL_FIRESTORM);
@@ -601,7 +603,6 @@ public:
                 {
                     case EVENT_1:
                         me->setFaction(190);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         break;
                     case EVENT_CHI_BARRAGE:
                         Talk(SAY_XUEN_BARRAGE);
@@ -783,7 +784,6 @@ public:
                 {
                     case EVENT_1:
                         me->setFaction(190);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         break;
                     case EVENT_JADEFLAME_BUFFET:
                         DoCast(SPELL_JADEFLAME_BUFFET);
@@ -980,7 +980,6 @@ public:
                 {
                     case EVENT_1:
                         me->setFaction(190);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         break;
                     case EVENT_MASSIVE_QUAKE:
                         Talk(SAY_NIUZAO_QUAKE);
@@ -1021,6 +1020,24 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_niuzaoAI (creature);
+    }
+};
+
+class at_ordos_entrance : public AreaTriggerScript
+{
+public:
+    at_ordos_entrance() : AreaTriggerScript("at_ordos_entrance") { }
+
+    bool OnTrigger(Player* pPlayer, const AreaTriggerEntry* /*pAt*/, bool /*enter*/)
+    {
+        if (pPlayer->isGameMaster())
+            return false;
+
+        // A Pandaren Legend
+        if (pPlayer->GetQuestStatus(33104) != QUEST_STATUS_REWARDED)
+            pPlayer->CastSpell(pPlayer, SPELL_BANISHMENT, true);
+
+        return false;
     }
 };
 
@@ -1130,6 +1147,7 @@ void AddSC_timeless_isle()
     new boss_xuen();
     new boss_yulon();
     new boss_niuzao();
+    new at_ordos_entrance();
     new spell_chi_barrage();
     new spell_crackling_lightning();
     new spell_jadefire_bolt();
