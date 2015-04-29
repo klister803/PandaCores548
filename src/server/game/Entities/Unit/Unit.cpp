@@ -23769,7 +23769,7 @@ void Unit::ApplySoulSwapDOT(Unit* target)
 {
     for (AuraIdList::iterator iter = _SoulSwapDOTList.begin(); iter != _SoulSwapDOTList.end(); ++iter)
     {
-        if (iter != _SoulSwapDOTList.end())
+        if (iter == _SoulSwapDOTList.end())
             continue;
 
         AddAura((*iter).Id, target);
