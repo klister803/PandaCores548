@@ -28,6 +28,7 @@
 typedef std::list<uint32> SimpleFactionsList;
 SimpleFactionsList const* GetFactionTeamList(uint32 faction);
 std::list<uint32> GetItemSpecsList(uint32 ItemID);
+void AddSpecdtoItem(uint32 ItemID, uint32 SpecID);
 uint32 GetLearnSpell(uint32 trigerSpell);
 uint32 GetSpellByTrigger(uint32 trigerSpell);
 
@@ -167,6 +168,7 @@ extern DBCStorage <ItemRandomPropertiesEntry>    sItemRandomPropertiesStore;
 extern DBCStorage <ItemRandomSuffixEntry>        sItemRandomSuffixStore;
 extern DBCStorage <ItemSetEntry>                 sItemSetStore;
 extern DBCStorage <ItemSpecEntry>                sItemSpecStore;
+extern DBCStorage <ItemSpecOverrideEntry>        sItemSpecOverrideStore;
 extern DBCStorage <LanguageWordsEntry>           sLanguageWordsStore;
 extern std::map<uint32, LanguageWordsMap>        sLanguageWordsMapStore;
 extern DBCStorage <LFGDungeonEntry>              sLFGDungeonStore;

@@ -293,7 +293,7 @@ class Item : public Object
         uint32 GetItemSuffixFactor() const { return GetUInt32Value(ITEM_FIELD_PROPERTY_SEED); }
         void SetItemRandomProperties(int32 randomPropId);
         void UpdateItemSuffixFactor();
-        static int32 GenerateItemRandomPropertyId(uint32 item_id);
+        static int32 GenerateItemRandomPropertyId(uint32 item_id, uint32 spec_id = 0);
         void SetEnchantment(EnchantmentSlot slot, uint32 id, uint32 duration, uint32 charges);
         void SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, Player* owner);
         void SetEnchantmentCharges(EnchantmentSlot slot, uint32 charges);

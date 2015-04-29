@@ -3174,6 +3174,7 @@ class Player : public Unit, public GridObject<Player>
         bool isWatchingMovie() const { return m_watching_movie; }
         void setWatchinMovie(bool s) { m_watching_movie = s; }
         uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
+        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
         //
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }

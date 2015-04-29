@@ -270,9 +270,6 @@ i_scriptLock(false)
         case 860: // start pandaren
             m_VisibleDistance = 250.0f;
             break;
-        case 870: // Pandaria
-            m_VisibleDistance = 150.0f;
-            break;
         default:
             break;
     }
@@ -283,6 +280,19 @@ void Map::InitVisibilityDistance()
     //init visibility for continents
     m_VisibleDistance = World::GetMaxVisibleDistanceOnContinents();
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodOnContinents();
+}
+
+float Map::GetVisibilityRange(uint32 /*zoneId*/, uint32 areaId) const
+{
+    switch(areaId)
+    {
+        case 6830: // Timeless Isle: Celestial Court
+            return 250.0f;
+            break;
+        default:
+            break;
+    }
+    return m_VisibleDistance;
 }
 
 // Template specialization of utility methods

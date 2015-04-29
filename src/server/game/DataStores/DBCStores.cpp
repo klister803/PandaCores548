@@ -157,6 +157,7 @@ DBCStorage <ItemRandomPropertiesEntry>    sItemRandomPropertiesStore(ItemRandomP
 DBCStorage <ItemRandomSuffixEntry>        sItemRandomSuffixStore(ItemRandomSuffixfmt);
 DBCStorage <ItemSetEntry>                 sItemSetStore(ItemSetEntryfmt);
 DBCStorage <ItemSpecEntry>                sItemSpecStore(ItemSpecEntryfmt);
+DBCStorage <ItemSpecOverrideEntry>        sItemSpecOverrideStore(ItemSpecOverrideEntryfmt);
 //std::map<uint32, 
 
 DBCStorage <LanguageWordsEntry>           sLanguageWordsStore(LanguageWordsEntryfmt);
@@ -492,12 +493,13 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemRandomPropertiesStore,   dbcPath, "ItemRandomProperties.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemRandomSuffixStore,       dbcPath, "ItemRandomSuffix.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemSetStore,                dbcPath, "ItemSet.dbc");//14545
-    LoadDBC(availableDbcLocales, bad_dbc_files, sItemSpecStore,               dbcPath, "ItemSpecOverride.dbc", &CustomItemSpecEntryfmt, &CustomItemSpecEntryIndex);//17538
+    LoadDBC(availableDbcLocales, bad_dbc_files, sItemSpecStore,               dbcPath, "ItemSpec.dbc");//17538
+    LoadDBC(availableDbcLocales, bad_dbc_files, sItemSpecOverrideStore,       dbcPath, "ItemSpecOverride.dbc", &CustomItemSpecOverrideEntryfmt, &CustomItemSpecOverrideEntryIndex);//17538
 
-    for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
+    for (uint32 i = 0; i < sItemSpecOverrideStore.GetNumRows(); ++i)
     {
-        if (ItemSpecEntry const* isp = sItemSpecStore.LookupEntry(i))
-            sItemSpecsList[isp->m_itemID].push_back(isp->m_specID);
+        if (ItemSpecOverrideEntry const* isp = sItemSpecOverrideStore.LookupEntry(i))
+            sItemSpecsList[isp->ItemID].push_back(isp->SpecID);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sItemArmorQualityStore,       dbcPath, "ItemArmorQuality.dbc");//14545
@@ -930,6 +932,11 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
 std::list<uint32> GetItemSpecsList(uint32 ItemID)
 {
     return sItemSpecsList[ItemID];
+}
+
+void AddSpecdtoItem(uint32 ItemID, uint32 SpecID)
+{
+    sItemSpecsList[ItemID].push_back(SpecID);
 }
 
 uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree)

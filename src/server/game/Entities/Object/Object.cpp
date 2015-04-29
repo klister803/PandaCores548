@@ -2252,8 +2252,8 @@ bool Position::IsPositionValid() const
 
 float WorldObject::GetGridActivationRange() const
 {
-    if (ToPlayer())
-        return GetMap()->GetVisibilityRange();
+    if (Player const* thisPlayer = ToPlayer())
+        return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
     else if (ToCreature())
         return ToCreature()->m_SightDistance;
     else
@@ -2266,7 +2266,12 @@ float WorldObject::GetVisibilityRange() const
         return MAX_VISIBILITY_DISTANCE;
     else
         if (GetMap())
-            return GetMap()->GetVisibilityRange();
+        {
+            if (Player const* thisPlayer = ToPlayer())
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+            else
+                return GetMap()->GetVisibilityRange();
+        }
 
     return MAX_VISIBILITY_DISTANCE;
 }
@@ -2275,7 +2280,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
 {
     if (ToUnit())
     {
-        if (ToPlayer())
+        if (Player const* thisPlayer = ToPlayer())
         {
             if (target && target->isActiveObject() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
@@ -2284,7 +2289,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
             else if (GetMapId() == 754) // Throne of the Four Winds
                 return MAX_VISIBILITY_DISTANCE;
             else
-                return GetMap()->GetVisibilityRange();
+                return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
         }
         else if (ToCreature())
             return ToCreature()->m_SightDistance;

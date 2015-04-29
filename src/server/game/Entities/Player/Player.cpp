@@ -22022,18 +22022,30 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
 
     for (saveItr = m_RewardedQuestsSave.begin(); saveItr != m_RewardedQuestsSave.end(); ++saveItr)
     {
+        Quest const* quest = sObjectMgr->GetQuestTemplate(saveItr->first);
         if (saveItr->second)
         {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_QUESTSTATUS);
-            stmt->setUInt32(0, GetGUIDLow());
-            stmt->setUInt32(1, saveItr->first);
-            stmt->setUInt32(2, GetSession()->GetAccountId());
-            trans->Append(stmt);
+            if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_QUESTSTATUS);
+                stmt->setUInt32(0, 0);
+                stmt->setUInt32(1, saveItr->first);
+                stmt->setUInt32(2, GetSession()->GetAccountId());
+                trans->Append(stmt);
+
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_QUESTSTATUS);
+                stmt->setUInt32(0, GetGUIDLow());
+                stmt->setUInt32(1, saveItr->first);
+                stmt->setUInt32(2, GetSession()->GetAccountId());
+                trans->Append(stmt);
+            }
 
         }
         else if (!keepAbandoned)
         {
-            Quest const* quest = sObjectMgr->GetQuestTemplate(saveItr->first);
             if (quest && quest->GetType() == QUEST_TYPE_ACCOUNT)
             {
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_QUESTSTATUS_REWARDED_BY_QUEST);

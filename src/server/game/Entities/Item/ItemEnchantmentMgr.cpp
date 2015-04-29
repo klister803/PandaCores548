@@ -84,7 +84,7 @@ void LoadRandomEnchantmentsTable()
         sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
 }
 
-uint32 GetItemEnchantMod(int32 entry, uint32 type)
+uint32 GetItemEnchantMod(int32 entry, uint32 type, uint32 SpecID)
 {
     if (!entry)
         return 0;
@@ -104,6 +104,11 @@ uint32 GetItemEnchantMod(int32 entry, uint32 type)
 
     for (EnchStoreList::const_iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
     {
+        if(SpecID)
+        {
+            if(!CheckSpecProp(ench_iter->ench, type, SpecID))
+                continue;
+        }
         fCount += ench_iter->chance;
 
         if (fCount > dRoll)
@@ -116,6 +121,11 @@ uint32 GetItemEnchantMod(int32 entry, uint32 type)
 
     for (EnchStoreList::const_iterator ench_iter = tab->second.begin(); ench_iter != tab->second.end(); ++ench_iter)
     {
+        if(SpecID)
+        {
+            if(!CheckSpecProp(ench_iter->ench, type, SpecID))
+                continue;
+        }
         fCount += ench_iter->chance;
 
         if (fCount > dRoll)
@@ -225,3 +235,142 @@ uint32 GenerateRandPropPoints(ItemTemplate const* itemProto, uint32 level)
     return 0;
 }
 
+bool CheckSpecProp(uint32 ench, uint32 type, uint32 SpecID)
+{
+    if(type == ENCHANTMENT_RANDOM_PROPERTY)
+    {
+        if(ItemRandomPropertiesEntry const* random_id = sItemRandomPropertiesStore.LookupEntry(ench))
+        {
+            for (uint32 slot = 0; slot < MAX_ITEM_ENCHANTMENT_EFFECTS; ++slot)
+            {
+                if(!random_id->enchant_id[slot])
+                    continue;
+                if(SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(random_id->enchant_id[slot]))
+                {
+                    for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
+                    {
+                        uint32 enchant_type = pEnchant->type[s];
+                        uint32 enchant_stat_id = pEnchant->spellid[s];
+                        if(enchant_type != ITEM_ENCHANTMENT_TYPE_STAT)
+                            continue;
+                        if(!CheckStatsSpec(enchant_stat_id, SpecID))
+                            return false;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if(ItemRandomSuffixEntry const* random_id = sItemRandomSuffixStore.LookupEntry(ench))
+        {
+            for (uint32 slot = 0; slot < 5; ++slot)
+            {
+                if(!random_id->enchant_id[slot])
+                    continue;
+                if(SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(random_id->enchant_id[slot]))
+                {
+                    for (int s = 0; s < MAX_ITEM_ENCHANTMENT_EFFECTS; ++s)
+                    {
+                        uint32 enchant_type = pEnchant->type[s];
+                        uint32 enchant_stat_id = pEnchant->spellid[s];
+                        if(enchant_type != ITEM_ENCHANTMENT_TYPE_STAT)
+                            continue;
+                        if(!CheckStatsSpec(enchant_stat_id, SpecID))
+                            return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool CheckStatsSpec(uint32 StatType, uint32 SpecID)
+{
+    for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
+    {
+        if (ItemSpecEntry const* itemSpec = sItemSpecStore.LookupEntry(i))
+        {
+            if(itemSpec->SpecID != SpecID)
+                continue;
+
+            switch (StatType)
+            {
+                case ITEM_MOD_AGILITY:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_AGILITY)
+                        return true;
+                    break;
+                case ITEM_MOD_STRENGTH:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_STRENGTH)
+                        return true;
+                    break;
+                case ITEM_MOD_INTELLECT:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_INTELLECT)
+                        return true;
+                    break;
+                case ITEM_MOD_SPIRIT:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_SPIRIT)
+                        return true;
+                    break;
+                case ITEM_MOD_DODGE_RATING:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_DODGE)
+                        return true;
+                    break;
+                case ITEM_MOD_PARRY_RATING:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_PARRY)
+                        return true;
+                    break;
+                case ITEM_MOD_CRIT_MELEE_RATING:
+                case ITEM_MOD_CRIT_RANGED_RATING:
+                case ITEM_MOD_CRIT_SPELL_RATING:
+                case ITEM_MOD_CRIT_RATING:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_CRIT)
+                        return true;
+                    break;
+                case ITEM_MOD_HASTE_MELEE_RATING:
+                case ITEM_MOD_HASTE_RANGED_RATING:
+                case ITEM_MOD_HASTE_SPELL_RATING:
+                case ITEM_MOD_HASTE_RATING:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_HASTE)
+                        return true;
+                    break;
+                case ITEM_MOD_HIT_RATING:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_HIT)
+                        return true;
+                    break;
+                case ITEM_MOD_EXTRA_ARMOR:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_BONUS_ARMOR)
+                        return true;
+                    break;
+                case ITEM_MOD_AGI_STR_INT:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_STRENGTH)
+                        return true;
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_STRENGTH)
+                        return true;
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_INTELLECT)
+                        return true;
+                    break;
+                case ITEM_MOD_AGI_STR:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_AGILITY)
+                        return true;
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_STRENGTH)
+                        return true;
+                    break;
+                case ITEM_MOD_AGI_INT:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_AGILITY)
+                        return true;
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_INTELLECT)
+                        return true;
+                    break;
+                case ITEM_MOD_STR_INT:
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_INTELLECT)
+                        return true;
+                    if(itemSpec->SecondaryStat == ITEM_SPEC_STAT_STRENGTH)
+                        return true;
+                    break;
+            }
+        }
+    }
+    return false;
+}

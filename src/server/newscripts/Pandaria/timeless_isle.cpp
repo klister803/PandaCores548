@@ -326,10 +326,12 @@ public:
             events.ScheduleEvent(EVENT_INSPIRING_SONG, 20000);
             events.ScheduleEvent(EVENT_BEACON, 40000);
             events.ScheduleEvent(EVENT_BLAZING_SONG, 44000);
+            me->SetReactState(REACT_AGGRESSIVE);
         }
 
         void EnterEvadeMode()
         {
+            me->SetReactState(REACT_PASSIVE);
             events.Reset();
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
 
@@ -513,10 +515,12 @@ public:
             events.ScheduleEvent(EVENT_LEAP, 12000);
             events.ScheduleEvent(EVENT_SPECTRAL_SWIPE, 8000);
             events.ScheduleEvent(EVENT_AGILITY, 28000);
+            me->SetReactState(REACT_AGGRESSIVE);
         }
 
         void EnterEvadeMode()
         {
+            me->SetReactState(REACT_PASSIVE);
             events.Reset();
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
 
@@ -674,10 +678,12 @@ public:
             events.ScheduleEvent(EVENT_JADEFIRE_BREATH, 4000);
             events.ScheduleEvent(EVENT_JADEFIRE_BOLT, 21000);
             events.ScheduleEvent(EVENT_FIRE_WALL, 46000);
+            me->SetReactState(REACT_AGGRESSIVE);
         }
 
         void EnterEvadeMode()
         {
+            me->SetReactState(REACT_PASSIVE);
             events.Reset();
             summons.DespawnAll();
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
@@ -865,6 +871,7 @@ public:
 
         void EnterEvadeMode()
         {
+            me->SetReactState(REACT_PASSIVE);
             events.Reset();
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
 

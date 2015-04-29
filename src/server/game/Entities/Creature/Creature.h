@@ -873,6 +873,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool onVehicleAccessoryInit() const { return m_onVehicleAccessory; }
         void SetVehicleAccessoryInit(bool r) { m_onVehicleAccessory = r; }
+
+        uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
+        uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
+
     protected:
         bool m_onVehicleAccessory;
 
@@ -937,6 +941,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //WaypointMovementGenerator vars
         uint32 m_waypointID;
         uint32 m_path_id;
+
+        uint16 m_zoneUpdateId;
+        uint16 m_areaUpdateId;
 
         //Formation var
         CreatureGroup* m_formation;

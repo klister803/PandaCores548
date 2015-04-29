@@ -1466,9 +1466,20 @@ struct ItemSetEntry
 
 struct ItemSpecEntry
 {
-    uint32      ID;                                         // 0        m_ID
-    uint32      m_itemID;                                   // 1,       m_itemID
-    uint32      m_specID;                                   // 2,       m_specID
+    uint32      ID;                                         // 0
+    uint32      MinLevel;                                   // 1
+    uint32      MaxLevel;                                   // 2
+    uint32      ItemType;                                   // 3
+    uint32      PrimaryStat;                                // 4
+    uint32      SecondaryStat;                              // 5
+    uint32      SpecID;                                     // 6
+};
+
+struct ItemSpecOverrideEntry
+{
+    uint32      ID;                                         // 0
+    uint32      ItemID;                                     // 1
+    uint32      SpecID;                                     // 2
 };
 
 struct LanguageWordsEntry

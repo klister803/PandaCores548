@@ -624,7 +624,7 @@ uint32 Item::GetSkill()
     }
 }
 
-int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
+int32 Item::GenerateItemRandomPropertyId(uint32 item_id, uint32 spec_id)
 {
     ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_id);
 
@@ -645,7 +645,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // RandomProperty case
     if (itemProto->RandomProperty)
     {
-        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomProperty, ENCHANTMENT_RANDOM_PROPERTY);
+        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomProperty, ENCHANTMENT_RANDOM_PROPERTY, spec_id);
         ItemRandomPropertiesEntry const* random_id = sItemRandomPropertiesStore.LookupEntry(randomPropId);
         if (!random_id)
         {
@@ -658,7 +658,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // RandomSuffix case
     else
     {
-        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomSuffix, ENCHANTMENT_RANDOM_SUFFIX);
+        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomSuffix, ENCHANTMENT_RANDOM_SUFFIX, spec_id);
         ItemRandomSuffixEntry const* random_id = sItemRandomSuffixStore.LookupEntry(randomPropId);
         if (!random_id)
         {

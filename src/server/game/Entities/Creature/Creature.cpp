@@ -788,7 +788,7 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
             break;
         default:
             break;
-    }        
+    }
 
     LoadCreaturesAddon();
 
@@ -832,6 +832,9 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
     SetFloatValue(UNIT_FIELD_MOD_RANGED_HASTE, 1.0f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
+
+    m_areaUpdateId = GetMap()->GetAreaId(x, y, z);
+    m_zoneUpdateId = GetMap()->GetZoneId(x, y, z);
 
     return true;
 }
