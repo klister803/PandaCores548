@@ -1168,7 +1168,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_ARENA_START_MATCHMAKER_RATING]              = ConfigMgr::GetIntDefault ("Arena.ArenaStartMatchmakerRating", 1500);
     m_bool_configs[CONFIG_ARENA_SEASON_IN_PROGRESS]                  = ConfigMgr::GetBoolDefault("Arena.ArenaSeason.InProgress", true);
     m_bool_configs[CONFIG_ARENA_LOG_EXTENDED_INFO]                   = ConfigMgr::GetBoolDefault("ArenaLog.ExtendedInfo", false);
-    m_int_configs[CONFIG_PVP_ITEM_LEVEL_CAP]                         = ConfigMgr::GetIntDefault ("PVP.ItemLevelCap", 542);
+    m_int_configs[CONFIG_PVP_ITEM_LEVEL_CAP]                         = ConfigMgr::GetIntDefault ("PVP.ItemLevelCap", 540);
 
     m_bool_configs[CONFIG_OFFHAND_CHECK_AT_SPELL_UNLEARN]            = ConfigMgr::GetBoolDefault("OffhandCheckAtSpellUnlearn", true);
 
