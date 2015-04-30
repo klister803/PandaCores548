@@ -1723,12 +1723,8 @@ void Item::SetLevelCap(uint32 cap, bool pvp)
         return;
 
     // Not for items with pvp power at pvp
-    if (pvp)
-    {
-        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
-            if (proto->ItemStat[i].ItemStatType == ITEM_MOD_PVP_POWER)
-                return;
-    }
+    if (pvp && proto->IsPvPItem())
+        return;
 
     ItemLevelBeforeCap = GetLevel();
     SetLevel(cap);

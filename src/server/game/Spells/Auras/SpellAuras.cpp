@@ -693,7 +693,7 @@ m_spellInfo(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID(
 m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(stackAmount ? stackAmount: 1),
-m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_aura_amount(0),
+m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false), m_fromAreatrigger(false), m_inArenaNerf(false), m_aura_amount(0),
 m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAreaTrGuid(0)
 {
     SpellPowerEntry power;
@@ -715,6 +715,13 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAr
     //For scaling trinket
     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && castItem)
         m_casterLevel = castItem->GetLevel();
+
+    if (castItem && castItem->GetLevelBeforeCap() && castItem->GetLevel() > 502 && m_maxDuration != -1)
+    {
+        AddPct(m_maxDuration, 100);
+        m_duration = m_maxDuration;
+        m_inArenaNerf = true;
+    }
 
     if(SpellScalingEntry const* _scaling = m_spellInfo->GetSpellScaling())
     {

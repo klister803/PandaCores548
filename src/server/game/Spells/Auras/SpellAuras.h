@@ -178,6 +178,7 @@ class Aura
         bool CanBeSaved() const;
         bool IsRemoved() const { return m_isRemoved; }
         bool CanBeSentToClient() const;
+        bool InArenaNerf() { return m_inArenaNerf; }
         // Single cast aura helpers
         bool IsSingleTarget() const {return m_isSingleTarget; }
         bool IsSingleTargetWith(Aura const* aura) const;
@@ -298,6 +299,7 @@ class Aura
         bool m_isSingleTarget:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
         bool m_isUsingCharges:1;
         bool m_fromAreatrigger:1;
+        bool m_inArenaNerf;
 
     private:
         Unit::AuraApplicationList m_removedApplications;

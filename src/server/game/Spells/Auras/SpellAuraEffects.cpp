@@ -549,6 +549,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     m_send_baseAmount = m_spellInfo->GetEffect(m_effIndex, m_diffMode).CalcValue(caster, &m_baseAmount, GetBase()->GetOwner()->ToUnit(), castItem);
     amount = m_send_baseAmount;
 
+    if (GetBase()->InArenaNerf())
+        amount = CalculatePct(amount, 50);
+
     // check item enchant aura cast
     if (!amount && caster && castItem)
         if (castItem->GetItemSuffixFactor())
@@ -1812,6 +1815,9 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
 {
     m_amplitude = m_spellInfo->GetEffect(m_effIndex, m_diffMode).Amplitude;
 
+    if (GetBase() && GetBase()->InArenaNerf())
+        AddPct(m_amplitude, 100);
+                        
     // prepare periodics
     switch (GetAuraType())
     {

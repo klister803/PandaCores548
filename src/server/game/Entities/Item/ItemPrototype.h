@@ -748,6 +748,15 @@ struct ItemTemplate
         return false;
     }
 
+    bool IsPvPItem() const
+    {
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+            if (ItemStat[i].ItemStatType == ITEM_MOD_PVP_POWER)
+                return true;
+
+        return false;
+    }
+
     bool IsCurrencyToken() const { return BagFamily & BAG_FAMILY_MASK_CURRENCY_TOKENS; }
 
     uint32 GetMaxStackSize() const
