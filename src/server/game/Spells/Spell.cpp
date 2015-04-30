@@ -2320,9 +2320,6 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
         else if (_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS)
             m_procEx |= PROC_EX_INTERNAL_TRIGGERED;
     }
-    // Totem casts require spellfamilymask defined in spell_proc_event to proc
-    if (m_originalCaster && m_caster != m_originalCaster && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->isTotem() && m_caster->IsControlledByPlayer())
-        m_procEx |= PROC_EX_INTERNAL_REQ_FAMILY;
 }
 
 void Spell::CleanupTargetList()

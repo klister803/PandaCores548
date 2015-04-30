@@ -17402,8 +17402,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         // Defensive procs are active on absorbs (so absorption effects are not a hindrance)
         bool active = dmgInfoProc->GetDamage() || dmgInfoProc->GetAddPower() || (procExtra & PROC_EX_ON_CAST) || (procExtra & PROC_EX_BLOCK && isVictim) || (procExtra & PROC_EX_ABSORB);
-        if (isVictim)
-            procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 
         if(triggerData.aura->IsUsingCharges())
         {
