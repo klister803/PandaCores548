@@ -2269,6 +2269,8 @@ float WorldObject::GetVisibilityRange() const
         {
             if (Player const* thisPlayer = ToPlayer())
                 return GetMap()->GetVisibilityRange(thisPlayer->getCurrentUpdateZoneID(), thisPlayer->getCurrentUpdateAreaID());
+            else if (Creature const* creature = ToCreature())
+                return GetMap()->GetVisibilityRange(creature->getCurrentUpdateZoneID(), creature->getCurrentUpdateAreaID());
             else
                 return GetMap()->GetVisibilityRange();
         }

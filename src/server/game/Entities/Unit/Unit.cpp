@@ -15675,6 +15675,13 @@ Unit* Creature::SelectVictim()
         if (!target && !m_ThreatManager.isThreatListEmpty())
             // No taunt aura or taunt aura caster is dead standard target selection
             target = m_ThreatManager.getHostilTarget();
+
+        //If target in agrolist check onli friend
+        if (target && !IsFriendlyTo(target) && canCreatureAttack(target))
+        {
+            SetInFront(target);
+            return target;
+        }
     }
     else if (!HasReactState(REACT_PASSIVE))
     {
