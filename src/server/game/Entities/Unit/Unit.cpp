@@ -17777,7 +17777,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_TRANSFORM:
                     {
                         // chargeable mods are breaking on hit
-                        if (useCharges)
+                        if (useCharges && int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()))
                             takeCharges = true;
                         else
                         {
@@ -17791,7 +17791,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             }
                             int32 damageLeft = triggeredByAura->GetAmount();
                             // No damage left
-                            if (damageLeft < int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()) && triggeredByAura->GetId() != 114052)
+                            if (damageLeft < int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()))
                             {
                                 std::list<uint32> auras;
                                 auras.push_back(i->aura->GetId());
@@ -17799,7 +17799,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
                                 i->aura->Remove();
                             }
-                            else if (triggeredByAura->GetId() != 114052)
+                            else
                                 triggeredByAura->SetAmount(damageLeft - dmgInfoProc->GetDamage() - dmgInfoProc->GetAbsorb());
                         }
                         break;
