@@ -3806,6 +3806,7 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 case 86213: // Soul Swap Exhale
                     spellInfo->Speed = 0;
+                    spellInfo->spellPower->powerCostPercentage = 0;
                     break;
                 case 122470: // Touch of Karma
                     spellInfo->AttributesEx6 &= ~SPELL_ATTR6_NOT_LIMIT_ABSORB;
