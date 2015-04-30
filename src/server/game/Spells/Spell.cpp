@@ -2275,29 +2275,6 @@ void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura**/)
     //==========================================================================================
 
     m_procVictim = m_procAttacker = 0;
-    // Get data for type of attack and fill base info for trigger
-    switch (m_spellInfo->DmgClass)
-    {
-        case SPELL_DAMAGE_CLASS_MELEE:
-            m_procVictim   = PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS;
-            m_procAttacker = PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS;
-            m_procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-            if (m_attackType == OFF_ATTACK)
-                m_procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
-            else
-                m_procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
-            break;
-        default:
-            if (m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON &&
-                m_spellInfo->EquippedItemSubClassMask & (1<<ITEM_SUBCLASS_WEAPON_WAND)
-                && AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG) // Wands auto attack
-            {
-                m_procAttacker = PROC_FLAG_DONE_RANGED_AUTO_ATTACK;
-                m_procVictim   = PROC_FLAG_TAKEN_RANGED_AUTO_ATTACK;
-            }
-            // For other spells trigger procflags are set in Spell::DoAllEffectOnTarget
-            // Because spell positivity is dependant on target
-    }
     m_procEx = PROC_EX_NONE;
 
     /* Effects which are result of aura proc from triggered spell cannot proc
@@ -2788,6 +2765,17 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                     procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
             break;
+            case SPELL_DAMAGE_CLASS_MELEE:
+            {
+                procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+
+                if (m_attackType == BASE_ATTACK)
+                    procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
+                else
+                    procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
+                break;
+            }
             case SPELL_DAMAGE_CLASS_NONE:
             {
                 if (m_spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC)
@@ -2827,8 +2815,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 }
                 else // Ranged spell attack
                 {
-                    procAttacker |= PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
-                    procVictim   |= PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS;
+                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
                 break;
         }
