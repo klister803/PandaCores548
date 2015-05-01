@@ -268,6 +268,8 @@ i_scriptLock(false)
         case 648: // start goblin
         case 654: // start worgen
         case 860: // start pandaren
+        case 754: // Throne of the Four Winds
+        case 967: // Dragon Soul
             m_VisibleDistance = 250.0f;
             break;
         default:

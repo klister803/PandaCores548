@@ -32,6 +32,7 @@
 #include "DB2Stores.h"
 #include <fstream>
 #include "WordFilterMgr.h"
+#include "ObjectMgr.h"
 
 class misc_commandscript : public CommandScript
 {
@@ -152,6 +153,7 @@ public:
             { "ranged",             SEC_ADMINISTRATOR,      true,  &HandleCharDisplayRangedCommand,     "", NULL },
             { "tabard",             SEC_ADMINISTRATOR,      true,  &HandleCharDisplayTabardCommand,     "", NULL },
             { "shirt",              SEC_ADMINISTRATOR,      true,  &HandleCharDisplayShirtCommand,     "", NULL },
+            { "itemspec",           SEC_ADMINISTRATOR,      false, &HandleItemSpecCommand,              "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
         return commandTable;
@@ -3371,6 +3373,63 @@ public:
             return false;
     }
 
+    static bool HandleItemSpecCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 itemId = atol((char*)args);
+
+        if (itemId == 0)
+        {
+            handler->PSendSysMessage("Item not set");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        std::list<uint32> specList = GetItemSpecsList(itemId);
+        for (std::list<uint32>::const_iterator spec = specList.begin(); spec != specList.end(); ++spec)
+            handler->PSendSysMessage("GetItemSpecsList %u", (*spec));
+
+        ItemSparseEntry const* sparse = sItemSparseStore.LookupEntry(itemId);
+        ItemEntry const* db2Data = sItemStore.LookupEntry(itemId);
+
+        ItemSpecStats itemSpecStats(db2Data, sparse);
+        handler->PSendSysMessage("ItemSpecStats ItemSpecStatCount %u", itemSpecStats.ItemSpecStatCount);
+
+        if (itemSpecStats.ItemSpecStatCount || itemSpecStats.ItemSpecPrimaryStat != -1)
+        {
+            for (uint32 i = 0; i < sItemSpecStore.GetNumRows(); ++i)
+            {
+                if (ItemSpecEntry const* itemSpec = sItemSpecStore.LookupEntry(i))
+                {
+                    if (itemSpecStats.ItemType != itemSpec->ItemType)
+                        continue;
+
+                    bool hasPrimary = false;
+                    if (itemSpecStats.ItemSpecPrimaryStat == itemSpec->PrimaryStat)
+                        hasPrimary = true;
+
+                    bool hasSecondary = itemSpec->SecondaryStat == ITEM_SPEC_STAT_NONE || itemSpecStats.ItemSpecStatCount == 0;
+                    for (uint32 i = 0; i < itemSpecStats.ItemSpecStatCount; ++i)
+                    {
+                        if (itemSpecStats.ItemSpecStatTypes[i] == itemSpec->SecondaryStat)
+                            hasSecondary = true;
+                    }
+
+                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ItemSpecStats SpecID %u hasPrimary %u, hasSecondary %u ItemSpecPrimaryStat %i PrimaryStat %i", itemSpec->SpecID, hasPrimary, hasSecondary, itemSpecStats.ItemSpecPrimaryStat, itemSpec->PrimaryStat);
+
+                    if (!hasPrimary || !hasSecondary)
+                        continue;
+
+                    handler->PSendSysMessage("ItemSpecStats SpecID %u hasPrimary %u, hasSecondary %u", itemSpec->SpecID, hasPrimary, hasSecondary);
+                }
+            }
+        }
+
+        handler->PSendSysMessage("end");
+        return true;
+    }
 };
 
 void AddSC_misc_commandscript()

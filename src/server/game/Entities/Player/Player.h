@@ -1100,15 +1100,19 @@ struct VoidStorageItem
         CreatorGuid = 0;
         ItemRandomPropertyId = 0;
         ItemSuffixFactor = 0;
+        change = false;
+        deleted = false;
     }
 
-    VoidStorageItem(uint64 id, uint32 entry, uint32 creator, uint32 randomPropertyId, uint32 suffixFactor)
+    VoidStorageItem(uint64 id, uint32 entry, uint32 creator, uint32 randomPropertyId, uint32 suffixFactor, bool _change)
     {
         ItemId = id;
         ItemEntry = entry;
         CreatorGuid = creator;
         ItemRandomPropertyId = randomPropertyId;
         ItemSuffixFactor = suffixFactor;
+        change = _change;
+        deleted = false;
     }
 
     uint64 ItemId;
@@ -1116,6 +1120,8 @@ struct VoidStorageItem
     uint32 CreatorGuid;
     uint32 ItemRandomPropertyId;
     uint32 ItemSuffixFactor;
+    bool change;
+    bool deleted;
 };
 
 #define MAX_CUF_PROFILES 5

@@ -1642,6 +1642,7 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 loadoutInfo->SetPower(power);
                 loadoutInfo->SetSpeed(speed);
                 loadoutInfo->SetMaxHealth(health);
+                loadoutInfo->SetInternalState(STATE_UPDATED);
 
                 updates.push_back(pb->GetGUID());
             }
@@ -1660,7 +1661,7 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 uint32 speed = accumulator->CalculateSpeed();
                 delete accumulator;
 
-                m_player->GetBattlePetMgr()->AddPetToList(petguid, pb->GetSpeciesID(), pb->GetCreatureEntry(), pb->GetLevel(), pb->GetDisplayID(), power, speed, pb->GetHealth(), health, pb->GetQuality(), 0, 0, pb->GetSummonSpell(), "", pb->GetBreedID());
+                m_player->GetBattlePetMgr()->AddPetToList(petguid, pb->GetSpeciesID(), pb->GetCreatureEntry(), pb->GetLevel(), pb->GetDisplayID(), power, speed, pb->GetHealth(), health, pb->GetQuality(), 0, 0, pb->GetSummonSpell(), "", pb->GetBreedID(), STATE_UPDATED);
                 // hack, fix it!
                 if (pb->GetSummonSpell())
                     m_player->learnSpell(pb->GetSummonSpell(), false);

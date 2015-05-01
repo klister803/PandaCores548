@@ -8419,7 +8419,7 @@ void Spell::EffectUncageBattlePet(SpellEffIndex effIndex)
             uint32 power = accumulator->CalculatePower();
             uint32 speed = accumulator->CalculateSpeed();
             delete accumulator;
-            player->GetBattlePetMgr()->AddPetToList(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID);
+            player->GetBattlePetMgr()->AddPetToList(petguid, bp->ID, bp->CreatureEntry, level, creature->Modelid1, power, speed, health, health, quality, 0, 0, bp->spellId, "", breedID, STATE_UPDATED);
         }
         std::list<uint64> updates;
         updates.clear();
@@ -8484,6 +8484,7 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
             int32 restoreHealth = int32(petInfo->GetMaxHealth() * healthPct / 100.0f);
             petInfo->SetHealth(restoreHealth);
             updates.push_back(j->first);
+            petInfo->SetInternalState(STATE_UPDATED);
         }
     }
 

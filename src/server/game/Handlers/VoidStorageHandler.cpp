@@ -258,7 +258,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             continue;
         }
 
-        VoidStorageItem itemVS(sObjectMgr->GenerateVoidStorageItemId(), item->GetEntry(), item->GetUInt64Value(ITEM_FIELD_CREATOR), item->GetItemRandomPropertyId(), item->GetItemSuffixFactor());
+        VoidStorageItem itemVS(sObjectMgr->GenerateVoidStorageItemId(), item->GetEntry(), item->GetUInt64Value(ITEM_FIELD_CREATOR), item->GetItemRandomPropertyId(), item->GetItemSuffixFactor(), true);
 
         uint8 slot = player->AddVoidStorageItem(itemVS);
 
@@ -307,6 +307,8 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
 
         player->DeleteVoidStorageItem(slot);
     }
+
+    player->SaveToDB();
 
     WorldPacket data(SMSG_VOID_STORAGE_TRANSFER_CHANGES, ((5 + 5 + (7 + 7) * depositCount +
         7 * withdrawCount) / 8) + 7 * withdrawCount + (7 + 7 + 4 * 4) * depositCount);
