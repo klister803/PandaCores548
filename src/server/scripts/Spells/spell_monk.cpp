@@ -444,20 +444,20 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* target = GetCaster())
+                if (Unit* caster = GetCaster())
                 {
-                    Unit::AuraApplicationMap AuraList = target->GetAppliedAuras();
+                    Unit::AuraApplicationMap AuraList = caster->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator iter = AuraList.begin(); iter != AuraList.end(); ++iter)
                     {
                         Aura* aura = iter->second->GetBase();
                         if (!aura)
                             continue;
 
-                        Unit* caster = aura->GetCaster();
-                        if (!caster || caster->GetGUID() == target->GetGUID())
+                        Unit* target = aura->GetCaster();
+                        if (!target || target->GetGUID() == caster->GetGUID())
                             continue;
 
-                        if (!caster->IsWithinDist(target, 40.0f))
+                        if (!target->IsWithinDist(caster, 40.0f))
                             continue;
 
                         if (aura->GetSpellInfo()->IsPositive())
@@ -466,14 +466,34 @@ class spell_monk_diffuse_magic : public SpellScriptLoader
                         if (!(aura->GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC))
                             continue;
 
-                        target->AddAura(aura->GetSpellInfo()->Id, caster);
+                        bool isBoss = false;
 
-                        if (Aura* targetAura = caster->GetAura(aura->GetSpellInfo()->Id, target->GetGUID()))
-                            for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                                if (targetAura->GetEffect(i) && aura->GetEffect(i))
-                                    targetAura->GetEffect(i)->SetAmount(aura->GetEffect(i)->GetAmount());
+                        if (Creature* crt = target->ToCreature())
+                            if (crt->isWorldBoss() || crt->IsDungeonBoss())
+                                isBoss = true;
 
-                        target->RemoveAura(aura->GetSpellInfo()->Id, caster->GetGUID());
+                        if (!isBoss)
+                        {
+                            caster->AddAura(aura->GetSpellInfo()->Id, target);
+
+                            if (Aura* targetAura = target->GetAura(aura->GetSpellInfo()->Id, caster->GetGUID()))
+                            {
+                                targetAura->SetMaxDuration(aura->GetDuration());
+                                targetAura->SetDuration(aura->GetDuration());
+                                targetAura->SetStackAmount(aura->GetStackAmount());
+
+                                for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                                    if (AuraEffect* targetEff = targetAura->GetEffect(i))
+                                        if (AuraEffect* Eff = aura->GetEffect(i))
+                                        {
+                                            targetEff->SetAmount(Eff->GetAmount());
+                                            targetEff->SetCritAmount(Eff->GetCritAmount());
+                                            targetEff->SetPeriodicTimer(Eff->GetPeriodicTimer());
+                                        }
+                            }
+                        }
+
+                        caster->RemoveAura(aura->GetSpellInfo()->Id, target->GetGUID());
                     }
                 }
             }
