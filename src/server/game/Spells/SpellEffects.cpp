@@ -2113,6 +2113,18 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             break;
         }
+        case 148705:
+        {
+            if (Player* caster = m_caster->ToPlayer())
+            {
+                if (caster->isGameMaster())
+                    return;
+
+                if (caster->GetQuestStatus(33104) == QUEST_STATUS_REWARDED || caster->GetAchievementMgr().HasAchieved(8325))
+                    return;
+            }
+            break;
+        }
     }
 
     // If not exist data for dest location - return
