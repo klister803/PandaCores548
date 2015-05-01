@@ -8993,7 +8993,9 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier)
     }
 
     float critChance = 0.0f;
-    targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
+
+    if (targetInfo.damage)
+        targetInfo.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType, critChance);
 
     if (targetInfo.crit)
         targetInfo.damageBeforeHit += targetInfo.damageBeforeHit;
