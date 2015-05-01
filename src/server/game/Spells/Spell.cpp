@@ -3886,6 +3886,16 @@ void Spell::cast(bool skipCheck)
 
             switch (m_spellInfo->DmgClass)
             {
+                case SPELL_DAMAGE_CLASS_MELEE:
+                {
+                    procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+
+                    if (m_attackType == BASE_ATTACK)
+                        procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
+                    else
+                        procAttacker |= PROC_FLAG_DONE_OFFHAND_ATTACK;
+                    break;
+                }
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
                     if (!positive)
@@ -3916,7 +3926,7 @@ void Spell::cast(bool skipCheck)
                 {
                     // Auto attack
                     if (!(AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG))
-                        procAttacker |= PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS;
+                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     break;
                 }
             }
