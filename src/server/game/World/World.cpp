@@ -1706,7 +1706,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadAreaTriggerScripts();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading LFG entrance positions..."); // Must be after areatriggers
-    sLFGMgr->LoadLFGDungeons();
+    sLFGMgr->LoadLFGDungeons(true);
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Dungeon boss data...");
     sObjectMgr->LoadInstanceEncounters();

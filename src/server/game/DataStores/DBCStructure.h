@@ -1546,6 +1546,8 @@ struct LFGDungeonEntry
             case 540:           // Temple of Kotmogu
             case 541:           // Test Scenario PS
             case 645:           // Greenstone Village
+            case 697:           // Scenario: Prototype
+            case 699:
                 return false;
             default:
                 break;
