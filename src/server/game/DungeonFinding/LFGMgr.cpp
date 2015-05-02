@@ -266,18 +266,16 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
         // No teleport coords in database, load from areatriggers
         if (dungeon.type != LFG_TYPE_RANDOM && dungeon.x == 0.0f && dungeon.y == 0.0f && dungeon.z == 0.0f)
         {
-            AreaTriggerStruct const* at = sObjectMgr->GetMapEntranceTrigger(dungeon.map);
-            if (!at)
+            if (AreaTriggerStruct const* at = sObjectMgr->GetMapEntranceTrigger(dungeon.map))
             {
-                sLog->outError(LOG_FILTER_LFG, "LFGMgr::LoadLFGDungeons: Failed to load dungeon %s, cant find areatrigger for map %u", dungeon.name.c_str(), dungeon.map);
-                continue;
+                dungeon.map = at->target_mapId;
+                dungeon.x = at->target_X;
+                dungeon.y = at->target_Y;
+                dungeon.z = at->target_Z;
+                dungeon.o = at->target_Orientation;
             }
-
-            dungeon.map = at->target_mapId;
-            dungeon.x = at->target_X;
-            dungeon.y = at->target_Y;
-            dungeon.z = at->target_Z;
-            dungeon.o = at->target_Orientation;
+            else
+                sLog->outError(LOG_FILTER_LFG, "LFGMgr::LoadLFGDungeons: Failed to load teleport positions for dungeon %s, cant find areatrigger for map %u", dungeon.name.c_str(), dungeon.map);
         }
 
         if (dungeon.type != LFG_TYPE_RANDOM)
@@ -1805,6 +1803,9 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
         LockData lockData;
         if (dungeon->expansion > expansion)
             lockData.status = LFG_LOCKSTATUS_INSUFFICIENT_EXPANSION;
+        // test check for locked dungeons with invalid teleport positions, BUT we still have to send it!
+        //else if (dungeon->type != LFG_TYPE_RANDOM && dungeon->x == 0.0f && dungeon->y == 0.0f && dungeon->z == 0.0f)
+            //lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, dungeon->map, player))
             lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (dungeon->difficulty > REGULAR_DIFFICULTY && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)) && 
@@ -1816,6 +1817,8 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             lockData.status = LFG_LOCKSTATUS_TOO_HIGH_LEVEL;
         else if (dungeon->seasonal && !IsSeasonActive(dungeon->id))
             lockData.status = LFG_LOCKSTATUS_NOT_IN_SEASON;
+        else if (!dungeon->dbc->FitsTeam(player->GetTeam()))
+            lockData.status = LFG_LOCKSTATUS_WRONG_FACTION;
         else if (AccessRequirement const* ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty)))
         {
             uint32 avgItemLevel = player->GetAverageItemLevel();
@@ -1840,8 +1843,6 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
                 else if (ar->item2 && !player->HasItemCount(ar->item2))
                     lockData.status = LFG_LOCKSTATUS_MISSING_ITEM;
         }
-        else if (!dungeon->dbc->FitsTeam(player->GetTeam()))
-            lockData.status = LFG_LOCKSTATUS_WRONG_FACTION;
 
         /* @todo VoA closed if WG is not under team control (LFG_LOCKSTATUS_RAID_LOCKED)
         lockData = LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE;
