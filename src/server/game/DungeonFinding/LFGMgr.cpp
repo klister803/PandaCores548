@@ -214,6 +214,7 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
     for (uint32 i = 0; i < sLFGDungeonStore.GetNumRows(); ++i)
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
+
         if (!dungeon || !dungeon->IsValid())
             continue;
 
@@ -496,6 +497,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
         for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end() && joinData.result == LFG_JOIN_OK; ++it)
         {
             LFGDungeonData const* entry = sLFGMgr->GetLFGDungeon(*it & 0xFFFFF, player->GetTeam());
+
             if(!entry)
             {
                 joinData.result = LFG_JOIN_DUNGEON_INVALID;
@@ -1796,7 +1798,7 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
 
     for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end(); ++it)
     {
-        LFGDungeonData const* dungeon = GetLFGDungeon(*it, player->GetTeam());
+        LFGDungeonData const* dungeon = GetLFGDungeon(*it);
         if (!dungeon) // should never happen - We provide a list from sLFGDungeonStore
             continue;
 
@@ -1838,6 +1840,8 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
                 else if (ar->item2 && !player->HasItemCount(ar->item2))
                     lockData.status = LFG_LOCKSTATUS_MISSING_ITEM;
         }
+        else if (!dungeon->dbc->FitsTeam(player->GetTeam()))
+            lockData.status = LFG_LOCKSTATUS_WRONG_FACTION;
 
         /* @todo VoA closed if WG is not under team control (LFG_LOCKSTATUS_RAID_LOCKED)
         lockData = LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE;

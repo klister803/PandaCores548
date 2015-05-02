@@ -86,16 +86,17 @@ enum LfgLockStatusType
     LFG_LOCKSTATUS_TOO_LOW_GEAR_SCORE            = 4,
     LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE           = 5,
     LFG_LOCKSTATUS_RAID_LOCKED                   = 6,
-    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_HIGH         = 7,
-    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_LOW          = 8,
+    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_HIGH         = 7,      // not used in lockedReason
+    LFG_LOCKSTATUS_TARGET_LEVEL_TOO_LOW          = 8,      // not used in lockedReason
     LFG_LOCKSTATUS_AREA_NOT_EXPLORED             = 9,
+    LFG_LOCKSTATUS_WRONG_FACTION                 = 10,     // LFG_INSTANCE_INVALID_WRONG_FACTION - not used in lockedReason
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_LOW_LEVEL      = 1001,
     LFG_LOCKSTATUS_ATTUNEMENT_TOO_HIGH_LEVEL     = 1002,
     LFG_LOCKSTATUS_QUEST_NOT_COMPLETED           = 1022,
     LFG_LOCKSTATUS_MISSING_ITEM                  = 1025,
-    LFG_LOCKSTATUS_WRONG_TIME_RANGE              = 1029,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
-    LFG_LOCKSTATUS_WRONG_TIME                    = 1030,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
-    LFG_LOCKSTATUS_NOT_IN_SEASON                 = 1031,    // INSTANCE_UNAVAILABLE_OTHER_TOO_SOON
+    LFG_LOCKSTATUS_WRONG_TIME_RANGE              = 1029,    // not used in lockedReason
+    LFG_LOCKSTATUS_WRONG_TIME                    = 1030,    // not used in lockedReason
+    LFG_LOCKSTATUS_NOT_IN_SEASON                 = 1031,    // not used in lockedReason
     LFG_LOCKSTATUS_MISSING_ACHIEVEMENT           = 1034,
     LFG_LOCKSTATUS_TEMPORARILY_DISABLED          = 10000,
 };
