@@ -1074,15 +1074,12 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                         amount = CalculatePct(amount, 70);
                     break;
                 }
-                case 15407: // Mind Flay
+                case 129197: // Insanity
                 {
-                    if (caster->HasAura(139139))
+                    if (Aura* aur = target->GetAura(2944, caster->GetGUID()))
                     {
-                        if (Aura* aur = target->GetAura(2944, caster->GetGUID()))
-                        {
-                            int32 addBonusPct = aur->GetEffect(EFFECT_2)->GetAmount();
-                            AddPct(amount, addBonusPct);
-                        }
+                        int32 addBonusPct = aur->GetEffect(EFFECT_2)->GetAmount();
+                        AddPct(amount, addBonusPct);
                     }
                     break;
                 }
