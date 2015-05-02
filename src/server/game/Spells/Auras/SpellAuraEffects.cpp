@@ -8052,10 +8052,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
     SpellPeriodicAuraLogInfo pInfo(this, damage, overkill, absorb, resist, 0.0f, crit);
     target->SendPeriodicAuraLog(&pInfo);
 
-    if (absorb && !damage && target->HasAuraType(SPELL_AURA_MOD_STEALTH))
-        if (GetTickNumber() == 1)
-            target->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-
     caster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, &dmgInfoProc, BASE_ATTACK, GetSpellInfo());
 
     caster->DealDamage(target, damage, &cleanDamage, DOT, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);
