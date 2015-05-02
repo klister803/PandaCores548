@@ -215,7 +215,7 @@ void LFGMgr::LoadLFGDungeons(bool reload /* = false */)
     {
         LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(i);
 
-        if (!dungeon || !dungeon->IsValid())
+        if (!dungeon || dungeon->type == LFG_TYPE_ZONE)
             continue;
 
         LfgDungeonStore[dungeon->ID] = LFGDungeonData(dungeon);
@@ -1803,11 +1803,6 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
         LockData lockData;
         if (dungeon->expansion > expansion)
             lockData.status = LFG_LOCKSTATUS_INSUFFICIENT_EXPANSION;
-        // test check for locked dungeons with invalid teleport positions, BUT we still have to send it!
-        //else if (dungeon->type != LFG_TYPE_RANDOM && dungeon->x == 0.0f && dungeon->y == 0.0f && dungeon->z == 0.0f)
-            //lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
-        else if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, dungeon->map, player))
-            lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
         else if (dungeon->difficulty > REGULAR_DIFFICULTY && player->GetBoundInstance(dungeon->map, Difficulty(dungeon->difficulty)) && 
             !dungeon->dbc->IsScenario() && !dungeon->dbc->IsRaidFinder() && !dungeon->dbc->IsFlex())
             lockData.status = LFG_LOCKSTATUS_RAID_LOCKED;
@@ -1817,7 +1812,10 @@ LfgLockMap const LFGMgr::GetLockedDungeons(uint64 guid)
             lockData.status = LFG_LOCKSTATUS_TOO_HIGH_LEVEL;
         else if (dungeon->seasonal && !IsSeasonActive(dungeon->id))
             lockData.status = LFG_LOCKSTATUS_NOT_IN_SEASON;
-        else if (!dungeon->dbc->FitsTeam(player->GetTeam()))
+        // merge faction check with check on invalid TP pos and check on test invalid maps (BUT we still have to send it! LOL, in WoD blizz deleted invalid maps from client DBC)
+        else if (!dungeon->dbc->FitsTeam(player->GetTeam()) || DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, dungeon->map, player)
+            || (dungeon->type != LFG_TYPE_RANDOM && dungeon->x == 0.0f && dungeon->y == 0.0f && dungeon->z == 0.0f) || !dungeon->dbc->IsValid())
+            // TODO: for non-faction check find correct reason
             lockData.status = LFG_LOCKSTATUS_WRONG_FACTION;
         else if (AccessRequirement const* ar = sObjectMgr->GetAccessRequirement(dungeon->map, Difficulty(dungeon->difficulty)))
         {

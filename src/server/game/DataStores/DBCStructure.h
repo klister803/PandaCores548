@@ -1531,16 +1531,6 @@ struct LFGDungeonEntry
     uint32 GetMaxGroupSize() const { return tankNeeded + healerNeeded + dpsNeeded; }
     bool IsValid() const
     {
-        switch (type)
-        {
-            case LFG_TYPE_DUNGEON:
-            case LFG_TYPE_RAID:
-            case LFG_TYPE_RANDOM:
-                break;
-            default:
-                return false;
-        }
-
         switch (ID)
         {
             case 540:           // Temple of Kotmogu
