@@ -466,6 +466,8 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
         _triggeredCastFlags = TRIGGERED_FULL_MASK;
     if(m_replaced || AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG) //If spell casted as replaced, enable proc from him
         _triggeredCastFlags &= ~TRIGGERED_DISALLOW_PROC_EVENTS;
+    if (info->AttributesEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING)
+        _triggeredCastFlags |= TRIGGERED_CAST_DIRECTLY;
 
     //Auto Shot & Shoot (wand)
     m_autoRepeat = m_spellInfo->IsAutoRepeatRangedSpell();

@@ -3804,6 +3804,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 116680: // Thunder Focus Tea
+                case 115399: // Chi Brew
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING;
+                    break;
                 case 119032: // Spectral Guise
                     spellInfo->AttributesEx4 |= SPELL_ATTR4_UNK19;
                     break;
