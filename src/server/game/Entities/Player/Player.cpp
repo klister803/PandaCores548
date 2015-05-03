@@ -25988,6 +25988,16 @@ void Player::learnDefaultSpells()
         else                                                // but send in normal spell in game learn case
             learnSpell(tspell, true);
     }
+
+    if (getRace() == RACE_WORGEN && GetMapId() != 654)
+    {
+        learnSpell(68975, true);
+        learnSpell(68976, true);
+        learnSpell(68978, true);
+        learnSpell(68992, true);
+        learnSpell(68996, true);
+        learnSpell(94293, true);
+    }
 }
 
 void Player::learnQuestRewardedSpells(Quest const* quest)
