@@ -539,9 +539,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     int32 amount;
     Item* castItem = NULL;
 
-    if (uint64 itemGUID = GetBase()->GetCastItemGUID())
-        if (Player* playerCaster = caster->ToPlayer())
-            castItem = playerCaster->GetItemByGuid(itemGUID);
+    if(caster)
+        if (uint64 itemGUID = GetBase()->GetCastItemGUID())
+            if (Player* playerCaster = caster->ToPlayer())
+                castItem = playerCaster->GetItemByGuid(itemGUID);
 
     Unit* target = GetBase()->GetUnitOwner();
 
