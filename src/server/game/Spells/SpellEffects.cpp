@@ -2113,7 +2113,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             break;
         }
-        case 148705:
+        case 148705: // Teleport Banishment(Ordos Palace)
         {
             if (Player* caster = m_caster->ToPlayer())
             {

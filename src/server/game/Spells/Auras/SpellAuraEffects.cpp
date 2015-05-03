@@ -925,6 +925,16 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     }
                     break;
                 }
+                case 23333: // Bg: Horde Flag
+                case 23335: // Bg: Alliance Flag
+                {
+                    if (Player* plr = caster->ToPlayer())
+                    {
+                        if (plr->isInTankSpec())
+                            amount = (m_spellInfo->Effects[EFFECT_1].BasePoints + 30);
+                    }
+                    break;
+                }
                 default:
                     break;
             }

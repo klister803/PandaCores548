@@ -524,6 +524,23 @@ public:
     }
 };
 
+// Leyara's Locket item=71259
+class item_leyara_locket : public ItemScript
+{
+public:
+    item_leyara_locket() : ItemScript("item_leyara_locket") { }
+
+    bool OnUse(Player* pPlayer, Item* pItem, const SpellCastTargets & /*pTargets*/)
+    {
+        if (pPlayer->getGender() == GENDER_MALE)
+            pPlayer->CastSpell(pPlayer, 101185); // model male
+        else
+            pPlayer->CastSpell(pPlayer, 101186); // female
+
+        return false;
+    }
+};
+
 void AddSC_item_scripts()
 {
     new item_only_for_flight();
@@ -541,4 +558,5 @@ void AddSC_item_scripts()
     new item_brewfest_sampler;
     new item_brewfest_ram_reins;
     new item_primal_egg();
+    new item_leyara_locket();
 }

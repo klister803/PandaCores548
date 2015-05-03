@@ -3697,8 +3697,6 @@ class spell_gen_orb_of_power : public SpellScriptLoader
                         aurEff2->HandleEffect(aurApp, AURA_EFFECT_HANDLE_REAL, true);
                     }
                 }
-
-                
             }
 
             void Register()

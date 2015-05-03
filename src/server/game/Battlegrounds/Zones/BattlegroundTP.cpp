@@ -138,9 +138,11 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
         {
             _flagSpellForceTimer += diff; /// Update the timer
 
-            if (_flagSpellForceTimer >= (3 + _flagDebuffState) * MINUTE* IN_MILLISECONDS && _flagDebuffState < 10)///< More than 3 minutes and amount of stacks from debuff lower than 10
+            if (_flagSpellForceTimer >= (1 + _flagDebuffState) * MINUTE* IN_MILLISECONDS && _flagDebuffState < 10)///< More than 1 minutes and amount of stacks from debuff lower than 10
             {
-                _flagDebuffState = _flagSpellForceTimer / MINUTE / IN_MILLISECONDS - 2;
+                _flagDebuffState = _flagSpellForceTimer / MINUTE / IN_MILLISECONDS;
+                _flagSpellForceTimer += 30 * IN_MILLISECONDS;
+
                 if (_flagDebuffState <= 5) ///< Cast on player Focused Assaultupposed to maintain number of stacks for debuff
                 {
                     for (uint8 team = TEAM_ALLIANCE; team <= TEAM_HORDE; ++team)
