@@ -29400,8 +29400,10 @@ bool Player::SwapVoidStorageItem(uint8 oldSlot, uint8 newSlot)
         return false;
 
     std::swap(_voidStorageItems[newSlot], _voidStorageItems[oldSlot]);
-    _voidStorageItems[newSlot]->change = true;
-    _voidStorageItems[oldSlot]->change = true;
+    if(_voidStorageItems[newSlot])
+        _voidStorageItems[newSlot]->change = true;
+    if(_voidStorageItems[oldSlot])
+        _voidStorageItems[oldSlot]->change = true;
     return true;
 }
 
