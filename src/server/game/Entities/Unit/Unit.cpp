@@ -3495,7 +3495,7 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
     //sLog->outDebug(LOG_FILTER_UNITS, "Interrupt spell for unit %u.", GetEntry());
     Spell* spell = m_currentSpells[spellType];
     if (spell
-        && (withDelayed || spell->getState() != SPELL_STATE_DELAYED && spell->getState() != SPELL_STATE_PREPARING)
+        && (withDelayed || spell->getState() != SPELL_STATE_DELAYED)
         && (withInstant || spell->GetCastTime() > 0))
     {
         // for example, do not let self-stun aura interrupt itself
