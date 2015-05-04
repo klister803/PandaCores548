@@ -2583,6 +2583,7 @@ public:
                 me->AddAura(113368, me);
 
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);//imune to knock aways like blast wave
+            me->SetReactState(REACT_PASSIVE);
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
@@ -2620,18 +2621,25 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-
             std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
             if (!threatlist.empty())
             {
                 for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
                 {
+                    if (!(*itr))
+                        continue;
+
                     if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
                     {
                         if (!pl->GetCombatTimer())
+                        {
                             pl->CombatStop(false);
+                            (*itr)->removeReference();
+                        }
+                    }
+                    else
+                    {
+                        (*itr)->removeReference();
                     }
                 }
             }
