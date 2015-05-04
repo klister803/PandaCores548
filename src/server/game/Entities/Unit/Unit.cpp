@@ -17761,6 +17761,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_TRANSFORM:
                     {
+                        if (procExtra & PROC_EX_INTERNAL_HOT)
+                            break;
+
                         // chargeable mods are breaking on hit
                         if (useCharges && int32(dmgInfoProc->GetDamage() + dmgInfoProc->GetAbsorb()))
                             takeCharges = true;
