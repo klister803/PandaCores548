@@ -6378,20 +6378,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
         {
             switch (dummySpell->Id)
             {
-                case 137595: // Lightning Strike Charges Trigger
-                {
-                    triggered_spell_id = 137596;
-
-                    if (Aura* aura = GetAura(triggered_spell_id))
-                    {
-                        if (aura->GetStackAmount() > 3)
-                        {
-                            RemoveAurasDueToSpell(triggered_spell_id);
-                            triggered_spell_id = getClass() == CLASS_HUNTER ? 141004 : 137597;
-                        }
-                    }
-                    break;
-                }
                 case 146200: // Spirit of Chi-Ji
                 {
                     if(!target)
@@ -19789,6 +19775,37 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                     check = true;
                 }
                 break;
+                case SPELL_TRIGGER_CAST_AFTER_MAX_STACK: // 37
+                {
+                    if (target->HasAura(itr->spell_trigger))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if (itr->bp0 > 0 && !_targetAura->HasAura(itr->bp0))
+                    {
+                        check = true;
+                        continue;
+                    }
+                    if (itr->bp0 < 0 && _targetAura->HasAura(abs(itr->bp0)))
+                    {
+                        check = true;
+                        continue;
+                    }
+
+                    triggered_spell_id = itr->aura;
+
+                    if (Aura* aura = _targetAura->GetAura(triggered_spell_id))
+                    {
+                        if ((aura->GetStackAmount() + 1) > (aura->GetSpellInfo()->StackAmount - 1))
+                        {
+                            RemoveAurasDueToSpell(triggered_spell_id);
+                            triggered_spell_id = itr->spell_trigger;
+                        }
+                    }
+                    _caster->CastSpell(target, triggered_spell_id, true, castItem);
+                    break;
+                }
             }
             if(itr->group != 0 && check)
                 groupList.push_back(itr->group);
