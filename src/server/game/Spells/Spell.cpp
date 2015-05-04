@@ -6503,6 +6503,26 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (!m_caster->isAlive() && !(AttributesCustom & SPELL_ATTR0_PASSIVE) && !((AttributesCustom & SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (IsTriggered() && !m_triggeredByAuraSpell)))
         return SPELL_FAILED_CASTER_DEAD;
 
+    if (m_spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_UNLEARN_TALENT)
+        if (Player* plr = m_caster->ToPlayer())
+        {
+            PlayerTalentMap* Talents = plr->GetTalentMap(plr->GetActiveSpec());
+            for (PlayerTalentMap::iterator itr = Talents->begin(); itr != Talents->end(); ++itr)
+            {
+                SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
+                if (!spell)
+                    continue;
+
+                if (spell->talentId != m_glyphIndex)
+                    continue;
+
+                if (plr->HasSpellCooldown(spell->Id))
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                else
+                    break;
+            }
+        }
+
     // check cooldowns to prevent cheating
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !(AttributesCustom & SPELL_ATTR0_PASSIVE))
     {
