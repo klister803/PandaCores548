@@ -458,7 +458,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
         m_ResetStatTimer = 0;
         for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
             if (Player* player = ObjectAccessor::FindPlayer(itr->first))
-                player->ResetAllPowers();
+                player->ResetAllPowers(true);
     }
 
     if (!(m_Events & BG_STARTING_EVENT_1))
@@ -1224,7 +1224,7 @@ void Battleground::AddPlayer(Player* player)
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
             player->CastSpell(player, SPELL_ARENA_PREPARATION, true);
-            player->ResetAllPowers();
+            player->ResetAllPowers(true);
         }
 
         // Set arena faction client-side to display arena unit frame

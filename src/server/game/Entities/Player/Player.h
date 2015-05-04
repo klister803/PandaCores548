@@ -2632,7 +2632,7 @@ class Player : public Unit, public GridObject<Player>
         void _ApplyAllStatBonuses();
         void _RemoveAllStatBonuses();
 
-        void ResetAllPowers();
+        void ResetAllPowers(bool preparation = false);
         void ResetEclipseState();
 
         void _ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID = 0, bool apply = true);

@@ -527,7 +527,7 @@ void BattlegroundSA::TeleportPlayers()
             }
 
             player->RemoveAurasWithMechanic(IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK);
-            player->ResetAllPowers();
+            player->ResetAllPowers(true);
             player->CombatStopWithPets(true);
 
             if (player->GetTeamId() == Attackers)

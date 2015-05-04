@@ -3184,7 +3184,7 @@ void Player::RegenerateHealth()
     ModifyHealth(int32(addvalue));
 }
 
-void Player::ResetAllPowers()
+void Player::ResetAllPowers(bool preparation)
 {
     SetHealth(GetMaxHealth());
     SetPower(POWER_ALTERNATE_POWER, 0);
@@ -3213,13 +3213,13 @@ void Player::ResetAllPowers()
             ResetEclipseState();
             break;
         case CLASS_MONK:
-            SetPower(POWER_CHI, 0);
+            SetPower(POWER_CHI, preparation ? GetMaxPower(POWER_CHI) : 0);
             break;
         case CLASS_PRIEST:
             SetPower(POWER_SHADOW_ORB, 0);
             break;
         case CLASS_WARLOCK:
-            SetPower(POWER_SOUL_SHARDS, 100, false);
+            SetPower(POWER_SOUL_SHARDS, 400, false);
             SetPower(POWER_DEMONIC_FURY, 200, false);
             SetPower(POWER_BURNING_EMBERS, 10, false);
             break;
