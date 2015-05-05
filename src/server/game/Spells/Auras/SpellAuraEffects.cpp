@@ -7873,14 +7873,12 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
         if (!(GetSpellInfo()->AttributesEx9 & SPELL_ATTR9_UNK28))
             damageBeforeHit = target->SpellDamageBonusForDamageBeforeHit(caster, GetSpellInfo(), damage);
 
-        damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage);
-
         switch (GetSpellInfo()->Id)
         {
             case 980: // Agony
             {
                 if (Aura* agony = GetBase())
-                    agony->CalcAgonyTickDamage();
+                    damage = agony->CalcAgonyTickDamage(damage);
                 break;
             }
             case 103103: // Malefic Grasp
@@ -7982,6 +7980,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, Spell
                     break;
             }
         }
+
+        damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage);
     }
     else if (GetSpellInfo()->GetEffect(effIndex, m_diffMode).Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA)
     {

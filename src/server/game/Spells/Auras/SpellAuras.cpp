@@ -3452,19 +3452,20 @@ void Aura::SetAuraTimer(int32 time, uint64 guid)
     }
 }
 
-void Aura::CalcAgonyTickDamage()
+uint32 Aura::CalcAgonyTickDamage(uint32 damage)
 {
     uint8 stack = GetStackAmount();
 
     if (stack < GetSpellInfo()->StackAmount)
         if (AuraEffect* eff = GetEffect(EFFECT_0))
         {
-            uint32 damage = eff->GetAmount();
             m_stackAmount = stack + 1;
-            eff->SetAmount((damage / stack) * (stack + 1));
-            eff->SetCritAmount(eff->GetAmount() * 2);
+            eff->SetAmount((eff->GetAmount() / stack) * (stack + 1));
+            damage = eff->GetAmount();
+            eff->SetCritAmount(damage * 2);
 
             if (AuraEffect* eff1 = GetEffect(EFFECT_1))
-                eff1->SetAmount(eff->GetAmount());
+                eff1->SetAmount(damage);
         }
+    return damage;
 }
