@@ -5535,6 +5535,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_RADIUS;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
                     break;
+                case 139384: // Summon Wrathion Intro
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(608);
+                    break;
                 default:
                     break;
             }

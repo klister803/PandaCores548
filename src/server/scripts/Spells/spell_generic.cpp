@@ -3739,8 +3739,16 @@ class spell_gen_drums_of_rage : public SpellScriptLoader
 
             void ApplyDebuff()
             {
-                if (Unit* target = GetHitUnit())
-                    target->CastSpell(target, SPELL_SHAMAN_EXHAUSTED, true);
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->GetTeam() == HORDE)
+                            target->CastSpell(target, SPELL_SHAMAN_SATED, true);
+                        else
+                            target->CastSpell(target, SPELL_SHAMAN_EXHAUSTED, true);
+                    }
+                }
             }
 
             void Register()
