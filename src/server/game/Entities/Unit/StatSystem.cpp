@@ -1670,7 +1670,7 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
     float APCoefficient = 11.f;
     UnitMods unitMod = UNIT_MOD_DAMAGE_MAINHAND;
 
-    float att_speed = float(GetAttackTime(BASE_ATTACK))/1000.0f;
+    float att_speed = BASE_ATTACK_TIME / 1000.0f;
 
     //float base_value  = GetModifierValue(unitMod, BASE_VALUE) + GetTotalAttackPowerValue(attType) / APCoefficient * att_speed;
     float base_value  = GetModifierValue(unitMod, BASE_VALUE) + (GetTotalAttackPowerValue(attType) * att_speed / APCoefficient);
