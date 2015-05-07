@@ -217,6 +217,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
         {
             switch (spellproto->Id)
             {
+                case 123393: return DIMINISHING_DISORIENT;       break; // Breath of Fire
                 case 120086: return DIMINISHING_CONTROLLED_STUN; break; // Fists of Fury
                 case 116095: return DIMINISHING_LIMITONLY;       break; // Disable
                 default:
