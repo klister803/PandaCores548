@@ -1067,11 +1067,6 @@ public:
         
         bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const
         {
-            // Only on win build no check for complete boses.
-            #ifdef WIN32
-            return true;
-            #endif
-
             if (player && AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()))
                 return true;
 
@@ -1079,10 +1074,8 @@ public:
             {
                 case DATA_IMMERSEUS:
                     return true;
-                    //no break
                 case DATA_F_PROTECTORS:
                     return GetBossState(DATA_IMMERSEUS) == DONE;
-                    //no break
                 case DATA_NORUSHEN:
                     return GetBossState(DATA_F_PROTECTORS) == DONE;
             }

@@ -135,7 +135,6 @@ struct boss_fallen_protectors : public BossAI
     void EnterCombat(Unit* who)
     {
         InitBattle();
-
         instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
         instance->SetBossState(DATA_F_PROTECTORS, IN_PROGRESS);
         DoZoneInCombat(me, 150.0f);
@@ -151,6 +150,8 @@ struct boss_fallen_protectors : public BossAI
                 DoZoneInCombat(prot, 150.0f);
             }
         }
+        if (!instance->CheckRequiredBosses(DATA_F_PROTECTORS, 0))
+            EnterEvadeMode();
     }
 
     virtual void InitBattle() { 
@@ -798,17 +799,17 @@ class ExitVexMeasure : public BasicEvent
         bool Execute(uint64 /*currTime*/, uint32 /*diff*/)
         {
             uint8 _idx = 0;
-            switch(creature->GetEntry())
+            switch (creature->GetEntry())
             {
-                case NPC_EMBODIED_DESPIRE_OF_SUN:       _idx = 0; break;
-                case NPC_EMBODIED_DESPERATION_OF_SUN:   _idx = 1; break;
-                case NPC_EMBODIED_ANGUISH_OF_HE:        _idx = 2; break;
-                case NPC_EMBODIED_MISERY_OF_ROOK:       _idx = 3; break;
-                case NPC_EMBODIED_GLOOM_OF_ROOK:        _idx = 4; break;
-                case NPC_EMBODIED_SORROW_OF_ROOK:       _idx = 5; break;
-                default:
-                    sLog->outError(LOG_FILTER_GENERAL, " >> Script: OO:ExitVexMeasure no position for fall down for entry %u", creature->GetEntry());
-                    return true;
+            case NPC_EMBODIED_DESPIRE_OF_SUN:       _idx = 0; break;
+            case NPC_EMBODIED_DESPERATION_OF_SUN:   _idx = 1; break;
+            case NPC_EMBODIED_ANGUISH_OF_HE:        _idx = 2; break;
+            case NPC_EMBODIED_MISERY_OF_ROOK:       _idx = 3; break;
+            case NPC_EMBODIED_GLOOM_OF_ROOK:        _idx = 4; break;
+            case NPC_EMBODIED_SORROW_OF_ROOK:       _idx = 5; break;
+            default:
+                sLog->outError(LOG_FILTER_GENERAL, " >> Script: OO:ExitVexMeasure no position for fall down for entry %u", creature->GetEntry());
+                return true;
             }
             creature->GetMotionMaster()->MoveJump(LotusJumpPosition[_idx].m_positionX, LotusJumpPosition[_idx].m_positionY, LotusJumpPosition[_idx].m_positionZ, 20.0f, 20.0f);
             creature->AI()->DoAction(EVENT_1);
