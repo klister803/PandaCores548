@@ -1351,6 +1351,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
+                case 112947: // Nerve Strike
+                {
+                    if (m_effIndex == EFFECT_0)
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                            amount = CalculatePct(amount, 50);
+                    break;
+                }
                 case 138130: // Storm, Earth and Fire (clone)
                 {
                     if (m_effIndex != EFFECT_1)
