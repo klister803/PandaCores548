@@ -393,7 +393,7 @@ void BattlegroundWS::HandleKillPlayer(Player* player, Player* killer)
         return;
 
     /// Call event player droped flag
-    if(player->HasAura(BG_WS_SPELL_HORDE_FLAG) || player->HasAura(BG_WS_SPELL_ALLIANCE_FLAG))
+    //if(player->HasAura(BG_WS_SPELL_HORDE_FLAG) || player->HasAura(BG_WS_SPELL_ALLIANCE_FLAG))
         EventPlayerDroppedFlag(player);
 
     Battleground::HandleKillPlayer(player, killer);
@@ -514,40 +514,85 @@ WorldSafeLocsEntry const* BattlegroundWS::GetClosestGraveYard(Player* player)
     }
 }
 
-void BattlegroundWS::EventPlayerDroppedFlag(Player* source)
+void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
 {
-    uint8 team = source->GetBGTeamId();
-
-    /// Mainly used when a player captures the flag, it prevents spawn the flag on ground
-    if (!_flagKeepers[team ^ 1])
-        return;
-
-    /// Most probably useless - If a GM applies the aura on a player
-    if (!_flagKeepers[team ^ 1] == source->GetGUID())
+    if (GetStatus() != STATUS_IN_PROGRESS)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: An error have occured in EventPlayerDroppedFlag, player: %u who carried the flag is not the flag keeper: %u.", source->GetGUID(), _flagKeepers[team ^ 1]);
+        // if not running, do not cast things at the dropper player (prevent spawning the "dropped" flag), neither send unnecessary messages
+        // just take off the aura
+        if (Source->GetTeam() == ALLIANCE)
+        {
+            if (!this->IsHordeFlagPickedup())
+                return;
+
+            if (GetFlagPickerGUID(TEAM_HORDE) == Source->GetGUID())
+            {
+                SetHordeFlagPicker(0);
+                Source->RemoveAurasDueToSpell(BG_WS_SPELL_HORDE_FLAG);
+            }
+        }
+        else
+        {
+            if (!this->IsAllianceFlagPickedup())
+                return;
+
+            if (GetFlagPickerGUID(TEAM_ALLIANCE) == Source->GetGUID())
+            {
+                SetAllianceFlagPicker(0);
+                Source->RemoveAurasDueToSpell(BG_WS_SPELL_ALLIANCE_FLAG);
+            }
+        }
         return;
     }
 
-    /// Unaura assaults debuff (if there are)
-        source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
-        source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
+    bool set = false;
 
-    /// Update flag state and flagkeepers
-    UpdateFlagState(team ^ 1, BG_WS_FLAG_STATE_ON_GROUND);
+    if (Source->GetTeam() == ALLIANCE)
+    {
+        if (!IsHordeFlagPickedup())
+            return;
 
-    /// "Drop the flag" + Set timer for flag
-    source->CastSpell(source, team == TEAM_ALLIANCE ? BG_WS_SPELL_HORDE_FLAG_DROPPED : BG_WS_SPELL_ALLIANCE_FLAG_DROPPED, true);
-    _flagsDropTimer[team ^ 1] = BG_WS_FLAG_DROP_TIME;
+        if (GetFlagPickerGUID(TEAM_HORDE) == Source->GetGUID())
+        {
+            SetHordeFlagPicker(0);
+            Source->RemoveAurasDueToSpell(BG_WS_SPELL_HORDE_FLAG);
+            _flagState[TEAM_HORDE] = BG_WS_FLAG_STATE_ON_GROUND;
+            Source->CastSpell(Source, BG_WS_SPELL_HORDE_FLAG_DROPPED, true);
+            set = true;
+        }
+    }
+    else
+    {
+        if (!IsAllianceFlagPickedup())
+            return;
+        if (GetFlagPickerGUID(TEAM_ALLIANCE) == Source->GetGUID())
+        {
+            SetAllianceFlagPicker(0);
+            Source->RemoveAurasDueToSpell(BG_WS_SPELL_ALLIANCE_FLAG);
+            _flagState[TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_GROUND;
+            Source->CastSpell(Source, BG_WS_SPELL_ALLIANCE_FLAG_DROPPED, true);
+            set = true;
+        }
+    }
 
-    /// Remove flag
-    source->RemoveAurasDueToSpell(team == TEAM_ALLIANCE ? BG_WS_SPELL_HORDE_FLAG : BG_WS_SPELL_ALLIANCE_FLAG);
+    if (set)
+    {
+        Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
+        UpdateFlagState(Source->GetTeam(), 1);
 
-    /// Apply debuff for recently dropped flag
-    source->CastSpell(source, SPELL_RECENTLY_DROPPED_FLAG, true);
+        if (Source->GetTeam() == ALLIANCE)
+        {
+            SendMessageToAll(LANG_BG_WS_DROPPED_HF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
+            UpdateWorldState(BG_WS_FLAG_UNK_HORDE, uint32(-1));
+        }
+        else
+        {
+            SendMessageToAll(LANG_BG_WS_DROPPED_AF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
+            UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, uint32(-1));
+        }
 
-    /// Send message to all
-    SendMessageToAll(team == TEAM_ALLIANCE ? LANG_BG_WS_DROPPED_HF : LANG_BG_WS_DROPPED_AF, team == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_HORDE : CHAT_MSG_BG_SYSTEM_ALLIANCE, source);
+        _flagsDropTimer[GetTeamIndexByTeamId(Source->GetTeam()) ? 0 : 1] = BG_WS_FLAG_DROP_TIME;
+    }
 }
 
 void BattlegroundWS::EventPlayerClickedOnFlag(Player* source, GameObject* target_obj)
