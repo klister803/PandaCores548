@@ -3805,6 +3805,13 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 101546: // Spinning Crane Kick
+                    spellInfo->Attributes &= ~SPELL_ATTR0_ABILITY;
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    break;
+                case 116847: // Rushing Jade Wind
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    break;
                 case 116680: // Thunder Focus Tea
                 case 115399: // Chi Brew
                     spellInfo->AttributesEx12 |= SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING;
