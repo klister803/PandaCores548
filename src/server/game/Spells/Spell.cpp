@@ -2739,15 +2739,20 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
+        bool dmgSpell = m_damage || m_healing;
+
         if (m_damage > 0)
             positive = false;
         else if (!m_healing)
         {
             for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
                 // If at least one effect negative spell is negative hit
-                if (mask & (1<<i) && !m_spellInfo->IsPositiveEffect(i))
+                if (mask & (1<<i))
                 {
-                    positive = false;
+                    if (!m_spellInfo->IsPositiveEffect(i))
+                        positive = false;
+                    else if (!dmgSpell)
+                        dmgSpell = m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB;
                     break;
                 }
         }
@@ -2757,20 +2762,20 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 if (positive)
                 {
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
-                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+                    procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                    procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
                 }
                 else
                 {
                     procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
-                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
             break;
             case SPELL_DAMAGE_CLASS_MELEE:
             {
-                procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MELEE_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
 
                 if (m_attackType == BASE_ATTACK)
                     procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
@@ -2784,13 +2789,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 {
                     if (positive)
                     {
-                        procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
-                        procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
+                        procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_POS;
                     }
                     else
                     {
-                        procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                        procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                        procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                     }
                 }
                 else
@@ -2817,8 +2822,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 }
                 else // Ranged spell attack
                 {
-                    procAttacker |= m_damage ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
-                    procVictim   |= m_damage ? PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
+                    procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    procVictim   |= dmgSpell ? PROC_FLAG_TAKEN_SPELL_RANGED_DMG_CLASS : PROC_FLAG_TAKEN_SPELL_NONE_DMG_CLASS_NEG;
                 }
                 break;
         }
@@ -3864,6 +3869,7 @@ void Spell::cast(bool skipCheck)
                 procEx |= PROC_EX_NORMAL_HIT;
 
             bool positive = true;
+            bool dmgSpell = procDamage;
             if (procDamage > 0)
                 positive = false;
             else if (procDamage < 0)
@@ -3872,9 +3878,12 @@ void Spell::cast(bool skipCheck)
             {
                 for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
                     // If at least one effect negative spell is negative hit
-                    if (mask & (1<<i) && !m_spellInfo->IsPositiveEffect(i))
+                    if (mask & (1 << i))
                     {
-                        positive = false;
+                        if (!m_spellInfo->IsPositiveEffect(i))
+                            positive = false;
+                        else if (!dmgSpell)
+                            dmgSpell = m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB;
                         break;
                     }
             }
@@ -3890,7 +3899,7 @@ void Spell::cast(bool skipCheck)
             {
                 case SPELL_DAMAGE_CLASS_MELEE:
                 {
-                    procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                    procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MELEE_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
 
                     if (m_attackType == BASE_ATTACK)
                         procAttacker |= PROC_FLAG_DONE_MAINHAND_ATTACK;
@@ -3901,9 +3910,9 @@ void Spell::cast(bool skipCheck)
                 case SPELL_DAMAGE_CLASS_MAGIC:
                 {
                     if (!positive)
-                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     else
-                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                        procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
                     break;
                 }
                 case SPELL_DAMAGE_CLASS_NONE:
@@ -3911,9 +3920,9 @@ void Spell::cast(bool skipCheck)
                     if (m_spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC)
                     {
                         if (!positive)
-                            procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                            procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                         else
-                            procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
+                            procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_POS;
                     }
                     else
                     {
@@ -3928,7 +3937,7 @@ void Spell::cast(bool skipCheck)
                 {
                     // Auto attack
                     if (!(AttributesCustomEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG))
-                        procAttacker |= procDamage ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
+                        procAttacker |= dmgSpell ? PROC_FLAG_DONE_SPELL_RANGED_DMG_CLASS : PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG;
                     break;
                 }
             }
