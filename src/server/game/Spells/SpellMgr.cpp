@@ -5538,6 +5538,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 139384: // Summon Wrathion Intro
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(608);
                     break;
+                case 140097: // Summon Intro Scene
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(600); //42s
+                    break;
                 default:
                     break;
             }
