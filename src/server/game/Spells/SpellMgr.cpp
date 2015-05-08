@@ -5502,6 +5502,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 109145: // Demonic Fury
                     spellInfo->Effects[0].BasePoints = 0;
                     break;
+                case 77489: // Echo of Light
                 case 58068: // Glyph of Soul Consumption
                     spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
                     break;
