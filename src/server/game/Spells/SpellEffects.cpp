@@ -4802,6 +4802,18 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             spell_bonus = int32(spell_bonus * weapon_total_pct);
     }
 
+    switch (m_spellInfo->Id)
+    {
+        case 50622: // Bladestorm
+        {
+            if (m_caster->HasAura(12712))
+                weaponDamagePercentMod += 60.0f / 100.0f;
+            break;
+        }
+        default:
+            break;
+    }
+
     int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, true);
     bool  calculateWPD = true;
 
