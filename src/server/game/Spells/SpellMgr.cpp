@@ -3805,6 +3805,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137030: // Hotfix Passive
+                    spellInfo->Effects[EFFECT_3].Effect = 0;
+                    spellInfo->Effects[EFFECT_3].ApplyAuraName = 0;
+                    spellInfo->Effects[EFFECT_3].MiscValue = 0;
+                    spellInfo->Effects[EFFECT_3].BasePoints = 0;
+                    break;
                 case 101546: // Spinning Crane Kick
                     spellInfo->Attributes &= ~SPELL_ATTR0_ABILITY;
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
