@@ -18869,7 +18869,15 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         check = true;
                         continue;
                     }
-                    int32 percent = triggerAmount;
+                    float percent = 0.0f;
+                    if (Player* plr = ToPlayer())
+                    {
+                        if (dummySpell->AttributesEx8 & SPELL_ATTR8_MASTERY_SPECIALIZATION)
+                            percent = plr->GetFloatValue(PLAYER_MASTERY) * dummySpell->GetEffect(effIndex, m_diffMode).BonusMultiplier;
+                    }
+                    else
+                        percent = triggerAmount;
+
                     if(bp0)
                         percent += bp0;
                     if(bp1)
