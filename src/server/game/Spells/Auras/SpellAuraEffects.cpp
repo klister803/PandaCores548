@@ -3697,17 +3697,13 @@ void AuraEffect::HandleAuraAllowOnlyAbility(AuraApplication const* aurApp, uint8
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
         if (apply)
-        {
             target->SetFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
-            target->AddUnitState(UNIT_STATE_CANNOT_AUTOATTACK);
-        }
         else
         {
             // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
             if (target->HasAuraType(SPELL_AURA_ALLOW_ONLY_ABILITY))
                 return;
             target->RemoveFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY);
-            target->ClearUnitState(UNIT_STATE_CANNOT_AUTOATTACK);
         }
     }
 }
