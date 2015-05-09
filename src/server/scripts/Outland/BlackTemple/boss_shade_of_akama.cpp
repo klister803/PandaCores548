@@ -186,7 +186,7 @@ public:
                         me->GetMotionMaster()->Clear(false);
                         me->GetMotionMaster()->MoveIdle();
                         DoCast(Shade, SPELL_SHADE_SOUL_CHANNEL, true);
-                        DoCast(Shade, SPELL_SHADE_SOUL_CHANNEL_2, true);
+                        //DoCast(Shade, SPELL_SHADE_SOUL_CHANNEL_2, true);
 
                         StartBanishing = true;
                     }
@@ -317,7 +317,7 @@ public:
                             }
 
                             Channeler->CastSpell(me, SPELL_SHADE_SOUL_CHANNEL, true);
-                            Channeler->CastSpell(me, SPELL_SHADE_SOUL_CHANNEL_2, true);
+                            //Channeler->CastSpell(me, SPELL_SHADE_SOUL_CHANNEL_2, true);
                             Channeler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             GridSearcherSucceeded = true;
                         }

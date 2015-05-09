@@ -895,7 +895,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
         {
             if (!target)
                 break;
-                
+
             switch (GetId())
             {
                 case 119450:

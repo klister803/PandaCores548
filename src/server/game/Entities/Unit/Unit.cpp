@@ -15147,6 +15147,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                 speed = min_speed;
         }
     }
+    if (speed <= 0) //crash client
+        speed = 0.01f;
+
     if(old_speed > speed)
         m_anti_JupmTime = 2000;
 
