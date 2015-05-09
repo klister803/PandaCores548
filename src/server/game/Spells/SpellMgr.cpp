@@ -5558,6 +5558,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 140097: // Summon Intro Scene
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(600); //42s
                     break;
+                case 139999: // Mason's Folly Finale Event
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(4); //120s
+                    break;
                 default:
                     break;
             }
