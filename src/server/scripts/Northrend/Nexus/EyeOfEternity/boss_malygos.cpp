@@ -366,6 +366,7 @@ public:
             _firstCyclicMovementStarted = false;
             _performingSurgeOfPower = false;
             _performingDestroyPlatform = false;
+            finalEvent = false;
 
             me->SetDisableGravity(true);
             me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
@@ -753,6 +754,14 @@ public:
             }
         }
 
+        void DamageTaken(Unit* /*attacker*/, uint32 &damage)
+        {
+            if (damage >= me->GetHealth() && !finalEvent)
+            {
+                damage = 0;
+            }
+        }
+
         void UpdateAI(uint32 diff)
         {
             if (!instance || (!UpdateVictim() && _phase != PHASE_NOT_STARTED && _phase != PHASE_TWO))
@@ -951,6 +960,7 @@ public:
                         UpdateVictim();
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         SetPhase(PHASE_THREE, true);
+                        finalEvent = true;
                         break;
                     case EVENT_SURGE_OF_POWER_P_THREE:
                         if (GetDifficulty() == MAN10_DIFFICULTY)
@@ -1068,6 +1078,7 @@ public:
         bool _firstCyclicMovementStarted; // At first movement start he throws one shield asap, so this check is needed for it only.
         bool _performingSurgeOfPower; // Used to prevent starting Cyclic Movement called in Arcane Bomb event.
         bool _performingDestroyPlatform; // Used to prevent starting some movements right when Destroy Platfrom event starts.
+        bool finalEvent;
 
         float _flySpeed; // Used to store base fly speed to prevent stacking on each evade.
     };
