@@ -522,6 +522,49 @@ void BossAI::_JustDied()
         instance->SetBossState(_bossId, DONE);
         instance->SaveToDB();
         instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
+        
+        Map* map = me->GetMap();
+        if (!map->IsDungeon())
+            return;
+
+        Map::PlayerList const& PlayerList = map->GetPlayers();
+        for (Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+        {
+            if (Player* player = itr->getSource())
+            {
+                std::list<uint32> spell_list;
+                SpellCooldowns cd_list = player->GetSpellCooldowns();
+                if (!cd_list.empty())
+                {
+                    for (SpellCooldowns::const_iterator itr = cd_list.begin(); itr != cd_list.end(); ++itr)
+                    {
+                        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
+                        if (spell &&
+                            spell->AttributesEx5 & SPELL_ATTR5_UNK8 &&
+                            spell->AttributesEx10 & SPELL_ATTR10_UNK13)
+                        {
+                            spell_list.push_back(itr->first);
+                        }
+                    }
+                }
+
+                if (!spell_list.empty())
+                {
+                    for (std::list<uint32>::const_iterator itr = spell_list.begin(); itr != spell_list.end(); ++itr)
+                        player->RemoveSpellCooldown((*itr), true);
+                }
+
+                Unit::AuraApplicationMap& Auras = player->GetAppliedAuras();
+                for (Unit::AuraApplicationMap::iterator itr = Auras.begin(); itr != Auras.end();)
+                {
+                    SpellInfo const* aura = itr->second->GetBase()->GetSpellInfo();
+                    if (aura && aura->Attributes & 0x24000000 && aura->AttributesEx5 & 0x00000004)
+                        player->RemoveAura(itr);
+                    else
+                        ++itr;
+                }
+            }
+        }
     }
 }
 
