@@ -821,14 +821,13 @@ class spell_dk_death_siphon : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_death_siphon_SpellScript);
 
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        float hpPct = float(GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster()) / 100.0f);
-                        int32 bp = int32(GetHitDamage() * hpPct);
+                        int32 bp = CalculatePct(GetHitDamage(), GetSpellInfo()->Effects[EFFECT_1].CalcValue(_player));
                         _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
                     }
                 }
@@ -836,7 +835,7 @@ class spell_dk_death_siphon : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_dk_death_siphon_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+                AfterHit += SpellHitFn(spell_dk_death_siphon_SpellScript::HandleAfterHit);
             }
         };
 
