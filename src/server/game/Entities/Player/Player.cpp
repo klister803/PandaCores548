@@ -30472,7 +30472,7 @@ void Player::CheckItemCapLevel(bool hasCap)
             if (!hasCap && m_items[i]->GetLevel() == proto->ItemLevel)
                 continue;
 
-            if (m_items[i]->IsEquipped())
+            if (m_items[i]->IsEquipped() && isAlive())
             {
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
                 // on apply perfome all changes
