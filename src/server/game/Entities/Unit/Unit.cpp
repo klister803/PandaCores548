@@ -4578,6 +4578,21 @@ void Unit::RemoveArenaAuras()
     }
 }
 
+void Unit::RecalcArenaAuras()
+{
+    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
+    {
+        AuraApplication const* aurApp = iter->second;
+        if(Aura* aura = aurApp->GetBase())
+        {
+            //recalc only if need
+            if ((aura->GetSpellInfo()->AttributesEx8 & SPELL_ATTR8_NOT_IN_BG_OR_ARENA) || (aura->GetSpellInfo()->AttributesEx4 & SPELL_ATTR4_NOT_USABLE_IN_ARENA_OR_RATED_BG))
+                aura->RecalculateAmountOfEffects(true);
+        }
+        ++iter;
+    }
+}
+
 void Unit::RemoveAllAurasOnDeath()
 {
     // used just after dieing to remove all visible auras

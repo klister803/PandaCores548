@@ -334,6 +334,18 @@ extern ScriptMapMap sGameObjectScripts;
 extern ScriptMapMap sEventScripts;
 extern ScriptMapMap sWaypointScripts;
 
+enum VisibleDistanceType
+{
+    TYPE_VISIBLE_MAP  = 0,
+    TYPE_VISIBLE_ZONE = 1,
+    TYPE_VISIBLE_AREA = 2,
+    TYPE_VISIBLE_MAX  = 3,
+};
+
+typedef std::unordered_map<uint32 /*id*/, float /*distance*/> VisibleDistanceMap;
+extern VisibleDistanceMap sVisibleDistance[TYPE_VISIBLE_MAX];
+float GetVisibleDistance(uint32 type, uint32 id);
+
 std::string GetScriptsTableNameByType(ScriptsType type);
 ScriptMapMap* GetScriptsMapByType(ScriptsType type);
 std::string GetScriptCommandName(ScriptCommands command);
@@ -1131,6 +1143,7 @@ class ObjectMgr
         bool LoadTrinityStrings() { return LoadTrinityStrings("trinity_string", MIN_TRINITY_STRING_ID, MAX_TRINITY_STRING_ID); }
         void LoadDbScriptStrings();
         void LoadCreatureClassLevelStats();
+        void LoadWorldVisibleDistance();
         void LoadCreatureLocales();
         void LoadCreatureDifficultyStat();
         void LoadCreatureTemplates();

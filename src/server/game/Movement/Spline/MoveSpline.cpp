@@ -210,8 +210,13 @@ bool MoveSplineInitArgs::Validate() const
         sLog->outError(LOG_FILTER_GENERAL, "MoveSplineInitArgs::Validate: expression '%s' failed", #exp);\
         return false;\
     }
+#define CHECK_V(exp) \
+    if (!(exp))\
+    {\
+        return false;\
+    }
     CHECK(path.size() > 1);
-    CHECK(velocity > 0.1f);
+    CHECK_V(velocity > 0.1f);
     CHECK(time_perc >= 0.f && time_perc <= 1.f);
     //CHECK(_checkPathBounds());
     return true;

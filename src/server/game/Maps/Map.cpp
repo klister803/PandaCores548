@@ -262,19 +262,8 @@ i_scriptLock(false)
 
     sScriptMgr->OnCreateMap(this);
 
-    switch(id)
-    {
-        case 609: // start DK
-        case 648: // start goblin
-        case 654: // start worgen
-        case 860: // start pandaren
-        case 754: // Throne of the Four Winds
-        case 967: // Dragon Soul
-            m_VisibleDistance = 250.0f;
-            break;
-        default:
-            break;
-    }
+    if(float _distMap = GetVisibleDistance(TYPE_VISIBLE_MAP, id))
+        m_VisibleDistance = _distMap;
 }
 
 void Map::InitVisibilityDistance()
@@ -284,16 +273,19 @@ void Map::InitVisibilityDistance()
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodOnContinents();
 }
 
-float Map::GetVisibilityRange(uint32 /*zoneId*/, uint32 areaId) const
+float Map::GetVisibilityRange(uint32 zoneId, uint32 areaId) const
 {
-    switch(areaId)
+    if(areaId)
     {
-        case 6830: // Timeless Isle: Celestial Court
-            return 250.0f;
-            break;
-        default:
-            break;
+        if(float _distArea = GetVisibleDistance(TYPE_VISIBLE_AREA, areaId))
+            return _distArea;
     }
+    if(zoneId)
+    {
+        if(float _distZone = GetVisibleDistance(TYPE_VISIBLE_ZONE, zoneId))
+            return _distZone;
+    }
+
     return m_VisibleDistance;
 }
 
@@ -2337,7 +2329,7 @@ bool InstanceMap::CanEnter(Player* player)
     if (player->GetMapRef().getTarget() == this)
     {
         sLog->outError(LOG_FILTER_MAPS, "InstanceMap::CanEnter - player %s(%u) already in map %d, %d, %d!", player->GetName(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
-        ASSERT(false);
+        //ASSERT(false);
         return false;
     }
 
@@ -2346,7 +2338,7 @@ bool InstanceMap::CanEnter(Player* player)
         return Map::CanEnter(player);
 
     MapEntry const* entry = sMapStore.LookupEntry(GetId());
-    if (entry->Expansion() <= 3)
+    if (entry->Expansion() <= 3 && !player->GetGroup())
         return true;
         
     // cannot enter if the instance is full (player cap), GMs don't count
@@ -2406,9 +2398,6 @@ bool InstanceMap::AddPlayerToMap(Player* player)
 
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
-        // Check moved to void WorldSession::HandleMoveWorldportAckOpcode()
-        //if (!CanEnter(player))
-            //return false;
 
         // Dungeon only code
         if (IsDungeon())

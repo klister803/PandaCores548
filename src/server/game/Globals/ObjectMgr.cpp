@@ -56,6 +56,7 @@ ScriptMapMap sSpellScripts;
 ScriptMapMap sGameObjectScripts;
 ScriptMapMap sEventScripts;
 ScriptMapMap sWaypointScripts;
+VisibleDistanceMap sVisibleDistance[TYPE_VISIBLE_MAX];
 
 std::string GetScriptsTableNameByType(ScriptsType type)
 {
@@ -237,6 +238,15 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
     return true;
 }
 
+float GetVisibleDistance(uint32 type, uint32 id)
+{
+    VisibleDistanceMap::const_iterator itr = sVisibleDistance[type].find(id);
+    if (itr != sVisibleDistance[type].end())
+        return itr->second;
+
+    return 0.0f;
+}
+
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiBattlePetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
@@ -284,6 +294,41 @@ void ObjectMgr::AddLocaleString(std::string const& s, LocaleConstant locale, Str
         data[locale] = s;
     }
 }
+
+void ObjectMgr::LoadWorldVisibleDistance()
+{
+    uint32 oldMSTime = getMSTime();
+
+    for (uint8 i = 0; i < TYPE_VISIBLE_MAX; ++i)
+        sVisibleDistance[i].clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT `type`, `id`, `distance` FROM `world_visible_distance`");
+
+    if (!result)
+        return;
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 type = fields[0].GetUInt32();
+        uint32 id = fields[1].GetUInt32();
+        float distance = fields[2].GetFloat();
+        if(type > TYPE_VISIBLE_MAX)
+        {
+            sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded world visible distance type %u error", type);
+            continue;
+        }
+
+        sVisibleDistance[type][id] = distance;
+
+        count++;
+    } while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u world visible distance in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 
 void ObjectMgr::LoadCreatureLocales()
 {

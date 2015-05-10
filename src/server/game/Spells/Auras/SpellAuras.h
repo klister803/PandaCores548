@@ -193,7 +193,7 @@ class Aura
         bool HasEffectType(AuraType type) const;
         AuraEffect* GetEffect(uint8 effIndex) const { ASSERT (effIndex < MAX_SPELL_EFFECTS); return m_effects[effIndex]; }
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }
-        void RecalculateAmountOfEffects();
+        void RecalculateAmountOfEffects(bool setCanRecalc = false);
         void HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply);
 
         //Save list target for custom scripts work

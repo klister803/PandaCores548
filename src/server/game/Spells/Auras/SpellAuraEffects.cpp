@@ -1600,6 +1600,18 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     if (CalcStack)
         amount *= GetBase()->GetStackAmount();
 
+    //Disable same auras on arena or BG(RBG)
+    if(caster)
+    {
+        if (Player* plr = caster->ToPlayer())
+        {
+            if ((plr->InBattleground() || plr->InArena()) && m_spellInfo->AttributesEx8 & SPELL_ATTR8_NOT_IN_BG_OR_ARENA)
+                amount = 0;
+            if ((plr->InRBG() || plr->InArena()) && m_spellInfo->AttributesEx4 & SPELL_ATTR4_NOT_USABLE_IN_ARENA_OR_RATED_BG)
+                amount = 0;
+        }
+    }
+
     switch (GetAuraType())
     {
         // Set crit amount for aura

@@ -979,12 +979,12 @@ struct DifficultyEntry
 {
     uint32 m_ID;                                            // 0
     uint32 m_fallbackDifficultyID;                          // 1
-    //uint32 m_instanceType;                                // 2
+    uint32 m_instanceType;                                  // 2
     uint32 m_minPlayers;                                    // 3
     uint32 m_maxPlayers;                                    // 4
     //uint32 m_oldEnumValue;                                // 5
     //uint32 m_flags;                                       // 6
-    //uint32 m_toggleDifficultyID;                          // 7
+    uint32 m_toggleDifficultyID;                            // 7
     //uint32 m_groupSizeHealthCurveID;                      // 8
     //uint32 m_groupSizeDmgCurveID;                         // 9
     //uint32 m_groupSizeSpellPointsCurveID;                 // 10

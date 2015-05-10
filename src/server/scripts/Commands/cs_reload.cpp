@@ -162,6 +162,7 @@ public:
             { "waypoint_data",                SEC_ADMINISTRATOR, true,  &HandleReloadWpCommand,                         "", NULL },
             { "vehicle_accessory",            SEC_ADMINISTRATOR, true,  &HandleReloadVehicleAccessoryCommand,           "", NULL },
             { "vehicle_template_accessory",   SEC_ADMINISTRATOR, true,  &HandleReloadVehicleTemplateAccessoryCommand,   "", NULL },
+            { "world_visible_distance",       SEC_ADMINISTRATOR, true,  &HandleReloadWorldVisibleDistanceCommand,       "", NULL },
             { NULL,                           0,                 false, NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1363,6 +1364,13 @@ public:
     {
         sObjectMgr->LoadAreaTriggerActionsAndData();
         handler->SendGlobalGMSysMessage("DB tables `areatrigger_data` and `areatrigger_actions` reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadWorldVisibleDistanceCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sObjectMgr->LoadWorldVisibleDistance();
+        handler->SendGlobalGMSysMessage("DB tables `world_visible_distance` reloaded.");
         return true;
     }
 };

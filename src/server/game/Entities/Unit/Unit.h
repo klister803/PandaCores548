@@ -1943,6 +1943,7 @@ class Unit : public WorldObject
         void RemoveAllAurasExceptType(AuraType type);
         void RemoveAllAurasByType(AuraType type);
         void DelayOwnedAuras(uint32 spellId, uint64 caster, int32 delaytime);
+        void RecalcArenaAuras();
 
         void _RemoveAllAuraStatMods();
         void _ApplyAllAuraStatMods();

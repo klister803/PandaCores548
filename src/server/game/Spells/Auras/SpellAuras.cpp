@@ -1550,13 +1550,17 @@ bool Aura::HasEffectType(AuraType type) const
     return false;
 }
 
-void Aura::RecalculateAmountOfEffects()
+void Aura::RecalculateAmountOfEffects(bool setCanRecalc)
 {
     ASSERT (!IsRemoved());
     Unit* caster = GetCaster();
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
+        {
+            if(setCanRecalc)
+                m_effects[i]->SetCanBeRecalculated(true);
             m_effects[i]->RecalculateAmount(caster);
+        }
 }
 
 void Aura::HandleAllEffects(AuraApplication * aurApp, uint8 mode, bool apply)

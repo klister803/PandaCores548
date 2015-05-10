@@ -1086,6 +1086,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             player->TeleportToBGEntryPoint();
 
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Removed player %s from Battleground.", player->GetName());
+        player->RecalcArenaAuras();
     }
 
     //battleground object will be deleted next Battleground::Update() call
@@ -1272,6 +1273,9 @@ void Battleground::AddPlayer(Player* player)
     // setup BG group membership
     PlayerAddedToBGCheckIfBGIsRunning(player);
     AddOrSetPlayerToCorrectBgGroup(player, team);
+
+    //Recal amaunt in auras
+    player->RecalcArenaAuras();
 
     // Log
     sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Player %s joined the battle.", player->GetName());

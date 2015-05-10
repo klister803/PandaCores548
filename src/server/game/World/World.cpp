@@ -1501,6 +1501,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading GameObject models...");
     LoadGameObjectModelList();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading World Visible Distance...");
+    sObjectMgr->LoadWorldVisibleDistance();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 
