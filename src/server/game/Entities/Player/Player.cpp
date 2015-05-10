@@ -27648,12 +27648,7 @@ void Player::UpdateCharmedAI()
 
 uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
 {
-    float cooldown = RUNE_BASE_COOLDOWN;
-
-    cooldown *= (1.0f / GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_RUNES, runeType));
-    cooldown *= GetFloatValue(UNIT_MOD_CAST_HASTE);
-
-    return cooldown;
+    return m_runes.runes[runeType].BaseCooldown;
 }
 
 void Player::RemoveRunesBySpell(uint32 spell_id)

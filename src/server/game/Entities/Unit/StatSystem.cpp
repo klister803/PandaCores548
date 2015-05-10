@@ -817,9 +817,43 @@ void Player::UpdateRuneRegen(RuneType rune)
 
 void Player::UpdateAllRunesRegen()
 {
-    for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
-        if (uint32 cooldown = GetRuneTypeBaseCooldown(RuneType(i)))
-            SetFloatValue(PLAYER_RUNE_REGEN_1 + i, float(1 * IN_MILLISECONDS) / float(cooldown));
+    float val = m_baseMHastRatingPct;
+
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
+
+    val *= GetTotalForAurasMultiplier(&auratypelist);
+
+    float bloodCoef  = val;
+    float unholyCoef = val;
+    float frostCoef  = val;
+    float deathCoef  = val;
+
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if ((*i)->GetMiscValue() == POWER_RUNES)
+        {
+            switch (RuneType((*i)->GetMiscValueB()))
+            {
+                case RUNE_BLOOD:  AddPct(bloodCoef,  (*i)->GetAmount()); break;
+                case RUNE_UNHOLY: AddPct(unholyCoef, (*i)->GetAmount()); break;
+                case RUNE_FROST:  AddPct(frostCoef,  (*i)->GetAmount()); break;
+                case RUNE_DEATH:  AddPct(deathCoef,  (*i)->GetAmount()); break;
+            }
+        }
+
+    SetRuneTypeBaseCooldown(RUNE_BLOOD,  RUNE_BASE_COOLDOWN * (1.0f / bloodCoef));
+    SetRuneTypeBaseCooldown(RUNE_UNHOLY, RUNE_BASE_COOLDOWN * (1.0f / unholyCoef));
+    SetRuneTypeBaseCooldown(RUNE_FROST,  RUNE_BASE_COOLDOWN * (1.0f / frostCoef));
+    SetRuneTypeBaseCooldown(RUNE_DEATH,  RUNE_BASE_COOLDOWN * (1.0f / deathCoef));
+
+    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_BLOOD,  bloodCoef  / 10.0f);
+    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_UNHOLY, unholyCoef / 10.0f);
+    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_FROST,  frostCoef  / 10.0f);
+    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_DEATH,  deathCoef  / 10.0f);
 }
 
 void Player::_ApplyAllStatBonuses()
