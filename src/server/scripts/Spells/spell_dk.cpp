@@ -1658,18 +1658,17 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
                         if (_player->HasAura(DK_SPELL_SCARLET_FEVER))
                         {
-                            if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
-                                if (Aura* aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
-                                    aura->SetDuration(aura->GetMaxDuration());
-                            if (target->HasAura(DK_SPELL_FROST_FEVER))
-                                if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER))
-                                    aura->SetDuration(aura->GetMaxDuration());
+                            if (Aura* aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
+                                aura->SetDuration(aura->GetMaxDuration());
+
+                            if (Aura* aura = target->GetAura(DK_SPELL_FROST_FEVER))
+                                aura->SetDuration(aura->GetMaxDuration());
                         }
 
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
                         if (target->HasAura(DK_SPELL_FROST_FEVER))
                         {
-                            SetHitDamage(int32(damge * 1.223f));
+                            SetHitDamage(int32(damge * 1.5f));
 
                             // Roiling Blood
                             /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
@@ -1688,7 +1687,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
                         }
                         else if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
                         {
-                            SetHitDamage(int32(damge * 1.223f));
+                            SetHitDamage(int32(damge * 1.5f));
 
                             // Roiling Blood
                             /*std::list<uint64> targets = GetSpell()->GetEffectTargets();
@@ -1706,34 +1705,18 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             }*/
                         }
                         else if (_player->HasAura(146650))
-                            SetHitDamage(int32(damge * 1.223f));
-
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            bool blood = false;
-
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_BLOOD && blood != true)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    blood = true;
-                                }
-                            }
-                        }
+                            SetHitDamage(int32(damge * 1.5f));
                     }
                 }
             }
 
             void FilterTargets(std::list<WorldObject*>& unitList)
             {
-                /*Unit* caster = GetCaster();
+                if (Unit* caster = GetCaster())
+                    if (!unitList.empty())
+                        caster->CastSpell(caster, DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
+
+                /*
                 if(!caster || !caster->HasAura(108170))
                     return;
 
@@ -1748,7 +1731,30 @@ class spell_dk_blood_boil : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Unit* caster = GetCaster())
-                    caster->CastSpell(caster, DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
+                {
+                    if (Player* plr = caster->ToPlayer())
+                    {
+                        if (caster->HasAura(DK_SPELL_REAPING, plr->GetGUID()))
+                        {
+                            bool blood = false;
+
+                            for (int i = 0; i < MAX_RUNES; i++)
+                            {
+                                if (plr->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!plr->GetRuneCooldown(i))
+                                    continue;
+
+                                if (plr->GetCurrentRune(i) == RUNE_BLOOD && !blood)
+                                {
+                                    plr->ConvertRune(i, RUNE_DEATH);
+                                    blood = true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             void Register()
