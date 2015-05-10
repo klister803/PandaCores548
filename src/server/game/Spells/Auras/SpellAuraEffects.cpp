@@ -8220,13 +8220,9 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, SpellEf
             AddPct(TakenTotalMod, Tenacity->GetAmount());
 
         // Healing taken percent
-        float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-        if (minval)
-            AddPct(TakenTotalMod, minval);
-
-        float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-        if (maxval)
-            AddPct(TakenTotalMod, maxval);
+       float ModHealingPct = target->GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALING_PCT);
+       if (ModHealingPct != 1.0f)
+           TakenTotalMod *= ModHealingPct;
 
         if (Map* m_map = caster->GetMap())
             if (!m_map->IsDungeon())
