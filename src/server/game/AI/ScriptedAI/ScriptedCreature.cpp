@@ -524,7 +524,7 @@ void BossAI::_JustDied()
         instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
         
         Map* map = me->GetMap();
-        if (!map->IsDungeon())
+        if (!map->IsDungeon() || map->IsNonRaidDungeon())
             return;
 
         Map::PlayerList const& PlayerList = map->GetPlayers();
