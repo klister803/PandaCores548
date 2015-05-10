@@ -716,10 +716,8 @@ m_diffMode(caster ? caster->GetSpawnMode() : 0), m_spellDynObjGuid(0), m_spellAr
     if((m_spellInfo->AttributesEx11 & SPELL_ATTR11_SEND_ITEM_LEVEL) && castItem)
         m_casterLevel = castItem->GetLevel();
 
-    if (castItem && castItem->GetLevelBeforeCap() && castItem->GetLevel() > 502 && m_maxDuration != -1)
+    if (castItem && castItem->GetLevelBeforeCap() && castItem->GetLevel() > 502)
     {
-        AddPct(m_maxDuration, 100);
-        m_duration = m_maxDuration;
         m_inArenaNerf = true;
     }
 

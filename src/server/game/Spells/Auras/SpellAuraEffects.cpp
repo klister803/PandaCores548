@@ -1841,9 +1841,6 @@ void AuraEffect::CalculateFromDummyAmount(Unit* caster, Unit* target, int32 &amo
 void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= true*/, bool load /*= false*/)
 {
     m_amplitude = m_spellInfo->GetEffect(m_effIndex, m_diffMode).Amplitude;
-
-    if (GetBase() && GetBase()->InArenaNerf())
-        AddPct(m_amplitude, 100);
                         
     // prepare periodics
     switch (GetAuraType())
