@@ -754,6 +754,10 @@ struct ItemTemplate
             if (ItemStat[i].ItemStatType == ITEM_MOD_PVP_POWER)
                 return true;
 
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            if (Spells[i].SpellId == 132586)
+                return true;
+
         return false;
     }
 
