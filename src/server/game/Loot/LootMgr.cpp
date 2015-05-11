@@ -635,21 +635,33 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
 
 void Loot::clear()
 {
-    for (QuestItemMap::const_iterator itr = PlayerCurrencies.begin(); itr != PlayerCurrencies.end(); ++itr)
-        delete itr->second;
-    PlayerCurrencies.clear();
+    if(!PlayerCurrencies.empty())
+    {
+        for (QuestItemMap::const_iterator itr = PlayerCurrencies.begin(); itr != PlayerCurrencies.end(); ++itr)
+            delete itr->second;
+        PlayerCurrencies.clear();
+    }
 
-    for (QuestItemMap::const_iterator itr = PlayerQuestItems.begin(); itr != PlayerQuestItems.end(); ++itr)
-        delete itr->second;
-    PlayerQuestItems.clear();
+    if(!PlayerQuestItems.empty())
+    {
+        for (QuestItemMap::const_iterator itr = PlayerQuestItems.begin(); itr != PlayerQuestItems.end(); ++itr)
+            delete itr->second;
+        PlayerQuestItems.clear();
+    }
 
-    for (QuestItemMap::const_iterator itr = PlayerFFAItems.begin(); itr != PlayerFFAItems.end(); ++itr)
-        delete itr->second;
-    PlayerFFAItems.clear();
+    if(!PlayerFFAItems.empty())
+    {
+        for (QuestItemMap::const_iterator itr = PlayerFFAItems.begin(); itr != PlayerFFAItems.end(); ++itr)
+            delete itr->second;
+        PlayerFFAItems.clear();
+    }
 
-    for (QuestItemMap::const_iterator itr = PlayerNonQuestNonFFANonCurrencyConditionalItems.begin(); itr != PlayerNonQuestNonFFANonCurrencyConditionalItems.end(); ++itr)
-        delete itr->second;
-    PlayerNonQuestNonFFANonCurrencyConditionalItems.clear();
+    if(!PlayerNonQuestNonFFANonCurrencyConditionalItems.empty())
+    {
+        for (QuestItemMap::const_iterator itr = PlayerNonQuestNonFFANonCurrencyConditionalItems.begin(); itr != PlayerNonQuestNonFFANonCurrencyConditionalItems.end(); ++itr)
+            delete itr->second;
+        PlayerNonQuestNonFFANonCurrencyConditionalItems.clear();
+    }
 
     PlayersLooting.clear();
     items.clear();
@@ -2563,6 +2575,9 @@ void LoadLootTemplates_Reference()
 
 Loot* LootMgr::GetLoot(uint64 guid)
 {
+    if(m_Loots.empty())
+        return;
+
     Loot* loot = NULL;
     LootsMap::iterator itr = m_Loots.find(guid);
     if (itr != m_Loots.end())
@@ -2582,6 +2597,9 @@ void LootMgr::AddLoot(Loot* loot)
 
 void LootMgr::RemoveLoot(uint64 guid)
 {
+    if(m_Loots.empty())
+        return;
+
     LootsMap::iterator itr = m_Loots.find(guid);
     if (itr == m_Loots.end())
         return;
