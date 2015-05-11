@@ -369,14 +369,17 @@ void AnyPetAI::InitializeAI()
     {
         if(Unit* victim = me->GetTargetUnit())
         {
-            Unit* owner = me->GetCharmerOrOwner();
-            if (owner && !owner->isInCombat())
-                owner->SetInCombatWith(victim);
+            if (!me->IsFriendlyTo(victim))
+            {
+                Unit* owner = me->GetCharmerOrOwner();
+                if (owner && !owner->isInCombat())
+                    owner->SetInCombatWith(victim);
 
-            if(me->GetCasterPet())
-                AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
-            else
-                AttackStart(victim);
+                if(me->GetCasterPet())
+                    AttackStartCaster(victim, me->GetAttackDist() - 0.5f);
+                else
+                    AttackStart(victim);
+            }
         }
     }
 
