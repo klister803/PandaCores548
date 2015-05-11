@@ -522,7 +522,7 @@ void BossAI::_JustDied()
         instance->SetBossState(_bossId, DONE);
         instance->SaveToDB();
         instance->SendEncounterUnit(ENCOUNTER_FRAME_RESET_COMBAT_RES_LIMIT, me);
-        
+
         Map* map = me->GetMap();
         if (!map->IsDungeon() || map->IsNonRaidDungeon())
             return;
@@ -532,26 +532,12 @@ void BossAI::_JustDied()
         {
             if (Player* player = itr->getSource())
             {
-                std::list<uint32> spell_list;
                 SpellCooldowns cd_list = player->GetSpellCooldowns();
-                if (!cd_list.empty())
+                for (SpellCooldowns::const_iterator itr = cd_list.begin(); itr != cd_list.end(); ++itr)
                 {
-                    for (SpellCooldowns::const_iterator itr = cd_list.begin(); itr != cd_list.end(); ++itr)
-                    {
-                        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
-                        if (spell &&
-                            spell->AttributesEx5 & SPELL_ATTR5_UNK8 &&
-                            spell->AttributesEx10 & SPELL_ATTR10_UNK13)
-                        {
-                            spell_list.push_back(itr->first);
-                        }
-                    }
-                }
-
-                if (!spell_list.empty())
-                {
-                    for (std::list<uint32>::const_iterator itr = spell_list.begin(); itr != spell_list.end(); ++itr)
-                        player->RemoveSpellCooldown((*itr), true);
+                    SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr->first);
+                    if (spell && spell->AttributesEx5 & SPELL_ATTR5_UNK8 && spell->AttributesEx10 & SPELL_ATTR10_UNK13)
+                        player->RemoveSpellCooldown(itr->first, true);
                 }
 
                 Unit::AuraApplicationMap& Auras = player->GetAppliedAuras();
