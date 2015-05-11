@@ -331,6 +331,7 @@ struct Loot
     bool personal;
     bool bonusLoot;
     bool isBoss;
+    bool isClear;
 
     explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }

@@ -477,6 +477,7 @@ Loot::Loot(uint32 _gold)
     personal = false;
     isBoss = false;
     bonusLoot = false;
+    isClear = true;
     m_guid = 0;
 }
 
@@ -588,6 +589,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
                             lootOwner->learnSpell(*spellId, false);
     }
     sLootMgr->AddLoot(this);
+    isClear = false;
 
     return true;
 }
@@ -635,6 +637,10 @@ void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
 
 void Loot::clear()
 {
+    //If loot not generate or already clear
+    if(isClear)
+        return;
+
     if(!PlayerCurrencies.empty())
     {
         for (QuestItemMap::const_iterator itr = PlayerCurrencies.begin(); itr != PlayerCurrencies.end(); ++itr)
@@ -676,6 +682,7 @@ void Loot::clear()
     personal = false;
     isBoss = false;
     bonusLoot = false;
+    isClear = true;
 }
 
 QuestItemList* Loot::FillCurrencyLoot(Player* player)
@@ -2576,7 +2583,7 @@ void LoadLootTemplates_Reference()
 Loot* LootMgr::GetLoot(uint64 guid)
 {
     if(m_Loots.empty())
-        return;
+        return NULL;
 
     Loot* loot = NULL;
     LootsMap::iterator itr = m_Loots.find(guid);
@@ -2591,7 +2598,8 @@ void LootMgr::AddLoot(Loot* loot)
 {
     if(!loot->GetGUID())
         loot->GenerateLootGuid();
-    m_Loots[loot->GetGUID()] = loot;
+    volatile uint64 guid = loot->GetGUID();
+    m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
 }
 
