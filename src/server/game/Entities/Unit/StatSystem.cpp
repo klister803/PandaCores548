@@ -827,33 +827,21 @@ void Player::UpdateAllRunesRegen()
 
     val *= GetTotalForAurasMultiplier(&auratypelist);
 
-    float bloodCoef  = val;
-    float unholyCoef = val;
-    float frostCoef  = val;
-    float deathCoef  = val;
+    float coef[NUM_RUNE_TYPES];
+
+    for (uint8 i = 0; i < NUM_RUNE_TYPES; i++)
+        coef[i] = val;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
         if ((*i)->GetMiscValue() == POWER_RUNES)
-        {
-            switch (RuneType((*i)->GetMiscValueB()))
-            {
-                case RUNE_BLOOD:  AddPct(bloodCoef,  (*i)->GetAmount()); break;
-                case RUNE_UNHOLY: AddPct(unholyCoef, (*i)->GetAmount()); break;
-                case RUNE_FROST:  AddPct(frostCoef,  (*i)->GetAmount()); break;
-                case RUNE_DEATH:  AddPct(deathCoef,  (*i)->GetAmount()); break;
-            }
-        }
+            AddPct(coef[(*i)->GetMiscValueB()], (*i)->GetAmount());
 
-    SetRuneTypeBaseCooldown(RUNE_BLOOD,  RUNE_BASE_COOLDOWN * (1.0f / bloodCoef));
-    SetRuneTypeBaseCooldown(RUNE_UNHOLY, RUNE_BASE_COOLDOWN * (1.0f / unholyCoef));
-    SetRuneTypeBaseCooldown(RUNE_FROST,  RUNE_BASE_COOLDOWN * (1.0f / frostCoef));
-    SetRuneTypeBaseCooldown(RUNE_DEATH,  RUNE_BASE_COOLDOWN * (1.0f / deathCoef));
-
-    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_BLOOD,  bloodCoef  / 10.0f);
-    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_UNHOLY, unholyCoef / 10.0f);
-    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_FROST,  frostCoef  / 10.0f);
-    SetFloatValue(PLAYER_RUNE_REGEN_1 + RUNE_DEATH,  deathCoef  / 10.0f);
+    for (uint8 i = 0; i < NUM_RUNE_TYPES; i++)
+    {
+        SetRuneTypeBaseCooldown(RuneType(i), RUNE_BASE_COOLDOWN * (1.0f / coef[i]));
+        SetFloatValue(PLAYER_RUNE_REGEN_1 + i, coef[i] / 10.0f);
+    }
 }
 
 void Player::_ApplyAllStatBonuses()
@@ -990,7 +978,7 @@ void Unit::UpdateMeleeHastMod()
     }
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->UpdateAllRunesRegen();
+        player->SetNeedToUpdateRunesRegen();
 
     if (Unit* owner = GetOwner())
         if (owner->getClass() == CLASS_HUNTER && (amount != 0.0f || (oldValue != 1.0f && value != oldValue)))
@@ -1046,7 +1034,7 @@ void Unit::UpdateHastMod()
     }
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->UpdateAllRunesRegen();
+        player->SetNeedToUpdateRunesRegen();
     UpdateManaRegen();
 }
 
@@ -1089,7 +1077,7 @@ void Unit::UpdateRangeHastMod()
         UpdateFocusRegen();
 
     if (player && getClass() == CLASS_DEATH_KNIGHT)
-        player->UpdateAllRunesRegen();
+        player->SetNeedToUpdateRunesRegen();
 }
 
 void Unit::UpdateEnergyRegen()

@@ -5284,7 +5284,7 @@ void AuraEffect::HandleModPowerRegenPCT(AuraApplication const* aurApp, uint8 mod
             break;
         case POWER_RUNES:
             if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->UpdateAllRunesRegen();
+                target->ToPlayer()->SetNeedToUpdateRunesRegen();
             break;
         default:
             target->UpdatePowerRegen(GetMiscValue());
@@ -5307,7 +5307,7 @@ void AuraEffect::HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, b
         return;
 
     //Note: an increase in regen does NOT cause threat.
-    target->ToPlayer()->UpdateAllRunesRegen();
+    target->ToPlayer()->SetNeedToUpdateRunesRegen();
 }
 
 void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const

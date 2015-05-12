@@ -756,8 +756,10 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_RunesRegenTimerCount = 0;
+    m_RunesRegenUpdateTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
+    m_needToUpdateRunesRegen = false;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -2807,6 +2809,18 @@ void Player::RegenerateAll()
     // Runes act as cooldowns, and they don't need to send any data
     if (getClass() == CLASS_DEATH_KNIGHT)
     {
+        m_RunesRegenUpdateTimerCount += m_regenTimer;
+
+        if (m_RunesRegenUpdateTimerCount >= 200)
+        {
+            if (m_needToUpdateRunesRegen)
+            {
+                UpdateAllRunesRegen();
+                m_needToUpdateRunesRegen = false;
+            }
+            m_RunesRegenUpdateTimerCount = 0;
+        }
+
         for (uint8 i = 0; i < MAX_RUNES; i += 2)
         {
             uint8 runeToRegen = i;
