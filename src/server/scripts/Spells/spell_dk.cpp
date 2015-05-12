@@ -845,41 +845,6 @@ class spell_dk_death_siphon : public SpellScriptLoader
         }
 };
 
-// Unholy Presence - 48265 and Improved Unholy Presence - 50392
-class spell_dk_unholy_presence : public SpellScriptLoader
-{
-    public:
-        spell_dk_unholy_presence() : SpellScriptLoader("spell_dk_unholy_presence") { }
-
-        class spell_dk_unholy_presence_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dk_unholy_presence_AuraScript);
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* _player = GetTarget()->ToPlayer())
-                    _player->UpdateAllRunesRegen();
-            }
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* _player = GetTarget()->ToPlayer())
-                    _player->UpdateAllRunesRegen();
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_dk_unholy_presence_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_dk_unholy_presence_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dk_unholy_presence_AuraScript();
-        }
-};
-
 // Death Strike - 49998
 class spell_dk_death_strike : public SpellScriptLoader
 {
@@ -2290,7 +2255,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_blood_charges();
     new spell_dk_blood_tap();
     new spell_dk_death_siphon();
-    new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();
     new spell_dk_purgatory_absorb();
