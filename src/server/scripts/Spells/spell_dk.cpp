@@ -536,47 +536,6 @@ class spell_dk_howling_blast : public SpellScriptLoader
         }
 };
 
-// Conversion - 119975
-class spell_dk_conversion : public SpellScriptLoader
-{
-    public:
-        spell_dk_conversion() : SpellScriptLoader("spell_dk_conversion") { }
-
-        class spell_dk_conversion_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dk_conversion_AuraScript);
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (GetCaster())
-                {
-                    // Drain 10 runic power to regen 3% of max health per second
-                    int32 runicPower = GetCaster()->GetPower(POWER_RUNIC_POWER);
-
-                    if (runicPower > 50)
-                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -50, true);
-                    else if (runicPower > 0)
-                    {
-                        GetCaster()->ModifyPower(POWER_RUNIC_POWER, -runicPower, true);
-                        GetCaster()->RemoveAura(DK_SPELL_CONVERSION);
-                    }
-                    else if (runicPower == 0)
-                        GetCaster()->RemoveAura(DK_SPELL_CONVERSION);
-                 }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dk_conversion_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dk_conversion_AuraScript();
-        }
-};
-
 // Remorseless Winter - 115000
 class spell_dk_remorseless_winter : public SpellScriptLoader
 {
@@ -2248,7 +2207,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
     new spell_dk_howling_blast();
-    new spell_dk_conversion();
     new spell_dk_remorseless_winter();
     new spell_dk_soul_reaper();
     new spell_dk_pillar_of_frost();

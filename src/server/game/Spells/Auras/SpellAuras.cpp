@@ -1046,12 +1046,15 @@ void Aura::UpdateOwner(uint32 diff, WorldObject* owner)
 
 void Aura::Update(uint32 diff, Unit* caster)
 {
-    if (m_duration > 0)
+    if (m_duration > 0 || (!IsPassive() && m_duration == -1))
     {
-        m_duration -= diff;
-        m_allDuration += diff;
-        if (m_duration < 0)
-            m_duration = 0;
+        if (m_duration > 0)
+        {
+            m_duration -= diff;
+            m_allDuration += diff;
+            if (m_duration < 0)
+                m_duration = 0;
+        }
 
         // handle powerPerSecond/PowerPerSecondPercentage
         if (m_timeCla)
@@ -1089,7 +1092,7 @@ void Aura::Update(uint32 diff, Unit* caster)
                         if (power.powerPerSecondPercentage)
                             reqPower += caster->CountPctFromMaxPower(power.powerPerSecondPercentage, powertype);
 
-                        if (reqPower < caster->GetPower(powertype))
+                        if (reqPower <= caster->GetPower(powertype))
                             caster->ModifyPower(powertype, -1 * reqPower, true);
                         else
                         {
