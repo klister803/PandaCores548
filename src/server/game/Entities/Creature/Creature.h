@@ -877,6 +877,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 getCurrentUpdateAreaID() const { return m_areaUpdateId; }
         uint32 getCurrentUpdateZoneID() const { return m_zoneUpdateId; }
 
+        bool IsDespawn() const { return m_despan; }
+
     protected:
         bool m_onVehicleAccessory;
 
@@ -932,6 +934,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 bossid;
         uint8 difficulty;
         float m_followAngle;
+        bool m_despan;
 
         bool IsInvisibleDueToDespawn() const;
         bool CanAlwaysSee(WorldObject const* obj) const;

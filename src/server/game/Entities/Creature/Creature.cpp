@@ -188,6 +188,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     bossid = 0;
     difficulty = 0;
     m_Stampeded = false;
+    m_despan = false;
 }
 
 Creature::~Creature()
@@ -1845,10 +1846,15 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
+    if(m_despan)
+        return;
+
     if (TempSummon* summon = this->ToTempSummon())
         summon->UnSummon(msTimeToDespawn);
     else
         ForcedDespawn(msTimeToDespawn);
+
+    m_despan = true;
 }
 
 bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo)

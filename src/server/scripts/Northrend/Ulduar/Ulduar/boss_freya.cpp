@@ -413,18 +413,13 @@ public:
                     }
                     checkElementalAlive = true;
                 }
-                else
+                else if (Elemental[0]->isDead() && Elemental[1]->isDead() && Elemental[2]->isDead())
                 {
-                    if (Elemental[0]->isDead())
-                        if (Elemental[1]->isDead())
-                            if (Elemental[2]->isDead())
-                            {
-                                for (uint32 i = 0; i < 3; i++)
-                                    Elemental[i]->DespawnOrUnsummon(3000);
-                                
-                                if (Creature* Freya = me->GetCreature(*me, instance->GetData64(DATA_FREYA)))
-                                    Freya->AI()->DoAction(ACTION_ELEMENTAL);
-                            }
+                    for (uint32 i = 0; i < 3; i++)
+                        Elemental[i]->DespawnOrUnsummon(3000);
+
+                    if (Creature* Freya = me->GetCreature(*me, instance->GetData64(DATA_FREYA)))
+                        Freya->AI()->DoAction(ACTION_ELEMENTAL);
                 }
             }
                            
