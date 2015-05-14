@@ -1625,13 +1625,13 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             }
             if(pStats->maxspdorap > 0)
             {
-                AP = temp_ap > school_spd ? int32(temp_ap * abs(pStats->ap)) : int32(school_spd * abs(pStats->spd));
-                SPD = temp_ap > school_spd ? int32(temp_ap * abs(pStats->ap)) : int32(school_spd * abs(pStats->spd));
+                AP = temp_ap > school_spd ? int32(temp_ap * fabs(pStats->ap)) : int32(school_spd * fabs(pStats->spd));
+                SPD = temp_ap > school_spd ? int32(temp_ap * fabs(pStats->ap)) : int32(school_spd * fabs(pStats->spd));
             }
             else if(pStats->maxspdorap < 0)
             {
-                AP = int32(((temp_ap + school_spd) / 2) * abs(pStats->ap));
-                SPD = int32(((temp_ap + school_spd) / 2) * abs(pStats->spd));
+                AP = int32(((temp_ap + school_spd) / 2) * fabs(pStats->ap));
+                SPD = int32(((temp_ap + school_spd) / 2) * fabs(pStats->spd));
             }
         }
         else
