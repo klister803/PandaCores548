@@ -901,6 +901,8 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem* *qite
     else
     {
         item = &items[lootSlot];
+        if (!item)
+            return NULL;
         is_looted = item->is_looted;
         if (item->currency)
         {
