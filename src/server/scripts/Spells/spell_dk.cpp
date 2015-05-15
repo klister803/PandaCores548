@@ -322,54 +322,6 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         }
 };
 
-// Blood Strike - 45902
-class spell_dk_blood_strike : public SpellScriptLoader
-{
-    public:
-        spell_dk_blood_strike() : SpellScriptLoader("spell_dk_blood_strike") { }
-
-        class spell_dk_blood_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_blood_strike_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_BLOOD)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dk_blood_strike_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_blood_strike_SpellScript();
-        }
-};
-
 // Festering Strike - 85948
 class spell_dk_festering_strike : public SpellScriptLoader
 {
@@ -405,31 +357,6 @@ class spell_dk_festering_strike : public SpellScriptLoader
                         {
                             uint32 dur = COI->GetDuration() + 6000;
                             COI->SetDuration(dur);
-                        }
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            bool blood = false;
-                            bool frost = false;
-
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_BLOOD && blood != true)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    blood = true;
-                                }
-                                if (_player->GetCurrentRune(i) == RUNE_FROST && frost != true)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    frost = true;
-                                }
-                            }
                         }
                     }
                 }
@@ -713,7 +640,7 @@ class spell_dk_blood_tap : public SpellScriptLoader
 
                     int32 cooldown = 0;
                     for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        if (_player->GetCurrentRune(i) != RUNE_DEATH && _player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i))
+                        if (_player->GetCurrentRune(i) != RUNE_DEATH && _player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN)
                             cooldown++;
 
                     if (!cooldown)
@@ -745,10 +672,11 @@ class spell_dk_blood_tap : public SpellScriptLoader
                         int32 runesRestor = 0;
                         for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1 && _player->GetCurrentRune(i) != RUNE_DEATH)
+                            if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 1 && _player->GetCurrentRune(i) != RUNE_DEATH)
                             {
                                 runesRestor++;
                                 _player->SetRuneCooldown(i, 0);
+                                _player->SetConvertIn(i, RUNE_DEATH);
                                 _player->ConvertRune(i, RUNE_DEATH);
                                 _player->AddRunePower(i);
                             }
@@ -801,70 +729,6 @@ class spell_dk_death_siphon : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dk_death_siphon_SpellScript();
-        }
-};
-
-// Death Strike - 49998
-class spell_dk_death_strike : public SpellScriptLoader
-{
-    public:
-        spell_dk_death_strike() : SpellScriptLoader("spell_dk_death_strike") { }
-
-        class spell_dk_death_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_death_strike_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        // Apply Blood Rites effects
-                        if (_player->HasAura(DK_SPELL_BLOOD_RITES))
-                        {
-                            SetHitDamage(int32(GetHitDamage() * 1.4f));
-
-                            bool runeFrost = false;
-                            bool runeUnholy = false;
-
-                            for (uint8 i = 0; i < MAX_RUNES; ++i)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH
-                                    || _player->GetCurrentRune(i) == RUNE_BLOOD
-                                    || _player->GetBaseRune(i) == RUNE_BLOOD)
-                                    continue;
-
-                                if (runeUnholy && _player->GetCurrentRune(i) == RUNE_UNHOLY)
-                                    continue;
-
-                                if (runeFrost && _player->GetCurrentRune(i) == RUNE_FROST)
-                                    continue;
-
-                                if (_player->GetRuneCooldown(i))
-                                {
-                                    if (_player->GetCurrentRune(i) == RUNE_FROST)
-                                        runeFrost = true;
-                                    else
-                                        runeUnholy = true;
-
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dk_death_strike_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_death_strike_SpellScript();
         }
 };
 
@@ -971,7 +835,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i))
+                        if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN)
                             runesUsed++;
 
                     if (!runesUsed)
@@ -1006,13 +870,16 @@ class spell_dk_plague_leech : public SpellScriptLoader
                         int32 runesRestor = 0;
                         for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 2)
+                            if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 2)
                             {
                                 runesRestor++;
                                 _player->SetRuneCooldown(i, 0);
                                 _player->AddRunePower(i);
                                 if (_player->GetCurrentRune(i) != RUNE_DEATH)
+                                {
+                                    _player->SetConvertIn(i, RUNE_DEATH);
                                     _player->ConvertRune(i, RUNE_DEATH);
+                                }
                             }
                         }
                     }
@@ -1652,38 +1519,8 @@ class spell_dk_blood_boil : public SpellScriptLoader
                 }*/
             }
 
-            void HandleAfterCast()
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Player* plr = caster->ToPlayer())
-                    {
-                        if (caster->HasAura(DK_SPELL_REAPING, plr->GetGUID()))
-                        {
-                            bool blood = false;
-
-                            for (int i = 0; i < MAX_RUNES; i++)
-                            {
-                                if (plr->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!plr->GetRuneCooldown(i))
-                                    continue;
-
-                                if (plr->GetCurrentRune(i) == RUNE_BLOOD && !blood)
-                                {
-                                    plr->ConvertRune(i, RUNE_DEATH);
-                                    blood = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             void Register()
             {
-                AfterCast += SpellCastFn(spell_dk_blood_boil_SpellScript::HandleAfterCast);
                 OnHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleOnHit);
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dk_blood_boil_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             }
@@ -1771,54 +1608,6 @@ class spell_dk_death_grip_dummy : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dk_death_grip_dummy_SpellScript();
-        }
-};
-
-// Icy Touch - 45477
-class spell_dk_icy_touch : public SpellScriptLoader
-{
-    public:
-        spell_dk_icy_touch() : SpellScriptLoader("spell_dk_icy_touch") { }
-
-        class spell_dk_icy_touch_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_icy_touch_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_FROST)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dk_icy_touch_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_icy_touch_SpellScript();
         }
 };
 
@@ -2081,7 +1870,10 @@ class spell_dk_dancing_rune_weapon : public SpellScriptLoader
                                 continue;
 
                             if (_player->GetCurrentRune(i) == RUNE_FROST || _player->GetCurrentRune(i) == RUNE_UNHOLY)
+                            {
+                                _player->SetConvertIn(i, RUNE_DEATH);
                                 _player->ConvertRune(i, RUNE_DEATH);
+                            }
                         }
                     }
                 }
@@ -2203,7 +1995,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();
-    new spell_dk_blood_strike();
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
     new spell_dk_howling_blast();
@@ -2213,7 +2004,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_blood_charges();
     new spell_dk_blood_tap();
     new spell_dk_death_siphon();
-    new spell_dk_death_strike();
     new spell_dk_purgatory();
     new spell_dk_purgatory_absorb();
     new spell_dk_plague_leech();
@@ -2232,7 +2022,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_blood_boil();
     new spell_dk_death_grip();
     new spell_dk_death_grip_dummy();
-    new spell_dk_icy_touch();
     new spell_dk_gorefiends_grasp();
     new spell_dk_presence();
     new spell_dk_unholy_frenzy();

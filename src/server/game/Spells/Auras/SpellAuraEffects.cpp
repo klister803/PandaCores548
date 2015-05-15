@@ -6896,23 +6896,17 @@ void AuraEffect::HandleAuraConvertRune(AuraApplication const* aurApp, uint8 mode
     if (player->getClass() != CLASS_DEATH_KNIGHT)
         return;
 
-    uint32 runes = m_amount;
     // convert number of runes specified in aura amount of rune type in miscvalue to runetype in miscvalueb
     if (apply)
     {
-        for (uint32 i = 0; i < MAX_RUNES && runes; ++i)
-        {
-            if (GetMiscValue() != player->GetCurrentRune(i))
-                continue;
-            if (!player->GetRuneCooldown(i))
-            {
-                player->AddRuneBySpell(i, RuneType(GetMiscValueB()), GetId());
-                --runes;
-            }
-        }
+        player->ConvertRune(m_amount - 1, RuneType(GetMiscValueB()));
+        player->SetBlockRuneConvert(m_amount - 1, true);
     }
     else
-        player->RemoveRunesBySpell(GetId());
+    {
+        player->ConvertRune(m_amount - 1, player->GetBaseRune(m_amount - 1));
+        player->SetBlockRuneConvert(m_amount - 1, false);
+    }
 }
 
 void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -7327,12 +7321,13 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
+        {
             switch (GetId())
             {
                 // Death's Advance
                 case 96268:
                 {
-                    if (caster->ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2) && caster->ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2+1))
+                    if (caster->ToPlayer()->GetRuneCooldown(RUNE_UNHOLY * 2) && caster->ToPlayer()->GetRuneCooldown(RUNE_UNHOLY * 2 + 1))
                         GetBase()->RefreshDuration();
                     else
                         caster->RemoveAurasDueToSpell(96268);
@@ -7344,22 +7339,32 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster, SpellEf
                     trigger_spell_id = 52212;
                     break;
                 }
+                case 50034: // Blood Rites
+                case 56835: // Reaping
+                {
+                    if (Player* plr = caster->ToPlayer())
+                    {
+                        if (Aura* aura = GetBase())
+                            if (AuraEffect* eff = aura->GetEffect(m_effIndex))
+                            {
+                                if (plr->isInCombat())
+                                    eff->SetAmount(10);
+                                else
+                                {
+                                    if (GetAmount() != 0)
+                                        eff->SetAmount(0);
+                                    else
+                                        plr->RestoreAllBaseRunes();
+                                }
+                            }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
-            // Blood Rites
-            // Reaping
-            if (GetSpellInfo()->Id == 50034 || GetSpellInfo()->Id == 56835)
-            {
-                if (target->GetTypeId() != TYPEID_PLAYER)
-                    return;
-                if (target->ToPlayer()->getClass() != CLASS_DEATH_KNIGHT)
-                    return;
-
-                 // timer expired - remove death runes
-                target->ToPlayer()->RemoveRunesBySpell(GetId());
-            }
             break;
+        }
         default:
             break;
     }

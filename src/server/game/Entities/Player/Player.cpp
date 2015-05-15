@@ -755,7 +755,6 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
-    m_RunesRegenTimerCount = 0;
     m_RunesRegenUpdateTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
@@ -2823,43 +2822,52 @@ void Player::RegenerateAll()
 
         for (uint8 i = 0; i < MAX_RUNES; i += 2)
         {
-            uint8 runeToRegen = i;
-            uint32 cd = GetRuneCooldown(i);
-            uint32 secondRuneCd = GetRuneCooldown(i + 1);
-            // Regenerate second rune of the same type only after first rune is off the cooldown
-            if (secondRuneCd && (cd > secondRuneCd || !cd))
-            {
-                runeToRegen = i + 1;
-                cd = secondRuneCd;
-            }
+            int8 cdRune = -1;
+            int8 fulCdRune = -1;
+            int32 cd1 = GetRuneCooldown(i);
+            int32 cd2 = GetRuneCooldown(i + 1);
 
-            if (cd)
-                SetRuneCooldown(runeToRegen, (cd > m_regenTimer) ? cd - m_regenTimer : 0);
-        }
-
-        if (!isInCombat())
-        {
-            if(m_RunesRegenTimerCount <= m_regenTimer && m_RunesRegenTimerCount != 0)
+            if (cd1 > cd2)
             {
-                m_RunesRegenTimerCount = 0;
-                for (uint32 i = 0; i < MAX_RUNES; ++i)
+                if (cd2)
                 {
-                    bool convertRune = true;
-                    RuneType rune = GetCurrentRune(i);
-                    if (rune == RUNE_DEATH)
-                    {
-                        if (uint32 _spell = GetRuneConvertSpell(i))
-                            convertRune = _spell != 54637;
-                        if(convertRune)
-                            RestoreBaseRune(i);
-                    }
+                    cdRune = i + 1;
+                    fulCdRune = i;
                 }
+                else
+                    cdRune = i;
             }
-            else if(m_RunesRegenTimerCount != 0)
-                m_RunesRegenTimerCount -= m_regenTimer;
+            else if (cd1 < cd2)
+            {
+                if (cd1)
+                {
+                    cdRune = i;
+                    fulCdRune = i + 1;
+                }
+                else
+                    cdRune = i + 1;
+            }
+            else if (cd1 && cd1 == cd2)
+            {
+                cdRune = i;
+                fulCdRune = i + 1;
+            }
+
+            if (cdRune >= 0)
+            {
+                float coef = GetRuneCooldownCoef(GetCurrentRune(i));
+                int32 setCool = GetRuneCooldown(cdRune) - (m_regenTimer * coef);
+
+                if (setCool < 0)
+                {
+                    SetRuneCooldown(cdRune, 0);
+                    if (fulCdRune >= 0)
+                        SetRuneCooldown(fulCdRune, GetRuneCooldown(fulCdRune) + setCool);
+                }
+                else
+                    SetRuneCooldown(cdRune, setCool);
+            }
         }
-        else
-            m_RunesRegenTimerCount = 30000;
     }
 
     if (m_focusRegenTimerCount >= 200 && getClass() == CLASS_HUNTER)
@@ -25773,7 +25781,11 @@ void Player::SendInitialPacketsAfterAddToMap()
     // send timers if already start challenge for example
     SendInitWorldTimers();
 
-    SendDeathRuneUpdate();
+    if (getClass() == CLASS_DEATH_KNIGHT)
+    {
+        RestoreAllBaseRunes();
+        SetPower(POWER_RUNIC_POWER, 0);
+    }
     GetSession()->SendStablePet(0);
 
     // send step data when entering scenarios
@@ -27660,28 +27672,16 @@ void Player::UpdateCharmedAI()
     }
 }
 
-uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
-{
-    return m_runes.runes[runeType].BaseCooldown;
-}
-
-void Player::RemoveRunesBySpell(uint32 spell_id)
+void Player::RestoreAllBaseRunes()
 {
     for (uint8 i = 0; i < MAX_RUNES; ++i)
-    {
-        if (m_runes.runes[i].spell_id == spell_id)
-        {
-            ConvertRune(i, GetBaseRune(i));
-            SetRuneConvertSpell(i, 0);
-        }
-    }
+        RestoreBaseRune(i);
 }
 
 void Player::RestoreBaseRune(uint8 index)
 {
-    uint32 spell_id = m_runes.runes[index].spell_id;
     ConvertRune(index, GetBaseRune(index));
-    SetRuneConvertSpell(index, 0);
+    SetConvertIn(index, GetBaseRune(index));
 }
 
 void Player::ConvertRune(uint8 index, RuneType newType)
@@ -27706,32 +27706,18 @@ void Player::ResyncRunes(uint8 count)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendDeathRuneUpdate()
+void Player::SendDeathRuneUpdate(uint8 index)
 {
-    if (getClass() != CLASS_DEATH_KNIGHT)
-        return;
+    RuneType rune = GetBaseRune(index);
+    WorldPacket data(SMSG_CONVERT_RUNE, 2);
+    data << uint8(rune);
+    data << uint8(index);
+    GetSession()->SendPacket(&data);
 
-    for (uint8 i = 0; i < MAX_RUNES; ++i)
-    {
-        RuneType rune = GetBaseRune(i);
-        WorldPacket data(SMSG_CONVERT_RUNE, 2);
-        data << uint8(rune);
-        data << uint8(i);
-        GetSession()->SendPacket(&data);
-    }
-
-    for (uint8 i = 0; i < MAX_RUNES; ++i)
-    {
-        if (m_runes.runes[i].CurrentRune != RUNE_DEATH)
-            continue;
-
-        WorldPacket data(SMSG_CONVERT_RUNE, 2);
-        data << uint8(RUNE_DEATH);
-        data << uint8(i);
-        GetSession()->SendPacket(&data);
-    }
-
-    SetPower(POWER_RUNIC_POWER, 0);
+    WorldPacket data1(SMSG_CONVERT_RUNE, 2);
+    data1 << uint8(RUNE_DEATH);
+    data1 << uint8(index);
+    GetSession()->SendPacket(&data1);
 }
 
 void Player::AddRunePower(uint8 index)
@@ -27763,9 +27749,10 @@ void Player::InitRunes()
         SetBaseRune(i, runeSlotTypes[i]);                              // init base types
         SetCurrentRune(i, runeSlotTypes[i]);                           // init current types
         SetRuneCooldown(i, 0);                                         // reset cooldowns
-        SetRuneConvertSpell(i, 0);
         m_runes.SetRuneState(i);
         SetDeathRuneUsed(i, false);
+        SetConvertIn(i, runeSlotTypes[i]);
+        SetBlockRuneConvert(i, false);
     }
 
     for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)

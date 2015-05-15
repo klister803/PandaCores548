@@ -2351,19 +2351,16 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             }
             case SPELLFAMILY_DEATHKNIGHT:
             {
-                // Reaping
-                // Blood Rites
-                if (GetSpellInfo()->Id == 56835 || GetSpellInfo()->Id == 54637)
+                switch (GetId())
                 {
-                    if (!GetEffect(0) || GetEffect(0)->GetAuraType() != SPELL_AURA_PERIODIC_DUMMY)
+                    case 56835: // Reaping
+                    case 50034: // Blood Rites
+                    {
+                        if (Player* plr = caster->ToPlayer())
+                            plr->RestoreAllBaseRunes();
+                    }
+                    default:
                         break;
-                    if (target->GetTypeId() != TYPEID_PLAYER)
-                        break;
-                    if (target->ToPlayer()->getClass() != CLASS_DEATH_KNIGHT)
-                        break;
-
-                     // aura removed - remove death runes
-                    target->ToPlayer()->RemoveRunesBySpell(GetId());
                 }
                 break;
             }

@@ -3977,12 +3977,12 @@ void Spell::cast(bool skipCheck)
 
     LinkedSpell(m_caster, m_targets.GetUnitTarget());
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (Player* plr = m_caster->ToPlayer())
     { 
-        m_caster->ToPlayer()->SetSpellModTakingSpell(this, false);
+        plr->SetSpellModTakingSpell(this, false);
         //Clear spell cooldowns after every spell is cast if .cheat cooldown is enabled.
-        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN))
-            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+        if (plr->GetCommandStatus(CHEAT_COOLDOWN))
+            plr->RemoveSpellCooldown(m_spellInfo->Id, true);
     }
 
     SetExecutedCurrently(false);
@@ -4515,6 +4515,25 @@ void Spell::finish(bool ok)
         default:
             break;
     }
+
+    if (m_caster->getClass() == CLASS_DEATH_KNIGHT && m_spellInfo->RuneCostID)
+        if (Player* plr = m_caster->ToPlayer())
+        {
+            for (uint8 i = 0; i < MAX_RUNES; i++)
+            {
+                if (!plr->IsBlockedRuneConvert(i) && plr->IsLastRuneUsed(i))
+                {
+                    if (plr->GetCurrentRune(i) != plr->GetConvertIn(i))
+                    {
+                        plr->ConvertRune(i, plr->GetConvertIn(i));
+                    }
+                    else if (plr->GetCurrentRune(i) == RUNE_DEATH)
+                    {
+                        plr->SendDeathRuneUpdate(i);
+                    }
+                }
+            }
+        }
 }
 
 void Spell::SendCastResult(SpellCastResult result)
@@ -4947,7 +4966,7 @@ void Spell::SendSpellStart()
     for (int i = 0; i < runeCooldownCount; ++i)
     {
         Player* player = m_caster->ToPlayer();
-        float baseCd = float(player->GetRuneBaseCooldown(i));
+        float baseCd = float(RUNE_BASE_COOLDOWN);
         data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
     }
 
@@ -5413,7 +5432,7 @@ void Spell::SendSpellGo()
     for (int i = 0; i < runeCooldownCount; ++i)
     {
         Player* player = m_caster->ToPlayer();
-        float baseCd = float(player->GetRuneBaseCooldown(i));
+        float baseCd = float(RUNE_BASE_COOLDOWN);
         data << uint8((baseCd - float(player->GetRuneCooldown(i))) / baseCd * 255); // rune cooldown passed
     }
     if (hasRuneState)
@@ -6062,60 +6081,79 @@ void Spell::TakeRunePower(bool didHit)
         }
     }
 
-    for (uint32 i = 0; i < MAX_RUNES; ++i)
+    bool canUse[MAX_RUNES];
+    bool isDeathRunes[MAX_RUNES];
+
+    for (uint8 i = 0; i < MAX_RUNES; ++i)
     {
+        canUse[i] = false;
+        isDeathRunes[i] = false;
+        player->SetLastRuneUsed(i, false);
         RuneType rune = player->GetCurrentRune(i);
-        if (player->GetRuneCooldown(i) || !runeCost[rune])
+        RuneType baseRune = player->GetBaseRune(i);
+
+        isDeathRunes[i] = rune == RUNE_DEATH ? true : false;
+
+        if (player->GetRuneCooldown(i) || !runeCost[baseRune])
+        {
+            canUse[i] = false;
             continue;
-
-        uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
-        player->SetRuneCooldown(i, cooldown);
-        player->SetDeathRuneUsed(i, false);
-        runeCost[rune]--;
-        if (rune == RUNE_DEATH)
+        }
+        else
         {
-            bool takePower = didHit;
-            if (uint32 spell = player->GetRuneConvertSpell(i))
-                takePower = (spell != 54637 && rune != RUNE_BLOOD);
-
-            // keep Death Rune type if missed or player has Blood of the North
-            if (takePower)
+            if (!isDeathRunes[i])
             {
-                player->RestoreBaseRune(i);
-                player->SetDeathRuneUsed(i, true);
+                runeCost[baseRune] = 0;
+                player->SetLastRuneUsed(i, true);
             }
+
+            canUse[i] = true;
         }
     }
 
-    runeCost[RUNE_DEATH] += runeCost[RUNE_BLOOD] + runeCost[RUNE_UNHOLY] + runeCost[RUNE_FROST];
+    uint8 _runesCost = 0;
 
-    if (runeCost[RUNE_DEATH] > 0)
+    for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+        _runesCost += runeCost[i];
+
+    if (_runesCost)
     {
-        for (uint32 i = 0; i < MAX_RUNES; ++i)
+        for (uint8 i = 0; i < MAX_RUNES; ++i)
         {
-            RuneType rune = player->GetCurrentRune(i);
-            if (!player->GetRuneCooldown(i) && rune == RUNE_DEATH)
+            RuneType baseRune = player->GetBaseRune(i);
+
+            if (canUse[i] && isDeathRunes[i] && runeCost[baseRune])
             {
-                uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? player->GetRuneBaseCooldown(i) : uint32(RUNE_MISS_COOLDOWN);
-                player->SetRuneCooldown(i, cooldown);
-                runeCost[rune]--;
-
-                bool takePower = didHit;
-                if (uint32 spell = player->GetRuneConvertSpell(i))
-                    takePower = (spell != 54637 && rune != RUNE_BLOOD);
-
-                // keep Death Rune type if missed or player has Blood of the North
-                if (takePower)
-                {
-                    player->RestoreBaseRune(i);
-                    player->SetDeathRuneUsed(i, true);
-                }
-
-                if (runeCost[RUNE_DEATH] == 0)
-                    break;
+                runeCost[baseRune] = 0;
+                player->SetLastRuneUsed(i, true);
+                isDeathRunes[i] = false;
             }
         }
+        _runesCost = 0;
+
+        for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+            _runesCost += runeCost[i];
+
+        if (_runesCost)
+            for (uint8 i = 0; i < MAX_RUNES; ++i)
+            {
+                if (isDeathRunes[i] && !player->GetRuneCooldown(i) && _runesCost)
+                {
+                    player->SetLastRuneUsed(i, true);
+                    isDeathRunes[i] = false;
+                    _runesCost--;
+                }
+            }
     }
+
+    for (uint8 i = 0; i < MAX_RUNES; ++i)
+        if (player->IsLastRuneUsed(i))
+        {
+            uint32 cooldown = ((m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE) > 0 || didHit) ? RUNE_BASE_COOLDOWN : uint32(RUNE_MISS_COOLDOWN);
+            player->SetRuneCooldown(i, cooldown);
+            if (!player->IsBlockedRuneConvert(i))
+                player->SetConvertIn(i, player->GetBaseRune(i));
+        }
 
     // you can gain some runic power when use runes
     if (didHit)

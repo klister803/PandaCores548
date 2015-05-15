@@ -9442,78 +9442,26 @@ bool Unit::HandleAuraProc(Unit* victim, DamageInfo* /*dmgInfoProc*/, Aura* trigg
             // Blood Rites
             if (dummySpell->Id == 56835 || dummySpell->Id == 50034)
             {
-                *handled = true;
-                // Convert recently used Blood Rune to Death Rune
-                if (Player* player = ToPlayer())
+                if (Player* plr = ToPlayer())
                 {
-                    if (player->getClass() != CLASS_DEATH_KNIGHT)
+                    SpellRuneCostEntry const* runeCostData = sSpellRuneCostStore.LookupEntry(procSpell->RuneCostID);
+                    if (!runeCostData || (runeCostData->NoRuneCost()))
                         return false;
 
-                    if (AuraEffect* aurEff = triggeredByAura->GetEffect(EFFECT_0))
-                        aurEff->ResetPeriodic(true);
+                    uint8 runeCost[NUM_RUNE_TYPES];
+                    for (uint8 i = 0; i < NUM_RUNE_TYPES; ++i)
+                        runeCost[i] = runeCostData->RuneCost[i];
 
-                    uint32 runesLeft;
-
-                    switch (procSpell->Id)
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
                     {
-                        case 45902: // Blood Strike
-                        case 50842: // Pestilence
+                        RuneType baseRune = plr->GetBaseRune(i);
+                        if (plr->IsLastRuneUsed(i))
                         {
-                            runesLeft = 1;
-                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
+                            if (runeCost[baseRune])
                             {
-                                if (player->GetCurrentRune(i) == RUNE_DEATH
-                                    || player->GetBaseRune(i) != RUNE_BLOOD
-                                    || player->IsDeathRuneUsed(i))
-                                    continue;
-
-                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
-                                    continue;
-
-                                --runesLeft;
-                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
+                                plr->SetConvertIn(i, RUNE_DEATH);
+                                plr->ConvertRune(i, RUNE_DEATH);
                             }
-
-                            break;
-                        }  
-                        case 49020: // Obliterate
-                        case 49998: // Death Strike
-                        {
-                            runesLeft = 2;
-                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
-                            {
-                                if (player->GetCurrentRune(i) == RUNE_DEATH
-                                    || player->GetBaseRune(i) == RUNE_BLOOD
-                                    || player->IsDeathRuneUsed(i))
-                                    continue;
-
-                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
-                                    continue;
-
-                                --runesLeft;
-                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
-                            }
-
-                            break;
-                        }
-                        case 85948: // Festering Strike
-                        {
-                            runesLeft = 2;
-                            for (uint8 i=0; i < MAX_RUNES && runesLeft; ++i)
-                            {
-                                if (player->GetCurrentRune(i) == RUNE_DEATH
-                                    || player->GetBaseRune(i) == RUNE_UNHOLY
-                                    || player->IsDeathRuneUsed(i))
-                                    continue;
-
-                                if (player->GetRuneCooldown(i) != player->GetRuneBaseCooldown(i))
-                                    continue;
-
-                                --runesLeft;
-                                player->AddRuneBySpell(i, RUNE_DEATH, dummySpell->Id);
-                            }
-
-                            break;
                         }
                     }
                 }
@@ -19350,7 +19298,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                         int32 runesRestor = 0;
                         for (int i = 0; i < MAX_RUNES ; i++)
                         {
-                            if (_player->GetRuneCooldown(i) == _player->GetRuneBaseCooldown(i) && runesRestor < 1)
+                            if (_player->GetRuneCooldown(i) == RUNE_BASE_COOLDOWN && runesRestor < 1)
                             {
                                 runesRestor++;
                                 _player->SetRuneCooldown(i, 0);
