@@ -24794,6 +24794,9 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     double catrecTime;
     double recTime;
 
+    if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY))
+        rec *= GetFloatValue(UNIT_MOD_CAST_HASTE);
+
     // overwrite time for selected category
     if (infinityCooldown)
     {
@@ -24859,9 +24862,6 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         ltm->tm_sec = 0;
         recTime = (double)mktime(ltm);
     }
-
-    if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY))
-        recTime *= GetFloatValue(UNIT_MOD_CAST_HASTE);
 
     // self spell cooldown
     if (G3D::fuzzyGt(recTime, 0.0))
