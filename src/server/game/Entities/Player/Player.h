@@ -129,7 +129,7 @@ struct SpellModifier
     SpellModOp   op   : 8;
     SpellModType type : 8;
     int16 charges     : 16;
-    int32 value;
+    float value;
     flag128 mask;
     uint32 spellId;
     Aura* const ownerAura;
