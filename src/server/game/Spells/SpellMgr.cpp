@@ -5100,7 +5100,23 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
-
+                //Tok Bloodthirsty
+                case 143428: //Tail lash
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
+                    break;  
+                case 143430: //Clump Check
+                    spellInfo->TargetAuraSpell = 0;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(22); //200yards
+                    spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                    spellInfo->Effects[0].TargetA = 22;
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
+                case 143445: //Fixate
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

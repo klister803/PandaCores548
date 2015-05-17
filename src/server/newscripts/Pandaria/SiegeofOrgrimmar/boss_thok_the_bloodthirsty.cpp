@@ -21,40 +21,184 @@
 
 enum eSpells
 {
+    //Phase 1
+    SPELL_FEARSOME_ROAR      = 143426, 
+    SPELL_DEAFENING_SCREECH  = 143343,
+    SPELL_TAIL_LASH          = 143428, 
+    SPELL_SHOCK_BLAST        = 143707,
+    SPELL_BLOODIED           = 143452,
+    SPELL_POWER_REGEN        = 143345,
+    SPELL_ACCELERATION       = 143411,
+    //
+    SPELL_ACID_BREATH        = 143780,
+    SPELL_CORROSIVE_BLOOD    = 143791, //3.5
+    //
+    SPELL_FREEZING_BREATH    = 143773,
+    SPELL_ICY_BLOOD          = 143800,
+    //
+    SPELL_SCORCHING_BREATH   = 143767,
+    SPELL_BURNING_BLOOD      = 143783,
+    SPELL_BURNING_BLOOD_ADMG = 143784,
+
+    //Phase 2
+    SPELL_BLOOD_FRENZY       = 143440,
+    SPELL_BLOOD_FRENZY_TE    = 143442,
+    SPELL_BLOOD_FRENZY_KB    = 144067, 
+    SPELL_FIXATE_PL          = 143445,
+    SPELL_FIXATE_IM          = 146540,
+
+    SPELL_ENRAGE_KJ          = 145974,
+    SPELL_UNLOCKING          = 146589, 
 };
+
+enum Events
+{
+    //Default events
+    EVENT_FEARSOME_ROAR      = 1,
+    EVENT_TAIL_LASH          = 2,
+    EVENT_SHOCK_BLAST        = 3,
+    //Extra event
+    EVENT_ACID_BREATH        = 4,
+    EVENT_FREEZING_BREATH    = 5,
+    EVENT_SCORCHING_BREATH   = 6,
+
+    //Summon events
+    EVENT_ENRAGE_KJ          = 7,
+    EVENT_MOVE_TO_CENTER     = 8,
+    EVENT_MOVE_TO_THOK       = 9,
+};
+
+enum Action
+{
+    ACTION_PHASE_TWO         = 1,
+    ACTION_PHASE_ONE_ACID    = 2, //EVENT_ACID_BREATH
+    ACTION_PHASE_ONE_FROST   = 3, //EVENT_FREEZING_BREATH
+    ACTION_PHASE_ONE_FIRE    = 4, //EVENT_SCORCHING_BREATH
+    ACTION_FIXATE            = 5,
+
+    ACTION_FREEDOM           = 6,
+};
+
+uint32 prisonersentry[3] =
+{
+    NPC_AKOLIK, 
+    NPC_MONTAK, 
+    NPC_WATERSPEAKER_GORAI, 
+};
+
+Position fpos[3] =
+{
+    {1293.5050f, -5127.1513f, -287.6911f, 2.9432f},
+    {1116.9144f, -5096.3139f, -287.6315f, 6.1209f},
+    {1223.3216f, -5026.2880f, -287.7276f, 4.5030f},
+};
+
+Position kjspawnpos = {1173.41f, -5130.74f, -289.9429f, 0.6028f};
+Position cpos = {1208.61f, -5106.27f, -289.939f, 0.526631f};
 
 class boss_thok_the_bloodthirsty : public CreatureScript
 {
     public:
         boss_thok_the_bloodthirsty() : CreatureScript("boss_thok_the_bloodthirsty") {}
 
-        struct boss_thok_the_bloodthirstyAI : public ScriptedAI
+        struct boss_thok_the_bloodthirstyAI : public BossAI
         {
-            boss_thok_the_bloodthirstyAI(Creature* creature) : ScriptedAI(creature)
+            boss_thok_the_bloodthirstyAI(Creature* creature) : BossAI(creature, DATA_THOK)
             {
                 instance = creature->GetInstanceScript();
             }
-
+            
             InstanceScript* instance;
+            std::list<Player*> plist;
+            uint32 meleecheck;
 
             void Reset()
             {
+                _Reset();
+                plist.clear();
+                me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
+                me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
+                me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
+                me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
+                me->setPowerType(POWER_ENERGY);
+                me->SetMaxPower(POWER_ENERGY, 100);
+                me->SetPower(POWER_ENERGY, 0);
+                meleecheck = 0;
+                if (instance)
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
             }
 
             void EnterCombat(Unit* who)
             {
-            }
-
-            void DamageTaken(Unit* attacker, uint32 &damage)
-            {
+                _EnterCombat();
+                DoCast(me, SPELL_POWER_REGEN, true);
+                events.ScheduleEvent(EVENT_SHOCK_BLAST, 1000);
+                events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
+                events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
             }
 
             void DoAction(int32 const action)
             {
+                switch (action)
+                {
+                case ACTION_PHASE_ONE_ACID: 
+                case ACTION_PHASE_ONE_FROST: 
+                case ACTION_PHASE_ONE_FIRE:  
+                    meleecheck = 0;
+                    me->StopMoving();
+                    me->getThreatManager().resetAllAggro();
+                    me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
+                    me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
+                    me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
+                    if (instance)
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    DoCast(me, SPELL_POWER_REGEN, true);
+                    DoZoneInCombat(me, 200.0f);
+                    events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
+                    switch (action)
+                    {
+                    case ACTION_PHASE_ONE_ACID: 
+                        events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
+                        break;
+                    case ACTION_PHASE_ONE_FROST: 
+                        events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
+                        break;
+                    case ACTION_PHASE_ONE_FIRE:
+                        events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
+                        break;
+                    }
+                    break;
+                case ACTION_PHASE_TWO:
+                    events.Reset();
+                    events.ScheduleEvent(EVENT_SHOCK_BLAST, urand(2000, 3000));
+                    if (instance)
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->AttackStop();
+                    me->getThreatManager().resetAllAggro();
+                    me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                    me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
+                    me->SetPower(POWER_ENERGY, 0);
+                    DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
+                    DoCast(me, SPELL_BLOOD_FRENZY, true);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 100.0f, true))
+                        DoCast(target, SPELL_FIXATE_PL);
+                    if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
+                        kj->AI()->DoZoneInCombat(kj, 300.0f);
+                    meleecheck = 4000;
+                    break;
+                case ACTION_FIXATE:
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 100.0f, true))
+                        DoCast(target, SPELL_FIXATE_PL);
+                    break;
+                }
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                _JustDied();
             }
 
             void UpdateAI(uint32 diff)
@@ -62,7 +206,63 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                DoMeleeAttackIfReady();
+                if (meleecheck)
+                {
+                    if (meleecheck <= diff)
+                    {
+                        plist.clear();
+                        GetPlayerListInGrid(plist, me, 5.0f);
+                        if (!plist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
+                                if ((*itr)->isInFront(me))
+                                    (*itr)->Kill(*itr, true);
+                        }
+                        meleecheck = 1000;
+                    }
+                    else
+                        meleecheck -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    //Default events
+                    case EVENT_SHOCK_BLAST:
+                        DoCastAOE(EVENT_SHOCK_BLAST, true);
+                        events.ScheduleEvent(EVENT_SHOCK_BLAST, urand(3000, 4000));
+                        break;
+                    case EVENT_TAIL_LASH:
+                        DoCast(me, SPELL_TAIL_LASH, true);
+                        events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
+                        break;
+                    case EVENT_FEARSOME_ROAR:
+                        DoCast(me, SPELL_FEARSOME_ROAR, true);
+                        events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
+                        break;
+                    //Extra events
+                    case EVENT_ACID_BREATH:
+                        DoCast(me, SPELL_ACID_BREATH, true);
+                        events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
+                        break;
+                    case EVENT_FREEZING_BREATH:
+                        DoCast(me, SPELL_FREEZING_BREATH, true);
+                        events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
+                        break;
+                    case EVENT_SCORCHING_BREATH:
+                        DoCast(me, SPELL_SCORCHING_BREATH, true);
+                        events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
+                        break;
+                    }
+                }
+                if (!meleecheck)
+                    DoMeleeAttackIfReady();
             }
         };
 
@@ -72,7 +272,357 @@ class boss_thok_the_bloodthirsty : public CreatureScript
         }
 };
 
+//71658
+class npc_korkron_jailer : public CreatureScript
+{
+public:
+    npc_korkron_jailer() : CreatureScript("npc_korkron_jailer") {}
+
+    struct npc_korkron_jailerAI : public ScriptedAI
+    {
+        npc_korkron_jailerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            done = false;
+            click = true;
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        bool done, click;
+
+        void Reset(){}
+        
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_ENRAGE_KJ, 1000);
+        }
+
+        void OnSpellClick(Unit* clicker)
+        {
+            if (click && done)
+            {
+                click = false;
+                clicker->CastSpell(clicker, SPELL_UNLOCKING);
+                me->DespawnOrUnsummon(1000);
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (damage >= me->GetHealth() && !done)
+            {
+                damage = 0;
+                done = true;
+                me->StopMoving();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->AttackStop();
+                me->SetReactState(REACT_PASSIVE);
+                me->SetStandState(UNIT_STAND_STATE_DEAD);
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_ENRAGE_KJ)
+                {
+                    DoCast(me, SPELL_ENRAGE_KJ, true);
+                    events.ScheduleEvent(EVENT_ENRAGE_KJ, urand(15000, 20000));
+                }
+            }
+            if (!done)
+                DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_korkron_jailerAI(creature);
+    }
+};
+
+//71742, 71763, 71749
+class npc_generic_prisoner : public CreatureScript
+{
+public:
+    npc_generic_prisoner() : CreatureScript("npc_generic_prisoner") {}
+
+    struct npc_generic_prisonerAI : public ScriptedAI
+    {
+        npc_generic_prisonerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset(){}
+
+        void DoAction(int32 const action)
+        {
+            if (action == ACTION_FREEDOM)
+                events.ScheduleEvent(EVENT_MOVE_TO_CENTER, 2000);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE && instance)
+            {
+                switch (pointId)
+                {
+                case 0:
+                    events.ScheduleEvent(EVENT_MOVE_TO_THOK, 500);
+                    break;
+                case 1:
+                    if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
+                    {
+                        if (thok->isAlive())
+                        {
+                            me->Kill(me, true);
+                            switch (me->GetEntry())
+                            {
+                            case NPC_AKOLIK:
+                                thok->AI()->DoAction(ACTION_PHASE_ONE_ACID);
+                                break;
+                            case NPC_MONTAK:
+                                thok->AI()->DoAction(ACTION_PHASE_ONE_FIRE);
+                                break;
+                            case NPC_WATERSPEAKER_GORAI:
+                                thok->AI()->DoAction(ACTION_PHASE_ONE_FROST);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }               
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_MOVE_TO_CENTER:
+                    me->GetMotionMaster()->MoveCharge(cpos.GetPositionX(), cpos.GetPositionY(), cpos.GetPositionZ(), 20.0f, 0);
+                    break;
+                case EVENT_MOVE_TO_THOK:
+                    if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
+                        if (thok->isAlive())
+                            me->GetMotionMaster()->MoveCharge(thok->GetPositionX(), thok->GetPositionY(), thok->GetPositionZ(), 20.0f, 1);
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_generic_prisonerAI(creature);
+    }
+};
+
+
+//143345
+class spell_power_regen : public SpellScriptLoader
+{
+public:
+    spell_power_regen() : SpellScriptLoader("spell_power_regen") { }
+
+    class spell_power_regen_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_power_regen_AuraScript);
+
+        void OnPeriodic(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->GetPower(POWER_ENERGY) == 100)
+                    if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
+                        GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_power_regen_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_power_regen_AuraScript();
+    }
+};
+
+//143430
+class spell_clump_check : public SpellScriptLoader
+{
+public:
+    spell_clump_check() : SpellScriptLoader("spell_clump_check") { }
+
+    class spell_clump_check_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_clump_check_SpellScript);
+
+        void HandleOnHit()
+        {
+            if (GetHitUnit() && GetCaster())
+            {
+                if (!GetHitUnit()->HasAura(SPELL_BLOODIED))
+                {
+                    if (GetHitUnit()->HealthBelowPct(50))
+                        GetCaster()->AddAura(SPELL_BLOODIED, GetHitUnit());
+                }
+                else
+                {
+                    //Test Only
+                    if (GetCaster()->HasAura(SPELL_POWER_REGEN))
+                    {
+                        GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
+                    }
+                   /* std::list<Player*>pllist;
+                    pllist.clear();
+                    GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
+                    if (!pllist.empty())
+                    {
+                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
+                        if (pllist.size() >= count)
+                        {
+                            if (GetCaster()->HasAura(SPELL_POWER_REGEN))
+                            {
+                                GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                                GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
+                            }
+                        }
+                    }*/
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_clump_check_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_clump_check_SpellScript();
+    }
+};
+
+//143445
+class spell_fixate : public SpellScriptLoader
+{
+public:
+    spell_fixate() : SpellScriptLoader("spell_fixate") { }
+
+    class spell_fixate_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fixate_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetTarget() && GetCaster() && GetCaster()->ToCreature())
+            {
+                GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
+                GetCaster()->AddThreat(GetTarget(), 50000000.0f);
+                GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
+                GetCaster()->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+                GetCaster()->Attack(GetTarget(), true);
+            }
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetCaster())
+            {
+                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
+                {
+                    GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
+                    GetCaster()->StopMoving();
+                    GetCaster()->getThreatManager().resetAllAggro();
+                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_fixate_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_POSSESS_PET, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_fixate_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_POSSESS_PET, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fixate_AuraScript();
+    }
+};
+
+//146589
+class spell_unlocking : public SpellScriptLoader
+{
+public:
+    spell_unlocking() : SpellScriptLoader("spell_unlocking") { }
+
+    class spell_unlocking_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_unlocking_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
+            {
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (Creature* p = GetTarget()->FindNearestCreature(prisonersentry[n], 40.0f, true))
+                    {
+                        p->NearTeleportTo(fpos[n].GetPositionX(), fpos[n].GetPositionY(), fpos[n].GetPositionZ(), fpos[n].GetOrientation());
+                        p->AI()->DoAction(ACTION_FREEDOM);
+                        break;
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_unlocking_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_unlocking_AuraScript();
+    }
+};
+
+
 void AddSC_boss_thok_the_bloodthirsty()
 {
     new boss_thok_the_bloodthirsty();
+    new npc_korkron_jailer();
+    new npc_generic_prisoner();
+    new spell_power_regen();
+    new spell_clump_check();
+    new spell_fixate();
+    new spell_unlocking();
 }

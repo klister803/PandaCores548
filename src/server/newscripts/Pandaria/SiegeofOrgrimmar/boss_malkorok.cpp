@@ -421,6 +421,11 @@ public:
             }
         }
 
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            damage = 0;
+        }
+
         void IsSummonedBy(Unit* summoner)
         {
             if (summoner->ToCreature())

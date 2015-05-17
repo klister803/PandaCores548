@@ -214,7 +214,22 @@ enum eCreatures
     //
 
     NPC_MALKOROK                    = 71454,
+    //Spoils of Pandaria
+    //Big mogu
+    NPC_JUN_WEI                     = 73723,
+    NPC_ZU_YIN                      = 73724,
+    NPC_XIANG_LIN                   = 73725,
+    NPC_KUN_DA                      = 71408,
+    //
+
     NPC_THOK                        = 71529,
+    //Jailer
+    NPC_KORKRON_JAILER              = 71658,
+    //Prisoners
+    NPC_AKOLIK                      = 71742, //GO_SAUROK_JAIL
+    NPC_MONTAK                      = 71763, //GO_YAUNGOLIAN_JAIL
+    NPC_WATERSPEAKER_GORAI          = 71749, //GO_JINUI_JAIL
+    
     NPC_BLACKFUSE                   = 71504,
 
     //Paragons of the Klaxxi
@@ -315,6 +330,26 @@ enum eGameObjects
     GO_NAZGRIM_EX_DOOR              = 221793,
     GO_MALKOROK_FENCH               = 221784,
     GO_MALKOROK_FENCH_2             = 221785,
+
+    //Spoils of Pandaria
+    GO_ENT_GATE                     = 223056,
+    GO_ENT_DOOR_LEFT                = 221800,
+    GO_ENT_DOOR_RIGHT               = 221801,
+    GO_EX_DOOR_RIGHT                = 221798,
+    GO_EX_DOOR_LEFT                 = 221799,
+    GO_EX_DOOR                      = 223058,
+
+    //Thok
+    GO_THOK_ENT_DOOR               = 223805,
+    //Jails
+    GO_JINUI_JAIL                  = 222010, //right
+    GO_JINUI_JAIL2                 = 222011, 
+
+    GO_SAUROK_JAIL                 = 222046, //left
+    GO_SAUROK_JAIL2                = 222047,
+
+    GO_YAUNGOLIAN_JAIL             = 223005,
+    GO_YAUNGOLIAN_JAIL2            = 223006,
 };
 
 enum GalakrasEvent

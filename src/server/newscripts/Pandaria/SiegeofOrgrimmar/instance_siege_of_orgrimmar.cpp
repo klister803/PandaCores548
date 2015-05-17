@@ -63,6 +63,8 @@ public:
         uint64 nazgrimdoorGuid;
         uint64 nazgrimexdoorGuid;
         std::vector<uint64> malkorokfenchGuids;
+        uint64 thokentdoorGuid;
+        std::vector<uint64> jaillistGuids;
         
         //Creature
         std::set<uint64> shaSlgGUID;
@@ -82,6 +84,8 @@ public:
         uint64 darkfangGuid;
         uint64 gnazgrimGuid;
         uint64 amGuid;
+        uint64 thokGuid;
+        std::vector<uint64> prisonerGuids;
 
         EventMap Events;
 
@@ -119,6 +123,8 @@ public:
             nazgrimdoorGuid         = 0;
             nazgrimexdoorGuid       = 0;
             malkorokfenchGuids.clear();
+            thokentdoorGuid         = 0;
+            jaillistGuids.clear();
            
             //Creature
             LorewalkerChoGUIDtmp    = 0;
@@ -136,6 +142,8 @@ public:
             darkfangGuid            = 0;
             gnazgrimGuid            = 0;
             amGuid                  = 0;
+            thokGuid                = 0;
+            prisonerGuids.clear();
 
             onInitEnterState = false;
             STowerFull = false;
@@ -298,7 +306,6 @@ public:
                 case NPC_TOWER_SOUTH:
                 case NPC_TOWER_NORTH:
                 case NPC_ANTIAIR_TURRET:
-                case NPC_THOK:
                 case NPC_BLACKFUSE:
                 case NPC_KILRUK:
                 case NPC_XARIL:
@@ -400,6 +407,16 @@ public:
                 case NPC_ANCIENT_MIASMA:
                     amGuid = creature->GetGUID();
                     break;
+                //Thok
+                case NPC_THOK:
+                    thokGuid = creature->GetGUID();
+                    break;
+                //Prisoners
+                case NPC_AKOLIK:
+                case NPC_MONTAK:
+                case NPC_WATERSPEAKER_GORAI:
+                    prisonerGuids.push_back(creature->GetGUID());
+                    break;
             }
         }
 
@@ -495,6 +512,19 @@ public:
                 case GO_MALKOROK_FENCH:
                 case GO_MALKOROK_FENCH_2:
                     malkorokfenchGuids.push_back(go->GetGUID());
+                    break;
+                //Thok
+                case GO_THOK_ENT_DOOR:
+                    thokentdoorGuid = go->GetGUID();
+                    break;
+                //jails
+                case GO_JINUI_JAIL:
+                case GO_JINUI_JAIL2:
+                case GO_SAUROK_JAIL:
+                case GO_SAUROK_JAIL2:
+                case GO_YAUNGOLIAN_JAIL:
+                case GO_YAUNGOLIAN_JAIL2:
+                    jaillistGuids.push_back(go->GetGUID());
                     break;
             }
         }
@@ -697,6 +727,41 @@ public:
                     case DONE:
                         for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
                             HandleGameObject(*itr, true);
+                        break;
+                    }
+                    break;
+                }
+                case DATA_THOK:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator Itr = prisonerGuids.begin(); Itr != prisonerGuids.end(); Itr++)
+                        {
+                            if (Creature* p = instance->GetCreature(*Itr))
+                            {
+                                if (!p->isAlive())
+                                    p->Respawn();
+                                p->NearTeleportTo(p->GetHomePosition().GetPositionX(), p->GetHomePosition().GetPositionY(), p->GetHomePosition().GetPositionZ(), p->GetHomePosition().GetOrientation());
+                            }
+                        }
+
+                        for (std::vector<uint64>::const_iterator itr = jaillistGuids.begin(); itr != jaillistGuids.end(); itr++)
+                        {
+                            if (GameObject* jail = instance->GetGameObject(*itr))
+                            {
+                                jail->SetGoState(GO_STATE_READY);
+                                jail->SetLootState(GO_READY);
+                                jail->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                            }
+                        }
+                        HandleGameObject(thokentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(thokentdoorGuid, false);
+                        break;
+                    case DONE:
+                        HandleGameObject(thokentdoorGuid, true);
                         break;
                     }
                     break;
@@ -974,6 +1039,8 @@ public:
                 //
                 case NPC_ANCIENT_MIASMA:
                     return amGuid;
+                case NPC_THOK:
+                    return thokGuid;
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);

@@ -9128,9 +9128,13 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                     if (skillValue < reqSkillValue)
                         return SPELL_FAILED_LOW_CASTLEVEL;
                 }
-
                 return SPELL_CAST_OK;
             }
+            case LOCK_KEY_SPELL:
+                if (lockInfo->Index[j] == 143917 && m_caster->HasAura(146589))
+                    return SPELL_CAST_OK;
+                reqKey = true;
+                break;
         }
     }
 

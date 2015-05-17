@@ -3124,6 +3124,37 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     if (unitTarget->HasAura(143594)) //Berserker Stance - General Nazgrim
         damage *= 2;
 
+    if (unitTarget->HasAura(143411)) //Acceleration - Thok Bloodthirsty
+    {
+        uint8 stack = unitTarget->GetAura(143411)->GetStackAmount();
+        switch (stack)
+        {
+        case 1:
+            damage += 1;
+            break;
+        case 2:
+            damage += 4;
+            break;
+        case 3:
+            damage += 11;
+            break;
+        case 4:
+            damage += 14;
+            break;
+        case 5:
+        case 6:
+        case 7:
+            damage += 21;
+            break;
+        case 8:
+            damage += 46;
+            break;
+        default:
+            damage += 46;
+            break;
+        }
+    }
+    
     if (unitTarget->GetMaxPower(power) == 0)
         return;
 
@@ -3349,7 +3380,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
     int32 skillValue;
 
     SpellCastResult res = CanOpenLock(effIndex, lockId, skillId, reqSkillValue, skillValue);
-    if (res != SPELL_CAST_OK)
+    if (res != SPELL_CAST_OK && lockId != 2127)
     {
         SendCastResult(res);
         return;
