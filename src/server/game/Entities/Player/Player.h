@@ -2428,7 +2428,9 @@ class Player : public Unit, public GridObject<Player>
         void UpdateMeleeHitChances();
         void UpdateRangedHitChances();
         void UpdateSpellHitChances();
+        void UpdateSpellHastDurationRecovery();
         void SetNeedToUpdateRunesRegen() { m_needToUpdateRunesRegen = true; }
+        void SetNeedToUpdateSpellHastDurationRecovery() { m_needToUpdateSpellHastDurationRecovery = true; }
 
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
@@ -3204,7 +3206,9 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
+        uint32 m_statsUpdateTimer;
         bool m_needToUpdateRunesRegen;
+        bool m_needToUpdateSpellHastDurationRecovery;
 
 
         /*********************************************************/

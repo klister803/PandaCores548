@@ -986,6 +986,9 @@ void Unit::UpdateMeleeHastMod()
 
     if (GetPower(POWER_ENERGY))
         UpdateEnergyRegen();
+
+    if (getClass() == CLASS_MONK)
+        player->SetNeedToUpdateSpellHastDurationRecovery();
 }
 
 void Unit::UpdateHastMod()

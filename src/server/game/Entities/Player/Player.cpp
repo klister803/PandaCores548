@@ -758,7 +758,9 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_RunesRegenUpdateTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
+    m_statsUpdateTimer = 0;
     m_needToUpdateRunesRegen = false;
+    m_needToUpdateSpellHastDurationRecovery = false;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -2011,6 +2013,17 @@ void Player::Update(uint32 p_time)
     {
         m_regenTimer += p_time;
         RegenerateAll();
+
+        m_statsUpdateTimer += p_time;
+        if (m_statsUpdateTimer >= 200)
+        {
+            if (m_needToUpdateSpellHastDurationRecovery)
+            {
+                UpdateSpellHastDurationRecovery();
+                m_needToUpdateSpellHastDurationRecovery = false;
+            }
+            m_statsUpdateTimer = 0;
+        }
 
         if (IsAIEnabled && GetAI())
             GetAI()->UpdateAI(p_time);
@@ -30587,4 +30600,37 @@ bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* sp
     SetLastChanceToProc(spellProto->Id, preciseTime);
 
     return roll_chance_f(chance);
+}
+
+void Player::UpdateSpellHastDurationRecovery()
+{
+    flag128 _mask = 0;
+    for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    {
+        uint32 SpellId = itr->first;
+
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SpellId))
+            if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY) && spellInfo->RecoveryTime >= 10000)
+            {
+                _mask |= spellInfo->SpellFamilyFlags;
+            }
+    }
+
+    if (_mask)
+    {
+        for (SpellModList::iterator itr = m_spellMods[SPELLMOD_COOLDOWN].begin(); itr != m_spellMods[SPELLMOD_COOLDOWN].end(); ++itr)
+            if ((*itr)->spellId == 60000)
+            {
+                m_spellMods[SPELLMOD_COOLDOWN].remove(*itr);
+                break;
+            }
+
+        SpellModifier* modApply = new SpellModifier();
+        modApply->op = SPELLMOD_COOLDOWN;
+        modApply->type = SPELLMOD_PCT;
+        modApply->spellId = 60000;
+        modApply->mask = _mask;
+        modApply->value = -(100.0f - (GetFloatValue(UNIT_MOD_CAST_HASTE) * 100.0f));
+        AddSpellMod(modApply, true);
+    }
 }
