@@ -405,6 +405,16 @@ class spell_sha_spirit_link : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_spirit_link_SpellScript);
 
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            {
+                std::list<WorldObject*> removeList;
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    if ((*itr) && (*itr)->GetTypeId() != TYPEID_PLAYER)
+                        removeList.push_back(*itr);
+
+                for (std::list<WorldObject*>::iterator iter = removeList.begin(); iter != removeList.end(); ++iter)
+                    targets.remove(*iter);
+            }
             void HandleAfterCast()
             {
                 if (Unit* caster = GetCaster())
@@ -430,6 +440,7 @@ class spell_sha_spirit_link : public SpellScriptLoader
 
             void Register()
             {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_spirit_link_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
                 AfterCast += SpellCastFn(spell_sha_spirit_link_SpellScript::HandleAfterCast);
             }
         };
