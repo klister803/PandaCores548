@@ -135,7 +135,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
             // Mesmerize
             else if (spellproto->Id == 115268)
                 return DIMINISHING_FEAR;
-            else if (spellproto->Id == 87204)
+            else if (spellproto->Id == 87204 || spellproto->Id == 31117)
                 return DIMINISHING_NONE;
             break;
         }
