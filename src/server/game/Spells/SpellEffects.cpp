@@ -4232,13 +4232,15 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
                 item_owner->GetName(), item_owner->GetSession()->GetAccountId());
         }
 
-        // remove old enchanting before applying new if equipped
-        item_owner->ApplyEnchantment(itemTarget, PERM_ENCHANTMENT_SLOT, false);
+        EnchantmentSlot slot = pEnchant->requiredSkill == SKILL_ENGINEERING? BONUS_ENCHANTMENT_SLOT: PERM_ENCHANTMENT_SLOT;
 
-        itemTarget->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchant_id, 0, 0);
+        // remove old enchanting before applying new if equipped
+        item_owner->ApplyEnchantment(itemTarget, slot, false);
+
+        itemTarget->SetEnchantment(slot, enchant_id, 0, 0);
 
         // add new enchanting if equipped
-        item_owner->ApplyEnchantment(itemTarget, PERM_ENCHANTMENT_SLOT, true);
+        item_owner->ApplyEnchantment(itemTarget, slot, true);
 
         item_owner->RemoveTradeableItem(itemTarget);
         itemTarget->ClearSoulboundTradeable(item_owner);
