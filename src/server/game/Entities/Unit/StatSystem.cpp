@@ -1086,7 +1086,7 @@ void Unit::UpdateRangeHastMod()
 void Unit::UpdateEnergyRegen()
 {
     float val = 1.0f / m_baseMHastRatingPct;
-    float amount = 0.0f;
+    float amount = 100.0f;
     
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_HASTE);
@@ -1094,7 +1094,8 @@ void Unit::UpdateEnergyRegen()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
     
     if(amount > 0)
         ApplyPercentModFloatVar(val, amount, false);
@@ -1109,7 +1110,7 @@ void Unit::UpdateEnergyRegen()
 void Unit::UpdateFocusRegen()
 {
     float val = 1.0f / m_baseRHastRatingPct;
-    float amount = 0.0f;
+    float amount = 100.0f;
     
     std::list<AuraType> auratypelist;
     auratypelist.push_back(SPELL_AURA_MOD_RANGED_HASTE);
@@ -1117,7 +1118,8 @@ void Unit::UpdateFocusRegen()
     auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    amount += GetTotalForAurasModifier(&auratypelist);
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
     
     if(amount > 0)
         ApplyPercentModFloatVar(val, amount, false);
