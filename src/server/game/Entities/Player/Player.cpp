@@ -30605,16 +30605,16 @@ bool Player::GetRPPMProcChance(double &cooldown, float RPPM, const SpellInfo* sp
 void Player::UpdateSpellHastDurationRecovery()
 {
     flag128 _mask = 0;
-    for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
-    {
-        uint32 SpellId = itr->first;
+//     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+//     {
+//         uint32 SpellId = itr->first;
 
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SpellId))
-            if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY) && spellInfo->RecoveryTime >= 10000)
-            {
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(/*SpellId*/116847))
+//             if (!spellInfo->IsChanneled() && (spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION_RECOVERY) && spellInfo->RecoveryTime == spellInfo->GetMaxDuration())
+//             {
                 _mask |= spellInfo->SpellFamilyFlags;
-            }
-    }
+//             }
+//     }
 
     if (_mask)
     {
