@@ -2429,8 +2429,13 @@ class Player : public Unit, public GridObject<Player>
         void UpdateRangedHitChances();
         void UpdateSpellHitChances();
         void UpdateSpellHastDurationRecovery();
+
         void SetNeedToUpdateRunesRegen() { m_needToUpdateRunesRegen = true; }
         void SetNeedToUpdateSpellHastDurationRecovery() { m_needToUpdateSpellHastDurationRecovery = true; }
+        void SetNeedUpdateCastHastMods() { m_needUpdateCastHastMods = true; }
+        void SetNeedUpdateMeleeHastMod() { m_needUpdateMeleeHastMod = true; }
+        void SetNeedUpdateRangeHastMod() { m_needUpdateRangeHastMod = true; }
+        void SetNeedUpdateHastMod() { m_needUpdateHastMod = true; }
 
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
@@ -3201,7 +3206,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_chiholyPowerRegenTimerCount;
         uint32 m_burningEmbersRegenTimerCount;
         uint32 m_soulShardsRegenTimerCount;
-        uint32 m_RunesRegenUpdateTimerCount;
         uint32 m_focusRegenTimerCount;
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
@@ -3209,6 +3213,10 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_statsUpdateTimer;
         bool m_needToUpdateRunesRegen;
         bool m_needToUpdateSpellHastDurationRecovery;
+        bool m_needUpdateCastHastMods = false;
+        bool m_needUpdateMeleeHastMod = false;
+        bool m_needUpdateRangeHastMod = false;
+        bool m_needUpdateHastMod = false;
 
 
         /*********************************************************/

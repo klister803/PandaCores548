@@ -5704,7 +5704,16 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
 
     Unit* target = aurApp->GetTarget();
 
-    target->UpdateHastMod();
+    if (Player* plr = target->ToPlayer())
+    {
+        plr->SetNeedUpdateHastMod();
+        plr->SetNeedUpdateCastHastMods();
+    }
+    else
+    {
+        target->UpdateHastMod();
+        target->UpdateCastHastMods();
+    }
 }
 
 void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5715,8 +5724,18 @@ void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uin
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->UpdateMeleeHastMod();
-    target->UpdateRangeHastMod();
+    if (Player* plr = target->ToPlayer())
+    {
+        plr->SetNeedUpdateMeleeHastMod();
+        plr->SetNeedUpdateRangeHastMod();
+        plr->SetNeedUpdateCastHastMods();
+    }
+    else
+    {
+        target->UpdateMeleeHastMod();
+        target->UpdateRangeHastMod();
+        target->UpdateCastHastMods();
+    }
 }
 
 void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5726,9 +5745,20 @@ void AuraEffect::HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mo
 
     Unit* target = aurApp->GetTarget();
     
-    target->UpdateHastMod();
-    target->UpdateMeleeHastMod();
-    target->UpdateRangeHastMod();
+    if (Player* plr = target->ToPlayer())
+    {
+        plr->SetNeedUpdateMeleeHastMod();
+        plr->SetNeedUpdateRangeHastMod();
+        plr->SetNeedUpdateHastMod();
+        plr->SetNeedUpdateCastHastMods();
+    }
+    else
+    {
+        target->UpdateHastMod();
+        target->UpdateMeleeHastMod();
+        target->UpdateRangeHastMod();
+        target->UpdateCastHastMods();
+    }
 }
 
 void AuraEffect::HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5754,7 +5784,14 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
 
     int32 value = GetAmount();
 
-    target->UpdateMeleeHastMod();
+    if (Player* plr = target->ToPlayer())
+    {
+        plr->SetNeedUpdateMeleeHastMod();
+    }
+    else
+    {
+        target->UpdateMeleeHastMod();
+    }
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5765,7 +5802,14 @@ void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 m
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->UpdateRangeHastMod();
+    if (Player* plr = target->ToPlayer())
+    {
+        plr->SetNeedUpdateRangeHastMod();
+    }
+    else
+    {
+        target->UpdateRangeHastMod();
+    }
 }
 
 /********************************/

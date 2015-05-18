@@ -2044,6 +2044,7 @@ class Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         // Update Mod Hast
+        void UpdateCastHastMods();
         void UpdateMeleeHastMod();
         void UpdateRangeHastMod();
         void UpdateHastMod();

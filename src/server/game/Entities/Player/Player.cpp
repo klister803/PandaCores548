@@ -755,12 +755,15 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
-    m_RunesRegenUpdateTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
     m_statsUpdateTimer = 0;
     m_needToUpdateRunesRegen = false;
     m_needToUpdateSpellHastDurationRecovery = false;
+    m_needUpdateCastHastMods = false;
+    m_needUpdateMeleeHastMod = false;
+    m_needUpdateRangeHastMod = false;
+    m_needUpdateHastMod = false;
 
     m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
@@ -2017,10 +2020,35 @@ void Player::Update(uint32 p_time)
         m_statsUpdateTimer += p_time;
         if (m_statsUpdateTimer >= 200)
         {
+            if (m_needUpdateMeleeHastMod)
+            {
+                UpdateMeleeHastMod();
+                m_needUpdateMeleeHastMod = false;
+            }
+            if (m_needUpdateRangeHastMod)
+            {
+                UpdateRangeHastMod();
+                m_needUpdateRangeHastMod = false;
+            }
+            if (m_needUpdateHastMod)
+            {
+                UpdateHastMod();
+                m_needUpdateHastMod = false;
+            }
+            if (m_needUpdateCastHastMods)
+            {
+                UpdateCastHastMods();
+                m_needUpdateCastHastMods = false;
+            }
             if (m_needToUpdateSpellHastDurationRecovery)
             {
                 UpdateSpellHastDurationRecovery();
                 m_needToUpdateSpellHastDurationRecovery = false;
+            }
+            if (m_needToUpdateRunesRegen)
+            {
+                UpdateAllRunesRegen();
+                m_needToUpdateRunesRegen = false;
             }
             m_statsUpdateTimer = 0;
         }
@@ -2821,18 +2849,6 @@ void Player::RegenerateAll()
     // Runes act as cooldowns, and they don't need to send any data
     if (getClass() == CLASS_DEATH_KNIGHT)
     {
-        m_RunesRegenUpdateTimerCount += m_regenTimer;
-
-        if (m_RunesRegenUpdateTimerCount >= 200)
-        {
-            if (m_needToUpdateRunesRegen)
-            {
-                UpdateAllRunesRegen();
-                m_needToUpdateRunesRegen = false;
-            }
-            m_RunesRegenUpdateTimerCount = 0;
-        }
-
         for (uint8 i = 0; i < MAX_RUNES; i += 2)
         {
             int8 cdRune = -1;
@@ -7078,13 +7094,16 @@ void Player::UpdateRating(CombatRating cr)
         case CR_CRIT_TAKEN_SPELL:                           // Deprecated since Cataclysm
             break;
         case CR_HASTE_MELEE:                                // Implemented in Player::ApplyRatingMod
-            UpdateMeleeHastMod();
+            SetNeedUpdateMeleeHastMod();
+            SetNeedUpdateCastHastMods();
             break;
         case CR_HASTE_RANGED:
-            UpdateRangeHastMod();
+            SetNeedUpdateRangeHastMod();
+            SetNeedUpdateCastHastMods();
             break;
         case CR_HASTE_SPELL:
-            UpdateHastMod();
+            SetNeedUpdateHastMod();
+            SetNeedUpdateCastHastMods();
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:

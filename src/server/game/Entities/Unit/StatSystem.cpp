@@ -927,6 +927,36 @@ void Unit::UpdateManaRegen()
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, manaRegenInterupted);
 }
 
+void Unit::UpdateCastHastMods()
+{
+    Player* player = ToPlayer();
+    float amount = 100.0f;
+    if (player)
+        amount += player->GetRatingBonusValue(CR_HASTE_MELEE);
+
+    m_baseMHastRatingPct = amount / 100.0f;
+
+    std::list<AuraType> auratypelist;
+    auratypelist.push_back(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+    auratypelist.push_back(SPELL_AURA_MOD_MELEE_RANGED_HASTE_2);
+    auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
+
+    amount *= GetTotalForAurasMultiplier(&auratypelist);
+    amount -= 100.0f;
+
+    float value = 1.0f;
+
+    if (amount > 0)
+        ApplyPercentModFloatVar(value, amount, false);
+    else
+        ApplyPercentModFloatVar(value, -amount, true);
+
+    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+
+    if (getClass() == CLASS_MONK)
+        player->SetNeedToUpdateSpellHastDurationRecovery();
+}
+
 void Unit::UpdateMeleeHastMod()
 {
     Player* player = ToPlayer();
@@ -964,8 +994,8 @@ void Unit::UpdateMeleeHastMod()
         ApplyPercentModFloatVar(value, amount, false);
     else
         ApplyPercentModFloatVar(value, -amount, true);
+
     SetFloatValue(UNIT_MOD_HASTE, value);
-    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
 
     for (uint8 i = BASE_ATTACK; i < RANGED_ATTACK; ++i)
         CalcAttackTimePercentMod(WeaponAttackType(i), value);
@@ -986,9 +1016,6 @@ void Unit::UpdateMeleeHastMod()
 
     if (GetPower(POWER_ENERGY))
         UpdateEnergyRegen();
-
-    if (getClass() == CLASS_MONK)
-        player->SetNeedToUpdateSpellHastDurationRecovery();
 }
 
 void Unit::UpdateHastMod()
@@ -1022,7 +1049,7 @@ void Unit::UpdateHastMod()
         ApplyPercentModFloatVar(value, amount, false);
     else
         ApplyPercentModFloatVar(value, -amount, true);
-    SetFloatValue(UNIT_MOD_CAST_HASTE, value);
+
     SetFloatValue(UNIT_MOD_CAST_SPEED, value);
 
     if(isAnySummons())

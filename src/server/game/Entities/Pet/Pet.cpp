@@ -838,6 +838,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     UpdateMeleeHastMod();
     UpdateHastMod();
     UpdateRangeHastMod();
+    UpdateCastHastMods();
 
     SetUInt32Value(UNIT_FIELD_FLAGS_2, cinfo->unit_flags2);
 
