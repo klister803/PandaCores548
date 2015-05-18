@@ -3805,6 +3805,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 113656: // Fists of Fury
+                    spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
+                    break;
                 case 137049: // Hotfix Passive 
                     spellInfo->Effects[EFFECT_5].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[EFFECT_5].BasePoints = 100;
