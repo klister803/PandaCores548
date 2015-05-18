@@ -5568,6 +5568,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_RADIUS;
                     spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(10);
                     break;
+                // Hacks scene
                 case 139384: // Summon Wrathion Intro
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(608);
                     break;
@@ -5579,6 +5580,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 140130: // Summon Intro Scene
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); //15s
+                    break;
+                case 140265: // Summon Thunder King Finale
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(23); //90s
                     break;
                 default:
                     break;
