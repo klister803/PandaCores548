@@ -218,13 +218,13 @@ public:
 
     struct npc_koltira_deathweaverAI : public npc_escortAI
     {
-        npc_koltira_deathweaverAI(Creature* creature) : npc_escortAI(creature)
-        {
-            me->SetReactState(REACT_DEFENSIVE);
-        }
+        npc_koltira_deathweaverAI(Creature* creature) : npc_escortAI(creature) {}
 
         void Reset()
         {
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
             {
                 wave = 0;
@@ -233,7 +233,7 @@ public:
                 me->LoadEquipment(0, true);
                 me->RemoveAurasDueToSpell(SPELL_ANTI_MAGIC_ZONE);
                 me->RemoveAurasDueToSpell(SPELL_KOLTIRA_TRANSFORM);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
         }
 
@@ -254,7 +254,6 @@ public:
                     break;
                 case 3:
                     SetEscortPaused(true);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
                     Talk(SAY_BREAKOUT2);
                     DoCast(me, SPELL_ANTI_MAGIC_ZONE);
@@ -337,7 +336,7 @@ public:
                         case 5:
                             Talk(SAY_BREAKOUT9);
                             me->RemoveAurasDueToSpell(SPELL_ANTI_MAGIC_ZONE);
-                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             waveTimer = 2500;
                             break;
                         case 6:
