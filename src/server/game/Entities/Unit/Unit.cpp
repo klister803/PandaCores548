@@ -7856,22 +7856,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if (!procSpell)
                         return false;
 
-                    if(procSpell->IsPositive())
+                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                        if (procSpell->Effects[i].Effect)
+                            if (procSpell->Effects[i].HasRadius())
+                                return false;
+
+                    if (Aura* aura = GetAura(137009))
                     {
-                        triggered_spell_id = 124991;
-                        basepoints0 = int32(damage * triggerAmount / 100);
-                        target = getAttackerForHelper();
+                        if (procSpell->IsPositive())
+                        {
+                            if (AuraEffect* eff = aura->GetEffect(EFFECT_3))
+                                eff->SetAmount(eff->GetAmount() + (damage * triggerAmount / 100.0f));
+                        }
+
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_2))
+                            eff->SetAmount(eff->GetAmount() + (damage * triggerAmount / 100.0f));
                     }
-                    else
-                    {
-                        target = this;
-                        triggered_spell_id = 124988;
-                        basepoints0 = int32(damage * triggerAmount / 100);
-                        target = SelectNearbyAlly(this, 25.0f);
-                        if(!target)
-                            target = this;
-                    }
-                    CastCustomSpell(target, triggered_spell_id, &basepoints0, NULL, NULL, true);
                     return true;
                 }
                 case 102351: // Cenarion Ward

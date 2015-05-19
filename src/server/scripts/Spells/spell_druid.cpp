@@ -902,69 +902,36 @@ class spell_dru_natures_vigil : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_natures_vigil_AuraScript);
 
-            void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+            void OnTick(AuraEffect const* aurEff)
             {
-                PreventDefaultAction();
-
-                if (!GetCaster())
-                    return;
-
-                Player* _player = GetCaster()->ToPlayer();
-                if (!_player)
-                    return;
-
-                if (eventInfo.GetActor()->GetGUID() != _player->GetGUID())
-                    return;
-
-                if (!eventInfo.GetDamageInfo()->GetSpellInfo())
-                    return;
-
-                bool singleTarget = false;
-                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                    if ((eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
-                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY) &&
-                        eventInfo.GetDamageInfo()->GetSpellInfo()->Effects[i].TargetB.GetTarget() == 0)
-                        singleTarget = true;
-
-                if (!singleTarget)
-                    return;
-
-                if (eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_HEAL ||
-                    eventInfo.GetDamageInfo()->GetSpellInfo()->Id == SPELL_DRUID_NATURES_VIGIL_DAMAGE)
-                    return;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamage()) && !(eventInfo.GetHealInfo()->GetHeal()))
-                    return;
-
-                if (!(eventInfo.GetDamageInfo()->GetDamageType() == SPELL_DIRECT_DAMAGE) && !(eventInfo.GetDamageInfo()->GetDamageType() == HEAL))
-                    return;
-
-                int32 bp = 0;
-                Unit* target = NULL;
-                uint32 spellId = 0;
-
-                if (!eventInfo.GetDamageInfo()->GetSpellInfo()->IsPositive())
+                if (Unit* caster = GetCaster())
                 {
-                    bp = eventInfo.GetDamageInfo()->GetDamage() / 4;
-                    spellId = SPELL_DRUID_NATURES_VIGIL_HEAL;
-                    target = _player->SelectNearbyAlly(_player, 25.0f);
+                    if (Aura* aura = caster->GetAura(137009))
+                    {
+                        if (AuraEffect* eff2 = aura->GetEffect(EFFECT_2))
+                        {
+                            if (int32 bp = eff2->GetAmount())
+                            {
+                                caster->CastCustomSpell(caster->SelectNearbyAlly(caster, 40.0f), SPELL_DRUID_NATURES_VIGIL_HEAL, &bp, 0, 0, true);
+                                eff2->SetAmount(0);
+                            }
+                        }
+                        if (AuraEffect* eff3 = aura->GetEffect(EFFECT_3))
+                        {
+                            if (int32 bp = eff3->GetAmount())
+                            {
+                                if (Unit* target = caster->GetNearbyVictim(caster, 40.0f, false, true))
+                                    caster->CastCustomSpell(target, SPELL_DRUID_NATURES_VIGIL_DAMAGE, &bp, 0, 0, true);
+                                eff3->SetAmount(0);
+                            }
+                        }
+                    }
                 }
-                else
-                {
-                    bp = eventInfo.GetHealInfo()->GetHeal() / 4;
-                    spellId = SPELL_DRUID_NATURES_VIGIL_DAMAGE;
-                    target = _player->SelectNearbyTarget(_player, 25.0f);
-                }
-
-                if (!target || !spellId || !bp)
-                    return;
-
-                _player->CastCustomSpell(target, spellId, &bp, NULL, NULL, true);
             }
 
             void Register()
             {
-                OnEffectProc += AuraEffectProcFn(spell_dru_natures_vigil_AuraScript::OnProc, EFFECT_2, SPELL_AURA_DUMMY);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_natures_vigil_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 
