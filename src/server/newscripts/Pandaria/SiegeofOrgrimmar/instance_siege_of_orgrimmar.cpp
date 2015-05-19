@@ -755,12 +755,18 @@ public:
                                 jail->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                             }
                         }
+                        if (Creature* thok = instance->GetCreature(thokGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, thok);
                         HandleGameObject(thokentdoorGuid, true);
                         break;
                     case IN_PROGRESS:
+                        if (Creature* thok = instance->GetCreature(thokGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, thok);
                         HandleGameObject(thokentdoorGuid, false);
                         break;
                     case DONE:
+                        if (Creature* thok = instance->GetCreature(thokGuid))
+                            SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, thok);
                         HandleGameObject(thokentdoorGuid, true);
                         break;
                     }

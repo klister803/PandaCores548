@@ -31,7 +31,7 @@ enum eSpells
     SPELL_ACCELERATION       = 143411,
     //
     SPELL_ACID_BREATH        = 143780,
-    SPELL_CORROSIVE_BLOOD    = 143791, //3.5
+    SPELL_CORROSIVE_BLOOD    = 143791,
     //
     SPELL_FREEZING_BREATH    = 143773,
     SPELL_ICY_BLOOD          = 143800,
@@ -59,8 +59,12 @@ enum Events
     EVENT_SHOCK_BLAST        = 3,
     //Extra event
     EVENT_ACID_BREATH        = 4,
-    EVENT_FREEZING_BREATH    = 5,
-    EVENT_SCORCHING_BREATH   = 6,
+    EVENT_CORROSIVE_BLOOD    = 5,
+    //
+    EVENT_FREEZING_BREATH    = 6,
+    //
+    EVENT_SCORCHING_BREATH   = 7,
+    //
 
     //Summon events
     EVENT_ENRAGE_KJ          = 7,
@@ -127,7 +131,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->SetPower(POWER_ENERGY, 0);
                 meleecheck = 0;
                 if (instance)
+                {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
+                }
             }
 
             void EnterCombat(Unit* who)
@@ -146,6 +153,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_ONE_ACID: 
                 case ACTION_PHASE_ONE_FROST: 
                 case ACTION_PHASE_ONE_FIRE:  
+                    events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
                     me->getThreatManager().resetAllAggro();
@@ -161,6 +169,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                     case ACTION_PHASE_ONE_ACID: 
                         events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
+                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 3500);
                         break;
                     case ACTION_PHASE_ONE_FROST: 
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
@@ -194,11 +203,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCast(target, SPELL_FIXATE_PL);
                     break;
                 }
-            }
-
-            void JustDied(Unit* /*killer*/)
-            {
-                _JustDied();
             }
 
             void UpdateAI(uint32 diff)
@@ -251,6 +255,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCast(me, SPELL_ACID_BREATH, true);
                         events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
                         break;
+                    case EVENT_CORROSIVE_BLOOD:
+                        DoCastAOE(SPELL_CORROSIVE_BLOOD, true);
+                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 3500);
+                        break;
                     case EVENT_FREEZING_BREATH:
                         DoCast(me, SPELL_FREEZING_BREATH, true);
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
@@ -263,6 +271,16 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
                 if (!meleecheck)
                     DoMeleeAttackIfReady();
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                _JustDied();
+                if (instance)
+                {
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
+                }
             }
         };
 
@@ -450,7 +468,7 @@ public:
 
         void OnPeriodic(AuraEffect const* aurEff)
         {
-            if (GetCaster() && GetCaster()->ToCreature())
+            if (GetCaster())
             {
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
                     if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
@@ -540,7 +558,7 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget() && GetCaster() && GetCaster()->ToCreature())
+            if (GetTarget() && GetCaster())
             {
                 GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
                 GetCaster()->AddThreat(GetTarget(), 50000000.0f);
