@@ -1779,6 +1779,7 @@ void Creature::Respawn(bool force)
     }
 
     RemoveCorpse(false);
+    m_despan = false;
 
     if (getDeathState() == DEAD)
     {
@@ -1846,7 +1847,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
-    if(m_despan)
+    if (m_despan)
         return;
 
     if (TempSummon* summon = this->ToTempSummon())
