@@ -88,7 +88,10 @@ class InstanceSave
            if there are players permanently bound to it
            this is cached for the case when those players are offline */
         bool CanReset() const { return m_canReset; }
+        bool CanBeSave() const { return m_canBeSave; }
         void SetCanReset(bool canReset) { m_canReset = canReset; }
+        uint32 GetCompletedEncounterMask() const { return m_completedEncounter; }
+        void SetCompletedEncountersMask(uint32 _mask) { m_completedEncounter = _mask; }
 
         /* currently it is possible to omit this information from this structure
            but that would depend on a lot of things that can easily change in future */
@@ -114,6 +117,8 @@ class InstanceSave
         Difficulty m_difficulty;
         bool m_canReset;
         bool m_toDelete;
+        bool m_canBeSave;
+        uint32 m_completedEncounter;
 
         ACE_Thread_Mutex _lock;
 };

@@ -28,6 +28,7 @@
 #include "ChallengeMgr.h"
 #include "Group.h"
 #include "ScenarioMgr.h"
+#include "InstanceSaveMgr.h"
 
 #define CHALLENGE_START 5
 
@@ -58,6 +59,8 @@ void InstanceScript::SaveToDB()
         progress->SaveToDB(trans);
         CharacterDatabase.CommitTransaction(trans);
     }
+    if(InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(instance->GetInstanceId()))
+        save->SetCompletedEncountersMask(GetCompletedEncounterMask());
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)

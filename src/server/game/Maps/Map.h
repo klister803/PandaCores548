@@ -363,6 +363,7 @@ class Map : public GridRefManager<NGridType>
 
         uint32 GetInstanceId() const { return i_InstanceId; }
         uint8 GetSpawnMode() const { return (i_spawnMode); }
+        void SetSpawnMode(uint8 spawnMode) { i_spawnMode = spawnMode; i_difficulty = spawnMode; }
         void SetSpawnModeBy(Difficulty d);
 
         virtual bool CanEnter(Player* /*player*/) { return true; }
@@ -379,10 +380,12 @@ class Map : public GridRefManager<NGridType>
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
         bool IsChallenge() const { return i_difficulty == CHALLENGE_MODE_DIFFICULTY; }
         bool IsLfr() const { return i_difficulty == RAID_TOOL_DIFFICULTY || i_difficulty == FLEXIBLE_DIFFICULTY || i_difficulty == HEROIC_SCENARIO_DIFFICULTY || i_difficulty == NORMAL_SCENARIO_DIFFICULTY; }
+        bool IsNeedRecalc() const { return i_difficulty == FLEXIBLE_DIFFICULTY; }
         bool IsScenario() const { return i_mapEntry && i_mapEntry->IsScenario(); }
         bool IsRaidOrHeroicDungeon() const { return IsRaid() || (i_difficulty == MAN25_DIFFICULTY || i_difficulty == MAN25_HEROIC_DIFFICULTY || i_difficulty == MAN10_DIFFICULTY || i_difficulty == MAN10_HEROIC_DIFFICULTY || i_difficulty == MAN40_DIFFICULTY || i_difficulty == HEROIC_DIFFICULTY); }
         bool IsHeroic() const {return ( i_difficulty == CHALLENGE_MODE_DIFFICULTY || i_difficulty == MAN25_HEROIC_DIFFICULTY || i_difficulty == MAN10_HEROIC_DIFFICULTY || i_difficulty == HEROIC_DIFFICULTY); }
         bool Is25ManRaid() const { return IsRaid() && (i_difficulty == MAN25_DIFFICULTY || i_difficulty == MAN25_HEROIC_DIFFICULTY); }   // since 25man difficulties are 1 and 3, we can check them like that
+        bool IsNormalRaid() const { return IsRaid() && (i_difficulty == MAN10_DIFFICULTY || i_difficulty == MAN25_DIFFICULTY); }
         bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
         bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
@@ -418,6 +421,7 @@ class Map : public GridRefManager<NGridType>
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
+        uint32 GetPlayerCount() const { return m_mapRefManager.getSize(); }
 
         //per-map script storage
         void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);

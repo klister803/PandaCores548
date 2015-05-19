@@ -452,6 +452,7 @@ enum Difficulty
 #define RAID_DIFFICULTY_MASK_25MAN 4                        // since 25man difficulties are 4 and 6, we can check them like that
 
 #define MAX_DIFFICULTY             FLEXIBLE_DIFFICULTY+1
+#define MAX_BOUND                  2
 
 enum ScenarioFlags
 {

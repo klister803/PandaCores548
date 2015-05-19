@@ -11193,7 +11193,7 @@ void Unit::ModifyExcludeCasterAuraSpell(uint32 auraId, bool apply)
             PlayerSpellMap const& sp_list = plr->GetSpellMap();
             for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
             {
-                if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
+                if (!itr->second || itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
                     continue;
 
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);

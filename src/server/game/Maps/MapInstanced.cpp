@@ -143,11 +143,8 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
     {
         Difficulty difficulty = IsRaid() ? player->GetRaidDifficulty() : player->GetDungeonDifficulty();
         MapEntry const* entry = sMapStore.LookupEntry(mapId);
-        if (entry)
-        {
-            if(entry->maxPlayers == 40 && mapId != 249) // hackfix - Onyxia's Lair 10/25
-                difficulty = MAN40_DIFFICULTY;
-        }
+        if (entry && entry->maxPlayers == 40)
+            difficulty = MAN40_DIFFICULTY;
 
         InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), difficulty);
         InstanceSave* pSave = pBind ? pBind->save : NULL;
@@ -166,6 +163,7 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
                     pSave = groupBind->save;
             }
         }
+
         if (pSave)
         {
             // solo/perm/group
@@ -173,7 +171,9 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             map = FindInstanceMap(newInstanceId);
             // it is possible that the save exists but the map doesn't
             if (!map)
-                map = CreateInstance(newInstanceId, pSave, pSave->GetDifficulty());
+                map = CreateInstance(newInstanceId, pSave, difficulty);
+            else if(map->GetDifficulty() != difficulty)
+                map->SetSpawnMode(difficulty);
         }
         else
         {
@@ -189,6 +189,8 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
             map = FindInstanceMap(newInstanceId);
             if (!map)
                 map = CreateInstance(newInstanceId, NULL, diff);
+            else if(map->GetDifficulty() != diff)
+                map->SetSpawnMode(diff);
         }
     }
 

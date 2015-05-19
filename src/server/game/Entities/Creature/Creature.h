@@ -665,6 +665,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool HasSpell(uint32 spellID) const;
 
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        void UpdateStat();
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
         void UpdateResistances(uint32 school);
@@ -856,7 +857,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool m_isTempWorldObject; //true when possessed
         uint32 GetBossId() const { return bossid; }
-        uint8 GetMobDifficulty() const { return difficulty; }
+        uint8 GetMobDifficulty() const { return m_difficulty; }
+        uint8 GetSpawnMode() const { return m_spawnMode; }
+        uint32 GetPlayerCount() const { return m_playerCount; }
 
         float GetFollowAngle() const { return m_followAngle; }
         void SetFollowAngle(float angle) { m_followAngle = angle; }
@@ -932,7 +935,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         uint32 guid_transport;
         uint32 bossid;
-        uint8 difficulty;
+        uint8 m_difficulty;
+        uint8 m_spawnMode;
+        uint32 m_playerCount;
         float m_followAngle;
         bool m_despan;
 

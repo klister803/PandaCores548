@@ -1188,20 +1188,7 @@ namespace Trinity
             float i_range;
     };
 
-    struct AnyDeadUnitCheck
-    {
-        bool operator()(Unit* u) { return !u->isAlive(); }
-    };
-
-    /*
-    struct AnyStealthedCheck
-    {
-        bool operator()(Unit* u) { return u->GetVisibility() == VISIBILITY_GROUP_STEALTH; }
-    };
-    */
-
     // Creature checks
-
     class NearestHostileUnitCheck
     {
         public:

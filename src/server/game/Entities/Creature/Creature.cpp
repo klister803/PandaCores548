@@ -186,7 +186,9 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
     bossid = 0;
-    difficulty = 0;
+    m_difficulty = 0;
+    m_spawnMode = 0;
+    m_playerCount = 0;
     m_Stampeded = false;
     m_despan = false;
 }
@@ -292,11 +294,13 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     }
 
     // get difficulty 1 mode entry
-    difficulty = sObjectMgr->GetDiffFromSpawn(GetMap()->GetSpawnMode());
+    m_difficulty = sObjectMgr->GetDiffFromSpawn(GetMap()->GetSpawnMode());
+    //Save spawn mode
+    m_spawnMode = GetMap()->GetSpawnMode();
 
     SetEntry(Entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
-    m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, difficulty);                                 // map mode related always
+    m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cinfo->Entry, m_difficulty);                                 // map mode related always
 
     // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
@@ -456,6 +460,55 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     return true;
 }
 
+void Creature::UpdateStat()
+{
+    m_difficulty = sObjectMgr->GetDiffFromSpawn(GetMap()->GetSpawnMode());
+    m_spawnMode = GetMap()->GetSpawnMode();
+
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
+    m_creatureDiffData = sObjectMgr->GetCreatureDifficultyStat(cInfo->Entry, m_difficulty);                                 // map mode related always
+
+    CreatureDifficultyStat const* diffStats = GetCreatureDiffStat();
+
+    // level
+    uint8 level = 0;
+    if(!diffStats)
+    {
+        uint8 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
+        uint8 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
+        level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
+    }
+    else
+    {
+        if(diffStats->Difficulty == 1 || diffStats->Difficulty == 2)
+            level = cInfo->maxlevel;
+        else
+            level = cInfo->minlevel;
+    }
+
+    SetLevel(level);
+
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+
+    // health
+    float healthmod = _GetHealthMod(cInfo->rank);
+
+    uint32 basehp = stats->GenerateHealth(cInfo, diffStats);
+    uint32 health = uint32(basehp * healthmod);
+
+    //shouldn't be more. Check stats.
+    if (basehp > 0x7FFFFFFF)
+        health = 1;
+
+    SetCreateHealth(health);
+    SetMaxHealth(health);
+    SetHealth(health);
+    SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
+
+    UpdateMaxHealth();
+    UpdateAttackPowerAndDamage();
+}
+
 void Creature::Update(uint32 diff)
 {
     volatile uint32 creatureEntry = GetEntry();
@@ -600,6 +653,19 @@ void Creature::Update(uint32 diff)
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
             if (!isAlive())
                 break;
+
+            //Check current difficulty map for change stats
+            if (GetMap()->GetInstanceId() != 0 && !isPet())
+            {
+                if(GetMap()->GetSpawnMode() != GetSpawnMode())
+                    UpdateStat();
+                else if(GetMap()->IsNeedRecalc() && GetMap()->GetPlayerCount() > 10 && GetMap()->GetPlayerCount() > GetPlayerCount()) //For dynamic stats
+                {
+                    m_playerCount = GetMap()->GetPlayerCount();
+                    UpdateMaxHealth();
+                    UpdateAttackPowerAndDamage();
+                }
+            }
 
             if (m_regenTimer != 0)
                break;
@@ -1278,7 +1344,6 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, cinfo->maxrangedmg * damagemod);
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-
 }
 
 float Creature::_GetHealthMod(int32 Rank)
@@ -1314,17 +1379,10 @@ float Creature::_GetHealthModPersonal(uint32 &count)
         }
         case CREATURE_ELITE_WORLDBOSS:
         {
-            switch(GetMap()->GetDifficulty())
+            if(GetMap()->IsNeedRecalc() && count > 10) //Base hp for 10 player if > 10 need increment hp
             {
-                //case NONE_DIFFICULTY: //From WOD
-                case FLEXIBLE_DIFFICULTY: //For flex
-                {
-                    if(count > 10) //Base hp for 10 player if > 10 need increment hp
-                    {
-                        count -= 10;
-                        return 0.1f;
-                    }
-                }
+                count -= 10;
+                return 0.1f;
             }
         }
     }
@@ -2378,8 +2436,8 @@ bool Creature::LoadCreaturesAddon(bool reload)
             // skip already applied aura
             if (HasAura(*itr))
             {
-                if (!reload)
-                    sLog->outError(LOG_FILTER_SQL, "Creature (GUID: %u Entry: %u) has duplicate aura (spell %u) in `auras` field.", GetGUIDLow(), GetEntry(), *itr);
+                //if (!reload)
+                    //sLog->outError(LOG_FILTER_SQL, "Creature (GUID: %u Entry: %u) has duplicate aura (spell %u) in `auras` field.", GetGUIDLow(), GetEntry(), *itr);
 
                 continue;
             }

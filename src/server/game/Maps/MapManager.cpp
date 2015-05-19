@@ -181,7 +181,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     //Bypass checks for GMs
     if (player->isGameMaster())
         return true;
-        
+
     char const* mapName = entry->name;
 
     if (!player->isAlive())
@@ -246,6 +246,14 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
                     //TODO: send some kind of error message to the player
                     return false;
                 }*/
+    }
+    else
+    {
+        InstancePlayerBind* boundInstance = player->GetBoundInstance(mapid, targetDifficulty);
+        if (boundInstance && boundInstance->save)
+            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
+                if (!loginCheck && !boundMap->CanEnter(player))
+                    return false;
     }
 
     // players are only allowed to enter 5 instances per hour

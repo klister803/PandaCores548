@@ -1246,20 +1246,38 @@ void Creature::UpdateMaxHealth()
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
     float mod = 1.0f;
     float percHealth = GetHealthPct();
-    uint32 count = GetSizeSaveThreat();
-
-    if(IsPersonalLoot() && count)
+    if (GetMap()->GetInstanceId() == 0)
     {
-        mod += _GetHealthModPersonal(count) * count;
-        value *= mod;
+        uint32 count = GetSizeSaveThreat();
+        if(IsPersonalLoot() && count)
+        {
+            mod += _GetHealthModPersonal(count) * count;
+            value *= mod;
+        }
+        SetMaxHealth((uint32)value);
+
+        if(IsPersonalLoot() && count)
+        {
+            int32 health = CalculatePct(GetMaxHealth(), percHealth);
+            SetHealth(health);
+        }
+        return;
+    }
+    else if(GetMap()->IsNeedRecalc())
+    {
+        if(uint32 count = GetPlayerCount())
+        {
+            mod += _GetHealthModPersonal(count) * count;
+            value *= mod;
+
+            SetMaxHealth((uint32)value);
+
+            int32 health = CalculatePct(GetMaxHealth(), percHealth);
+            SetHealth(health);
+        }
+        return;
     }
     SetMaxHealth((uint32)value);
-
-    if(IsPersonalLoot() && count)
-    {
-        int32 health = CalculatePct(GetMaxHealth(), percHealth);;
-        SetHealth(health);
-    }
 }
 
 void Creature::UpdateMaxPower(Powers power)

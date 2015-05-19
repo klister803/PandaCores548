@@ -2337,10 +2337,6 @@ bool InstanceMap::CanEnter(Player* player)
     if (player->isGameMaster())
         return Map::CanEnter(player);
 
-    MapEntry const* entry = sMapStore.LookupEntry(GetId());
-    if (entry->Expansion() <= 3 && !player->GetGroup())
-        return true;
-        
     // cannot enter if the instance is full (player cap), GMs don't count
     uint32 maxPlayers = GetMaxPlayers();
     if (GetPlayersCountExceptGMs() >= maxPlayers)
@@ -2355,6 +2351,7 @@ bool InstanceMap::CanEnter(Player* player)
     if (!player->isGameMaster() && group && group->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())*/
     if (IsRaid() && GetInstanceScript() && GetInstanceScript()->IsEncounterInProgress())
     {
+        //sLog->outInfo(LOG_FILTER_NETWORKIO, "MAP: Instance '%u' of map '%s' IsEncounterInProgress %u", GetInstanceId(), GetMapName(), GetInstanceScript()->IsEncounterInProgress());
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;
     }
@@ -2363,26 +2360,35 @@ bool InstanceMap::CanEnter(Player* player)
     // permanent save in the same instance id
 
     PlayerList const &playerList = GetPlayers();
-
     if (!playerList.isEmpty())
+    {
+        //sLog->outInfo(LOG_FILTER_NETWORKIO, "MAP: Instance '%u' of map '%s' GetPlayerCount %u", GetInstanceId(), GetMapName(), GetPlayerCount());
+        if (!player->GetGroup()) // player has not group and there is someone inside, deny entry
+        {
+            player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
+            return false;
+        }
         for (PlayerList::const_iterator i = playerList.begin(); i != playerList.end(); ++i)
+        {
             if (Player* iPlayer = i->getSource())
             {
                 if (iPlayer->isGameMaster()) // bypass GMs
                     continue;
-                if (!player->GetGroup()) // player has not group and there is someone inside, deny entry
+                if (!iPlayer->GetGroup()) // player has not group and there is someone inside, deny entry
                 {
                     player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
                     return false;
                 }
                 // player inside instance has no group or his groups is different to entering player's one, deny entry
-                if (!iPlayer->GetGroup() || iPlayer->GetGroup() != player->GetGroup())
+                if (iPlayer->GetGroup() != player->GetGroup())
                 {
                     player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
                     return false;
                 }
                 break;
             }
+        }
+    }
 
     return Map::CanEnter(player);
 }
@@ -2424,6 +2430,10 @@ bool InstanceMap::AddPlayerToMap(Player* player)
             InstancePlayerBind* playerBind = player->GetBoundInstance(GetId(), Difficulty(GetSpawnMode()));
             if (playerBind && playerBind->perm)
             {
+                //If normal mode check save peer boss save
+                /*if(IsNormalRaid())
+                {
+                }*/
                 // cannot enter other instances if bound permanently
                 if (playerBind->save != mapSave)
                 {
@@ -2567,7 +2577,8 @@ void InstanceMap::CreateInstanceData(bool load)
         {
             Field* fields = result->Fetch();
             std::string data = fields[0].GetString();
-            i_data->SetCompletedEncountersMask(fields[1].GetUInt32());
+            uint32 completedEncounter = fields[1].GetUInt32();
+            i_data->SetCompletedEncountersMask(completedEncounter);
             i_data->SetChallengeProgresInSec(fields[2].GetUInt32());
             if (data != "")
             {
@@ -2621,7 +2632,7 @@ bool InstanceMap::Reset(uint8 method)
 
 void InstanceMap::PermBindAllPlayers(Player* source)
 {
-    if (!IsDungeon())
+    if (!IsDungeon() || IsLfr())
         return;
 
     InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());

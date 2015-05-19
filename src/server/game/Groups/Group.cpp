@@ -90,7 +90,7 @@ Group::~Group()
     // it is undefined whether objectmgr (which stores the groups) or instancesavemgr
     // will be unloaded first so we must be prepared for both cases
     // this may unload some instance saves
-    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+    for (uint8 i = 0; i < MAX_BOUND; ++i)
         for (BoundInstancesMap::iterator itr2 = m_boundInstances[i].begin(); itr2 != m_boundInstances[i].end(); ++itr2)
             itr2->second.save->RemoveGroup(this);
 
@@ -683,7 +683,7 @@ void Group::ChangeLeader(uint64 guid)
     if (!isBGGroup() && !isBFGroup())
     {
         // Remove the groups permanent instance bindings
-        for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+        for (uint8 i = 0; i < MAX_BOUND; ++i)
         {
             for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end();)
             {
@@ -2431,8 +2431,9 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
 
     // we assume that when the difficulty changes, all instances that can be reset will be
     Difficulty diff = GetDifficulty(isRaid);
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(diff);
 
-    for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
+    for (BoundInstancesMap::iterator itr = m_boundInstances[boundType].begin(); itr != m_boundInstances[boundType].end();)
     {
         InstanceSave* instanceSave = itr->second.save;
         const MapEntry* entry = sMapStore.LookupEntry(itr->first);
@@ -2487,8 +2488,8 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
 
 
             // i don't know for sure if hash_map iterators
-            m_boundInstances[diff].erase(itr);
-            itr = m_boundInstances[diff].begin();
+            m_boundInstances[boundType].erase(itr);
+            itr = m_boundInstances[boundType].begin();
             // this unloads the instance save unless online players are bound to it
             // (eg. permanent binds or GM solo binds)
             instanceSave->RemoveGroup(this);
@@ -2513,8 +2514,10 @@ InstanceGroupBind* Group::GetBoundInstance(Map* aMap)
     // some instances only have one difficulty
     GetDownscaledMapDifficultyData(aMap->GetId(), difficulty);
 
-    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(aMap->GetId());
-    if (itr != m_boundInstances[difficulty].end())
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
+
+    BoundInstancesMap::iterator itr = m_boundInstances[boundType].find(aMap->GetId());
+    if (itr != m_boundInstances[boundType].end())
         return &itr->second;
     else
         return NULL;
@@ -2530,8 +2533,10 @@ InstanceGroupBind* Group::GetBoundInstance(MapEntry const* mapEntry)
     // some instances only have one difficulty
     GetDownscaledMapDifficultyData(mapEntry->MapID, difficulty);
 
-    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapEntry->MapID);
-    if (itr != m_boundInstances[difficulty].end())
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
+
+    BoundInstancesMap::iterator itr = m_boundInstances[boundType].find(mapEntry->MapID);
+    if (itr != m_boundInstances[boundType].end())
         return &itr->second;
     else
         return NULL;
@@ -2542,16 +2547,23 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave* save, bool permanent, boo
     if (!save || isBGGroup() || isBFGroup())
         return NULL;
 
-    InstanceGroupBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
-    if (!load && (!bind.save || permanent != bind.perm || save != bind.save))
+    if(!save->CanBeSave())
+        permanent = false;
+
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(save->GetDifficulty());
+    InstanceGroupBind& bind = m_boundInstances[boundType][save->GetMapId()];
+    if(save->CanBeSave())
     {
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GROUP_INSTANCE);
+        if (!load && (!bind.save || permanent != bind.perm || save != bind.save))
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GROUP_INSTANCE);
 
-        stmt->setUInt32(0, m_dbStoreId);
-        stmt->setUInt32(1, save->GetInstanceId());
-        stmt->setBool(2, permanent);
+            stmt->setUInt32(0, m_dbStoreId);
+            stmt->setUInt32(1, save->GetInstanceId());
+            stmt->setBool(2, permanent);
 
-        CharacterDatabase.Execute(stmt);
+            CharacterDatabase.Execute(stmt);
+        }
     }
 
     if (bind.save != save)
@@ -2572,8 +2584,9 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave* save, bool permanent, boo
 
 void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
 {
-    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
-    if (itr != m_boundInstances[difficulty].end())
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
+    BoundInstancesMap::iterator itr = m_boundInstances[boundType].find(mapid);
+    if (itr != m_boundInstances[boundType].end())
     {
         if (!unload)
         {
@@ -2586,7 +2599,7 @@ void Group::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
         }
 
         itr->second.save->RemoveGroup(this);                // save can become invalid
-        m_boundInstances[difficulty].erase(itr);
+        m_boundInstances[boundType].erase(itr);
     }
 }
 
@@ -2907,7 +2920,8 @@ void Group::DelinkMember(uint64 guid)
 
 Group::BoundInstancesMap& Group::GetBoundInstances(Difficulty difficulty)
 {
-    return m_boundInstances[difficulty];
+    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
+    return m_boundInstances[boundType];
 }
 
 void Group::_initRaidSubGroupsCounter()
