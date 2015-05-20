@@ -1496,7 +1496,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
     // Mixology - Effect value mod
     if (caster && caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_POTION && (
+        if (/*GetSpellInfo()->SpellFamilyName == SPELLFAMILY_POTION && */(
             sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_BATTLE) ||
             sSpellMgr->IsSpellMemberOfSpellGroup(GetId(), SPELL_GROUP_ELIXIR_GUARDIAN)))
         {
@@ -1573,15 +1573,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     case 105693: // Flask of Falling Leaves
                         amount += 480;
                         break;
-                    //need info    
-                  // case 105686: // Elixir of Perfection
-                  // case 105687: // Elixir of Mirrors
-                  // case 105685: // Elixir of Peace
-                  // case 105684: // Elixir of the Rapids
-                  // case 105682: // Mad Hozen Elixir
-                  // case 105681: // Mantid Elixir
-                  // case 105683: // Elixir of Weaponry
-                  // case 105688: // Monk's Elixir
                 }
             }
         }
