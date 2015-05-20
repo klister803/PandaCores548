@@ -3059,14 +3059,17 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                 targets.remove_if(OptionCheck(GetCaster()));
                 if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
                 {
+                    targets.remove_if(NotFriendlyToOriginalCaster(GetOriginalCaster()));
                     targets.sort(CheckHealthState());
                     if (targets.size() > 1)
                         targets.resize(1);
-                    if(targets.size() == 0)
-                        targets.push_back(GetOriginalCaster());
                 }
                 else
-                    Trinity::Containers::RandomResizeList(targets, 1);
+                {
+                    targets.sort(CheckNearbyVictim(GetCaster()));
+                    if (targets.size() > 1)
+                        targets.resize(1);
+                }
             }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
@@ -3111,6 +3114,23 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                         return false;
                     }
             };
+            class NotFriendlyToOriginalCaster
+            {
+            public:
+                NotFriendlyToOriginalCaster(Unit* caster) : _caster(caster) {}
+
+                Unit* _caster;
+
+                bool operator()(WorldObject* unit)
+                {
+                    Unit* victim = unit->ToUnit();
+                    if (!victim)
+                        return true;
+                    if (!_caster->IsFriendlyTo(victim))
+                        return true;
+                    return false;
+                }
+            };
             class CheckHealthState
             {
                 public:
@@ -3126,6 +3146,32 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                             return false;
                         return unita->GetHealthPct() < unitb->GetHealthPct();
                     }
+            };
+            class CheckNearbyVictim
+            {
+            public:
+                CheckNearbyVictim(Unit* caster) : _caster(caster) { }
+
+                Unit* _caster;
+
+                bool operator() (WorldObject* a, WorldObject* b) const
+                {
+                    Unit* unita = a->ToUnit();
+                    Unit* unitb = b->ToUnit();
+                    if (!unita)
+                        return true;
+                    if (!unitb)
+                        return false;
+
+                    Position posA;
+                    Position posB;
+                    unita->GetPosition(&posA);
+                    unitb->GetPosition(&posB);
+                    float distA = _caster->GetDistance(posA);
+                    float distB = _caster->GetDistance(posB);
+
+                    return distA < distB;
+                }
             };
         };
 
