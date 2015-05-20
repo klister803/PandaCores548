@@ -20893,6 +20893,10 @@ void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
         victim->setDeathState(JUST_DIED);
     }
 
+    if (Creature* crt = victim->ToCreature())
+        if (CreatureAI* ai = crt->AI())
+            ai->ComonOnHome();
+
     // Inform pets (if any) when player kills target)
     // MUST come after victim->setDeathState(JUST_DIED); or pet next target
     // selection will get stuck on same target and break pet react state
