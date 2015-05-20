@@ -1323,7 +1323,7 @@ class spell_pal_divine_protection : public SpellScriptLoader
                         if(_heal)
                             caster->CastCustomSpell(caster, 144581, &_heal, NULL, NULL, true, NULL, aurEff);
                     }
-                    if(Aura* aura = caster->GetAura(138244))
+                    if (Aura* aura = caster->GetAura(144580))
                         aura->GetEffect(0)->SetAmount(0);
                 }
             }
