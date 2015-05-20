@@ -202,6 +202,11 @@ void TempSummon::InitStats(uint32 duration)
 
         switch(GetEntry())
         {
+            case 69792:
+            case 69680:
+            case 69791:
+                slot = SUMMON_SLOT_PET;
+                break;
             case 59271:     //Warlock purge gateway
                 slot = MAX_SUMMON_SLOT - 1;
                 break;
