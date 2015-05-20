@@ -132,22 +132,27 @@ public:
         bool comeonhome;
         bool startattack;
         uint32 jump;
+        uint32 canSeeCheck;
         uint32 entryId;
         uint64 firsttarget;
-        Unit *owner;
+        Unit* owner;
+        Unit* target;
         float oldHast;
 
         void InitializeAI()
         {
             owner = me->ToTempSummon()->GetSummoner();
+            target = NULL;
             firsttarget = me->GetTargetGUID();
             addaura = true;
             jumpontarget = true;
             comeonhome = false;
             startattack = false;
             jump = 0;
+            canSeeCheck = 0;
             entryId = me->GetEntry();
             oldHast = 0;
+            me->SetReactState(REACT_PASSIVE);
         }
 
         void CheckWayOfTheMonkAura()
@@ -180,23 +185,21 @@ public:
                 {
                     adddmg = offItem->GetTemplate()->DPS;
                     offattackspeed = mainItem->GetTemplate()->Delay / 1000.0f;
-
-                    if (greenClone)
-                        adddmg /= 2;
                 }
 
                 finaldmg += adddmg;
+                float damagePctDone = me->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELL_SCHOOL_MASK_NORMAL);
+                float offfinaldmg = finaldmg / 2;
+                finaldmg -= offfinaldmg;
+
+                offfinaldmg = (offfinaldmg + me->GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f) * (offattackspeed ? offattackspeed: mainattackspeed);
+                offfinaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT);
+                offfinaldmg += me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE);
+                offfinaldmg *= damagePctDone;
+                offfinaldmg = CalculatePct(offfinaldmg, 50);
 
                 if (!greenClone)
                 {
-                    float offfinaldmg = finaldmg / 2;
-                    finaldmg -= offfinaldmg;
-
-                    offfinaldmg = (offfinaldmg + me->GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f) * (offattackspeed ? offattackspeed: mainattackspeed);
-                    offfinaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, BASE_PCT);
-                    offfinaldmg += me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE);
-                    offfinaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_PCT);
-
                     me->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, offfinaldmg);
                     me->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, offfinaldmg);
                 }
@@ -204,7 +207,10 @@ public:
                 finaldmg = (finaldmg + me->GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f) * mainattackspeed;
                 finaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, BASE_PCT);
                 finaldmg += me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE);
-                finaldmg *= me->GetModifierValue(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_PCT);
+                finaldmg *= damagePctDone;
+
+                if (greenClone)
+                    finaldmg += offfinaldmg;
 
                 me->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, finaldmg);
                 me->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, finaldmg);
@@ -241,6 +247,7 @@ public:
                     me->SetFloatValue(UNIT_FIELD_BASEATTACKTIME+OFF_ATTACK, offattackspeed ? offattackspeed: mainattackspeed);
 
                 me->SetFloatValue(UNIT_FIELD_BASEATTACKTIME+BASE_ATTACK, mainattackspeed);
+                me->SetFloatValue(UNIT_MOD_CAST_HASTE, owner->GetFloatValue(UNIT_MOD_CAST_HASTE));
             }
         }
 
@@ -315,7 +322,7 @@ public:
         {
             if (!comeonhome)
             {
-                if (!me->getVictim())
+                if (!me->getVictim() || !target)
                 {
                     if (addaura)
                     {
@@ -352,10 +359,11 @@ public:
                         jump += diff;
                         if (jump >= 500)
                         {
-                            if(Unit* gettarget = ObjectAccessor::GetUnit(*me, firsttarget))
+                            if (target = ObjectAccessor::GetUnit(*me, firsttarget))
                             {
-                                me->CastSpell(gettarget, 124002, true);
-                                AttackStart(gettarget);
+                                me->CastSpell(target, 124002, true);
+                                AttackStart(target);
+                                me->SetReactState(REACT_AGGRESSIVE);
                                 jumpontarget = false;
                             }
                         }
@@ -378,25 +386,38 @@ public:
                     }
                 }
 
-                Unit *victim = me->getVictim();
-
-                if (me->isAttackReady() && me->IsWithinMeleeRange(victim))
+                canSeeCheck += diff;
+                if (canSeeCheck >= 1000 && target)
                 {
-                    me->AttackerStateUpdate(victim);
-                    me->resetAttackTimer();
+                    if (!me->canSeeOrDetect(target) && !comeonhome)
+                        ComonOnHome();
+                    canSeeCheck = 0;
+                }
 
-                    if (entryId != 69792 && !startattack)
+                Unit *victim = me->getVictim();
+                bool meeleRange = me->IsWithinMeleeRange(victim, me->GetAttackDist() - 2.0f);
+
+                if (me->IsWithinMeleeRange(victim))
+                {
+                    if (me->isAttackReady())
                     {
-                        me->setAttackTimer(OFF_ATTACK, 1000);
-                        startattack = true;
+                        me->AttackerStateUpdate(victim);
+                        me->resetAttackTimer();
+                    }
+                    if (entryId != 69792 && me->isAttackReady(OFF_ATTACK))
+                    {
+                        if (!startattack)
+                        {
+                            me->setAttackTimer(OFF_ATTACK, 1000);
+                            startattack = true;
+                        }
+                        me->AttackerStateUpdate(victim, OFF_ATTACK);
+                        me->resetAttackTimer(OFF_ATTACK);
                     }
                 }
 
-                if (entryId != 69792 && me->isAttackReady(OFF_ATTACK) && me->IsWithinMeleeRange(victim))
-                {
-                    me->AttackerStateUpdate(victim, OFF_ATTACK);
-                    me->resetAttackTimer(OFF_ATTACK);
-                }
+                if (!meeleRange)
+                    me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 2.0f);
             }
         }
     };
