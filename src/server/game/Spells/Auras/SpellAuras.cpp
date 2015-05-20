@@ -1558,7 +1558,7 @@ void Aura::RecalculateAmountOfEffects(bool setCanRecalc)
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (HasEffect(i))
         {
-            if(setCanRecalc)
+            if(setCanRecalc && !IsRemoved())
                 m_effects[i]->SetCanBeRecalculated(true);
             m_effects[i]->RecalculateAmount(caster);
         }

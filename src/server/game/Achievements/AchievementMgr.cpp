@@ -3261,6 +3261,9 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
 template<class T>
 bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
 {
+    if (m_completedAchievements.empty())
+        return false;
+
     CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
     if (itr == m_completedAchievements.end())
         return false;
@@ -3271,6 +3274,9 @@ bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
 template<class T>
 bool AchievementMgr<T>::HasAccountAchieved(uint32 achievementId) const
 {
+    if (m_completedAchievements.empty())
+        return false;
+
     return m_completedAchievements.find(achievementId) != m_completedAchievements.end();
 }
 

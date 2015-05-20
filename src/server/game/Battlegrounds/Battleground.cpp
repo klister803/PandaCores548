@@ -994,6 +994,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (realTeam != team)
                 player->setFactionForRace(player->getRace());
         }
+        player->RecalcArenaAuras();
     }
 
     RemovePlayer(player, guid, team);                           // BG subclass specific code
@@ -1086,7 +1087,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             player->TeleportToBGEntryPoint();
 
         sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Removed player %s from Battleground.", player->GetName());
-        player->RecalcArenaAuras();
     }
 
     //battleground object will be deleted next Battleground::Update() call
