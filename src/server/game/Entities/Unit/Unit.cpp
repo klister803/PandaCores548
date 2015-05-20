@@ -15061,8 +15061,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                         dist = 5;
 
                     float mult = base_rate + ((dist - 5) * 0.01f);
+                    float initSpeed = pOwner->GetSpeedRate(mtype) < old_speed ? old_speed : pOwner->GetSpeedRate(mtype);
 
-                    speed *= pOwner->GetSpeedRate(mtype) * mult; // pets derive speed from owner when not in combat
+                    speed *= initSpeed * mult; // pets derive speed from owner when not in combat
                 }
                 else
                     speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
