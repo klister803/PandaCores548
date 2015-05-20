@@ -134,6 +134,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
                 }
             }
 
@@ -152,13 +153,14 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                 case ACTION_PHASE_ONE_ACID: 
                 case ACTION_PHASE_ONE_FROST: 
-                case ACTION_PHASE_ONE_FIRE:  
+                case ACTION_PHASE_ONE_FIRE:
                     events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
+                    me->InterruptNonMeleeSpells(true);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     if (instance)
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
@@ -280,6 +282,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
                 }
             }
         };
@@ -332,6 +335,7 @@ public:
             {
                 damage = 0;
                 done = true;
+                events.Reset();
                 me->StopMoving();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->AttackStop();
@@ -505,7 +509,13 @@ public:
                 if (!GetHitUnit()->HasAura(SPELL_BLOODIED))
                 {
                     if (GetHitUnit()->HealthBelowPct(50))
-                        GetCaster()->AddAura(SPELL_BLOODIED, GetHitUnit());
+                    {
+                        if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                            if (!instance->GetData(DATA_THOK))
+                                return;
+
+                        GetHitUnit()->AddAura(SPELL_BLOODIED, GetHitUnit());
+                    }
                 }
                 else
                 {
