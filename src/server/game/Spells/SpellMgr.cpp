@@ -4528,6 +4528,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                     // Wise Mari Wash Away
                 case 106334:
+                case 99508: //Bloated Frog
                     spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                     break;
                 case 120552:
