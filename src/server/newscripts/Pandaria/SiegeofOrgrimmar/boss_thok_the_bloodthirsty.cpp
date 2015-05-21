@@ -100,6 +100,11 @@ Position fpos[3] =
 Position kjspawnpos = {1173.41f, -5130.74f, -289.9429f, 0.6028f};
 Position cpos = {1208.61f, -5106.27f, -289.939f, 0.526631f};
 
+enum CreatureText
+{
+    SAY_PULL
+};
+
 class boss_thok_the_bloodthirsty : public CreatureScript
 {
     public:
@@ -194,14 +199,14 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
                         kj->AI()->DoZoneInCombat(kj, 300.0f);
                     meleecheck = 4000;
                     break;
                 case ACTION_FIXATE:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
                     break;
                 }
@@ -316,6 +321,7 @@ public:
         
         void EnterCombat(Unit* who)
         {
+            Talk(SAY_PULL);
             events.ScheduleEvent(EVENT_ENRAGE_KJ, 1000);
         }
 
@@ -519,13 +525,7 @@ public:
                 }
                 else
                 {
-                    //Test Only
-                    if (GetCaster()->HasAura(SPELL_POWER_REGEN))
-                    {
-                        GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
-                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
-                    }
-                   /* std::list<Player*>pllist;
+                    std::list<Player*>pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
                     if (!pllist.empty())
@@ -539,7 +539,7 @@ public:
                                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                             }
                         }
-                    }*/
+                    }
                 }
             }
         }
