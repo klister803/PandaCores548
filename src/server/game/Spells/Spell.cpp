@@ -6534,10 +6534,6 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
 
 SpellCastResult Spell::CheckCast(bool strict)
 {
-    // Blink Strikes - Hunter pet
-    if (m_spellInfo->Id == 130393 && m_caster->HasUnitState(UNIT_STATE_ROOT))
-        return SPELL_FAILED_DONT_REPORT;
-    
     // Gloves S12 - Druid
     if (m_spellInfo->Id == 33830 && m_caster->HasAura(33830))
         return SPELL_FAILED_DONT_REPORT;
@@ -6611,6 +6607,14 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         m_customError = SPELL_CUSTOM_ERROR_GM_ONLY;
         return SPELL_FAILED_CUSTOM_ERROR;
+    }
+
+    if (AttributesCustomEx12 & SPELL_ATTR12_CANT_CAST_ROOTED && m_caster->HasUnitState(UNIT_STATE_ROOT))
+    {
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            return SPELL_FAILED_ROOTED;
+        else
+            return SPELL_FAILED_DONT_REPORT;
     }
 
     // Check global cooldown

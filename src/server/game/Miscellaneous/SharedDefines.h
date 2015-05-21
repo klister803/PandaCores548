@@ -844,7 +844,7 @@ enum SpellAttr12
     SPELL_ATTR12_UNK27                            = 0x08000000, // 27
     SPELL_ATTR12_UNK28                            = 0x10000000, // 28
     SPELL_ATTR12_UNK29                            = 0x20000000, // 29
-    SPELL_ATTR12_UNK30                            = 0x40000000, // 30
+    SPELL_ATTR12_CANT_CAST_ROOTED                 = 0x40000000, // 30
     SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING     = 0x80000000  // 31
 };
 

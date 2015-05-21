@@ -3805,6 +3805,12 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 101545: // Flying Serpent Kick
+                case 109132: // Roll
+                case 115008: // Chi Torpedo
+                case 130393: // Blink Strikes - Hunter pet
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_CANT_CAST_ROOTED;
+                    break;
                 case 113656: // Fists of Fury
                     spellInfo->AttributesEx5 |= SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME;
                     break;
