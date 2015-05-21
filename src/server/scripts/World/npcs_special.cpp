@@ -2421,26 +2421,21 @@ class npc_ebon_gargoyle : public CreatureScript
             npc_ebon_gargoyleAI(Creature* creature) : CasterAI(creature) {}
 
             uint32 despawnTimer;
+            bool checkTarget;
+            uint64 ownerGuid;
+            uint64 mainTargetGUID;
+            uint32 targetCheckTime;
 
             void InitializeAI()
             {
+                checkTarget = false;
+                mainTargetGUID = 0;
                 CasterAI::InitializeAI();
-                uint64 ownerGuid = me->GetOwnerGUID();
+                ownerGuid = me->GetOwnerGUID();
                 if (!ownerGuid)
                     return;
                 // Not needed to be despawned now
                 despawnTimer = 0;
-                // Find victim of Summon Gargoyle spell
-                std::list<Unit*> targets;
-                Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30);
-                Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-                me->VisitNearbyObject(30, searcher);
-                for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
-                    if ((*iter)->GetAura(49206, ownerGuid))
-                    {
-                        me->Attack((*iter), false);
-                        break;
-                    }
             }
 
             void JustDied(Unit* /*killer*/)
@@ -2493,6 +2488,37 @@ class npc_ebon_gargoyle : public CreatureScript
                     return;
                 }
                 CasterAI::UpdateAI(diff);
+
+                targetCheckTime += diff;
+                if (targetCheckTime > 2000)
+                {
+                    if (mainTargetGUID)
+                        if (me->getVictim() && !me->getVictim()->GetGUID() != mainTargetGUID)
+                            checkTarget = false;
+
+                    targetCheckTime = 0;
+                }
+
+                if (!checkTarget)
+                {
+                    std::list<Unit*> targets;
+                    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 30);
+                    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
+                    me->VisitNearbyObject(30, searcher);
+                    for (std::list<Unit*>::const_iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                        if (Unit* unit = (*iter)->ToUnit())
+                            if (unit->HasAura(49206, ownerGuid))
+                            {
+                                if (!mainTargetGUID)
+                                    mainTargetGUID = unit->GetGUID();
+
+                                if (me->IsValidAttackTarget(unit))
+                                    me->Attack((unit), false);
+                                break;
+                            }
+
+                    checkTarget = true;
+                }
             }
         };
 
