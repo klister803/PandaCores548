@@ -3251,7 +3251,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     }
                     // Pygmy Oil
                     case 53806:
-                        target->SetDisplayId(22512);
+                        target->SetDisplayId(14973);
                         break;
                     // Honor the Dead
                     case 65386:

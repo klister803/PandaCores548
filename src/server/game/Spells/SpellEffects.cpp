@@ -1274,6 +1274,29 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 92679: // Flask of Battle
+                {
+                    uint32 spellid;
+                    uint32 Agi = m_caster->GetStat(STAT_AGILITY);
+                    uint32 Str = m_caster->GetStat(STAT_STRENGTH);
+                    uint32 Int = m_caster->GetStat(STAT_INTELLECT);
+                    uint32 Spi = m_caster->GetStat(STAT_SPIRIT);
+
+                    if (Player* pPlayer = m_caster->ToPlayer())
+                    {
+                        if (pPlayer->isInTankSpec())
+                            pPlayer->CastSpell(pPlayer, 92729, true);
+                        else
+                        {
+                            if      (Agi > Str && Agi > Int && Agi > Spi) spellid = 92725;
+                            else if (Str > Agi && Str > Int && Str > Spi) spellid = 92731;
+                            else if (Int > Str && Int > Agi && Int > Spi) spellid = 92730;
+                            else if (Spi > Str && Spi > Agi && Spi > Int) spellid = 94160;
+                        }
+                        pPlayer->CastCustomSpell(pPlayer, spellid, &damage, 0, 0, true);
+                    }
+                    break;
+                }
                 case 126734: // Synapse Springs (Mod II)
                 {
                     uint32 spellid;
