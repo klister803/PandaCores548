@@ -4359,6 +4359,42 @@ class npc_riggle_bassbait : public CreatureScript
     }
 };
 
+class npc_mirror_image : public CreatureScript
+{
+    public:
+        npc_mirror_image() : CreatureScript("npc_mirror_image") { }
+
+        struct npc_mirror_imageAI : public Scripted_NoMovementAI
+        {
+            npc_mirror_imageAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            void Reset()
+            {
+                if (Unit* owner = me->GetOwner())
+                {
+                    owner->CastSpell(me, SPELL_CLONE_CASTER, true);
+                    owner->CastSpell(me, 41055, true);
+                    owner->CastSpell(me, 45206, true);
+                    me->SetFacingToObject(owner);
+                }
+            }
+
+            void UpdateAI(uint32 diff) {}
+
+            void EnterCombat(Unit* /*who*/) {}
+
+            void EnterEvadeMode() {}
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_mirror_imageAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -4409,4 +4445,5 @@ void AddSC_npcs_special()
     new npc_past_self();
     new npc_guild_battle_standard();
     new npc_riggle_bassbait();
+    new npc_mirror_image();
 }

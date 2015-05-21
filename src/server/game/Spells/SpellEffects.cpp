@@ -3640,7 +3640,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (!summon || !summon->isTotem())
                         return;
 
-                    
                     switch (m_spellInfo->Id)
                     {
                         case 114192: // Mocking Banner
