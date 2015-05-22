@@ -706,7 +706,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 switch (m_spellInfo->Id)
                 {
-                    case 44461:  // Living Bomb
+                    case 42208: // Blizzard
+                    {
+                        m_caster->CastSpell(unitTarget, 12486, true);
+                        break;
+                    }
+                    case 44461: // Living Bomb
                     {
                         SpellInfo const* Living_Bomb_Dot = sSpellMgr->GetSpellInfo(44457);
                         if (!Living_Bomb_Dot)
