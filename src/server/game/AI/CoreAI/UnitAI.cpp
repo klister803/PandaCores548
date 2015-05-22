@@ -198,9 +198,13 @@ void UnitAI::FillAISpellInfo()
             UPDATE_TARGET(AITARGET_SELF)
         else
         {
+            bool checkAura = true;
             for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
             {
                 uint32 targetType = spellInfo->Effects[j].TargetA.GetTarget();
+                
+                if (spellInfo->Effects[j].Effect != SPELL_EFFECT_APPLY_AURA)
+                    checkAura = false;
 
                 if (targetType == TARGET_UNIT_TARGET_ENEMY
                     || targetType == TARGET_DEST_TARGET_ENEMY)
@@ -208,7 +212,7 @@ void UnitAI::FillAISpellInfo()
                 else if (targetType == TARGET_UNIT_DEST_AREA_ENEMY)
                     UPDATE_TARGET(AITARGET_ENEMY)
 
-                if (spellInfo->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA)
+                if (spellInfo->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && checkAura)
                 {
                     if (targetType == TARGET_UNIT_TARGET_ENEMY)
                         UPDATE_TARGET(AITARGET_DEBUFF)
