@@ -2528,6 +2528,48 @@ class npc_ebon_gargoyle : public CreatureScript
         }
 };
 
+class npc_mirror_image : public CreatureScript
+{
+public:
+    npc_mirror_image() : CreatureScript("npc_mirror_image") { }
+
+    struct npc_mirror_imageAI : CasterAI
+    {
+        npc_mirror_imageAI(Creature* creature) : CasterAI(creature) {}
+
+        uint32 targetCheckTime;
+        bool firstCheck;
+
+        void InitializeAI()
+        {
+            CasterAI::InitializeAI();
+            targetCheckTime = 0;
+            firstCheck = false;
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            targetCheckTime += diff;
+            if (targetCheckTime > 2000 || !firstCheck)
+            {
+                if (Unit* owner = me->GetOwner())
+                    if (Unit* victim = owner->getVictim())
+                        me->Attack(victim, false);
+
+                firstCheck = true;
+                targetCheckTime = 0;
+            }
+
+            CasterAI::UpdateAI(diff);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_mirror_imageAI(creature);
+    }
+};
+
 class npc_lightwell : public CreatureScript
 {
     public:
@@ -4462,6 +4504,7 @@ void AddSC_npcs_special()
     new npc_brewfest_reveler();
     new npc_snake_trap();
     new npc_ebon_gargoyle();
+    new npc_mirror_image();
     new npc_lightwell();
     new npc_lightwell_mop();
     new mob_mojo();
