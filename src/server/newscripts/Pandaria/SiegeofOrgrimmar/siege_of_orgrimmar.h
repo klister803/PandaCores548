@@ -341,6 +341,7 @@ enum eGameObjects
 
     //Thok
     GO_THOK_ENT_DOOR               = 223805,
+    GO_ICE_TOMB                    = 218627,
     //Jails
     GO_JINUI_JAIL                  = 222010, //right
     GO_JINUI_JAIL2                 = 222011, 

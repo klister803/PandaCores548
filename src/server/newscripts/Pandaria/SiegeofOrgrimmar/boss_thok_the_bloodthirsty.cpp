@@ -35,6 +35,8 @@ enum eSpells
     //
     SPELL_FREEZING_BREATH    = 143773,
     SPELL_ICY_BLOOD          = 143800,
+    SPELL_SUMMON_ICE_TOMB    = 136929,
+    SPELL_FROZEN_SOLID       = 143777,
     //
     SPELL_SCORCHING_BREATH   = 143767,
     SPELL_BURNING_BLOOD      = 143783,
@@ -49,6 +51,8 @@ enum eSpells
 
     SPELL_ENRAGE_KJ          = 145974,
     SPELL_UNLOCKING          = 146589, 
+
+    SPELL_ENRAGE             = 145974,
 };
 
 enum Events
@@ -64,12 +68,14 @@ enum Events
     EVENT_FREEZING_BREATH    = 6,
     //
     EVENT_SCORCHING_BREATH   = 7,
+    EVENT_BURNING_BLOOD      = 8,
     //
 
     //Summon events
-    EVENT_ENRAGE_KJ          = 7,
-    EVENT_MOVE_TO_CENTER     = 8,
-    EVENT_MOVE_TO_THOK       = 9,
+    EVENT_ENRAGE_KJ          = 9,
+    EVENT_MOVE_TO_CENTER     = 10,
+    EVENT_MOVE_TO_THOK       = 11,
+    EVENT_CHECK_TPLAYER      = 12,
 };
 
 enum Action
@@ -119,12 +125,13 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             
             InstanceScript* instance;
             std::list<Player*> plist;
-            uint32 meleecheck;
+            uint32 meleecheck, enrage;
 
             void Reset()
             {
                 _Reset();
                 plist.clear();
+                DespawnObjects();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                 me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
@@ -135,6 +142,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
                 meleecheck = 0;
+                enrage = 0;
                 if (instance)
                 {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
@@ -143,9 +151,22 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
             }
 
+            void DespawnObjects()
+            {
+                std::list<AreaTrigger*> atlist;
+                atlist.clear();
+                me->GetAreaTriggersWithEntryInRange(atlist, 4890, me->GetGUID(), 150.0f);
+                if (!atlist.empty())
+                {
+                    for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
+                        (*itr)->RemoveFromWorld();
+                }
+            }
+
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
+                enrage = 600000;
                 DoCast(me, SPELL_POWER_REGEN, true);
                 events.ScheduleEvent(EVENT_SHOCK_BLAST, 1000);
                 events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
@@ -159,6 +180,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_ONE_ACID: 
                 case ACTION_PHASE_ONE_FROST: 
                 case ACTION_PHASE_ONE_FIRE:
+                    if (me->GetMap()->IsHeroic())
+                        me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(8));
                     events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
@@ -183,6 +206,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case ACTION_PHASE_ONE_FIRE:
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
+                        events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
                         break;
                     }
                     break;
@@ -217,6 +241,17 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                if (enrage)
+                {
+                    if (enrage <= diff)
+                    {
+                        DoCast(me, SPELL_ENRAGE, true);
+                        enrage = 0;
+                    }
+                    else
+                        enrage -= diff;
+                }
+
                 if (meleecheck)
                 {
                     if (meleecheck <= diff)
@@ -235,10 +270,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         meleecheck -= diff;
                 }
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
-                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
@@ -258,6 +293,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
                         break;
                     //Extra events
+                    //
                     case EVENT_ACID_BREATH:
                         DoCast(me, SPELL_ACID_BREATH, true);
                         events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
@@ -266,13 +302,20 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCastAOE(SPELL_CORROSIVE_BLOOD, true);
                         events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 3500);
                         break;
+                    //
                     case EVENT_FREEZING_BREATH:
                         DoCast(me, SPELL_FREEZING_BREATH, true);
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
                         break;
+                    //
                     case EVENT_SCORCHING_BREATH:
                         DoCast(me, SPELL_SCORCHING_BREATH, true);
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
+                        break;
+                    case EVENT_BURNING_BLOOD:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                            DoCast(target, SPELL_BURNING_BLOOD);
+                        events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
                         break;
                     }
                 }
@@ -283,6 +326,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
+                DespawnObjects();
                 if (instance)
                 {
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
@@ -465,6 +509,82 @@ public:
     }
 };
 
+//69398
+class npc_thok_ice_tomb : public CreatureScript
+{
+public:
+    npc_thok_ice_tomb() : CreatureScript("npc_thok_ice_tomb") {}
+
+    struct npc_thok_ice_tombAI : public ScriptedAI
+    {
+        npc_thok_ice_tombAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        uint64 sGuid;
+
+        void Reset()
+        {
+            events.Reset();
+            sGuid = 0;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            sGuid = summoner->GetGUID();
+            events.ScheduleEvent(EVENT_CHECK_TPLAYER, 1000);
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void JustDied(Unit* killer)
+        {
+            if (Player* pl = me->GetPlayer(*me, sGuid))
+            {
+                pl->RemoveAurasDueToSpell(SPELL_FROZEN_SOLID);
+                if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
+                    it->Delete();
+            }
+            me->DespawnOrUnsummon();
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_CHECK_TPLAYER)
+                {
+                    if (Player* pl = me->GetPlayer(*me, sGuid))
+                    {
+                        if (!pl->isAlive())
+                        {
+                            if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 3.0f))
+                                it->Delete();
+                            me->DespawnOrUnsummon();
+                        }
+                        else
+                            events.ScheduleEvent(EVENT_CHECK_TPLAYER, 1000);
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_thok_ice_tombAI(creature);
+    }
+};
 
 //143345
 class spell_power_regen : public SpellScriptLoader
@@ -643,14 +763,51 @@ public:
     }
 };
 
+//143800
+class spell_icy_blood : public SpellScriptLoader
+{
+public:
+    spell_icy_blood() : SpellScriptLoader("spell_icy_blood") { }
+
+    class spell_icy_blood_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_icy_blood_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget() && GetTarget()->HasAura(SPELL_ICY_BLOOD))
+            {
+                if (GetTarget()->GetAura(SPELL_ICY_BLOOD)->GetStackAmount() >= 5 && !GetTarget()->HasAura(SPELL_FROZEN_SOLID))
+                {
+                    GetTarget()->AddAura(SPELL_FROZEN_SOLID, GetTarget());
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_ICY_BLOOD);
+                    GetTarget()->CastSpell(GetTarget(), SPELL_SUMMON_ICE_TOMB, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_icy_blood_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_icy_blood_AuraScript();
+    }
+};
+
 
 void AddSC_boss_thok_the_bloodthirsty()
 {
     new boss_thok_the_bloodthirsty();
     new npc_korkron_jailer();
     new npc_generic_prisoner();
+    new npc_thok_ice_tomb();
     new spell_power_regen();
     new spell_clump_check();
     new spell_fixate();
     new spell_unlocking();
+    new spell_icy_blood();
 }
