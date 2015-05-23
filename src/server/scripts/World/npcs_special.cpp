@@ -3595,20 +3595,30 @@ class npc_frozen_orb : public CreatureScript
                         owner->CastSpell(owner, 126084, true);
                     owner->CastSpell(owner, 44544, true);
 
-                    float distance = 100.0f;
+                    
+                    float distance = 0.0f;
                     owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
-                    z = me->GetMap()->GetHeight(x,y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
-                    if(!me->IsWithinLOS(x, y, z))
+                    z = me->GetMap()->GetHeight(x, y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
+                    float moveX = x;
+                    float moveY = y;
+                    float moveZ = z;
+                    for (uint8 j = 0; distance < 100.0f; ++j)
                     {
-                        for (uint8 j = 0; distance > 5.0f; ++j)
+                        distance += 5.0f;
+                        owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
+                        z = me->GetMap()->GetHeight(x,y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
+                        if (me->IsWithinLOS(x, y, z))
                         {
-                            distance -= 5.0f;
-                            owner->GetNearPoint2D(x, y, distance, owner->GetOrientation());
-                            z = me->GetMap()->GetHeight(x,y, me->GetPositionZ(), true, MAX_FALL_DISTANCE);
-                            if(me->IsWithinLOS(x, y, z))
-                                break;
+                            moveX = x;
+                            moveY = y;
+                            moveZ = z;
                         }
+                        else
+                            break;
                     }
+                    x = moveX;
+                    y = moveY;
+                    z = moveZ;
                     me->GetMotionMaster()->MovePoint(0, x, y, z);
                 }
 
@@ -3638,15 +3648,18 @@ class npc_frozen_orb : public CreatureScript
 
                     owner->CastSpell(me, 84721, true);
 
-                    UnitList targets;
-                    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 10.0f);
-                    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
-                    me->VisitNearbyObject(10.0f, searcher);
-                    for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                    if (me->GetSpeed(MOVE_RUN) != 0.2f)
                     {
-                        me->SetSpeed(MOVE_WALK, 0.2f);
-                        me->SetSpeed(MOVE_RUN, 0.2f);
-                        break;
+                        UnitList targets;
+                        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(me, me, 10.0f);
+                        Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(me, targets, u_check);
+                        me->VisitNearbyObject(10.0f, searcher);
+                        for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+                        {
+                            me->SetSpeed(MOVE_WALK, 0.2f);
+                            me->SetSpeed(MOVE_RUN, 0.2f);
+                            break;
+                        }
                     }
                     frozenOrbTimer = 1000;
                 }
