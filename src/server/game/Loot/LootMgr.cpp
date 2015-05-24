@@ -2606,7 +2606,8 @@ void LootMgr::AddLoot(Loot* loot)
     uint32 guid = loot->GetGUIDLow();
     volatile uint32 guidDebug = guid;
     if(guid > 0)
-        m_Loots[guid] = loot;
+        m_Loots.emplace(guid, loot);
+        //m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
 }
 
