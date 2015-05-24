@@ -4001,6 +4001,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
                 case 124465: // Mastery: Vampiric Touch
+                case 143343: // Deafening Screech
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
                     break;
