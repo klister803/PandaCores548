@@ -2528,14 +2528,14 @@ class npc_ebon_gargoyle : public CreatureScript
         }
 };
 
-class npc_mirror_image : public CreatureScript
+class npc_mage_mirror_image : public CreatureScript
 {
 public:
-    npc_mirror_image() : CreatureScript("npc_mirror_image") { }
+    npc_mage_mirror_image() : CreatureScript("npc_mage_mirror_image") { }
 
-    struct npc_mirror_imageAI : CasterAI
+    struct npc_mage_mirror_imageAI : CasterAI
     {
-        npc_mirror_imageAI(Creature* creature) : CasterAI(creature) {}
+        npc_mage_mirror_imageAI(Creature* creature) : CasterAI(creature) {}
 
         uint32 targetCheckTime;
         bool firstCheck;
@@ -2566,7 +2566,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_mirror_imageAI(creature);
+        return new npc_mage_mirror_imageAI(creature);
     }
 };
 
@@ -4517,7 +4517,7 @@ void AddSC_npcs_special()
     new npc_brewfest_reveler();
     new npc_snake_trap();
     new npc_ebon_gargoyle();
-    new npc_mirror_image();
+    new npc_mage_mirror_image();
     new npc_lightwell();
     new npc_lightwell_mop();
     new mob_mojo();

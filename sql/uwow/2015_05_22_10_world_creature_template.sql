@@ -1,1 +1,1 @@
-UPDATE `creature_template` SET `ScriptName`='npc_mirror_image' WHERE (`entry`='31216');
+UPDATE `creature_template` SET `ScriptName`='npc_mage_mirror_image' WHERE (`entry`='31216');
