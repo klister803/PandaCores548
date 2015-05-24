@@ -309,6 +309,35 @@ class spell_gen_cannibalize : public SpellScriptLoader
         }
 };
 
+class spell_sha_cloud : public SpellScriptLoader
+{
+public:
+    spell_sha_cloud() : SpellScriptLoader("spell_sha_cloud") { }
+
+    class spell_sha_cloud_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_cloud_SpellScript);
+
+        void HandleOnCast()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                caster->GetMotionMaster()->MoveJump(1273.716f, 1039.498f, 434.867f, 20.0f, 15.0f, GetSpellInfo()->Id, 0.966f, 0);
+            }  
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_sha_cloud_SpellScript::HandleOnCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_sha_cloud_SpellScript();
+    }
+};
+
 // 45472 Parachute
 enum ParachuteSpells
 {
@@ -4023,6 +4052,7 @@ class spell_gen_cooking_way : public SpellScriptLoader
 
 void AddSC_generic_spell_scripts()
 {
+    new spell_sha_cloud();
     new spell_gen_battle_fatigue();
     new spell_endurance_of_niuzao();
     new spell_gen_absorb0_hitlimit1();
