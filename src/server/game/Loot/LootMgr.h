@@ -332,6 +332,7 @@ struct Loot
     bool bonusLoot;
     bool isBoss;
     bool isClear;
+    uint32 areaId;
 
     explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }
@@ -462,13 +463,13 @@ class LootMgr
     public:
         typedef UNORDERED_MAP<uint64, Loot*> LootsMap;
 
-        Loot* GetLoot(uint64 guid);
+        Loot* GetLoot(uint64 guid, uint32 areaId);
         void AddLoot(Loot* loot);
-        void RemoveLoot(uint64 guid);
+        void RemoveLoot(uint64 guid, uint32 areaId);
         uint32 GenerateLowGuid(uint32 areaId) { return ++m_LootGuid[areaId]; }
 
     protected:
-        LootsMap m_Loots;
+        LootsMap m_Loots[5492];
         uint32 m_LootGuid[5492];
 };
 

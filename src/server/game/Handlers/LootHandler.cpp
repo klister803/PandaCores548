@@ -96,7 +96,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
         }
         else if (IS_LOOT_GUID(lguid))
         {
-            loot = sLootMgr->GetLoot(lguid);
+            loot = sLootMgr->GetLoot(lguid, player->getCurrentUpdateAreaID());
             if(!loot)
             {
                 player->SendLootRelease(lguid);
