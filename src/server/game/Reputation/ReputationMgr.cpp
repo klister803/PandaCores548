@@ -213,6 +213,8 @@ void ReputationMgr::SendInitialReputations()
             data << uint8(0);
             data << uint32(0);
             bitBuff.WriteBit(0);
+            if(a >= 256)
+                break;
         }
 
         // fill in encountered data
@@ -221,6 +223,8 @@ void ReputationMgr::SendInitialReputations()
         bitBuff.WriteBit(0);                // bonus rep gain unlocked
 
         itr->second.needSend = false;
+        if(a >= 256)
+            break;
         ++a;
     }
 
