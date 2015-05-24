@@ -353,7 +353,7 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
     uint64 GetGUID() { return m_guid; }
     uint32 GetGUIDLow() { return GUID_LOPART(m_guid); }
-    void GenerateLootGuid();
+    void GenerateLootGuid(uint32 areaId);
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool noGroup, bool noEmptyError = false, WorldObject const* lootFrom = NULL);
@@ -452,7 +452,11 @@ class LootMgr
         friend class ACE_Singleton<LootMgr, ACE_Null_Mutex>;
 
     private:
-        LootMgr() {}
+        LootMgr()
+        {
+            for (uint16 i = 0; i < 5492; ++i)
+                m_LootGuid[i] = 0;
+        }
         ~LootMgr() {}
 
     public:
@@ -461,9 +465,11 @@ class LootMgr
         Loot* GetLoot(uint64 guid);
         void AddLoot(Loot* loot);
         void RemoveLoot(uint64 guid);
+        uint32 GenerateLowGuid(uint32 areaId) { return ++m_LootGuid[areaId]; }
 
     protected:
         LootsMap m_Loots;
+        uint32 m_LootGuid[5492];
 };
 
 #define sLootMgr ACE_Singleton<LootMgr, ACE_Null_Mutex>::instance()

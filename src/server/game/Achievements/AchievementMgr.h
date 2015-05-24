@@ -31,12 +31,16 @@ typedef std::list<CriteriaTreeEntry const*> CriteriaTreeEntryList;
 typedef std::list<AchievementEntry const*>         AchievementEntryList;
 typedef std::unordered_map<uint32, AchievementEntryList>         AchievementListByReferencedId;
 
-struct CriteriaProgress
+struct CriteriaTreeProgress
 {
     uint32 counter;
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
     bool changed;
+
+    // ToDo: make cleanup after achieve getting and store Criteria there - no need find it every time.
+    uint32 criteria;
+    uint32 achievID;
 };
 
 enum AchievementCriteriaDataType
@@ -221,11 +225,11 @@ struct CompletedAchievementData
     time_t date;
     std::set<uint64> guids;
     uint64 first_guid;
-    bool completedByThisCharacter;
+    bool isAccountAchievement;
     bool changed;
 };
 
-typedef UNORDERED_MAP<uint32, CriteriaProgress> CriteriaProgressMap;
+typedef UNORDERED_MAP<uint32, CriteriaTreeProgress> CriteriaProgressMap;
 typedef UNORDERED_MAP<uint32, CompletedAchievementData> CompletedAchievementMap;
 
 enum CriteriaSort
@@ -281,11 +285,11 @@ class AchievementMgr
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
         void SendAchievementEarned(AchievementEntry const* achievement) const;
-        void SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
-        void SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
+        void SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
+        void SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
 
-        CriteriaProgress* GetCriteriaProgress(uint32 entry);
-        CriteriaProgress* GetCriteriaProgress(CriteriaTreeEntry const* entry);
+        CriteriaTreeProgress* GetCriteriaProgress(uint32 entry);
+        CriteriaTreeProgress* GetCriteriaProgress(CriteriaTreeEntry const* entry);
         void SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* entry, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
         void RemoveCriteriaProgress(CriteriaTreeEntry const* entry);
         void CompletedCriteriaFor(AchievementEntry const* achievement, Player* referencePlayer);

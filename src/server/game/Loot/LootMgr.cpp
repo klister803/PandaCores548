@@ -481,9 +481,9 @@ Loot::Loot(uint32 _gold)
     m_guid = 0;
 }
 
-void Loot::GenerateLootGuid()
+void Loot::GenerateLootGuid(uint32 areaId)
 {
-    m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_LOOT), 0, HIGHGUID_LOOT);
+    m_guid = MAKE_NEW_GUID(sLootMgr->GenerateLowGuid(areaId), 0, HIGHGUID_LOOT);
 }
 
 // Inserts the item into the loot (called by LootTemplate processors)
@@ -2599,7 +2599,7 @@ Loot* LootMgr::GetLoot(uint64 guid)
 void LootMgr::AddLoot(Loot* loot)
 {
     if(!loot->GetGUID())
-        loot->GenerateLootGuid();
+        loot->GenerateLootGuid(loot->GetLootOwner()->getCurrentUpdateAreaID());
     uint64 guid = loot->GetGUID();
     m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());

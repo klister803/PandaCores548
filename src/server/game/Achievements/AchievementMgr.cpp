@@ -593,6 +593,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
     if (!m_completedAchievements.empty())
     {
         bool need_execute = false;
+        bool need_execute_acc = false;
 
         std::ostringstream ssAccDel;
         std::ostringstream ssAccIns;
@@ -605,43 +606,45 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
             if (!iter->second.changed)
                 continue;
 
-            bool mustSaveForCharacter = iter->second.completedByThisCharacter;
+            bool isAccount = iter->second.isAccountAchievement;
 
             /// first new/changed record prefix
             if (!need_execute)
             {
-                ssAccDel << "DELETE FROM account_achievement WHERE account = " << GetOwner()->GetSession()->GetAccountId() << " AND achievement IN (";
-                ssAccIns << "INSERT INTO account_achievement (account, first_guid, achievement, date) VALUES ";
-
-                if (mustSaveForCharacter)
-                {
-                    ssCharDel << "DELETE FROM character_achievement WHERE guid = " << GetOwner()->GetGUIDLow() << " AND achievement IN (";
-                    ssCharIns << "INSERT INTO character_achievement (guid, achievement) VALUES ";
-                }
+                ssCharDel << "DELETE FROM character_achievement WHERE guid = " << GetOwner()->GetGUIDLow() << " AND achievement IN (";
+                ssCharIns << "INSERT INTO character_achievement (guid, achievement, date) VALUES ";
                 need_execute = true;
             }
             /// next new/changed record prefix
             else
             {
-                ssAccDel << ',';
-                ssAccIns << ',';
+                ssCharDel << ',';
+                ssCharIns << ',';
+            }
 
-                if (mustSaveForCharacter)
+            if (isAccount)
+            {
+                if (!need_execute_acc)
                 {
-                    ssCharDel << ',';
-                    ssCharIns << ',';
+                    ssAccDel << "DELETE FROM account_achievement WHERE account = " << GetOwner()->GetSession()->GetAccountId() << " AND achievement IN (";
+                    ssAccIns << "INSERT INTO account_achievement (account, first_guid, achievement, date) VALUES ";
+                    need_execute_acc = true;
+                }else
+                {
+                    ssAccDel << ',';
+                    ssAccIns << ',';
                 }
             }
 
             // new/changed record data
-            ssAccDel << iter->first;
-            ssAccIns << '(' << GetOwner()->GetSession()->GetAccountId() << ',' << iter->second.first_guid << ',' << iter->first << ',' << iter->second.date << ')';
-
-            if (mustSaveForCharacter)
+            if (isAccount)
             {
-                ssCharDel << iter->first;
-                ssCharIns << '(' << GetOwner()->GetGUIDLow() << ',' << iter->first << ')';
+                ssAccDel << iter->first;
+                ssAccIns << '(' << GetOwner()->GetSession()->GetAccountId() << ',' << iter->second.first_guid << ',' << iter->first << ',' << iter->second.date << ')';
             }
+
+            ssCharDel << iter->first;
+            ssCharIns << '(' << GetOwner()->GetGUIDLow() << ',' << iter->first << ',' << iter->second.date << ')';
 
             /// mark as saved in db
             iter->second.changed = false;
@@ -649,13 +652,16 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
 
         if (need_execute)
         {
-            ssAccDel  << ')';
             ssCharDel << ')';
-            trans->Append(ssAccDel.str().c_str());
-            trans->Append(ssAccIns.str().c_str());
-
             trans->Append(ssCharDel.str().c_str());
             trans->Append(ssCharIns.str().c_str());
+        }
+
+        if (need_execute_acc)
+        {
+            ssAccDel  << ')';
+            trans->Append(ssAccDel.str().c_str());
+            trans->Append(ssAccIns.str().c_str());
         }
     }
 
@@ -682,7 +688,6 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
         std::ostringstream ssAccins;
         std::ostringstream ssChardel;
         std::ostringstream ssCharins;
-
         
         uint64 guid      = GetOwner()->GetGUIDLow();
         uint32 accountId = GetOwner()->GetSession()->GetAccountId();
@@ -749,7 +754,8 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
             }
 
             // store data only for real progress
-            if (iter->second.counter != 0)
+            bool hasAchieve = HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
+            if (iter->second.counter != 0 && !hasAchieve)
             {
                 /// first new/changed record prefix
                 if (!need_execute_ins)
@@ -913,7 +919,7 @@ void AchievementMgr<ScenarioProgress>::LoadFromDB(PreparedQueryResult achievemen
             if (!progressMap)
                 continue;
 
-            CriteriaProgress& progress = (*progressMap)[char_criteria_id];
+            CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
             progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.changed = false;
@@ -942,7 +948,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             ca.date = time_t(fields[2].GetUInt32());
             ca.changed = false;
             ca.first_guid = first_guid;
-            ca.completedByThisCharacter = false;
+            ca.isAccountAchievement = false;
             
             _achievementPoints += achievement->points;
 
@@ -959,6 +965,45 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
         } 
         while (achievementAccountResult->NextRow());
+    }
+
+    if (achievementResult)
+    {
+        do
+        {
+            Field* fields = achievementResult->Fetch();
+            uint32 achievementid = fields[0].GetUInt32();
+
+            // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
+            AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
+            if (!achievement)
+                continue;
+
+            // already added on account
+            if (m_completedAchievements.find(achievementid) ==  m_completedAchievements.end())
+                continue;
+
+            CompletedAchievementData& ca = m_completedAchievements[achievementid];
+            ca.isAccountAchievement = false;
+            ca.changed = false;
+            ca.first_guid = GetOwner()->GetGUIDLow();
+            ca.date = time_t(fields[1].GetUInt32());
+
+            _achievementPoints += achievement->points;
+
+            // title achievement rewards are retroactive
+            if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
+            {
+                if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
+                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
+                        GetOwner()->SetTitle(titleEntry);
+
+                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
+                    GetOwner()->learnSpell(reward->learnSpell, true);
+            }
+
+        }
+        while (achievementResult->NextRow());
     }
 
     if (criteriaResult)
@@ -996,6 +1041,18 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             }
 
+            AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+            bool hasAchieve = !achievement || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
+            if (hasAchieve)
+            {
+                // we will remove already completed criteria
+                sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "Achievement %s with progress char_criteria_id %u data removed from table `character_achievement_progress` ", achievement ? "completed" : "not exist", char_criteria_id);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
+                stmt->setUInt32(0, char_criteria_id);
+                CharacterDatabase.Execute(stmt);
+            }
+
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
                 continue;
 
@@ -1004,50 +1061,12 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (!progressMap)
                 continue;
 
-            CriteriaProgress& progress = (*progressMap)[char_criteria_id];
+            CriteriaTreeProgress& progress = (*progressMap)[char_criteria_id];
             progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.changed = false;
         }
         while (criteriaResult->NextRow());
-    }
-    
-    if (achievementResult)
-    {
-        do
-        {
-            Field* fields = achievementResult->Fetch();
-            uint32 achievementid = fields[0].GetUInt32();
-
-            // must not happen: cleanup at server startup in sAchievementMgr->LoadCompletedAchievements()
-            AchievementEntry const* achievement = sAchievementMgr->GetAchievement(achievementid);
-            if (!achievement)
-                continue;
-
-            CompletedAchievementData& ca = m_completedAchievements[achievementid];
-            ca.completedByThisCharacter = true;
-
-            // not fined achievement progress.
-            if (m_completedAchievements.find(achievementid) ==  m_completedAchievements.end())
-            {
-                ca.date = time(NULL);
-                ca.changed = true;
-            }
-            _achievementPoints += achievement->points;
-
-            // title achievement rewards are retroactive
-            if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
-            {
-                if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
-                    if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
-                        GetOwner()->SetTitle(titleEntry);
-
-                if (reward->learnSpell && !GetOwner()->HasSpell(reward->learnSpell))
-                    GetOwner()->learnSpell(reward->learnSpell, true);
-            }
-
-        }
-        while (achievementResult->NextRow());
     }
 
     if (criteriaAccountResult)
@@ -1085,6 +1104,18 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             }
 
+            AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+            bool hasAchieve = !achievement || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
+            if (hasAchieve)
+            {
+                // we will remove already completed criteria
+                sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "Achievement %s with progress acc_criteria_id %u data removed from table `account_achievement_progress` ", achievement ? "completed" : "not exist", acc_criteria_id);
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACC_ACHIEV_PROGRESS_CRITERIA);
+                stmt->setUInt32(0, acc_criteria_id);
+                CharacterDatabase.Execute(stmt);
+            }
+
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
                 continue;
 
@@ -1100,7 +1131,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             }
             
-            CriteriaProgress& progress = (*progressMap)[acc_criteria_id];
+            CriteriaTreeProgress& progress = (*progressMap)[acc_criteria_id];
             progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.changed = false;
@@ -1142,18 +1173,18 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
         do
         {
             Field* fields = criteriaResult->Fetch();
-            uint32 guild_criteria_id      = fields[0].GetUInt32();
+            uint32 guild_criteriaTree_id  = fields[0].GetUInt32();
             time_t date                   = time_t(fields[2].GetUInt32());
             uint64 guid                   = fields[3].GetUInt32();
 
-            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(guild_criteria_id);
+            CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(guild_criteriaTree_id);
             if (!criteriaTree)
             {
                 // we will remove not existed criteria for all guilds
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteria_id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteriaTree_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, guild_criteria_id);
+                stmt->setUInt32(0, guild_criteriaTree_id);
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1162,10 +1193,10 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
             if (!criteria)
             {
                 // we will remove not existed criteria for all guilds
-                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteria_id);
+                sLog->outError(LOG_FILTER_ACHIEVEMENTSYS, "Non-existing achievement criteria %u data removed from table `guild_achievement_progress`.", guild_criteriaTree_id);
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA);
-                stmt->setUInt32(0, guild_criteria_id);
+                stmt->setUInt32(0, guild_criteriaTree_id);
                 CharacterDatabase.Execute(stmt);
                 continue;
             }
@@ -1178,7 +1209,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
             if (!progressMap)
                 continue;
             
-            CriteriaProgress& progress = (*progressMap)[guild_criteria_id];
+            CriteriaTreeProgress& progress = (*progressMap)[guild_criteriaTree_id];
             progress.counter = fields[1].GetUInt32();
             progress.date    = date;
             progress.CompletedGUID = MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
@@ -1370,17 +1401,17 @@ void AchievementMgr<Guild>::SendAchievementEarned(AchievementEntry const* achiev
 }
 
 template<class T>
-void AchievementMgr<T>::SendCriteriaUpdate(CriteriaEntry const* /*entry*/, CriteriaProgress const* /*progress*/, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+void AchievementMgr<T>::SendCriteriaUpdate(CriteriaEntry const* /*entry*/, CriteriaTreeProgress const* /*progress*/, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
 {
 }
 
 template<class T>
-void AchievementMgr<T>::SendAccountCriteriaUpdate(CriteriaEntry const* /*entry*/, CriteriaProgress const* /*progress*/, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+void AchievementMgr<T>::SendAccountCriteriaUpdate(CriteriaEntry const* /*entry*/, CriteriaTreeProgress const* /*progress*/, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
 {
 }
 
 template<>
-void AchievementMgr<Player>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
+void AchievementMgr<Player>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
 {
     WorldPacket data(SMSG_CRITERIA_UPDATE, 8 + 4 + 8);
     data << uint32(entry->ID);
@@ -1402,7 +1433,7 @@ void AchievementMgr<Player>::SendCriteriaUpdate(CriteriaEntry const* entry, Crit
 }
 
 template<>
-void AchievementMgr<Player>::SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
+void AchievementMgr<Player>::SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const
 {
     WorldPacket data(SMSG_ACCOUNT_CRITERIA_UPDATE);
     ObjectGuid guid = GetOwner()->GetGUID();         // needed send first completer criteria guid or else not found - then current player guid
@@ -1435,7 +1466,7 @@ void AchievementMgr<Player>::SendAccountCriteriaUpdate(CriteriaEntry const* entr
 }
 
 template<>
-void AchievementMgr<ScenarioProgress>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool timedCompleted) const
+void AchievementMgr<ScenarioProgress>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 /*timeElapsed*/, bool timedCompleted) const
 {
     // FIXME
     GetOwner()->SendCriteriaUpdate(entry->ID, progress->counter, progress->date);
@@ -1444,7 +1475,7 @@ void AchievementMgr<ScenarioProgress>::SendCriteriaUpdate(CriteriaEntry const* e
 }
 
 template<>
-void AchievementMgr<Guild>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaProgress const* progress, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
+void AchievementMgr<Guild>::SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 /*timeElapsed*/, bool /*timedCompleted*/) const
 {
     //will send response to criteria progress request
     WorldPacket data(SMSG_GUILD_CRITERIA_UPDATE, 3 + 1 + 1 + 8 + 8 + 4 + 4 + 4 + 4 + 4);
@@ -1675,7 +1706,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY:
             {
                 time_t nextDailyResetTime = sWorld->GetNextDailyQuestsResetTime();
-                CriteriaProgress *progress = GetCriteriaProgress(criteriaTree);
+                CriteriaTreeProgress *progress = GetCriteriaProgress(criteriaTree);
 
                 if (!miscValue1) // Login case.
                 {
@@ -1970,7 +2001,7 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         return false;
     }
 
-    CriteriaProgress const* progress = GetCriteriaProgress(criteriaTree);
+    CriteriaTreeProgress const* progress = GetCriteriaProgress(criteriaTree);
     if (!progress)
         return false;
 
@@ -2115,7 +2146,7 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
         else
         {
             CriteriaEntry const* achievementCriteria = sAchievementMgr->GetAchievementCriteria(cTree->criteria);
-            CriteriaProgress const* progress = GetCriteriaProgress(cTree);
+            CriteriaTreeProgress const* progress = GetCriteriaProgress(cTree);
             if(!progress || !achievementCriteria)
                 continue;
 
@@ -2296,7 +2327,7 @@ bool AchievementMgr<T>::IsCompletedScenarioTree(CriteriaTreeEntry const* criteri
         else
         {
             CriteriaEntry const* achievementCriteria = sAchievementMgr->GetAchievementCriteria(cTree->criteria);
-            CriteriaProgress const* progress = GetCriteriaProgress(cTree);
+            CriteriaTreeProgress const* progress = GetCriteriaProgress(cTree);
             if(!progress || !achievementCriteria)
                 return false;
 
@@ -2471,7 +2502,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
         {
             CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
 
-            CriteriaProgress const* progress = GetCriteriaProgress(criteriaTree);
+            CriteriaTreeProgress const* progress = GetCriteriaProgress(criteriaTree);
             if (!progress)
                 continue;
 
@@ -2515,7 +2546,7 @@ bool AchievementMgr<T>::IsCompletedAchievement(AchievementEntry const* entry)
 }
 
 template<class T>
-CriteriaProgress* AchievementMgr<T>::GetCriteriaProgress(uint32 entry)
+CriteriaTreeProgress* AchievementMgr<T>::GetCriteriaProgress(uint32 entry)
 {
     CriteriaProgressMap* criteriaProgressMap = GetCriteriaProgressMap();
 
@@ -2531,7 +2562,7 @@ CriteriaProgress* AchievementMgr<T>::GetCriteriaProgress(uint32 entry)
 }
 
 template<class T>
-CriteriaProgress* AchievementMgr<T>::GetCriteriaProgress(CriteriaTreeEntry const* entry)
+CriteriaTreeProgress* AchievementMgr<T>::GetCriteriaProgress(CriteriaTreeEntry const* entry)
 {
    CriteriaProgressMap* criteriaProgressMap = GetCriteriaProgressMap();
 
@@ -2556,7 +2587,7 @@ void AchievementMgr<T>::SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, 
 
     sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "SetCriteriaProgress(%u, %u) CriteriaSort %u", entry->ID, changeValue, GetCriteriaSort());
 
-    CriteriaProgress* progress = GetCriteriaProgress(treeEntry);
+    CriteriaTreeProgress* progress = GetCriteriaProgress(treeEntry);
     if (!progress)
     {
         // not create record for 0 counter but allow it for timed achievements
@@ -2730,13 +2761,13 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
     if (HasAccountAchieved(achievement->ID))
     {
-        CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
-        ca.completedByThisCharacter = true;
+        //CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
+        //ca.isAccountAchievement = true;
         return;
     }
     
     CompletedAchievementData& ca = m_completedAchievements[achievement->ID];
-    ca.completedByThisCharacter = true;
+    ca.isAccountAchievement = achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT;
     ca.date = time(NULL);
     ca.first_guid = GetOwner()->GetGUIDLow();
     ca.changed = true;
@@ -2892,7 +2923,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
         // account criteria send in other packet
-        if (!achievement || (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT) || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent)))
+        if (!achievement || (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
             continue;
 
         ObjectGuid counter = uint64(itr->second.counter);
@@ -2948,7 +2979,7 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
         // account criteria send in other packet
-        if (!achievement || (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT) || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent)))
+        if (!achievement || (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
             continue;
 
         ObjectGuid counter = uint64(itr->second.counter);
@@ -3029,7 +3060,7 @@ void AchievementMgr<T>::SendAllAccountCriteriaData(Player* /*receiver*/)
 
         AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(GetParantTreeId(criteriaTree->parent));
 
-        if (!achievement || !(achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT) || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent)))
+        if (!achievement || !(achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT))
             continue;
 
         ObjectGuid counter = uint64(itr->second.counter);
@@ -3209,7 +3240,7 @@ void AchievementMgr<Guild>::SendAchievementInfo(Player* receiver, uint32 achieve
     for (std::list<uint32>::const_iterator itr = cTree->begin(); itr != cTree->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr);
-        CriteriaProgress* progress = GetCriteriaProgress(criteriaTree->ID);
+        CriteriaTreeProgress* progress = GetCriteriaProgress(criteriaTree->ID);
         if (!progress)
             continue;
 
@@ -4109,8 +4140,16 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MIN_LEVEL: // 70
+                {
                     if (!unit || unit->getLevel() >= reqValue)
                         check = false;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MAX_LEVEL: // 71
+                {
+                    if (!unit || unit->getLevel() < reqValue)
+                        check = false;
+                    break;
+                }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
                 {
                     BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(miscValue1);
@@ -4140,6 +4179,12 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                         if (!bp || bp->ID != reqValue)
                             check = false;
                     }
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_EXPANSION_LESS: // 92
+                {
+                    if (reqValue >= (int32)sWorld->getIntConfig(CONFIG_EXPANSION))
+                        check = false;
+                    break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_REPUTATION: // 95
                 {

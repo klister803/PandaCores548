@@ -155,7 +155,8 @@ bool Group::Create(Player* leader)
 
         ASSERT(AddMember(leader)); // If the leader can't be added to a new group because it appears full, something is clearly wrong.
 
-        Player::ConvertInstancesToGroup(leader, this, false);
+        if (!isLFGGroup())
+            Player::ConvertInstancesToGroup(leader, this, false);
     }
     else if (!AddMember(leader))
         return false;
@@ -707,7 +708,8 @@ void Group::ChangeLeader(uint64 guid)
         CharacterDatabase.Execute(stmt);
 
         // Copy the permanent binds from the new leader to the group
-        Player::ConvertInstancesToGroup(player, this, true);
+        if (!isLFGGroup())
+            Player::ConvertInstancesToGroup(player, this, true);
 
         // Update the group leader
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_LEADER);

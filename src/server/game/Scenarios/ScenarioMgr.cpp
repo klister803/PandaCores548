@@ -245,7 +245,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
         {
             for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
             {
-                CriteriaProgress const& progress = itr->second;
+                CriteriaTreeProgress const& progress = itr->second;
                 CriteriaTreeEntry const* criteriaTreeEntry = sCriteriaTreeStore.LookupEntry(itr->first);
                 if (!criteriaTreeEntry)
                     continue;
