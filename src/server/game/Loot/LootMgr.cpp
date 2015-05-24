@@ -481,9 +481,9 @@ Loot::Loot(uint32 _gold)
     m_guid = 0;
 }
 
-void Loot::GenerateLootGuid(uint32 areaId)
+void Loot::GenerateLootGuid()
 {
-    m_guid = MAKE_NEW_GUID(sLootMgr->GenerateLowGuid(areaId), 0, HIGHGUID_LOOT);
+    m_guid = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_LOOT), 0, HIGHGUID_LOOT);
 }
 
 // Inserts the item into the loot (called by LootTemplate processors)
@@ -535,7 +535,6 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
             spawnMode = lootFrom->GetMap()->GetSpawnMode();
     }
     m_lootOwner = lootOwner;
-    areaId = m_lootOwner->getCurrentUpdateAreaID();
 
     LootTemplate const* tab = store.GetLootFor(lootId);
 
@@ -678,13 +677,12 @@ void Loot::clear()
     roundRobinPlayer = 0;
     objType = 0;
     i_LootValidatorRefManager.clearReferences();
-    sLootMgr->RemoveLoot(GetGUID(), areaId);
+    sLootMgr->RemoveLoot(GetGUIDLow());
     chance = 20;
     personal = false;
     isBoss = false;
     bonusLoot = false;
     isClear = true;
-    areaId = 0;
 }
 
 QuestItemList* Loot::FillCurrencyLoot(Player* player)
@@ -2584,37 +2582,38 @@ void LoadLootTemplates_Reference()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded refence loot templates in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
 
-Loot* LootMgr::GetLoot(uint64 guid, uint32 areaId)
+Loot* LootMgr::GetLoot(uint64 guid)
 {
-    if(m_Loots[areaId].empty())
+    uint32 lowGuid = GUID_LOPART(guid);
+    if(m_Loots.empty())
         return NULL;
 
     Loot* loot = NULL;
-    LootsMap::iterator itr = m_Loots[areaId].find(guid);
-    if (itr != m_Loots[areaId].end())
+    LootsMap::iterator itr = m_Loots.find(lowGuid);
+    if (itr != m_Loots.end())
         loot = itr->second;
 
-    //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::GetLoot loot %i guid %i size %i", loot ? loot->GetGUID() : 0, guid, m_Loots[areaId].size());
+    //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::GetLoot loot %i guid %i size %i", loot ? loot->GetGUID() : 0, guid, m_Loots.size());
     return loot;
 }
 
 void LootMgr::AddLoot(Loot* loot)
 {
     if(!loot->GetGUID())
-        loot->GenerateLootGuid(loot->areaId);
-    uint64 guid = loot->GetGUID();
-    m_Loots[loot->areaId][guid] = loot;
+        loot->GenerateLootGuid();
+    uint32 guid = loot->GetGUIDLow();
+    m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
 }
 
-void LootMgr::RemoveLoot(uint64 guid, uint32 areaId)
+void LootMgr::RemoveLoot(uint32 guid)
 {
-    if(m_Loots[areaId].empty())
+    if(m_Loots.empty())
         return;
 
-    LootsMap::iterator itr = m_Loots[areaId].find(guid);
-    if (itr == m_Loots[areaId].end())
+    LootsMap::iterator itr = m_Loots.find(guid);
+    if (itr == m_Loots.end())
         return;
 
-    m_Loots[areaId].erase(itr);
+    m_Loots.erase(itr);
 }

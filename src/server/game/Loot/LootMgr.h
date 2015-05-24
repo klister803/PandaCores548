@@ -332,7 +332,6 @@ struct Loot
     bool bonusLoot;
     bool isBoss;
     bool isClear;
-    uint32 areaId;
 
     explicit Loot(uint32 _gold = 0);
     ~Loot() { clear(); }
@@ -354,7 +353,7 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
     uint64 GetGUID() { return m_guid; }
     uint32 GetGUIDLow() { return GUID_LOPART(m_guid); }
-    void GenerateLootGuid(uint32 areaId);
+    void GenerateLootGuid();
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool noGroup, bool noEmptyError = false, WorldObject const* lootFrom = NULL);
@@ -453,24 +452,18 @@ class LootMgr
         friend class ACE_Singleton<LootMgr, ACE_Null_Mutex>;
 
     private:
-        LootMgr()
-        {
-            for (uint16 i = 0; i < 5492; ++i)
-                m_LootGuid[i] = 0;
-        }
+        LootMgr() {}
         ~LootMgr() {}
 
     public:
         typedef UNORDERED_MAP<uint64, Loot*> LootsMap;
 
-        Loot* GetLoot(uint64 guid, uint32 areaId);
+        Loot* GetLoot(uint64 guid);
         void AddLoot(Loot* loot);
-        void RemoveLoot(uint64 guid, uint32 areaId);
-        uint32 GenerateLowGuid(uint32 areaId) { return ++m_LootGuid[areaId]; }
+        void RemoveLoot(uint32 guid);
 
     protected:
-        LootsMap m_Loots[5492];
-        uint32 m_LootGuid[5492];
+        LootsMap m_Loots;
 };
 
 #define sLootMgr ACE_Singleton<LootMgr, ACE_Null_Mutex>::instance()
