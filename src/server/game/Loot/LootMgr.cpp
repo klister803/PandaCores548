@@ -677,7 +677,8 @@ void Loot::clear()
     roundRobinPlayer = 0;
     objType = 0;
     i_LootValidatorRefManager.clearReferences();
-    sLootMgr->RemoveLoot(GetGUIDLow());
+    if(m_guid)
+        sLootMgr->RemoveLoot(GetGUIDLow());
     chance = 20;
     personal = false;
     isBoss = false;
@@ -2585,7 +2586,8 @@ void LoadLootTemplates_Reference()
 Loot* LootMgr::GetLoot(uint64 guid)
 {
     uint32 lowGuid = GUID_LOPART(guid);
-    if(m_Loots.empty())
+    volatile uint32 guidDebug = lowGuid;
+    if(m_Loots.empty() || lowGuid <= 0)
         return NULL;
 
     Loot* loot = NULL;
@@ -2602,13 +2604,16 @@ void LootMgr::AddLoot(Loot* loot)
     if(!loot->GetGUID())
         loot->GenerateLootGuid();
     uint32 guid = loot->GetGUIDLow();
-    m_Loots[guid] = loot;
+    volatile uint32 guidDebug = guid;
+    if(guid > 0)
+        m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
 }
 
 void LootMgr::RemoveLoot(uint32 guid)
 {
-    if(m_Loots.empty())
+    volatile uint32 guidDebug = guid;
+    if(m_Loots.empty() || guid <= 0)
         return;
 
     LootsMap::iterator itr = m_Loots.find(guid);
