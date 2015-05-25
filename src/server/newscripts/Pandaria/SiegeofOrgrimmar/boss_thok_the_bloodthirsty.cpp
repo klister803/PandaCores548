@@ -223,14 +223,14 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 150.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
                         kj->AI()->DoZoneInCombat(kj, 300.0f);
                     meleecheck = 4000;
                     break;
                 case ACTION_FIXATE:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 1, 150.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
                     break;
                 }
@@ -281,7 +281,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                     //Default events
                     case EVENT_SHOCK_BLAST:
-                        DoCastAOE(EVENT_SHOCK_BLAST, true);
+                        DoCastAOE(SPELL_SHOCK_BLAST, true);
                         events.ScheduleEvent(EVENT_SHOCK_BLAST, urand(3000, 4000));
                         break;
                     case EVENT_TAIL_LASH:
@@ -601,8 +601,10 @@ public:
             if (GetCaster())
             {
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
-                    if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
-                        GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
+                {
+                    GetCaster()->SetPower(POWER_ENERGY, 0);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH, true);
+                }
             }
         }
 
@@ -645,7 +647,13 @@ public:
                 }
                 else
                 {
-                    std::list<Player*>pllist;
+                    //Test Only (For testing Solo)
+                    if (GetCaster()->HasAura(SPELL_POWER_REGEN))
+                    {
+                        GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
+                    }
+                    /*std::list<Player*>pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
                     if (!pllist.empty())
@@ -659,7 +667,7 @@ public:
                                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
