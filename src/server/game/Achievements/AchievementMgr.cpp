@@ -931,6 +931,7 @@ void AchievementMgr<ScenarioProgress>::LoadFromDB(PreparedQueryResult achievemen
 template<>
 void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if (achievementAccountResult)
     {
         do
@@ -1023,8 +1024,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
-                CharacterDatabase.Execute(stmt);
-
+                trans->Append(stmt);
                 continue;
             }
 
@@ -1036,8 +1036,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
-                CharacterDatabase.Execute(stmt);
-
+                trans->Append(stmt);
                 continue;
             }
 
@@ -1047,10 +1046,11 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             {
                 // we will remove already completed criteria
                 sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "Achievement %s with progress char_criteria_id %u data removed from table `character_achievement_progress` ", achievement ? "completed" : "not exist", char_criteria_id);
-
-                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
-                CharacterDatabase.Execute(stmt);
+                stmt->setUInt32(1, GetOwner()->GetGUIDLow());
+                trans->Append(stmt);
+                continue;
             }
 
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
@@ -1086,8 +1086,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
-                CharacterDatabase.Execute(stmt);
-
+                trans->Append(stmt);
                 continue;
             }
 
@@ -1099,8 +1098,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
-                CharacterDatabase.Execute(stmt);
-
+                trans->Append(stmt);
                 continue;
             }
 
@@ -1111,9 +1109,11 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 // we will remove already completed criteria
                 sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "Achievement %s with progress acc_criteria_id %u data removed from table `account_achievement_progress` ", achievement ? "completed" : "not exist", acc_criteria_id);
 
-                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACC_ACHIEV_PROGRESS_CRITERIA);
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
-                CharacterDatabase.Execute(stmt);
+                stmt->setUInt32(1, GetOwner()->GetSession()->GetAccountId());
+                trans->Append(stmt);
+                continue;
             }
 
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
@@ -1138,6 +1138,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         }
         while (criteriaAccountResult->NextRow());
     }
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 template<>
