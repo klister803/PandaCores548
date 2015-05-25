@@ -588,7 +588,8 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
                         if (!lootOwner->HasActiveSpell(*spellId))
                             lootOwner->learnSpell(*spellId, false);
     }
-    sLootMgr->AddLoot(this);
+    if(!personal)
+        sLootMgr->AddLoot(this);
     isClear = false;
 
     return true;
@@ -677,7 +678,7 @@ void Loot::clear()
     roundRobinPlayer = 0;
     objType = 0;
     i_LootValidatorRefManager.clearReferences();
-    if(m_guid)
+    if(m_guid && !personal)
         sLootMgr->RemoveLoot(GetGUIDLow());
     chance = 20;
     personal = false;
@@ -2587,9 +2588,6 @@ Loot* LootMgr::GetLoot(uint64 guid)
 {
     uint32 lowGuid = GUID_LOPART(guid);
     volatile uint32 guidDebug = lowGuid;
-    if(m_Loots.empty() || lowGuid <= 0)
-        return NULL;
-
     Loot* loot = NULL;
     LootsMap::iterator itr = m_Loots.find(lowGuid);
     if (itr != m_Loots.end())
@@ -2614,9 +2612,6 @@ void LootMgr::AddLoot(Loot* loot)
 void LootMgr::RemoveLoot(uint32 guid)
 {
     volatile uint32 guidDebug = guid;
-    if(m_Loots.empty() || guid <= 0)
-        return;
-
     LootsMap::iterator itr = m_Loots.find(guid);
     if (itr == m_Loots.end())
         return;

@@ -931,7 +931,6 @@ void AchievementMgr<ScenarioProgress>::LoadFromDB(PreparedQueryResult achievemen
 template<>
 void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
 {
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if (achievementAccountResult)
     {
         do
@@ -1024,7 +1023,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1036,7 +1035,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1049,7 +1048,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, char_criteria_id);
                 stmt->setUInt32(1, GetOwner()->GetGUIDLow());
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1086,7 +1085,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1098,7 +1097,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1112,7 +1111,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACC_ACHIEV_PROGRESS_CRITERIA);
                 stmt->setUInt32(0, acc_criteria_id);
                 stmt->setUInt32(1, GetOwner()->GetSession()->GetAccountId());
-                trans->Append(stmt);
+                CharacterDatabase.Execute(stmt);
                 continue;
             }
 
@@ -1138,7 +1137,6 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         }
         while (criteriaAccountResult->NextRow());
     }
-    CharacterDatabase.CommitTransaction(trans);
 }
 
 template<>
