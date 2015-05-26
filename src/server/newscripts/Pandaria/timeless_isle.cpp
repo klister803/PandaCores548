@@ -92,6 +92,11 @@ enum Spells
     
     //Ordos
     SPELL_BANISHMENT            = 148705,
+    
+    //Other
+    SPELL_GHOSTLY_VOID          = 147495,
+    SPELL_DESATURATE            = 129290,
+    SPELL_SPIRIT_STRANGLE       = 144059,
 };
 
 enum Events
@@ -1029,6 +1034,53 @@ public:
         return new boss_niuzaoAI (creature);
     }
 };
+class npc_timeless_spirit : public CreatureScript
+{
+public:
+    npc_timeless_spirit() : CreatureScript("npc_timeless_spirit") { }
+
+    struct npc_timeless_spiritAI : public ScriptedAI
+    {
+        npc_timeless_spiritAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 SpiritStrangle_timer;
+
+        void Reset() 
+        {
+            SpiritStrangle_timer = 0;
+            //me->GetMotionMaster()->MoveRandom(10.0f);
+            DoCast(SPELL_GHOSTLY_VOID);
+            DoCast(SPELL_DESATURATE);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (Unit* pTarget = me->getVictim())
+            {
+                if (me->GetDistance(pTarget) >= 15.0f)
+                    EnterEvadeMode();
+
+                if (SpiritStrangle_timer <= diff)
+                {
+                    DoCast(pTarget, SPELL_SPIRIT_STRANGLE);
+    
+                    SpiritStrangle_timer = 7000;
+                }
+                else SpiritStrangle_timer -= diff;
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_timeless_spiritAI (creature);
+    }
+};
 
 class at_ordos_entrance : public AreaTriggerScript
 {
@@ -1046,6 +1098,32 @@ public:
 
         return false;
     }
+};
+
+enum eZarimEvents
+{
+    QUEST_BONE_APART_INTRO      = 33348,
+    NPC_ZARIM                   = 71876,
+    SPELL_BONE_APART_INTRO      = 149122,
+};
+// AT - 9211
+class at_tom_bone_apart : public AreaTriggerScript
+{
+    public:
+        at_tom_bone_apart() : AreaTriggerScript("at_tom_bone_apart") {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/)
+        {
+            if (Creature* Zarim = GetClosestCreatureWithEntry(player, NPC_ZARIM, 30.0f))
+            {
+                if (player->GetDailyQuestStatus(QUEST_BONE_APART_INTRO) != QUEST_STATUS_REWARDED)
+                {
+                    player->CastSpell(player, SPELL_BONE_APART_INTRO, true);
+                    Zarim->AI()->Talk(0);
+                }
+            }
+            return false;
+        }
 };
 
 class spell_chi_barrage : public SpellScriptLoader
@@ -1154,7 +1232,9 @@ void AddSC_timeless_isle()
     new boss_xuen();
     new boss_yulon();
     new boss_niuzao();
+    new npc_timeless_spirit();
     new at_ordos_entrance();
+    new at_tom_bone_apart();
     new spell_chi_barrage();
     new spell_crackling_lightning();
     new spell_jadefire_bolt();

@@ -9199,8 +9199,8 @@ void ObjectMgr::LoadSpellPhaseInfo()
 
     uint32 oldMSTime = getMSTime();
 
-    //                                               0       1            2
-    QueryResult result = WorldDatabase.Query("SELECT id, phasemask, terrainswapmap FROM `spell_phase`");
+    //                                               0       1            2            3
+    QueryResult result = WorldDatabase.Query("SELECT id, phasemask, terrainswapmap, phaseId FROM `spell_phase`");
 
     if (!result)
     {
@@ -9220,12 +9220,6 @@ void ObjectMgr::LoadSpellPhaseInfo()
         if (!spell)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u defined in `spell_phase` does not exists, skipped.", spellPhaseInfo.spellId);
-            continue;
-        }
-
-        if (!spell->HasAura(SPELL_AURA_PHASE))
-        {
-            sLog->outError(LOG_FILTER_SQL, "Spell %u defined in `spell_phase` does not have aura effect type SPELL_AURA_PHASE, useless value.", spellPhaseInfo.spellId);
             continue;
         }
 

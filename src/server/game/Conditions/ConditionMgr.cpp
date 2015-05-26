@@ -120,8 +120,19 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         {
             if (Player* player = object->ToPlayer())
             {
-                QuestStatus status = player->GetQuestStatus(ConditionValue1);
-                condMeets = (status == QUEST_STATUS_REWARDED);
+                if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(ConditionValue1))
+                {
+                    if (!qInfo->IsRepeatable())
+                    {
+                        QuestStatus status = player->GetQuestStatus(ConditionValue1);
+                        condMeets = (status == QUEST_STATUS_REWARDED);
+                    }
+                    else
+                    {
+                        QuestStatus statusDaily = player->GetDailyQuestStatus(ConditionValue1);
+                        condMeets = (statusDaily == QUEST_STATUS_REWARDED);
+                    }
+                }
             }
             break;
         }

@@ -358,8 +358,6 @@ Unit::~Unit()
 
 void Unit::Update(uint32 p_time)
 {
-    volatile uint32 entryorguid = GetTypeId() == TYPEID_PLAYER ? GetGUIDLow() : GetEntry();
-
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.

@@ -67,6 +67,7 @@ struct SpellPhaseInfo
     uint32 spellId;
     uint32 phasemask;
     uint32 terrainswapmap;
+    uint32 phaseId;
 };
 
 typedef UNORDERED_MAP<uint32 /*spellId*/, SpellPhaseInfo> SpellPhaseStore;
@@ -142,6 +143,10 @@ public:
     // Aura phase effects
     void RegisterPhasingAuraEffect(AuraEffect const* auraEffect);
     void UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect);
+
+    // Aura phase
+    void RegisterPhasingAura(uint32 spellId, Unit* target);
+    void UnRegisterPhasingAura(uint32 spellId, Unit* target);
 
     // Update flags (delayed phasing)
     void AddUpdateFlag(PhaseUpdateFlag const updateFlag) { _UpdateFlags |= updateFlag; }

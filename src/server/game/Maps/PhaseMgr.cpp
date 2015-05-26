@@ -138,21 +138,6 @@ void PhaseMgr::RegisterPhasingAuraEffect(AuraEffect const* auraEffect)
         _UpdateFlags |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
         phaseInfo.phasemask = auraEffect->GetMiscValue();
     }
-    else
-    {
-        SpellPhaseStore::const_iterator itr = _SpellPhaseStore->find(auraEffect->GetId());
-        if (itr != _SpellPhaseStore->end())
-        {
-            if (itr->second.phasemask)
-            {
-                _UpdateFlags |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
-                phaseInfo.phasemask = itr->second.phasemask;
-            }
-
-            if (itr->second.terrainswapmap)
-                phaseInfo.terrainswapmap = itr->second.terrainswapmap;
-        }
-    }
 
     phaseInfo.phaseId = auraEffect->GetMiscValueB();
 
@@ -169,6 +154,53 @@ void PhaseMgr::UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect)
     _UpdateFlags |= phaseData.RemoveAuraInfo(auraEffect->GetId());
 
     Update();
+}
+
+void PhaseMgr::RegisterPhasingAura(uint32 spellId, Unit* target)
+{
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
+
+    SpellPhaseStore::const_iterator itr = _SpellPhaseStore->find(spellId);
+    if (itr == _SpellPhaseStore->end())
+        return;
+
+    PhaseInfo phaseInfo;
+
+    if (itr->second.phasemask)
+    {
+        _UpdateFlags |= PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED;
+        phaseInfo.phasemask = itr->second.phasemask;
+    }
+
+    if (itr->second.terrainswapmap)
+        phaseInfo.terrainswapmap = itr->second.terrainswapmap;
+
+    if (itr->second.phaseId)
+        phaseInfo.phaseId = itr->second.phaseId;
+
+    if (phaseInfo.NeedsClientSideUpdate())
+        _UpdateFlags |= PHASE_UPDATE_FLAG_CLIENTSIDE_CHANGED;
+
+    phaseData.AddAuraInfo(spellId, phaseInfo);
+
+    Update();
+    if (target->IsVisible())
+        target->UpdateObjectVisibility();
+}
+
+void PhaseMgr::UnRegisterPhasingAura(uint32 spellId, Unit* target)
+{
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
+
+    SpellPhaseStore::const_iterator itr = _SpellPhaseStore->find(spellId);
+    if (itr == _SpellPhaseStore->end())
+        return;
+
+    _UpdateFlags |= phaseData.RemoveAuraInfo(spellId);
+
+    Update();
+    if (target->IsVisible())
+        target->UpdateObjectVisibility();
 }
 
 //////////////////////////////////////////////////////////////////

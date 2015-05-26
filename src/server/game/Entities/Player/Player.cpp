@@ -17767,6 +17767,16 @@ QuestStatus Player::GetQuestStatus(uint32 quest_id) const
     return QUEST_STATUS_NONE;
 }
 
+QuestStatus Player::GetDailyQuestStatus(uint32 quest_id) const
+{
+    if (quest_id)
+    {
+        if (m_dailyquests.find(quest_id) != m_dailyquests.end())
+            return QUEST_STATUS_REWARDED;
+    }
+    return QUEST_STATUS_NONE;
+}
+
 bool Player::CanShareQuest(uint32 quest_id) const
 {
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id);
