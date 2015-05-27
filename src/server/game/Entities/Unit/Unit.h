@@ -1345,6 +1345,7 @@ class Unit : public WorldObject
     public:
         typedef std::set<Unit*> AttackerSet;
         typedef std::set<Unit*> ControlList;
+        typedef std::set<Unit*> StormEarthFire;
         typedef std::pair<uint32, uint8> spellEffectPair;
         typedef std::multimap<uint32,  Aura*> AuraMap;
         typedef std::multimap<uint32,  AuraApplication*> AuraApplicationMap;
@@ -1857,6 +1858,8 @@ class Unit : public WorldObject
         void RestoreFaction();
 
         ControlList m_Controlled;
+        StormEarthFire m_stormEarthFire;
+
         Unit* GetFirstControlled() const;
         void RemoveAllControlled();
 

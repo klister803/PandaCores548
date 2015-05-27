@@ -114,18 +114,17 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
             {
                 std::list<Unit*> ControllUnit;
                 std::list<Unit*> removeAllClones;
-                if (!caster->m_Controlled.empty())
+                if (!caster->m_stormEarthFire.empty())
                 {
-                    for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                        ControllUnit.push_back(*itr);
+                    for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
+                        if (Creature* crt = (*itr)->ToCreature())
+                            if (!crt->IsDespawn())
+                                ControllUnit.push_back(*itr);
 
                     for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                     {
                         if (Unit* cloneUnit = (*i))
                         {
-                            if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                continue;
-
                             if (cloneUnit->getVictim() != target)
                             {
                                 if (!fullstack)
@@ -136,7 +135,10 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                             }
                             else
                             {
-                                cloneUnit->ToCreature()->AI()->ComonOnHome();
+                                if (Creature* crt = cloneUnit->ToCreature())
+                                    if (CreatureAI* ai = crt->AI())
+                                        ai->ComonOnHome();
+
                                 castspell = false;
                                 return;
                             }
@@ -197,11 +199,13 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                             addVisual = false;
                         }
 
-                        if (!caster->m_Controlled.empty())
+                        if (!caster->m_stormEarthFire.empty())
                         {
                             std::list<Unit*> ControllUnit;
-                            for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                                ControllUnit.push_back(*itr);
+                            for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
+                                if (Creature* crt = (*itr)->ToCreature())
+                                    if (!crt->IsDespawn())
+                                        ControllUnit.push_back(*itr);
 
                             for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                             {
@@ -209,9 +213,6 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                                 {
                                     if (getVisual)
                                         break;
-
-                                    if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                        continue;
 
                                     SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
 
@@ -275,22 +276,19 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
                     caster->RemoveAura(138080);
                     caster->RemoveAura(138081);
 
-                    if (!caster->m_Controlled.empty())
+                    if (!caster->m_stormEarthFire.empty())
                     {
                         std::list<Unit*> ControllUnit;
-                        for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                            ControllUnit.push_back(*itr);
+                        for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
+                            if (Creature* crt = (*itr)->ToCreature())
+                                if (!crt->IsDespawn())
+                                    ControllUnit.push_back(*itr);
 
                         for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                        {
                             if (Unit* cloneUnit = (*i))
-                            {
-                                if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                    continue;
-
-                                cloneUnit->ToCreature()->AI()->ComonOnHome();
-                            }
-                        }
+                                if (Creature* crt = cloneUnit->ToCreature())
+                                    if (CreatureAI* crtAI = crt->AI())
+                                        crtAI->ComonOnHome();
                     }
                 }
             }
@@ -320,7 +318,7 @@ public:
         {
             if (Unit* caster = GetCaster())
                 if (caster->GetTypeId() == TYPEID_PLAYER)
-                    if (caster->m_Controlled.empty())
+                    if (caster->m_stormEarthFire.empty())
                         caster->RemoveAura(137639);
         }
 
@@ -345,40 +343,6 @@ public:
     {
         PrepareSpellScript(spell_monk_clone_cast_SpellScript);
 
-        void HandleOnCast()
-        {
-            if (Unit* caster = GetCaster())
-                if (Player* plr = caster->ToPlayer())
-                {
-                    uint32 spellid = GetSpellInfo()->Id;
-
-                    std::list<Unit*> ControllUnit;
-                    for (Unit::ControlList::iterator itr = plr->m_Controlled.begin(); itr != plr->m_Controlled.end(); ++itr)
-                        ControllUnit.push_back(*itr);
-
-                    for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                    {
-                        if (Unit* cloneUnit = (*i))
-                        {
-                            if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                continue;
-
-                            if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
-                                continue;
-
-                            if (spellid != 113656 && spellid != 101546 && spellid != 116847)
-                                if (Unit* cloneTarget = cloneUnit->getVictim())
-                                    if (Unit* _target = GetExplTargetUnit())
-                                        if (_target == cloneTarget)
-                                            continue;
-                                            
-                            if (Unit* cloneTarget = cloneUnit->getVictim())
-                                cloneUnit->CastSpell(cloneTarget, spellid, true);
-                        }
-                    }
-                }
-        }
-
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
             if(Unit* caster = GetCaster())
@@ -389,7 +353,6 @@ public:
         void Register()
         {
             OnEffectHitTarget += SpellEffectFn(spell_monk_clone_cast_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-            OnCast += SpellCastFn(spell_monk_clone_cast_SpellScript::HandleOnCast);
         }
     };
 

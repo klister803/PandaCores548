@@ -3805,6 +3805,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 137639: // Storm, Earth, and Fire
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_PROC_ONLY_ON_CAST;
+                    break;
                 case 101545: // Flying Serpent Kick
                 case 109132: // Roll
                 case 115008: // Chi Torpedo

@@ -13894,19 +13894,18 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     trigger = 108977;
             }
 
-            if (!m_Controlled.empty())
+            if (!m_stormEarthFire.empty())
             {
                 std::list<Unit*> ControllUnit;
-                for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-                    ControllUnit.push_back(*itr);
+                for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
+                    if (Creature* crt = (*itr)->ToCreature())
+                        if (!crt->IsDespawn())
+                            ControllUnit.push_back(*itr);
 
                 for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
                 {
                     if (Unit* cloneUnit = (*i))
                     {
-                        if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                            continue;
-
                         cloneUnit->RemoveAurasDueToSpell(120275);
                         cloneUnit->RemoveAurasDueToSpell(108977);
                         cloneUnit->AddAura(trigger, cloneUnit);

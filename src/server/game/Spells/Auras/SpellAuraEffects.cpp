@@ -1419,22 +1419,17 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     }
 
                     if (m_effIndex == EFFECT_1)
-                        if (!caster->m_Controlled.empty())
+                        if (!caster->m_stormEarthFire.empty())
                         {
                             std::list<Unit*> ControllUnit;
-                            for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
-                                ControllUnit.push_back(*itr);
+                            for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
+                                if (Creature* crt = (*itr)->ToCreature())
+                                    if (!crt->IsDespawn())
+                                        ControllUnit.push_back(*itr);
 
                             for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                            {
                                 if (Unit* cloneUnit = (*i))
-                                {
-                                    if (cloneUnit->GetEntry() != 69792 && cloneUnit->GetEntry() != 69680 && cloneUnit->GetEntry() != 69791)
-                                        continue;
-
                                     cloneUnit->CastCustomSpell(cloneUnit, m_spellInfo->Id, &amount, &amount, NULL, true);
-                                }
-                            }
                         }
                     break;
                 }

@@ -141,7 +141,9 @@ public:
 
         void InitializeAI()
         {
-            owner = me->ToTempSummon()->GetSummoner();
+            owner = NULL; 
+            if (TempSummon* tempSum = me->ToTempSummon())
+                owner = tempSum->GetSummoner();
             target = NULL;
             firsttarget = me->GetTargetGUID();
             addaura = true;
@@ -172,9 +174,9 @@ public:
                 bool greenClone = entryId == 69792;
 
                 float finaldmg = 0;
-                float mainattackspeed = 0;
+                float mainattackspeed = 2.0f;
                 float adddmg = 0;
-                float offattackspeed = 0;
+                float offattackspeed = 2.0f;
 
                 if (mainItem)
                 {
@@ -248,6 +250,7 @@ public:
 
                 me->SetFloatValue(UNIT_FIELD_BASEATTACKTIME+BASE_ATTACK, mainattackspeed);
                 me->SetFloatValue(UNIT_MOD_CAST_HASTE, owner->GetFloatValue(UNIT_MOD_CAST_HASTE));
+                me->SetFloatValue(UNIT_MOD_CAST_SPEED, owner->GetFloatValue(UNIT_MOD_CAST_SPEED));
             }
         }
 
@@ -299,14 +302,23 @@ public:
 
             comeonhome = true;
 
+            if (!owner->IsInWorld())
+            {
+                owner->m_stormEarthFire.erase(me);
+                me->DespawnOrUnsummon();
+                return;
+            }
+
             if (me->isAlive())
             {
                 me->CastSpell(owner, 124002, true);
-                owner->m_Controlled.erase(me);
                 me->DespawnOrUnsummon(500);
             }
             else
+            {
+                owner->m_stormEarthFire.erase(me);
                 me->DespawnOrUnsummon();
+            }
 
             if (Aura *aura = owner->GetAura(137639))
             {
@@ -352,7 +364,10 @@ public:
                     }
 
                     if (!jumpontarget)
+                    {
                         ComonOnHome();
+                        return;
+                    }
 
                     if (jumpontarget)
                     {
@@ -368,11 +383,15 @@ public:
                             }
                         }
                     }
+                    return;
                 }
 
                 if (me->getVictim() && me->getVictim()->GetGUID() != firsttarget)
                     if (!jumpontarget && !comeonhome)
+                    {
                         ComonOnHome();
+                        return;
+                    }
 
                 if (owner)
                 {
@@ -390,34 +409,37 @@ public:
                 if (canSeeCheck >= 1000 && target)
                 {
                     if (!me->canSeeOrDetect(target) && !comeonhome)
+                    {
                         ComonOnHome();
+                        return;
+                    }
                     canSeeCheck = 0;
                 }
 
-                Unit *victim = me->getVictim();
-                bool meeleRange = me->IsWithinMeleeRange(victim, me->GetAttackDist() - 2.0f);
-
-                if (me->IsWithinMeleeRange(victim))
+                if (Unit *victim = me->getVictim())
                 {
-                    if (me->isAttackReady())
+                    if (me->IsWithinMeleeRange(victim))
                     {
-                        me->AttackerStateUpdate(victim);
-                        me->resetAttackTimer();
-                    }
-                    if (entryId != 69792 && me->isAttackReady(OFF_ATTACK))
-                    {
-                        if (!startattack)
+                        if (me->isAttackReady())
                         {
-                            me->setAttackTimer(OFF_ATTACK, 1000);
-                            startattack = true;
+                            me->AttackerStateUpdate(victim);
+                            me->resetAttackTimer();
                         }
-                        me->AttackerStateUpdate(victim, OFF_ATTACK);
-                        me->resetAttackTimer(OFF_ATTACK);
+                        if (entryId != 69792 && me->isAttackReady(OFF_ATTACK))
+                        {
+                            if (!startattack)
+                            {
+                                me->setAttackTimer(OFF_ATTACK, 1000);
+                                startattack = true;
+                            }
+                            me->AttackerStateUpdate(victim, OFF_ATTACK);
+                            me->resetAttackTimer(OFF_ATTACK);
+                        }
                     }
-                }
 
-                if (!meeleRange)
-                    me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 2.0f);
+                    if (!me->IsWithinMeleeRange(victim, me->GetAttackDist() - 2.0f))
+                        me->GetMotionMaster()->MoveChase(victim, me->GetAttackDist() - 2.0f);
+                }
             }
         }
     };
