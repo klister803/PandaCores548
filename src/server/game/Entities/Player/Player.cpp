@@ -13895,23 +13895,14 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
             }
 
             if (!m_stormEarthFire.empty())
-            {
-                std::list<Unit*> ControllUnit;
                 for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
                     if (Creature* crt = (*itr)->ToCreature())
-                        if (!crt->IsDespawn())
-                            ControllUnit.push_back(*itr);
-
-                for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                {
-                    if (Unit* cloneUnit = (*i))
-                    {
-                        cloneUnit->RemoveAurasDueToSpell(120275);
-                        cloneUnit->RemoveAurasDueToSpell(108977);
-                        cloneUnit->AddAura(trigger, cloneUnit);
-                    }
-                }
-            }
+                        if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+                        {
+                            crt->RemoveAurasDueToSpell(120275);
+                            crt->RemoveAurasDueToSpell(108977);
+                            crt->AddAura(trigger, crt);
+                        }
         }
     }
 

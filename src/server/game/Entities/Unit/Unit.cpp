@@ -9128,26 +9128,21 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     std::list<Unit*> ControllUnit;
                     for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
                         if (Creature* crt = (*itr)->ToCreature())
-                            if (!crt->IsDespawn())
-                                ControllUnit.push_back(*itr);
-
-                    for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                    {
-                        if (Unit* cloneUnit = (*i))
-                        {
-                            if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
-                                continue;
-
-                            if (procSpell->Id != 113656 && procSpell->Id != 101546 && procSpell->Id != 116847)
-                                if (Unit* cloneTarget = cloneUnit->getVictim())
-                                    if (target == cloneTarget)
+                            if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+                            {
+                                if (Unit* cloneUnit = (*itr))
+                                    if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
                                         continue;
 
-                            if (Unit* cloneTarget = cloneUnit->getVictim())
-                                cloneUnit->CastSpell(cloneTarget, procSpell->Id, true);
-                        }
-                    }
-                    break;
+                                if (procSpell->Id != 113656 && procSpell->Id != 101546 && procSpell->Id != 116847)
+                                    if (Unit* cloneTarget = crt->getVictim())
+                                        if (target == cloneTarget)
+                                            continue;
+
+                                if (Unit* cloneTarget = crt->getVictim())
+                                    crt->CastSpell(cloneTarget, procSpell->Id, true);
+                            }
+                    return true;
                 }
                 case 116023: // Sparring
                 {
@@ -11850,9 +11845,8 @@ void Unit::RemoveAllControlled()
                 RemoveList.insert(unit);
 
         for (std::set<Unit*>::iterator itr = RemoveList.begin(); itr != RemoveList.end(); ++itr)
-            if (Unit* unit = (*itr))
-                if (TempSummon* tempsum = unit->ToTempSummon())
-                    tempsum->UnSummon();
+            if (TempSummon* tempsum = (*itr)->ToTempSummon())
+                tempsum->UnSummon();
     }
 
     if (GetPetGUID())

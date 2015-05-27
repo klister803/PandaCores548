@@ -112,38 +112,30 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
             void CheckTarget(bool fullstack, Unit* caster, Unit* target)
             {
-                std::list<Unit*> ControllUnit;
                 std::list<Unit*> removeAllClones;
                 if (!caster->m_stormEarthFire.empty())
                 {
                     for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
                         if (Creature* crt = (*itr)->ToCreature())
-                            if (!crt->IsDespawn())
-                                ControllUnit.push_back(*itr);
-
-                    for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                    {
-                        if (Unit* cloneUnit = (*i))
-                        {
-                            if (cloneUnit->getVictim() != target)
+                            if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
                             {
-                                if (!fullstack)
-                                    return;
+                                if (crt->getVictim() != target)
+                                {
+                                    if (!fullstack)
+                                        return;
 
-                                removeAllClones.push_back(cloneUnit);
-                                continue;
-                            }
-                            else
-                            {
-                                if (Creature* crt = cloneUnit->ToCreature())
+                                    removeAllClones.push_back(crt);
+                                    continue;
+                                }
+                                else
+                                {
                                     if (CreatureAI* ai = crt->AI())
                                         ai->ComonOnHome();
 
-                                castspell = false;
-                                return;
+                                    castspell = false;
+                                    return;
+                                }
                             }
-                        }
-                    }
 
                     for (std::list<Unit*>::const_iterator i = removeAllClones.begin(); i != removeAllClones.end(); ++i)
                         if (Creature* crt = (*i)->ToCreature())
@@ -201,29 +193,22 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
                         if (!caster->m_stormEarthFire.empty())
                         {
-                            std::list<Unit*> ControllUnit;
                             for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
                                 if (Creature* crt = (*itr)->ToCreature())
-                                    if (!crt->IsDespawn())
-                                        ControllUnit.push_back(*itr);
-
-                            for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                            {
-                                if (Unit* cloneUnit = (*i))
-                                {
-                                    if (getVisual)
-                                        break;
-
-                                    SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
-
-                                    if (cloneUnit->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                                    if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
                                     {
-                                        getVisual = true;
-                                        addVisual = false;
-                                        break;
+                                        if (getVisual)
+                                            break;
+
+                                        SpellInfo const* _spellinfo = sSpellMgr->GetSpellInfo(*iter);
+
+                                        if (crt->GetEntry() == _spellinfo->Effects[EFFECT_0].MiscValue)
+                                        {
+                                            getVisual = true;
+                                            addVisual = false;
+                                            break;
+                                        }
                                     }
-                                }
-                            }
                         }
 
                         if (getVisual)
@@ -278,17 +263,15 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
                     if (!caster->m_stormEarthFire.empty())
                     {
-                        std::list<Unit*> ControllUnit;
+                        std::list<Creature*> ControllUnit;
                         for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
                             if (Creature* crt = (*itr)->ToCreature())
-                                if (!crt->IsDespawn())
-                                    ControllUnit.push_back(*itr);
+                                if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+                                    ControllUnit.push_back(crt);
 
-                        for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                            if (Unit* cloneUnit = (*i))
-                                if (Creature* crt = cloneUnit->ToCreature())
-                                    if (CreatureAI* crtAI = crt->AI())
-                                        crtAI->ComonOnHome();
+                        for (std::list<Creature*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
+                            if (CreatureAI* crtAI = (*i)->AI())
+                                crtAI->ComonOnHome();
                     }
                 }
             }

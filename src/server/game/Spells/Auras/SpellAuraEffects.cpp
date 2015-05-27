@@ -1420,17 +1420,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
                     if (m_effIndex == EFFECT_1)
                         if (!caster->m_stormEarthFire.empty())
-                        {
-                            std::list<Unit*> ControllUnit;
                             for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
                                 if (Creature* crt = (*itr)->ToCreature())
-                                    if (!crt->IsDespawn())
-                                        ControllUnit.push_back(*itr);
-
-                            for (std::list<Unit*>::const_iterator i = ControllUnit.begin(); i != ControllUnit.end(); ++i)
-                                if (Unit* cloneUnit = (*i))
-                                    cloneUnit->CastCustomSpell(cloneUnit, m_spellInfo->Id, &amount, &amount, NULL, true);
-                        }
+                                    if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+                                        crt->CastCustomSpell(crt, m_spellInfo->Id, &amount, &amount, NULL, true);
                     break;
                 }
                 default:
