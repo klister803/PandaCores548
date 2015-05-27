@@ -321,9 +321,8 @@ public:
         void HandleOnCast()
         {
             if (Unit* caster = GetCaster())
-            {
-                caster->GetMotionMaster()->MoveJump(1273.716f, 1039.498f, 434.867f, 20.0f, 15.0f, GetSpellInfo()->Id, 0.966f, 0);
-            }  
+                if (!caster->isInCombat())
+                    caster->GetMotionMaster()->MoveJump(1273.716f, 1039.498f, 434.867f, 20.0f, 15.0f, GetSpellInfo()->Id, 0.966f, 0); 
         }
 
         void Register()
