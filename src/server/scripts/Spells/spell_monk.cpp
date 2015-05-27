@@ -3005,13 +3005,14 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                 targets.remove_if(OptionCheck(GetCaster()));
                 if (!GetCaster()->IsFriendlyTo(GetOriginalCaster()))
                 {
-                    targets.remove_if(NotFriendlyToOriginalCaster(GetOriginalCaster()));
+                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster(), false));
                     targets.sort(CheckHealthState());
                     if (targets.size() > 1)
                         targets.resize(1);
                 }
                 else
                 {
+                    targets.remove_if(FriendlyToOriginalCaster(GetOriginalCaster(), true));
                     targets.sort(CheckNearbyVictim(GetCaster()));
                     if (targets.size() > 1)
                         targets.resize(1);
@@ -3060,21 +3061,22 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                         return false;
                     }
             };
-            class NotFriendlyToOriginalCaster
+            class FriendlyToOriginalCaster
             {
             public:
-                NotFriendlyToOriginalCaster(Unit* caster) : _caster(caster) {}
+                FriendlyToOriginalCaster(Unit* caster, bool friendly) : _caster(caster), _friendly(friendly){}
 
                 Unit* _caster;
+                bool _friendly;
 
                 bool operator()(WorldObject* unit)
                 {
                     Unit* victim = unit->ToUnit();
                     if (!victim)
-                        return true;
+                        return !_friendly;
                     if (!_caster->IsFriendlyTo(victim))
-                        return true;
-                    return false;
+                        return !_friendly;
+                    return _friendly;
                 }
             };
             class CheckHealthState
