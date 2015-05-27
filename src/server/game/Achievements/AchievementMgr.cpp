@@ -980,7 +980,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
 
             // already added on account
-            if (m_completedAchievements.find(achievementid) ==  m_completedAchievements.end())
+            if (m_completedAchievements.find(achievementid) !=  m_completedAchievements.end())
                 continue;
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
@@ -1039,7 +1039,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             }
 
-            AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+            /*AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
             bool hasAchieve = !achievement || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
             if (hasAchieve)
             {
@@ -1050,7 +1050,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 stmt->setUInt32(1, GetOwner()->GetGUIDLow());
                 CharacterDatabase.Execute(stmt);
                 continue;
-            }
+            }*/
 
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
                 continue;
@@ -1101,7 +1101,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 continue;
             }
 
-            AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
+            /*AchievementEntry const* achievement = sAchievementMgr->GetAchievementByCriteriaTree(criteriaTree->parent);
             bool hasAchieve = !achievement || HasAchieved(achievement->ID) || (achievement->parent && !HasAchieved(achievement->parent));
             if (hasAchieve)
             {
@@ -1113,7 +1113,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
                 stmt->setUInt32(1, GetOwner()->GetSession()->GetAccountId());
                 CharacterDatabase.Execute(stmt);
                 continue;
-            }
+            }*/
 
             if (criteria->timeLimit && time_t(date + criteria->timeLimit) < now)
                 continue;
