@@ -160,7 +160,7 @@ class boss_foereaper5000 : public CreatureScript
                             DoCast(me, DUNGEON_MODE(SPELL_HARVEST_SWEEP, SPELL_HARVEST_SWEEP), true);
                             me->RemoveAurasDueToSpell(SPELL_HARVEST_AURA);
                             if (harvestTarget)
-                                harvestTarget->DespawnOrUnsummon();
+                                harvestTarget->DespawnOrUnsummon(1000);
                             break;
                     }
                 }

@@ -964,8 +964,9 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
 
     // remove auras from units no longer needing them
     for (UnitList::iterator itr = targetsToRemove.begin(); itr != targetsToRemove.end();++itr)
-        if (AuraApplication * aurApp = GetApplicationOfTarget((*itr)->GetGUID()))
-            (*itr)->_UnapplyAura(aurApp, AURA_REMOVE_BY_DEFAULT);
+        if(Unit* unit = (*itr))
+            if (AuraApplication * aurApp = GetApplicationOfTarget(unit->GetGUID()))
+                unit->_UnapplyAura(aurApp, AURA_REMOVE_BY_DEFAULT);
 
     if (!apply)
         return;

@@ -1905,7 +1905,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
-    if (m_despan)
+    if (m_despan || !IsInWorld())
         return;
 
     if (TempSummon* summon = this->ToTempSummon())
