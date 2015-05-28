@@ -53,6 +53,13 @@ enum eSpells
     SPELL_UNLOCKING          = 146589, 
 
     SPELL_ENRAGE             = 145974,
+
+    SPELL_VAMPIRIC_FRENZY    = 147978,
+
+    SPELL_CANNON_BALL        = 147906,
+    SPELL_CANNON_BALL_ATDMG  = 147607,
+    SPELL_CANNON_BALL_AT_A   = 147609,
+    SPELL_CANNON_BALL_DESTD  = 147662,//dest dummy
 };
 
 enum Events
@@ -69,13 +76,16 @@ enum Events
     //
     EVENT_SCORCHING_BREATH   = 7,
     EVENT_BURNING_BLOOD      = 8,
-    //
 
     //Summon events
     EVENT_ENRAGE_KJ          = 9,
     EVENT_MOVE_TO_CENTER     = 10,
     EVENT_MOVE_TO_THOK       = 11,
     EVENT_CHECK_TPLAYER      = 12,
+    EVENT_Y_CHARGE           = 13,
+    EVENT_PRE_Y_CHARGE       = 14,
+    EVENT_CHECKER            = 15,
+    EVENT_VAMPIRIC_FRENZY    = 16,
 };
 
 enum Action
@@ -106,6 +116,25 @@ Position fpos[3] =
 Position kjspawnpos = {1173.41f, -5130.74f, -289.9429f, 0.6028f};
 Position cpos = {1208.61f, -5106.27f, -289.939f, 0.526631f};
 
+Position ccbatspawnpos[7] =
+{
+    {1257.04f, -5169.60f, -280.0894f, 2.2238f},
+    {1251.81f, -5162.37f, -280.0894f, 2.2238f},
+    {1251.15f, -5174.29f, -280.0894f, 2.2238f},
+    {1245.83f, -5166.56f, -280.0894f, 2.2238f},
+    {1238.66f, -5181.14f, -280.0894f, 2.2238f},
+    {1233.69f, -5172.25f, -280.0894f, 2.2238f},
+    {1244.47f, -5158.36f, -280.0894f, 2.2238f},
+};
+
+Position sumyetipos[4] = 
+{
+    {1217.50f, -5041.30f, -290.4328f, 4.4818f},
+    {1272.52f, -5124.51f, -290.4575f, 2.8089f},
+    {1218.18f, -5181.76f, -290.4609f, 1.7683f},
+    {1135.86f, -5098.79f, -290.4617f, 6.0448f},
+};
+
 enum CreatureText
 {
     SAY_PULL
@@ -126,6 +155,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             InstanceScript* instance;
             std::list<Player*> plist;
             uint32 meleecheck, enrage;
+            uint8 phasecount;
 
             void Reset()
             {
@@ -141,6 +171,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                phasecount = 0;
                 meleecheck = 0;
                 enrage = 0;
                 if (instance)
@@ -148,6 +179,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BURNING_BLOOD_ADMG);
                 }
             }
 
@@ -155,7 +187,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 std::list<AreaTrigger*> atlist;
                 atlist.clear();
-                me->GetAreaTriggersWithEntryInRange(atlist, 4890, me->GetGUID(), 150.0f);
+                me->GetAreaTriggersWithEntryInRange(atlist, 4890, me->GetGUID(), 200.0f);
                 if (!atlist.empty())
                 {
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
@@ -180,8 +212,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_ONE_ACID: 
                 case ACTION_PHASE_ONE_FROST: 
                 case ACTION_PHASE_ONE_FIRE:
-                    if (me->GetMap()->IsHeroic())
-                        me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(8));
                     events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
@@ -208,6 +238,24 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
                         break;
+                    }
+                    if (me->GetMap()->IsHeroic())
+                    {
+                        phasecount++;
+                        me->SetHealth(me->GetHealth() + me->CountPctFromMaxHealth(8));
+                        switch (phasecount)
+                        {
+                        case 1:
+                            for (uint8 n = 0; n < 7; n++)
+                                if (Creature* bat = me->SummonCreature(NPC_CAPTIVE_CAVE_BAT, ccbatspawnpos[n]))
+                                    bat->AI()->DoZoneInCombat(bat, 200.0f);
+                            break;
+                        case 2:
+                            me->SummonCreature(NPC_STARVED_YETI, sumyetipos[urand(0, 3)]);
+                            break;
+                        default:
+                            break;
+                        }
                     }
                     break;
                 case ACTION_PHASE_TWO:
@@ -316,7 +364,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
-                        break;
+                        break;               
                     }
                 }
                 if (!meleecheck)
@@ -332,6 +380,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BURNING_BLOOD_ADMG);
                 }
             }
         };
@@ -586,6 +635,234 @@ public:
     }
 };
 
+//73522
+class npc_captive_cave_bat : public CreatureScript
+{
+public:
+    npc_captive_cave_bat() : CreatureScript("npc_captive_cave_bat") {}
+
+    struct npc_captive_cave_batAI : public ScriptedAI
+    {
+        npc_captive_cave_batAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who)
+        {
+            events.ScheduleEvent(EVENT_VAMPIRIC_FRENZY, urand(10000, 20000));
+        }
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_VAMPIRIC_FRENZY)
+                {
+                    DoCastAOE(SPELL_VAMPIRIC_FRENZY, true);
+                    events.ScheduleEvent(EVENT_VAMPIRIC_FRENZY, urand(10000, 20000));
+                }
+            }
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_captive_cave_batAI(creature);
+    }
+};
+
+//71787
+class npc_body_stalker : public CreatureScript
+{
+public:
+    npc_body_stalker() : CreatureScript("npc_body_stalker") {}
+
+    struct npc_body_stalkerAI : public ScriptedAI
+    {
+        npc_body_stalkerAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE |UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+        
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_body_stalkerAI(creature);
+    }
+};
+
+//71645
+class npc_shock_collar : public CreatureScript
+{
+public:
+    npc_shock_collar() : CreatureScript("npc_shock_collar") {}
+
+    struct npc_shock_collarAI : public ScriptedAI
+    {
+        npc_shock_collarAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->AddAura(SPELL_CANNON_BALL_DESTD, me);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_shock_collarAI(creature);
+    }
+};
+
+//73184
+class npc_starved_yeti : public CreatureScript
+{
+public:
+    npc_starved_yeti() : CreatureScript("npc_starved_yeti") {}
+
+    struct npc_starved_yetiAI : public ScriptedAI
+    {
+        npc_starved_yetiAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        }
+
+        InstanceScript* instance;
+        EventMap events;
+        SummonList summons;
+        float x, y;
+
+        void Reset(){}
+
+        void JustSummoned(Creature* sum)
+        {
+            summons.Summon(sum);
+            events.ScheduleEvent(EVENT_Y_CHARGE, 2000);
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+                if (pointId == 1)
+                {
+                    events.CancelEvent(EVENT_CHECKER);
+                    summons.DespawnAll();
+                    DoCast(me, SPELL_CANNON_BALL, true);
+                    if (Creature* bs = me->FindNearestCreature(NPC_BODY_STALKER, 100.0f, true))
+                    {
+                        float ang1 = me->GetAngle(bs);
+                        float ang = ang1 + GetAngleMod();
+                        me->SetFacingTo(ang);
+                        GetPositionWithDistInOrientation(me, 135.0f, ang, x, y);
+                        events.ScheduleEvent(EVENT_PRE_Y_CHARGE, 15000);
+                    }
+                }
+            }
+        }
+
+        float GetAngleMod()
+        {
+            float mod = float(urand(0, 1));
+            mod = !mod ? -1 : 1;
+            float mod2 = float(urand(1, 5))/10;
+            float modangle = mod*mod2;
+            return modangle;
+        }
+
+        void IsSummonedBy(Unit* summoner)
+        {
+            GetPositionWithDistInOrientation(me, 135.0f, me->GetOrientation(), x, y);
+            me->SummonCreature(NPC_SHOCK_COLLAR, x, y, me->GetPositionZ());
+        }
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                case EVENT_CHECKER:
+                {
+                    std::list<Player*> plist;
+                    plist.clear();
+                    GetPlayerListInGrid(plist, me, 10.0f);
+                    if (!plist.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
+                            if ((*itr)->isInFront(me))
+                                DoCast(*itr, SPELL_CANNON_BALL_ATDMG, true);
+                    }
+                    events.ScheduleEvent(EVENT_CHECKER, 750);
+                    break;
+                }
+                case EVENT_PRE_Y_CHARGE:
+                    me->SummonCreature(NPC_SHOCK_COLLAR, x, y, me->GetPositionZ());
+                    break;
+                case EVENT_Y_CHARGE:
+                    if (Creature* sc = me->FindNearestCreature(NPC_SHOCK_COLLAR, 135.0f, true))
+                        me->SetFacingToObject(sc);
+                    me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 30.0f, 1);
+                    events.ScheduleEvent(EVENT_CHECKER, 750);
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_starved_yetiAI(creature);
+    }
+};
+
 //143345
 class spell_power_regen : public SpellScriptLoader
 {
@@ -603,7 +880,7 @@ public:
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
                 {
                     GetCaster()->SetPower(POWER_ENERGY, 0);
-                    GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH, true);
+                    GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
                 }
             }
         }
@@ -813,6 +1090,10 @@ void AddSC_boss_thok_the_bloodthirsty()
     new npc_korkron_jailer();
     new npc_generic_prisoner();
     new npc_thok_ice_tomb();
+    new npc_captive_cave_bat();
+    new npc_body_stalker();
+    new npc_shock_collar();
+    new npc_starved_yeti();
     new spell_power_regen();
     new spell_clump_check();
     new spell_fixate();

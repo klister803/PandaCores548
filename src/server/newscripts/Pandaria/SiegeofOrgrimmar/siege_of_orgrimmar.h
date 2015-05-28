@@ -84,6 +84,10 @@ enum eCreatures
     NPC_IMPLOSION                   = 71470,
     NPC_ESSENCE_OF_YSHAARJ          = 63420,
     NPC_LIVING_CORRUPTION           = 71644,
+    NPC_BODY_STALKER                = 71787, //in center room
+    NPC_SHOCK_COLLAR                = 71645, //dest dummy
+    NPC_STARVED_YETI                = 73184,
+    NPC_CAPTIVE_CAVE_BAT            = 73522,
 
     NPC_IMMERSEUS                   = 71543,
 

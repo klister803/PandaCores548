@@ -5115,7 +5115,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
-                //Tok Bloodthirsty
+                //Thok Bloodthirsty
+                case 147607: //Cannon Ball AT Dmg
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 0;
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 0;
+                    break;
+                case 147906: //Cannon Ball Dest Dmg
+                    spellInfo->Effects[4].RadiusEntry = sSpellRadiusStore.LookupEntry(14);//8yards
+                    break;
                 case 143428: //Tail lash
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
                     break;  

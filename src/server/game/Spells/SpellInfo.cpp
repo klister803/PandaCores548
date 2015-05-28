@@ -1200,6 +1200,8 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142906: //Ancient Miasma Dmg
     case 143848: //Essence of yshaarj
     //Tok Bloodthirsty
+    case 147607: //Cannon Ball AT Dmg
+    case 147906: //Cannon Ball Dest Dmg
     case 143428: //Tail lash
     case 143430: //Clump Check
     case 143445: //Fixate
