@@ -87,6 +87,9 @@ uint32 _SpellScript::EffectHook::GetAffectedEffectsMask(SpellInfo const* spellEn
 
 bool _SpellScript::EffectHook::IsEffectAffected(SpellInfo const* spellEntry, uint8 effIndex)
 {
+    if (!spellEntry)
+        return false;
+
     return GetAffectedEffectsMask(spellEntry) & 1<<effIndex;
 }
 

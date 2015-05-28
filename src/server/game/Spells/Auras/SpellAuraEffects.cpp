@@ -668,23 +668,18 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             break;
         }
-        case SPELL_AURA_MOD_ABSORB:
-        {
-            if (!caster)
-                break;
-
-            switch (m_spellInfo->Id)
-            {
-                case 134735: // Battle Fatigue
-                {
-                    amount = -60;
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
+//         case SPELL_AURA_MOD_ABSORB:
+//         {
+//             if (!caster)
+//                 break;
+// 
+//             switch (m_spellInfo->Id)
+//             {
+//                 default:
+//                     break;
+//             }
+//             break;
+//         }
         case SPELL_AURA_MOD_HEALING_PCT:
         {
             if (!caster)
@@ -692,11 +687,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
 
             switch (m_spellInfo->Id)
             {
-                case 134735: // Battle Fatigue
-                {
-                    amount = -60;
-                    break;
-                }
                 case 114232: // Sanctified Wrath
                 {
                     if (Player* paladin = caster->ToPlayer())
