@@ -8198,6 +8198,10 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
 
 int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)
 {
+    Player* pPlayer = caster->ToPlayer();
+    if(!pPlayer)
+        return 0.0f;
+
     Item* mainItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     Item* offItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
 
