@@ -4050,6 +4050,39 @@ class spell_gen_cooking_way : public SpellScriptLoader
         }
 };
 
+class spell_gen_bg_inactive : public SpellScriptLoader
+{
+    public:
+        spell_gen_bg_inactive() : SpellScriptLoader("spell_gen_bg_inactive") { }
+
+        class spell_gen_bg_inactive_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_bg_inactive_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* pCaster = GetCaster()->ToPlayer())
+                {
+                    if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                        return;
+
+                    if (pCaster->GetMap()->IsBattleground())
+                        pCaster->LeaveBattleground();
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_gen_bg_inactive_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_CURRENCY_GAIN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_bg_inactive_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_sha_cloud();
@@ -4138,4 +4171,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_landmine_knockback();
     new spell_gen_ic_seaforium_blast();
     new spell_gen_cooking_way();
+    new spell_gen_bg_inactive();
 }
