@@ -6349,15 +6349,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             }
                             break;
                         }
-                        case 43681: // Inactive
-                        {
-                            if (target->GetTypeId() != TYPEID_PLAYER || aurApp->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
-                                return;
-
-                            if (target->GetMap()->IsBattleground())
-                                target->ToPlayer()->LeaveBattleground();
-                            break;
-                        }
                         case 42783: // Wrath of the Astromancer
                             target->CastSpell(target, GetAmount(), true, NULL, this);
                             break;
