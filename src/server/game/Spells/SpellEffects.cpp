@@ -1595,7 +1595,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             int32 countDamage = int32(m_caster->GetDamageCounterInPastSecs(5, DAMAGE_TAKEN_COUNTER) * 0.20f);
 
-            if (m_caster->CountPctFromMaxHealth(7) > countDamage)
+            if (int32(m_caster->CountPctFromMaxHealth(7)) > countDamage)
                 bp = m_caster->CountPctFromMaxHealth(7);
             else
                 bp = countDamage;
@@ -1630,7 +1630,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
             if (spellid == 125195)
             {
-                for (uint32 i = 0; i < damage; ++i)
+                for (uint32 i = 0; i < uint32(damage); ++i)
                     m_caster->CastSpell(m_caster, spellid, true);
             }
             else
