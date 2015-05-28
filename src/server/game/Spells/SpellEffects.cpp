@@ -2129,19 +2129,6 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                 return;
             }
             break;
-        case 66550: // Teleport outside (Isle of Conquest)
-        case 66551: // Teleport inside (Isle of Conquest)
-        {
-            if (Creature* teleportTarget = m_caster->FindNearestCreature((m_spellInfo->Id == 66550 ? 23472 : 22515), 30.0f, true))
-            {
-                float x, y, z, o;
-                teleportTarget->GetPosition(x, y, z, o);
-
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->TeleportTo(628, x, y, z, o);
-            }
-            break;
-        }
         case 148705: // Teleport Banishment(Ordos Palace)
         {
             if (Player* caster = m_caster->ToPlayer())
@@ -2181,6 +2168,19 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
     // post effects for TARGET_DEST_DB
     switch (m_spellInfo->Id)
     {
+        case 66550: // Teleport outside (Isle of Conquest)
+        case 66551: // Teleport inside (Isle of Conquest)
+        {
+            if (Creature* teleportTarget = m_caster->FindNearestCreature((m_spellInfo->Id == 66550 ? 23472 : 22515), 35.0f, true))
+            {
+                float x, y, z, o;
+                teleportTarget->GetPosition(x, y, z, o);
+
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    m_caster->ToPlayer()->TeleportTo(628, x, y, z, o);
+            }
+            break;
+        }
         // Dimensional Ripper - Everlook
         case 23442:
         {
