@@ -1633,7 +1633,7 @@ public:
             }
         }
 
-        void PassengerBoarded(Unit* /*unit*/, int8 /*seat*/, bool apply)
+        void PassengerBoarded(Unit* player, int8 /*seat*/, bool apply)
         {
             if (!apply)
             {
@@ -1647,6 +1647,7 @@ public:
                 pos.m_positionZ += 12.0f;
                 me->GetMotionMaster()->MovePoint(1, pos);
             }
+            player->ClearUnitState(UNIT_STATE_ONVEHICLE);
         }
 
     private:
