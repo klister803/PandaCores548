@@ -1434,7 +1434,6 @@ public:
         if(!samount)
             return false;
         int32 amount = atoi(samount);
-                target->ModifyCurrency(currencyId, amount, true, true, false, false);
         if (!amount)
             return false;
 
