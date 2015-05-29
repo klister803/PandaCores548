@@ -912,7 +912,15 @@ class spell_dru_natures_vigil : public SpellScriptLoader
                         {
                             if (int32 bp = eff2->GetAmount())
                             {
-                                caster->CastCustomSpell(caster->SelectNearbyAlly(caster, 40.0f), SPELL_DRUID_NATURES_VIGIL_HEAL, &bp, 0, 0, true);
+                                std::list<Unit*> partyList;
+                                caster->GetPartyMembers(partyList);
+                                partyList.sort(Trinity::UnitHealthState(true));
+                                partyList.resize(1);
+
+                                for (std::list<Unit*>::const_iterator itr = partyList.begin(); itr != partyList.end(); ++itr)
+                                    if (Unit* _target = (*itr))
+                                        caster->CastCustomSpell(_target, SPELL_DRUID_NATURES_VIGIL_HEAL, &bp, 0, 0, true);
+
                                 eff2->SetAmount(0);
                             }
                         }
