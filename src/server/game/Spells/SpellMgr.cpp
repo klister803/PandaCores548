@@ -3805,6 +3805,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 145591: // Sha Cloud
+                    spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
+                    break;
                 case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesEx12 |= SPELL_ATTR12_PROC_ONLY_ON_CAST;
                     break;
