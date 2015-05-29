@@ -1440,9 +1440,7 @@ public:
 
         target->ModifyCurrency(currencyId, amount, true, true, false, false);
 
-                return true;
-            }
-        return false;
+        return true;
     }
 };
 
