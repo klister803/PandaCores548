@@ -22311,6 +22311,12 @@ void Player::_SaveSpells(SQLTransaction& trans)
 
     for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end();)
     {
+        if(!itr->second)
+        {
+            continue;
+            ++itr;
+        }
+
         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
         {
             if(itr->second->mount)
