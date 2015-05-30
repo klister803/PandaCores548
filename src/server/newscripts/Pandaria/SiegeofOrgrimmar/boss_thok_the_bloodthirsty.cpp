@@ -935,8 +935,8 @@ public:
                     GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
                     if (!pllist.empty())
                     {
-                        uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
-                        if (pllist.size() >= count)
+                        //uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5; Test Only
+                        if (pllist.size() >= 2)//count)
                         {
                             if (GetCaster()->HasAura(SPELL_POWER_REGEN))
                             {
