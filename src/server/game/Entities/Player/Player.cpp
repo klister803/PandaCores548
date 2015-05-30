@@ -27744,8 +27744,12 @@ void Player::UpdateCharmedAI()
 void Player::RestoreAllBaseRunes()
 {
     for (uint8 i = 0; i < MAX_RUNES; ++i)
+    {
         if (!IsBlockedRuneConvert(i))
             RestoreBaseRune(i);
+        else
+            ConvertRune(i, GetCurrentRune(i));
+    }
 }
 
 void Player::RestoreBaseRune(uint8 index)
