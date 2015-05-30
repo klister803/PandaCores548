@@ -59,7 +59,7 @@ enum eSpells
     SPELL_CANNON_BALL        = 147906,
     SPELL_CANNON_BALL_ATDMG  = 147607,
     SPELL_CANNON_BALL_AT_A   = 147609,
-    SPELL_CANNON_BALL_DESTD  = 147662,//dest dummy
+    SPELL_CANNON_BALL_DESTD  = 147662,
 };
 
 enum Events
@@ -91,9 +91,9 @@ enum Events
 enum Action
 {
     ACTION_PHASE_TWO         = 1,
-    ACTION_PHASE_ONE_ACID    = 2, //EVENT_ACID_BREATH
-    ACTION_PHASE_ONE_FROST   = 3, //EVENT_FREEZING_BREATH
-    ACTION_PHASE_ONE_FIRE    = 4, //EVENT_SCORCHING_BREATH
+    ACTION_PHASE_ONE_ACID    = 2, 
+    ACTION_PHASE_ONE_FROST   = 3, 
+    ACTION_PHASE_ONE_FIRE    = 4, 
     ACTION_FIXATE            = 5,
 
     ACTION_FREEDOM           = 6,
@@ -361,7 +361,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
                         break;
                     case EVENT_BURNING_BLOOD:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
                         break;               
@@ -924,13 +924,13 @@ public:
                 }
                 else
                 {
-                    //Test Only (For testing Solo)
+                    /*//Test Only (For testing Solo)
                     if (GetCaster()->HasAura(SPELL_POWER_REGEN))
                     {
                         GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                         GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
-                    }
-                    /*std::list<Player*>pllist;
+                    }*/
+                    std::list<Player*>pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
                     if (!pllist.empty())
@@ -944,7 +944,7 @@ public:
                                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                             }
                         }
-                    }*/
+                    }
                 }
             }
         }
