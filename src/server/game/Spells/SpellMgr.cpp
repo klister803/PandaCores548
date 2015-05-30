@@ -4008,7 +4008,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Speed = 25.f;
                     break;
                 case 124465: // Mastery: Vampiric Touch
-                case 143343: // Deafening Screech
                     spellInfo->CastTimeMin = 0;
                     spellInfo->CastTimeMax = 0;
                     break;
@@ -5611,6 +5610,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 140265: // Summon Thunder King Finale
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(23); //90s
+                    break;
+                case 143343: // Deafening Screech
+                    spellInfo->CastTimeMin = 0.7;
+                    spellInfo->CastTimeMax = 0.7;
                     break;
                 default:
                     break;
