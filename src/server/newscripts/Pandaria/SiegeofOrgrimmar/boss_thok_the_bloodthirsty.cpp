@@ -265,6 +265,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
+                    me->StopMoving();                    
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
@@ -711,6 +712,46 @@ public:
         void EnterEvadeMode(){}
 
         void UpdateAI(uint32 diff){}
+
+        void SetGUID(uint64 Guid, int32 type)
+        {
+            if (type == 1 && instance)
+            {
+                if (Player* pl = me->GetPlayer(*me, Guid))
+                {
+                    if (pl->isAlive())
+                    {
+                        std::list<Player*>pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, pl, 10.0f);
+                        if (!pllist.empty())
+                        {
+                          //uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
+                            uint8 maxcount = 2; //test only
+                            uint8 count = 0;
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            {
+                                if ((*itr)->GetGUID() != Guid && (*itr)->HasAura(SPELL_BLOODIED))
+                                    count++;
+
+                                if (count >= maxcount)
+                                {
+                                    if (Creature* thok = me->FindNearestCreature(NPC_THOK, 200.0f, true))
+                                    {
+                                        if (thok->HasAura(SPELL_POWER_REGEN))
+                                        {
+                                            thok->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                                            thok->AI()->DoAction(ACTION_PHASE_TWO);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -924,25 +965,12 @@ public:
                 }
                 else
                 {
-                    /*//Test Only (For testing Solo)
-                    if (GetCaster()->HasAura(SPELL_POWER_REGEN))
+                    if (GetCaster()->HasAura(SPELL_POWER_REGEN)) //for safe
                     {
-                        GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
-                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
-                    }*/
-                    std::list<Player*>pllist;
-                    pllist.clear();
-                    GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
-                    if (!pllist.empty())
-                    {
-                        //uint8 count = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5; Test Only
-                        if (pllist.size() >= 2)//count)
+                        if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                         {
-                            if (GetCaster()->HasAura(SPELL_POWER_REGEN))
-                            {
-                                GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
-                                GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
-                            }
+                            if (Creature* bs = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_BODY_STALKER)))
+                                bs->AI()->SetGUID(GetHitUnit()->GetGUID(), 1);
                         }
                     }
                 }
@@ -990,6 +1018,7 @@ public:
                 if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
                 {
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
+                    GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
                     GetCaster()->getThreatManager().resetAllAggro();
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);

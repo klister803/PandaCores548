@@ -86,6 +86,7 @@ public:
         uint64 amGuid;
         uint64 thokGuid;
         std::vector<uint64> prisonerGuids;
+        uint64 bsGuid;
 
         EventMap Events;
 
@@ -144,6 +145,7 @@ public:
             amGuid                  = 0;
             thokGuid                = 0;
             prisonerGuids.clear();
+            bsGuid                  = 0;
 
             onInitEnterState = false;
             STowerFull = false;
@@ -410,6 +412,9 @@ public:
                 //Thok
                 case NPC_THOK:
                     thokGuid = creature->GetGUID();
+                    break;
+                case NPC_BODY_STALKER:
+                    bsGuid = creature->GetGUID();
                     break;
                 //Prisoners
                 case NPC_AKOLIK:
@@ -1057,6 +1062,8 @@ public:
                     return amGuid;
                 case NPC_THOK:
                     return thokGuid;
+                case NPC_BODY_STALKER:
+                    return bsGuid;
             }
 
             std::map<uint32, uint64>::iterator itr = easyGUIDconteiner.find(type);
