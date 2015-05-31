@@ -215,6 +215,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
+                    me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
@@ -265,7 +266,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
-                    me->StopMoving();                    
+                    me->StopMoving(); 
+                    me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
@@ -919,7 +921,8 @@ public:
             if (GetCaster())
             {
                 if (GetCaster()->GetPower(POWER_ENERGY) == 100)
-                    GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
+                    if (!GetCaster()->HasUnitState(UNIT_STATE_CASTING))
+                        GetCaster()->CastSpell(GetCaster(), SPELL_DEAFENING_SCREECH);
             }
         }
 
@@ -1017,6 +1020,7 @@ public:
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
+                    GetCaster()->GetMotionMaster()->Clear(false);
                     GetCaster()->getThreatManager().resetAllAggro();
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
                 }
