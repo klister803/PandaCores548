@@ -56,6 +56,8 @@ include_directories(
   ${OPENSSL_INCLUDE_DIR}
 )
 
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
+
 add_executable(authserver
   ${authserver_SRCS}
   ${authserver_PCH_SRC}

@@ -135,6 +135,8 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
 )
 
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
+
 add_library(newscripts STATIC
   ${scripts_STAT_SRCS}
   ${scripts_STAT_PCH_SRC}
