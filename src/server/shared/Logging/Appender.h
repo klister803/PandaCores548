@@ -70,6 +70,7 @@ enum LogFilterType
     LOG_FILTER_UWOW_CORE           = 42,
     LOG_FILTER_POWER               = 43,
     LOG_FILTER_PROC                = 44,
+    LOG_FILTER_EFIR                = 45,
     LOG_FILTER_MAX
 };
 

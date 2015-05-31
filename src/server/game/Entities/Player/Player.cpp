@@ -13577,6 +13577,8 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
     Item* pItem = Item::CreateItem(item, count, this);
     if (pItem)
     {
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::StoreNewItem - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
         ItemAddedQuestCheck(item, count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item, count);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM, item, 1);
@@ -13651,6 +13653,9 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem = pItem->CloneItem(count, this);
         else
             pItem->SetCount(count);
+
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u", clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
 
         if (!pItem)
             return NULL;
@@ -14479,6 +14484,8 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pSrcItem, NULL);
         return;
     }
+    if(pNewItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u", pNewItem->GetEntry(), count, GetGUID(), pNewItem->GetGUID());
 
     if (IsInventoryPos(dst))
     {
@@ -14604,10 +14611,16 @@ void Player::SwapItem(uint16 src, uint16 dst)
         return;
     }
 
+    if(pSrcItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+
     // DST checks
 
     if (pDstItem)
     {
+        if(pDstItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pDstItem %u; count = %u playerGUID %u", pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID());
+
         if (pDstItem->m_lootGenerated)                       // prevent swap looting item
         {
             //best error message found for attempting to swap while looting

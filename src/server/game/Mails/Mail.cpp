@@ -112,6 +112,8 @@ void MailDraft::prepareItems(Player* receiver, SQLTransaction& trans)
             {
                 item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
                 AddItem(item);
+                if(item->GetEntry() == 38186)
+                    sLog->outDebug(LOG_FILTER_EFIR, "MailDraft::prepareItems - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), lootitem->count, receiver->GetGUID(), item->GetGUID());
             }
         }
     }

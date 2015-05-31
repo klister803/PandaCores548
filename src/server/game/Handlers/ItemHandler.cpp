@@ -685,6 +685,9 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
             return; // Therefore, no feedback to client
         }
 
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", pItem->GetEntry(), count, _player->GetGUID(), creature->GetGUID());
+
         // special case at auto sell (sell all)
         if (count == 0)
             count = pItem->GetCount();
@@ -712,6 +715,8 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
                         _player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, itemguid);
                         return;
                     }
+                    if(pItem->GetEntry() == 38186)
+                        sLog->outDebug(LOG_FILTER_EFIR, "HandleSellItemOpcode - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), count, _player->GetGUID(), pItem->GetGUID());
 
                     pItem->SetCount(pItem->GetCount() - count);
                     _player->ItemRemovedQuestCheck(pItem->GetEntry(), count);
@@ -777,6 +782,9 @@ void WorldSession::HandleBuybackItem(WorldPacket& recvData)
             return;
         }
 
+        if(pItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", pItem->GetEntry(), pItem->GetCount(), _player->GetGUID(), creature->GetGUID());
+    
         ItemPosCountVec dest;
         InventoryResult msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false);
         if (msg == EQUIP_ERR_OK)
@@ -809,6 +817,9 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recvData)
         --slot;
     else
         return;                                             // cheating
+
+    if(item == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", item, count, _player->GetGUID(), vendorguid);
 
     uint8 bag = NULL_BAG;                                   // init for case invalid bagGUID
     Item* bagItem = NULL;
@@ -866,6 +877,9 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
         --slot;
     else
         return; // cheating
+
+    if(item == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemOpcode item %u; count = %u playerGUID %u", item, count, _player->GetGUID());
 
     if (itemType == ITEM_VENDOR_TYPE_ITEM)
     {

@@ -862,6 +862,8 @@ bool Guild::MoveItemData::CloneItem(uint32 count)
         m_pPlayer->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, m_pItem);
         return false;
     }
+    if(m_pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "BankMoveItemData - CloneItem of item %u; count = %u playerGUID %u, guild %u", m_pItem->GetEntry(), count, m_pGuild->GetId(), m_pItem->GetGUID());
     return true;
 }
 
@@ -1053,6 +1055,9 @@ Item* Guild::BankMoveItemData::_StoreItem(SQLTransaction& trans, BankTab* pTab, 
         pItem = pItem->CloneItem(count);
     else
         pItem->SetCount(count);
+
+    if(pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "BankMoveItemData - CloneItem %i of item %u; count = %u playerGUID %u, guild %u", clone, pItem->GetEntry(), count, m_pGuild->GetId(), pItem->GetGUID());
 
     if (pItem && pTab->SetItem(trans, slotId, pItem))
         return pItem;
@@ -3146,6 +3151,9 @@ void Guild::_MoveItems(MoveItemData* pSrc, MoveItemData* pDest, uint32 splitedAm
         // 5.1. Clone source item
         if (!pSrc->CloneItem(splitedAmount))
             return; // Item could not be cloned
+
+        if(pSrc->GetItem()->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "_MoveItems - CloneItem of item %u; splitedAmount = %u playerGUID %u, guild %u", pSrc->GetItem()->GetEntry(), splitedAmount, GetId(), pSrc->GetItem()->GetGUID());
 
         // 5.2. Move splited item to destination
         _DoItemsMove(pSrc, pDest, true, splitedAmount);

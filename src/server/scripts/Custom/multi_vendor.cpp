@@ -241,6 +241,8 @@ public:
                         draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(action)), sendermail);
                         CharacterDatabase.CommitTransaction(trans);
                         chH.PSendSysMessage(20019, transcount);
+
+                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", item->GetEntry(), transcount, player->GetGUID(), item->GetGUID(), receiver->GetGUID());
                     }
                     CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='%s', `cost`='%u', `targetguid`='%u'",accountId , player->GetGUIDLow(), "EFIRALS_TRANS", transcount, action);
                 }
@@ -416,6 +418,8 @@ public:
 
             if(Item *item = GetItemByGuid(action, player))
             {
+                sLog->outDebug(LOG_FILTER_EFIR, "ItemBack item %u; count efir = %u playerGUID %u, itemGUID %u", item->GetEntry(), count, player->GetGUID(), item->GetGUID());
+
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));
                 player->SaveToDB();
