@@ -727,11 +727,11 @@ public:
                         if (!pllist.empty())
                         {
                           //uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
-                            uint8 maxcount = 2; //test only
+                            uint8 maxcount = 1; //test only
                             uint8 count = 0;
                             for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                             {
-                                if ((*itr)->GetGUID() != Guid && (*itr)->HasAura(SPELL_BLOODIED))
+                                if ((*itr)->HasAura(SPELL_BLOODIED))
                                     count++;
 
                                 if (count >= maxcount)
