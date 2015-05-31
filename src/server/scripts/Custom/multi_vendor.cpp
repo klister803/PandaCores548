@@ -235,7 +235,7 @@ public:
 
                     if (Item* item = Item::CreateItem(EFIRALS, transcount, 0))
                     {
-                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", item->GetEntry(), transcount, player->GetGUID(), item->GetGUID(), receiver->GetGUID());
+                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", EFIRALS, transcount, player->GetGUID(), item->GetGUID(), action);
 
                         player->SaveInventoryAndGoldToDB(trans);
                         item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
@@ -418,7 +418,7 @@ public:
 
             if(Item *item = GetItemByGuid(action, player))
             {
-                sLog->outDebug(LOG_FILTER_EFIR, "ItemBack item %u; count efir = %u playerGUID %u, itemGUID %u", item->GetEntry(), count, player->GetGUID(), item->GetGUID());
+                sLog->outDebug(LOG_FILTER_EFIR, "ItemBack item %u; count efir = %u playerGUID %u, itemGUID %u", item->GetEntry(), count, player->GetGUID(), action);
 
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));
