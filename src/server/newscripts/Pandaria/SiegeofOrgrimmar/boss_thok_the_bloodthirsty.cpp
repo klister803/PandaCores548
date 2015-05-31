@@ -215,7 +215,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.Reset();
                     meleecheck = 0;
                     me->StopMoving();
-                    me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
@@ -225,6 +224,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     DoCast(me, SPELL_POWER_REGEN, true);
                     DoZoneInCombat(me, 200.0f);
+                    if (me->getVictim())
+                        me->GetMotionMaster()->MoveChase(me->getVictim());
                     events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
                     switch (action)
                     {
@@ -267,7 +268,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
                     me->StopMoving(); 
-                    me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
@@ -1008,6 +1008,7 @@ public:
                 GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
                 GetCaster()->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                 GetCaster()->Attack(GetTarget(), true);
+                GetCaster()->GetMotionMaster()->MoveChase(GetTarget());
             }
         }
 
@@ -1020,7 +1021,6 @@ public:
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
-                    GetCaster()->GetMotionMaster()->Clear(false);
                     GetCaster()->getThreatManager().resetAllAggro();
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
                 }
