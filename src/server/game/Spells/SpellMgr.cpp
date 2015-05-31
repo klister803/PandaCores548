@@ -5612,8 +5612,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(23); //90s
                     break;
                 case 143343: // Deafening Screech
-                    spellInfo->CastTimeMin = 0.7;
-                    spellInfo->CastTimeMax = 0.7;
+                    spellInfo->CastTimeMin = 0.7f;
+                    spellInfo->CastTimeMax = 0.7f;
                     break;
                 default:
                     break;
