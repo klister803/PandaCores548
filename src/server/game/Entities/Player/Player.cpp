@@ -13643,7 +13643,7 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
     uint8 bag = pos >> 8;
     uint8 slot = pos & 255;
 
-    sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE: StoreItem bag = %u, slot = %u, item = %u, count = %u, guid = %u", bag, slot, pItem->GetEntry(), count, pItem->GetGUIDLow());
+    sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE:_StoreItem bag = %u, slot = %u, item = %u, count = %u, guid = %u", bag, slot, pItem->GetEntry(), count, pItem->GetGUIDLow());
 
     Item* pItem2 = GetItemByPos(bag, slot);
 
@@ -13655,7 +13655,8 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem->SetCount(count);
 
         if(pItem->GetEntry() == 38186)
-            sLog->outDebug(LOG_FILTER_EFIR, "Player::_StoreItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u", clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::_StoreItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u bag %u slot %u",
+                clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID(), bag, slot);
 
         if (!pItem)
             return NULL;
@@ -14069,6 +14070,9 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
     // update quest counters
     ItemAddedQuestCheck(pItem->GetEntry(), pItem->GetCount());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_RECEIVE_EPIC_ITEM, pItem->GetEntry(), pItem->GetCount());
+
+    if(pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::MoveItemToInventory - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), GetGUID(), pItem->GetGUID());
 
     // store item
     Item* pLastItem = StoreItem(dest, pItem, update);
@@ -14621,14 +14625,16 @@ void Player::SwapItem(uint16 src, uint16 dst)
     }
 
     if(pSrcItem->GetEntry() == 38186)
-        sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
 
     // DST checks
 
     if (pDstItem)
     {
         if(pDstItem->GetEntry() == 38186)
-            sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pDstItem %u; count = %u playerGUID %u", pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID());
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pDstItem %u; count = %u playerGUID %u IsNotEmptyBag %u IsNotEmptyBag %u",
+                pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID(), pDstItem->IsNotEmptyBag(), pSrcItem->IsNotEmptyBag());
 
         if (pDstItem->m_lootGenerated)                       // prevent swap looting item
         {

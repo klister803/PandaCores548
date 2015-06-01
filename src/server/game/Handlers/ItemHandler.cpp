@@ -217,6 +217,10 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
         return;
     }
 
+    if(pSrcItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "HandleAutoEquipItemOpcode - item %u; count = %u playerGUID %u, itemGUID %u srcbag %u srcslot %u",
+            pSrcItem->GetEntry(), count, _player->GetGUID(), pSrcItem->GetGUID(), srcbag, srcslot);
+
     uint16 src = pSrcItem->GetPos();
     if (dest == src)                                           // prevent equip in same slot, only at cheat
         return;
@@ -232,6 +236,10 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
     {
         uint8 dstbag = pDstItem->GetBagSlot();
         uint8 dstslot = pDstItem->GetSlot();
+
+        if(pDstItem->GetEntry() == 38186)
+            sLog->outDebug(LOG_FILTER_EFIR, "HandleAutoEquipItemOpcode - item %u; count = %u playerGUID %u, itemGUID %u dstbag %u dstslot %u",
+                pDstItem->GetEntry(), count, _player->GetGUID(), pDstItem->GetGUID(), dstbag, dstslot);
 
         msg = _player->CanUnequipItem(dest, !pSrcItem->IsBag());
         if (msg != EQUIP_ERR_OK)
@@ -1200,6 +1208,10 @@ void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recvPacket)
         _player->SendEquipError(EQUIP_ERR_INTERNAL_BAG_ERROR, pItem, NULL);
         return;
     }
+
+    if(pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "HandleAutoStoreBagItemOpcode - item %u; count = %u playerGUID %u, itemGUID %u dstbag %u srcslot %u srcbag %u",
+            pItem->GetEntry(), count, _player->GetGUID(), pItem->GetGUID(), dstbag, srcslot, srcbag);
 
     _player->RemoveItem(srcbag, srcslot, true);
     _player->StoreItem(dest, pItem, true);

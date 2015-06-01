@@ -924,6 +924,10 @@ void Guild::PlayerMoveItemData::RemoveItem(SQLTransaction& trans, MoveItemData* 
 Item* Guild::PlayerMoveItemData::StoreItem(SQLTransaction& trans, Item* pItem)
 {
     ASSERT(pItem);
+
+    if(pItem->GetEntry() == 38186)
+        sLog->outDebug(LOG_FILTER_EFIR, "PlayerMoveItemData::StoreItem - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), m_pPlayer->GetGUID(), pItem->GetGUID());
+
     m_pPlayer->MoveItemToInventory(m_vec, pItem, true);
     m_pPlayer->SaveInventoryAndGoldToDB(trans);
     return pItem;

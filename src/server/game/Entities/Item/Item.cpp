@@ -357,7 +357,15 @@ void Item::SaveToDB(SQLTransaction& trans)
 
             std::ostringstream ssSpells;
             for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            {
+                if(GetEntry() == 38186 && GetSpellCharges(i)) //Efir not have charges
+                {
+                    sWorld->BanAccount(BAN_CHARACTER, GetOwner()->GetName(), "-1", "Dupe efir", "System");
+                    delete this;
+                    return;
+                }
                 ssSpells << GetSpellCharges(i) << ' ';
+            }
             stmt->setString(++index, ssSpells.str());
 
             stmt->setUInt32(++index, GetUInt32Value(ITEM_FIELD_FLAGS));
