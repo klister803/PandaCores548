@@ -2375,6 +2375,47 @@ public:
     }
 };
 
+class spell_item_potion_of_illusion : public SpellScriptLoader
+{
+public:
+    spell_item_potion_of_illusion() : SpellScriptLoader("spell_item_potion_of_illusion") { }
+
+    class spell_item_potion_of_illusion_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_item_potion_of_illusion_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& targets)
+        {
+            Trinity::Containers::RandomResizeList(targets, 1);
+        }
+
+        void HandleOnHit()
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (Unit* target = GetHitUnit())
+            {
+                if (target == caster)
+                    return; // need info - morph random model
+                else
+                    target->CastSpell(caster, GetSpellInfo()->Effects[0].BasePoints, false);
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_item_potion_of_illusion_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_item_potion_of_illusion_SpellScript();
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2433,4 +2474,5 @@ void AddSC_item_spell_scripts()
     new spell_item_eye_of_the_black_prince();
     new spell_item_book_of_the_ages();
     new spell_item_chocolate_cookie();
+    new spell_item_potion_of_illusion();
 }
