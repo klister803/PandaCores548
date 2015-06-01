@@ -357,6 +357,11 @@ enum eGameObjects
     GO_YAUNGOLIAN_JAIL2            = 223006,
 };
 
+enum esSpells
+{
+    SPELL_SWIRL_SEARCHER           = 113762, //Cone Searcher
+};
+
 enum GalakrasEvent
 {
     TRANSPORT_PERIOD                = 98995,

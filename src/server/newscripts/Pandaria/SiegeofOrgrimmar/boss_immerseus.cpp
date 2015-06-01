@@ -26,7 +26,6 @@ enum eSpells
     SPELL_SHA_BOLT              = 143293, 
     SPELL_SWIRL                 = 143309, 
     SPELL_SWIRL_DMG             = 143412,
-    SPELL_SWIRL_SEARCHER        = 113762,
     SPELL_SEEPING_SHA           = 143286,
     SPELL_SUBMERGE              = 139832,
     SPELL_SUBMERGE_2            = 143281,
@@ -989,7 +988,7 @@ class spell_swirl : public SpellScriptLoader
                 if (GetCaster() && GetCaster()->ToCreature())
                 {
                     GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
-                    GetCaster()->AddAura(SPELL_SWIRL_SEARCHER, GetCaster());
+                    GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
                 }
             }
 
@@ -1029,8 +1028,25 @@ class spell_swirl_searcher : public SpellScriptLoader
 
             void ApplyHit()
             {
-                if (GetHitUnit())
-                    GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
+                if (GetHitUnit() && GetCaster() && GetCaster()->ToCreature())
+                {
+                    switch (GetCaster()->GetEntry())
+                    {
+                    case NPC_IMMERSEUS:
+                        GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
+                        break;
+                    case NPC_THOK:
+                        if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
+                            GetHitUnit()->Kill(GetHitUnit(), true);
+                        break;
+                    case NPC_STARVED_YETI:
+                        if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
+                            GetCaster()->CastSpell(GetHitUnit(), 147607, true); //SPELL_CANNON_BALL_ATDMG
+                        break;
+                    default:
+                        break;
+                    }
+                }
             }
 
             void Register()

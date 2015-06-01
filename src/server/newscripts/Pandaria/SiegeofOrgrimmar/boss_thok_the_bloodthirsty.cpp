@@ -84,8 +84,7 @@ enum Events
     EVENT_CHECK_TPLAYER      = 12,
     EVENT_Y_CHARGE           = 13,
     EVENT_PRE_Y_CHARGE       = 14,
-    EVENT_CHECKER            = 15,
-    EVENT_VAMPIRIC_FRENZY    = 16,
+    EVENT_VAMPIRIC_FRENZY    = 15,
 };
 
 enum Action
@@ -154,8 +153,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             
             InstanceScript* instance;
             std::list<Player*> plist;
-            uint32 meleecheck, enrage;
+            uint32 enrage;
             uint8 phasecount;
+            bool phasetwo;
 
             void Reset()
             {
@@ -163,6 +163,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 plist.clear();
                 DespawnObjects();
                 me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                 me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                 me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
                 me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
@@ -172,7 +173,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
                 phasecount = 0;
-                meleecheck = 0;
+                phasetwo = false;
                 enrage = 0;
                 if (instance)
                 {
@@ -213,10 +214,11 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_ONE_FROST: 
                 case ACTION_PHASE_ONE_FIRE:
                     events.Reset();
-                    meleecheck = 0;
+                    phasetwo = false;
                     me->StopMoving();
                     me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
+                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
                     me->InterruptNonMeleeSpells(true);
@@ -280,7 +282,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCast(target, SPELL_FIXATE_PL);
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
                         kj->AI()->DoZoneInCombat(kj, 300.0f);
-                    meleecheck = 4000;
+                    DoCast(me, SPELL_SWIRL_SEARCHER, true);
                     break;
                 case ACTION_FIXATE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
@@ -303,24 +305,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     }
                     else
                         enrage -= diff;
-                }
-
-                if (meleecheck)
-                {
-                    if (meleecheck <= diff)
-                    {
-                        plist.clear();
-                        GetPlayerListInGrid(plist, me, 10.0f);
-                        if (!plist.empty())
-                        {
-                            for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
-                                if ((*itr)->isInFront(me))
-                                    (*itr)->Kill(*itr, true);
-                        }
-                        meleecheck = 750;
-                    }
-                    else
-                        meleecheck -= diff;
                 }
 
                 events.Update(diff);
@@ -372,7 +356,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;               
                     }
                 }
-                if (!meleecheck)
+                if (!phasetwo)
                     DoMeleeAttackIfReady();
             }
 
@@ -832,7 +816,7 @@ public:
             {
                 if (pointId == 1)
                 {
-                    events.CancelEvent(EVENT_CHECKER);
+                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     summons.DespawnAll();
                     DoCast(me, SPELL_CANNON_BALL, true);
                     if (Creature* bs = me->FindNearestCreature(NPC_BODY_STALKER, 100.0f, true))
@@ -874,20 +858,6 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_CHECKER:
-                {
-                    std::list<Player*> plist;
-                    plist.clear();
-                    GetPlayerListInGrid(plist, me, 10.0f);
-                    if (!plist.empty())
-                    {
-                        for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
-                            if ((*itr)->isInFront(me))
-                                DoCast(*itr, SPELL_CANNON_BALL_ATDMG, true);
-                    }
-                    events.ScheduleEvent(EVENT_CHECKER, 750);
-                    break;
-                }
                 case EVENT_PRE_Y_CHARGE:
                     me->SummonCreature(NPC_SHOCK_COLLAR, x, y, me->GetPositionZ());
                     break;
@@ -895,7 +865,7 @@ public:
                     if (Creature* sc = me->FindNearestCreature(NPC_SHOCK_COLLAR, 135.0f, true))
                         me->SetFacingToObject(sc);
                     me->GetMotionMaster()->MoveCharge(x, y, me->GetPositionZ(), 30.0f, 1);
-                    events.ScheduleEvent(EVENT_CHECKER, 750);
+                    DoCast(me, SPELL_SWIRL_SEARCHER, true);
                     break;
                 }
             }

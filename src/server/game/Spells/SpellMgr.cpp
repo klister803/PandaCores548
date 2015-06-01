@@ -4976,6 +4976,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 113762: //Swirl
                     spellInfo->Effects[0].TriggerSpell = 125925;
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->Attributes |= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
                     break;
                 case 143412: //Swirl dmg
                     spellInfo->Effects[0].TargetA = 1;
