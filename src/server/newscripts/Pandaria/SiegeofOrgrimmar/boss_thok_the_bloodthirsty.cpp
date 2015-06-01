@@ -76,15 +76,16 @@ enum Events
     //
     EVENT_SCORCHING_BREATH   = 7,
     EVENT_BURNING_BLOOD      = 8,
+    EVENT_GO_TO_PRISONER     = 9,
 
     //Summon events
-    EVENT_ENRAGE_KJ          = 9,
-    EVENT_MOVE_TO_CENTER     = 10,
-    EVENT_MOVE_TO_THOK       = 11,
-    EVENT_CHECK_TPLAYER      = 12,
-    EVENT_Y_CHARGE           = 13,
-    EVENT_PRE_Y_CHARGE       = 14,
-    EVENT_VAMPIRIC_FRENZY    = 15,
+    EVENT_ENRAGE_KJ          = 10,
+    EVENT_MOVE_TO_CENTER     = 11,
+    EVENT_MOVE_TO_THOK       = 12,
+    EVENT_CHECK_TPLAYER      = 13,
+    EVENT_Y_CHARGE           = 14,
+    EVENT_PRE_Y_CHARGE       = 15,
+    EVENT_VAMPIRIC_FRENZY    = 16,
 };
 
 enum Action
@@ -107,9 +108,9 @@ uint32 prisonersentry[3] =
 
 Position fpos[3] =
 {
-    {1293.5050f, -5127.1513f, -287.6911f, 2.9432f},
-    {1116.9144f, -5096.3139f, -287.6315f, 6.1209f},
-    {1223.3216f, -5026.2880f, -287.7276f, 4.5030f},
+    {1273.30f, -5123.47f, -290.4582f, 2.9432f},
+    {1138.35f, -5100.04f, -290.4619f, 6.1209f},
+    {1220.41f, -5045.36f, -290.4579f, 4.5030f},
 };
 
 Position kjspawnpos = {1173.41f, -5130.74f, -289.9429f, 0.6028f};
@@ -153,6 +154,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             
             InstanceScript* instance;
             std::list<Player*> plist;
+            uint64 pGuid;
             uint32 enrage;
             uint8 phasecount;
             bool phasetwo;
@@ -172,6 +174,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                pGuid = 0;
                 phasecount = 0;
                 phasetwo = false;
                 enrage = 0;
@@ -206,6 +209,25 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
             }
 
+            void SetGUID(uint64 Guid, int32 type)
+            {
+                if (type == 2 && instance)
+                {
+                    pGuid = Guid;
+                    me->InterruptNonMeleeSpells(true);
+                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
+                    me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
+                    if (instance)
+                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->AttackStop();
+                    me->StopMoving();
+                    me->GetMotionMaster()->Clear(false);
+                    me->getThreatManager().resetAllAggro();
+                    me->GetMotionMaster()->MoveCharge(cpos.GetPositionX(), cpos.GetPositionY(), cpos.GetPositionZ(), 15.0f, 0);
+                }
+            }
+
             void DoAction(int32 const action)
             {
                 switch (action)
@@ -221,12 +243,12 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
-                    me->InterruptNonMeleeSpells(true);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     if (instance)
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     DoCast(me, SPELL_POWER_REGEN, true);
-                    DoZoneInCombat(me, 200.0f);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    DoZoneInCombat(me, 150.0f);
                     if (me->getVictim())
                         me->GetMotionMaster()->MoveChase(me->getVictim());
                     events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
@@ -282,12 +304,43 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCast(target, SPELL_FIXATE_PL);
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
                         kj->AI()->DoZoneInCombat(kj, 300.0f);
-                    DoCast(me, SPELL_SWIRL_SEARCHER, true);
                     break;
                 case ACTION_FIXATE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
                     break;
+                }
+            }
+
+            void MovementInform(uint32 type, uint32 pointId)
+            {
+                if (type == POINT_MOTION_TYPE)
+                {
+                    switch (pointId)
+                    {
+                    case 0:
+                        events.ScheduleEvent(EVENT_GO_TO_PRISONER, 500);
+                        break;
+                    case 1:
+                        if (Creature* pr = me->GetCreature(*me, pGuid))
+                        {
+                            pr->Kill(pr, true);
+                            switch (pr->GetEntry())
+                            {
+                            case NPC_AKOLIK:
+                                DoAction(ACTION_PHASE_ONE_ACID);
+                                break;
+                            case NPC_MONTAK:
+                                DoAction(ACTION_PHASE_ONE_FIRE);
+                                break;
+                            case NPC_WATERSPEAKER_GORAI:
+                                DoAction(ACTION_PHASE_ONE_FROST);
+                                break;
+                            }
+                            pGuid = 0;
+                        }
+                        break;
+                    }       
                 }
             }
 
@@ -328,6 +381,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_FEARSOME_ROAR:
                         DoCast(me, SPELL_FEARSOME_ROAR, true);
                         events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
+                        break;
+                    case EVENT_GO_TO_PRISONER:
+                        if (Creature* pr = me->GetCreature(*me, pGuid))
+                            me->GetMotionMaster()->MoveCharge(pr->GetPositionX(), pr->GetPositionY(), pr->GetPositionZ(), 15.0f, 1);
                         break;
                     //Extra events
                     //
@@ -479,66 +536,15 @@ public:
         void DoAction(int32 const action)
         {
             if (action == ACTION_FREEDOM)
-                events.ScheduleEvent(EVENT_MOVE_TO_CENTER, 2000);
-        }
-
-        void MovementInform(uint32 type, uint32 pointId)
-        {
-            if (type == POINT_MOTION_TYPE && instance)
-            {
-                switch (pointId)
-                {
-                case 0:
-                    events.ScheduleEvent(EVENT_MOVE_TO_THOK, 500);
-                    break;
-                case 1:
-                    if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
-                    {
-                        if (thok->isAlive())
-                        {
-                            me->Kill(me, true);
-                            switch (me->GetEntry())
-                            {
-                            case NPC_AKOLIK:
-                                thok->AI()->DoAction(ACTION_PHASE_ONE_ACID);
-                                break;
-                            case NPC_MONTAK:
-                                thok->AI()->DoAction(ACTION_PHASE_ONE_FIRE);
-                                break;
-                            case NPC_WATERSPEAKER_GORAI:
-                                thok->AI()->DoAction(ACTION_PHASE_ONE_FROST);
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }               
+                if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
+                    thok->AI()->SetGUID(me->GetGUID(), 2);
         }
 
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff)
-        {
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                case EVENT_MOVE_TO_CENTER:
-                    me->GetMotionMaster()->MoveCharge(cpos.GetPositionX(), cpos.GetPositionY(), cpos.GetPositionZ(), 20.0f, 0);
-                    break;
-                case EVENT_MOVE_TO_THOK:
-                    if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
-                        if (thok->isAlive())
-                            me->GetMotionMaster()->MoveCharge(thok->GetPositionX(), thok->GetPositionY(), thok->GetPositionZ(), 20.0f, 1);
-                    break;
-                }
-            }
-        }
+        void UpdateAI(uint32 diff){}
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -975,6 +981,8 @@ public:
         {
             if (GetTarget() && GetCaster())
             {
+                if (!GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
+                    GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
                 GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
                 GetCaster()->AddThreat(GetTarget(), 50000000.0f);
                 GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
@@ -988,7 +996,7 @@ public:
         {
             if (GetTarget() && GetCaster())
             {
-                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
+                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
                 {
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
