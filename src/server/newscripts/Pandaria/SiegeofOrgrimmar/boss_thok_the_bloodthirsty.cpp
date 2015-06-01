@@ -73,19 +73,20 @@ enum Events
     EVENT_CORROSIVE_BLOOD    = 5,
     //
     EVENT_FREEZING_BREATH    = 6,
+    EVENT_ICY_BLOOD          = 7,
     //
-    EVENT_SCORCHING_BREATH   = 7,
-    EVENT_BURNING_BLOOD      = 8,
-    EVENT_GO_TO_PRISONER     = 9,
+    EVENT_SCORCHING_BREATH   = 8,
+    EVENT_BURNING_BLOOD      = 9,
+    EVENT_GO_TO_PRISONER     = 10,
 
     //Summon events
-    EVENT_ENRAGE_KJ          = 10,
-    EVENT_MOVE_TO_CENTER     = 11,
-    EVENT_MOVE_TO_THOK       = 12,
-    EVENT_CHECK_TPLAYER      = 13,
-    EVENT_Y_CHARGE           = 14,
-    EVENT_PRE_Y_CHARGE       = 15,
-    EVENT_VAMPIRIC_FRENZY    = 16,
+    EVENT_ENRAGE_KJ          = 11,
+    EVENT_MOVE_TO_CENTER     = 12,
+    EVENT_MOVE_TO_THOK       = 13,
+    EVENT_CHECK_TPLAYER      = 14,
+    EVENT_Y_CHARGE           = 15,
+    EVENT_PRE_Y_CHARGE       = 16,
+    EVENT_VAMPIRIC_FRENZY    = 17,
 };
 
 enum Action
@@ -260,6 +261,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case ACTION_PHASE_ONE_FROST: 
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, urand(4000, 5000));
                         break;
                     case ACTION_PHASE_ONE_FIRE:
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
@@ -401,6 +403,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         DoCast(me, SPELL_FREEZING_BREATH, true);
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
                         break;
+                    case EVENT_ICY_BLOOD:
+                        DoCastAOE(SPELL_ICY_BLOOD, true);
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, urand(4000, 5000));
                     //
                     case EVENT_SCORCHING_BREATH:
                         DoCast(me, SPELL_SCORCHING_BREATH, true);
@@ -564,7 +569,6 @@ public:
         npc_thok_ice_tombAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetDisplayId(11686);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
         }
