@@ -13655,7 +13655,7 @@ Item* Player::_StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool
             pItem->SetCount(count);
 
         if(pItem->GetEntry() == 38186)
-            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u", clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::_StoreItem - CloneItem clone %i of item %u; count = %u playerGUID %u, itemGUID %u", clone, pItem->GetEntry(), count, GetGUID(), pItem->GetGUID());
 
         if (!pItem)
             return NULL;
@@ -14485,7 +14485,16 @@ void Player::SplitItem(uint16 src, uint16 dst, uint32 count)
         return;
     }
     if(pNewItem->GetEntry() == 38186)
-        sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u", pNewItem->GetEntry(), count, GetGUID(), pNewItem->GetGUID());
+    {
+        if (pSrcItem->IsNotEmptyBag())
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem IsNotEmptyBag pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+
+        if (IsBagPos(src) || IsBagPos(dst))
+            sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem IsBagPos pSrcItem %u; count = %u playerGUID %u", pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID());
+
+        sLog->outDebug(LOG_FILTER_EFIR, "Player::SplitItem - CloneItem of item %u; count = %u playerGUID %u, itemGUID %u sEntry %u sitemGUID %u srcbag %i, srcslot %i, dstbag %i, dstslot %i sCount %i",
+        pNewItem->GetEntry(), count, GetGUID(), pNewItem->GetGUID(), pSrcItem->GetEntry(), pSrcItem->GetGUID(), srcbag, srcslot, dstbag, dstslot, pSrcItem->GetCount());
+    }
 
     if (IsInventoryPos(dst))
     {
