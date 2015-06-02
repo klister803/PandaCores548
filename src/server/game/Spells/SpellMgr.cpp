@@ -5617,6 +5617,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->CastTimeMin = 0.7f;
                     spellInfo->CastTimeMax = 0.7f;
                     break;
+                case 89496: // Gnomish Gravity Well
+                    spellInfo->AttributesEx4 &= ~SPELL_ATTR4_CAST_ONLY_IN_OUTLAND;
+                    break;
                 default:
                     break;
             }
