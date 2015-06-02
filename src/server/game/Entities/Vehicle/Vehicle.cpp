@@ -894,7 +894,8 @@ bool VehicleJoinEvent::Execute(uint64, uint32)
         {
             return false;
             //ASSERT(false);
-        }else if (Seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_UNK2)
+        }
+        else if (Seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_UNK2 && Seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
         {
             Passenger->Dismount();
             Passenger->ToPlayer()->SetClientControl(Target->GetBase(), 1);
