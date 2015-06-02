@@ -32,6 +32,7 @@ EndScriptData */
 #include "GridNotifiersImpl.h"
 #include "GossipDef.h"
 #include "MapManager.h"
+#include "Vehicle.h"
 
 #include <fstream>
 

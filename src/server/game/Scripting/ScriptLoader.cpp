@@ -873,6 +873,7 @@ void AddScripts()
 
 void AddExampleScripts()
 {
+#ifdef SCRIPTS
     AddSC_custom_reward();
     AddSC_custum_trainer();
     AddSC_command_donate();
@@ -880,6 +881,7 @@ void AddExampleScripts()
     AddSC_npc_profession();
     AddSC_npc_beastmaster();
     AddSC_npc_teleguy();
+#endif
 }
 
 void AddSpellScripts()

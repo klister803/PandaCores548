@@ -3850,9 +3850,9 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
     for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
     {
         ModifierTreeEntry const* modifier = sModifierTreeStore.LookupEntry(*itr);
-        int32 const reqType = modifier->additionalConditionType;
-        int32 const reqValue = modifier->additionalConditionValue;
-        int32 const reqCount = modifier->additionalConditionCount;
+        uint32 const reqType = modifier->additionalConditionType;
+        uint32 const reqValue = modifier->additionalConditionValue;
+        uint32 const reqCount = modifier->additionalConditionCount;
         bool check = true;
 
         //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::AdditionalRequirementsSatisfied cheker start Modify %i, reqType %i reqValue %i reqCount %i saveCheck %i saveReqType %i operatorFlags %i check %i", (*itr), reqType, reqValue, reqCount, saveCheck, saveReqType, modifier->operatorFlags, check);

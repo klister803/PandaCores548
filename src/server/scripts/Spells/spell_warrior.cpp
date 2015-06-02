@@ -1175,9 +1175,9 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
                     float angle = caster->GetAngle(&savePos);
                     if(count > 0)
                     {
-                        for(int32 j = 1; j < count + 1; ++j)
+                        for(uint32 j = 1; j < count + 1; ++j)
                         {
-                            int32 distanceNext = j;
+                            uint32 distanceNext = j;
                             float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
                             float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
                             savePos.Relocate(destx, desty, caster->GetPositionZ());
