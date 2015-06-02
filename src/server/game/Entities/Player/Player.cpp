@@ -2551,7 +2551,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!GetSession()->PlayerLogout())
         {
             Position newPos;
-            newPos.Relocate(x, y, z, orientation);
+            if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+                z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
+            Relocate(x, y, z, orientation);
             SendTeleportPacket(newPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
     }
