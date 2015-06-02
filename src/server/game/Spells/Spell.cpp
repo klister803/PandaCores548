@@ -4235,7 +4235,7 @@ void Spell::SendSpellCooldown()
     Player* _player = (Player*)m_caster;
 
     // mana/health/etc potions, disabled by client (until combat out as declarate)
-    if (m_CastItem && m_CastItem->IsPotion())
+    if (m_CastItem && (m_CastItem->IsPotion() || m_CastItem->GetEntry() == 77589))
     {
         // need in some way provided data for Spell::finish SendCooldownEvent
         _player->SetLastPotionId(m_CastItem->GetEntry());

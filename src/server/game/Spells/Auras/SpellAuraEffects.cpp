@@ -3368,6 +3368,9 @@ void AuraEffect::HandleAuraCloneCaster(AuraApplication const* aurApp, uint8 mode
         if (!caster || caster == target)
             return;
 
+        // Remove aura from invisible model
+        target->RemoveAurasByType(SPELL_AURA_TRANSFORM);
+
         // What must be cloned? at least display and scale
         target->SetDisplayId(caster->GetDisplayId());
         //target->SetObjectScale(caster->GetFloatValue(OBJECT_FIELD_SCALE_X)); // we need retail info about how scaling is handled (aura maybe?)
