@@ -2536,11 +2536,6 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
                         AddPct(addhealth, 25);
                 break;
             }
-            case 105708: // Master Healing Potion
-            {
-                addhealth = 60000; // dbc missing scaling data
-                break;
-            }
             default:
                 break;
         }
