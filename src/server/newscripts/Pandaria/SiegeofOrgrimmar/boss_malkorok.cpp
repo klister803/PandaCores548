@@ -131,7 +131,7 @@ class boss_malkorok : public CreatureScript
 
             InstanceScript* instance;
             std::vector<uint64> asGuids;
-            uint32 powercheck, displacedenergy;
+            uint32 powercheck, displacedenergy, checkvictim;
             Phase phase;
 
             void Reset()
@@ -148,16 +148,41 @@ class boss_malkorok : public CreatureScript
                 phase = PHASE_ONE;
                 displacedenergy = 0;
                 powercheck = 0;
+                checkvictim = 0;
                 if (instance)
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LANGUISH);
             }
 
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_DEFENSIVE);
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
+                    if (am->GetDistance(who) > 42.0f)
+                        return false;
+
+                return true;
+            }
+
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
                 _EnterCombat();
                 Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
                 powercheck = 1300;
+                checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
                 events.ScheduleEvent(EVENT_PREPARE, 13000);
@@ -305,8 +330,27 @@ class boss_malkorok : public CreatureScript
                         powercheck -= diff;
                 }
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
 
                 if (displacedenergy)
                 {
@@ -320,6 +364,9 @@ class boss_malkorok : public CreatureScript
                 }
 
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {

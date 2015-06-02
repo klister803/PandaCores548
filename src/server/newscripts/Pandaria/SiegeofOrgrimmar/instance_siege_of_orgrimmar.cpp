@@ -778,7 +778,6 @@ public:
                     break;
                 }
             }
-
             if (state == DONE)
                 DoSummoneEventCreatures();
             return true;

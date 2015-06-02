@@ -247,11 +247,16 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     if (instance)
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
-                    DoCast(me, SPELL_POWER_REGEN, true);
                     me->SetReactState(REACT_AGGRESSIVE);
+                    DoCast(me, SPELL_POWER_REGEN, true);
                     DoZoneInCombat(me, 150.0f);
                     if (me->getVictim())
                         me->GetMotionMaster()->MoveChase(me->getVictim());
+                    else
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
                     events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
                     switch (action)
                     {
@@ -302,14 +307,21 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
+                    else
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
                     if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
                         kj->AI()->DoZoneInCombat(kj, 300.0f);
                     break;
                 case ACTION_FIXATE:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 150.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                         DoCast(target, SPELL_FIXATE_PL);
+                    else
+                        EnterEvadeMode();
                     break;
                 }
             }
@@ -406,6 +418,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_ICY_BLOOD:
                         DoCastAOE(SPELL_ICY_BLOOD, true);
                         events.ScheduleEvent(EVENT_ICY_BLOOD, urand(4000, 5000));
+                        break;
                     //
                     case EVENT_SCORCHING_BREATH:
                         DoCast(me, SPELL_SCORCHING_BREATH, true);
@@ -1098,6 +1111,41 @@ public:
     }
 };
 
+//143773
+class spell_freezing_breath : public SpellScriptLoader
+{
+public:
+    spell_freezing_breath() : SpellScriptLoader("spell_freezing_breath") { }
+
+    class spell_freezing_breath_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_freezing_breath_AuraScript);
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (GetTarget() && GetTarget()->HasAura(SPELL_FREEZING_BREATH))
+            {
+                if (GetTarget()->GetAura(SPELL_FREEZING_BREATH)->GetStackAmount() >= 5 && !GetTarget()->HasAura(SPELL_FROZEN_SOLID))
+                {
+                    GetTarget()->AddAura(SPELL_FROZEN_SOLID, GetTarget());
+                    GetTarget()->RemoveAurasDueToSpell(SPELL_FREEZING_BREATH);
+                    GetTarget()->CastSpell(GetTarget(), SPELL_SUMMON_ICE_TOMB, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_freezing_breath_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_freezing_breath_AuraScript();
+    }
+};
+
 
 void AddSC_boss_thok_the_bloodthirsty()
 {
@@ -1114,4 +1162,5 @@ void AddSC_boss_thok_the_bloodthirsty()
     new spell_fixate();
     new spell_unlocking();
     new spell_icy_blood();
+    new spell_freezing_breath();
 }

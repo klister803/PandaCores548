@@ -123,7 +123,7 @@ class boss_general_nazgrim : public CreatureScript
 
             InstanceScript* instance;
             uint8 laststance;
-            uint32 checkpower;
+            uint32 checkpower, checkvictim;
             uint8 wavenum;
             bool lowhp;
 
@@ -137,6 +137,7 @@ class boss_general_nazgrim : public CreatureScript
                 me->SetPower(POWER_ENERGY, 0);
                 laststance = 4; //default
                 checkpower = 1000;
+                checkvictim = 0;
                 lowhp = false;
             }
 
@@ -324,12 +325,35 @@ class boss_general_nazgrim : public CreatureScript
                 }
             }
 
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (who->GetPositionY() >= -4586.20f)
+                    return false;
+
+                return true;
+            }
+
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
                 Talk(SAY_PULL);
                 _EnterCombat();
                 SetStance(0);
                 wavenum = 0;
+                checkvictim = 1500;
                 events.ScheduleEvent(EVENT_SUMMON, 45000);
                 events.ScheduleEvent(EVENT_SUNDERING_BLOW, 10000);
                 events.ScheduleEvent(EVENT_BONECRACKER, 15000);
@@ -396,7 +420,7 @@ class boss_general_nazgrim : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                if (!UpdateVictim())
                     return;
 
                 if (checkpower <= diff)
@@ -416,7 +440,32 @@ class boss_general_nazgrim : public CreatureScript
                 else
                     checkpower -= diff;
 
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
+
                 events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {

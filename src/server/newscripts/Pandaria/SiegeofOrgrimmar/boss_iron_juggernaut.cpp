@@ -108,12 +108,13 @@ class boss_iron_juggernaut : public CreatureScript
             }
 
             InstanceScript* instance;
-            uint32 PowerTimer, enrage;
+            uint32 PowerTimer, enrage, checkvictim;
             Phases phase;
 
             void Reset()
             {
                 _Reset();
+                checkvictim = 0;
                 PowerTimer = 0;
                 phase = PHASE_ONE;
                 events.SetPhase(PHASE_ONE);
@@ -124,11 +125,34 @@ class boss_iron_juggernaut : public CreatureScript
                 SendActionForAllPassenger(false);
             }
 
+            void JustReachedHome()
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_DEFENSIVE);
+            }
+
+            bool CheckPullPlayerPos(Unit* who)
+            {
+                if (who->GetPositionX() < 1258.00f)
+                    return false;
+
+                return true;
+            }
+
             void EnterCombat(Unit* who)
             {
+                if (instance)
+                {
+                    if (!CheckPullPlayerPos(who))
+                    {
+                        EnterEvadeMode();
+                        return;
+                    }
+                }
                 _EnterCombat();
                 SendActionForAllPassenger(true);
                 PowerTimer = 1100;
+                checkvictim = 1500;
                 enrage = 600000;
                 events.ScheduleEvent(EVENT_SUMMON_MINE, 30000);
                 events.ScheduleEvent(EVENT_DEMOLISHER_CANNON, 9000);
@@ -219,6 +243,28 @@ class boss_iron_juggernaut : public CreatureScript
                         PowerTimer -= diff;
                 }
 
+                if (checkvictim && instance)
+                {
+                    if (checkvictim <= diff)
+                    {
+                        if (me->getVictim())
+                        {
+                            if (!CheckPullPlayerPos(me->getVictim()))
+                            {
+                                me->AttackStop();
+                                me->SetReactState(REACT_PASSIVE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+                                EnterEvadeMode();
+                                checkvictim = 0;
+                            }
+                            else
+                                checkvictim = 1500;
+                        }
+                    }
+                    else
+                        checkvictim -= diff;
+                }
+
                 if (enrage)
                 {
                     if (enrage <= diff)
@@ -230,10 +276,10 @@ class boss_iron_juggernaut : public CreatureScript
                         enrage -= diff;
                 }
 
+                events.Update(diff);
+
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
-
-                events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
