@@ -55,7 +55,7 @@ enum Opcodes
     CMSG_AUCTION_PLACE_BID                            = 0x035E, // 5.4.1 17538
     CMSG_AUCTION_REMOVE_ITEM                          = 0x0AD7, // 5.4.1 17538
     CMSG_AUCTION_SELL_ITEM                            = 0x0746, // 5.4.1 17538
-    CMSG_AUTH_SESSION                                 = 0x14DA, // 5.4.1 17358
+    CMSG_AUTH_SESSION                                 = 0x14DA, // 5.4.1 17538
     CMSG_AUTO_DECLINE_GUILD_INVITES                   = 0x02DF, // 5.4.1 17538
     CMSG_AUTOBANK_ITEM                                = 0x0035, // 5.4.1 17538
     CMSG_AUTOEQUIP_ITEM                               = 0x0024, // 5.4.1 17538
@@ -94,7 +94,7 @@ enum Opcodes
     CMSG_CALENDAR_COMPLAIN                            = 0x094C, // 5.4.1 17538
     CMSG_CALENDAR_COPY_EVENT                          = 0x0C45, // 5.4.1 17538
     CMSG_CALENDAR_EVENT_INVITE                        = 0x0464, // 5.4.1 17538
-    CMSG_CALENDAR_EVENT_MODERATOR_STATUS              = 0x00CD, // 5.4.1 17358
+    CMSG_CALENDAR_EVENT_MODERATOR_STATUS              = 0x00CD, // 5.4.1 17538
     CMSG_CALENDAR_EVENT_REMOVE_INVITE                 = 0x094C, // 5.4.1 17538
     CMSG_CALENDAR_EVENT_RSVP                          = 0x1868, // 5.4.1 17538
     CMSG_CALENDAR_EVENT_SIGNUP                        = 0x144D, // 5.4.1 17538
@@ -314,7 +314,7 @@ enum Opcodes
     CMSG_MESSAGECHAT_CHANNEL                          = 0x01DD, // 5.4.1 17538
     CMSG_MESSAGECHAT_DND                              = 0x0175, // 5.4.1 17538
     CMSG_MESSAGECHAT_EMOTE                            = 0x0CDC, // 5.4.1 17538
-    CMSG_MESSAGECHAT_GUILD                            = 0x0459, // 5.4.1 17358
+    CMSG_MESSAGECHAT_GUILD                            = 0x0459, // 5.4.1 17538
     CMSG_MESSAGECHAT_INSTANCE                         = 0x0555, // 5.4.1 17538
     CMSG_MESSAGECHAT_OFFICER                          = 0x0DF1, // 5.4.1 17538
     CMSG_MESSAGECHAT_PARTY                            = 0x0954, // 5.4.1 17538
@@ -639,7 +639,7 @@ enum Opcodes
     SMSG_CHANNEL_NOTIFY                               = 0x1490, // 5.4.1 17538
     SMSG_CHANNEL_START                                = 0x0565, // 5.4.1 17538
     SMSG_CHANNEL_UPDATE                               = 0x1148, // 5.4.1 17538
-    SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17399
+    SMSG_CHAR_CREATE                                  = 0x1007, // 5.4.1 17538
     SMSG_CHAR_CUSTOMIZE                               = 0x041D, // 5.4.1 17538
     SMSG_CHAR_DELETE                                  = 0x0017, // 5.4.1 17538
     SMSG_CHAR_ENUM                                    = 0x040E, // 5.4.1 17538
@@ -1325,7 +1325,6 @@ enum Opcodes
     SMSG_PLAYER_DIFFICULTY_CHANGE                     = 0xCB4,  // 5.0.5 16048
     SMSG_PLAYER_SKINNED                               = 0x8B2,  // 5.0.5 16048
     SMSG_PLAY_DANCE                                   = 0x86C,  // 5.0.5 16048
-    //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048

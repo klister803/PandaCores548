@@ -306,6 +306,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
+
+    m_sequenceIndex = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -22163,7 +22165,7 @@ void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float 
     data << float(speedXY);
     data << float(vcos);
     data << float(speedZ);
-    data << uint32(0);
+    data << uint32(player->m_sequenceIndex++);
     data << float(vsin);
     
     data.WriteGuidMask<7, 2, 4, 3, 0, 6, 1, 5>(guid);
@@ -23732,31 +23734,30 @@ bool Unit::SetFeatherFall(bool enable, bool packetOnly)
 
 bool Unit::SetHover(bool enable, bool packetOnly)
 {
-    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetHover(enable);
-    //for creature using virtual function
-
-    if (packetOnly)
-        return false;
-
-    if (enable)
+    if (!packetOnly)
     {
-        //! No need to check height on ascent
-        AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
-        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
-            UpdateHeight(GetPositionZ() + hh);
-    }
-    else
-    {
-        RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
-        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+        if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+            return false;
+
+        if (GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->SendMovementSetHover(enable);
+
+        if (enable)
         {
-            float newZ = GetPositionZ() - hh;
-            UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
-            UpdateHeight(newZ);
+            //! No need to check height on ascent
+            AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
+            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+                UpdateHeight(GetPositionZ() + hh);
+        }
+        else
+        {
+            RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
+            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+            {
+                float newZ = GetPositionZ() - hh;
+                UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
+                UpdateHeight(newZ);
+            }
         }
     }
 
