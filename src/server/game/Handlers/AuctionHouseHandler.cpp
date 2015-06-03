@@ -309,7 +309,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             sAuctionMgr->AddAItem(item);
             auctionHouse->AddAuction(AH);
 
-            _player->MoveItemFromInventory(item, item, true);
+            _player->MoveItemFromInventory(item, true);
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             item->DeleteFromInventoryDB(trans);
@@ -366,7 +366,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
                 // Item stack count equals required count, ready to delete item - cloned item will be used for auction
                 if (item2->GetCount() == stackCount[j])
                 {
-                    _player->MoveItemFromInventory(item2, item2, true);
+                    _player->MoveItemFromInventory(item2, true);
                     item2->DeleteFromInventoryDB(trans);
                     item2->DeleteFromDB(trans);
                     delete item2;

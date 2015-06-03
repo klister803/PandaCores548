@@ -474,12 +474,12 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
             if (myItems[i])
             {
                 myItems[i]->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
-                _player->MoveItemFromInventory(myItems[i], myItems[i], true);
+                _player->MoveItemFromInventory(myItems[i], true);
             }
             if (hisItems[i])
             {
                 hisItems[i]->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, trader->GetGUID());
-                trader->MoveItemFromInventory(hisItems[i], hisItems[i], true);
+                trader->MoveItemFromInventory(hisItems[i], true);
             }
         }
 
