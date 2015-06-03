@@ -14047,6 +14047,77 @@ void Player::RemoveItem(uint8 bag, uint8 slot, bool update)
     }
 }
 
+void Player::RemoveItem(Item* pItem, bool update)
+{
+    // note: removeitem does not actually change the item
+    // it only takes the item out of storage temporarily
+    // note2: if removeitem is to be used for delinking
+    // the item must be removed from the player's updatequeue
+
+    if (pItem)
+    {
+        uint8 bag = pItem->GetBagSlot();
+        uint8 slot = pItem->GetSlot();
+
+        sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "STORAGE: RemoveItem bag = %u, slot = %u, item = %u", bag, slot, pItem->GetEntry());
+
+        RemoveEnchantmentDurations(pItem);
+        RemoveItemDurations(pItem);
+        RemoveTradeableItem(pItem);
+
+        if (bag == INVENTORY_SLOT_BAG_0)
+        {
+            if (slot < INVENTORY_SLOT_BAG_END)
+            {
+                ItemTemplate const* pProto = pItem->GetTemplate();
+                // item set bonuses applied only at equip and removed at unequip, and still active for broken items
+
+                if (pProto && pProto->ItemSet)
+                    RemoveItemsSetItem(this, pProto);
+
+                _ApplyItemMods(pItem, slot, false);
+
+                // remove item dependent auras and casts (only weapon and armor slots)
+                if (slot < EQUIPMENT_SLOT_END)
+                {
+                    RemoveItemDependentAurasAndCasts(pItem);
+
+                    // remove held enchantments, update expertise
+                    if (slot == EQUIPMENT_SLOT_MAINHAND)
+                    {
+                        if (pItem->GetItemSuffixFactor())
+                        {
+                            pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_3);
+                            pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_4);
+                        }
+                        else
+                        {
+                            pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_0);
+                            pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_1);
+                        }
+                    }
+                }
+            }
+
+            m_items[slot] = NULL;
+            SetUInt64Value(PLAYER_FIELD_INV_SLOT_HEAD + (slot * 2), 0);
+
+            UpdateExpertise();
+
+            if (slot < EQUIPMENT_SLOT_END)
+                SetVisibleItemSlot(slot, NULL);
+        }
+        else if (Bag* pBag = GetBagByPos(bag))
+            pBag->RemoveItem(slot, update);
+
+        pItem->SetUInt64Value(ITEM_FIELD_CONTAINED, 0);
+        // pItem->SetUInt64Value(ITEM_FIELD_OWNER, 0); not clear owner at remove (it will be set at store). This used in mail and auction code
+        pItem->SetSlot(NULL_SLOT);
+        if (IsInWorld() && update)
+            pItem->SendUpdateToPlayer(this);
+    }
+}
+
 // Common operation need to remove item from inventory without delete in trade, auction, guild bank, mail....
 void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
 {
@@ -14060,6 +14131,22 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
         {
             it->RemoveFromWorld();
             it->DestroyForPlayer(this);
+        }
+    }
+}
+
+void Player::MoveItemFromInventory(Item* pItem, bool update)
+{
+    if (pItem)
+    {
+        ItemRemovedQuestCheck(pItem->GetEntry(), pItem->GetCount());
+        RemoveItem(pItem, update);
+        pItem->SetNotRefundable(this, false);
+        pItem->RemoveFromUpdateQueueOf(this);
+        if (pItem->IsInWorld())
+        {
+            pItem->RemoveFromWorld();
+            pItem->DestroyForPlayer(this);
         }
     }
 }
@@ -26613,7 +26700,7 @@ void Player::AutoUnequipOffhandIfNeed(bool force /*= false*/)
     }
     else
     {
-        MoveItemFromInventory(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+        MoveItemFromInventory(offItem, true);
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         offItem->DeleteFromInventoryDB(trans);                   // deletes item from character's inventory
         offItem->SaveToDB(trans);                                // recursive and not have transaction guard into self, item not in inventory and can be save standalone
