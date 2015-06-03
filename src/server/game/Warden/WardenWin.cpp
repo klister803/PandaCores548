@@ -163,7 +163,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     buff.rpos(buff.wpos());
 
     // Verify key
-    if (memcmp(buff.contents() + 1, Module.ClientKeySeedHash, 20) != 0)
+    if (memcmp(buff.contents() + 5, Module.ClientKeySeedHash, 20) != 0)
     {
         sLog->outWarn(LOG_FILTER_WARDEN, "%s failed hash reply. Action: %s", _session->GetPlayerName(false).c_str(), Penalty().c_str());
         return;
@@ -199,6 +199,7 @@ void WardenWin::RequestData()
     uint16 id;
     uint8 type;
     WardenCheck* wd;
+
     _currentChecks.clear();
 
     // Build check request
@@ -354,6 +355,9 @@ void WardenWin::HandleData(ByteBuffer &buff)
         sLog->outWarn(LOG_FILTER_WARDEN, "%s failed checksum. Action: %s", _session->GetPlayerName(false).c_str(), Penalty().c_str());
         return;
     }
+
+    sLog->outInfo(LOG_FILTER_NETWORKIO, "0x02 packet with unknown check - %s", ByteArrayToHexStr(const_cast<uint8*>(buff.contents()), buff.size()).c_str());
+    return;
 
     // TIMING_CHECK
     {
