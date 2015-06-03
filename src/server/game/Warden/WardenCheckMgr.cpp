@@ -165,7 +165,6 @@ void WardenCheckMgr::LoadWardenOverrides()
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden action overrides. DB table `warden_action` is empty!");
-
         return;
     }
 
