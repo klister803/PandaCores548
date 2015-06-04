@@ -266,7 +266,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case ACTION_PHASE_ONE_FROST: 
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
-                        events.ScheduleEvent(EVENT_ICY_BLOOD, urand(4000, 5000));
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, 3000);
                         break;
                     case ACTION_PHASE_ONE_FIRE:
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
@@ -416,9 +416,32 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
                         break;
                     case EVENT_ICY_BLOOD:
-                        DoCastAOE(SPELL_ICY_BLOOD, true);
-                        events.ScheduleEvent(EVENT_ICY_BLOOD, urand(4000, 5000));
+                    {
+                        std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                        if (!tlist.empty())
+                        {
+                            uint8 num = 0;
+                            uint8 maxnum = me->GetMap()->Is25ManRaid() ? 8 : 4;
+                            for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                            {
+                                if (itr != tlist.begin())
+                                {
+                                    if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                    {
+                                        if (!pl->HasAura(SPELL_FROZEN_SOLID))
+                                        {
+                                            pl->AddAura(SPELL_ICY_BLOOD, pl);
+                                            num++;
+                                            if (num == maxnum)
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, 3000);
                         break;
+                    }
                     //
                     case EVENT_SCORCHING_BREATH:
                         DoCast(me, SPELL_SCORCHING_BREATH, true);
