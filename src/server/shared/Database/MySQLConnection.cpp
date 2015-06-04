@@ -460,8 +460,19 @@ void MySQLConnection::PrepareStatement(uint32 index, const char* sql, Connection
         {
             sLog->outError(LOG_FILTER_SQL, "In mysql_stmt_prepare() id: %u, sql: \"%s\"", index, sql);
             sLog->outError(LOG_FILTER_SQL, "%s", mysql_stmt_error(stmt));
-            mysql_stmt_close(stmt);
-            m_prepareError = true;
+            if(_HandleMySQLErrno(CR_SERVER_LOST))
+            {
+                if (mysql_stmt_prepare(stmt, sql, static_cast<unsigned long>(strlen(sql))))
+                {
+                    mysql_stmt_close(stmt);
+                    m_prepareError = true;
+                }
+                else
+                {
+                    MySQLPreparedStatement* mStmt = new MySQLPreparedStatement(stmt);
+                    m_stmts[index] = mStmt;
+                }
+            }
         }
         else
         {
