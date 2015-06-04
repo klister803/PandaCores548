@@ -78,15 +78,16 @@ enum Events
     EVENT_SCORCHING_BREATH   = 8,
     EVENT_BURNING_BLOOD      = 9,
     EVENT_GO_TO_PRISONER     = 10,
+    EVENT_FIXATE             = 11,
 
     //Summon events
-    EVENT_ENRAGE_KJ          = 11,
-    EVENT_MOVE_TO_CENTER     = 12,
-    EVENT_MOVE_TO_THOK       = 13,
-    EVENT_CHECK_TPLAYER      = 14,
-    EVENT_Y_CHARGE           = 15,
-    EVENT_PRE_Y_CHARGE       = 16,
-    EVENT_VAMPIRIC_FRENZY    = 17,
+    EVENT_ENRAGE_KJ          = 12,
+    EVENT_MOVE_TO_CENTER     = 13,
+    EVENT_MOVE_TO_THOK       = 14,
+    EVENT_CHECK_TPLAYER      = 15,
+    EVENT_Y_CHARGE           = 16,
+    EVENT_PRE_Y_CHARGE       = 17,
+    EVENT_VAMPIRIC_FRENZY    = 18,
 };
 
 enum Action
@@ -294,12 +295,12 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     break;
                 case ACTION_PHASE_TWO:
                     events.Reset();
-                    events.ScheduleEvent(EVENT_SHOCK_BLAST, urand(2000, 3000));
+                    events.ScheduleEvent(EVENT_SHOCK_BLAST, 3000);
                     if (instance)
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
-                    me->StopMoving(); 
+                    me->StopMoving();
                     me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
@@ -307,15 +308,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
-                        DoCast(target, SPELL_FIXATE_PL);
-                    else
-                    {
-                        EnterEvadeMode();
-                        return;
-                    }
-                    if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
-                        kj->AI()->DoZoneInCombat(kj, 300.0f);
+                    events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_FIXATE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
@@ -451,7 +444,19 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
-                        break;               
+                        break; 
+                    case EVENT_FIXATE:
+                        me->InterruptNonMeleeSpells(true);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                            DoCast(target, SPELL_FIXATE_PL);
+                        else
+                        {
+                            EnterEvadeMode();
+                            return;
+                        }
+                        if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
+                            kj->AI()->DoZoneInCombat(kj, 300.0f);
+                        break;
                     }
                 }
                 if (!phasetwo)
@@ -974,10 +979,9 @@ public:
                 {
                     if (GetHitUnit()->HealthBelowPct(50))
                     {
-                        if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                       /* if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                             if (!instance->GetData(DATA_THOK))
-                                return;
-
+                                return;*/
                         GetHitUnit()->AddAura(SPELL_BLOODIED, GetHitUnit());
                     }
                 }
