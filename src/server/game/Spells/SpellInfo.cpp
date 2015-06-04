@@ -1186,6 +1186,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144918: //Cutter Laser Dmg
     case 144555: //Mortar Barrage
     //Korkron Dark Shaman
+    case 144215: //Froststorm strike
     case 144334: //Iron Tomb dmg
     case 144331: //Iron Prison
     //General Nazgrim

@@ -237,7 +237,7 @@ class boss_malkorok : public CreatureScript
                 case ACTION_RE_ATTACK:
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
-                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 10000);
+                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 5000);
                     if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                     {
                         float x, y;
@@ -248,7 +248,7 @@ class boss_malkorok : public CreatureScript
                         }
                     }
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
-                    events.ScheduleEvent(EVENT_PREPARE, 20000);
+                    events.ScheduleEvent(EVENT_PREPARE, 14000);
                     break;
                 case ACTION_BREATH_OF_YSHAARJ:
                     for (std::vector<uint64>::const_iterator itr = asGuids.begin(); itr != asGuids.end(); itr++)

@@ -531,10 +531,10 @@ public:
                     break;
                 //Haromm
                 case EVENT_ASHEN_WALL:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (me->getVictim())
                     {
                         Position pos;
-                        target->GetPosition(&pos);
+                        me->getVictim()->GetPosition(&pos);
                         me->SummonCreature(NPC_ASH_ELEMENTAL, pos);
                     }
                     events.ScheduleEvent(EVENT_ASHEN_WALL, 30000);

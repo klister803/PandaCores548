@@ -5082,6 +5082,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Korkron Dark Shaman
+                case 144215: //Froststorm strike 
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(3); //20yards
+                    break;
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
                     break;
