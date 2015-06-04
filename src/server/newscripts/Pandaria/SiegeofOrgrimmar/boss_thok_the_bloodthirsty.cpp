@@ -155,7 +155,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             }
             
             InstanceScript* instance;
-            std::list<Player*> plist;
             uint64 pGuid;
             uint32 enrage;
             uint8 phasecount;
@@ -164,7 +163,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             void Reset()
             {
                 _Reset();
-                plist.clear();
                 DespawnObjects();
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
@@ -206,7 +204,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 _EnterCombat();
                 enrage = 600000;
                 DoCast(me, SPELL_POWER_REGEN, true);
-                events.ScheduleEvent(EVENT_SHOCK_BLAST, 1000);
+                events.ScheduleEvent(EVENT_SHOCK_BLAST, 4000);
                 events.ScheduleEvent(EVENT_TAIL_LASH, 12000);
                 events.ScheduleEvent(EVENT_FEARSOME_ROAR, 15000);
             }
@@ -263,15 +261,15 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                     case ACTION_PHASE_ONE_ACID: 
                         events.ScheduleEvent(EVENT_ACID_BREATH, 15000);
-                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 3500);
+                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 4000);
                         break;
                     case ACTION_PHASE_ONE_FROST: 
                         events.ScheduleEvent(EVENT_FREEZING_BREATH, 15000);
-                        events.ScheduleEvent(EVENT_ICY_BLOOD, 3000);
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, 4000);
                         break;
                     case ACTION_PHASE_ONE_FIRE:
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
-                        events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
+                        events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break;
                     }
                     if (me->GetMap()->IsHeroic())
@@ -379,7 +377,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     //Default events
                     case EVENT_SHOCK_BLAST:
                         DoCastAOE(SPELL_SHOCK_BLAST, true);
-                        events.ScheduleEvent(EVENT_SHOCK_BLAST, urand(3000, 4000));
+                        events.ScheduleEvent(EVENT_SHOCK_BLAST, 4000);
                         break;
                     case EVENT_TAIL_LASH:
                         DoCast(me, SPELL_TAIL_LASH, true);
@@ -401,7 +399,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case EVENT_CORROSIVE_BLOOD:
                         DoCastAOE(SPELL_CORROSIVE_BLOOD, true);
-                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 3500);
+                        events.ScheduleEvent(EVENT_CORROSIVE_BLOOD, 4000);
                         break;
                     //
                     case EVENT_FREEZING_BREATH:
@@ -432,7 +430,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                                 }
                             }
                         }
-                        events.ScheduleEvent(EVENT_ICY_BLOOD, 3000);
+                        events.ScheduleEvent(EVENT_ICY_BLOOD, 4000);
                         break;
                     }
                     //
@@ -443,7 +441,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_BURNING_BLOOD:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 150.0f, true))
                             DoCast(target, SPELL_BURNING_BLOOD);
-                        events.ScheduleEvent(EVENT_BURNING_BLOOD, urand(3000, 4000));
+                        events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break; 
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
@@ -455,7 +453,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             return;
                         }
                         if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
-                            kj->AI()->DoZoneInCombat(kj, 300.0f);
+                            kj->AI()->DoZoneInCombat(kj, 250.0f);
                         break;
                     }
                 }
@@ -751,46 +749,6 @@ public:
         void EnterEvadeMode(){}
 
         void UpdateAI(uint32 diff){}
-
-        void SetGUID(uint64 Guid, int32 type)
-        {
-            if (type == 1 && instance)
-            {
-                if (Player* pl = me->GetPlayer(*me, Guid))
-                {
-                    if (pl->isAlive())
-                    {
-                        std::list<Player*>pllist;
-                        pllist.clear();
-                        GetPlayerListInGrid(pllist, pl, 10.0f);
-                        if (!pllist.empty())
-                        {
-                          //uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
-                            uint8 maxcount = 1; //test only
-                            uint8 count = 0;
-                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                            {
-                                if ((*itr)->HasAura(SPELL_BLOODIED))
-                                    count++;
-
-                                if (count >= maxcount)
-                                {
-                                    if (Creature* thok = me->FindNearestCreature(NPC_THOK, 200.0f, true))
-                                    {
-                                        if (thok->HasAura(SPELL_POWER_REGEN))
-                                        {
-                                            thok->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
-                                            thok->AI()->DoAction(ACTION_PHASE_TWO);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -973,26 +931,39 @@ public:
 
         void HandleOnHit()
         {
-            if (GetHitUnit() && GetCaster())
+            if (GetHitUnit() && GetCaster()->ToCreature())
             {
                 if (!GetHitUnit()->HasAura(SPELL_BLOODIED))
                 {
                     if (GetHitUnit()->HealthBelowPct(50))
-                    {
-                       /* if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                            if (!instance->GetData(DATA_THOK))
-                                return;*/
                         GetHitUnit()->AddAura(SPELL_BLOODIED, GetHitUnit());
-                    }
                 }
                 else
                 {
                     if (GetCaster()->HasAura(SPELL_POWER_REGEN)) //for safe
                     {
-                        if (InstanceScript* instance = GetCaster()->GetInstanceScript())
+                        std::list<Player*> pllist;
+                        pllist.clear();
+                        GetPlayerListInGrid(pllist, GetHitUnit(), 10.0f);
+                        if (!pllist.empty())
                         {
-                            if (Creature* bs = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_BODY_STALKER)))
-                                bs->AI()->SetGUID(GetHitUnit()->GetGUID(), 1);
+                            uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 15 : 5;
+                            uint8 count = 0;
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            {
+                                if ((*itr)->HasAura(SPELL_BLOODIED))
+                                    count++;
+
+                                if (count >= maxcount)
+                                {
+                                    if (GetCaster()->HasAura(SPELL_POWER_REGEN))
+                                    {
+                                        GetCaster()->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
