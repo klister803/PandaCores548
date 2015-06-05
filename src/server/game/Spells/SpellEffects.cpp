@@ -4685,6 +4685,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     float totalDamagePercentMod  = 1.0f;                    // applied to final bonus+weapon damage
     int32 fixed_bonus = 0;
     int32 spell_bonus = 0;                                  // bonus specific for spell
+    bool calcAllEffects = true;
 
     switch (m_spellInfo->SpellFamilyName)
     {
@@ -4793,6 +4794,16 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         }
         case SPELLFAMILY_HUNTER:
         {
+            switch (m_spellInfo->Id)
+            {
+                case 109259:
+                {
+                    calcAllEffects = false;
+                    break;
+                }
+                default:
+                    break;
+            }
             // Kill Shot - bonus damage from Ranged Attack Power
             if (m_spellInfo->SpellFamilyFlags[1] & 0x800000)
                 spell_bonus += int32(0.45f * m_caster->GetTotalAttackPowerValue(RANGED_ATTACK));
@@ -4850,7 +4861,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 normalized = true;
                 break;
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                weaponDamagePercentMod += CalculateDamage(j, unitTarget) / 100.0f;
+                if (!calcAllEffects && effIndex == j + 1 || calcAllEffects)
+                    weaponDamagePercentMod += CalculateDamage(j, unitTarget) / 100.0f;
                 break;
             default:
                 break;                                      // not weapon damage effect, just skip
