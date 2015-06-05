@@ -449,14 +449,14 @@ inline void LoadLootTables()
 
 class LootMgr
 {
-        friend class ACE_Singleton<LootMgr, ACE_Null_Mutex>;
+        friend class ACE_Singleton<LootMgr, ACE_Thread_Mutex>;
 
     private:
         LootMgr() {}
         ~LootMgr() {}
 
     public:
-        typedef UNORDERED_MAP<uint64, Loot*> LootsMap;
+        typedef std::unordered_map<uint64, Loot*> LootsMap;
 
         Loot* GetLoot(uint64 guid);
         void AddLoot(Loot* loot);
@@ -466,6 +466,6 @@ class LootMgr
         LootsMap m_Loots;
 };
 
-#define sLootMgr ACE_Singleton<LootMgr, ACE_Null_Mutex>::instance()
+#define sLootMgr ACE_Singleton<LootMgr, ACE_Thread_Mutex>::instance()
 
 #endif
