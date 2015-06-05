@@ -103,13 +103,6 @@ struct _ang
     float maxang;
 };
 
-_ang modang[3]
-{
-    {0.0f, 1.5f},
-    {2.0f, 3.5f},
-    {4.0f, 6.0f},
-};
-
 uint32 ancientbarrierbar[3] = 
 {
     SPEEL_WEAK_ANCIENT_BARRIER,
@@ -207,6 +200,34 @@ class boss_malkorok : public CreatureScript
                     }
                 }
             }
+
+            float _GetRandomAngle(uint8 pos)
+            {
+                switch (pos)
+                {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                {
+                    float mod = float(urand(0, 5)) / 10;
+                    return pos + mod;
+                }
+                case 5:
+                {
+                    float mod = float(urand(0, 3)) / 10;
+                    return pos + mod;
+                }
+                case 6:
+                {
+                    float mod = float(urand(6, 10)) / 10;
+                    return (pos - 1) + mod;
+                }
+                default:
+                    return 0;
+                }
+            }
             
             void DoAction(int32 const action)
             {
@@ -220,7 +241,6 @@ class boss_malkorok : public CreatureScript
                     powercheck = 1300;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
                     events.ScheduleEvent(EVENT_PREPARE, 13000);
                     break;
                 case ACTION_PHASE_TWO:
@@ -238,12 +258,16 @@ class boss_malkorok : public CreatureScript
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
                             events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 5000);
+                        else
+                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 7000);
                     if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                     {
                         float x, y;
-                        for (uint8 n = 0; n < 3; n++)
+                        uint8 num = me->GetMap()->Is25ManRaid() ? 7 : 3;
+                        for (uint8 n = 0; n < num; n++)
                         {
-                            GetPositionWithDistInOrientation(am, float(urand(15, 30)), urand(modang[n].minang, modang[n].maxang), x, y);
+                            float ang = _GetRandomAngle(n);
+                            GetPositionWithDistInOrientation(am, float(urand(15, 30)), ang, x, y);
                             me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
                         }
                     }
@@ -403,19 +427,51 @@ class boss_malkorok : public CreatureScript
                         events.ScheduleEvent(EVENT_BLOOD_RAGE, 2000);
                         break;
                     case EVENT_SEISMIC_SLAM:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                        if (me->GetMap()->Is25ManRaid())
                         {
-                            DoCast(target, SPELL_SEISMIC_SLAM, true);
-                            if (me->GetMap()->IsHeroic())
-                            { 
-                                if (Creature* lc = me->SummonCreature(NPC_LIVING_CORRUPTION, target->GetPositionX(), target->GetPositionY(), -198.5297f))
+                            std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                            if (!tlist.empty())
+                            {
+                                uint8 num = 0;
+                                uint8 maxnum = 3;
+                                for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
                                 {
-                                    lc->CastSpell(lc, SPELL_LANGUISH_AT);
-                                    lc->AI()->DoZoneInCombat(lc, 100.0f);
+                                    if (itr != tlist.begin())
+                                    {
+                                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                        {
+                                            DoCast(pl, SPELL_SEISMIC_SLAM, true);
+                                            if (me->GetMap()->IsHeroic())
+                                            {
+                                                if (Creature* lc = me->SummonCreature(NPC_LIVING_CORRUPTION, pl->GetPositionX(), pl->GetPositionY(), -198.5297f))
+                                                {
+                                                    lc->CastSpell(lc, SPELL_LANGUISH_AT);
+                                                    lc->AI()->DoZoneInCombat(lc, 100.0f);
+                                                }
+                                            }
+                                            num++;
+                                            if (num == maxnum)
+                                                break;
+                                        }
+                                    }
                                 }
                             }
                         }
-                        events.ScheduleEvent(EVENT_SEISMIC_SLAM, 15000);
+                        else
+                        {
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                            {
+                                DoCast(target, SPELL_SEISMIC_SLAM, true);
+                                if (me->GetMap()->IsHeroic())
+                                {
+                                    if (Creature* lc = me->SummonCreature(NPC_LIVING_CORRUPTION, target->GetPositionX(), target->GetPositionY(), -198.5297f))
+                                    {
+                                        lc->CastSpell(lc, SPELL_LANGUISH_AT);
+                                        lc->AI()->DoZoneInCombat(lc, 100.0f);
+                                    }
+                                }
+                            }
+                        }
                         break;
                     }
                 }
