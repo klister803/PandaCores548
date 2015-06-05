@@ -21091,7 +21091,8 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
             if (switchLeader && !itr->second.perm)
             {
                 // increments itr in call
-                player->UnbindInstance(itr, Difficulty(i), false);
+                if(itr->second.save->GetDifficulty() != REGULAR_DIFFICULTY)
+                    player->UnbindInstance(itr, Difficulty(i), false);
             }
             else
                 ++itr;
