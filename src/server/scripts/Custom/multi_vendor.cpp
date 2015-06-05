@@ -235,16 +235,16 @@ public:
 
                     if (Item* item = Item::CreateItem(EFIRALS, transcount, 0))
                     {
-                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", item->GetEntry(), transcount, player->GetGUID(), item->GetGUID(), receiver->GetGUID());
-
                         player->SaveInventoryAndGoldToDB(trans);
                         item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
                         draft.AddItem(item);
                         draft.SendMailTo(trans, MailReceiver(receiver, GUID_LOPART(action)), sendermail);
                         CharacterDatabase.CommitTransaction(trans);
                         chH.PSendSysMessage(20019, transcount);
+
+                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", item->GetEntry(), transcount, player->GetGUID(), item->GetGUID(), receiver->GetGUID());
                     }
-                    CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='%s', `cost`='%u', `targetguid`='%u'", accountId , player->GetGUIDLow(), "EFIRALS_TRANS", transcount, action);
+                    CharacterDatabase.PExecute("INSERT INTO character_donate_service SET `account`='%u',`guid`='%u', `service`='%s', `cost`='%u', `targetguid`='%u'",accountId , player->GetGUIDLow(), "EFIRALS_TRANS", transcount, action);
                 }
                 break;
             }
