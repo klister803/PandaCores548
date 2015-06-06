@@ -175,7 +175,7 @@ enum EnchantmentSlot
     SOCK_ENCHANTMENT_SLOT_3         = 4,
     BONUS_ENCHANTMENT_SLOT          = 5,
     PRISMATIC_ENCHANTMENT_SLOT      = 6,                    // added at apply special permanent enchantment
-    //TODO: 7,
+    ENGINEERING_ENCHANTMENT_SLOT    = 7,
     MAX_INSPECTED_ENCHANTMENT_SLOT  = 8,
 
     PROP_ENCHANTMENT_SLOT_0         = 8,                   // used with RandomSuffix

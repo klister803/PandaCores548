@@ -4264,7 +4264,7 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
                 item_owner->GetName(), item_owner->GetSession()->GetAccountId());
         }
 
-        EnchantmentSlot slot = pEnchant->requiredSkill == SKILL_ENGINEERING? BONUS_ENCHANTMENT_SLOT: PERM_ENCHANTMENT_SLOT;
+        EnchantmentSlot slot = pEnchant->requiredSkill == SKILL_ENGINEERING? ENGINEERING_ENCHANTMENT_SLOT: PERM_ENCHANTMENT_SLOT;
 
         // remove old enchanting before applying new if equipped
         item_owner->ApplyEnchantment(itemTarget, slot, false);

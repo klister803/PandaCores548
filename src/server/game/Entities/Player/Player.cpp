@@ -10180,7 +10180,7 @@ void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8
     // Item enchantments spells casted at use
     for (uint8 e_slot = 0; e_slot < MAX_ENCHANTMENT_SLOT; ++e_slot)
     {
-        if (e_slot > PRISMATIC_ENCHANTMENT_SLOT && e_slot < PROP_ENCHANTMENT_SLOT_0)    // not holding enchantment id
+        if (e_slot > ENGINEERING_ENCHANTMENT_SLOT && e_slot < PROP_ENCHANTMENT_SLOT_0)    // not holding enchantment id
             continue;
 
         uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(e_slot));
