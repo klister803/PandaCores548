@@ -126,14 +126,14 @@ struct  SpecialModifier
 
 static SpecialModifier mod[] =
 {
-    { 5.0f,  0.0f },
-    { 10.0f, 0.0f },
-    { 15.0f, 0.0f },
-    { 20.0f, 0.0f },
-    { 5.0f,  M_PI },
-    { 10.0f, M_PI },
-    { 15.0f, M_PI },
-    { 20.0f, M_PI },
+    { 5.0f,  1.570796326795f },
+    { 10.0f, 1.570796326795f },
+    { 15.0f, 1.570796326795f },
+    { 20.0f, 1.570796326795f },
+    { 5.0f,  M_PI + 1.570796326795f },
+    { 10.0f, M_PI + 1.570796326795f },
+    { 15.0f, M_PI + 1.570796326795f },
+    { 20.0f, M_PI + 1.570796326795f },
 };
 
 class boss_korkron_dark_shaman : public CreatureScript
