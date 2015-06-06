@@ -44,32 +44,17 @@ class spell_gen_battle_fatigue : public SpellScriptLoader
         {
             PrepareAuraScript(spell_gen_battle_fatigue_AuraScript);
 
-            uint32 _timer;
-
-            bool Load()
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                _timer = 0;
-                return true;
-            }
-
-            void OnUpdate(uint32 diff, AuraEffect* aurEff)
-            {
-                _timer += diff;
-
-                if (_timer >= 19000)
-                {
-                    _timer = 0;
-                    if (Unit* caster = GetUnitOwner())
-                        if (Player* plr = caster->ToPlayer())
-                            if (plr->InArena() || plr->InRBG())
-                                if (Aura* aura = aurEff->GetBase())
-                                    aura->RefreshTimers();
-                }
+                if (Unit* caster = GetUnitOwner())
+                    if (Player* plr = caster->ToPlayer())
+                        if (plr->InArena() || plr->InRBG())
+                            plr->CastSpell(plr, GetSpellInfo()->Id, true);
             }
 
             void Register()
             {
-                OnEffectUpdate += AuraEffectUpdateFn(spell_gen_battle_fatigue_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_HEALING_PCT);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_gen_battle_fatigue_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_HEALING_PCT, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
