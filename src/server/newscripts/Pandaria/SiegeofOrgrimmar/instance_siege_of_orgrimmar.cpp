@@ -1009,16 +1009,6 @@ public:
                     return ShowNorthTower;
                 case DATA_NORTH_COUNT:
                     return NorthTowerCount;
-                case DATA_THOK:
-                {
-                    for (std::vector<uint64>::const_iterator Itr = prisonerGuids.begin(); Itr != prisonerGuids.end(); Itr++)
-                    {
-                        if (Creature* p = instance->GetCreature(*Itr))
-                            if (p->isAlive())
-                                return true;
-                    }
-                    return false;
-                }
             }
             return 0;
         }

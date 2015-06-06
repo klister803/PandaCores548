@@ -5082,6 +5082,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Korkron Dark Shaman
+                case 144215: //Froststorm strike 
+                    spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(13); //200yards
+                    break;
                 case 144334: //Iron Tomb dmg
                     spellInfo->Effects[0].TargetA = TARGET_DEST_CASTER_FRONT;
                     break;
@@ -5145,6 +5148,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     spellInfo->Effects[1].TargetA = 25;
                     spellInfo->Effects[1].TargetB = 0;
+                    break;
+                case 144115: //Flame Coating
+                    spellInfo->Effects[0].TargetB = 15;
                     break;
                     
                 //World Bosses

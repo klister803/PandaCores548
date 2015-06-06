@@ -1186,6 +1186,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 144918: //Cutter Laser Dmg
     case 144555: //Mortar Barrage
     //Korkron Dark Shaman
+    case 144215: //Froststorm strike
     case 144334: //Iron Tomb dmg
     case 144331: //Iron Prison
     //General Nazgrim
@@ -1205,6 +1206,7 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 143428: //Tail lash
     case 143430: //Clump Check
     case 143445: //Fixate
+    case 144115: //Flame Coating
         return Effects[effect];
     }
 

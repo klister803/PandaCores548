@@ -100,11 +100,10 @@ enum sEvents
     EVENT_REND                  = 12,
 
     EVENT_SUMMON_TORNADO        = 13,
-    EVENT_FIND_PLAYER           = 14,
-    EVENT_ACTIVE                = 15,
-    EVENT_DESPAWN               = 16,
+    EVENT_ACTIVE                = 14,
+    EVENT_DESPAWN               = 15,
 
-    EVENT_BERSERK               = 15,
+    EVENT_BERSERK               = 16,
 };
 
 enum Data
@@ -127,14 +126,14 @@ struct  SpecialModifier
 
 static SpecialModifier mod[] =
 {
-    { 5.0f,  0.0f },
-    { 10.0f, 0.0f },
-    { 15.0f, 0.0f },
-    { 20.0f, 0.0f },
-    { 5.0f,  M_PI },
-    { 10.0f, M_PI },
-    { 15.0f, M_PI },
-    { 20.0f, M_PI },
+    { 5.0f,  1.570796326795f },
+    { 10.0f, 1.570796326795f },
+    { 15.0f, 1.570796326795f },
+    { 20.0f, 1.570796326795f },
+    { 5.0f,  M_PI + 1.570796326795f },
+    { 10.0f, M_PI + 1.570796326795f },
+    { 15.0f, M_PI + 1.570796326795f },
+    { 20.0f, M_PI + 1.570796326795f },
 };
 
 class boss_korkron_dark_shaman : public CreatureScript
@@ -531,12 +530,8 @@ public:
                     break;
                 //Haromm
                 case EVENT_ASHEN_WALL:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
-                    {
-                        Position pos;
-                        target->GetPosition(&pos);
-                        me->SummonCreature(NPC_ASH_ELEMENTAL, pos);
-                    }
+                    if (me->getVictim())
+                        me->getVictim()->SummonCreature(NPC_ASH_ELEMENTAL, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ(), me->getVictim()->GetOrientation());
                     events.ScheduleEvent(EVENT_ASHEN_WALL, 30000);
                     break;
                 case EVENT_BERSERK:
@@ -684,7 +679,7 @@ public:
     {
         return new npc_wolf_mauntAI(creature);
     }
-};
+}; 
 
 //71801
 class npc_toxic_storm : public CreatureScript
@@ -837,20 +832,19 @@ public:
 
         void IsSummonedBy(Unit* summoner)
         {
-            if (summoner->ToCreature() && summoner->GetEntry() != me->GetEntry())
+            if (!summoner->ToCreature())
             {
-            //main elemental
                 float x, y;
                 for (uint8 n = 0; n < 8; n++)
                 {
                     x = 0, y = 0;
-                    GetPositionWithDistInOrientation(me, mod[n].dist, mod[n].ang, x, y);
-                    me->SummonCreature(NPC_ASH_ELEMENTAL, x, y, me->GetPositionZ() + 5.0f, 0.0f);
-                }   
+                    float ang = me->GetOrientation() + mod[n].ang;
+                    GetPositionWithDistInOrientation(me, mod[n].dist, ang, x, y);
+                    me->SummonCreature(NPC_ASH_ELEMENTAL, x, y, me->GetPositionZ() + 5.0f, me->GetOrientation());
+                }
                 events.ScheduleEvent(EVENT_DESPAWN, 60000);
             }
-            //other elementals
-            if (summoner->ToCreature() && summoner->GetEntry() == me->GetEntry())
+            else
                 me->GetMotionMaster()->MoveFall();
             events.ScheduleEvent(EVENT_ACTIVE, 1250);
         }
@@ -868,11 +862,6 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_FIND_PLAYER:
-                    if (Player* pl = me->FindNearestPlayer(5.0f, true))
-                        me->Attack(pl, true);
-                    events.ScheduleEvent(EVENT_FIND_PLAYER, 1000);
-                    break;
                 case EVENT_ACTIVE:
                     me->SetVisible(true);
                     DoCast(me, SPELL_ASH_ELEMENTAL_SPAWN, true);
