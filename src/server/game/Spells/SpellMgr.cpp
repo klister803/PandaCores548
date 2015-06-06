@@ -5149,6 +5149,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[1].TargetA = 25;
                     spellInfo->Effects[1].TargetB = 0;
                     break;
+                case 144115: //Flame Coating
+                    spellInfo->Effects[0].TargetB = 15;
+                    break;
                     
                 //World Bosses
                 //Sha of Anger

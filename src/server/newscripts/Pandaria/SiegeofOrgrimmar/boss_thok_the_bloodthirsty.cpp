@@ -61,6 +61,7 @@ enum eSpells
     SPELL_CANNON_BALL_AT_A   = 147609,
     SPELL_CANNON_BALL_DESTD  = 147662,
     SPELL_FLAME_COATING      = 144115,
+    SPELL_R_WATERS           = 144117,
 };
 
 enum Events
@@ -89,6 +90,7 @@ enum Events
     EVENT_Y_CHARGE           = 16,
     EVENT_PRE_Y_CHARGE       = 17,
     EVENT_VAMPIRIC_FRENZY    = 18,
+    EVENT_R_WATERS           = 19,
 };
 
 enum Action
@@ -269,18 +271,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_ICY_BLOOD, 4000);
                         break;
                     case ACTION_PHASE_ONE_FIRE:
-                        std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                        if (!tlist.empty())
-                        {
-                            for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
-                            {
-                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                                {
-                                    if (!pl->HasAura(SPELL_FLAME_COATING))
-                                        pl->AddAura(SPELL_FLAME_COATING, pl);
-                                }
-                            }
-                        }
+                        DoCastAOE(SPELL_FLAME_COATING, true);
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break;
@@ -351,7 +342,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             case NPC_MONTAK:
                                 DoAction(ACTION_PHASE_ONE_FIRE);
                                 break;
-                            case NPC_WATERSPEAKER_GORAI:
+                            case NPC_WATERSPEAKER_GORAI: 
                                 DoAction(ACTION_PHASE_ONE_FROST);
                                 break;
                             }
@@ -581,6 +572,8 @@ public:
         npc_generic_prisonerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
+                me->setFaction(35);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -593,15 +586,34 @@ public:
         void DoAction(int32 const action)
         {
             if (action == ACTION_FREEDOM)
+            {
                 if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
                     thok->AI()->SetGUID(me->GetGUID(), 2);
+            }
+            if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
+            {
+                DoCastAOE(SPELL_R_WATERS);
+                events.ScheduleEvent(EVENT_R_WATERS, 11000);
+            }
         }
 
         void EnterCombat(Unit* who){}
 
         void EnterEvadeMode(){}
 
-        void UpdateAI(uint32 diff){}
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                if (eventId == EVENT_R_WATERS)
+                {
+                    DoCastAOE(SPELL_R_WATERS);
+                    events.ScheduleEvent(EVENT_R_WATERS, 11000);
+                }
+            }
+        }
     };
 
     CreatureAI* GetAI(Creature* creature) const
