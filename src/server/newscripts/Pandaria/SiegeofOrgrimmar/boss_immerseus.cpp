@@ -571,7 +571,6 @@ class boss_immerseus : public CreatureScript
                             me->SetReactState(REACT_PASSIVE);
                             me->SetFacingToObject(target);
                             DoCast(me, SPELL_SWIRL);
-                            me->ClearUnitState(UNIT_STATE_CASTING);
                         }
                         events.ScheduleEvent(EVENT_SWIRL, 48000);
                         break;

@@ -60,6 +60,7 @@ enum eSpells
     SPELL_CANNON_BALL_ATDMG  = 147607,
     SPELL_CANNON_BALL_AT_A   = 147609,
     SPELL_CANNON_BALL_DESTD  = 147662,
+    SPELL_FLAME_COATING      = 144115,
 };
 
 enum Events
@@ -268,6 +269,18 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_ICY_BLOOD, 4000);
                         break;
                     case ACTION_PHASE_ONE_FIRE:
+                        std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                        if (!tlist.empty())
+                        {
+                            for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                            {
+                                if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                {
+                                    if (!pl->HasAura(SPELL_FLAME_COATING))
+                                        pl->AddAura(SPELL_FLAME_COATING, pl);
+                                }
+                            }
+                        }
                         events.ScheduleEvent(EVENT_SCORCHING_BREATH, 15000);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break;
