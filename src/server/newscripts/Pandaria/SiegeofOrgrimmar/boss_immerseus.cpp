@@ -987,6 +987,7 @@ class spell_swirl : public SpellScriptLoader
             {
                 if (GetCaster() && GetCaster()->ToCreature())
                 {
+                    GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
                     GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
                     GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
                 }
