@@ -389,6 +389,7 @@ public:
                 if (EventProgress)
                 {
                     EventProgress = false;
+                    QuestCredit();
                     me->setFaction(35);
                     me->RemoveAllAuras();
                     summons.DespawnAll();
@@ -399,6 +400,19 @@ public:
                             Shao->AI()->DoAction(ACTION_CHIJI_END);
                 }
                 EnterEvadeMode();
+            }
+        }
+
+        void QuestCredit()
+        {
+            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
+                if (!pTarget)
+                    return;
+
+                pTarget->KilledMonsterCredit(me->GetEntry());
             }
         }
 
@@ -570,6 +584,7 @@ public:
                 if (EventProgress)
                 {
                     EventProgress = false;
+                    QuestCredit();
                     me->setFaction(35);
                     me->RemoveAllAuras();
                     me->GeneratePersonalLoot(me, NULL);
@@ -579,6 +594,19 @@ public:
                             Shao->AI()->DoAction(ACTION_XUEN_END);
                 }
                 EnterEvadeMode();
+            }
+        }
+
+        void QuestCredit()
+        {
+            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
+                if (!pTarget)
+                    return;
+
+                pTarget->KilledMonsterCredit(me->GetEntry());
             }
         }
 
@@ -734,6 +762,7 @@ public:
                 if (EventProgress)
                 {
                     EventProgress = false;
+                    QuestCredit();
                     me->setFaction(35);
                     me->RemoveAllAuras();
                     me->GeneratePersonalLoot(me, NULL);
@@ -743,6 +772,19 @@ public:
                             Shao->AI()->DoAction(ACTION_YULON_END);
                 }
                 EnterEvadeMode();
+            }
+        }
+
+        void QuestCredit()
+        {
+            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
+                if (!pTarget)
+                    return;
+
+                pTarget->KilledMonsterCredit(me->GetEntry());
             }
         }
 
@@ -936,6 +978,7 @@ public:
                 {
                     EventProgress = false;
                     ChargeEvent = false;
+                    QuestCredit();
                     me->setFaction(35);
                     me->RemoveAllAuras();
                     me->GeneratePersonalLoot(me, NULL);
@@ -945,6 +988,19 @@ public:
                             Shao->AI()->DoAction(ACTION_NIUZAO_END);
                 }
                 EnterEvadeMode();
+            }
+        }
+
+        void QuestCredit()
+        {
+            std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+            {
+                Player *pTarget = Player::GetPlayer(*me, (*itr)->getUnitGuid());
+                if (!pTarget)
+                    return;
+
+                pTarget->KilledMonsterCredit(me->GetEntry());
             }
         }
 
