@@ -165,7 +165,7 @@ bool BattlegroundSA::ResetObjs()
 
     //Cannons and demolishers - NPCs are spawned
     //By capturing GYs.
-    for (uint8 i = 0; i < BG_SA_NPC_SPARKLIGHT; i++)
+    for (uint8 i = 0; i < BG_SA_DEMOLISHER_5; i++)
     {
         if (!AddCreature(BG_SA_NpcEntries[i], i, (Attackers == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE),
               BG_SA_NpcSpawnlocs[i][0], BG_SA_NpcSpawnlocs[i][1],
@@ -754,6 +754,16 @@ void BattlegroundSA::CaptureGraveyard(BG_SA_Graveyards i, Player* Source)
             AddCreature(BG_SA_NpcEntries[npc], npc, Attackers,
               BG_SA_NpcSpawnlocs[npc][0], BG_SA_NpcSpawnlocs[npc][1],
               BG_SA_NpcSpawnlocs[npc][2], BG_SA_NpcSpawnlocs[npc][3]);
+              
+            for (uint8 j = BG_SA_DEMOLISHER_7; j <= BG_SA_DEMOLISHER_8; j++)
+            {
+                AddCreature(BG_SA_NpcEntries[j], j, (Attackers == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE),
+                    BG_SA_NpcSpawnlocs[j][0], BG_SA_NpcSpawnlocs[j][1],
+                    BG_SA_NpcSpawnlocs[j][2], BG_SA_NpcSpawnlocs[j][3], 600);
+                    
+                if (Creature* dem = GetBGCreature(j))
+                    dem->setFaction(BG_SA_Factions[Attackers]);
+            }
 
             UpdateWorldState(BG_SA_LEFT_GY_ALLIANCE, (GraveyardStatus[i] == TEAM_ALLIANCE? 1:0));
             UpdateWorldState(BG_SA_LEFT_GY_HORDE, (GraveyardStatus[i] == TEAM_ALLIANCE? 0:1));

@@ -2184,6 +2184,18 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             break;
         }
+        case 54643: // Telepot inside (Strand of the Ancients)
+        {
+            if (Creature* teleportTarget = m_caster->FindNearestCreature(23472, 35.0f, true))
+            {
+                float x, y, z, o;
+                teleportTarget->GetPosition(x, y, z, o);
+
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    m_caster->ToPlayer()->TeleportTo(teleportTarget->GetMapId(), x, y, z, o);
+            }
+            break;
+        }
         // Dimensional Ripper - Everlook
         case 23442:
         {
