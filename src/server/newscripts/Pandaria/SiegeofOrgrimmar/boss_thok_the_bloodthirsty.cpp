@@ -514,8 +514,9 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (click && done)
+            if (click && !done)
             {
+                done = true;
                 click = false;
                 clicker->CastSpell(clicker, SPELL_UNLOCKING);
                 me->DespawnOrUnsummon(1000);
@@ -524,13 +525,13 @@ public:
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
-            if (damage >= me->GetHealth() && !done)
+            if (damage >= me->GetHealth())
             {
                 damage = 0;
-                done = true;
+                me->SetFullHealth();
                 events.Reset();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                 me->StopMoving();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
                 me->SetStandState(UNIT_STAND_STATE_DEAD);

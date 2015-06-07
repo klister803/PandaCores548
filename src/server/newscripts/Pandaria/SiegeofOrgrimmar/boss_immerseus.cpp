@@ -1036,8 +1036,11 @@ class spell_swirl_searcher : public SpellScriptLoader
                         GetHitUnit()->CastSpell(GetHitUnit(), SPELL_SWIRL_DMG);
                         break;
                     case NPC_THOK:
-                        if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
-                            GetHitUnit()->Kill(GetHitUnit(), true);
+                        if (GetHitUnit()->ToPlayer())
+                        {
+                            if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
+                                GetHitUnit()->Kill(GetHitUnit(), true);
+                        }
                         break;
                     case NPC_STARVED_YETI:
                         if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
