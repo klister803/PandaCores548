@@ -16,6 +16,11 @@ enum globalSpells
     SPELL_TP_ORGRIMMAR_2            = 148034, //Aliance
 };
 
+enum sActions
+{
+    ACTION_RESET                    = 255,
+};
+
 enum eData
 {
     // Encounter States/Boss GUIDs

@@ -585,15 +585,21 @@ public:
 
         void DoAction(int32 const action)
         {
-            if (action == ACTION_FREEDOM)
+            switch (action)
             {
+            case ACTION_FREEDOM:
                 if (Creature* thok = me->GetCreature(*me, instance->GetData64(NPC_THOK)))
                     thok->AI()->SetGUID(me->GetGUID(), 2);
-            }
-            if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
-            {
-                DoCastAOE(SPELL_R_WATERS);
-                events.ScheduleEvent(EVENT_R_WATERS, 11000);
+                if (me->GetEntry() == NPC_WATERSPEAKER_GORAI)
+                {
+                    DoCastAOE(SPELL_R_WATERS);
+                    events.ScheduleEvent(EVENT_R_WATERS, 11000);
+                }
+                break;
+            case ACTION_RESET:
+                me->InterruptNonMeleeSpells(true);
+                events.Reset();
+                break;
             }
         }
 

@@ -755,6 +755,7 @@ public:
                             {
                                 if (!p->isAlive())
                                     p->Respawn();
+                                p->AI()->DoAction(ACTION_RESET);
                                 p->NearTeleportTo(p->GetHomePosition().GetPositionX(), p->GetHomePosition().GetPositionY(), p->GetHomePosition().GetPositionZ(), p->GetHomePosition().GetOrientation());
                             }
                         }
