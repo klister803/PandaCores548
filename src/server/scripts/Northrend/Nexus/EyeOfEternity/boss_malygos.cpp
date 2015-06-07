@@ -1285,18 +1285,20 @@ public:
             if (type != POINT_MOTION_TYPE)
                 return;
 
-            if (_wpCount < 3)
+            if (_wpCount < 3 && _wpCount > 0)
             {
                 _events.ScheduleEvent(id + 1, 1);
                 ++_wpCount;
             }
             else if (Vehicle* hoverDisk = me->GetVehicleKit())
                 if (Unit* lordPassenger = hoverDisk->GetPassenger(0))
-                    lordPassenger->ToCreature()->AI()->DoAction(ACTION_SET_DISK_VICTIM_CHASE);
+                    if (Creature* _passenger = lordPassenger->ToCreature())
+                        if(_passenger->AI())
+                            _passenger->AI()->DoAction(ACTION_SET_DISK_VICTIM_CHASE);
         }
 
     private:
-        uint8 _wpCount; // how many points are triggered
+        int32 _wpCount; // how many points are triggered
         InstanceScript* _instance;
         EventMap _events;
     };

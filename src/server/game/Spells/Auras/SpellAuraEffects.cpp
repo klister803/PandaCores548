@@ -1999,6 +1999,9 @@ void AuraEffect::ChangeAmount(int32 newAmount, bool mark, bool onStackOrReapply)
 
 void AuraEffect::HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply)
 {
+    if(!GetBase())
+        return;
+
     // check if call is correct, we really don't want using bitmasks here (with 1 exception)
     ASSERT(mode == AURA_EFFECT_HANDLE_REAL
         || mode == AURA_EFFECT_HANDLE_SEND_FOR_CLIENT

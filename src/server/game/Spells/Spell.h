@@ -630,7 +630,8 @@ class Spell
                                                             // e.g. damage around area spell trigered by victim aura and damage enemies of aura caster
         Unit* m_originalCaster;                             // cached pointer for m_originalCaster, updated at Spell::UpdatePointers()
         Unit* m_originalTarget;
-         
+        uint64 m_originalTargetGUID;
+
         Spell** m_selfContainer;                            // pointer to our spell container (if applicable)
 
         //Spell data
