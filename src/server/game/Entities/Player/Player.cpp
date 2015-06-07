@@ -21093,6 +21093,8 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
                 // increments itr in call
                 if(itr->second.save->GetDifficulty() != REGULAR_DIFFICULTY)
                     player->UnbindInstance(itr, Difficulty(i), false);
+                else
+                    ++itr;
             }
             else
                 ++itr;

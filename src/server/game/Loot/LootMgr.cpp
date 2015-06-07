@@ -2603,7 +2603,9 @@ void LootMgr::AddLoot(Loot* loot)
         loot->GenerateLootGuid();
     uint32 guid = loot->GetGUIDLow();
     volatile uint32 guidDebug = guid;
-    if(guid > 0)
+
+    LootsMap::iterator itr = m_Loots.find(guid);
+    if (itr == m_Loots.end())
         m_Loots.emplace(guid, loot);
         //m_Loots[guid] = loot;
     //sLog->outDebug(LOG_FILTER_LOOT, "LootMgr::AddLoot loot %i guid %i size %i", loot->GetGUID(), loot->GetGUID(), m_Loots.size());
