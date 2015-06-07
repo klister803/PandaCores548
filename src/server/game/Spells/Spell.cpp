@@ -529,7 +529,7 @@ void Spell::InitExplicitTargets(SpellCastTargets const& targets)
 {
     m_targets = targets;
     m_originalTarget = targets.GetUnitTarget();
-    m_originalTargetGUID = m_originalTarget->GetGUID();
+    m_originalTargetGUID = m_originalTarget ? m_originalTarget->GetGUID() : 0;
     // this function tries to correct spell explicit targets for spell
     // client doesn't send explicit targets correctly sometimes - we need to fix such spells serverside
     // this also makes sure that we correctly send explicit targets to client (removes redundant data)
