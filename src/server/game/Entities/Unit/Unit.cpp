@@ -348,7 +348,6 @@ Unit::~Unit()
     ASSERT(m_attackers.empty());
     ASSERT(m_sharedVision.empty());
     ASSERT(m_Controlled.empty());
-    ASSERT(m_stormEarthFire.empty());
     ASSERT(m_appliedAuras.empty());
     ASSERT(m_ownedAuras.empty());
     ASSERT(m_removedAuras.empty());
@@ -9154,23 +9153,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
             {
                 case 137639: // Storm, Earth, and Fire
                 {
-                    std::list<Unit*> ControllUnit;
-                    for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
-                        if (Creature* crt = (*itr)->ToCreature())
-                            if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
-                            {
-                                if (Unit* cloneUnit = (*itr))
-                                    if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
-                                        continue;
-
-                                if (procSpell->Id != 113656 && procSpell->Id != 101546 && procSpell->Id != 116847)
-                                    if (Unit* cloneTarget = crt->getVictim())
-                                        if (target == cloneTarget)
+                    for (uint8 i = 13; i < 16; ++i)
+                        if (m_SummonSlot[i])
+                            if (Creature* crt = GetMap()->GetCreature(m_SummonSlot[i]))
+                                if (!crt->IsDespawn())
+                                {
+                                    if (Unit* cloneUnit = crt->ToUnit())
+                                        if (cloneUnit->HasUnitState(UNIT_STATE_CASTING))
                                             continue;
 
-                                if (Unit* cloneTarget = crt->getVictim())
-                                    crt->CastSpell(cloneTarget, procSpell->Id, true);
-                            }
+                                    if (procSpell->Id != 113656 && procSpell->Id != 101546 && procSpell->Id != 116847)
+                                        if (Unit* cloneTarget = crt->getVictim())
+                                            if (target == cloneTarget)
+                                                continue;
+
+                                    if (Unit* cloneTarget = crt->getVictim())
+                                        crt->CastSpell(cloneTarget, procSpell->Id, true);
+                                }
                     return true;
                 }
                 case 116023: // Sparring
@@ -11437,9 +11436,6 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
 
         if (minion->GetEntry() != 69792 && minion->GetEntry() != 69680 && minion->GetEntry() != 69791)
             m_Controlled.insert(minion);
-        else
-            m_stormEarthFire.insert(minion);
-
 
         if (GetTypeId() == TYPEID_PLAYER)
         {
@@ -11523,7 +11519,6 @@ void Unit::SetMinion(Minion *minion, bool apply, bool stampeded)
         }
 
         m_Controlled.erase(minion);
-        m_stormEarthFire.erase(minion);
 
         if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
         {
@@ -11866,14 +11861,15 @@ void Unit::RemoveAllControlled()
             sLog->outError(LOG_FILTER_UNITS, "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
     }
 
-    if (!m_stormEarthFire.empty())
+    if (getClass() == CLASS_MONK && (m_SummonSlot[13] || m_SummonSlot[14] || m_SummonSlot[15]))
     {
-        std::set<Unit*> RemoveList;
-        for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
-            if (Unit* unit = (*itr))
-                RemoveList.insert(unit);
+        std::set<Creature*> RemoveList;
+        for (uint8 i = 13; i < 16; ++i)
+            if (m_SummonSlot[i])
+                if (Creature* crt = GetMap()->GetCreature(m_SummonSlot[i]))
+                    RemoveList.insert(crt);
 
-        for (std::set<Unit*>::iterator itr = RemoveList.begin(); itr != RemoveList.end(); ++itr)
+        for (std::set<Creature*>::iterator itr = RemoveList.begin(); itr != RemoveList.end(); ++itr)
             if (TempSummon* tempsum = (*itr)->ToTempSummon())
                 tempsum->UnSummon();
     }

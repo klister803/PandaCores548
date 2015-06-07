@@ -1858,7 +1858,6 @@ class Unit : public WorldObject
         void RestoreFaction();
 
         ControlList m_Controlled;
-        StormEarthFire m_stormEarthFire;
 
         Unit* GetFirstControlled() const;
         void RemoveAllControlled();

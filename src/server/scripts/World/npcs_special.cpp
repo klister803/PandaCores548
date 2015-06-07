@@ -301,10 +301,20 @@ public:
                 return;
 
             comeonhome = true;
+            uint8 num = 0;
+
+            switch (me->GetEntry())
+            {
+                case 69792: num = 13; break; // Earth
+                case 69680: num = 14; break; // Storm
+                case 69791: num = 15; break; // Fire
+                default:
+                    return;
+            }
 
             if (!owner->IsInWorld())
             {
-                owner->m_stormEarthFire.erase(me);
+                owner->m_SummonSlot[num] = 0;
                 me->DespawnOrUnsummon();
                 return;
             }
@@ -316,9 +326,10 @@ public:
             }
             else
             {
-                owner->m_stormEarthFire.erase(me);
+                owner->m_SummonSlot[num] = 0;
                 me->DespawnOrUnsummon();
             }
+
 
             if (Aura *aura = owner->GetAura(137639))
             {

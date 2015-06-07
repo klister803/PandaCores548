@@ -1409,10 +1409,10 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     }
 
                     if (m_effIndex == EFFECT_1)
-                        if (!caster->m_stormEarthFire.empty())
-                            for (Unit::StormEarthFire::iterator itr = caster->m_stormEarthFire.begin(); itr != caster->m_stormEarthFire.end(); ++itr)
-                                if (Creature* crt = (*itr)->ToCreature())
-                                    if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+                        for (uint8 i = 13; i < 16; ++i)
+                            if (caster->m_SummonSlot[i])
+                                if (Creature* crt = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
+                                    if (!crt->IsDespawn())
                                         crt->CastCustomSpell(crt, m_spellInfo->Id, &amount, &amount, NULL, true);
                     break;
                 }

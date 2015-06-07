@@ -13900,10 +13900,10 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
                     trigger = 108977;
             }
 
-            if (!m_stormEarthFire.empty())
-                for (Unit::StormEarthFire::iterator itr = m_stormEarthFire.begin(); itr != m_stormEarthFire.end(); ++itr)
-                    if (Creature* crt = (*itr)->ToCreature())
-                        if (!crt->IsDespawn() && crt->isAlive() && crt->IsInWorld())
+            for (uint8 i = 13; i < 16; ++i)
+                if (m_SummonSlot[i])
+                    if (Creature* crt = GetMap()->GetCreature(m_SummonSlot[i]))
+                        if (!crt->IsDespawn())
                         {
                             crt->RemoveAurasDueToSpell(120275);
                             crt->RemoveAurasDueToSpell(108977);
