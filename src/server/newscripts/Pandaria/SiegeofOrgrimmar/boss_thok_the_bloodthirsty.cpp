@@ -496,13 +496,10 @@ public:
         npc_korkron_jailerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            done = false;
-            click = true;
         }
 
         InstanceScript* instance;
         EventMap events;
-        bool done, click;
 
         void Reset(){}
         
@@ -514,29 +511,13 @@ public:
 
         void OnSpellClick(Unit* clicker)
         {
-            if (click && !done)
-            {
-                done = true;
-                click = false;
-                clicker->CastSpell(clicker, SPELL_UNLOCKING);
-                me->DespawnOrUnsummon(1000);
-            }
+            clicker->CastSpell(clicker, SPELL_UNLOCKING);
+            me->DespawnOrUnsummon();
         }
 
-        void DamageTaken(Unit* attacker, uint32 &damage)
+        void JustDied(Unit* killer)
         {
-            if (damage >= me->GetHealth())
-            {
-                damage = 0;
-                me->SetFullHealth();
-                events.Reset();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
-                me->StopMoving();
-                me->AttackStop();
-                me->SetReactState(REACT_PASSIVE);
-                me->SetStandState(UNIT_STAND_STATE_DEAD);
-                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-            }
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         }
 
         void UpdateAI(uint32 diff)
@@ -551,8 +532,7 @@ public:
                     events.ScheduleEvent(EVENT_ENRAGE_KJ, urand(15000, 20000));
                 }
             }
-            if (!done)
-                DoMeleeAttackIfReady();
+            DoMeleeAttackIfReady();
         }
     };
 
