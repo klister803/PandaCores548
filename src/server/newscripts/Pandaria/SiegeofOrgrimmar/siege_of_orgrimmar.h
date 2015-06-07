@@ -341,7 +341,8 @@ enum eGameObjects
     GO_ENT_DOOR_RIGHT               = 221801,
     GO_EX_DOOR_RIGHT                = 221798,
     GO_EX_DOOR_LEFT                 = 221799,
-    GO_EX_DOOR                      = 223058,
+
+    GO_SP_EX_DOOR                   = 223058, //Pre Enter Thok
 
     //Thok
     GO_THOK_ENT_DOOR               = 223805,
