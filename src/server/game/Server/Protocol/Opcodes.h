@@ -1318,7 +1318,7 @@ enum Opcodes
     SMSG_SELL_ITEM                                    = 0x002E, // 5.4.1 17538
     SMSG_SEND_MAIL_RESULT                             = 0x0C8D, // 5.4.1 17538
     SMSG_SEND_UNLEARN_SPELLS                          = 0x14C4, // 5.4.1 17538
-    SMSG_SERVERTIME                                   = 0x999,  // 5.0.5 16048
+    SMSG_SERVERTIME                                   = 0x0C87, // 5.4.1 17538
     SMSG_SERVER_FIRST_ACHIEVEMENT                     = 0x082E, // 5.4.1 17538
     SMSG_SERVER_INFO_RESPONSE                         = 0xA5C,  // 5.0.5 16048
     SMSG_SERVER_MESSAGE                               = 0x1539, // 5.4.1 17538

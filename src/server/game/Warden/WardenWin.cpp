@@ -334,6 +334,11 @@ void WardenWin::RequestData()
         stream << *itr << " ";
 
     //sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
+
+    WorldPacket data1(SMSG_SERVERTIME, 8);
+    data1 << uint32(12755321);
+    data1 << uint32(13904220);
+    _session->SendPacket(&data1);
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
