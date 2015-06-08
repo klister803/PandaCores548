@@ -145,7 +145,7 @@ void WardenCheckMgr::LoadWardenChecks()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_WARDEN, ">> Loaded %u warden checks.", count);
+    sLog->outWarn(LOG_FILTER_WARDEN, ">> Loaded %u warden checks.", count);
 
 }
 
@@ -193,7 +193,7 @@ void WardenCheckMgr::LoadWardenOverrides()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_WARDEN, ">> Loaded %u warden actions", count);
+    sLog->outWarn(LOG_FILTER_WARDEN, ">> Loaded %u warden actions", count);
 
 }
 
