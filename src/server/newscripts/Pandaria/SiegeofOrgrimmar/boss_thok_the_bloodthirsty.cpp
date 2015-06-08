@@ -315,6 +315,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_FIXATE:
+                    me->InterruptNonMeleeSpells(true);
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
                     {
                         DoCast(target, SPELL_FIXATE_PL);
@@ -326,7 +327,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_DETECT_EXPLOIT:
                     me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
                     if (Player* pl = me->GetPlayer(*me, fplGuid))
-                        if (pl->isAlive())
+                        if (pl->isAlive() && pl->HasAura(SPELL_FIXATE_PL))
                             pl->Kill(pl, true);
                     break;
                 }
@@ -1039,6 +1040,7 @@ public:
             {
                 if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
                 {
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
