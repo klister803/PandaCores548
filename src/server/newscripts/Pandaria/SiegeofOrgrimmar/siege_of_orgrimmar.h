@@ -19,6 +19,7 @@ enum globalSpells
 enum sActions
 {
     ACTION_RESET                    = 255,
+    ACTION_DETECT_EXPLOIT           = 256,
 };
 
 enum eData

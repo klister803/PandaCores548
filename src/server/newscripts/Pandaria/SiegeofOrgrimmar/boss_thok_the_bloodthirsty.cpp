@@ -96,9 +96,9 @@ enum Events
 enum Action
 {
     ACTION_PHASE_TWO         = 1,
-    ACTION_PHASE_ONE_ACID    = 2, 
-    ACTION_PHASE_ONE_FROST   = 3, 
-    ACTION_PHASE_ONE_FIRE    = 4, 
+    ACTION_PHASE_ONE_ACID    = 2,
+    ACTION_PHASE_ONE_FROST   = 3,
+    ACTION_PHASE_ONE_FIRE    = 4,
     ACTION_FIXATE            = 5,
 
     ACTION_FREEDOM           = 6,
@@ -158,6 +158,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             }
             
             InstanceScript* instance;
+            uint64 fplGuid;
             uint64 pGuid;
             uint32 enrage;
             uint8 phasecount;
@@ -177,6 +178,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                fplGuid = 0;
                 pGuid = 0;
                 phasecount = 0;
                 phasetwo = false;
@@ -199,6 +201,17 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                         (*itr)->RemoveFromWorld();
+                }
+            }
+
+            //Test Only
+            void SpellHit(Unit* caster, SpellInfo const *spell)
+            {
+                if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
+                {
+                    me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                    me->RemoveAurasDueToSpell(SPELL_BLOODIED);
+                    DoAction(ACTION_PHASE_TWO);
                 }
             }
 
@@ -314,9 +327,18 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     break;
                 case ACTION_FIXATE:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                    {
                         DoCast(target, SPELL_FIXATE_PL);
+                        fplGuid = target->GetGUID();
+                    }
                     else
                         EnterEvadeMode();
+                    break;
+                case ACTION_DETECT_EXPLOIT:
+                    me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
+                    if (Player* pl = me->GetPlayer(*me, fplGuid))
+                        if (pl->isAlive())
+                            pl->Kill(pl, true);
                     break;
                 }
             }
@@ -450,7 +472,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        {
                             DoCast(target, SPELL_FIXATE_PL);
+                            fplGuid = target->GetGUID();
+                        }
                         else
                         {
                             EnterEvadeMode();
