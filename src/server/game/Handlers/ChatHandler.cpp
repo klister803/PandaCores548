@@ -699,6 +699,7 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recvData)
 
     if (emote > ANIM_FLYMONKOFFENSEATTACKWEAPON)
     {
+        sLog->outWarn(LOG_FILTER_WARDEN, "Detected debugger - %s", GetPlayerName(false).c_str());
         KickPlayer();
         return;
     }
