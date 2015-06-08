@@ -995,6 +995,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 player->setFactionForRace(player->getRace());
         }
         player->RecalcArenaAuras();
+        player->RemoveAura(SPELL_BATTLE_FATIGUE);
     }
 
     RemovePlayer(player, guid, team);                           // BG subclass specific code
