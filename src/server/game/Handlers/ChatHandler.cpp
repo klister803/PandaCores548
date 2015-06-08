@@ -694,11 +694,18 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleEmoteOpcode(WorldPacket & recvData)
 {
+    uint32 emote;
+    recvData >> emote;
+
+    if (emote > ANIM_FLYMONKOFFENSEATTACKWEAPON)
+    {
+        KickPlayer();
+        return;
+    }
+
     if (!GetPlayer()->isAlive() || GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         return;
 
-    uint32 emote;
-    recvData >> emote;
     sScriptMgr->OnPlayerEmote(GetPlayer(), emote);
     GetPlayer()->HandleEmoteCommand(emote);
 }
