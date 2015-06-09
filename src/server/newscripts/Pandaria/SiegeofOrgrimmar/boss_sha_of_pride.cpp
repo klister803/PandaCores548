@@ -1502,6 +1502,44 @@ class spell_sha_of_pride_mark_of_arrogance : public SpellScriptLoader
         }
 };
 
+//144843
+class spell_sha_of_pride_overcome : public SpellScriptLoader
+{
+public:
+    spell_sha_of_pride_overcome() : SpellScriptLoader("spell_sha_of_pride_overcome") { }
+
+    class spell_sha_of_pride_overcome_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_sha_of_pride_overcome_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (GetCaster() && GetTarget() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->GetEntry() == NPC_SHA_OF_PRIDE && !GetTarget()->HasAura(SPELL_OVERCOME_MIND_CONTROL))
+                    GetCaster()->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
+            }
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (GetTarget() && GetTarget()->isAlive())
+                GetTarget()->RemoveAurasDueToSpell(SPELL_OVERCOME_MIND_CONTROL);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_sha_of_pride_overcome_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_pride_overcome_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_sha_of_pride_overcome_AuraScript();
+    }
+};
+
 void AddSC_boss_sha_of_pride()
 {
     new boss_sha_of_pride();
@@ -1519,4 +1557,5 @@ void AddSC_boss_sha_of_pride()
     new spell_sha_of_pride_gift_of_titans();
     new spell_sha_of_pride_gift_of_titans_ckecker();
     new spell_sha_of_pride_mark_of_arrogance();
+    new spell_sha_of_pride_overcome();
 }
