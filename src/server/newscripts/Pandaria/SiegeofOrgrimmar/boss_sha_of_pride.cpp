@@ -169,10 +169,18 @@ class boss_sha_of_pride : public CreatureScript
             void Reset()
             {
                 _Reset();
+                //Test Only
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
+                SetCombatMovement(false);
+                me->AddAura(SPELL_SUBMERGE, me);
+                me->SetVisible(true);
+                DoCast(me, SPELL_SUBMERGE, false);
+                //
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
+                //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
+                //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_WEST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
@@ -1509,10 +1517,10 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetCaster() && GetTarget() && GetCaster()->ToCreature())
+            if (GetTarget() && !GetTarget()->HasAura(SPELL_OVERCOME_MIND_CONTROL))
             {
-                if (GetCaster()->GetEntry() == NPC_SHA_OF_PRIDE && !GetTarget()->HasAura(SPELL_OVERCOME_MIND_CONTROL))
-                    GetCaster()->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
+                if (Creature* sha = GetTarget()->FindNearestCreature(NPC_SHA_OF_PRIDE, 150.0f, true))
+                    sha->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
             }
         }
 
