@@ -169,40 +169,33 @@ class boss_sha_of_pride : public CreatureScript
             void Reset()
             {
                 _Reset();
-                //Test Only
+                /*Debug
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
                 SetCombatMovement(false);
                 me->AddAura(SPELL_SUBMERGE, me);
                 me->SetVisible(true);
                 DoCast(me, SPELL_SUBMERGE, false);
-                //
+                */
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
-                //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
-                //instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_WEST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
-                
                 me->RemoveAurasDueToSpell(SPELL_UNLEASHED);
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
                 bPhaseLowHp = false;
-                
                 if (Creature* norushen = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
                     norushen->Respawn();
-
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-                
-                for(uint8 i = 0; i < 12; ++i)
+                for (uint8 i = 0; i < 12; ++i)
                 {
                     if (GameObject* prisonGo = instance->instance->GetGameObject(instance->GetData64(prisonbutton[i])))
-                    {
                         prisonGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-                    }
                 }
             }
 
@@ -227,16 +220,16 @@ class boss_sha_of_pride : public CreatureScript
             {
                 ZoneTalk(urand(TEXT_GENERIC_9, TEXT_GENERIC_10), 0);
             }
+
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-
                 ZoneTalk(TEXT_GENERIC_1, 0);
                 events.SetPhase(PHASE_BATTLE);
                 uint32 t = 0;
-                
-                if (IsHeroic())events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);                 //19:02:02.000
+                if (IsHeroic())
+                    events.RescheduleEvent(EVENT_RIFT_OF_CORRUPTION, t += 2000, 0, PHASE_BATTLE);             //19:02:02.000
                 events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, t += 1000, 0, PHASE_BATTLE);           //19:02:03.000
                 events.RescheduleEvent(EVENT_SPELL_WOUNDED_PRIDE, t += 3000, 0, PHASE_BATTLE);                //19:02:06.000
                 events.RescheduleEvent(EVENT_SPELL_MARK_OF_ARROGANCE, t += 2000, 0, PHASE_BATTLE);            //19:02:08.000
@@ -303,7 +296,6 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PRIDE);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_MARK_OF_ARROGANCE);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_OVERCOME_MIND_CONTROL);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_WEST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_EAST);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
@@ -1520,20 +1512,16 @@ public:
             if (GetTarget() && !GetTarget()->HasAura(SPELL_OVERCOME_MIND_CONTROL))
             {
                 if (Creature* sha = GetTarget()->FindNearestCreature(NPC_SHA_OF_PRIDE, 150.0f, true))
+                {
                     sha->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
+                    GetTarget()->Kill(GetTarget(), true);
+                }
             }
-        }
-
-        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
-        {
-            if (GetTarget() && GetTarget()->isAlive())
-                GetTarget()->RemoveAurasDueToSpell(SPELL_OVERCOME_MIND_CONTROL);
         }
 
         void Register()
         {
             OnEffectApply += AuraEffectApplyFn(spell_sha_of_pride_overcome_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
-            OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_pride_overcome_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
         }
     };
 

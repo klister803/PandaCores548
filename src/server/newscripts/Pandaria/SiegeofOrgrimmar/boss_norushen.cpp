@@ -516,6 +516,7 @@ class boss_amalgam_of_corruption : public CreatureScript
                 _JustDied();
                 ApplyOrRemoveBar(false);
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PURIFIED);
             }
 
             void UpdateAI(uint32 diff)
