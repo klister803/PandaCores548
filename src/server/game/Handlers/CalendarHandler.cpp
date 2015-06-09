@@ -123,7 +123,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 
     ByteBuffer instanceBuffer;
     uint32 p2 = 0;
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (Player::BoundInstancesMap::const_iterator itr = _player->m_boundInstances[i].begin(); itr != _player->m_boundInstances[i].end(); ++itr)
             if (itr->second.perm)
             {

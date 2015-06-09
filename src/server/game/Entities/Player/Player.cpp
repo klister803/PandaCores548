@@ -1036,7 +1036,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
         m_transport->RemovePassenger(this);
 
     // clean up player-instance binds, may unload some instance saves
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
             itr->second.save->RemovePlayer(this);
 }
@@ -20784,7 +20784,7 @@ bool Player::IsPlayerLootCooldown(uint32 entry, uint8 type/* = 0*/, uint8 diff/*
 
 void Player::_LoadBoundInstances(PreparedQueryResult result)
 {
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         m_boundInstances[i].clear();
 
     Group* group = GetGroup();
@@ -20860,10 +20860,8 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, Difficulty difficulty
     if (!mapDiff)
         return NULL;
 
-    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
-
-    BoundInstancesMap::iterator itr = m_boundInstances[boundType].find(mapid);
-    if (itr != m_boundInstances[boundType].end())
+    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
+    if (itr != m_boundInstances[difficulty].end())
         return &itr->second;
     else
         return NULL;
@@ -20883,15 +20881,13 @@ InstanceSave* Player::GetInstanceSave(uint32 mapid, bool raid)
 
 void Player::UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload)
 {
-    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
-    BoundInstancesMap::iterator itr = m_boundInstances[boundType].find(mapid);
+    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     UnbindInstance(itr, difficulty, unload);
 }
 
 void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload)
 {
-    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
-    if (itr != m_boundInstances[boundType].end())
+    if (itr != m_boundInstances[difficulty].end())
     {
         if (!unload)
         {
@@ -20907,7 +20903,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
             GetSession()->SendCalendarRaidLockout(itr->second.save, false);
 
         itr->second.save->RemovePlayer(this);               // save can become invalid
-        m_boundInstances[boundType].erase(itr++);
+        m_boundInstances[difficulty].erase(itr++);
     }
 }
 
@@ -20915,40 +20911,34 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave* save, bool permanent, b
 {
     if (save)
     {
-        uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(save->GetDifficulty());
-        InstancePlayerBind& bind = m_boundInstances[boundType][save->GetMapId()];
-        if(!save->CanBeSave())
-            permanent = false;
-        if(save->CanBeSave())
+        InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
+        if (bind.save)
         {
-            if (bind.save)
-            {
-                // update the save when the group kills a boss
-                if (permanent != bind.perm || save != bind.save)
-                    if (!load)
-                    {
-                        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_INSTANCE);
-
-                        stmt->setUInt32(0, save->GetInstanceId());
-                        stmt->setBool(1, permanent);
-                        stmt->setUInt32(2, GetGUIDLow());
-                        stmt->setUInt32(3, bind.save->GetInstanceId());
-
-                        CharacterDatabase.Execute(stmt);
-                    }
-            }
-            else
+            // update the save when the group kills a boss
+            if (permanent != bind.perm || save != bind.save)
                 if (!load)
                 {
-                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_INSTANCE);
+                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_INSTANCE);
 
-                    stmt->setUInt32(0, GetGUIDLow());
-                    stmt->setUInt32(1, save->GetInstanceId());
-                    stmt->setBool(2, permanent);
+                    stmt->setUInt32(0, save->GetInstanceId());
+                    stmt->setBool(1, permanent);
+                    stmt->setUInt32(2, GetGUIDLow());
+                    stmt->setUInt32(3, bind.save->GetInstanceId());
 
                     CharacterDatabase.Execute(stmt);
                 }
         }
+        else
+            if (!load)
+            {
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_INSTANCE);
+
+                stmt->setUInt32(0, GetGUIDLow());
+                stmt->setUInt32(1, save->GetInstanceId());
+                stmt->setBool(2, permanent);
+
+                CharacterDatabase.Execute(stmt);
+            }
 
         if (bind.save != save)
         {
@@ -20999,13 +20989,14 @@ void Player::SendRaidInfo()
 
     time_t now = time(NULL);
 
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
         {
             if (itr->second.perm)
             {
                 save = itr->second.save;
+                bool isHeroic = save->GetDifficulty() == MAN10_HEROIC_DIFFICULTY || save->GetDifficulty() == MAN25_HEROIC_DIFFICULTY;
                 instanceID = save->GetInstanceId();
                 data.WriteGuidMask<2, 4, 7>(instanceID);
                 data.WriteBit(0);                                       //extended?
@@ -21040,7 +21031,7 @@ void Player::SendSavedInstances()
     bool hasBeenSaved = false;
     WorldPacket data;
 
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
         {
@@ -21061,7 +21052,7 @@ void Player::SendSavedInstances()
     if (!hasBeenSaved)
         return;
 
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
         {
@@ -21082,7 +21073,7 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
 
-    for (uint8 i = 0; i < MAX_BOUND; ++i)
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
         for (BoundInstancesMap::iterator itr = player->m_boundInstances[i].begin(); itr != player->m_boundInstances[i].end();)
         {
@@ -21091,21 +21082,12 @@ void Player::ConvertInstancesToGroup(Player* player, Group* group, bool switchLe
             if (switchLeader && !itr->second.perm)
             {
                 // increments itr in call
-                if(itr->second.save->GetDifficulty() != REGULAR_DIFFICULTY)
-                    player->UnbindInstance(itr, Difficulty(i), false);
-                else
-                    ++itr;
+                player->UnbindInstance(itr, Difficulty(i), false);
             }
             else
                 ++itr;
         }
     }
-}
-
-Player::BoundInstancesMap& Player::GetBoundInstances(Difficulty difficulty)
-{
-    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(difficulty);
-    return m_boundInstances[boundType];
 }
 
 bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report)
@@ -22803,9 +22785,8 @@ void Player::ResetInstances(uint8 method, bool isRaid)
 
     // we assume that when the difficulty changes, all instances that can be reset will be
     Difficulty diff = GetDifficulty(isRaid);
-    uint8 boundType = sObjectMgr->GetboundTypeFromDifficulty(diff);
 
-    for (BoundInstancesMap::iterator itr = m_boundInstances[boundType].begin(); itr != m_boundInstances[boundType].end();)
+    for (BoundInstancesMap::iterator itr = m_boundInstances[diff].begin(); itr != m_boundInstances[diff].end();)
     {
         InstanceSave* p = itr->second.save;
         const MapEntry* entry = sMapStore.LookupEntry(itr->first);
@@ -22839,7 +22820,7 @@ void Player::ResetInstances(uint8 method, bool isRaid)
             SendResetInstanceSuccess(p->GetMapId());
 
         p->DeleteFromDB();
-        m_boundInstances[boundType].erase(itr++);
+        m_boundInstances[diff].erase(itr++);
 
         // the following should remove the instance save from the manager and delete it as well
         p->RemovePlayer(this);
