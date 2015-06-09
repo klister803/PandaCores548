@@ -241,7 +241,7 @@ class boss_malkorok : public CreatureScript
                     powercheck = 1500;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_PREPARE, 20000);
+                    events.ScheduleEvent(EVENT_PREPARE, 19000);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
@@ -270,15 +270,18 @@ class boss_malkorok : public CreatureScript
                         if (asGuids.size() == 3)
                             events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 10000);
                         else
+                        {
                             events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
-                    events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
-                    events.ScheduleEvent(EVENT_PREPARE, 20000);
+                            events.ScheduleEvent(EVENT_PREPARE, 19000);
+                        }
+                        events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
                     break;
                 case ACTION_BREATH_OF_YSHAARJ:
                     for (std::vector<uint64>::const_iterator itr = asGuids.begin(); itr != asGuids.end(); itr++)
                         if (Creature* as = me->GetCreature(*me, *itr))
                             as->AI()->DoAction(ACTION_BREATH_OF_YSHAARJ);
                     asGuids.clear();
+                    events.ScheduleEvent(EVENT_PREPARE,  15000);
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1500);
                     break;
                 }
