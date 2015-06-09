@@ -238,10 +238,10 @@ class boss_malkorok : public CreatureScript
                     DoCast(me, SPELL_RELENTLESS_ASSAULT, true);
                     DoCast(me, SPELL_EXPEL_MIASMA);
                     asGuids.clear();
-                    powercheck = 1600;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_PREPARE, 17000);
+                    powercheck = 1600;
+                    events.ScheduleEvent(EVENT_PREPARE, 12000);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
