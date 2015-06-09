@@ -1154,6 +1154,20 @@ public:
             events.ScheduleEvent(EVENT_HURL_CORRUPTION, 20000);
             events.ScheduleEvent(EVENT_BURST_OF_CORRUPTION, 35000);
         }
+
+        void JustDied(Unit* killer)
+        {
+            if (!killer->ToPlayer())
+                return;
+
+            if (!me->GetPhaseId())
+            {
+                me->DespawnOrUnsummon();
+                return;
+            }
+            killer->RemoveAurasDueToSpell(SPELL_TEST_OF_CONFIDENCE);
+            me->DespawnOrUnsummon();
+        }
         
         void UpdateAI(uint32 diff)
         {
