@@ -24178,7 +24178,10 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         if (spellInfo->PreventionType == SPELL_PREVENTION_TYPE_PACIFY || spellInfo->PreventionType == SPELL_PREVENTION_TYPE_NONE)
             continue;
 
-        if ((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs * 1.0 / IN_MILLISECONDS)
+        uint32 _SchoolMask = spellInfo->GetSchoolMask();
+        _SchoolMask &= uint32(~idSchoolMask);
+
+        if ((_SchoolMask == 0) && GetSpellCooldownDelay(unSpellId) < unTimeMs * 1.0 / IN_MILLISECONDS)
         {
             data << uint32(unTimeMs);                       // in m.secs
             data << uint32(unSpellId);
