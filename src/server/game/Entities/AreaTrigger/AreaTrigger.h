@@ -210,6 +210,7 @@ class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>
         uint32 _activationDelay;
         uint32 _updateDelay;
         std::list<uint64> affectedPlayers;
+        std::list<uint64> affectedPlayersForAllTime;
         float _radius;
         AreaTriggerInfo atInfo;
         ActionInfoMap _actionInfo;

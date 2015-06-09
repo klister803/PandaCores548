@@ -505,7 +505,14 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         || action.action->targetFlags & AT_TARGET_FLAG_CASTER_IS_TARGET)
         caster = unit;
 
-    if(action.action->hitMaxCount && int32(action.hitCount) >= action.action->hitMaxCount)
+    if (action.action->hitMaxCount < 0)
+    {
+        if (!affectedPlayersForAllTime.empty())
+            for (std::list<uint64>::iterator itr = affectedPlayersForAllTime.begin(); itr != affectedPlayersForAllTime.end(); ++itr)
+                if (unit->GetGUID() == (*itr))
+                    return;
+    }
+    else if (action.action->hitMaxCount && int32(action.hitCount) >= action.action->hitMaxCount)
         return;
 
     switch (action.action->actionType)
@@ -585,6 +592,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             break;
         }
     }
+
+    if (action.action->hitMaxCount < 0)
+        affectedPlayersForAllTime.push_back(unit->GetGUID());
 
     action.hitCount++;
     if (atInfo.hitType & (1 << action.action->actionType))
