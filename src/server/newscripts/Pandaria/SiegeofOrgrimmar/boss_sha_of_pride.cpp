@@ -280,12 +280,7 @@ class boss_sha_of_pride : public CreatureScript
                         else if (power >= 75 && power <= 99)
                             DoCast(target, SPELL_AURA_OF_PRIDE, true);
                         else if (power == 100)
-                        {
-                            if (target->HasAura(SPELL_OVERCOME))
-                                me->CastSpell(target, SPELL_OVERCOME_MIND_CONTROL, true);
-                            else
-                                target->CastSpell(target, SPELL_OVERCOME, true);
-                        }
+                            target->CastSpell(target, SPELL_OVERCOME, true);
                         break;
                     }
                 }
