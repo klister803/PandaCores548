@@ -7774,9 +7774,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     {
                         switch (procSpell->Id)
                         {
-                            case 589:   triggered_spell_id = 124464; break;
-                            case 15407: triggered_spell_id = 124468; break;
-                            case 34914: triggered_spell_id = 124465; break;
+                            case 129197: 
+                            case 15407:  triggered_spell_id = 124468; break;
+                            case 589:    triggered_spell_id = 124464; break;
+                            case 34914:  triggered_spell_id = 124465; break;
+                            case 2944:   triggered_spell_id = 124467; break;
+                            case 49821:  triggered_spell_id = 124469; break;
                             default:
                                 break;
                         }
