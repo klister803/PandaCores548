@@ -174,11 +174,11 @@ class boss_malkorok : public CreatureScript
                 _EnterCombat();
                 Talk(SAY_PULL);
                 SetGasStateAndBuffPlayers(true);
-                powercheck = 1300;
+                powercheck = 1500;
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
-                events.ScheduleEvent(EVENT_PREPARE, 11000);
+                events.ScheduleEvent(EVENT_PREPARE, 12000);
                 events.ScheduleEvent(EVENT_ERADICATE, 300000);
             }
 
@@ -238,10 +238,10 @@ class boss_malkorok : public CreatureScript
                     DoCast(me, SPELL_RELENTLESS_ASSAULT, true);
                     DoCast(me, SPELL_EXPEL_MIASMA);
                     asGuids.clear();
-                    powercheck = 1300;
+                    powercheck = 1500;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_PREPARE, 11000);
+                    events.ScheduleEvent(EVENT_PREPARE, 20000);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
@@ -255,11 +255,6 @@ class boss_malkorok : public CreatureScript
                     displacedenergy = 4000;
                     break;
                 case ACTION_RE_ATTACK:
-                    if (!asGuids.empty())
-                        if (asGuids.size() == 3)
-                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 8000);
-                        else
-                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 8000);
                     if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                     {
                         float x, y;
@@ -271,8 +266,13 @@ class boss_malkorok : public CreatureScript
                             me->SummonCreature(NPC_IMPLOSION, x, y, am->GetPositionZ());
                         }
                     }
+                    if (!asGuids.empty())
+                        if (asGuids.size() == 3)
+                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 10000);
+                        else
+                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
-                    events.ScheduleEvent(EVENT_PREPARE, 11000);
+                    events.ScheduleEvent(EVENT_PREPARE, 20000);
                     break;
                 case ACTION_BREATH_OF_YSHAARJ:
                     for (std::vector<uint64>::const_iterator itr = asGuids.begin(); itr != asGuids.end(); itr++)
@@ -328,7 +328,7 @@ class boss_malkorok : public CreatureScript
                             if (me->GetPower(POWER_ENERGY) <= 99)
                             {
                                 me->SetPower(POWER_ENERGY, me->GetPower(POWER_ENERGY) + 1);
-                                powercheck = 1300;
+                                powercheck = 1500;
                                 if (me->GetPower(POWER_ENERGY) == 100)
                                 {
                                     phase = PHASE_TWO;
