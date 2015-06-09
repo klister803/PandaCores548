@@ -5619,6 +5619,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 140265: // Summon Thunder King Finale
                     spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(23); //90s
                     break;
+                case 146397: // Legendary Finale
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(567); //135s
+                    break;
                 case 143343: // Deafening Screech
                     spellInfo->CastTimeMin = 0.7f;
                     spellInfo->CastTimeMax = 0.7f;
