@@ -241,7 +241,7 @@ class boss_malkorok : public CreatureScript
                     powercheck = 1600;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_PREPARE, 18000);
+                    events.ScheduleEvent(EVENT_PREPARE, 17000);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
@@ -272,7 +272,7 @@ class boss_malkorok : public CreatureScript
                         else
                         {
                             events.ScheduleEvent(EVENT_SEISMIC_SLAM, 10000);
-                            events.ScheduleEvent(EVENT_PREPARE, 18000);
+                            events.ScheduleEvent(EVENT_PREPARE, 17000);
                         }
                         events.ScheduleEvent(EVENT_RE_ATTACK, 1000);               
                     break;
