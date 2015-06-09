@@ -179,7 +179,7 @@ class boss_malkorok : public CreatureScript
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
                 events.ScheduleEvent(EVENT_PREPARE, 12000);
-                events.ScheduleEvent(EVENT_ERADICATE, 300000);
+                events.ScheduleEvent(EVENT_ERADICATE, 360000);
             }
 
             void MovementInform(uint32 type, uint32 pointId)
