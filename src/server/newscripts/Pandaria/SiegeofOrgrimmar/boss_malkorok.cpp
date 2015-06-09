@@ -178,7 +178,7 @@ class boss_malkorok : public CreatureScript
                 checkvictim = 1500;
                 DoCast(me, SPELL_FATAL_STRIKE, true);
                 events.ScheduleEvent(EVENT_SEISMIC_SLAM, 5000);
-                events.ScheduleEvent(EVENT_PREPARE, 13000);
+                events.ScheduleEvent(EVENT_PREPARE, 11000);
                 events.ScheduleEvent(EVENT_ERADICATE, 300000);
             }
 
@@ -241,7 +241,7 @@ class boss_malkorok : public CreatureScript
                     powercheck = 1300;
                     DoCast(me, SPELL_FATAL_STRIKE, true);
                     SetGasStateAndBuffPlayers(true);
-                    events.ScheduleEvent(EVENT_PREPARE, 13000);
+                    events.ScheduleEvent(EVENT_PREPARE, 11000);
                     break;
                 case ACTION_PHASE_TWO:
                     me->RemoveAurasDueToSpell(SPELL_FATAL_STRIKE);
@@ -257,9 +257,9 @@ class boss_malkorok : public CreatureScript
                 case ACTION_RE_ATTACK:
                     if (!asGuids.empty())
                         if (asGuids.size() == 3)
-                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 5000);
+                            events.ScheduleEvent(EVENT_BREATH_OF_YSHAARJ, 8000);
                         else
-                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 7000);
+                            events.ScheduleEvent(EVENT_SEISMIC_SLAM, 8000);
                     if (Creature* am = me->GetCreature(*me, instance->GetData64(NPC_ANCIENT_MIASMA)))
                     {
                         float x, y;
@@ -272,7 +272,7 @@ class boss_malkorok : public CreatureScript
                         }
                     }
                     events.ScheduleEvent(EVENT_RE_ATTACK, 1000);
-                    events.ScheduleEvent(EVENT_PREPARE, 14000);
+                    events.ScheduleEvent(EVENT_PREPARE, 11000);
                     break;
                 case ACTION_BREATH_OF_YSHAARJ:
                     for (std::vector<uint64>::const_iterator itr = asGuids.begin(); itr != asGuids.end(); itr++)
