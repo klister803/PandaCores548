@@ -480,8 +480,7 @@ void ReputationMgr::SetAtWar(RepListID repListID, bool on)
 void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
 {
     // not allow declare war to own faction.
-    // enable war on faction Oracles/Frenzyheart Tribe
-    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED && (!sFactionStore.LookupEntry(1105) || !sFactionStore.LookupEntry(1104))))
+    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED))
         return;
 
     // already set
@@ -572,6 +571,10 @@ void ReputationMgr::LoadFromDB(PreparedQueryResult result)
                 // set atWar for hostile
                 if (GetRank(factionEntry) <= REP_HOSTILE)
                     SetAtWar(faction, true);
+
+                // enable war on faction Oracles/Frenzyheart Tribe
+                if (GetRank(factionEntry) <= REP_HOSTILE && (sFactionStore.LookupEntry(1104) || sFactionStore.LookupEntry(1105)))
+                    faction->Flags |= FACTION_FLAG_AT_WAR;
 
                 // reset changed flag if values similar to saved in DB
                 if (faction->Flags == dbFactionFlags)
