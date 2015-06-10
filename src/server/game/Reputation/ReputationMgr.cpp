@@ -479,8 +479,9 @@ void ReputationMgr::SetAtWar(RepListID repListID, bool on)
 
 void ReputationMgr::SetAtWar(FactionState* faction, bool atWar) const
 {
-    // not allow declare war to own faction
-    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED))
+    // not allow declare war to own faction.
+    // enable war on faction Oracles/Frenzyheart Tribe
+    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED && (!sFactionStore.LookupEntry(1105) || !sFactionStore.LookupEntry(1104))))
         return;
 
     // already set
