@@ -505,28 +505,25 @@ class spell_monk_bear_hug : public SpellScriptLoader
     public:
         spell_monk_bear_hug() : SpellScriptLoader("spell_monk_bear_hug") { }
 
-        class spell_monk_bear_hug_SpellScript : public SpellScript
+        class spell_monk_bear_hug_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_monk_bear_hug_SpellScript);
+            PrepareAuraScript(spell_monk_bear_hug_AuraScript);
 
-            void HandleOnHit()
+            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (Aura* bearHug = target->GetAura(SPELL_MONK_BEAR_HUG, _player->GetGUID()))
-                            if (bearHug->GetEffect(1))
-                                bearHug->GetEffect(1)->SetAmount(_player->CountPctFromMaxHealth(2));
+                if (Unit* caster = GetCaster())
+                    amount = caster->CountPctFromMaxHealth(2);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_monk_bear_hug_SpellScript::HandleOnHit);
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_bear_hug_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_monk_bear_hug_SpellScript();
+            return new spell_monk_bear_hug_AuraScript();
         }
 };
 
@@ -787,7 +784,7 @@ class spell_monk_spinning_fire_blossom_damage : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         int32 damage = GetSpell()->CalculateMonkMeleeAttacks(caster, 1.5f, 6);
-                         if (target->GetExactDist2d(caster) > 10.0f)
+                        if (target->GetExactDist2d(caster) > 10.0f)
                             SetHitDamage(int32(damage * 1.5f));
                         else
                             SetHitDamage(damage);

@@ -3573,6 +3573,8 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
                 }
         }
 
+        CallScriptBeforeStartCastHandlers();
+
         m_caster->SetCurrentCastedSpell(this);
         SendSpellPendingCast(); //Send activation spell
         SendSpellStart();
@@ -9237,6 +9239,19 @@ void Spell::CallScriptBeforeCastHandlers()
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_BEFORE_CAST);
         std::list<SpellScript::CastHandler>::iterator hookItrEnd = (*scritr)->BeforeCast.end(), hookItr = (*scritr)->BeforeCast.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(*scritr);
+
+        (*scritr)->_FinishScriptCall();
+    }
+}
+
+void Spell::CallScriptBeforeStartCastHandlers()
+{
+    for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_BEFORE_START_CAST);
+        std::list<SpellScript::CastHandler>::iterator hookItrEnd = (*scritr)->BeforeStartCast.end(), hookItr = (*scritr)->BeforeStartCast.begin();
         for (; hookItr != hookItrEnd; ++hookItr)
             (*hookItr).Call(*scritr);
 

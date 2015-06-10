@@ -2016,9 +2016,11 @@ class Player : public Unit, public GridObject<Player>
         }
 
         uint64 GetSelection() const { return m_curSelection; }
+        uint64 GetLastSelection() const { return m_lastSelection; }
         Unit* GetSelectedUnit() const;
+        Unit* GetLastSelectedUnit() const;
         Player* GetSelectedPlayer() const;
-        void SetSelection(uint64 guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        void SetSelection(uint64 guid) { if(m_curSelection) m_lastSelection = m_curSelection; m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() const { if(HasAura(138148)) return m_comboPoints + 1; else return m_comboPoints; }
         uint64 GetComboTarget() const { return m_comboTarget; }
@@ -3366,6 +3368,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_ExtraFlags;
         uint64 m_curSelection;
+        uint64 m_lastSelection;
         DigSiteInfo m_digsite;
 
         uint64 m_comboTarget;

@@ -168,8 +168,13 @@ class spell_warr_shield_block : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED, true);
+                if (Unit* caster = GetCaster())
+                {
+                    if (Aura* aura = caster->GetAura(WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED))
+                        aura->SetDuration(aura->GetDuration() + 6 * IN_MILLISECONDS);
+                    else
+                        caster->CastSpell(caster, WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED, true);
+                }
             }
 
             void Register()
@@ -831,36 +836,6 @@ class spell_war_avatar : public SpellScriptLoader
         }
 };
 
-class spell_war_intimidating_shout : public SpellScriptLoader
-{
-    public:
-        spell_war_intimidating_shout() : SpellScriptLoader("spell_war_intimidating_shout") { }
-
-        class spell_war_intimidating_shout_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_war_intimidating_shout_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& targets)
-            {
-                if (targets.empty())
-                    return;
-
-                if(!GetCaster() || !GetCaster()->HasAura(63327))
-                    targets.clear();
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_war_intimidating_shout_SpellScript::FilterTargets, EFFECT_3, TARGET_UNIT_SRC_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_war_intimidating_shout_SpellScript();
-        }
-};
-
 // Glyph of Die by the Sword - 58386
 class spell_war_glyph_of_die_by_the_sword : public SpellScriptLoader
 {
@@ -1229,7 +1204,6 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
     new spell_war_avatar();
-    new spell_war_intimidating_shout();
     new spell_war_glyph_of_die_by_the_sword();
     new spell_glyph_of_gag_order();
     new spell_warr_t16_dps_2p();

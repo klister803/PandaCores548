@@ -1124,7 +1124,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
             case 54428: // Divine Plea
                 int32 manaPerc;
                 manaPerc = CalculatePct(caster->GetMaxPower(POWER_MANA), m_spellInfo->Effects[1].BasePoints) / GetTotalTicks();
-                amount = CalculatePct(caster->GetStat(STAT_SPIRIT), amount);
+                amount = CalculatePct(caster->GetTotalStatValue(STAT_SPIRIT), amount);
                 if(amount < manaPerc)
                    amount = manaPerc;
                 break;
@@ -3111,8 +3111,12 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         target->RemoveAurasByType(SPELL_AURA_CLONE_CASTER);
 
         // update active transform spell only when transform or shapeshift not set or not overwriting negative by positive case
-        if (!target->GetModelForForm(target->GetShapeshiftForm()) || !GetSpellInfo()->IsPositive())
+        SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(target->getTransForm());
+        if (!transformSpellInfo || !GetSpellInfo()->IsPositive() || transformSpellInfo->IsPositive())
+        //if (!target->GetModelForForm(target->GetShapeshiftForm()) || !GetSpellInfo()->IsPositive())
         {
+            target->setTransForm(GetId());
+
             // special case (spell specific functionality)
             if (GetMiscValue() == 0)
             {
@@ -3288,6 +3292,10 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                                 model_id = 47428;
                         }
 
+                    // Prevent visual bug with mirrors image
+                    if (target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE))
+                        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+
                     target->SetDisplayId(model_id);
 
                     // Dragonmaw Illusion (set mount model also)
@@ -3296,11 +3304,6 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                 }
             }
         }
-
-        // update active transform spell only when transform or shapeshift not set or not overwriting negative by positive case
-        SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(target->getTransForm());
-        if (!transformSpellInfo || !GetSpellInfo()->IsPositive() || transformSpellInfo->IsPositive())
-            target->setTransForm(GetId());
 
         // polymorph case
         if ((mode & AURA_EFFECT_HANDLE_REAL) && target->GetTypeId() == TYPEID_PLAYER && target->IsPolymorphed())

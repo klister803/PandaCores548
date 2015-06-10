@@ -153,6 +153,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 case 102355: // Faerie Swarm
                 case 102354: // Faerie Swarm (Slow)
                     return DIMINISHING_LIMITONLY;
+                case 45334: // Immobilized
+                    return DIMINISHING_ROOT;
                 default:
                     break;
             }
@@ -2481,7 +2483,7 @@ void SpellMgr::LoadTalentSpellLinked()
         int32 caster = fields[4].GetUInt8();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(talent));
-        if (!spellInfo)
+        if (!spellInfo && talent)
         {
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_talent_linked_spell` does not exist", abs(talent));
             continue;
@@ -4258,9 +4260,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 61999: // Raise Ally
                     spellInfo->Effects[EFFECT_1].TargetA = TARGET_UNIT_TARGET_ALLY;
-                    break;
-                case 44203: // Tranquility (triggered)
-                    spellInfo->CustomMaxAffectedTargets = 5; //used if empty on dbc SpellTargetRestrictionsEntry
                     break;
                 case 121118:// Dire Beast summons
                 case 122802:

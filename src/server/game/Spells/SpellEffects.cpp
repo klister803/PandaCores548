@@ -1837,6 +1837,8 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         return;
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::EffectTriggerSpell spell %u tried to trigger spell %u effectHandleMode %u Need %u TargetMask %u", m_spellInfo->Id, triggered_spell_id, effectHandleMode, spellInfo->NeedsToBeTriggeredByCaster(), spellInfo->GetExplicitTargetMask());
+
     SpellCastTargets targets;
     if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
     {
@@ -1850,7 +1852,12 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
             return;
 
         if (spellInfo->GetExplicitTargetMask() & TARGET_FLAG_DEST_LOCATION)
-            targets.SetDst(m_targets);
+        {
+            if (m_targets.HasDst())
+                targets.SetDst(m_targets);
+            else
+                targets.SetDst(*m_caster);
+        }
 
         targets.SetUnitTarget(m_caster);
     }
@@ -5990,7 +5997,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
     if (damage <= 0)
         return;
 
-    if (m_spellInfo->Id == 51723)
+    if (m_spellInfo->IsTargetingArea())
     {
         if (uint64 combotarget = m_caster->m_movedPlayer->GetComboTarget())
         {
@@ -6007,7 +6014,7 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
         }
     }
 
-    if (m_spellInfo->Id == 139546) //Add CP after use old CP
+    if (m_spellInfo->Id == 139546 || m_spellInfo->Id == 144859) //Add CP after use old CP
         m_caster->m_movedPlayer->SaveAddComboPoints(damage);
     else
         m_caster->m_movedPlayer->AddComboPoints(unitTarget, damage, this);

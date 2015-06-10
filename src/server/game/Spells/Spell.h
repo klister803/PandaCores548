@@ -772,6 +772,7 @@ class Spell
         void CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex);
         void CustomTargetSelector(std::list<WorldObject*>& targets, SpellEffIndex effIndex, Targets targetId);
         std::list<SpellScript*> m_loadedScripts;
+        void CallScriptBeforeStartCastHandlers();
 
         struct HitTriggerSpell
         {

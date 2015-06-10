@@ -158,7 +158,7 @@ void PhaseMgr::UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect)
 
 void PhaseMgr::RegisterPhasingAura(uint32 spellId, Unit* target)
 {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
 
     SpellPhaseStore::const_iterator itr = _SpellPhaseStore->find(spellId);
     if (itr == _SpellPhaseStore->end())
@@ -190,7 +190,7 @@ void PhaseMgr::RegisterPhasingAura(uint32 spellId, Unit* target)
 
 void PhaseMgr::UnRegisterPhasingAura(uint32 spellId, Unit* target)
 {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PhaseMgr::RegisterPhasingAura: spellId %u", spellId);
 
     SpellPhaseStore::const_iterator itr = _SpellPhaseStore->find(spellId);
     if (itr == _SpellPhaseStore->end())

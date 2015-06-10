@@ -25611,6 +25611,14 @@ Unit* Player::GetSelectedUnit() const
     return NULL;
 }
 
+Unit* Player::GetLastSelectedUnit() const
+{
+    if (m_lastSelection)
+        return ObjectAccessor::GetUnit(*this, m_lastSelection);
+    return NULL;
+}
+
+
 Player* Player::GetSelectedPlayer() const
 {
     if (m_curSelection)
@@ -29040,6 +29048,47 @@ void Player::ActivateSpec(uint8 spec)
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
                 if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
                     removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches
+    }
+
+    if (const std::vector<SpellTalentLinked> *spell_triggered = sSpellMgr->GetSpelltalentLinked(0))
+    {
+        for (std::vector<SpellTalentLinked>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+        {
+            Unit* target = (Unit*)this;
+            Unit* caster = (Unit*)this;
+
+            if(i->caster == 1)
+                if (Pet* pet = GetPet())
+                    caster = (Unit*)pet;
+            if(i->target == 1)
+                if (Pet* pet = GetPet())
+                    target = (Unit*)pet;
+
+            switch (i->type)
+            {
+                case 0: //remove or add auras
+                {
+                    if (i->triger < 0)
+                        target->RemoveAurasDueToSpell(-(i->triger));
+                    else
+                        caster->CastSpell(target, i->triger, true);
+                    break;
+                }
+                case 1: //remove or add spell
+                {
+                    if (i->triger < 0)
+                        removeSpell(-(i->triger));
+                    else
+                        learnSpell(i->triger, false);
+                    break;
+                }
+                case 2: //remove pet
+                {
+                    RemovePet(NULL);
+                    break;
+                }
+            }
+        }
     }
 
     RemoveSpecializationSpells();

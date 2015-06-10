@@ -138,6 +138,7 @@ enum SpellScriptHookType
     SPELL_SCRIPT_HOOK_BEFORE_CAST,
     SPELL_SCRIPT_HOOK_ON_CAST,
     SPELL_SCRIPT_HOOK_AFTER_CAST,
+    SPELL_SCRIPT_HOOK_BEFORE_START_CAST,
 };
 
 #define HOOK_SPELL_HIT_START SPELL_SCRIPT_HOOK_EFFECT_HIT
@@ -275,6 +276,8 @@ class SpellScript : public _SpellScript
         HookList<CastHandler> OnCast;
         // example: AfterCast += SpellCastFn(class::function);
         HookList<CastHandler> AfterCast;
+        // example: BeforeStartCast += SpellCastFn(class::function);
+        HookList<CastHandler> BeforeStartCast;
         #define SpellCastFn(F) CastHandlerFunction(&F)
 
         // example: OnCheckCast += SpellCheckCastFn();
@@ -328,6 +331,7 @@ class SpellScript : public _SpellScript
         // 10. OnEffectHitTarget - executed just before specified effect handler call - called for each target from spell target map
         // 11. OnHit - executed just before spell deals damage and procs auras - when spell hits target - called for each target from spell target map
         // 12. AfterHit - executed just after spell finishes all it's jobs for target - called for each target from spell target map
+        // 13. BeforeStartCast - executed when spell preparation is start (when cast bar becomes start) before cast is handled
 
         //
         // methods allowing interaction with Spell object

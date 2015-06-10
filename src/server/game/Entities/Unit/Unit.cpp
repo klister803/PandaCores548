@@ -6290,29 +6290,34 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
                 return false;
 
             int32 powerMod = 0;
+            bool isGlyph = false;
 
-            /*if(HasAura(54812) && !(HasAura(48517) || HasAura(48518)))
+            if(HasAura(54812) && !(HasAura(48517) || HasAura(48518)))
             {
                 switch(procSpell->Id)
                 {
                     case 2912:
                     case 78674:
-                        break;
                     case 5176:
+                        break;
                     case 99:
                     case 339:
                     case 5211:
+                    case 33786:
                     case 61391:
                     case 102359:
+                    case 102355:
                     case 106707:
                     case 102793:
+                    case 132469:
                         powerMod = 10;
+                        isGlyph = true;
                         break;
                     default:
                         return false;
                 }
             }
-            else
+            /*else
             {
                 switch(procSpell->Id)
                 {
@@ -6342,6 +6347,8 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
             // Starsurge
             else if (procSpell->Id == 78674)
                 powerMod = direction * procSpell->Effects[1].CalcValue(this);
+            else if(HasAura(54812))
+                powerMod *= direction;
 
             // solar Eclipse Marker
             if (HasAura(67484))
@@ -6367,7 +6374,7 @@ bool Unit::HandleAuraProcOnPowerAmount(Unit* victim, DamageInfo* /*dmgInfoProc*/
                 return false;
 
             // while not in Eclipse State
-            if (!HasAura(48517) && !HasAura(48518))
+            if (!HasAura(48517) && !HasAura(48518) && !isGlyph)
             {
                 // search Euphoria
                 if (HasAura(81062))
@@ -10060,19 +10067,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, DamageInfo* dmgInfoProc, AuraEff
                 CastSpell(this, 79808, true);
             break;
         }
-        // Lightning Shield (Symbiosis)
-        case 110803:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (ToPlayer()->HasSpellCooldown(110804))
-                return false;
-
-            ToPlayer()->AddSpellCooldown(110804, 0, getPreciseTime() + 4.0);
-
-            break;
-        }
         // Glyph of Avenging Wrath
         case 54927:
         {
@@ -11823,7 +11817,6 @@ Unit* Unit::GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
             if (_IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this)
                 && (!spellInfo || (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK)))
-                if (roll_chance_i((*i)->GetAmount()))
                 {
                     (*i)->GetBase()->DropCharge(AURA_REMOVE_BY_DROP_CHARGERS);
                     return magnet;
@@ -14554,11 +14547,16 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
         }
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "_IsValidAssistTarget Id %i GetReactionTo %i", bySpell ? bySpell->Id : 0, GetReactionTo(target));
     // can't assist non-friendly targets
     if (GetReactionTo(target) <= REP_NEUTRAL
         && target->GetReactionTo(this) <= REP_NEUTRAL
         && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_TREAT_AS_RAID_UNIT)))
         return false;
+
+    //Check for pets(need for Wild Mushroom)
+    if(target->GetOwner() == this)
+        return true;
 
     // PvP case
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
@@ -17527,6 +17525,8 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ProcDamageAndSpell: procSpell %u procTriggered %u procFlag %u procExtra %u isVictim %u", procSpell ? procSpell->Id : 0, procTriggered.size(), procFlag, procExtra, isVictim);
+
     // Nothing found
     if (procTriggered.empty())
         return;
@@ -18953,24 +18953,15 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 break;
                 case SPELL_TRIGGER_UPDATE_DUR: //5
                 {
-                    if (itr->aura)
+                    if(itr->aura > 0 && !_targetAura->HasAura(itr->aura))
                     {
-                        if (itr->aura > 0)
-                        {
-                            if (!HasAura(itr->aura))
-                            {
-                                check = true;
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            if (HasAura(-(itr->aura)))
-                            {
-                                check = true;
-                                continue;
-                            }
-                        }
+                        check = true;
+                        continue;
+                    }
+                    if(itr->aura < 0 && _targetAura->HasAura(abs(itr->aura)))
+                    {
+                        check = true;
+                        continue;
                     }
 
                     if (itr->spell_trigger > 0)
