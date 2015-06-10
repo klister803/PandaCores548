@@ -1000,7 +1000,13 @@ void Unit::UpdateMeleeHastMod()
     for (uint8 i = BASE_ATTACK; i < RANGED_ATTACK; ++i)
         CalcAttackTimePercentMod(WeaponAttackType(i), value);
 
-    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE);
+    Unit::AuraEffectList const& CooldownByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE);
+    for (Unit::AuraEffectList::const_iterator itr = CooldownByMeleeHaste.begin(); itr != CooldownByMeleeHaste.end(); ++itr)
+    {	
+        (*itr)->SetCanBeRecalculated(true);
+        (*itr)->RecalculateAmount(this);
+    }
+    Unit::AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE);
     for (Unit::AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
     {	
         (*itr)->SetCanBeRecalculated(true);

@@ -950,6 +950,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                     break;
             }
         }
+        case SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE:
         case SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE:
         {
             switch (GetId())
@@ -1928,7 +1929,7 @@ void AuraEffect::CalculateSpellMod()
                                 m_spellmod->spellId = GetId();
                                 m_spellmod->mask[1] = 0x0010;
                             }
-                            m_spellmod->value = GetAmount()/7;
+                            m_spellmod->value = GetAmount() / 7;
                         }
                         break;
                     }
@@ -1937,7 +1938,7 @@ void AuraEffect::CalculateSpellMod()
                     break;
             }
             break;
-        case SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE:
+
         case SPELL_AURA_ADD_FLAT_MODIFIER:
         case SPELL_AURA_ADD_PCT_MODIFIER:
         {
@@ -1947,7 +1948,24 @@ void AuraEffect::CalculateSpellMod()
                 m_spellmod->op = SpellModOp(GetMiscValue());
                 ASSERT(m_spellmod->op < MAX_SPELLMOD);
 
-                m_spellmod->type = GetAuraType() == SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE ? SPELLMOD_PCT: SpellModType(GetAuraType());    // SpellModType value == spell aura types
+                m_spellmod->type = SpellModType(GetAuraType());    // SpellModType value == spell aura types
+                m_spellmod->spellId = GetId();
+                m_spellmod->mask = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).SpellClassMask;
+                m_spellmod->charges = GetBase()->GetCharges();
+            }
+            m_spellmod->value = GetAmount();
+            break;
+        }
+        case SPELL_AURA_MOD_SPELL_COOLDOWN_BY_MELEE_HASTE:
+        case SPELL_AURA_MOD_SPELL_GDC_BY_MELEE_HASTE:
+        {
+            if (!m_spellmod)
+            {
+                m_spellmod = new SpellModifier(GetBase());
+                m_spellmod->op = SpellModOp(GetMiscValue());
+                ASSERT(m_spellmod->op < MAX_SPELLMOD);
+
+                m_spellmod->type = SPELLMOD_PCT;    // SpellModType value == spell aura types
                 m_spellmod->spellId = GetId();
                 m_spellmod->mask = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).SpellClassMask;
                 m_spellmod->charges = GetBase()->GetCharges();

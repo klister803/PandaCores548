@@ -23497,6 +23497,9 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
                 if (mod->value && apply)
                     AddPct(val, mod->value);
 
+                if (mod->op == SPELLMOD_GLOBAL_COOLDOWN && val < 0.666666666f)
+                    val = 0.666666666f;
+
                 data << float(val);
                 data << uint8(eff);
                 ++modTypeCount;
