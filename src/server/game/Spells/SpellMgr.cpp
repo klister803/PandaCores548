@@ -5124,6 +5124,14 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetB = 0;
                     break;
                 //Thok Bloodthirsty
+                case 144067: //Blood Frenzy Knock Back
+                    spellInfo->Effects[0].TargetA = 25;
+                    spellInfo->Effects[0].TargetB = 15;
+                    spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(27);//50yards
+                    spellInfo->Effects[1].TargetA = 25;
+                    spellInfo->Effects[1].TargetB = 15;
+                    spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(27);//50yards
+                    break;
                 case 147607: //Cannon Ball AT Dmg
                     spellInfo->Effects[0].TargetA = 25;
                     spellInfo->Effects[0].TargetB = 0;

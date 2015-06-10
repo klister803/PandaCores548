@@ -240,6 +240,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_ONE_ACID: 
                 case ACTION_PHASE_ONE_FROST: 
                 case ACTION_PHASE_ONE_FIRE:
+                    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                     events.Reset();
                     phasetwo = false;
                     me->StopMoving();
@@ -298,6 +300,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     }
                     break;
                 case ACTION_PHASE_TWO:
+                    me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                     events.Reset();
                     events.ScheduleEvent(EVENT_SHOCK_BLAST, 3000);
                     if (instance)
@@ -312,7 +316,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
-                    events.ScheduleEvent(EVENT_FIXATE, 1000);
+                    events.ScheduleEvent(EVENT_FIXATE, 5000);
                     break;
                 case ACTION_FIXATE:
                     me->InterruptNonMeleeSpells(true);
