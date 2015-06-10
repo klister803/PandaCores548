@@ -490,6 +490,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 DespawnObjects();
                 if (instance)
                 {
+                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
