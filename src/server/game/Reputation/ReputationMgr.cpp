@@ -573,7 +573,7 @@ void ReputationMgr::LoadFromDB(PreparedQueryResult result)
                     SetAtWar(faction, true);
 
                 // enable war on faction Oracles/Frenzyheart Tribe
-                if (GetRank(factionEntry) <= REP_HOSTILE && (sFactionStore.LookupEntry(1104) || sFactionStore.LookupEntry(1105)))
+                if (GetRank(factionEntry) <= REP_HOSTILE && (factionEntry->ID == 1104 || factionEntry->ID == 1105))
                     faction->Flags |= FACTION_FLAG_AT_WAR;
 
                 // reset changed flag if values similar to saved in DB
