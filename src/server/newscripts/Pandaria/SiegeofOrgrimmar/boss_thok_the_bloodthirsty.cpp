@@ -540,8 +540,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (!pllist.empty())
                 {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        if ((*itr)->GetGUID() != jvGuid || !(*itr)->HasAura(SPELL_UNLOCKING))
-                            fpllist.push_back(*itr);
+                        if (!(*itr)->HasAura(SPELL_UNLOCKING))
+                            if ((*itr)->GetGUID() != jvGuid)
+                                fpllist.push_back(*itr);
 
                     if (!fpllist.empty())
                     {
