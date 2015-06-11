@@ -519,7 +519,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (!pllist.empty())
                 {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        if ((*itr)->GetGUID() != jvGuid)
+                        if ((*itr)->GetGUID() != jvGuid && !(*itr)->HasAura(SPELL_UNLOCKING))
                             fpllist.push_back(*itr);
 
                     if (!fpllist.empty())
@@ -590,6 +590,9 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (!UpdateVictim())
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())

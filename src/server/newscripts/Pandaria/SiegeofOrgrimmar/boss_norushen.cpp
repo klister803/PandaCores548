@@ -999,12 +999,14 @@ public:
         {
             //Summon NPC_RESIDUAL_CORRUPTION by not existent spell 145522
             Unit* owner = me->GetAnyOwner();
+
             if (!owner)
                 return;
 
-            if (Creature* rc = owner->SummonCreature(NPC_RESIDUAL_CORRUPTION, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+            if (Creature* n = me->FindNearestCreature(NPC_NORUSHEN, 150.0f, true))
             {
-                rc->CastSpell(rc, 145074, true);
+                if (Creature* rc = n->SummonCreature(NPC_RESIDUAL_CORRUPTION, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
+                    rc->CastSpell(rc, 145074, true);
             }
         }
        
