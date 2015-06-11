@@ -337,20 +337,14 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         kj->AI()->DoZoneInCombat(kj, 250.0f);
                         jGuid = kj->GetGUID();
                     }
-                    events.ScheduleEvent(EVENT_FIXATE, 1000);
+                    events.ScheduleEvent(EVENT_FIXATE, 2000);
                     break;
                 case ACTION_FIXATE:
                     if (!me->HasAura(SPELL_FIXATE_PR))
                         events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
-                    events.ScheduleEvent(EVENT_MOVING, 3000);
-                    break;
-                case ACTION_DETECT_EXPLOIT:
-                    me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
-                    if (Player* pl = me->GetPlayer(*me, fplGuid))
-                        if (pl->isAlive() && pl->HasAura(SPELL_FIXATE_PL))
-                            pl->Kill(pl, true);
+                    events.ScheduleEvent(EVENT_MOVING, 2000);
                     break;
                 }
             }
@@ -546,7 +540,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 if (!pllist.empty())
                 {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
-                        if ((*itr)->GetGUID() != jvGuid && !(*itr)->HasAura(SPELL_UNLOCKING))
+                        if ((*itr)->GetGUID() != jvGuid || !(*itr)->HasAura(SPELL_UNLOCKING))
                             fpllist.push_back(*itr);
 
                     if (!fpllist.empty())
@@ -1118,7 +1112,6 @@ public:
             {
                 if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
                 {
-                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
