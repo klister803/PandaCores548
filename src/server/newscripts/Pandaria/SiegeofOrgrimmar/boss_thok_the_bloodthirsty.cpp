@@ -515,7 +515,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             me->Attack(pl, true);
                             me->GetMotionMaster()->MoveChase(pl);
                             if (!me->HasAura(SPELL_SWIRL_SEARCHER))
-                                me->CastSpell(me, SPELL_SWIRL_SEARCHER, true);
+                                me->AddAura(SPELL_SWIRL_SEARCHER, me);
                         }
                         else
                             EnterEvadeMode();
