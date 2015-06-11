@@ -509,13 +509,12 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
                         {
+                            if (!me->HasAura(SPELL_SWIRL_SEARCHER))
+                                me->AddAura(SPELL_SWIRL_SEARCHER, me);
                             me->AddThreat(pl, 50000000.0f);
-                            me->ClearUnitState(UNIT_STATE_CASTING);
                             me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                             me->Attack(pl, true);
                             me->GetMotionMaster()->MoveChase(pl);
-                            if (!me->HasAura(SPELL_SWIRL_SEARCHER))
-                                me->AddAura(SPELL_SWIRL_SEARCHER, me);
                         }
                         else
                             EnterEvadeMode();
@@ -1108,6 +1107,7 @@ public:
             if (GetCaster() && GetCaster()->ToCreature())
             {
                 GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
+                me->ClearUnitState(UNIT_STATE_CASTING);
                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_START_FIXATE);
             }
         }
