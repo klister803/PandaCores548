@@ -1107,7 +1107,7 @@ public:
             if (GetCaster() && GetCaster()->ToCreature())
             {
                 GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
-                me->ClearUnitState(UNIT_STATE_CASTING);
+                GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_START_FIXATE);
             }
         }
