@@ -158,8 +158,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             }
             
             InstanceScript* instance;
-            uint64 fplGuid;
-            uint64 pGuid;
+            uint64 fplGuid, jGuid, pGuid;
             uint32 enrage;
             uint8 phasecount;
             bool phasetwo;
@@ -178,8 +177,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
-                fplGuid = 0;
-                pGuid = 0;
+                fplGuid = 0;  //fixate player Guid
+                jGuid = 0;    //jailer Guid
+                pGuid = 0;    //prisoner Guid
                 phasecount = 0;
                 phasetwo = false;
                 enrage = 0;
@@ -201,6 +201,16 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     for (std::list<AreaTrigger*>::const_iterator itr = atlist.begin(); itr != atlist.end(); itr++)
                         (*itr)->RemoveFromWorld();
+                }
+            }
+
+            //Debug (for testing)
+            void SpellHit(Unit* caster, SpellInfo const *spell)
+            {
+                if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
+                {
+                    me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
+                    me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
             }
 
@@ -316,17 +326,15 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->SetPower(POWER_ENERGY, 0);
                     DoCast(me, SPELL_BLOOD_FRENZY_KB, true);
                     DoCast(me, SPELL_BLOOD_FRENZY, true);
+                    if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
+                    {
+                        kj->AI()->DoZoneInCombat(kj, 250.0f);
+                        jGuid = kj->GetGUID();
+                    }
                     events.ScheduleEvent(EVENT_FIXATE, 5000);
                     break;
                 case ACTION_FIXATE:
-                    me->InterruptNonMeleeSpells(true);
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
-                    {
-                        DoCast(target, SPELL_FIXATE_PL);
-                        fplGuid = target->GetGUID();
-                    }
-                    else
-                        EnterEvadeMode();
+                    events.ScheduleEvent(EVENT_FIXATE, 500);
                     break;
                 case ACTION_DETECT_EXPLOIT:
                     me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
@@ -465,23 +473,63 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break; 
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                        if (!GetJailerVictimGuid())
                         {
-                            DoCast(target, SPELL_FIXATE_PL);
-                            fplGuid = target->GetGUID();
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
+                            {
+                                DoCast(target, SPELL_FIXATE_PL);
+                                fplGuid = target->GetGUID();
+                            }
                         }
                         else
                         {
-                            EnterEvadeMode();
-                            return;
+                            if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
+                            {
+                                DoCast(pl, SPELL_FIXATE_PL);
+                                fplGuid = pl->GetGUID();
+                            }
+                            else
+                                EnterEvadeMode();
                         }
-                        if (Creature* kj = me->SummonCreature(NPC_KORKRON_JAILER, kjspawnpos))
-                            kj->AI()->DoZoneInCombat(kj, 250.0f);
                         break;
                     }
                 }
                 if (!phasetwo)
                     DoMeleeAttackIfReady();
+            }
+
+            uint64 GetJailerVictimGuid()
+            {
+                if (Creature* kj = me->GetCreature(*me, jGuid))
+                {
+                    if (kj->isAlive() && kj->isInCombat())
+                        return kj->getVictim() ? kj->getVictim()->GetGUID() : 0;
+                }
+                return 0;
+            }
+
+            uint64 GetFixateTargetGuid()
+            {
+                std::list<Player*> pllist;
+                std::list<Player*> fpllist;
+                pllist.clear();
+                fpllist.clear();
+                GetPlayerListInGrid(pllist, me, 150.0f);
+                uint64 jvGuid = GetJailerVictimGuid();
+                if (!pllist.empty())
+                {
+                    for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        if ((*itr)->GetGUID() != jvGuid)
+                            fpllist.push_back(*itr);
+
+                    if (!fpllist.empty())
+                    {
+                        std::list<Player*>::const_iterator Itr = fpllist.begin();
+                        std::advance(Itr, urand(0, fpllist.size() - 1));
+                        return (*Itr)->GetGUID();
+                    }
+                }
+                return 0;
             }
 
             void JustDied(Unit* /*killer*/)
