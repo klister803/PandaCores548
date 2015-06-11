@@ -48,6 +48,7 @@ enum eSpells
     SPELL_BLOOD_FRENZY_KB    = 144067, 
     SPELL_FIXATE_PL          = 143445,
     SPELL_FIXATE_IM          = 146540,
+    SPELL_FIXATE_PR          = 146581,
 
     SPELL_ENRAGE_KJ          = 145974,
     SPELL_UNLOCKING          = 146589, 
@@ -91,7 +92,8 @@ enum Events
     EVENT_PRE_Y_CHARGE       = 17,
     EVENT_VAMPIRIC_FRENZY    = 18,
     EVENT_R_WATERS           = 19,
-    EVENT_EAT_PRISONER       = 20,
+    EVENT_KILL_PRISONER      = 20,
+    EVENT_MOVING             = 21,
 };
 
 enum Action
@@ -101,8 +103,9 @@ enum Action
     ACTION_PHASE_ONE_FROST   = 3,
     ACTION_PHASE_ONE_FIRE    = 4,
     ACTION_FIXATE            = 5,
+    ACTION_START_FIXATE      = 6,
 
-    ACTION_FREEDOM           = 6,
+    ACTION_FREEDOM           = 7,
 };
 
 uint32 prisonersentry[3] =
@@ -234,8 +237,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->InterruptNonMeleeSpells(true);
                     me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
-                    if (instance)
-                        instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    if (Creature* p = me->GetCreature(*me, pGuid))
+                        DoCast(p, SPELL_FIXATE_PR, true);
+                    instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
                     me->StopMoving();
@@ -333,10 +337,14 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         kj->AI()->DoZoneInCombat(kj, 250.0f);
                         jGuid = kj->GetGUID();
                     }
-                    events.ScheduleEvent(EVENT_FIXATE, 5000);
+                    events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_FIXATE:
-                    events.ScheduleEvent(EVENT_FIXATE, 3000);
+                    if (!me->HasAura(SPELL_FIXATE_PR))
+                        events.ScheduleEvent(EVENT_FIXATE, 1000);
+                    break;
+                case ACTION_START_FIXATE:
+                    events.ScheduleEvent(EVENT_MOVING, 3000);
                     break;
                 case ACTION_DETECT_EXPLOIT:
                     me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
@@ -357,7 +365,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_GO_TO_PRISONER, 500);
                         break;
                     case 1:
-                        events.ScheduleEvent(EVENT_EAT_PRISONER, 3000);
+                        events.ScheduleEvent(EVENT_KILL_PRISONER, 3000);
                         break;
                     }       
                 }
@@ -457,9 +465,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break; 
-                    case EVENT_EAT_PRISONER:
+                    case EVENT_KILL_PRISONER:
                         if (Creature* pr = me->GetCreature(*me, pGuid))
                         {
+                            me->RemoveAurasDueToSpell(SPELL_FIXATE_PR);
                             pr->Kill(pr, true);
                             switch (pr->GetEntry())
                             {
@@ -496,6 +505,20 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             else
                                 EnterEvadeMode();
                         }
+                        break;
+                    case EVENT_MOVING:
+                        if (Player* pl = me->GetPlayer(*me, fplGuid))
+                        {
+                            me->AddThreat(pl, 50000000.0f);
+                            me->ClearUnitState(UNIT_STATE_CASTING);
+                            me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+                            me->Attack(pl, true);
+                            me->GetMotionMaster()->MoveChase(pl);
+                            if (!me->HasAura(SPELL_SWIRL_SEARCHER))
+                                me->CastSpell(me, SPELL_SWIRL_SEARCHER, true);
+                        }
+                        else
+                            EnterEvadeMode();
                         break;
                     }
                 }
@@ -1082,16 +1105,10 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget() && GetCaster())
+            if (GetCaster() && GetCaster()->ToCreature())
             {
-                if (!GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
-                    GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
                 GetCaster()->CastSpell(GetCaster(), SPELL_FIXATE_IM, true);
-                GetCaster()->AddThreat(GetTarget(), 50000000.0f);
-                GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
-                GetCaster()->ToCreature()->SetReactState(REACT_AGGRESSIVE);
-                GetCaster()->Attack(GetTarget(), true);
-                GetCaster()->GetMotionMaster()->MoveChase(GetTarget());
+                GetCaster()->ToCreature()->AI()->DoAction(ACTION_START_FIXATE);
             }
         }
 
