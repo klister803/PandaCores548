@@ -91,6 +91,7 @@ enum Events
     EVENT_PRE_Y_CHARGE       = 17,
     EVENT_VAMPIRIC_FRENZY    = 18,
     EVENT_R_WATERS           = 19,
+    EVENT_EAT_PRISONER       = 20,
 };
 
 enum Action
@@ -118,7 +119,7 @@ Position fpos[3] =
     {1220.41f, -5045.36f, -290.4579f, 4.5030f},
 };
 
-Position kjspawnpos = {1173.41f, -5130.74f, -289.9429f, 0.6028f};
+Position kjspawnpos = {1285.03f, -5059.10f, -290.9505f, 3.6988f}; 
 Position cpos = {1208.61f, -5106.27f, -289.939f, 0.526631f};
 
 Position ccbatspawnpos[7] =
@@ -209,6 +210,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
                 {
+                    me->RemoveAurasDueToSpell(SPELL_BLOODIED);
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
@@ -334,7 +336,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     events.ScheduleEvent(EVENT_FIXATE, 5000);
                     break;
                 case ACTION_FIXATE:
-                    events.ScheduleEvent(EVENT_FIXATE, 500);
+                    events.ScheduleEvent(EVENT_FIXATE, 3000);
                     break;
                 case ACTION_DETECT_EXPLOIT:
                     me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
@@ -355,23 +357,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         events.ScheduleEvent(EVENT_GO_TO_PRISONER, 500);
                         break;
                     case 1:
-                        if (Creature* pr = me->GetCreature(*me, pGuid))
-                        {
-                            pr->Kill(pr, true);
-                            switch (pr->GetEntry())
-                            {
-                            case NPC_AKOLIK:
-                                DoAction(ACTION_PHASE_ONE_ACID);
-                                break;
-                            case NPC_MONTAK:
-                                DoAction(ACTION_PHASE_ONE_FIRE);
-                                break;
-                            case NPC_WATERSPEAKER_GORAI: 
-                                DoAction(ACTION_PHASE_ONE_FROST);
-                                break;
-                            }
-                            pGuid = 0;
-                        }
+                        events.ScheduleEvent(EVENT_EAT_PRISONER, 3000);
                         break;
                     }       
                 }
@@ -471,6 +457,25 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break; 
+                    case EVENT_EAT_PRISONER:
+                        if (Creature* pr = me->GetCreature(*me, pGuid))
+                        {
+                            pr->Kill(pr, true);
+                            switch (pr->GetEntry())
+                            {
+                            case NPC_AKOLIK:
+                                DoAction(ACTION_PHASE_ONE_ACID);
+                                break;
+                            case NPC_MONTAK:
+                                DoAction(ACTION_PHASE_ONE_FIRE);
+                                break;
+                            case NPC_WATERSPEAKER_GORAI:
+                                DoAction(ACTION_PHASE_ONE_FROST);
+                                break;
+                            }
+                            pGuid = 0;
+                        }
+                        break;
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
                         if (!GetJailerVictimGuid())
