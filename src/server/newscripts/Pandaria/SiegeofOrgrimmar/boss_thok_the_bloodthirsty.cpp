@@ -237,10 +237,10 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     findtargets = 0;
                     pGuid = Guid;
                     me->InterruptNonMeleeSpells(true);
-                    if (Creature* prisoner = me->GetCreature(*me, pGuid))
-                        DoCast(prisoner, SPELL_FIXATE_PR, true);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
+                    if (Creature* prisoner = me->GetCreature(*me, pGuid))
+                        DoCast(prisoner, SPELL_FIXATE_PR, true);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
                     me->StopMoving();
@@ -1121,14 +1121,17 @@ public:
         {
             if (GetTarget() && GetCaster())
             {
-                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && !GetCaster()->HasAura(SPELL_FIXATE_PR))
-                {
-                    GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
-                    GetCaster()->AttackStop();
-                    GetCaster()->StopMoving();
-                    GetCaster()->GetMotionMaster()->Clear(false);
-                    GetCaster()->getThreatManager().resetAllAggro();
-                    GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
+                if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
+                { 
+                    if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && !GetCaster()->HasAura(SPELL_FIXATE_PR))
+                    {
+                        GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
+                        GetCaster()->AttackStop();
+                        GetCaster()->StopMoving();
+                        GetCaster()->GetMotionMaster()->Clear(false);
+                        GetCaster()->getThreatManager().resetAllAggro();
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
+                    }
                 }
             }
         }
