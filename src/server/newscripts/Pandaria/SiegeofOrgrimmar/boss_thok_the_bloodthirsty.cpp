@@ -502,8 +502,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
                         {
-                            if (!me->HasAura(SPELL_SWIRL_SEARCHER))
-                                DoCast(me, SPELL_SWIRL_SEARCHER, true);
+                            DoCast(me, SPELL_SWIRL_SEARCHER, true);
                             me->AddThreat(pl, 50000000.0f);
                             me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                             me->Attack(pl, true);
@@ -1111,6 +1110,7 @@ public:
             {
                 if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
                 {
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
