@@ -318,6 +318,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 case ACTION_PHASE_TWO:
                     me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
                     me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                    phasetwo = true;
                     events.Reset();
                     events.ScheduleEvent(EVENT_SHOCK_BLAST, 3000);
                     if (instance)

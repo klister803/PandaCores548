@@ -1038,7 +1038,7 @@ class spell_swirl_searcher : public SpellScriptLoader
                     case NPC_THOK:
                         if (GetHitUnit()->ToPlayer())
                         {
-                            if (GetCaster()->GetDistance(GetHitUnit()) <= 8.0f)
+                            if (GetCaster()->GetDistance(GetHitUnit()) <= 12.0f)
                                 GetHitUnit()->Kill(GetHitUnit(), true);
                         }
                         break;
