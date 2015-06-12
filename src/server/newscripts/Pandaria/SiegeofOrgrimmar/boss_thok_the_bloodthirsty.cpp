@@ -164,6 +164,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             InstanceScript* instance;
             uint64 fplGuid, jGuid, pGuid;
             uint32 enrage;
+            uint32 findtargets;
             uint8 phasecount;
             bool phasetwo;
 
@@ -172,7 +173,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 _Reset();
                 DespawnObjects();
                 me->SetReactState(REACT_DEFENSIVE);
-                me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                 me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                 me->RemoveAurasDueToSpell(SPELL_ACCELERATION);
                 me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
@@ -181,6 +181,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
+                findtargets = 0;
                 fplGuid = 0;  
                 jGuid = 0;   
                 pGuid = 0;    
@@ -233,12 +234,12 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 if (type == 2 && instance)
                 {
+                    findtargets = 0;
                     pGuid = Guid;
                     me->InterruptNonMeleeSpells(true);
-                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
-                    me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     if (Creature* prisoner = me->GetCreature(*me, pGuid))
                         DoCast(prisoner, SPELL_FIXATE_PR, true);
+                    me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
@@ -263,7 +264,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->StopMoving();
                     me->GetMotionMaster()->Clear(false);
                     me->getThreatManager().resetAllAggro();
-                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY);
                     me->RemoveAurasDueToSpell(SPELL_BLOOD_FRENZY_TE);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
@@ -342,17 +342,12 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     break;
                 //Special actions
                 case ACTION_FIXATE:
+                    findtargets = 0;
                     if (!me->HasAura(SPELL_FIXATE_PR))
                         events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
                     events.ScheduleEvent(EVENT_MOVING, 2000);
-                    break;
-                case ACTION_DETECT_EXPLOIT:
-                    me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
-                    if (Player* pl = me->GetPlayer(*me, fplGuid))
-                        if (pl->isAlive() && pl->HasAura(SPELL_FIXATE_PL))
-                            pl->Kill(pl, true);
                     break;
                 }
             }
@@ -377,6 +372,25 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+
+                if (findtargets)
+                {
+                    if (findtargets <= diff)
+                    {
+                        std::list<Player*> plist;
+                        plist.clear();
+                        GetPlayerListInGrid(plist, me, 10.0f);
+                        if (!plist.empty())
+                        {
+                            for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
+                                if (me->isInFront(*itr, 2.0f) && me->GetDistance(*itr) <= 12.0f)
+                                    (*itr)->Kill(*itr, true);
+                        }
+                        findtargets = 700;
+                    }
+                    else
+                        findtargets -= diff;
+                }
 
                 if (enrage)
                 {
@@ -502,11 +516,11 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
                         {
-                            DoCast(me, SPELL_SWIRL_SEARCHER, true);
                             me->AddThreat(pl, 50000000.0f);
                             me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                             me->Attack(pl, true);
                             me->GetMotionMaster()->MoveChase(pl);
+                            findtargets = 700;
                         }
                         else
                             EnterEvadeMode();
@@ -557,7 +571,6 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 DespawnObjects();
                 if (instance)
                 {
-                    me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_BLOODIED);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLOCKING);
@@ -1108,9 +1121,8 @@ public:
         {
             if (GetTarget() && GetCaster())
             {
-                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && GetCaster()->HasAura(SPELL_SWIRL_SEARCHER))
+                if (GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY) && !GetCaster()->HasAura(SPELL_FIXATE_PR))
                 {
-                    GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
                     GetCaster()->AttackStop();
                     GetCaster()->StopMoving();
