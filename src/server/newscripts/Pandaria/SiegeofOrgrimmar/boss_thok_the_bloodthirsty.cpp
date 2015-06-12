@@ -343,8 +343,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 //Special actions
                 case ACTION_FIXATE:
                     findtargets = 0;
-                    if (!me->HasAura(SPELL_FIXATE_PR))
-                        events.ScheduleEvent(EVENT_FIXATE, 1000);
+                    events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
                     events.ScheduleEvent(EVENT_MOVING, 2000);
@@ -505,16 +504,13 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
-                        if (!me->HasAura(SPELL_FIXATE_PR))
+                        if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
                         {
-                            if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
-                            {
-                                DoCast(pl, SPELL_FIXATE_PL);
-                                fplGuid = pl->GetGUID();
-                            }
-                            else
-                                EnterEvadeMode();
+                            DoCast(pl, SPELL_FIXATE_PL);
+                            fplGuid = pl->GetGUID();
                         }
+                        else
+                            EnterEvadeMode();
                         break;
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
