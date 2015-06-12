@@ -71,7 +71,7 @@ enum Events
     EVENT_FEARSOME_ROAR      = 1,
     EVENT_TAIL_LASH          = 2,
     EVENT_SHOCK_BLAST        = 3,
-    //Extra event
+    //Extra events
     EVENT_ACID_BREATH        = 4,
     EVENT_CORROSIVE_BLOOD    = 5,
     //
@@ -80,20 +80,21 @@ enum Events
     //
     EVENT_SCORCHING_BREATH   = 8,
     EVENT_BURNING_BLOOD      = 9,
+    //Special events
     EVENT_GO_TO_PRISONER     = 10,
     EVENT_FIXATE             = 11,
+    EVENT_KILL_PRISONER      = 12,
+    EVENT_MOVING             = 13,
 
     //Summon events
-    EVENT_ENRAGE_KJ          = 12,
-    EVENT_MOVE_TO_CENTER     = 13,
-    EVENT_MOVE_TO_THOK       = 14,
-    EVENT_CHECK_TPLAYER      = 15,
-    EVENT_Y_CHARGE           = 16,
-    EVENT_PRE_Y_CHARGE       = 17,
-    EVENT_VAMPIRIC_FRENZY    = 18,
-    EVENT_R_WATERS           = 19,
-    EVENT_KILL_PRISONER      = 20,
-    EVENT_MOVING             = 21,
+    EVENT_ENRAGE_KJ          = 14,
+    EVENT_MOVE_TO_CENTER     = 15,
+    EVENT_MOVE_TO_THOK       = 16,
+    EVENT_CHECK_TPLAYER      = 17,
+    EVENT_Y_CHARGE           = 18,
+    EVENT_PRE_Y_CHARGE       = 19,
+    EVENT_VAMPIRIC_FRENZY    = 20,
+    EVENT_R_WATERS           = 21,
 };
 
 enum Action
@@ -104,7 +105,6 @@ enum Action
     ACTION_PHASE_ONE_FIRE    = 4,
     ACTION_FIXATE            = 5,
     ACTION_START_FIXATE      = 6,
-
     ACTION_FREEDOM           = 7,
 };
 
@@ -181,9 +181,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
-                fplGuid = 0;  //fixate player Guid
-                jGuid = 0;    //jailer Guid
-                pGuid = 0;    //prisoner Guid
+                fplGuid = 0;  
+                jGuid = 0;   
+                pGuid = 0;    
                 phasecount = 0;
                 phasetwo = false;
                 enrage = 0;
@@ -237,8 +237,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->InterruptNonMeleeSpells(true);
                     me->RemoveAurasDueToSpell(SPELL_SWIRL_SEARCHER);
                     me->RemoveAurasDueToSpell(SPELL_FIXATE_PL);
-                    if (Creature* p = me->GetCreature(*me, pGuid))
-                        DoCast(p, SPELL_FIXATE_PR, true);
+                    if (Creature* prisoner = me->GetCreature(*me, pGuid))
+                        DoCast(prisoner, SPELL_FIXATE_PR, true);
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_PL);
                     me->SetReactState(REACT_PASSIVE);
                     me->AttackStop();
@@ -339,12 +339,19 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     }
                     events.ScheduleEvent(EVENT_FIXATE, 2000);
                     break;
+                //Special actions
                 case ACTION_FIXATE:
                     if (!me->HasAura(SPELL_FIXATE_PR))
                         events.ScheduleEvent(EVENT_FIXATE, 1000);
                     break;
                 case ACTION_START_FIXATE:
                     events.ScheduleEvent(EVENT_MOVING, 2000);
+                    break;
+                case ACTION_DETECT_EXPLOIT:
+                    me->MonsterTextEmote("Warning: detect exploit, target it will be destroyed", 0, true);
+                    if (Player* pl = me->GetPlayer(*me, fplGuid))
+                        if (pl->isAlive() && pl->HasAura(SPELL_FIXATE_PL))
+                            pl->Kill(pl, true);
                     break;
                 }
             }
@@ -459,6 +466,8 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                             DoCast(target, SPELL_BURNING_BLOOD);
                         events.ScheduleEvent(EVENT_BURNING_BLOOD, 4000);
                         break; 
+                    //
+                    //Special events
                     case EVENT_KILL_PRISONER:
                         if (Creature* pr = me->GetCreature(*me, pGuid))
                         {
@@ -481,24 +490,13 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
-                        if (!GetJailerVictimGuid())
+                        if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150.0f, true))
-                            {
-                                DoCast(target, SPELL_FIXATE_PL);
-                                fplGuid = target->GetGUID();
-                            }
+                            DoCast(pl, SPELL_FIXATE_PL);
+                            fplGuid = pl->GetGUID();
                         }
                         else
-                        {
-                            if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
-                            {
-                                DoCast(pl, SPELL_FIXATE_PL);
-                                fplGuid = pl->GetGUID();
-                            }
-                            else
-                                EnterEvadeMode();
-                        }
+                            EnterEvadeMode();
                         break;
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
@@ -522,10 +520,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             uint64 GetJailerVictimGuid()
             {
                 if (Creature* kj = me->GetCreature(*me, jGuid))
-                {
                     if (kj->isAlive() && kj->isInCombat())
                         return kj->getVictim() ? kj->getVictim()->GetGUID() : 0;
-                }
+
                 return 0;
             }
 

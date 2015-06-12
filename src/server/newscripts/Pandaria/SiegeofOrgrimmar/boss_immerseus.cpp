@@ -1064,6 +1064,40 @@ class spell_swirl_searcher : public SpellScriptLoader
         }
 };
 
+//113762 
+class spell_swirl_searcher_base : public SpellScriptLoader
+{
+public:
+    spell_swirl_searcher_base() : SpellScriptLoader("spell_swirl_searcher_base") { }
+
+    class spell_swirl_searcher_base_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_swirl_searcher_base_AuraScript);
+
+        void OnPeriodic(AuraEffect const* aurEff)
+        {
+            if (GetCaster() && GetCaster()->ToCreature())
+            {
+                if (GetCaster()->GetEntry() == NPC_THOK)
+                {
+                    if (!GetCaster()->isMoving() && GetCaster()->HasAura(143445)) //SPELL_FIXATE_PL
+                        GetCaster()->ToCreature()->AI()->DoAction(ACTION_DETECT_EXPLOIT);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_swirl_searcher_base_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        }
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_swirl_searcher_base_AuraScript();
+        }
+    };
+};
+
 class ExactDistanceCheck
 {
     public:
@@ -1155,6 +1189,7 @@ void AddSC_boss_immerseus()
     new npc_contaminated_puddle();
     new spell_swirl();
     new spell_swirl_searcher();
+    new spell_swirl_searcher_base();
     new spell_sha_pool();
     new spell_sha_pool_p_s();
 }
