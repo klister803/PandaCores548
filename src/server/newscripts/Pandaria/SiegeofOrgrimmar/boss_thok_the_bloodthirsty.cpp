@@ -505,13 +505,16 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         break;
                     case EVENT_FIXATE:
                         me->InterruptNonMeleeSpells(true);
-                        if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
+                        if (!me->HasAura(SPELL_FIXATE_PR))
                         {
-                            DoCast(pl, SPELL_FIXATE_PL);
-                            fplGuid = pl->GetGUID();
+                            if (Player* pl = me->GetPlayer(*me, GetFixateTargetGuid()))
+                            {
+                                DoCast(pl, SPELL_FIXATE_PL);
+                                fplGuid = pl->GetGUID();
+                            }
+                            else
+                                EnterEvadeMode();
                         }
-                        else
-                            EnterEvadeMode();
                         break;
                     case EVENT_MOVING:
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
