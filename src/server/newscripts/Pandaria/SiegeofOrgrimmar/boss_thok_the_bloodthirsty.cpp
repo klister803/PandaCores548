@@ -503,7 +503,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
                         {
                             if (!me->HasAura(SPELL_SWIRL_SEARCHER))
-                                me->AddAura(SPELL_SWIRL_SEARCHER, me);
+                                DoCast(me, SPELL_SWIRL_SEARCHER, true);
                             me->AddThreat(pl, 50000000.0f);
                             me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                             me->Attack(pl, true);
