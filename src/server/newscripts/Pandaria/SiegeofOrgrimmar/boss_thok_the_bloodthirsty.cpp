@@ -209,7 +209,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
             }
 
-            //Debug (for testing)
+            /*Debug (for testing)
             void SpellHit(Unit* caster, SpellInfo const *spell)
             {
                 if (spell->Id == SPELL_BLOODIED && me->HasAura(SPELL_POWER_REGEN))
@@ -218,7 +218,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     me->RemoveAurasDueToSpell(SPELL_POWER_REGEN);
                     me->ToCreature()->AI()->DoAction(ACTION_PHASE_TWO);
                 }
-            }
+            }*/
 
             void EnterCombat(Unit* who)
             {
@@ -449,7 +449,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         if (!tlist.empty())
                         {
                             uint8 num = 0;
-                            uint8 maxnum = me->GetMap()->Is25ManRaid() ? 8 : 4;
+                            uint8 maxnum = me->GetMap()->Is25ManRaid() ? 8 : 3;
                             for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
                             {
                                 if (itr != tlist.begin())
