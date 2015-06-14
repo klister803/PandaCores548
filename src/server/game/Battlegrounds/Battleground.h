@@ -603,6 +603,8 @@ class Battleground
         void HandleTriggerBuff(uint64 go_guid);
         void SetHoliday(bool is_holiday);
 
+        void AddNameInNameList(uint32 team, const char* Name) { m_nameList[team].push_back(Name); }
+
         // TODO: make this protected:
         typedef std::vector<uint64> BGObjects;
         typedef std::vector<uint64> BGCreatures;
@@ -753,6 +755,8 @@ class Battleground
 
         // Players count by team
         uint32 m_PlayersCount[BG_TEAMS_COUNT];
+
+        std::map<uint32, std::list<const char*>> m_nameList;
 
         // Arena team ids by team
         uint32 m_GroupIds[BG_TEAMS_COUNT];

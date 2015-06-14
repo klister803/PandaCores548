@@ -1068,6 +1068,56 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
 
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Starting rated arena match!");
             arena->StartBattleground();
+
+            if (arena->isRated())
+            {
+                const char* team1[5];
+                const char* team2[5];
+                uint8 i = 0;
+                for (std::map<uint64, PlayerQueueInfo*>::iterator itr = aTeam->Players.begin(); itr != aTeam->Players.end(); ++itr)
+                {
+                    if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+                    {
+                        arena->AddNameInNameList(aTeam->Team, player->GetName());
+                        team1[i] = player->GetName();
+                        i++;
+                    }
+                }
+
+                i = 0;
+
+                for (std::map<uint64, PlayerQueueInfo*>::iterator itr = hTeam->Players.begin(); itr != hTeam->Players.end(); ++itr)
+                {
+                    if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+                    {
+                        arena->AddNameInNameList(hTeam->Team, player->GetName());
+                        team2[i] = player->GetName();
+                        i++;
+                    }
+                }
+
+                switch (arena->GetJoinType())
+                {
+                    case 2:
+                    {
+                        sLog->outArena("START:  Arena match type: 2v2 for (%s, %s) vs (%s, %s).", team1[0], team1[1], team2[0], team2[1]);
+                        break;
+                    }
+                    case 3:
+                    {
+                        sLog->outArena("START:  Arena match type: 3v3 for (%s, %s, %s) vs (%s, %s, %s).", team1[0], team1[1], team1[2], team2[0], team2[1], team2[2]);
+                        break;
+                    }
+                    case 5:
+                    {
+                        sLog->outArena("START:  Arena match type: 5v5 for (%s, %s, %s, %s, %s) vs (%s, %s, %s, %s, %s).", team1[0], team1[1], team1[2], team1[3], team1[4], team2[0], team2[1], team2[2], team2[3], team2[4]);
+                        break;
+                    }
+                    default:
+                        sLog->outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", arena->GetJoinType(), arena->GetGroupIdByIndex(BG_TEAM_ALLIANCE), arena->GetGroupIdByIndex(BG_TEAM_HORDE));
+                        break;
+                }
+            }
         }
     }
 }

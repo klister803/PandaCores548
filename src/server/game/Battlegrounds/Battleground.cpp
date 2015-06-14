@@ -798,6 +798,7 @@ void Battleground::EndBattleground(uint32 winner)
     bool guildAwarded = false;
     uint8 aliveWinners = GetAlivePlayersCountByTeam(winner);
     std::ostringstream info;
+    
     for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
         uint32 team = itr->second.Team;
@@ -935,8 +936,58 @@ void Battleground::EndBattleground(uint32 winner)
 
     if (isArena() && isRated() && winner != WINNER_NONE)
     {
-        sLog->outArena("match Type: %u --- Winner: old rating: %u  --- Loser: old rating: %u| DETAIL: %s", 
-            m_JoinType, GetMatchmakerRating(winner), GetMatchmakerRating(GetOtherTeam(winner)), info.str().c_str());
+        const char* winnerTeam[5];
+        const char*  loserTeam[5];
+        uint8 w = 0;
+        uint8 l = 0;
+
+        for (std::list<const char*>::iterator itr = m_nameList[winner].begin(); itr != m_nameList[winner].end(); ++itr)
+            if (const char* winnerName = (*itr))
+            {
+                winnerTeam[w] = winnerName;
+                w++;
+            }
+
+        for (std::list<const char*>::iterator itr = m_nameList[GetOtherTeam(winner)].begin(); itr != m_nameList[GetOtherTeam(winner)].end(); ++itr)
+            if (const char* loserName = (*itr))
+            {
+                loserTeam[l] = loserName;
+                l++;
+            }
+
+        uint32 _arenaTimer = m_StartTime / 1000;
+        uint32 _min = _arenaTimer / 60;
+        uint32 _sec = _arenaTimer - (_min * 60);
+        const char* att = "";
+        if (m_StartTime < 75000)
+            att = "--- ATTENTION!";
+
+        switch (m_JoinType)
+        {
+            case 2:
+            {
+                sLog->outArena("FINISH: Arena match Type: 2v2 --- Winner[%s, %s]: old rating: %u --- Loser[%s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                    winnerTeam[0], winnerTeam[1], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
+                break;
+            }
+            case 3:
+            {
+                sLog->outArena("FINISH: Arena match Type: 3v3 --- Winner[%s, %s, %s]: old rating: %u --- Loser[%s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                    winnerTeam[0], winnerTeam[1], winnerTeam[2], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], loserTeam[2], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
+                break;
+            }
+            case 5:
+            {
+                sLog->outArena("FINISH: Arena match Type: 5v5 --- Winner[%s, %s, %s, %s, %s]: old rating: %u --- Loser[%s, %s, %s, %s, %s]: old rating: %u --- Duration: %u min. %u sec. %s",
+                    winnerTeam[0], winnerTeam[1], winnerTeam[2], winnerTeam[3], winnerTeam[4], GetMatchmakerRating(winner), loserTeam[0], loserTeam[1], loserTeam[2], loserTeam[3], loserTeam[4], GetMatchmakerRating(GetOtherTeam(winner)), _min, _sec, att);
+                break;
+            }
+            default:
+                sLog->outArena("match Type: %u --- Winner: old rating: %u  --- Loser: old rating: %u| DETAIL: %s",
+                    m_JoinType, GetMatchmakerRating(winner), GetMatchmakerRating(GetOtherTeam(winner)), info.str().c_str());
+                break;
+        }
+        
     }
 
     sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
@@ -1134,8 +1185,6 @@ void Battleground::StartBattleground()
     // This must be done here, because we need to have already invited some players when first BG::Update() method is executed
     // and it doesn't matter if we call StartBattleground() more times, because m_Battlegrounds is a map and instance id never changes
     sBattlegroundMgr->AddBattleground(GetInstanceID(), GetTypeID(), this);
-    if (m_IsRated)
-        sLog->outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_JoinType, m_GroupIds[BG_TEAM_ALLIANCE], m_GroupIds[BG_TEAM_HORDE]);
 }
 
 void Battleground::AddPlayer(Player* player)
