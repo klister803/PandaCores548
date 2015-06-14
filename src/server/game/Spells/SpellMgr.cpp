@@ -880,7 +880,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
         }
         /// Aura must have negative or neutral(PROC_FLAG_DONE_PERIODIC only) procflags for a DOT to proc
         else if (EventProcFlag != PROC_FLAG_DONE_PERIODIC)
-            if (!(EventProcFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG)))
+            if (!(EventProcFlag & (PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_NEG | PROC_FLAG_DONE_SPELL_NONE_DMG_CLASS_NEG | PROC_FLAG_DONE_TRAP_ACTIVATION)))
                 return false;
     }
 
@@ -2802,8 +2802,8 @@ void SpellMgr::LoadSpellTriggered()
     mSpellTargetFilterMap.clear();    // need for reload case
 
     uint32 count = 0;
-    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16            17           18
-    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype`, `schoolMask` FROM `spell_trigger`");
+    //                                                    0           1                    2           3         4          5          6      7      8         9          10       11        12         13        14          15             16            17           18          19           20
+    QueryResult result = WorldDatabase.Query("SELECT `spell_id`, `spell_trigger`, `spell_cooldown`, `option`, `target`, `caster`, `targetaura`, `bp0`, `bp1`, `bp2`, `effectmask`, `aura`, `chance`, `group`, `procFlags`, `procEx`, `check_spell_id`, `addptype`, `schoolMask`, `dummyId`, `dummyEffect` FROM `spell_trigger`");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 triggered spells. DB table `spell_trigger` is empty.");
@@ -2833,18 +2833,26 @@ void SpellMgr::LoadSpellTriggered()
         int32 check_spell_id = fields[16].GetInt32();
         int32 addptype = fields[17].GetInt32();
         int32 schoolMask = fields[18].GetInt32();
+        int32 dummyId = fields[19].GetInt32();
+        int32 dummyEffect = fields[20].GetInt32();
 
         SpellInfo const* spellInfo = GetSpellInfo(abs(spell_id));
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger` does not exist", abs(spell_id));
+            sLog->outError(LOG_FILTER_SQL, "Spell_id %u listed in `spell_trigger` does not exist", abs(spell_id));
             //WorldDatabase.PExecute("DELETE FROM `spell_trigger` WHERE spell_id = %u", abs(spell_id));
             continue;
         }
         spellInfo = GetSpellInfo(abs(spell_trigger));
         if (!spellInfo)
         {
-            sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_trigger` does not exist", abs(spell_trigger));
+            sLog->outError(LOG_FILTER_SQL, "Spell_trigger %u listed in `spell_trigger` does not exist", abs(spell_trigger));
+            continue;
+        }
+        spellInfo = GetSpellInfo(abs(dummyId));
+        if (dummyId && !spellInfo)
+        {
+            sLog->outError(LOG_FILTER_SQL, "DummyId %u listed in `spell_trigger` does not exist", abs(dummyId));
             continue;
         }
 
@@ -2868,6 +2876,8 @@ void SpellMgr::LoadSpellTriggered()
         temptrigger.check_spell_id = check_spell_id;
         temptrigger.addptype = addptype;
         temptrigger.schoolMask = schoolMask;
+        temptrigger.dummyId = dummyId;
+        temptrigger.dummyEffect = dummyEffect;
         mSpellTriggeredMap[spell_id].push_back(temptrigger);
 
         ++count;
@@ -3814,6 +3824,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
+                case 34487: // Master Marksman
+                case 76659: // Mastery: Wild Quiver
                 case 137639: // Storm, Earth, and Fire
                     spellInfo->AttributesEx12 |= SPELL_ATTR12_PROC_ONLY_ON_CAST;
                     break;
@@ -3943,6 +3955,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 145640: // Chi Brew
                     spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER;
                     break;
+                case 58095: // Glyph of Mystic Shout
                 case 146631: // Glyph of Hemorrhaging Veins
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                     break;
@@ -4197,12 +4210,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 72444: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 case 72445: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
+                case 118000: // Dragon Roar
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;
                 case 64422:  // Sonic Screech (Auriaya)
                 case 122994: // Unseen Strike
                 case 117921: // Massive Attacks
-                case 118000: // Dragon Roar
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                     break;

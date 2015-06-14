@@ -354,8 +354,12 @@ class spell_pal_hand_of_protection : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 if (Unit* target = GetExplTargetUnit())
+                {
                     if (target->HasAura(SPELL_FORBEARANCE))
                         return SPELL_FAILED_TARGET_AURASTATE;
+                    if (!caster || (caster->HasUnitState(UNIT_STATE_CONTROLLED) && caster != target))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
 
                 return SPELL_CAST_OK;
             }
@@ -1563,6 +1567,39 @@ class spell_pal_exorcism : public SpellScriptLoader
         }
 };
 
+// Shield of Glory - 138242
+class spell_pal_shield_of_glory : public SpellScriptLoader
+{
+    public:
+        spell_pal_shield_of_glory() : SpellScriptLoader("spell_pal_shield_of_glory") { }
+
+        class spell_pal_shield_of_glory_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_shield_of_glory_AuraScript);
+
+            void CalculateMaxDuration(int32& duration)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(caster->HasAura(PALADIN_SPELL_DIVINE_PURPOSE))
+                        duration *= 3;
+                    else
+                        duration *= caster->GetPower(POWER_HOLY_POWER);
+                }
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_pal_shield_of_glory_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_shield_of_glory_AuraScript();
+        }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_glyph_of_avenging_wrath();
@@ -1600,4 +1637,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_glyph_of_double_jeopardy();
     new spell_pal_judgment();
     new spell_pal_exorcism();
+    new spell_pal_shield_of_glory();
 }

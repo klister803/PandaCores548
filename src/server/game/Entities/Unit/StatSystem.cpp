@@ -1599,6 +1599,12 @@ void Guardian::UpdateMaxHealth()
         multiplicator *= owner->GetTotalAuraMultiplierByMiscValueB(SPELL_AURA_MOD_PET_STATS_MODIFIER, int32(PETSPELLMOD_MAX_HP), GetEntry());
         value = owner->GetMaxHealth() * multiplicator;
 
+        UnitMods unitMod = UNIT_MOD_HEALTH;
+        value += GetModifierValue(unitMod, BASE_VALUE);
+        value *= GetModifierValue(unitMod, BASE_PCT);
+        value += GetModifierValue(unitMod, TOTAL_VALUE);
+        value *= GetModifierValue(unitMod, TOTAL_PCT);
+
         //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
     }
     else

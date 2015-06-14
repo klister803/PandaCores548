@@ -124,7 +124,9 @@ void PetAI::UpdateAI(uint32 diff)
         m_updateAlliesTimer -= diff;
 
     // me->getVictim() can't be used for check in case stop fighting, me->getVictim() clear at Unit death etc.
-    if (me->getVictim())
+    if(owner && owner->IsMounted())
+        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
+    else if (me->getVictim())
     {
         // is only necessary to stop casting, the pet must not exit combat
         if (me->getVictim()->HasCrowdControlAura(me))

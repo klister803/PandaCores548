@@ -1181,6 +1181,46 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
         }
 };
 
+// Dragon Roar - 118000
+class spell_warr_dragon_roar : public SpellScriptLoader
+{
+    public:
+        spell_warr_dragon_roar() : SpellScriptLoader("spell_warr_dragon_roar") { }
+
+        class spell_warr_dragon_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_dragon_roar_SpellScript);
+
+            void HandleOnHit()
+            {
+                uint32 count = GetSpell()->GetTargetCount();
+                int32 damage = GetHitDamage();
+                if(count >= 10)
+                    damage = damage * 5 / count;
+                else if(count >= 5)
+                    damage = damage * 0.5f;
+                else if(count >= 4)
+                    damage = damage * 0.55f;
+                else if(count >= 3)
+                    damage = damage * 0.65f;
+                else if(count >= 2)
+                    damage = damage * 0.75f;
+                SetHitDamage(damage);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_dragon_roar_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_dragon_roar_SpellScript();
+        }
+};
+
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_stampeding_shout();
@@ -1212,4 +1252,5 @@ void AddSC_warrior_spell_scripts()
     new spell_war_slam_aoe();
     new spell_war_intervene();
     new spell_warr_charge_drop_fire();
+    new spell_warr_dragon_roar();
 }

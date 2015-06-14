@@ -1128,7 +1128,12 @@ class spell_dru_savage_defense : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     if (Aura* aura = caster->GetAura(SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT))
-                        aura->SetDuration(aura->GetDuration() + 6 * IN_MILLISECONDS);
+                    {
+                        int32 newDur = aura->GetDuration() + 6 * IN_MILLISECONDS;
+                        if(newDur > aura->GetMaxDuration())
+                            aura->SetMaxDuration(newDur);
+                        aura->SetDuration(newDur);
+                    }
                     else
                         caster->CastSpell(caster, SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT, true);
                 }
@@ -3456,30 +3461,30 @@ class spell_dru_frenzied_regeneration_t16 : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_frenzied_regeneration_t16_SpellScript);
 
-            void HandleOnHit(SpellEffIndex /*effIndex*/)
+            void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
-                    if (AuraEffect const* aurEff = _player->GetAuraEffect(144879, EFFECT_0)) //Item - Druid T16 Guardian 2P Bonus
+                    if (AuraEffect const* aurEff = caster->GetAuraEffect(144879, EFFECT_0)) //Item - Druid T16 Guardian 2P Bonus
                     {
                         int32 rageused = aurEff->GetAmount() * 10;
-                        int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
-                        int32 agility = _player->GetStat(STAT_AGILITY) * 2;
-                        int32 stamina = int32(_player->GetStat(STAT_STAMINA));
-                        int32 a = (AP - agility) * GetSpellInfo()->Effects[1].BasePoints / 100;
-                        int32 b = stamina * GetSpellInfo()->Effects[2].BasePoints / 100;
+                        int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                        int32 agility = caster->GetStat(STAT_AGILITY) * 2;
+                        int32 stamina = int32(caster->GetStat(STAT_STAMINA));
+                        int32 a = (AP - agility) * 220 / 100;
+                        int32 b = stamina * 250 / 100;
 
                         int32 healAmount = int32(std::max(a, b));
                         healAmount = rageused * healAmount / 600;
 
-                        SetEffectValue(healAmount);
+                        SetHitHeal(healAmount);
                     }
                 }
             }
 
             void Register()
             {
-                OnEffectLaunchTarget += SpellEffectFn(spell_dru_frenzied_regeneration_t16_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_HEAL);
+                OnHit += SpellHitFn(spell_dru_frenzied_regeneration_t16_SpellScript::HandleOnHit);
             }
         };
 
@@ -3718,6 +3723,34 @@ class spell_dru_fortifying_brew : public SpellScriptLoader
         }
 };
 
+// Mangle - 93622
+class spell_dru_mangle : public SpellScriptLoader
+{
+    public:
+        spell_dru_mangle() : SpellScriptLoader("spell_dru_mangle") { }
+
+        class spell_dru_mangle_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_mangle_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->RemoveSpellCooldown(33878, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_mangle_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_mangle_SpellScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3790,4 +3823,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_wild_mushroom_bloom_heal();
     new spell_dru_anti_magic_shell();
     new spell_dru_fortifying_brew();
+    new spell_dru_mangle();
 }

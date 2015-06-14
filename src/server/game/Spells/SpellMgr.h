@@ -99,6 +99,7 @@ enum SpellLinkedType
     SPELL_LINK_AURA         = 2 * 200000,   // +: aura; -: immune
     SPELL_LINK_BEFORE_HIT   = 3 * 200000,
     SPELL_LINK_AURA_HIT     = 4 * 200000,
+    SPELL_LINK_BEFORE_CAST  = 5 * 200000,
     SPELL_LINK_REMOVE       = 0,
 };
 
@@ -710,6 +711,8 @@ struct SpellTriggered
     int32 check_spell_id;
     int32 addptype;
     int32 schoolMask;
+    int32 dummyId;
+    int32 dummyEffect;
 };
 
 struct SpellMountList

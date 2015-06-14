@@ -1443,10 +1443,12 @@ class spell_monk_purifying_brew : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
+                    if (caster->HasAura(145055))  // Item - Monk T16 Brewmaster 4P Bonus
+                        caster->CastSpell(caster, 145056, true);
                     caster->RemoveAura(124255);
                     caster->RemoveAura(SPELL_MONK_MODERATE_STAGGER);
                     caster->RemoveAura(SPELL_MONK_LIGHT_STAGGER);
-                    caster->RemoveAura(SPELL_MONK_LIGHT_STAGGER);
+                    caster->RemoveAura(SPELL_MONK_HEAVY_STAGGER);
                 }
             }
 
@@ -1558,14 +1560,11 @@ class spell_monk_elusive_brew : public SpellScriptLoader
                 {
                     if (Player* _player = caster->ToPlayer())
                     {
-                        if (AuraApplication* brewStacks = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW_STACKS))
-                            stackAmount = brewStacks->GetBase()->GetStackAmount();
+                        if (Aura* brewStacks = _player->GetAura(SPELL_MONK_ELUSIVE_BREW_STACKS))
+                            stackAmount = brewStacks->GetStackAmount();
 
-                        _player->AddAura(SPELL_MONK_ELUSIVE_BREW, _player);
-
-                        if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
+                        if(Aura* elusiveBrew = _player->AddAura(SPELL_MONK_ELUSIVE_BREW, _player))
                         {
-                            Aura* elusiveBrew = aura->GetBase();
                             int32 maxDuration = elusiveBrew->GetMaxDuration();
                             int32 newDuration = stackAmount * 1000;
                             elusiveBrew->SetDuration(newDuration);
@@ -1584,6 +1583,39 @@ class spell_monk_elusive_brew : public SpellScriptLoader
                 OnHit += SpellHitFn(spell_monk_elusive_brew_SpellScript::HandleOnHit);
             }
         };
+
+        class spell_monk_elusive_brew_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_elusive_brew_AuraScript);
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(caster->HasAura(138231)) // Item - Monk T15 Brewmaster 2P Bonus
+                    {
+                        if(Aura* staggering = caster->AddAura(138233, caster))
+                        {
+                            int32 newDuration = aurEff->GetBase()->GetMaxDuration();
+                            staggering->SetDuration(newDuration);
+
+                            if (newDuration > staggering->GetMaxDuration())
+                                staggering->SetMaxDuration(newDuration);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_elusive_brew_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_DODGE_PERCENT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_elusive_brew_AuraScript();
+        }
 
         SpellScript* GetSpellScript() const
         {
@@ -3241,6 +3273,51 @@ class spell_monk_disable : public SpellScriptLoader
         }
 };
 
+// Purified Healing - 145056
+class spell_monk_purified_healing : public SpellScriptLoader
+{
+    public:
+        spell_monk_purified_healing() : SpellScriptLoader("spell_monk_purified_healing") { }
+
+        class spell_monk_purified_healing_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_purified_healing_SpellScript);
+
+            void HandleHeal(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Aura* bonusAura = caster->GetAura(145055)) // Item - Monk T16 Brewmaster 4P Bonus
+                    {
+                        int32 perc = bonusAura->GetEffect(EFFECT_0)->GetAmount();
+                        int32 _amount = 0;
+                        if (Aura* staggerAura = caster->GetAura(124275))
+                            if(AuraEffect* eff = staggerAura->GetEffect(EFFECT_1))
+                                _amount += eff->GetAmount();
+                        if (Aura* staggerAura = caster->GetAura(124274))
+                            if(AuraEffect* eff = staggerAura->GetEffect(EFFECT_1))
+                                _amount += eff->GetAmount();
+                        if (Aura* staggerAura = caster->GetAura(124273))
+                            if(AuraEffect* eff = staggerAura->GetEffect(EFFECT_1))
+                                _amount += eff->GetAmount();
+                        if(_amount)
+                            SetHitHeal(CalculatePct(_amount, perc));
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_purified_healing_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_purified_healing_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_clone_cast();
@@ -3306,4 +3383,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_chi_wave();
     new spell_monk_chi_wave_dummy();
     new spell_monk_disable();
+    new spell_monk_purified_healing();
 }

@@ -74,7 +74,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         // 14 SPELL_AURA_MOD_DAMAGE_TAKEN implemented in Unit::MeleeDamageBonus and Unit::SpellDamageBonus
     &AuraEffect::HandleNoImmediateEffect,                         // 15 SPELL_AURA_DAMAGE_SHIELD    implemented in Unit::DoAttackDamage
     &AuraEffect::HandleModStealth,                                // 16 SPELL_AURA_MOD_STEALTH
-    &AuraEffect::HandleModStealthDetect,                          // 17 SPELL_AURA_MOD_DETECT
+    &AuraEffect::HandleModStealthDetect,                          // 17 SPELL_AURA_MOD_STEALTH_DETECT
     &AuraEffect::HandleModInvisibility,                           // 18 SPELL_AURA_MOD_INVISIBILITY
     &AuraEffect::HandleModInvisibilityDetect,                     // 19 SPELL_AURA_MOD_INVISIBILITY_DETECTION
     &AuraEffect::HandleNoImmediateEffect,                         // 20 SPELL_AURA_OBS_MOD_HEALTH implemented in AuraEffect::PeriodicTick
@@ -1861,6 +1861,13 @@ void AuraEffect::CalculatePeriodic(Unit* caster, bool resetPeriodicTimer /*= tru
             {
                 if (m_spellInfo->AttributesEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                     caster->ModSpellCastTime(m_spellInfo, m_amplitude);
+
+                if (m_spellInfo->AttributesEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
+                {
+                    int32 _duration = GetBase()->GetMaxDuration() * caster->GetFloatValue(UNIT_MOD_CAST_HASTE);
+                    GetBase()->SetMaxDuration(_duration);
+                    GetBase()->SetDuration(_duration);
+                }
             }
             else
             {
@@ -5319,6 +5326,12 @@ void AuraEffect::HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint
     int32 getMaxHealth = target->GetMaxHealth();
     int32 amount = GetAmount();
 
+    if(target->isPet())
+    {
+        if(target != GetCaster())
+            return;
+    }
+
     if (apply)
     {
         target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(amount), apply);
@@ -5352,6 +5365,12 @@ void AuraEffect::HandleAuraModIncreaseMaxHealth(AuraApplication const* aurApp, u
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    if(target->isPet())
+    {
+        if(target != GetCaster())
+            return;
+    }
 
     uint32 oldhealth = target->GetHealth();
     double healthPercentage = (double)oldhealth / (double)target->GetMaxHealth();
@@ -5470,6 +5489,11 @@ void AuraEffect::HandleAuraModIncreaseHealthPercent(AuraApplication const* aurAp
 
     Unit* target = aurApp->GetTarget();
 
+    if(target->isPet())
+    {
+        if(target != GetCaster())
+            return;
+    }
     // Unit will keep hp% after MaxHealth being modified if unit is alive.
     float percent = target->GetHealthPct();
 
@@ -5513,6 +5537,12 @@ void AuraEffect::HandleAuraIncreaseBaseHealthPercent(AuraApplication const* aurA
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    if(target->isPet())
+    {
+        if(target != GetCaster())
+            return;
+    }
 
     target->HandleStatModifier(UNIT_MOD_HEALTH, BASE_PCT, float(GetAmount()), apply);
 }

@@ -3702,6 +3702,7 @@ void Spell::cast(bool skipCheck)
     }
 
     CallScriptBeforeCastHandlers();
+    LinkedSpell(m_caster, m_targets.GetUnitTarget(), SPELL_LINK_BEFORE_CAST);
 
     // skip check if done already (for instant cast spells for example)
     if (!skipCheck)
@@ -3821,7 +3822,7 @@ void Spell::cast(bool skipCheck)
         m_caster->ToPlayer()->RemoveSpellMods(this, true);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 14157 || m_spellInfo->Id == 54957)
+    if (((m_spellInfo->Speed > 0.0f || m_delayMoment) && !m_spellInfo->IsChanneled() && !m_spellInfo->IsNonNeedDelay() && m_spellInfo->Id != 114157)  || m_spellInfo->AttributesEx4 & SPELL_ATTR4_UNK4 || m_spellInfo->Id == 54957)
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -6788,9 +6789,24 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (!((AttributesCustom & SPELL_ATTR0_PASSIVE) && (!m_targets.GetUnitTarget() || m_targets.GetUnitTarget() == m_caster)))
     {
         // Check explicit target for m_originalCaster - todo: get rid of such workarounds
-        SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, m_targets.GetObjectTarget(), m_targets.GetItemTarget());
-        if (castResult != SPELL_CAST_OK)
-            return castResult;
+        if (WorldObject* target = m_targets.GetObjectTarget())
+        {
+            SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, target, m_targets.GetItemTarget());
+            if (castResult != SPELL_CAST_OK)
+                return castResult;
+        }
+        else if (m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_CORPSE_MASK)
+        {
+            if (Unit* owner = m_caster->GetAnyOwner())
+                if (Player* playerCaster = owner->ToPlayer())
+                    if (Unit* selectedUnit = ObjectAccessor::GetUnit(*m_caster, playerCaster->GetSelection()))
+                    {
+                        SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, selectedUnit, m_targets.GetItemTarget());
+                        if (castResult != SPELL_CAST_OK)
+                            return castResult;
+                        m_targets.SetUnitTarget(selectedUnit);
+                    }
+        }
     }
 
     if (Unit* target = m_targets.GetUnitTarget())

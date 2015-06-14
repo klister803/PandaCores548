@@ -507,6 +507,7 @@ public:
     bool IsRangedWeaponSpell() const;
     bool IsRangedSpell() const;
     bool IsAutoRepeatRangedSpell() const;
+    bool IsNonNeedDelay() const;
 
     bool IsAffectedBySpellMods() const;
     bool IsAffectedBySpellMod(SpellModifier* mod) const;

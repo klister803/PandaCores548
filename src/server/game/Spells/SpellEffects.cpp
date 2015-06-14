@@ -666,6 +666,8 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                                 damage += int32(ap * combo * 0.12f);
                             else if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_SUBTLETY)
                                 damage += int32(ap * combo * 0.149f);
+                            if(combo >= 3)
+                                m_caster->CastSpell(unitTarget, 137576, true);
                         }
                     }
                 }
@@ -2614,14 +2616,22 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
             {
                 if (Aura* selflessHealer = caster->GetAura(114250))
                 {
-                    int32 basePct = 0;
+                    int32 perc = 0;
 
                     if (AuraEffect* eff = selflessHealer->GetEffect(EFFECT_1))
-                        basePct = eff->GetAmount();
+                        perc = eff->GetAmount();
 
-                    int32 perc = basePct;
                     if (perc && unitTarget->GetGUID() != caster->GetGUID())
                         AddPct(addhealth, perc);
+                    else if(unitTarget->GetGUID() == caster->GetGUID())
+                    {
+                        if (Aura* bastion = caster->GetAura(114637))
+                            if (AuraEffect* bastionEff = bastion->GetEffect(EFFECT_2))
+                            {
+                                AddPct(addhealth, bastionEff->GetAmount());
+                                bastion->Remove();
+                            }
+                    }
                 }
                 break;
             }
@@ -5041,12 +5051,6 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
 
     if (!unitTarget || !unitTarget->isAlive())
         return;
-
-    // Deadly Throw - Interrupt spell only if used with 5 combo points
-    if (m_spellInfo->Id == 26679)
-        if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
-            if (m_originalCaster->ToPlayer()->GetComboPoints() < 5)
-                return;
 
     // TODO: not all spells that used this effect apply cooldown at school spells
     // also exist case: apply cooldown to interrupted cast only and to all spells

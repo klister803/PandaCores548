@@ -144,7 +144,15 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
         std::vector<Unit*> controlled;
         for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)
             if ((*itr)->GetEntry() == pet->GetEntry() && (*itr)->isAlive())
-                controlled.push_back(*itr);
+            {
+                if((*itr)->ToCreature())
+                {
+                    if(!(*itr)->ToCreature()->m_Stampeded)
+                        controlled.push_back(*itr);
+                }
+                else
+                    controlled.push_back(*itr);
+            }
         for (std::vector<Unit*>::iterator itr = controlled.begin(); itr != controlled.end(); ++itr)
             HandlePetActionHelper(*itr, guid1, spellid, flag, guid2, x, y, z);
     }

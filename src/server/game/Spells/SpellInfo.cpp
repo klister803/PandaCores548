@@ -1602,6 +1602,11 @@ bool SpellInfo::IsAutoRepeatRangedSpell() const
     return AttributesEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG;
 }
 
+bool SpellInfo::IsNonNeedDelay() const
+{
+    return HasAura(SPELL_AURA_MOD_SILENCE) || HasEffect(SPELL_EFFECT_INTERRUPT_CAST);
+}
+
 bool SpellInfo::IsAffectedBySpellMods() const
 {
     return !(AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS);
@@ -2177,6 +2182,8 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
         if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK))
             if (!(neededTargets & TARGET_FLAG_GAMEOBJECT_ITEM) || !itemTarget)
                 return SPELL_FAILED_BAD_TARGETS;
+
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget Id %i non bad target", Id);
         return SPELL_CAST_OK;
     }
 

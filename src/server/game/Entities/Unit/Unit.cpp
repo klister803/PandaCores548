@@ -119,7 +119,8 @@ m_damageType(DIRECT_DAMAGE), m_attackType(dmgInfo.attackType), m_absorb(dmgInfo.
 }
 DamageInfo::DamageInfo(SpellNonMeleeDamage& dmgInfo)
 : m_attacker(dmgInfo.attacker), m_victim(dmgInfo.target), m_damage(dmgInfo.damage), m_spellInfo(NULL), m_schoolMask(SpellSchoolMask(dmgInfo.schoolMask)),
-m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked), m_cleanDamage(dmgInfo.cleanDamage), m_damageBeforeHit(dmgInfo.damageBeforeHit)
+m_damageType(DIRECT_DAMAGE), m_attackType(BASE_ATTACK), m_absorb(dmgInfo.absorb), m_resist(dmgInfo.resist), m_block(dmgInfo.blocked),
+ m_cleanDamage(dmgInfo.cleanDamage), m_damageBeforeHit(dmgInfo.damageBeforeHit), m_addptype(-1), m_addpower(0)
 {
 }
 
@@ -1517,7 +1518,10 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     else
         damageInfo->damage = damage;
 
-    damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+    if (Unit* owner = GetAnyOwner()) //For pets chance calc from owner
+        damageInfo->hitOutCome = owner->RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+    else
+        damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
     switch (damageInfo->hitOutCome)
     {
@@ -3133,21 +3137,16 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
         }
     }
 
+    Unit* checker = (GetTypeId() == TYPEID_UNIT && GetAnyOwner()) ? GetAnyOwner() : this;
     switch (spell->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_RANGED:
         case SPELL_DAMAGE_CLASS_MELEE:
-            if (Unit* owner = GetOwner())
-                return owner->MeleeSpellHitResult(victim, spell);
-            else
-                return MeleeSpellHitResult(victim, spell);
+            return checker->MeleeSpellHitResult(victim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            if (Unit* owner = GetOwner())
-                return owner->MagicSpellHitResult(victim, spell);
-            else
-                return MagicSpellHitResult(victim, spell);
+            return checker->MagicSpellHitResult(victim, spell);
     }
     return SPELL_MISS_NONE;
 }
@@ -8283,10 +8282,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return true;
                     }
                     triggeredByAura->GetBase()->SetCharges(0);
-                    triggered_spell_id = 53220;
-                    basepoints0 = triggerAmount;
-                    target = this;
-                    break;
+                    CastSpell(this, 53220, true);
+                    return true;
                 }
                 case 3560: // Rapid Recuperation
                 {
@@ -12122,6 +12119,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         {
             float crit_chance;
             crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
+            int32 modif = victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+            if(modif < -100)
+                crit_chance -= 50.0f;
             AddPct(DoneTotalMod, crit_chance);
         }
 
@@ -15129,9 +15129,8 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                         dist = 5;
 
                     float mult = base_rate + ((dist - 5) * 0.01f);
-                    float initSpeed = pOwner->GetSpeedRate(mtype) < old_speed ? old_speed : pOwner->GetSpeedRate(mtype);
 
-                    speed *= initSpeed * mult; // pets derive speed from owner when not in combat
+                    speed *= pOwner->GetSpeedRate(mtype) * mult; // pets derive speed from owner when not in combat
                 }
                 else
                     speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
@@ -18041,6 +18040,8 @@ void Unit::SendPetCastFail(uint32 spellid, SpellCastResult result)
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendPetCastFail  Spell: %u result %u.", spellid, result);
+
     //! 5.4.1
     WorldPacket data(SMSG_PET_CAST_FAILED, 1 + 4 + 1);
     data << uint32(spellid);
@@ -18690,8 +18691,16 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
         std::list<int32> groupList;
         for (std::vector<SpellTriggered>::const_iterator itr = spellTrigger->begin(); itr != spellTrigger->end(); ++itr)
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellTriggered target %u, caster %u, spell_trigger %i, chance %i, triggerAmount %i, damage %i, GetAbsorb %i, GetResist %i, GetBlock %i, group %i, effIndex %i, effectmask %i, option %i, (1<<effIndex) %i, procFlag %i",
-            itr->target, itr->caster, itr->spell_trigger, itr->chance, triggerAmount, damage, dmgInfoProc->GetAbsorb(), dmgInfoProc->GetResist(), dmgInfoProc->GetBlock(), itr->group, effIndex, itr->effectmask, itr->option, (1<<effIndex), procFlag);
+            if(itr->dummyId) //take amount from other spell
+            {
+                if(SpellInfo const* dummySpellInfo = sSpellMgr->GetSpellInfo(abs(itr->dummyId)))
+                    triggerAmount = dummySpellInfo->Effects[itr->dummyEffect].BasePoints;
+            }
+
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellTriggered target %u, caster %u, spell_trigger %i, chance %i, triggerAmount %i, damage %i, GetAbsorb %i, GetResist %i, GetBlock %i",
+            itr->target, itr->caster, itr->spell_trigger, itr->chance, triggerAmount, damage, dmgInfoProc->GetAbsorb(), dmgInfoProc->GetResist(), dmgInfoProc->GetBlock());
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, " group %i, effIndex %i, effectmask %i, option %i, (1<<effIndex) %i, procFlag %i addpowertype %i addptype %i procEx %i",
+            itr->group, effIndex, itr->effectmask, itr->option, (1<<effIndex), procFlag, addpowertype, itr->addptype, procEx);
 
             if(itr->spell_cooldown)
                 cooldown_spell_id = abs(itr->spell_cooldown);
@@ -18719,6 +18728,8 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
                 continue;
 
             if(itr->addptype != -1 && itr->addptype != addpowertype)
+                continue;
+            else if(itr->addptype == -1 && addpowertype != -1)
                 continue;
 
             if(itr->chance != 0)
