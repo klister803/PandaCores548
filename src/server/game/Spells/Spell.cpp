@@ -6788,16 +6788,12 @@ SpellCastResult Spell::CheckCast(bool strict)
     // also, such casts shouldn't be sent to client
     if (!((AttributesCustom & SPELL_ATTR0_PASSIVE) && (!m_targets.GetUnitTarget() || m_targets.GetUnitTarget() == m_caster)))
     {
+        bool targetCheck = false;
         // Check explicit target for m_originalCaster - todo: get rid of such workarounds
-        if (WorldObject* target = m_targets.GetObjectTarget())
-        {
-            SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, target, m_targets.GetItemTarget());
-            if (castResult != SPELL_CAST_OK)
-                return castResult;
-        }
-        else if (m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_CORPSE_MASK)
+        if ((m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_CORPSE_MASK) && !m_targets.GetObjectTarget())
         {
             if (Unit* owner = m_caster->GetAnyOwner())
+            {
                 if (Player* playerCaster = owner->ToPlayer())
                     if (Unit* selectedUnit = ObjectAccessor::GetUnit(*m_caster, playerCaster->GetSelection()))
                     {
@@ -6805,7 +6801,15 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (castResult != SPELL_CAST_OK)
                             return castResult;
                         m_targets.SetUnitTarget(selectedUnit);
+                        targetCheck = true;
                     }
+            }
+        }
+        if(!targetCheck)
+        {
+            SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(m_originalCaster ? m_originalCaster : m_caster, target, m_targets.GetItemTarget());
+            if (castResult != SPELL_CAST_OK)
+                return castResult;
         }
     }
 
