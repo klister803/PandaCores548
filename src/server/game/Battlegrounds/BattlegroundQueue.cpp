@@ -1073,6 +1073,11 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
             {
                 const char* team1[5];
                 const char* team2[5];
+                for (uint8 i=0; i < 5; ++i)
+                {
+                    team1[i] = "";
+                    team2[i] = "";
+                }
                 uint8 i = 0;
                 for (std::map<uint64, PlayerQueueInfo*>::iterator itr = aTeam->Players.begin(); itr != aTeam->Players.end(); ++itr)
                 {
