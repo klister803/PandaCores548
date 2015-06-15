@@ -1600,9 +1600,9 @@ void Guardian::UpdateMaxHealth()
         value = owner->GetMaxHealth() * multiplicator;
 
         UnitMods unitMod = UNIT_MOD_HEALTH;
-        value += GetModifierValue(unitMod, BASE_VALUE);
-        value *= GetModifierValue(unitMod, BASE_PCT);
-        value += GetModifierValue(unitMod, TOTAL_VALUE);
+        //value += GetModifierValue(unitMod, BASE_VALUE);
+        //value *= GetModifierValue(unitMod, BASE_PCT);
+        //value += GetModifierValue(unitMod, TOTAL_VALUE);
         value *= GetModifierValue(unitMod, TOTAL_PCT);
 
         //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
