@@ -938,6 +938,11 @@ void Battleground::EndBattleground(uint32 winner)
     {
         const char* winnerTeam[5];
         const char*  loserTeam[5];
+        for (uint8 i=0; i < 5; ++i)
+        {
+            winnerTeam[i] = "";
+            loserTeam[i] = "";
+        }
         uint8 w = 0;
         uint8 l = 0;
 
