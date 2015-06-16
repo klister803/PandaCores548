@@ -8839,6 +8839,9 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         case 36:
             maxPower = 35000;
             break;
+        case 244 :
+            maxPower = 200;
+            break;
     }
 
     switch (GetMiscValue())

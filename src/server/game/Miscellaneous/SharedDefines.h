@@ -1180,7 +1180,7 @@ enum SpellEffects
     SPELL_EFFECT_RANDOMIZE_DIGSITES                 = 187, // 126957 only
     SPELL_EFFECT_STAMPEDE                           = 188, // Stampede 121818
     SPELL_EFFECT_LOOT_BONUS                         = 189, // Boss loot bonus ?
-    SPELL_EFFECT_JOIN_PLAYER_PARTY                  = 190,
+    SPELL_EFFECT_JOIN_LEAVE_PLAYER_PARTY            = 190,
     SPELL_EFFECT_TELEPORT_TO_DIGSITE                = 191, // Teleport player to an random digsite (Archaeology)
     SPELL_EFFECT_UNCAGE_PET                         = 192, // Battle pet exchange (123302)
     SPELL_EFFECT_193                                = 193, // 0 spells

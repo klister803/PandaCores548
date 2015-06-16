@@ -261,7 +261,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectRandomizeDigsites,                        //187 SPELL_EFFECT_RANDOMIZE_DIGSITES
     &Spell::EffectNULL,                                     //188 SPELL_EFFECT_STAMPEDE
     &Spell::EffectBonusLoot,                                //189 SPELL_EFFECT_LOOT_BONUS
-    &Spell::EffectNULL,                                     //190 SPELL_EFFECT_JOIN_PLAYER_PARTY
+    &Spell::EffectJoinOrLeavePlayerParty,                   //190 SPELL_EFFECT_JOIN_LEAVE_PLAYER_PARTY
     &Spell::EffectTeleportToDigsite,                        //191 SPELL_EFFECT_TELEPORT_TO_DIGSITE
     &Spell::EffectUncageBattlePet,                          //192 SPELL_EFFECT_UNCAGE_BATTLE_PET
     &Spell::EffectNULL,                                     //193 SPELL_EFFECT_193
@@ -8695,4 +8695,17 @@ void Spell::EffectBonusLoot(SpellEffIndex effIndex)
         if(m_CastItem)
             player->DestroyItemCount(m_CastItem, count, true);
     }
+}
+
+void Spell::EffectJoinOrLeavePlayerParty(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    /*
+    if (EffectMiscValueA == 1)
+        Join
+    else
+        Leave
+    */
 }

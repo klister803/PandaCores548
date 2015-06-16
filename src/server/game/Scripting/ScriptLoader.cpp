@@ -839,6 +839,11 @@ void AddSC_boss_jolgrum();
 void AddSC_boss_little_liuyang();
 void AddSC_boss_chagan_firehoof();
 void AddSC_arena_of_annihilation();
+
+//< Fall of Shan'bu
+void AddSC_fall_of_shan_bu();
+void AddSC_instance_fall_of_shan_bu();
+
 // battlegrounds
 
 // outdoor pvp
@@ -1707,12 +1712,18 @@ void AddPandarieScripts()
     AddSC_timeless_isle();
     
     //Scenario
-    AddSC_instance_arena_of_annihilation();     // ArenaofAnnihilation
+    //< ArenaofAnnihilation
+    AddSC_instance_arena_of_annihilation();
     AddSC_boss_scar_shell();
     AddSC_boss_jolgrum();
     AddSC_boss_little_liuyang();
     AddSC_boss_chagan_firehoof();
     AddSC_arena_of_annihilation();
+
+    //< Fall of Shan'bu
+    AddSC_fall_of_shan_bu();
+    AddSC_instance_fall_of_shan_bu();
+
 #endif
 }
 

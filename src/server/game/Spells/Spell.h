@@ -420,6 +420,7 @@ class Spell
         void EffectHealBattlePetPct(SpellEffIndex effIndex);
         void SendScene(SpellEffIndex effIndex);
         void EffectBonusLoot(SpellEffIndex effIndex);
+        void EffectJoinOrLeavePlayerParty(SpellEffIndex effIndex);
 
         typedef std::set<Aura *> UsedSpellMods;
 
