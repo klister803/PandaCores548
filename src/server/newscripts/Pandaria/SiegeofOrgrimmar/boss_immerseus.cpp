@@ -27,6 +27,7 @@ enum eSpells
     SPELL_SWIRL                 = 143309, 
     SPELL_SWIRL_DMG             = 143412,
     SPELL_SEEPING_SHA           = 143286,
+    SPELL_SEEPING_SHA_AT        = 143281,
     SPELL_SUBMERGE              = 139832,
     SPELL_SUBMERGE_2            = 143281,
     SPELL_BERSERK               = 64238,
@@ -290,6 +291,8 @@ class boss_immerseus : public CreatureScript
             void Reset()
             {
                 _Reset();
+                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                    pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
                 me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
                 me->SetReactState(REACT_DEFENSIVE);
                 me->RemoveAurasDueToSpell(SPELL_SHA_POOL);
@@ -341,6 +344,8 @@ class boss_immerseus : public CreatureScript
             {
                 _EnterCombat();
                 berserk = 600000;
+                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                    pp->CastSpell(pp, SPELL_SEEPING_SHA_AT, true);
                 if (me->GetMap()->IsHeroic())
                     events.ScheduleEvent(EVENT_SWELLING_CORRUPTION, 12000);
                 events.ScheduleEvent(EVENT_CORROSIVE_BLAST, 9000);
@@ -432,7 +437,6 @@ class boss_immerseus : public CreatureScript
                 if (damage >= me->GetHealth() && !phase_two)
                 {
                     SpawnWave();
-
                     damage = 0;
                     phase_two = true;
                     events.Reset();
@@ -497,6 +501,8 @@ class boss_immerseus : public CreatureScript
             void JustDied(Unit* killer)
             {
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                if (Creature* pp = me->GetCreature(*me, instance->GetData64(NPC_PUDDLE_POINT)))
+                    pp->RemoveAurasDueToSpell(SPELL_SEEPING_SHA_AT);
                 instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEV_CREDIT, 0, me);
                 if (killer == me)
                 {
@@ -570,6 +576,7 @@ class boss_immerseus : public CreatureScript
                             me->AttackStop();
                             me->SetReactState(REACT_PASSIVE);
                             me->SetFacingToObject(target);
+                            events.DelayEvents(10000);
                             DoCast(me, SPELL_SWIRL);
                         }
                         events.ScheduleEvent(EVENT_SWIRL, 48000);
@@ -973,6 +980,39 @@ class npc_contaminated_puddle : public CreatureScript
         }
 };
 
+//90000 new trigger, nedded for work SPELL_SEEPING_SHA_AT = 143281
+class npc_puddle_point : public CreatureScript
+{
+public:
+    npc_puddle_point() : CreatureScript("npc_puddle_point") {}
+
+    struct npc_puddle_pointAI : public ScriptedAI
+    {
+        npc_puddle_pointAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+            me->SetDisplayId(11686);
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+        }
+
+        InstanceScript* instance;
+
+        void Reset(){}
+
+        void EnterCombat(Unit* who){}
+
+        void EnterEvadeMode(){}
+
+        void UpdateAI(uint32 diff){}
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_puddle_pointAI(creature);
+    }
+};
+
 //143309
 class spell_swirl : public SpellScriptLoader
 {
@@ -987,6 +1027,7 @@ class spell_swirl : public SpellScriptLoader
             {
                 if (GetCaster() && GetCaster()->ToCreature())
                 {
+                    GetCaster()->ClearUnitState(UNIT_STATE_CASTING);
                     GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
                     GetCaster()->CastSpell(GetCaster(), SPELL_SWIRL_SEARCHER, true);
                 }
@@ -1146,6 +1187,7 @@ void AddSC_boss_immerseus()
     new npc_sha_pool();
     new npc_sha_puddle();
     new npc_contaminated_puddle();
+    new npc_puddle_point();
     new spell_swirl();
     new spell_swirl_searcher();
     new spell_sha_pool();
