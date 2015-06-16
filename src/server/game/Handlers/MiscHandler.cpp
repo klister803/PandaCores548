@@ -276,7 +276,11 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     std::wstring wplayer_name;
     std::wstring wguild_name;
     if (!(Utf8toWStr(player_name, wplayer_name) && Utf8toWStr(guild_name, wguild_name)))
+    {
+        delete unkLens;
         return;
+    }
+
     wstrToLower(wplayer_name);
     wstrToLower(wguild_name);
 
