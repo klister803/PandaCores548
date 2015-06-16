@@ -1364,7 +1364,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                         while (types[++types_i]);
 
                         if (found)
-                            itr++;
+                            ++itr;
                         else
                             itr = unitTargets.erase(itr);
                     }

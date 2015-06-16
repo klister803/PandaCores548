@@ -1653,7 +1653,7 @@ void PetBattleWild::UpdatePetsAfterBattle()
         }
     }
 
-    if (updates.size() > 0)
+    if (!updates.empty())
         m_player->GetBattlePetMgr()->SendUpdatePets(updates, false);
 }
 

@@ -29929,7 +29929,7 @@ void Player::_LoadStore()
 
             uint32 learnId = 0;
 
-            for(SpellSkillingList::iterator itr = sSpellSkillingList.begin(); itr != sSpellSkillingList.end(); itr++)
+            for(SpellSkillingList::iterator itr = sSpellSkillingList.begin(); itr != sSpellSkillingList.end(); ++itr)
             {
                 SpellEntry const* spell = (*itr);
 

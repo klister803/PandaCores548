@@ -258,10 +258,9 @@ void Player::UpdateResistances(uint32 school)
 
 void Player::UpdateArmor()
 {
-    float value = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    value = GetModifierValue(unitMod, BASE_VALUE);                                        // base armor (from items)
+    float value = GetModifierValue(unitMod, BASE_VALUE);                                        // base armor (from items)
     value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, 1);     // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 

@@ -3615,7 +3615,7 @@ void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
     data.Initialize(SMSG_GUILD_NEWS_UPDATE, 7 + 32);
     data.WriteBits(_newsLog.size(), 19); // size, we are only sending 1 news here
 
-    for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
+    for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); ++it)
     {
         ObjectGuid guid = MAKE_NEW_GUID(it->second.PlayerGuid, 0, HIGHGUID_PLAYER);
 
@@ -3624,7 +3624,7 @@ void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
         data.WriteGuidMask<1, 6, 4, 7>(guid);
     }
 
-    for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
+    for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); ++it)
     {
         ObjectGuid guid = MAKE_NEW_GUID(it->second.PlayerGuid, 0, HIGHGUID_PLAYER);
 
