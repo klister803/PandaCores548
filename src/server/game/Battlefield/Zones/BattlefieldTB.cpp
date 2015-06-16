@@ -716,6 +716,7 @@ BfCapturePointTB::BfCapturePointTB(BattlefieldTB *bf,TeamId control) : BfCapture
 {
     m_Bf = bf;
     m_team = control;
+    m_WorkShop = nullptr;
 }
 
 BfGraveYardTB::BfGraveYardTB(BattlefieldTB* bf) : BfGraveyard(bf)

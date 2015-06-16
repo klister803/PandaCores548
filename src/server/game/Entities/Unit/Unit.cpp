@@ -9046,11 +9046,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if(modify)
                         procDmg += int32((procDmg * modify) / 100);
 
-                    if(procSpell)
+                    if(procSpell) //< wtf?
                         pPet->CastSpell(pPet->getVictim(), procSpell->Id, true);
                     else
                     {
-                        pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
+                        if (procSpell)
+                            pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
                         pPet->DealDamage(pPet->getVictim(), procDmg);
                     }
                     break;
@@ -12024,18 +12025,20 @@ void Unit::SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 
 int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHealth, bool critical)
 {
     uint32 absorb = 0;
+    int32 gain = 0;
     // calculate heal absorb and reduce healing
     CalcHealAbsorb(victim, spellInfo, addHealth, absorb);
 
-    if(spellInfo)
+    if (spellInfo)
     {
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellInfo->Id);
         if(bonus && bonus->heal_bonus)
             addHealth *= bonus->heal_bonus;
+        
+        gain = DealHeal(victim, addHealth, spellInfo);
+        SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     }
 
-    int32 gain = DealHeal(victim, addHealth, spellInfo);
-    SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     return gain;
 }
 

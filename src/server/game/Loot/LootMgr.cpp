@@ -401,7 +401,8 @@ LootItem::LootItem(LootStoreItem const& li, Loot* loot)
             count = uint32(count * mult + 0.5f);
         }
         randomSuffix = proto && proto->RandomSuffix ? GenerateEnchSuffixFactor(proto) : 0;
-        randomPropertyId = Item::GenerateItemRandomPropertyId(itemid, loot->personal ? loot->GetLootOwner()->GetLootSpecID() : 0);
+        if (loot)
+            randomPropertyId = Item::GenerateItemRandomPropertyId(itemid, loot->personal ? loot->GetLootOwner()->GetLootSpecID() : 0);
         quality = proto ? ItemQualities(proto->Quality) : ITEM_QUALITY_POOR;
     }
 }

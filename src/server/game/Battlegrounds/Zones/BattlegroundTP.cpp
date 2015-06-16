@@ -259,7 +259,7 @@ bool BattlegroundTP::SetupBattleground()
         }
         else
         {
-                sLog->outError(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to load spirit guide id: %u. Battleground not created!", grave->ID);
+                sLog->outError(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to load spirit guide. Battleground not created!");
                 return false;
         }
     }

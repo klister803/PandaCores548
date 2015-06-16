@@ -6411,6 +6411,9 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
+    if (!m_caster)
+        return;
+
     uint8 slot = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValueB;
     if (slot >= MAX_GAMEOBJECT_SLOT)
         return;
@@ -6418,14 +6421,9 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     uint32 go_id = m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue;
     float x, y, z, o;
 
-    uint64 guid = m_caster->m_ObjectSlot[slot];
-    if (guid != 0)
+    if (uint64 guid = m_caster->m_ObjectSlot[slot])
     {
-        GameObject* obj = NULL;
-        if (m_caster)
-            obj = m_caster->GetMap()->GetGameObject(guid);
-
-        if (obj)
+        if (GameObject* obj = m_caster->GetMap()->GetGameObject(guid))
         {
             // Recast case - null spell id to make auras not be removed on object remove from world
             if (m_spellInfo->Id == obj->GetSpellId())
@@ -6480,6 +6478,9 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
+    if (!m_caster)
+        return;
+
     Player* player = m_caster->ToPlayer();
     if (!player)
         return;
@@ -6506,14 +6507,9 @@ void Spell::EffectSurvey(SpellEffIndex effIndex)
         return;
     }
 
-    uint64 guid = m_caster->m_ObjectSlot[slot];
-    if (guid != 0)
+    if (uint64 guid = m_caster->m_ObjectSlot[slot])
     {
-        GameObject* obj = NULL;
-        if (m_caster)
-            obj = m_caster->GetMap()->GetGameObject(guid);
-
-        if (obj)
+        if (GameObject* obj = m_caster->GetMap()->GetGameObject(guid))
         {
             // Recast case - null spell id to make auras not be removed on object remove from world
             if (m_spellInfo->Id == obj->GetSpellId())

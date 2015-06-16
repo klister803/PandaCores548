@@ -45,6 +45,11 @@ BattlegroundBFG::BattlegroundBFG()
     StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_BG_START_ONE_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_BG_BG_START_HALF_MINUTE;
     StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_BG_BG_HAS_BEGUN;
+
+    _IsInformedNearVictory = false;
+
+    for (int8 i = 0; i < 2; i++)
+        m_TeamScores500Disadvantage[i] = false;
 }
 
 BattlegroundBFG::~BattlegroundBFG() {}
@@ -334,7 +339,7 @@ void BattlegroundBFG::_NodeOccupied(uint8 node, Team team)
     uint8 capturedNodes = 0;
     for (uint8 i = 0; i < GILNEAS_BG_DYNAMIC_NODES_COUNT; ++i)
     {
-        if (_Nodes[node] == GetTeamIndexByTeamId(team) + GILNEAS_BG_NODE_TYPE_OCCUPIED && !_NodeTimers[i])
+        if (_Nodes[node] == GetTeamIndexByTeamId(team) + GILNEAS_BG_NODE_TYPE_OCCUPIED && !_NodeTimers[i])  // wrong
             ++capturedNodes;
     }
 

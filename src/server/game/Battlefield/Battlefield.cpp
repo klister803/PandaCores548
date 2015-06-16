@@ -986,6 +986,7 @@ BfCapturePoint::BfCapturePoint(Battlefield* battlefield) : m_Bf(battlefield), m_
     m_team = TEAM_NEUTRAL;
     m_value = 0.0f;
     m_maxValue = 0.0f;
+    m_minValue = 0.0f;
     m_State = BF_CAPTUREPOINT_OBJECTIVESTATE_NEUTRAL;
     m_OldState = BF_CAPTUREPOINT_OBJECTIVESTATE_NEUTRAL;
     m_capturePointEntry = 0;

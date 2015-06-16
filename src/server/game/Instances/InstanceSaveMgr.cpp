@@ -286,11 +286,11 @@ void InstanceSaveManager::LoadResetTimes()
 
             uint32 instanceId = fields[0].GetUInt32();
             uint32 difficulty = fields[2].GetUInt8();
-
-            const MapEntry* entry = sMapStore.LookupEntry(fields[1].GetUInt16());
+            uint16 mapID = fields[1].GetUInt16();
+            MapEntry const* entry = sMapStore.LookupEntry(mapID);
             if (!entry)
             {
-                sLog->outError(LOG_FILTER_GENERAL, "InstanceSaveManager::AddInstanceSave: wrong mapid = %d, instanceid = %d!", entry->MapID, instanceId);
+                sLog->outError(LOG_FILTER_GENERAL, "InstanceSaveManager::AddInstanceSave: wrong mapid = %d, instanceid = %d!", mapID, instanceId);
                 continue;
             }
             // Instances are pulled in ascending order from db and nextInstanceId is initialized with 1,

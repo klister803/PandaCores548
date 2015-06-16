@@ -345,6 +345,7 @@ uint16 BattlePetMgr::GetRandomBreedID(uint32 speciesID)
 
 void BattlePetMgr::CreateWildBattle(Player* initiator, ObjectGuid wildCreatureGuid)
 {
+    delete m_petBattleWild;
     m_petBattleWild = new PetBattleWild(initiator);
     m_petBattleWild->Init(wildCreatureGuid);
 }

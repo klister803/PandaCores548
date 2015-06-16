@@ -3541,7 +3541,7 @@ void Player::RemoveFromGroup(Group* group, uint64 guid, RemoveMethod method /* =
     if (group)
     {
         group->RemoveMember(guid, method, kicker, reason);
-        group = NULL;
+        delete group;
     }
 }
 

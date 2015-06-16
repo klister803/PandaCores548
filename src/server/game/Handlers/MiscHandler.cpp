@@ -230,6 +230,8 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     for (uint8 i = 0; i < str_count; i++)
         unkLens[i] = recvData.ReadBits(7);
 
+    delete unkLens;
+
     std::wstring str[4];                                    // 4 is client limit
     for (uint32 i = 0; i < str_count; ++i)
     {
@@ -276,10 +278,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     std::wstring wplayer_name;
     std::wstring wguild_name;
     if (!(Utf8toWStr(player_name, wplayer_name) && Utf8toWStr(guild_name, wguild_name)))
-    {
-        delete unkLens;
         return;
-    }
 
     wstrToLower(wplayer_name);
     wstrToLower(wguild_name);
