@@ -190,8 +190,6 @@ Quest::Quest(Field* questRecord)
         RequiredNpcOrGoCount[i] = 0;
         RequiredItemId[i] = 0;
         RequiredItemCount[i] = 0;
-        RequiredCurrencyId[i] = 0;
-        RequiredCurrencyCount[i] = 0;
         if (RequiredId[i])
         {
             switch(RequirementType[i])
@@ -211,6 +209,18 @@ Quest::Quest(Field* questRecord)
                     RequiredNpcOrGo[i] = int32((-1)*RequiredId[i]);
                     RequiredNpcOrGoCount[i] = RequiredIdCount[i];
                     break;
+            }
+        }
+    }
+
+    for (int i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
+    {
+        RequiredCurrencyId[i] = 0;
+        RequiredCurrencyCount[i] = 0;
+        if (RequiredId[i])
+        {
+            switch(RequirementType[i])
+            {
                 case 4:
                     ++m_reqCurrencyCount;
                     RequiredCurrencyId[i] = RequiredId[i];
