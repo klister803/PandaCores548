@@ -266,26 +266,8 @@ class boss_sha_of_pride : public CreatureScript
 
             void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
-                if (target->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                switch (spell->Id)
-                {
-                    case SPELL_SWELLING_PRIDE:
-                    {
-                        uint32 power = target->GetPower(POWER_ALTERNATE_POWER);
-                        if (power >= 25 && power <= 49)
-                            DoCast(target, SPELL_BURSTING_PRIDE, true);
-                        else if (power >= 50 && power <= 74)
-                            DoCast(target, SPELL_PROJECTION, true);
-                        else if (power >= 75 && power <= 99)
-                            DoCast(target, SPELL_AURA_OF_PRIDE, true);
-                        else if (power == 100)
-                            target->CastSpell(target, SPELL_OVERCOME, true);
-                        break;
-                    }
-                }
-                addPride(spell->Id, target);
+                if (target->GetTypeId() == TYPEID_PLAYER)
+                    addPride(spell->Id, target);
             }
 
             void JustDied(Unit* /*killer*/)
@@ -1301,67 +1283,6 @@ class spell_sha_of_pride_self_reflection : public SpellScriptLoader
         }
 };
 
-class player_spell_sha_of_pride_self_overcome_mcAI : public PlayerAI
-{
-    public:
-        player_spell_sha_of_pride_self_overcome_mcAI(Player* player, Creature* c) : PlayerAI(player, c)
-        {
-        }
-
-        void UpdateAI(uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-            DoMeleeAttackIfReady();
-        }
-};
-
-class spell_sha_of_pride_self_overcome_mc : public SpellScriptLoader
-{
-    public:
-        spell_sha_of_pride_self_overcome_mc() : SpellScriptLoader("spell_sha_of_pride_self_overcome_mc") { }
-
-        class spell_sha_of_pride_self_overcome_mc_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_of_pride_self_overcome_mc_AuraScript);
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                oldAI = GetTarget()->GetAI();
-                GetTarget()->SetAI(new player_spell_sha_of_pride_self_overcome_mcAI(GetTarget()->ToPlayer(), GetCaster()->ToCreature()));
-                oldAIState = GetTarget()->IsAIEnabled;
-                GetTarget()->IsAIEnabled = true;
-            }
-
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                GetTarget()->SetDisabledCurrentAI();
-                GetTarget()->SetAI(oldAI);
-                GetTarget()->IsAIEnabled = oldAIState;
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_sha_of_pride_self_overcome_mc_AuraScript::OnApply, EFFECT_0, SPELL_AURA_AOE_CHARM, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_pride_self_overcome_mc_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_AOE_CHARM, AURA_EFFECT_HANDLE_REAL);
-            }
-
-            UnitAI* oldAI;
-            bool oldAIState;
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_of_pride_self_overcome_mc_AuraScript();
-        }
-};
-
 class spell_sha_of_pride_projection : public SpellScriptLoader
 {
     public:
@@ -1509,14 +1430,8 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (GetTarget() && !GetTarget()->HasAura(SPELL_OVERCOME_MIND_CONTROL))
-            {
-                if (Creature* sha = GetTarget()->FindNearestCreature(NPC_SHA_OF_PRIDE, 150.0f, true))
-                {
-                    sha->CastSpell(GetTarget(), SPELL_OVERCOME_MIND_CONTROL, true);
-                    GetTarget()->Kill(GetTarget(), true);
-                }
-            }
+            if (GetTarget()) //mind control not works, just kill target
+                GetTarget()->Kill(GetTarget(), true);
         }
 
         void Register()
@@ -1528,6 +1443,47 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_sha_of_pride_overcome_AuraScript();
+    }
+};
+
+//144400
+class spell_swelling_pride : public SpellScriptLoader
+{
+public:
+    spell_swelling_pride() : SpellScriptLoader("spell_swelling_pride") { }
+
+    class spell_swelling_pride_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_swelling_pride_SpellScript);
+
+        void HitHandler()
+        {
+            if (GetCaster() && GetHitUnit()->ToPlayer())
+            {
+                if (GetHitUnit()->GetPower(POWER_ALTERNATE_POWER))
+                {
+                    uint32 power = GetHitUnit()->GetPower(POWER_ALTERNATE_POWER);
+                    if (power >= 25 && power <= 49)
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_BURSTING_PRIDE, true);
+                    else if (power >= 50 && power <= 74)
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_PROJECTION, true);
+                    else if (power >= 75 && power <= 99)
+                        GetCaster()->CastSpell(GetHitUnit(), SPELL_AURA_OF_PRIDE, true);
+                    else if (power == 100)
+                        GetHitUnit()->CastSpell(GetHitUnit(), SPELL_OVERCOME, true);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_swelling_pride_SpellScript::HitHandler);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_swelling_pride_SpellScript();
     }
 };
 
@@ -1543,10 +1499,10 @@ void AddSC_boss_sha_of_pride()
     new npc_sha_of_pride_rift_of_corruption();
     new spell_sha_of_pride_imprison();
     new spell_sha_of_pride_self_reflection();
-    new spell_sha_of_pride_self_overcome_mc();
     new spell_sha_of_pride_projection();
     new spell_sha_of_pride_gift_of_titans();
     new spell_sha_of_pride_gift_of_titans_ckecker();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
+    new spell_swelling_pride();
 }
