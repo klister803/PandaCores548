@@ -86,6 +86,12 @@ void WorldSession::SendUpdateTrade(bool trader_data /*= true*/)
         if (view_trade->GetItem(TradeSlots(i)))
             ++count;
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---SendUpdateTrade;");
+    }
+
     WorldPacket data(SMSG_TRADE_STATUS_EXTENDED);
     data << uint32(TRADE_SLOT_COUNT);                       // trade slots count/number?, = next field in most cases
     data << uint32(TRADE_SLOT_COUNT);                       // trade slots count/number?, = prev field in most cases
@@ -163,6 +169,12 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
     Player* trader = _player->GetTrader();
     if (!trader)
         return;
+
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---Trade moveItems;");
+    }
 
     for (uint8 i = 0; i < TRADE_SLOT_TRADED_COUNT; ++i)
     {
@@ -674,6 +686,12 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleInitiateTradeOpcode;");
+    }
+
     // OK start trade
     _player->m_trade = new TradeData(_player, pOther);
     pOther->m_trade = new TradeData(pOther, _player);
@@ -740,6 +758,12 @@ void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
         // cheating attempt
         SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
         return;
+    }
+
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSetTradeItemOpcode; item: %u; iGUID %u", item->GetEntry(), iGUID);
     }
 
     my_trade->SetItem(TradeSlots(tradeSlot), item);

@@ -62,6 +62,12 @@ void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
         return;
     }
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSplitItemOpcode; srcbag %u, srcslot %u, dstbag %u, dstslot %u, src %u, dst %u, count %u", srcbag, srcslot, dstbag, dstslot, src, dst, count);
+    }
+
     _player->SplitItem(src, dst, count);
 }
 
@@ -106,6 +112,12 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recvData)
     uint16 src = ((INVENTORY_SLOT_BAG_0 << 8) | srcslot);
     uint16 dst = ((INVENTORY_SLOT_BAG_0 << 8) | dstslot);
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSwapInvItemOpcode; src %u, dst %u", src, dst);
+    }
+
     _player->SwapItem(src, dst);
 }
 
@@ -147,6 +159,12 @@ void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPacket& recvData)
     if (!item || item->GetPos() == dstpos)
         return;
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---WorldSession::HandleAutoEquipItemSlotOpcode dstpos %u entry %u", dstpos, item->GetEntry());
+    }
+
     _player->SwapItem(item->GetPos(), dstpos);
 }
 
@@ -176,6 +194,12 @@ void WorldSession::HandleSwapItem(WorldPacket& recvData)
     {
         _player->SendEquipError(EQUIP_ERR_WRONG_SLOT, NULL, NULL);
         return;
+    }
+
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSwapItem; src %u dst %u", src, dst);
     }
 
     _player->SwapItem(src, dst);
@@ -656,6 +680,12 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
         return;
     }
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSellItemOpcode; vendor: %llu; item: %u; count %u", GUID_LOPART(vendorguid), GUID_LOPART(itemguid), count);
+    }
+
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -776,6 +806,12 @@ void WorldSession::HandleBuybackItem(WorldPacket& recvData)
         return;
     }
 
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleBuybackItem; vendor: %llu; slot %u", GUID_LOPART(vendorguid), slot);
+    }
+
     // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
@@ -825,6 +861,12 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recvData)
         --slot;
     else
         return;                                             // cheating
+
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", item, count, _player->GetGUID(), vendorguid);
+    }
 
     if(item == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemInSlotOpcode item %u; count = %u playerGUID %u vendorguid %u", item, count, _player->GetGUID(), vendorguid);
@@ -885,6 +927,12 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
         --slot;
     else
         return; // cheating
+
+    if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
+    {
+        sObjectMgr->DumpDupeConstant(GetPlayer());
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleBuyItemOpcode; vendor: %llu; item: %u; count: %u;", GUID_LOPART(vendorguid), item, count);
+    }
 
     if(item == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "HandleBuyItemOpcode item %u; count = %u playerGUID %u", item, count, _player->GetGUID());

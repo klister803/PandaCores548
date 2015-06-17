@@ -9865,3 +9865,32 @@ AreaTriggerInfo const* ObjectMgr::GetAreaTriggerInfo(uint32 entry)
     AreaTriggerInfoMap::const_iterator itr = _areaTriggerData.find(entry);
     return itr != _areaTriggerData.end() ? &itr->second : NULL;
 }
+
+void ObjectMgr::AddCharToDupeLog(uint64 guid)
+{
+    m_dupeLogMap.insert(guid);
+}
+
+bool ObjectMgr::IsPlayerInLogList(Player *player)
+{
+    if(m_dupeLogMap.empty())
+        return false;
+
+    uint64 guid = player->GetGUID();
+    DupeLogMap::iterator itr = m_dupeLogMap.find(guid);
+    if (itr != m_dupeLogMap.end())
+        return true;
+
+    return false;
+}
+
+void ObjectMgr::RemoveCharFromDupeList(uint64 guid)
+{
+    m_dupeLogMap.erase(guid);
+}
+
+void ObjectMgr::DumpDupeConstant(Player *player)
+{
+    sLog->outDebug(LOG_FILTER_DUPE, "Name: %s. Items: %u; Pos: map - %u; %f; %f; %f;", player->GetName(), player->GetItemCount(38186, true),
+                  player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+}

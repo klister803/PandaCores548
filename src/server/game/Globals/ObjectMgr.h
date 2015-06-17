@@ -890,6 +890,14 @@ class ObjectMgr
 
         typedef std::map<uint32, uint32> CharacterConversionMap;
 
+        typedef std::set<uint64> DupeLogMap;
+        DupeLogMap m_dupeLogMap;
+
+        void AddCharToDupeLog(uint64 guid);
+        bool IsPlayerInLogList(Player *player);
+        void RemoveCharFromDupeList(uint64 guid);
+        void DumpDupeConstant(Player *player);
+
         typedef std::list<CurrencyLoot> CurrencysLoot;
         std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type, uint8 spawnMode);
 

@@ -63,6 +63,18 @@ public:
         if(!player || !creature || !player->getAttackers().empty())
             return true;
 
+        if (player->InBattlegroundQueue())
+        {
+            ChatHandler(player).PSendSysMessage("You should leave from battleground queue.");
+            return true;
+        }
+
+        if (sObjectMgr->IsPlayerInLogList(player))
+        {
+            sObjectMgr->DumpDupeConstant(player);
+            sLog->outDebug(LOG_FILTER_DUPE, "---ItemBack; action: %u;", action);
+        }
+
         float rate = sWorld->getRate(RATE_DONATE);
         uint32 priceFaction = uint32(200 * rate);
         if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
@@ -373,6 +385,18 @@ public:
 
         ChatHandler chH = ChatHandler(player);
 
+        if (player->InBattlegroundQueue())
+        {
+            chH.PSendSysMessage("You should leave from battleground queue.");
+            return true;
+        }
+
+        if (sObjectMgr->IsPlayerInLogList(player))
+        {
+            sObjectMgr->DumpDupeConstant(player);
+            sLog->outDebug(LOG_FILTER_DUPE, "---ItemBack; action: %u;", action);
+        }
+
         sLog->outDebug(LOG_FILTER_NETWORKIO, "item_back sender %u, action %u", sender, action);
 
         if(action > 0)
@@ -423,6 +447,9 @@ public:
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));
                 player->SaveToDB();
+                if (sObjectMgr->IsPlayerInLogList(player))
+                    sObjectMgr->DumpDupeConstant(player);
+
                 CharacterDatabase.PExecute("UPDATE character_donate SET state = 4, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), action);
                 chH.PSendSysMessage(20002, uint32(efircount * 0.8));
             }
@@ -461,6 +488,26 @@ public:
                             return pItem;
 
         return NULL;
+    }
+
+    bool CanStoreItem(Player* player)
+    {
+        ChatHandler chH = ChatHandler(player);
+        uint32 itemId = 38186;
+        uint32 count = 1;
+        uint32 _noSpaceForCount = 0;
+        ItemPosCountVec dest;
+        InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &_noSpaceForCount);
+        if (msg != EQUIP_ERR_OK)
+            count -= _noSpaceForCount;
+
+        if (count == 0 || dest.empty())
+        {
+            // -- TODO: Send to mailbox if no space
+            chH.PSendSysMessage("You don't have any space in your bags.");
+            return false;
+        }
+        return true;
     }
 };
 

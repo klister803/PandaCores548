@@ -61,9 +61,13 @@ void Bag::AddToWorld()
 
 void Bag::RemoveFromWorld()
 {
+    volatile uint32 bagDebug = GetGUIDLow();
     for (uint32 i = 0; i < GetBagSize(); ++i)
         if (m_bagslot[i] && m_bagslot[i]->IsInWorld())
+        {
+            volatile uint32 itemDebug = m_bagslot[i]->GetGUIDLow();
             m_bagslot[i]->RemoveFromWorld();
+        }
 
     Item::RemoveFromWorld();
 }

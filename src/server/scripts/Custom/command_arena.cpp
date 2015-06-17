@@ -37,12 +37,21 @@ public:
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
 
+        static ChatCommand logCommandTable[] =
+        {
+            { "addchar",        SEC_GAMEMASTER,     false, &HandleAddCharCommand,               "", NULL },
+            { "removechar",     SEC_GAMEMASTER,     false, &HandleRemoveCharCommand,            "", NULL },
+            { NULL,             0,                  false, NULL,                                "", NULL }
+        };
+
         static ChatCommand commandTable[] =
         {
             { "custom",         SEC_GAMEMASTER,     false, NULL,                                "", customCommandTable },
             { "arena",          SEC_GAMEMASTER,     false, NULL,                                "", arenaCommandTable },
+            { "log",            SEC_GAMEMASTER,   false, NULL,                                  "", logCommandTable },
             { NULL,             0,                  false, NULL,                                "", NULL }
         };
+
         return commandTable;
     }
 
@@ -588,6 +597,30 @@ public:
 
         if(!debugOnly)
             sWorld->SendWorldText(LANG_ARENA_CLOSESEASON_END);
+        return true;
+    }
+
+    static bool HandleAddCharCommand(ChatHandler* handler, const char* args)
+    {
+        std::string name = args;
+        if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+        {
+            sObjectMgr->AddCharToDupeLog(guid);
+            handler->PSendSysMessage("Added.");
+        }
+
+        return true;
+    }
+
+    static bool HandleRemoveCharCommand(ChatHandler* handler, const char* args)
+    {
+        std::string name = args;
+        if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+        {
+            sObjectMgr->RemoveCharFromDupeList(guid);
+            handler->PSendSysMessage("Removed.");
+        }
+
         return true;
     }
 };

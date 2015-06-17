@@ -6806,7 +6806,7 @@ void Player::UpdateLocalChannels(uint32 newZone)
 
             for (JoinedChannelsList::iterator itr = m_channels.begin(); itr != m_channels.end(); ++itr)
             {
-                if ((*itr)->GetChannelId() == i)
+                if ((*itr) && (*itr)->GetChannelId() == i)
                 {
                     usedChannel = *itr;
                     break;
@@ -14161,6 +14161,12 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
     if(pItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "Player::MoveItemToInventory - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), GetGUID(), pItem->GetGUID());
 
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "Player::MoveItemToInventory - item %u; count = %u playerGUID %u, itemGUID %u", pItem->GetEntry(), pItem->GetCount(), GetGUID(), pItem->GetGUID());
+    }
+
     // store item
     Item* pLastItem = StoreItem(dest, pItem, update);
 
@@ -14714,6 +14720,17 @@ void Player::SwapItem(uint16 src, uint16 dst)
     if(pSrcItem->GetEntry() == 38186)
         sLog->outDebug(LOG_FILTER_EFIR, "Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
             pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
+
+        if(pDstItem)
+            sLog->outDebug(LOG_FILTER_DUPE, "Player::SwapItem pDstItem %u; count = %u playerGUID %u IsNotEmptyBag %u IsNotEmptyBag %u",
+                pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID(), pDstItem->IsNotEmptyBag(), pSrcItem->IsNotEmptyBag());
+    }
 
     // DST checks
 
@@ -19611,6 +19628,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             SetSpecsCount(2);
             SetActiveSpec(1);
         }
+    }
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---PlayerLoaded;");
     }
 
     return true;
@@ -29285,6 +29308,12 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
         // -- TODO: Send to mailbox if no space
         ChatHandler(this).PSendSysMessage("You don't have any space in your bags.");
         return false;
+    }
+
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---AddItem; item: %u; count: %u;", itemId, count);
     }
 
     Item* item = StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
