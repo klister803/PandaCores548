@@ -504,61 +504,57 @@ class npc_crawler_mine : public CreatureScript
 public:
     npc_crawler_mine() : CreatureScript("npc_crawler_mine") {}
 
-    struct npc_crawler_mineAI : public CreatureAI
+    struct npc_crawler_mineAI : public ScriptedAI
     {
-        npc_crawler_mineAI(Creature* creature) : CreatureAI(creature)
+        npc_crawler_mineAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            me->SetReactState(REACT_PASSIVE);
+            me->setFaction(35);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         }
 
         InstanceScript* instance;
         EventMap events;
         uint64 targetGuid;
-        bool done;
 
         void Reset()
         {
             events.Reset();
-            done = true;
-            targetGuid = NULL;
+            targetGuid = 0;
+            events.ScheduleEvent(EVENT_ACTIVE_DETONATE, urand(3000, 5000)); //test only
+        }
+
+        void OnSpellClick(Unit* clicker)
+        {
+            if (clicker->ToPlayer() && me->HasAura(SPELL_DETONATION_SEQUENCE))
+            {
+                me->RemoveAurasDueToSpell(SPELL_DETONATION_SEQUENCE);
+                targetGuid = clicker->GetGUID();
+                clicker->CastSpell(me, SPELL_GROUND_POUND, true);
+                events.ScheduleEvent(EVENT_ENGULFED_EXPLOSE, 1250);
+            }
         }
 
         void DamageTaken(Unit* attacker, uint32 &damage)
         {
             damage = 0;
         }
-
-        void MoveInLineOfSight(Unit* who)
-        {
-            if (!done)
-            {
-                if (who->ToPlayer() && me->GetDistance(who) <= 1.0f && !who->HasAura(SPELL_ENGULFED_EXPLOSE))
-                {
-                    done = true;
-                    me->RemoveAurasDueToSpell(SPELL_DETONATION_SEQUENCE);
-                    targetGuid = who->GetGUID();
-                    who->CastSpell(me, SPELL_GROUND_POUND, true);
-                    events.ScheduleEvent(EVENT_ENGULFED_EXPLOSE, 1250);
-                }
-            }
-        }
-
+        
         void MovementInform(uint32 type, uint32 pointId)
         {
             if (type == POINT_MOTION_TYPE)
-            {
                 if (pointId == 0)
                     events.ScheduleEvent(EVENT_ACTIVE_DETONATE, urand(3000, 5000));
-            }
         }
 
         void SpellHit(Unit* caster, SpellInfo const *spell)
         {   //after detonate
-            if (spell->Id == SPELL_CRAWLER_MINE_BLAST && !done)
+            if (spell->Id == SPELL_CRAWLER_MINE_BLAST)
             {
-                done = true;
-                me->DespawnOrUnsummon(1000);
+                me->Kill(me, true);
+                me->DespawnOrUnsummon();
             }
         }
 
@@ -571,13 +567,12 @@ public:
                 switch (eventId)
                 {
                 case EVENT_ACTIVE_DETONATE:
-                    DoCast(me, SPELL_DETONATION_SEQUENCE);
-                    done = false;
+                    DoCast(me, SPELL_DETONATION_SEQUENCE, true);
                     break;
                 case EVENT_ENGULFED_EXPLOSE:
                     if (Player *pl = me->GetPlayer(*me, targetGuid))
                         pl->CastSpell(pl, SPELL_ENGULFED_EXPLOSE);
-                    me->DespawnOrUnsummon(1000);
+                    me->DespawnOrUnsummon();
                     break;
                 }
             }

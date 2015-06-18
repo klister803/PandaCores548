@@ -14394,8 +14394,8 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if (this == target)
         return false;
     
-    // Sha of anger mind control
-    if (target->HasAura(119626))
+    // Sha of anger mind control || Crawler mine (Iron Juggernaut)
+    if (target->HasAura(119626) || target->HasAura(144718))
         return true;
 
     // can't attack unattackable units or GMs

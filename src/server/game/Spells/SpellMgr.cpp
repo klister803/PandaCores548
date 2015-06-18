@@ -5075,6 +5075,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[2].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                     break;
                 //Iron Juggernaut
+                case 144766: //Detonation sequence
+                    spellInfo->Effects[0].TargetB = 30;
+                    break;
                 case 144218: //Borer Drill Dmg
                     spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
