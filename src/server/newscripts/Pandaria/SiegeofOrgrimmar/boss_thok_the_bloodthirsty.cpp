@@ -53,7 +53,7 @@ enum eSpells
     SPELL_ENRAGE_KJ          = 145974,
     SPELL_UNLOCKING          = 146589, 
 
-    SPELL_ENRAGE             = 145974,
+    SPELL_ENRAGE             = 26662,
 
     SPELL_VAMPIRIC_FRENZY    = 147978,
 

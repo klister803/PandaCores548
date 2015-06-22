@@ -380,9 +380,28 @@ class boss_sha_of_pride : public CreatureScript
                         }
                         case EVENT_SPELL_GIFT_OF_THE_TITANS:
                         {
-                            if (Creature* nor = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
-                                nor->AI()->SetData(SPELL_GIFT_OF_THE_TITANS, 0);
-
+                            std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                            if (!tlist.empty())
+                            {
+                                uint8 num = 0;
+                                uint8 maxnum = me->GetMap()->Is25ManRaid() ? 8 : 3;
+                                for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                                {
+                                    if (itr != tlist.begin())
+                                    {
+                                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                        {
+                                            if (!pl->HasAura(SPELL_GIFT_OF_THE_TITANS))
+                                            {
+                                                pl->AddAura(SPELL_GIFT_OF_THE_TITANS, pl);
+                                                num++;
+                                                if (num == maxnum)
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             events.RescheduleEvent(EVENT_SPELL_GIFT_OF_THE_TITANS, 25000, 0, PHASE_BATTLE);
                             break;
                         }
@@ -1321,6 +1340,7 @@ class spell_sha_of_pride_projection : public SpellScriptLoader
         }
 };
 
+//144359
 class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
 {
     public:
@@ -1330,63 +1350,51 @@ class spell_sha_of_pride_gift_of_titans : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_of_pride_gift_of_titans_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnTick(AuraEffect const* aurEff)
             {
-                if (GetCaster() && GetCaster()->ToCreature())
-                    GetCaster()->ToCreature()->AI()->SetGUID(GetTarget()->GetGUID());
+                if (GetCaster())
+                { 
+                    std::list<Player*> pllist;
+                    std::list<Player*> gpllist;
+                    pllist.clear();
+                    gpllist.clear();
+                    GetPlayerListInGrid(pllist, GetCaster(), 8.0f);
+                    if (!pllist.empty())
+                    {
+                        uint8 maxcount = GetCaster()->GetMap()->Is25ManRaid() ? 9 : 4;
+                        uint8 count = 0;
+                        for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                        {
+                            if ((*itr)->HasAura(SPELL_GIFT_OF_THE_TITANS))
+                            {
+                                gpllist.push_back(*itr);
+                                count++;
+                                if (count >= maxcount)
+                                    break;
+                            }
+                        }
+
+                        if (!gpllist.empty() && gpllist.size() >= maxcount)
+                        {
+                            for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
+                            {
+                                (*itr)->RemoveAurasDueToSpell(SPELL_GIFT_OF_THE_TITANS);
+                                (*itr)->CastSpell(*itr, SPELL_POWER_OF_THE_TITANS, true);
+                            }
+                        }
+                    }
+                }
             }
 
             void Register()
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_pride_gift_of_titans_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_SCALE_2, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_of_pride_gift_of_titans_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
             return new spell_sha_of_pride_gift_of_titans_AuraScript();
-        }
-};
-
-class spell_sha_of_pride_gift_of_titans_ckecker : public SpellScriptLoader
-{
-    public:
-        spell_sha_of_pride_gift_of_titans_ckecker() : SpellScriptLoader("spell_sha_of_pride_gift_of_titans_ckecker") { }
-
-        class spell_sha_of_pride_gift_of_titans_ckecker_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_of_pride_gift_of_titans_ckecker_SpellScript);
-
-            //! Should work by different way.
-            void SelectTarget(std::list<WorldObject*>& unitList)
-            {
-                Unit* caster = GetCaster();
-                if (!caster)
-                    return;
-
-                InstanceScript* instance = caster->GetInstanceScript();
-                if (!instance)
-                    return;
-
-                uint8 c = 0;
-                for(std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-                {
-                    if (caster->GetDistance(*itr) <= 8.0f)
-                        ++c;
-                }
-                if (Creature * norush = instance->instance->GetCreature(instance->GetData64(NPC_SHA_NORUSHEN)))
-                    norush->AI()->SetData(EVENT_SPELL_GIFT_OF_THE_TITANS, c);
-            }
-
-            void Register() override
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_of_pride_gift_of_titans_ckecker_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_sha_of_pride_gift_of_titans_ckecker_SpellScript();
         }
 };
 
@@ -1501,7 +1509,6 @@ void AddSC_boss_sha_of_pride()
     new spell_sha_of_pride_self_reflection();
     new spell_sha_of_pride_projection();
     new spell_sha_of_pride_gift_of_titans();
-    new spell_sha_of_pride_gift_of_titans_ckecker();
     new spell_sha_of_pride_mark_of_arrogance();
     new spell_sha_of_pride_overcome();
     new spell_swelling_pride();
