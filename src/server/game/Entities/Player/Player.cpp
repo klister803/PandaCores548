@@ -12421,10 +12421,7 @@ InventoryResult Player::CanStoreItem_InBag(uint8 bag, ItemPosCountVec &dest, Ite
         return EQUIP_ERR_WRONG_BAG_TYPE;
 
     if (pSrcItem && pSrcItem->IsNotEmptyBag())
-    {
-        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Exploit new dupe player2","System");
         return EQUIP_ERR_DESTROY_NONEMPTY_BAG;
-    }
 
     ItemTemplate const* pBagProto = pBag->GetTemplate();
     if (!pBagProto)
@@ -12486,10 +12483,7 @@ InventoryResult Player::CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 sl
 {
     //this is never called for non-bag slots so we can do this
     if (pSrcItem && pSrcItem->IsNotEmptyBag())
-    {
-        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Exploit new dupe player3","System");
         return EQUIP_ERR_DESTROY_NONEMPTY_BAG;
-    }
 
     for (uint32 j = slot_begin; j < slot_end; j++)
     {
@@ -14712,7 +14706,6 @@ void Player::SwapItem(uint16 src, uint16 dst)
     // prevent equipping bag in the same slot from its inside
     if (IsBagPos(dst) && srcbag == dstslot)
     {
-        sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Dupe1","System");
         SendEquipError(EQUIP_ERR_CANT_SWAP, pSrcItem, pDstItem);
         return;
     }
@@ -21995,16 +21988,14 @@ void Player::_SaveInventory(SQLTransaction& trans)
                 DeleteRefundReference(item->GetGUIDLow());
                 // don't skip, let the switch delete it
                 //continue;
-                sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Exploit guild bank1","System");
             }
             else if (test != item)
             {
                 sLog->outError(LOG_FILTER_PLAYER, "Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u are incorrect, the item with guid %u is there instead!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
                 // save all changes to the item...
-                //if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
-                    //item->SaveToDB(trans);
+                if (item->GetState() != ITEM_NEW) // only for existing items, no dupes
+                    item->SaveToDB(trans);
                 // ...but do not save position in inventory
-                sWorld->BanAccount(BAN_CHARACTER,GetName(),"45d","Exploit guild bank2","System");
                 continue;
             }
         }
