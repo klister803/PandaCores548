@@ -425,23 +425,20 @@ class boss_malkorok : public CreatureScript
                     case EVENT_ERADICATE:
                         DoCastAOE(SPELL_ERADICATE);
                         break;
-                    case EVENT_BLOOD_RAGE:
-                        DoCast(me, SPELL_BLOOD_RAGE_DMG, true);
-                        events.ScheduleEvent(EVENT_BLOOD_RAGE, 2000);
-                        break;
                     case EVENT_SEISMIC_SLAM:
-                        if (me->GetMap()->Is25ManRaid())
+                    {
+                        std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
+                        if (!tlist.empty())
                         {
-                            std::list<HostileReference*> tlist = me->getThreatManager().getThreatList();
-                            if (!tlist.empty())
+                            uint8 num = 0;
+                            uint8 maxnum = me->GetMap()->Is25ManRaid() ? 3 : 1;
+                            for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
                             {
-                                uint8 num = 0;
-                                uint8 maxnum = 3;
-                                for (std::list<HostileReference*>::const_iterator itr = tlist.begin(); itr != tlist.end(); itr++)
+                                if (itr != tlist.begin())
                                 {
-                                    if (itr != tlist.begin())
+                                    if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
                                     {
-                                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
+                                        if (me->GetDistance(pl) >= 20.0f)
                                         {
                                             DoCast(pl, SPELL_SEISMIC_SLAM, true);
                                             if (me->GetMap()->IsHeroic())
@@ -460,21 +457,11 @@ class boss_malkorok : public CreatureScript
                                 }
                             }
                         }
-                        else
-                        {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
-                            {
-                                DoCast(target, SPELL_SEISMIC_SLAM, true);
-                                if (me->GetMap()->IsHeroic())
-                                {
-                                    if (Creature* lc = me->SummonCreature(NPC_LIVING_CORRUPTION, target->GetPositionX(), target->GetPositionY(), -198.5297f))
-                                    {
-                                        lc->CastSpell(lc, SPELL_LANGUISH_AT);
-                                        lc->AI()->DoZoneInCombat(lc, 100.0f);
-                                    }
-                                }
-                            }
-                        }
+                        break;
+                    }
+                    case EVENT_BLOOD_RAGE:
+                        DoCast(me, SPELL_BLOOD_RAGE_DMG, true);
+                        events.ScheduleEvent(EVENT_BLOOD_RAGE, 2000);
                         break;
                     }
                 }

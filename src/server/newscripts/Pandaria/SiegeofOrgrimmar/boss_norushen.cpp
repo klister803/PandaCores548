@@ -697,6 +697,7 @@ public:
         npc_norushen_residual_corruptionAI(Creature* creature) : ScriptedAI(creature)
         {
             SetCombatMovement(false);
+            me->SetDisplayId(169); //anim like trigger
         }
 
         void Reset() { }
