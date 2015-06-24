@@ -2753,6 +2753,46 @@ public:
     }
 };
 
+class CreatureTargetFilter
+{
+    public:
+        bool operator()(WorldObject* target) const
+        {
+            if (Unit* unit = target->ToCreature())
+                if (!unit->isTotem())
+                    if (!unit->isPet())
+                        return false;
+
+            return true;
+        }
+};
+
+class spell_galakras_shattering_roar : public SpellScriptLoader
+{
+    public:
+        spell_galakras_shattering_roar() : SpellScriptLoader("spell_galakras_shattering_roar") { }
+
+        class spell_galakras_shattering_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_galakras_shattering_roar_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& unitList)
+            {
+                unitList.remove_if(CreatureTargetFilter());
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_galakras_shattering_roar_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENTRY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_galakras_shattering_roar_SpellScript();
+        }
+};
+
 void AddSC_boss_galakras()
 {
     new boss_galakras();
@@ -2780,4 +2820,5 @@ void AddSC_boss_galakras()
     new spell_most_complicated_bomb();
     new spell_galakras_flames_of_galakrond();
     new spell_galakras_tower_rope_jump();
+    new spell_galakras_shattering_roar();
 }
