@@ -1819,7 +1819,8 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
                     if ((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
                         || ((spell->GetDispelMask()) & dispelMask))
                         // ignore positive and passive auras
-                        && !iter->second->IsPositive() && !iter->second->GetBase()->IsPassive())
+                        && !iter->second->IsPositive() && !iter->second->GetBase()->IsPassive()
+                        && spell->Id != 142861) // Don't remove auras from boss Malkorok
                     {
                         m_caster->RemoveAura(iter);
                     }
