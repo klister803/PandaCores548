@@ -1123,10 +1123,6 @@ void GameObject::EnableOrDisableGo(bool enable, bool alternative)
 
 void GameObject::Use(Unit* user)
 {
-    // We do not allow players to use the hidden objects. Need test
-    if (m_respawnTime > 0 || ((user && user->ToPlayer()) && HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE | GO_FLAG_NOT_SELECTABLE)))
-        return;
-
     // by default spell caster is user
     Unit* spellCaster = user;
     uint32 spellId = 0;
@@ -1134,6 +1130,10 @@ void GameObject::Use(Unit* user)
 
     if (Player* playerUser = user->ToPlayer())
     {
+        // We do not allow players to use the hidden objects.
+        if (playerUser && (!isSpawned() || HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE | GO_FLAG_NOT_SELECTABLE)))
+            return;
+
         if (sScriptMgr->OnGossipHello(playerUser, this))
             return;
     }
