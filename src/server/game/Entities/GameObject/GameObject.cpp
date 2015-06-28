@@ -1123,6 +1123,9 @@ void GameObject::EnableOrDisableGo(bool enable, bool alternative)
 
 void GameObject::Use(Unit* user)
 {
+    if (m_respawnTime > 0)
+        return;
+
     // by default spell caster is user
     Unit* spellCaster = user;
     uint32 spellId = 0;
