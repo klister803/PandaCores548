@@ -478,6 +478,7 @@ m_absorb(0), m_resist(0), m_blocked(0), m_interupted(false), m_effect_targets(NU
     // Patch 1.2 notes: Spell Reflection no longer reflects abilities
     m_canReflect = m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(AttributesCustom & SPELL_ATTR0_ABILITY)
         && !(AttributesCustomEx & SPELL_ATTR1_CANT_BE_REFLECTED) && !(AttributesCustom & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
+        && !(AttributesCustomEx3 & SPELL_ATTR3_ONLY_TARGET_PLAYERS && m_caster->ToCreature())
         && !m_spellInfo->IsPassive() && !m_spellInfo->IsPositive();
 
     CleanupTargetList();
