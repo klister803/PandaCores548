@@ -192,7 +192,7 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL), m_o
     m_Stampeded = false;
     m_despan = false;
 
-    m_creatureDiffData = nullptr;
+    m_creatureDiffData = NULL;
 }
 
 Creature::~Creature()
