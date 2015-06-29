@@ -1718,7 +1718,7 @@ DrunkenState Player::GetDrunkenstateByValue(uint8 value)
 void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
 {
     bool isSobering = newDrunkValue < GetDrunkValue();
-    uint32 oldDrunkenState = Player::GetDrunkenstateByValue(GetDrunkValue());
+    uint32 oldDrunkenState = GetDrunkenstateByValue(GetDrunkValue());
     if (newDrunkValue > 100)
         newDrunkValue = 100;
 
@@ -1732,7 +1732,7 @@ void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
     else if (!HasAuraType(SPELL_AURA_MOD_FAKE_INEBRIATE) && !newDrunkValue)
         m_invisibilityDetect.DelFlag(INVISIBILITY_DRUNK);
 
-    uint32 newDrunkenState = Player::GetDrunkenstateByValue(newDrunkValue);
+    uint32 newDrunkenState = GetDrunkenstateByValue(newDrunkValue);
     SetByteValue(PLAYER_BYTES_3, 1, newDrunkValue);
     UpdateObjectVisibility();
 
@@ -18947,26 +18947,33 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         if (m_bgData.bgInstanceID)                                                //saved in Battleground
             currentBg = sBattlegroundMgr->GetBattleground(m_bgData.bgInstanceID, BATTLEGROUND_TYPE_NONE);
 
-        bool player_at_bg = currentBg && currentBg->IsPlayerInBattleground(GetGUID());
+        bool player_at_bg = false;
+        
+        if (currentBg)
+            if (currentBg->IsPlayerInBattleground(GetGUID()))
+                player_at_bg = true;
 
-        if (player_at_bg && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
+        if (player_at_bg && currentBg)
         {
-            BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
-            AddBattlegroundQueueId(bgQueueTypeId);
+            if (currentBg->GetStatus() != STATUS_WAIT_LEAVE)
+            {
+                BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
+                AddBattlegroundQueueId(bgQueueTypeId);
 
-            m_bgData.bgTypeID = currentBg->GetTypeID();
+                m_bgData.bgTypeID = currentBg->GetTypeID();
 
-            //join player to battleground group
-            currentBg->EventPlayerLoggedIn(this);
-            currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
+                //join player to battleground group
+                currentBg->EventPlayerLoggedIn(this);
+                currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
 
-            SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
+                SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
+            }
         }
         // Bg was not found - go to Entry Point
         else
         {
             // leave bg
-            if (player_at_bg)
+            if (player_at_bg && currentBg)
                 currentBg->RemovePlayerAtLeave(GetGUID(), false, true);
 
             // Do not look for instance if bg not found

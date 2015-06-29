@@ -396,6 +396,8 @@ BattlegroundDG::Point::Point(BattlegroundDG *bg) : m_bg(bg)
     m_goldCredit = 0;
 
     m_currentWorldState = std::make_pair(0, 0);
+
+    m_point = nullptr;
 }
 
 BattlegroundDG::Point::~Point()

@@ -445,7 +445,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
     &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_MOD_REST_GAINED
     &AuraEffect::HandleNULL,                                      //387 SPELL_AURA_MOD_VOID_STORAGE_AND_TRANSMOGRIFY_COST
-    &AuraEffect::HandleNULL,                                      //388 SPELL_AURA_MOD_FLY_PATH_SPEED
+    &AuraEffect::HandleNoImmediateEffect,                         //388 SPELL_AURA_MOD_FLY_PATH_SPEED
     &AuraEffect::HandleNULL,                                      //389 SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING
     &AuraEffect::HandleNULL,                                      //390 SPELL_AURA_390
     &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391

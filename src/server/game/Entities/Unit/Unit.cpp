@@ -24607,6 +24607,11 @@ void Unit::SetDynamicPassiveSpells(uint32 spellId, uint32 slot)
     SetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot, spellId);
 }
 
+void Unit::SetDynamicWorldEffects(uint32 effect, uint32 slot)
+{
+    SetDynamicUInt32Value(UNIT_DYNAMIC_WORLD_EFFECTS, slot, effect);
+}
+
 uint32 Unit::GetDynamicPassiveSpells(uint32 slot)
 {
     //from sniff 1-3 enable spell, 0-2 disable

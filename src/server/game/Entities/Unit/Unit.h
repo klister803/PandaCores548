@@ -2520,6 +2520,8 @@ class Unit : public WorldObject
         void SetDynamicPassiveSpells(uint32 spellId, uint32 slot);
         uint32 GetDynamicPassiveSpells(uint32 slot);
 
+        void SetDynamicWorldEffects(uint32 effect, uint32 slot);
+
         uint32 m_sequenceIndex;
 
     protected:

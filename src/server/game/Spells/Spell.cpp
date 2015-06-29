@@ -2650,8 +2650,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (unit->isAlive() != target->alive)
         return;
 
-    if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
-        return;                                             // No missinfo in that case
+    if (m_spellInfo)
+        if (getState() == SPELL_STATE_DELAYED && !m_spellInfo->IsPositive() && (getMSTime() - target->timeDelay) <= unit->m_lastSanctuaryTime)
+            return;                                             // No missinfo in that case
 
     // Some spells should remove Camouflage after hit (traps, some spells that have casting time)
     if (target->targetGUID != m_caster->GetGUID() && m_spellInfo && m_spellInfo->IsBreakingCamouflageAfterHit())

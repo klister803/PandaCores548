@@ -290,6 +290,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket& /*recvDa
     for (CGBattlefieldInfo__m_numPlayerPositions)
         data << guid << posx << posy;
     */
+    if (allianceFlagCarrier)
     {
         data << uint64(allianceFlagCarrier->GetGUID());
         data << float(allianceFlagCarrier->GetPositionX());

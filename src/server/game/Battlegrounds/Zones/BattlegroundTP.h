@@ -218,7 +218,7 @@ class BattlegroundTP : public Battleground
         /// Update score on the top of screen by worldstates
         void UpdateTeamScore(uint32 team);
 
-        void SetDroppedFlagGUID(uint64 guid, int32 team = -1)
+        void SetDroppedFlagGUID(uint64 guid, int32 team)
         {
             if (team == TEAM_ALLIANCE || team == TEAM_HORDE)
                 _droppedFlagGUID[team] = guid;
