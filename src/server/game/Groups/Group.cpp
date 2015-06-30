@@ -2316,6 +2316,9 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
         // offline member? don't let join
         if (!member)
             return ERR_BATTLEGROUND_JOIN_FAILED;
+
+        if (member->HasAura(125761) && isRated)
+            return ERR_BATTLEGROUND_JOIN_FAILED;
         // don't allow cross-faction join as group
         if (member->GetTeam() != team)
             return ERR_BATTLEGROUND_JOIN_TIMED_OUT;

@@ -1368,7 +1368,7 @@ bool Aura::IsDeathPersistent() const
 
 bool Aura::CanBeSaved() const
 {
-    if (IsPassive())
+    if (IsPassive() && !(GetSpellInfo()->AttributesEx12 & SPELL_ATTR12_CAN_BE_SAVED))
         return false;
 
     if (GetCasterGUID() != GetOwner()->GetGUID())

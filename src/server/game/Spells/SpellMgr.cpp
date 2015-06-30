@@ -3817,6 +3817,33 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+                case 147303: // Arena Deserter DR (Test Spell)
+                    spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
+                    spellInfo->Attributes |= SPELL_ATTR0_PASSIVE;
+                    spellInfo->Attributes |= SPELL_ATTR0_HIDE_IN_COMBAT_LOG;
+                    spellInfo->AttributesEx12 |= SPELL_ATTR12_CAN_BE_SAVED;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(42);
+                    break;
+                case 125761: // Arena Deserter (Test Spell)
+                    spellInfo->AttributesCu  = SPELL_ATTR0_CU_NEGATIVE_EFF0;
+                    spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(3);
+                    spellInfo->Attributes    = 0x2D800100;
+                    spellInfo->AttributesEx  = 0x000000A8;
+                    spellInfo->AttributesEx2 = 0x00084005;
+                    spellInfo->AttributesEx3 = 0x10100000;
+                    spellInfo->AttributesEx4 = 0x00000004;
+                    spellInfo->AttributesEx5 = 0x00060008;
+                    spellInfo->AttributesEx6 = 0x00001000;
+                    spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+                    spellInfo->Effects[EFFECT_0].TargetA = TARGET_UNIT_TARGET_ANY;
+                    spellInfo->Effects[EFFECT_0].TargetB = 0;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_DUMMY;
+                    spellInfo->Effects[EFFECT_0].TriggerSpell = 0;
+                    break;
                 case 25956: // Sanctity of Battle
                     spellInfo->Effects[EFFECT_1].MiscValue = SPELLMOD_GLOBAL_COOLDOWN;
                     break;

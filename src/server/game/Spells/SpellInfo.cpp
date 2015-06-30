@@ -1528,6 +1528,9 @@ bool SpellInfo::IsPassiveStackableWithRanks() const
 
 bool SpellInfo::IsMultiSlotAura() const
 {
+    if (AttributesEx12 & SPELL_ATTR12_CAN_BE_SAVED)
+        return false;
+
     return IsPassive();
 }
 

@@ -508,6 +508,10 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
             sBattlegroundMgr->BuildStatusFailedPacket(&data, bg, _player, queueSlot, ERR_LEAVE_QUEUE);
             SendPacket(&data);
 
+            if (bg && bg->isRated())
+                if (bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetStatus() == STATUS_IN_PROGRESS)
+                    _player->HandleArenaDeserter();
+
             _player->RemoveBattlegroundQueueId(bgQueueTypeId);  // must be called this way, because if you move this call to queue->removeplayer, it causes bugs
             bgQueue.RemovePlayer(_player->GetGUID(), true);
             // player left queue, we should update it - do not update Arena Queue

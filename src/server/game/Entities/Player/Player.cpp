@@ -19813,6 +19813,13 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
                     continue;
                 }
 
+                if (InArena())
+                    if (aura->GetId() == 125761)
+                    {
+                        aura->Remove();
+                        continue;
+                    }
+
                 aura->SetLoadedState(maxduration, remaintime, remaincharges, stackcount, recalculatemask, &damage[0]);
                 aura->ApplyForTargets();
                 sLog->outInfo(LOG_FILTER_PLAYER, "Added aura spellid %u, effectmask %u", spellInfo->Id, effmask);
@@ -25315,18 +25322,26 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         // call after remove to be sure that player resurrected for correct cast
-        if (bg->isBattleground() && !isGameMaster() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
+        if (!isGameMaster() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
         {
-            if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN)
+            if (bg->isBattleground())
             {
-                //lets check if player was teleported from BG and schedule delayed Deserter spell cast
-                if (IsBeingTeleportedFar())
+                if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN)
                 {
-                    ScheduleDelayedOperation(DELAYED_SPELL_CAST_DESERTER);
-                    return;
-                }
+                    //lets check if player was teleported from BG and schedule delayed Deserter spell cast
+                    if (IsBeingTeleportedFar())
+                    {
+                        ScheduleDelayedOperation(DELAYED_SPELL_CAST_DESERTER);
+                        return;
+                    }
 
-                CastSpell(this, 26013, true);               // Deserter
+                    CastSpell(this, 26013, true);               // Deserter
+                }
+            }
+            else if (bg->isArena())
+            {
+                if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetRemainingTime() == 120000)
+                    HandleArenaDeserter();
             }
         }
     }
@@ -30845,5 +30860,46 @@ void Player::UpdateSpellHastDurationRecovery()
         modApply->mask = _mask;
         modApply->value = -(100.0f - (GetFloatValue(UNIT_MOD_CAST_HASTE) * 100.0f));
         AddSpellMod(modApply, true);
+    }
+}
+
+void Player::HandleArenaDeserter()
+{
+    AddAura(125761, this);
+
+    if (Aura* deserterAura = GetAura(125761))
+    {
+        if (Aura* dRAura = GetAura(147303))
+        {
+            if (AuraEffect* aRAuraEff = dRAura->GetEffect(EFFECT_0))
+            {
+                switch (aRAuraEff->GetAmount())
+                {
+                    case 0:
+                    {
+                        deserterAura->SetDuration(300000);
+                        deserterAura->SetMaxDuration(300000);
+                        aRAuraEff->SetAmount(aRAuraEff->GetAmount() + 1);
+                        break;
+                    }
+                    case 1:
+                    {
+                        deserterAura->SetDuration(900000);
+                        deserterAura->SetMaxDuration(900000);
+                        aRAuraEff->SetAmount(aRAuraEff->GetAmount() + 1);
+                        break;
+                    }
+                    default:
+                    {
+                        deserterAura->SetDuration(1800000);
+                        deserterAura->SetMaxDuration(1800000);
+                        break;
+                    }
+                }
+                dRAura->RefreshTimers();
+            }
+        }
+        else
+            AddAura(147303, this);
     }
 }

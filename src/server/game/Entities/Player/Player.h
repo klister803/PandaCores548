@@ -2435,6 +2435,8 @@ class Player : public Unit, public GridObject<Player>
         void UpdateSpellHitChances();
         void UpdateSpellHastDurationRecovery();
 
+        void HandleArenaDeserter();
+
         void SetNeedToUpdateRunesRegen() { m_needToUpdateRunesRegen = true; }
         void SetNeedToUpdateSpellHastDurationRecovery() { m_needToUpdateSpellHastDurationRecovery = true; }
         void SetNeedUpdateCastHastMods() { m_needUpdateCastHastMods = true; }

@@ -1203,6 +1203,9 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             WorldPacket data;
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, player, queueSlot, STATUS_NONE, player->GetBattlegroundQueueJoinTime(m_BgTypeId), 0, 0);
             player->GetSession()->SendPacket(&data);
+
+            if (bg && bg->isRated())
+                player->HandleArenaDeserter();
         }
     }
 

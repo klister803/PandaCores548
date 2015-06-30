@@ -34,6 +34,52 @@
 #include "Group.h"
 #include "LFGMgr.h"
 
+// Position const sumprpos[4] =
+// {
+//     {-13209.37f, 284.98f, 21.85f},
+//     {-13213.52f, 278.17f, 21.85f},
+//     {-13214.94f, 283.93f, 21.85f},
+//     {-13207.78f, 278.98f, 21.85f},
+// };
+// 
+// class spell_gen_protect : public SpellScriptLoader
+// {
+// public:
+//     spell_gen_protect() : SpellScriptLoader("spell_gen_protect") { }
+// 
+//     class spell_gen_protect_SpellScript : public SpellScript
+//     {
+//         PrepareSpellScript(spell_gen_protect_SpellScript);
+// 
+//         void HandleAfterHit()
+//         {
+//             if (Unit* caster = GetCaster())
+//                 if (Player* plr = caster->ToPlayer())
+//                 {
+//                     for (uint8 n = 0; n < 4; n++)
+//                     {
+//                         if (Creature* pr = plr->SummonCreature(48416, sumprpos[n]))
+//                         {
+//                             pr->SetObjectScale(0.1f);
+//                             pr->SetFloatValue(UNIT_FIELD_COMBATREACH, 0.1f);
+//                             pr->AI()->DoZoneInCombat(pr, 100.0f);
+//                         }
+//                     }
+//                 }
+//         }
+// 
+//         void Register()
+//         {
+//             AfterHit += SpellHitFn(spell_gen_protect_SpellScript::HandleAfterHit);
+//         }
+//     };
+// 
+//     SpellScript* GetSpellScript() const
+//     {
+//         return new spell_gen_protect_SpellScript();
+//     }
+// };
+
 // Battle Fatigue - 134735
 class spell_gen_battle_fatigue : public SpellScriptLoader
 {
@@ -4071,6 +4117,7 @@ class spell_gen_bg_inactive : public SpellScriptLoader
 
 void AddSC_generic_spell_scripts()
 {
+//    new spell_gen_protect();
     new spell_sha_cloud();
     new spell_gen_battle_fatigue();
     new spell_endurance_of_niuzao();
