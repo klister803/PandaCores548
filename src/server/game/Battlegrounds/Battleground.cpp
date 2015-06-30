@@ -269,19 +269,23 @@ void Battleground::Update(uint32 diff)
                 _ProcessJoin(diff);
             break;
         case STATUS_IN_PROGRESS:
+        {
+            uint8 dumpeningTime = m_JoinType == 2 ? 6 : 11;
+
             _ProcessOfflineQueue();
             // after 47 minutes without one team losing, the arena closes with no winner and no rating change
             if (isArena())
             {
                 //! Patch 5.4: If neither team has won after 20 minutes, the Arena match will end in a draw.
-                if (GetElapsedTime() >= 20*MINUTE*IN_MILLISECONDS)
+                if (GetElapsedTime() >= 20 * MINUTE*IN_MILLISECONDS)
                 {
                     UpdateArenaWorldState();
                     CheckArenaAfterTimerConditions();
                     return;
-                //! Patch 5.4: For Arena matches that last more than 10 minutes, all players in the Arena will begin to receive Dampening.
-                //! Patch 5.4.7: Dampening is now applied to an Arena match starting at the 5 minute mark (down from 10 minutes).
-                }else if (GetElapsedTime() >= 6*MINUTE*IN_MILLISECONDS)
+                    //! Patch 5.4: For Arena matches that last more than 10 minutes, all players in the Arena will begin to receive Dampening.
+                    //! Patch 5.4.7: Dampening is now applied to an Arena match starting at the 5 minute mark (down from 10 minutes).
+                }
+                else if (GetElapsedTime() >= dumpeningTime*MINUTE*IN_MILLISECONDS)
                 {
                     ModifyStartDelayTime(diff);
                     if (GetStartDelayTime() <= 0 || GetStartDelayTime() > 10000)
@@ -304,6 +308,7 @@ void Battleground::Update(uint32 diff)
                     m_PrematureCountDown = false;
             }
             break;
+        }
         case STATUS_WAIT_LEAVE:
             _ProcessLeave(diff);
             break;
