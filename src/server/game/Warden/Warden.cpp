@@ -273,7 +273,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
             //_warden->TestSendMemCheck();
             break;
         case WARDEN_CMSG_MODULE_FAILED:
-            sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN_CMSG_MODULE_FAILED received, kick player!");
+            sLog->outWarn(LOG_FILTER_WARDEN, "WARDEN_CMSG_MODULE_FAILED received, kick player %s!", GetPlayerName(false).c_str());
             KickPlayer();
             break;
         default:
