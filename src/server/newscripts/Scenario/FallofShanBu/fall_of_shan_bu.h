@@ -90,10 +90,10 @@ enum eCreatures
     NPC_CELESTIAL_DEFENDER              = 69837,
     NPC_PHASE3_ROOM_CENTER_STALKER      = 70481,
     NPC_ANVIL_STALKER                   = 70079,
-
     NPC_SHA_AMALGAMATION                = 70228,
     NPC_SHA_FIEND                       = 70039,
     NPC_SHA_BEAST                       = 70048,
+    NPC_THUNDER_FORGE                   = 70061,
 };
 
 enum eGameObects

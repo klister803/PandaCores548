@@ -61,8 +61,6 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (70099, 2, 0, 'Кузня в безопасности, нам нужно возвращаться. Удачи тебе в твоих дальнейших приключениях.', 12, 0, 100, 2, 0, 0, 'Защитник Шадо-Пан to Гневион');
 
 
-
-
 UPDATE `creature_template` SET  `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70556');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70283');
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70148');
@@ -148,6 +146,9 @@ UPDATE `creature_template` SET `ScriptName` ='npc_shanze_pyromancer' WHERE (`ent
 UPDATE `creature_template` SET `ScriptName` ='npc_celestial_blacksmith' WHERE (`entry`='69828');
 UPDATE `creature_template` SET `ScriptName` ='npc_celestial_defender' WHERE (`entry`='69837');
 UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge_second' WHERE (`entry`='70283');
+UPDATE `creature_template` SET `ScriptName` ='npc_sha_beast' WHERE (`entry`='70048');
+UPDATE `creature_template` SET `ScriptName` ='npc_sha_fiend' WHERE (`entry`='70039');
+UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entry`='70228');
 
 DELETE FROM areatrigger_scripts where entry in (840, 503, 868);
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES 

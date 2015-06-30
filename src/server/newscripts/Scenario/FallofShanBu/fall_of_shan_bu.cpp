@@ -2147,6 +2147,7 @@ public:
             {
                 case ACTION_CB_START_MOVING:
                     events.ScheduleEvent(EVENT_LR_1, 1 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_LR_5, 15 * IN_MILLISECONDS);
 
                     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 94156);
                     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 94156);
@@ -2225,11 +2226,10 @@ public:
                         }
                         init.SetCyclic();
                         init.Launch();
-
-                        events.ScheduleEvent(EVENT_LR_5, 5 * IN_MILLISECONDS);
                         break;
                     }
                     case EVENT_LR_5:
+                        DoCast(SPELL_POWER_SURGE);
                         break;
                     default:
                         break;
