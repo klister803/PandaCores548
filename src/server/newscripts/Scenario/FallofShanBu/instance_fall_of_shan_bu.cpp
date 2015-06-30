@@ -20,3 +20,149 @@
 #include "ScriptedCreature.h"
 #include "fall_of_shan_bu.h"
 
+const DoorData doorData[] =
+{
+    {   GO_THUNDER_FORGE_DOOR,  DATA_TRUNDER_FORGE_DOOR,    DOOR_TYPE_PASSAGE,  0},
+    {   0,                      0,                          DOOR_TYPE_PASSAGE,  0},
+};
+
+class instance_fall_of_shan_bu : public InstanceMapScript
+{
+public:
+    instance_fall_of_shan_bu() : InstanceMapScript("instance_fall_of_shan_bu", 1126) { }
+
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    {
+        return new instance_fall_of_shan_bu_InstanceMapScript(map);
+    }
+
+    struct instance_fall_of_shan_bu_InstanceMapScript : public InstanceScript
+    {
+        instance_fall_of_shan_bu_InstanceMapScript(Map* map) : InstanceScript(map)
+        { }
+
+        int8 eventStage;
+        int8 eventStage2;
+        int8 eventStage3;
+        int8 completeEventStage_1;
+        int64 doorGUID;
+        uint8 counter;
+        uint8 jumpPos;
+        uint8 lrStage2;
+
+        void Initialize()
+        {
+            LoadDoorData(doorData);
+
+            eventStage = 0;
+            eventStage2 = 0;
+            eventStage3 = 0;
+            completeEventStage_1 = 0;
+            doorGUID = 0;
+            counter = 0;
+            jumpPos = 0;
+            lrStage2 = 0;
+        }
+
+        bool SetBossState(uint32 type, EncounterState state)
+        {
+            if (!InstanceScript::SetBossState(type, state))
+                return false;
+
+            //switch (type)
+            //{
+            //}
+            return true;
+        }
+
+        void OnGameObjectCreate(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+                case GO_THUNDER_FORGE_DOOR:
+                    AddDoor(go, true);
+                    doorGUID = go->GetGUID();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void OnCreatureCreate(Creature* creature)
+        {
+            //switch (creature->GetEntry())
+            //{
+            //}
+        }
+
+        void SetData(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+                case DATA_START_EVENT:
+                    eventStage = data;
+                    break;
+                case DATA_EVENT_PART_1:
+                    eventStage2 = data;
+                    break;
+                case DATA_EVENT_PART_2:
+                    eventStage3 = data;
+                    break;
+                case DATA_COMPLETE_EVENT_STAGE_1:
+                    completeEventStage_1 = data;
+                    break;
+                case DATA_SUMMONS_COUNTER:
+                    counter = data;
+                    break;
+                case DATA_JUMP_POS:
+                    jumpPos = data;
+                    break;
+                case DATA_LR_STAGE_2:
+                    lrStage2 = data;
+                default:
+                    break;
+            }
+        }
+
+        uint64 GetData64(uint32 type)
+        {
+            switch (type)
+            {
+                case DATA_TRUNDER_FORGE_DOOR:
+                    return doorGUID;
+                default:
+                    break;
+            }
+            return 0;
+        }
+
+        uint32 GetData(uint32 type)
+        {
+            switch (type)
+            {
+                case DATA_START_EVENT:
+                    return eventStage;
+                case DATA_EVENT_PART_1:
+                    return eventStage2;
+                case DATA_EVENT_PART_2:
+                    return eventStage3;
+                case DATA_COMPLETE_EVENT_STAGE_1:
+                    return completeEventStage_1;
+                case DATA_SUMMONS_COUNTER:
+                    return counter;
+                case DATA_JUMP_POS:
+                    return jumpPos;
+                case DATA_LR_STAGE_2:
+                    return lrStage2;
+                default:
+                    break;
+            }
+            return 0;
+        }
+    };
+};
+
+void AddSC_instance_fall_of_shan_bu()
+{
+    new instance_fall_of_shan_bu();
+}
