@@ -3824,6 +3824,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
                     break;
+                case 56835:  // Reaping
+                case 50034:  // Blood Rites
                 case 34487: // Master Marksman
                 case 76659: // Mastery: Wild Quiver
                 case 137639: // Storm, Earth, and Fire
