@@ -149,13 +149,15 @@ UPDATE `creature_template` SET `ScriptName` ='npc_celestial_blacksmith' WHERE (`
 UPDATE `creature_template` SET `ScriptName` ='npc_celestial_defender' WHERE (`entry`='69837');
 UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge_second' WHERE (`entry`='70283');
 
-DELETE FROM areatrigger_scripts where entry in (8964, 9007);
+DELETE FROM areatrigger_scripts where entry in (840, 503, 868);
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES 
-(8964, 'at_thunder_forge_buff'),
-(9007, 'at_healing_orb');
---(0, 'at_power_surge');
+(840, 'at_thunder_forge_buff'),
+(503, 'at_healing_orb'),
+(868, 'at_power_surge');
 
-DELETE FROM `spell_script_names` WHERE (`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
+DELETE FROM `spell_script_names` WHERE (`spell_id`=140487 AND `ScriptName`='spell_thundder_forge_charging_2') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('134715', 'spell_phase_shift_update'),
+('138869', 'spell_forging'),
+('140487', 'spell_thundder_forge_charging_2'),
 ('140382', 'spell_thundder_forge_charging');

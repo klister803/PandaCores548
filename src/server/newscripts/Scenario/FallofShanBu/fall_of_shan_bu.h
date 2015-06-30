@@ -88,13 +88,19 @@ enum eCreatures
     //< second room
     NPC_CELESTIAL_BLACKSMITH            = 69828,
     NPC_CELESTIAL_DEFENDER              = 69837,
+    NPC_PHASE3_ROOM_CENTER_STALKER      = 70481,
+    NPC_ANVIL_STALKER                   = 70079,
 
+    NPC_SHA_AMALGAMATION                = 70228,
+    NPC_SHA_FIEND                       = 70039,
+    NPC_SHA_BEAST                       = 70048,
 };
 
 enum eGameObects
 {
     GO_MOGU_CRICUBLE            = 218910,
     GO_THUNDER_FORGE_DOOR       = 218832,
+    GO_THUNDER_FORGE_AVNIL      = 218741,
 };
 
 template<class AI>
