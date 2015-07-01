@@ -815,7 +815,59 @@ void WorldSession::SendCalendarEventInviteAlert(CalendarEvent const& calendarEve
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_EVENT_INVITE_ALERT [" UI64FMTD "] EventId ["
         UI64FMTD "] InviteId [" UI64FMTD "]", guid, eventId, inviteId);
 
+    uint64 guid1 = 0;
+    uint64 guid2 = 0;
+    uint64 guid3 = 0;
+
     WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_ALERT);
+    data.WriteGuidMask<3, 4>(guid2);
+    data.WriteGuidMask<4>(guid3);
+    data.WriteGuidMask<1, 5>(guid1);
+    data.WriteGuidMask<5>(guid3);
+    data.WriteGuidMask<2>(guid2);
+    data.WriteGuidMask<6, 0>(guid3);
+    data.WriteGuidMask<5>(guid2);
+    data.WriteGuidMask<4>(guid1);
+    data.WriteBits(calendarEvent.GetTitle().length(), 8);
+    data.WriteGuidMask<6>(guid1);
+    data.WriteGuidMask<0, 1, 6>(guid2);
+    data.WriteGuidMask<7>(guid3);
+    data.WriteGuidMask<0, 3, 7>(guid1);
+    data.WriteGuidMask<1, 3>(guid3);
+    data.WriteGuidMask<2>(guid1);
+    data.WriteGuidMask<7>(guid2);
+    data.WriteGuidMask<2>(guid3);
+
+    data.WriteGuidBytes<2, 1>(guid2);
+    data.WriteGuidBytes<4>(guid3);
+    data.WriteGuidBytes<6>(guid2);
+    data.WriteString(calendarEvent.GetTitle());
+    data.WriteGuidBytes<2>(guid1);
+    data.WriteGuidBytes<5>(guid2);
+    data.WriteGuidBytes<0>(guid1);
+    data.WriteGuidBytes<1>(guid3);
+    data.WriteGuidBytes<6>(guid1);
+    data.WriteGuidBytes<4, 7>(guid2);
+    data.WriteGuidBytes<3>(guid3);
+    data.WriteGuidBytes<0>(guid2);
+    data << uint8(0);
+    data << uint8(0);
+    data << uint32(0);
+    data.WriteGuidBytes<3>(guid2);
+    data.WriteGuidBytes<2>(guid3);
+    data << uint32(0);
+    data.WriteGuidBytes<5, 1>(guid1);
+    data.WriteGuidBytes<6>(guid3);
+    data << uint32(0);
+    data << uint8(0);
+    data.WriteGuidBytes<5>(guid3);
+    data.WriteGuidBytes<4, 7>(guid1);
+    data << uint64(0);
+    data.WriteGuidBytes<7>(guid3);
+    data << uint64(0);
+    data.WriteGuidBytes<3>(guid1);
+    data.WriteGuidBytes<0>(guid3);
+
     data << uint64(eventId);
     data << calendarEvent.GetTitle().c_str();
     data << uint32(calendarEvent.GetTime());
