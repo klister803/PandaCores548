@@ -982,11 +982,15 @@ void WorldSession::SendCalendarEventModeratorStatusAlert(CalendarInvite const& i
         invitee, eventId, status);
 
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_MODERATOR_STATUS_ALERT, 8 + 8 + 1 + 1);
-    data.appendPackGUID(invitee);
+    WorldPacket data(SMSG_CALENDAR_EVENT_MODERATOR_STATUS_ALERT);
+    data.WriteGuidMask<6, 7, 4, 1, 2, 0, 5, 3>(invitee);
+    data.WriteBit(true);
+    data.WriteGuidBytes<2>(invitee);
     data << uint64(eventId);
+    data.WriteGuidBytes<0>(invitee);
     data << uint8(status);
-    data << uint8(1); // FIXME
+    data.WriteGuidBytes<7, 5, 3, 4, 6, 1>(invitee);
+
     SendPacket(&data);
 }
 
@@ -1001,11 +1005,11 @@ void WorldSession::SendCalendarEventInviteRemoveAlert(CalendarEvent const& calen
         UI64FMTD "] EventId [" UI64FMTD "] Time %u, Flags %u, Status %u",
         guid, eventId, eventTime, flags, status);
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_REMOVED_ALERT, 8 + 4 + 4 + 1);
-    data << uint64(eventId);
+    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_REMOVED_ALERT);
     data << uint32(eventTime);
-    data << uint32(flags);
     data << uint8(status);
+    data << uint64(eventId);
+    data << uint32(flags);
     SendPacket(&data);
 }
 
@@ -1019,11 +1023,16 @@ void WorldSession::SendCalendarEventInviteRemove(CalendarInvite const& invite, u
         UI64FMTD "] Invitee [" UI64FMTD "] EventId [" UI64FMTD
         "] Flags %u", guid, invitee, eventId, flags);
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_REMOVED, 8 + 4 + 4 + 1);
-    data.appendPackGUID(invitee);
-    data << uint32(eventId);
+    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_REMOVED);
+    data.WriteGuidMask<3, 1, 6, 2, 4, 7, 5>(invitee);
+    data.WriteBit(true);
+    data.WriteGuidMask<0>(invitee);
+    data.WriteGuidBytes<2, 1, 0, 7>(invitee);
     data << uint32(flags);
-    data << uint8(1); // FIXME
+    data.WriteGuidBytes<6>(invitee);
+    data << uint64(eventId);
+    data.WriteGuidBytes<4, 3, 5>(invitee);
+
     SendPacket(&data);
 }
 
