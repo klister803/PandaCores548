@@ -24621,6 +24621,14 @@ uint32 Unit::GetDynamicPassiveSpells(uint32 slot)
     return GetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot);
 }
 
+/*
+WorldPacket data(SMSG_CANCEL_SCENE);
+data.WriteBit(!i->SceneInstanceID);
+if (i->SceneInstanceID)
+data << uint32(i->SceneInstanceID);
+SendPacket(&data);
+*/
+
 void Unit::SendSpellScene(uint32 miscValue, Position* /*pos*/)
 {
     if (GetTypeId() != TYPEID_PLAYER)
