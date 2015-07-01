@@ -891,8 +891,20 @@ void WorldSession::SendCalendarEventUpdateAlert(CalendarEvent const& calendarEve
         UI64FMTD "] EventId [" UI64FMTD "]", guid, eventId);
 
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_UPDATED_ALERT, 1 + 8 + 4 + 4 + 4 + 1 + 4 +
-        calendarEvent.GetTitle().size() + calendarEvent.GetDescription().size() + 1 + 4 + 4);
+    WorldPacket data(SMSG_CALENDAR_EVENT_UPDATED_ALERT);
+    data.WriteBits(calendarEvent.GetDescription().length(), 11);
+    data.WriteBits(calendarEvent.GetTitle().length(), 8);
+    data.WriteBit(false);          // ClearPending
+    data << uint32(0);
+    data << uint32(0);
+    data << uint8(0);
+    data.WriteString(calendarEvent.GetDescription());
+    data << uint32(0);
+    data << uint64(0);
+    data << uint32(0);
+    data.WriteString(calendarEvent.GetTitle());
+    data << uint32(0);
+
     data << uint8(sendEventType);
     data << uint64(eventId);
     data << uint32(calendarEvent.GetTime());
