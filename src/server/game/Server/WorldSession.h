@@ -972,7 +972,8 @@ class WorldSession
         void SendCalendarEventStatus(CalendarEvent const& calendarEvent, CalendarInvite const& invite);
         void SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite);
         void SendCalendarClearPendingAction();
-        void SendCalendarRaidLockout(InstanceSave* save, bool add);
+        void SendCalendarRaidLockoutAdded(InstanceSave* save, bool add);
+        void SendCalendarRaidLockoutRemoved(InstanceSave* save, bool add);
         void SendCalendarRaidLockoutUpdated(InstanceSave* save);
         void SendCalendarCommandResult(CalendarError err, char const* param = NULL);
 

@@ -2658,7 +2658,7 @@ void InstanceMap::PermBindAllPlayers(Player* source)
             data << uint8(0);       //debug bit
             player->GetSession()->SendPacket(&data);
 
-            player->GetSession()->SendCalendarRaidLockout(save, true);
+            player->GetSession()->SendCalendarRaidLockoutAdded(save);
         }
 
         // if the leader is not in the instance the group will not get a perm bind

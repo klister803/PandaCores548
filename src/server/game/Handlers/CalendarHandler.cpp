@@ -1047,10 +1047,10 @@ void WorldSession::SendCalendarClearPendingAction()
 
 void WorldSession::SendCalendarCommandResult(CalendarError err, char const* param /*= NULL*/)
 {
-    uint64 guid = _player->GetGUID();
+    /*uint64 guid = _player->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_COMMAND_RESULT [" UI64FMTD "] Value: %u", guid, err);
 
-    WorldPacket data(SMSG_CALENDAR_COMMAND_RESULT, 0);
+    WorldPacket data(SMSG_CALENDAR_COMMAND_RESULT);
     data << uint32(0);
     data << uint8(0);
     switch (err)
@@ -1067,25 +1067,35 @@ void WorldSession::SendCalendarCommandResult(CalendarError err, char const* para
 
     data << uint32(err);
 
+    SendPacket(&data);*/
+}
+
+void WorldSession::SendCalendarRaidLockoutAdded(InstanceSave* save)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_RAID_LOCKOUT_ADDED");
+    time_t currTime = time(NULL);
+
+    WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_ADDED);
+    data << uint32(secsToTimeBitFields(currTime));
+    data << uint32(save->GetResetTime() - currTime);
+    data << uint32(save->GetMapId());
+    data << uint32(save->GetDifficulty());
+    data.WriteGuidMask<1, 2, 3, 6, 4, 7, 0, 5>(save->GetInstanceId());
+    data.WriteGuidBytes<7, 1, 5, 6, 0, 4, 3, 2>(save->GetInstanceId());
+
     SendPacket(&data);
 }
 
-void WorldSession::SendCalendarRaidLockout(InstanceSave* save, bool add)
+void WorldSession::SendCalendarRaidLockoutRemoved(InstanceSave* save)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", add ? "SMSG_CALENDAR_RAID_LOCKOUT_ADDED" : "SMSG_CALENDAR_RAID_LOCKOUT_REMOVED");
-    time_t currTime = time(NULL);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_RAID_LOCKOUT_REMOVED");
 
-    WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_REMOVED, (add ? 4 : 0) + 4 + 4 + 4 + 8);
-    if (add)
-    {
-        data.SetOpcode(SMSG_CALENDAR_RAID_LOCKOUT_ADDED);
-        data << uint32(secsToTimeBitFields(currTime));
-    }
-
+    WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_REMOVED);
     data << uint32(save->GetMapId());
     data << uint32(save->GetDifficulty());
-    data << uint32(save->GetResetTime() - currTime);
-    data << uint64(save->GetInstanceId());
+    data.WriteGuidMask<4, 0, 6, 7, 5, 3, 2, 1>(save->GetInstanceId());
+    data.WriteGuidBytes<2, 1, 3, 0, 6, 4, 7, 5>(save->GetInstanceId());
+
     SendPacket(&data);
 }
 
@@ -1100,8 +1110,8 @@ void WorldSession::SendCalendarRaidLockoutUpdated(InstanceSave* save)
 
     time_t cur_time = time_t(time(NULL));
 
-    WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_UPDATED, 4 + 4 + 4 + 4 + 8);
-    data << secsToTimeBitFields(cur_time);
+    WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_UPDATED);
+    data << uint32(secsToTimeBitFields(cur_time));
     data << uint32(save->GetMapId());
     data << uint32(save->GetDifficulty());
     data << uint32(0); // Amount of seconds that has changed to the reset time

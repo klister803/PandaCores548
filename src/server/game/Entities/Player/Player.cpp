@@ -20930,7 +20930,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
         }
 
         if (itr->second.perm)
-            GetSession()->SendCalendarRaidLockout(itr->second.save, false);
+            GetSession()->SendCalendarRaidLockoutRemoved(itr->second.save);
 
         itr->second.save->RemovePlayer(this);               // save can become invalid
         m_boundInstances[difficulty].erase(itr++);
@@ -21003,7 +21003,7 @@ void Player::BindToInstance()
     GetSession()->SendPacket(&data);
     BindToInstance(mapSave, true);
 
-    GetSession()->SendCalendarRaidLockout(mapSave, true);
+    GetSession()->SendCalendarRaidLockoutAdded(mapSave);
 }
 
 //! 5.4.1
