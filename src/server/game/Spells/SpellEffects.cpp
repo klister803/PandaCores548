@@ -8605,8 +8605,8 @@ void Spell::EffectHealBattlePetPct(SpellEffIndex effIndex)
         {
             int32 restoreHealth = int32(petInfo->GetMaxHealth() * healthPct / 100.0f);
             petInfo->SetHealth(restoreHealth);
+            petInfo->SetState(STATE_UPDATED);
             updates.push_back(j->first);
-            petInfo->SetInternalState(STATE_UPDATED);
         }
     }
 
