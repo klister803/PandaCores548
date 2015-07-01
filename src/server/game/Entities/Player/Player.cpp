@@ -20680,7 +20680,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
         if (health > maxHealth)
             health = maxHealth;
 
-        GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID);
+        GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID, STATE_NORMAL);
     }
     while (result->NextRow());
 }
@@ -22544,7 +22544,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     // save journal
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
-        if (pet->second->GetInternalState() == STATE_DELETED)
+        if (pet->second->GetState() == STATE_DELETED)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
             stmt->setUInt64(0, pet->first);
@@ -22552,7 +22552,8 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
             trans->Append(stmt);
             continue;
         }
-        if (pet->second->GetInternalState() != STATE_UPDATED)
+
+        if (pet->second->GetState() != STATE_UPDATED)
             continue;
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
@@ -22575,7 +22576,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
 
         trans->Append(stmt);
 
-        pet->second->SetInternalState(STATE_NORMAL);
+        pet->second->SetState(STATE_NORMAL);
     }
 }
 

@@ -33,7 +33,7 @@ void WorldSession::HandleBattlePetSummon(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+    if (!petInfo || petInfo->GetState() == STATE_DELETED)
         return;
 
     uint32 spellId = petInfo->GetSummonSpell();
@@ -104,7 +104,7 @@ void WorldSession::HandleBattlePetNameQuery(WorldPacket& recvData)
         {
             if (PetJournalInfo* petInfo = owner->GetBattlePetMgr()->GetPetInfoByPetGUID(battlepetGuid))
             {
-                if (petInfo->GetInternalState() == STATE_DELETED)
+                if (petInfo->GetState() == STATE_DELETED)
                     return;
 
                 bool hasCustomName = petInfo->GetCustomName() == "" ? false : true;
@@ -165,7 +165,7 @@ void WorldSession::HandleBattlePetModifyName(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+    if (!petInfo || petInfo->GetState() == STATE_DELETED)
         return;
 
     // set custom name
@@ -185,7 +185,7 @@ void WorldSession::HandleBattlePetSetFlags(WorldPacket& recvData)
     // find pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+    if (!petInfo || petInfo->GetState() == STATE_DELETED)
         return;
 
     if (!active)
@@ -216,7 +216,7 @@ void WorldSession::HandleCageBattlePet(WorldPacket& recvData)
         if (!bp || bp->flags & SPECIES_FLAG_CANT_TRADE)
             return;
 
-        if (petInfo->GetInternalState() == STATE_DELETED)
+        if (petInfo->GetState() == STATE_DELETED)
             return;
 
         // at first - all operations with check free space
@@ -283,7 +283,7 @@ void WorldSession::HandleBattlePetSetSlot(WorldPacket& recvData)
     // find current pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+    if (!petInfo || petInfo->GetState() == STATE_DELETED)
         return;
 
     // special handle switch slots
@@ -513,7 +513,7 @@ void WorldSession::HandleBattlePetDelete(WorldPacket& recvData)
     // find current pet
     PetJournalInfo* petInfo = _player->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-    if (!petInfo || petInfo->GetInternalState() == STATE_DELETED)
+    if (!petInfo || petInfo->GetState() == STATE_DELETED)
         return;
 
     if (petInfo->GetFlags() & 0xC)

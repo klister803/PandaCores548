@@ -146,9 +146,9 @@ class PetJournalInfo
 {
 
 public:
-    PetJournalInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, int32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID) :
+    PetJournalInfo(uint32 _speciesID, uint32 _creatureEntry, uint8 _level, uint32 _display, uint16 _power, uint16 _speed, int32 _health, uint32 _maxHealth, uint8 _quality, uint16 _xp, uint16 _flags, uint32 _spellID, std::string _customName, int16 _breedID, uint8 _state) :
         displayID(_display), power(_power), speed(_speed), maxHealth(_maxHealth),
-        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), internalState(STATE_NORMAL) {}
+        health(_health), quality(_quality), xp(_xp), level(_level), flags(_flags), speciesID(_speciesID), creatureEntry(_creatureEntry), summonSpellID(_spellID), customName(_customName), breedID(_breedID), state(_state) {}
 
     // helpers
     void SetCustomName(std::string name) { customName = name; }
@@ -157,8 +157,8 @@ public:
     void SetFlag(uint16 _flag) { if (!HasFlag(_flag)) flags |= _flag; }
     uint16 GetFlags() { return flags; }
     void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
-    void SetInternalState(uint8 state) { internalState = state; }
-    BattlePetInternalStates GetInternalState() { return BattlePetInternalStates(internalState); }
+    void SetState(uint8 _state) { state = _state; }
+    BattlePetInternalStates GetState() { return BattlePetInternalStates(state); }
     void SetXP(uint16 _xp) { xp = _xp; }
     uint16 GetXP() { return xp; }
     void SetLevel(uint8 _level) { level = _level; }
@@ -209,7 +209,7 @@ private:
     uint32 summonSpellID;
     std::string customName;
     // service vars
-    uint8 internalState;
+    uint8 state;
 };
 
 class PetBattleSlot
@@ -662,7 +662,7 @@ public:
         {
             PetJournalInfo * pi = pet->second;
 
-            if (!pi || pi->GetInternalState() == STATE_DELETED)
+            if (!pi || pi->GetState() == STATE_DELETED)
                 continue;
 
             if (pi->GetCreatureEntry() == creatureEntry)
@@ -678,7 +678,7 @@ public:
         if (pet == m_PetJournal.end())
             return;
 
-        pet->second->SetInternalState(STATE_DELETED);
+        pet->second->SetState(STATE_DELETED);
     }
 
     uint64 GetPetGUIDBySpell(uint32 spell)
@@ -687,7 +687,7 @@ public:
         {
             PetJournalInfo * pi = pet->second;
 
-            if (!pi || pi->GetInternalState() == STATE_DELETED)
+            if (!pi || pi->GetState() == STATE_DELETED)
                 continue;
 
             if (pi->GetSummonSpell() == spell)
