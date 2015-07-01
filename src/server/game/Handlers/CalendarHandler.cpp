@@ -929,10 +929,11 @@ void WorldSession::SendCalendarEventRemovedAlert(CalendarEvent const& calendarEv
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_EVENT_REMOVED_ALERT [" UI64FMTD "] EventId ["
         UI64FMTD "] Time %u", guid, eventId, eventTime);
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_REMOVED_ALERT, 1 + 8 + 1);
-    data << uint8(1); // FIXME: If true does not SignalEvent(EVENT_CALENDAR_ACTION_PENDING)
-    data << uint64(eventId);
+    WorldPacket data(SMSG_CALENDAR_EVENT_REMOVED_ALERT);
     data << uint32(eventTime);
+    data << uint64(eventId);
+    data.WriteBit(true); // FIXME: If true does not SignalEvent(EVENT_CALENDAR_ACTION_PENDING)
+
     SendPacket(&data);
 }
 
@@ -955,14 +956,16 @@ void WorldSession::SendCalendarEventStatus(CalendarEvent const& calendarEvent, C
         guid, eventId, inviteId, invitee, eventTime, flags, status, rank,
         responseTime);
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_STATUS, 8 + 8 + 4 + 4 + 1 + 1 + 4);
-    data.appendPackGUID(invitee);
+    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE_STATUS);
+    data << uint32(0);
+    data << uint32(0);
     data << uint64(eventId);
-    data << uint32(eventTime);
-    data << uint32(flags);
-    data << uint8(status);
-    data << uint8(rank);
-    data << uint32(statusTime);
+    data << uint32(0);
+    data << uint8(0);
+    data.WriteBit(false);
+    data.WriteGuidMask<7, 2, 1, 3, 0, 4, 5, 6>(invitee);
+    data.WriteGuidBytes<6, 5, 7, 1, 2, 3, 0, 4>(invitee);
+
     SendPacket(&data);
 }
 
