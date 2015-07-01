@@ -46,8 +46,8 @@ class CalendarInvite
         void SetInvitee(uint64 guid) { _invitee = guid; }
         uint64 GetInvitee() const { return _invitee; }
 
-        void SetStatusTime(uint32 statusTime) { _statusTime = statusTime; }
-        uint32 GetStatusTime() const { return _statusTime; }
+        void SetResponseTime(uint32 responseTime) { _responseTime = responseTime; }
+        uint32 GetResponseTime() const { return _responseTime; }
 
         void SetText(std::string text) { _text = text; }
         std::string GetText() const { return _text; }
@@ -67,7 +67,7 @@ class CalendarInvite
         uint64 _eventId;
         uint64 _invitee;
         uint64 _senderGUID;
-        uint32 _statusTime;
+        uint32 _responseTime;
         CalendarInviteStatus _status;
         CalendarModerationRank _rank;
         std::string _text;

@@ -167,7 +167,7 @@ void CalendarMgr::LoadFromDB()
             invite.SetInvitee(fields[2].GetUInt64());
             invite.SetSenderGUID(fields[3].GetUInt64());
             invite.SetStatus(fields[4].GetUInt8());
-            invite.SetStatusTime(fields[5].GetUInt32());
+            invite.SetResponseTime(fields[5].GetUInt32());
             invite.SetRank(fields[6].GetUInt8());
             invite.SetText(fields[7].GetString());
 
@@ -303,7 +303,7 @@ void CalendarMgr::AddAction(CalendarAction const& action, uint64 eventId)
                     newInvite.SetSenderGUID(action.GetPlayer()->GetGUID());
                     newInvite.SetInvitee(invite->GetInvitee());
                     newInvite.SetStatus(invite->GetStatus());
-                    newInvite.SetStatusTime(invite->GetStatusTime());
+                    newInvite.SetResponseTime(invite->GetResponseTime());
                     newInvite.SetText(invite->GetText());
                     newInvite.SetRank(invite->GetRank());
                     if (AddInvite(newInvite))
@@ -343,7 +343,7 @@ void CalendarMgr::AddAction(CalendarAction const& action, uint64 eventId)
                 {
                     calendarEvent->AddInvite((*itr).GetInviteId());
                     SendCalendarEventInvite((*itr), (!(calendarEvent->GetFlags() & CALENDAR_FLAG_INVITES_LOCKED) &&
-                        !(*itr).GetStatusTime()));
+                        !(*itr).GetResponseTime()));
                     SendCalendarEventInviteAlert(*calendarEvent, *itr);
                 }
             }
@@ -368,7 +368,7 @@ void CalendarMgr::AddAction(CalendarAction const& action, uint64 eventId)
 
             CalendarInvite newInvite(GetFreeInviteId());
             newInvite.SetStatus(status);
-            newInvite.SetStatusTime(uint32(time(NULL)));
+            newInvite.SetResponseTime(uint32(time(NULL)));
             newInvite.SetEventId(eventId);
             newInvite.SetInvitee(action.GetPlayer()->GetGUID());
             newInvite.SetSenderGUID(action.GetPlayer()->GetGUID());

@@ -756,7 +756,7 @@ void WorldSession::SendCalendarEvent(CalendarEvent const& calendarEvent, Calenda
             data << uint8(invite->GetRank());
             data << uint8(calendarEvent.GetGuildId() != 0);
             data << uint64(invite->GetInviteId());
-            data << uint32(invite->GetStatusTime());
+            data << uint32(invite->GetResponseTime());
             data << invite->GetText().c_str();
         }
         else
@@ -779,26 +779,29 @@ void WorldSession::SendCalendarEventInvite(CalendarInvite const& invite, bool pe
     uint64 inviteId = invite.GetInviteId();
     uint64 invitee = invite.GetInvitee();
     uint8 status = invite.GetStatus();
-    uint32 statusTime = invite.GetStatusTime();
+    uint32 responseTime = invite.GetResponseTime();
     Player* player = ObjectAccessor::FindPlayer(invitee);
     uint8 level = player ? player->getLevel() : Player::GetLevelFromDB(invitee);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_EVENT_INVITE [" UI64FMTD "] EventId ["
         UI64FMTD "] InviteId [" UI64FMTD "] Invitee [" UI64FMTD "] "
         " Level %u, Status %u, StatusTime %u" , guid, eventId, inviteId,
-        invitee, level, status, statusTime);
+        invitee, level, status, responseTime);
 
-    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE, 8 + 8 + 8 + 1 + 1 + 1 + (statusTime ? 4 : 0) + 1);
-    data.appendPackGUID(invitee);
-    data << uint64(eventId);
+    WorldPacket data(SMSG_CALENDAR_EVENT_INVITE);
     data << uint64(inviteId);
-    data << uint8(level);
+    data << uint64(eventId);
+    data << uint8(0);         // Type
     data << uint8(status);
-    if (statusTime)
-        data << uint8(1) << uint32(statusTime);
-    else
-        data << uint8(0);
-    data << uint8(pending);
+    data << uint8(level);
+    data.WriteGuidMask<7, 5, 3, 4>(invitee);
+    data.WriteBit(!responseTime);
+    data.WriteGuidMask<1, 6, 0, 2>(invitee);
+    data.WriteBit(pending);
+    data.WriteGuidBytes<3, 7, 0>(invitee);
+    if (responseTime)
+        data << uint32(responseTime);
+    data.WriteGuidBytes<2, 5, 1, 4, 6>(invitee);
 
     SendPacket(&data);
 }
@@ -879,14 +882,14 @@ void WorldSession::SendCalendarEventStatus(CalendarEvent const& calendarEvent, C
     uint32 flags = calendarEvent.GetFlags();
     uint8 status = invite.GetStatus();
     uint8 rank = invite.GetRank();
-    uint32 statusTime = secsToTimeBitFields(invite.GetStatusTime());
+    uint32 responseTime = secsToTimeBitFields(invite.GetResponseTime());
 
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_EVENT_STATUS [" UI64FMTD "] EventId ["
         UI64FMTD "] InviteId [" UI64FMTD "] Invitee [" UI64FMTD "] Time %u "
         "Flags %u, Status %u, Rank %u, StatusTime %u",
         guid, eventId, inviteId, invitee, eventTime, flags, status, rank,
-        statusTime);
+        responseTime);
 
     WorldPacket data(SMSG_CALENDAR_EVENT_STATUS, 8 + 8 + 4 + 4 + 1 + 1 + 4);
     data.appendPackGUID(invitee);
