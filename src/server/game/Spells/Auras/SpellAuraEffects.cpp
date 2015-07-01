@@ -446,7 +446,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_MOD_REST_GAINED
     &AuraEffect::HandleNULL,                                      //387 SPELL_AURA_MOD_VOID_STORAGE_AND_TRANSMOGRIFY_COST
     &AuraEffect::HandleNoImmediateEffect,                         //388 SPELL_AURA_MOD_FLY_PATH_SPEED
-    &AuraEffect::HandleNULL,                                      //389 SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING
+    &AuraEffect::HandleNoImmediateEffect,                         //389 SPELL_AURA_MOD_CAST_TIME_WHILE_MOVING
     &AuraEffect::HandleNULL,                                      //390 SPELL_AURA_390
     &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391
     &AuraEffect::HandleNULL,                                      //392 SPELL_AURA_392
@@ -485,7 +485,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //425 SPELL_AURA_425
     &AuraEffect::HandleNULL,                                      //426 SPELL_AURA_426
     &AuraEffect::HandleNULL,                                      //427 SPELL_AURA_427
-    &AuraEffect::HandleNULL,                                      //428 SPELL_AURA_SUMMON_CONTROLLER
+    &AuraEffect::HandleSummonController,                          //428 SPELL_AURA_SUMMON_CONTROLLER
     &AuraEffect::HandleNULL,                                      //429 SPELL_AURA_PET_DAMAGE_DONE_PCT
     &AuraEffect::HandleAuraActivateScene,                         //430 SPELL_AURA_ACTIVATE_SCENE
     &AuraEffect::HandleNULL,                                      //431 SPELL_AURA_CONTESTED_PVP
@@ -9142,4 +9142,20 @@ void AuraEffect::HandleLootBonus(AuraApplication const* aurApp, uint8 mode, bool
         return;
 
     //m_amount = target->GetMap()->GetDifficulty();
+}
+
+void AuraEffect::HandleSummonController(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    uint32 summonId = GetSpellInfo()->GetEffect(GetEffIndex(), m_diffMode).TriggerSpell;
+
+    if (apply)
+        GetCaster()->CastSpell(GetCaster(), summonId, true);
+    else
+    {
+        if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(summonId))
+            GetCaster()->RemoveAllMinionsByEntry(GetMiscValue());
+    }
 }
