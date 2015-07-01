@@ -6838,7 +6838,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_LINE_OF_SIGHT;
 
                 if (m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE && m_caster->IsVisionObscured(target))
+                {
+                    if (m_caster->ToCreature() && m_caster->GetEntry() == 71529) //fix exploit on Thok Bloodthirsty
+                        m_caster->ToCreature()->AI()->EnterEvadeMode();
                     return SPELL_FAILED_VISION_OBSCURED; // smoke bomb, camouflage...
+                }
             }
         }
     }
@@ -9159,7 +9163,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                 return SPELL_CAST_OK;
             }
             case LOCK_KEY_SPELL:
-                if (lockInfo->Index[j] == 143917 && m_caster->HasAura(146589))
+                if ((lockInfo->Index[j] == 143917 && m_caster->HasAura(146589)) || lockInfo->Index[j] == 144229)
                     return SPELL_CAST_OK;
                 reqKey = true;
                 break;
