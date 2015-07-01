@@ -1775,25 +1775,40 @@ class spell_warl_unbound_will : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Unit* player = GetCaster())
                 {
                     player->ModifyHealth(-int32(player->CountPctFromMaxHealth(20)));
-                    player->RemoveMovementImpairingAuras();
-                    player->RemoveAurasByType(SPELL_AURA_MOD_CONFUSE);
-                    player->RemoveAurasByType(SPELL_AURA_MOD_FEAR);
-                    player->RemoveAurasByType(SPELL_AURA_MOD_FEAR_2);
-                    player->RemoveAurasByType(SPELL_AURA_MOD_STUN);
-                    player->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
-                    player->RemoveAurasByType(SPELL_AURA_TRANSFORM);
+                    std::list<AuraType> auratypelist;
+                    std::vector<uint32> removeAuraId;
+                    auratypelist.push_back(SPELL_AURA_MOD_CONFUSE);
+                    auratypelist.push_back(SPELL_AURA_MOD_FEAR);
+                    auratypelist.push_back(SPELL_AURA_MOD_FEAR_2);
+                    auratypelist.push_back(SPELL_AURA_MOD_STUN);
+                    auratypelist.push_back(SPELL_AURA_MOD_ROOT);
+                    auratypelist.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+                    auratypelist.push_back(SPELL_AURA_TRANSFORM);
+
+                    for (std::list<AuraType>::iterator auratype = auratypelist.begin(); auratype != auratypelist.end(); ++auratype)
+                    {
+                        std::list<AuraEffect*> const& effList = player->GetAuraEffectsByType(*auratype);
+                        if (!effList.empty())
+                            for (std::list<AuraEffect*>::const_iterator itr = effList.begin(); itr != effList.end(); ++itr)
+                                if (AuraEffect* eff = (*itr))
+                                    removeAuraId.push_back(eff->GetId());
+                    }
+
+                    if (!removeAuraId.empty())
+                        for (std::vector<uint32>::iterator i = removeAuraId.begin(); i != removeAuraId.end(); ++i)
+                            player->RemoveAura(*i);
                 }
             }
 
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_warl_unbound_will_SpellScript::CheckHealth);
-                OnHit += SpellHitFn(spell_warl_unbound_will_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_warl_unbound_will_SpellScript::HandleAfterHit);
             }
         };
 
