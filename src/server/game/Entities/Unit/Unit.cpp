@@ -2329,7 +2329,7 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
             amount += int32(bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK));
     }
 
-    AuraEffectList const& mAbsorbReducedDamage = victim->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB);
+    AuraEffectList const& mAbsorbReducedDamage = victim->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB_AMOUNT);
     for (AuraEffectList::const_iterator i = mAbsorbReducedDamage.begin(); i != mAbsorbReducedDamage.end(); ++i)
         AddPct(amount, (*i)->GetAmount());
 
@@ -13735,7 +13735,7 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     }
     else
     {
-        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_MOD_AUTOATTACK_DAMAGE_TARGET);
         for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
             if ((*i)->GetCasterGUID() == attacker->GetGUID())
                 AddPct(TakenTotalMod, (*i)->GetAmount());
@@ -13831,7 +13831,7 @@ uint32 Unit::MeleeDamageBonusForDamageBeforeHit(Unit* attacker, uint32 damageBef
     }
     else
     {
-        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_MOD_AUTOATTACK_DAMAGE_TARGET);
         for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
             if ((*i)->GetCasterGUID() == attacker->GetGUID())
                 if ((*i)->GetAmount() > 0)

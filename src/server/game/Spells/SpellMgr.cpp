@@ -3875,7 +3875,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AuraInterruptFlags = 0;
                     break;
                 case 121471: // Shadow Blades
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_367;
+                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_OVERRIDE_AUTOATTACK;
                     break;
                 case 148008: // Essence of Yu'lon
                 case 48743:  // Death Pact

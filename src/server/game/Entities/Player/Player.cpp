@@ -1855,7 +1855,7 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
                 if (!replacementMeleeAttacks.empty())
                 {
                     for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
@@ -1918,7 +1918,7 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
                 if (!replacementMeleeAttacks.empty())
                 {
                     for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
@@ -6303,6 +6303,10 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // set health/powers (0- will be set in caller)
     if (restore_percent > 0.0f)
     {
+        AuraEffectList const& mResurrectedHealthByGuildMember = GetAuraEffectsByType(SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER);
+        for (AuraEffectList::const_iterator i = mResurrectedHealthByGuildMember.begin(); i != mResurrectedHealthByGuildMember.end(); ++i)
+            AddPct(restore_percent, (*i)->GetAmount());
+
         SetHealth(uint32(GetMaxHealth()*restore_percent));
         SetPower(POWER_MANA, uint32(GetMaxPower(POWER_MANA)*restore_percent));
         SetPower(POWER_RAGE, 0);
