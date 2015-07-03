@@ -10,6 +10,216 @@
 #define SPELL_TORCHES_CAUGHT 45693
 #define GO_RIBBON_POLE 181605
 
+// Darkmoon Faire Gnolls - 54444, 54466, 54549
+class npc_darkmoon_faire_gnolls : public CreatureScript
+{
+    enum Spells
+    {
+        SPELL_WHACK             = 102022,
+        SPELL_GNOLL_KILL_CREDIT = 101835,
+    };
+
+    public:
+        npc_darkmoon_faire_gnolls() : CreatureScript("npc_darkmoon_faire_gnolls") { }
+
+        struct npc_darkmoon_faire_gnollsAI : public Scripted_NoMovementAI
+        {
+            npc_darkmoon_faire_gnollsAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }
+
+            EventMap events;
+
+            void Reset() 
+            {
+                me->DespawnOrUnsummon(3000);
+            }
+
+            void SpellHit(Unit* pCaster, const SpellInfo* Spell)
+            {
+                if (Spell->Id == SPELL_WHACK)
+                {
+                    DoCast(pCaster, SPELL_GNOLL_KILL_CREDIT);
+                    me->Kill(me);
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_darkmoon_faire_gnollsAI(creature);
+        }
+};
+
+// Darkmoon Faire Gnoll Holder - 54547
+class npc_darkmoon_faire_gnoll_holder : public CreatureScript
+{
+    enum Events
+    {
+        EVENT_SUMMON_GNOLL = 1,
+    };
+    
+    enum Spells
+    {
+        SPELL_SUMMON_GNOLL          = 102036,
+        SPELL_SUMMON_GNOLL_BABY     = 102043,
+        SPELL_SUMMON_GNOLL_BONUS    = 102044,
+    };
+
+    public:
+        npc_darkmoon_faire_gnoll_holder() : CreatureScript("npc_darkmoon_faire_gnoll_holder") { }
+
+        struct npc_darkmoon_faire_gnoll_holderAI : public Scripted_NoMovementAI
+        {
+            npc_darkmoon_faire_gnoll_holderAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+            
+            EventMap events;
+
+            void Reset() 
+            {
+                events.ScheduleEvent(EVENT_SUMMON_GNOLL, 3000);
+            }
+            
+            void UpdateAI(uint32 diff) 
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SUMMON_GNOLL:
+                        {
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, 54546, 40.0f);
+                            if (!creatures.empty())
+                            {
+                                Trinity::Containers::RandomResizeList(creatures, 1);
+                                uint32 Spells[3] = 
+                                    {
+                                        SPELL_SUMMON_GNOLL,
+                                        SPELL_SUMMON_GNOLL_BABY,
+                                        SPELL_SUMMON_GNOLL_BONUS,
+                                    };
+                                    uint8 rand = urand(0, 3);
+                                if (Creature* pTarget = creatures.front())
+                                    DoCast(pTarget, Spells[rand], true);
+                            }
+                            events.ScheduleEvent(EVENT_SUMMON_GNOLL, 3000);
+                            break;
+                        }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_darkmoon_faire_gnoll_holderAI(creature);
+        }
+};
+
+// Rinling - 14841
+class npc_darkmoon_faire_rinling : public CreatureScript
+{
+    enum Events
+    {
+        EVENT_SHOTEVENT_ACTIVE  = 1,
+        EVENT_SHOTEVENT_PAUSE   = 2,
+    };
+    
+    enum Npcs
+    {
+        NPC_DARKMOON_FAIRE_TARGET   = 24171,
+    };
+
+    enum Spells
+    {
+        SPELL_GOSSIP_CREATE_RIFLE   = 101991,
+        SPELL_INDICATOR             = 43313,
+        SPELL_INDICATOR_QUICK_SHOT  = 101010,
+    };
+
+    public:
+        npc_darkmoon_faire_rinling() : CreatureScript("npc_darkmoon_faire_rinling") { }
+
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        {
+            player->CLOSE_GOSSIP_MENU();
+
+            if (action == 1)
+                creature->CastSpell(player, SPELL_GOSSIP_CREATE_RIFLE, true);
+
+            return true;
+        }
+
+        struct npc_darkmoon_faire_rinlingAI : public Scripted_NoMovementAI
+        {
+            npc_darkmoon_faire_rinlingAI(Creature* c) : Scripted_NoMovementAI(c)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+            
+            EventMap events;
+
+            void Reset() 
+            {
+                events.ScheduleEvent(EVENT_SHOTEVENT_ACTIVE, 3000);
+            }
+            
+            void UpdateAI(uint32 diff) 
+            {
+                events.Update(diff);
+
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_SHOTEVENT_ACTIVE:
+                        {
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, NPC_DARKMOON_FAIRE_TARGET, 15.0f);
+                            if (!creatures.empty())
+                            {
+                                Trinity::Containers::RandomResizeList(creatures, 1);
+
+                                if (Creature* pTarget = creatures.front())
+                                {
+                                    pTarget->CastSpell(pTarget, SPELL_INDICATOR, true);
+                                    pTarget->CastSpell(pTarget, SPELL_INDICATOR_QUICK_SHOT, true);
+                                }
+                            }
+                            events.ScheduleEvent(EVENT_SHOTEVENT_PAUSE, 3000);
+                            break;
+                        }
+                        case EVENT_SHOTEVENT_PAUSE:
+                        {
+                            std::list<Creature*> creatures;
+                            me->GetCreatureListWithEntryInGrid(creatures, NPC_DARKMOON_FAIRE_TARGET, 15.0f);
+                            if (!creatures.empty())
+                            {
+                                for (std::list<Creature*>::iterator iter = creatures.begin(); iter != creatures.end(); ++iter)
+                                    (*iter)->RemoveAura(SPELL_INDICATOR);
+                            }
+                            events.ScheduleEvent(EVENT_SHOTEVENT_ACTIVE, 3000);
+                            break;
+                        }
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature *creature) const
+        {
+            return new npc_darkmoon_faire_rinlingAI(creature);
+        }
+};
+
 // spell 45418
 class spell_fire_dancing : public SpellScriptLoader
 {
@@ -335,8 +545,277 @@ class spell_achiev_snow : public SpellScriptLoader
         }
 };
 
+class spell_darkmoon_cannon_prep : public SpellScriptLoader
+{
+    enum misc
+    {
+        NPC_DARKMOON_FAIRE_CANNON   = 15218,
+
+        SPELL_DARKMOON_MAGIC_WINGS  = 102116,
+    };
+
+    public:
+        spell_darkmoon_cannon_prep() : SpellScriptLoader("spell_darkmoon_cannon_prep") { }
+
+        class spell_darkmoon_cannon_prep_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_darkmoon_cannon_prep_AuraScript);
+
+            void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* pCaster = GetCaster())
+                    pCaster->SetControlled(true, UNIT_STATE_ROOT);
+            }
+            
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* pCaster = GetCaster())
+                {
+                    pCaster->SetControlled(false, UNIT_STATE_ROOT);
+
+                    if (Creature* CanonTrigger = pCaster->FindNearestCreature(NPC_DARKMOON_FAIRE_CANNON, 30.0f))
+                        CanonTrigger->CastSpell(pCaster, SPELL_DARKMOON_MAGIC_WINGS, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_darkmoon_cannon_prep_AuraScript::OnApply, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_darkmoon_cannon_prep_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_TRANSFORM, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_darkmoon_cannon_prep_AuraScript();
+        }
+};
+
+//62244
+class spell_darkmoon_cannonball : public SpellScriptLoader
+{
+    enum misc
+    {
+        NPC_DARKMOON_FAIRE_CANNON_TARGET    = 33068,
+
+        SPELL_LANDING_RESULT_KILL_CREDIT    = 100962,
+        SPELL_BULLSEYE                      = 62173,
+        SPELL_GREAT_SHOT                    = 62175,
+        SPELL_POOR_SHOT                     = 62179,
+        SPELL_CANNONBALL                    = 62244,
+    };
+
+    public:
+        spell_darkmoon_cannonball() : SpellScriptLoader("spell_darkmoon_cannonball") { }
+
+        class spell_darkmoon_cannonball_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_darkmoon_cannonball_AuraScript);
+
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            {
+                Unit* pCaster = GetCaster();
+                if (!pCaster)
+                    return;
+
+                if (pCaster->IsInWater())
+                    if (Creature* CanonTrigger = pCaster->FindNearestCreature(NPC_DARKMOON_FAIRE_CANNON_TARGET, 30.0f))
+                    {
+                        pCaster->CastSpell(pCaster, GetSpellInfo()->Effects[EFFECT_0].BasePoints, true);
+
+                        if (pCaster->IsInRange(CanonTrigger, 0.0f, 1.0f))
+                        {
+                            for (uint8 i = 0; i < 5; ++i)
+                                pCaster->CastSpell(pCaster, SPELL_LANDING_RESULT_KILL_CREDIT, true);
+
+                            pCaster->CastSpell(pCaster, SPELL_BULLSEYE, true);
+                        }
+                        else if (pCaster->IsInRange(CanonTrigger, 1.0f, 4.0f))
+                        {
+                            for (uint8 i = 0; i < 3; ++i)
+                                pCaster->CastSpell(pCaster, SPELL_LANDING_RESULT_KILL_CREDIT, true);
+
+                            pCaster->CastSpell(pCaster, SPELL_GREAT_SHOT, true);
+                        }
+                        else if (pCaster->IsInRange(CanonTrigger, 4.0f, 15.0f))
+                        {
+                            pCaster->CastSpell(pCaster, SPELL_POOR_SHOT, true);
+                        }
+
+                        pCaster->RemoveAura(SPELL_CANNONBALL);
+                    }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_darkmoon_cannonball_AuraScript::HandlePeriodicTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_darkmoon_cannonball_AuraScript();
+        }
+};
+
+// Cannon - 102292
+class spell_darkmoon_faire_cannon : public SpellScriptLoader
+{
+    enum misc
+    {
+        NPC_TONK_TARGET    = 33081,
+
+        SPELL_TONK_TARGET_ = 62265,
+    };
+
+    public:
+        spell_darkmoon_faire_cannon() : SpellScriptLoader("spell_darkmoon_faire_cannon") { }
+
+        class spell_darkmoon_faire_cannon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_darkmoon_faire_cannon_SpellScript);
+
+            void HandleHitTarget(SpellEffIndex /*effIndex*/)
+            {
+                PreventHitDefaultEffect(EFFECT_0);
+
+                Unit* caster = GetCaster()->GetOwner();
+                Unit* target = GetHitUnit()->ToCreature();
+
+                if(!caster || !target)
+                    return;
+
+                if (target->isAlive() && target->GetEntry() == NPC_TONK_TARGET)
+                    caster->CastSpell(caster, SPELL_TONK_TARGET_, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_darkmoon_faire_cannon_SpellScript::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_darkmoon_faire_cannon_SpellScript();
+        }
+};
+
+// Ring Toss - 101695
+class spell_darkmoon_ring_toss : public SpellScriptLoader
+{
+    enum misc
+    {
+        NPC_DUBENKO     = 54490,
+
+        SPELL_RING_TOSS_HIT     = 101699,
+        SPELL_RING_TOSS_MISS    = 101697,
+        SPELL_RING_TOSS_MISS_2  = 101698,
+    };
+
+    public:
+        spell_darkmoon_ring_toss() : SpellScriptLoader("spell_darkmoon_ring_toss") { }
+
+        class spell_darkmoon_ring_toss_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_darkmoon_ring_toss_SpellScript);
+
+            void HandleHitTarget(SpellEffIndex /*effIndex*/)
+            {
+                PreventHitDefaultEffect(EFFECT_0);
+
+                Unit* caster = GetCaster();
+                Unit* target = GetHitUnit()->ToCreature();
+                if(!caster || !target)
+                    return;
+
+                if (target->GetEntry() == NPC_DUBENKO)
+                {
+                    float distance = target->GetDistance2d(GetExplTargetDest()->GetPositionX(), GetExplTargetDest()->GetPositionY());
+
+                    if (distance < 0.5f)
+                        caster->CastSpell(target, SPELL_RING_TOSS_HIT, true);
+
+                    else if (distance < 2.0f)
+                        caster->CastSpell(target, SPELL_RING_TOSS_MISS, true);
+
+                    else if (distance < 4.0f)
+                        caster->CastSpell(target, SPELL_RING_TOSS_MISS_2, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_darkmoon_ring_toss_SpellScript::HandleHitTarget, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_darkmoon_ring_toss_SpellScript();
+        }
+};
+
+class spell_darkmoon_deathmatch_teleport : public SpellScriptLoader
+{
+    enum Spells
+    {
+        SPELL_DARKMOON_DEATHMATCH_TELE_1 = 108919,
+        SPELL_DARKMOON_DEATHMATCH_TELE_2 = 113212,
+        SPELL_DARKMOON_DEATHMATCH_TELE_3 = 113213,
+        SPELL_DARKMOON_DEATHMATCH_TELE_4 = 113216,
+        SPELL_DARKMOON_DEATHMATCH_TELE_5 = 113219,
+        SPELL_DARKMOON_DEATHMATCH_TELE_6 = 113224,
+        SPELL_DARKMOON_DEATHMATCH_TELE_7 = 113227,
+        SPELL_DARKMOON_DEATHMATCH_TELE_8 = 113228,
+    };
+
+    public:
+        spell_darkmoon_deathmatch_teleport() : SpellScriptLoader("spell_darkmoon_deathmatch_teleport") { }
+
+        class spell_darkmoon_deathmatch_teleport_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_darkmoon_deathmatch_teleport_SpellScript);
+            
+            void HandleScript(SpellEffIndex effIndex)
+            {
+                Player* pTarget = GetHitUnit()->ToPlayer();
+                if (!pTarget)
+                    return;
+
+                uint32 Spells[8] = 
+                {
+                    SPELL_DARKMOON_DEATHMATCH_TELE_1,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_2,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_3,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_4,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_5,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_6,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_7,
+                    SPELL_DARKMOON_DEATHMATCH_TELE_8,
+                };
+                uint8 rand = urand(0, 8);
+
+                pTarget->CastSpell(pTarget, Spells[rand]);
+            }
+            
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_darkmoon_deathmatch_teleport_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_darkmoon_deathmatch_teleport_SpellScript();
+        }
+};
+
 void AddSC_midsummer_fire_festival()
 {
+    new npc_darkmoon_faire_gnolls();
+    new npc_darkmoon_faire_gnoll_holder();
+    new npc_darkmoon_faire_rinling();
     new spell_fire_dancing;
     new spell_torches_caught;
     new spell_throw_torch;
@@ -346,4 +825,9 @@ void AddSC_midsummer_fire_festival()
     new spell_turkey_tracker();
     new spell_pass_the_turkey();
     new spell_achiev_snow();
+    new spell_darkmoon_cannon_prep();
+    new spell_darkmoon_cannonball();
+    new spell_darkmoon_faire_cannon();
+    new spell_darkmoon_ring_toss();
+    new spell_darkmoon_deathmatch_teleport();
 }

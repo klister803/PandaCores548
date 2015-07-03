@@ -8914,6 +8914,7 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         case 258:
             startPower = 75;
             break;
+        case 88:
         case 103:
             startPower = 10;
             break;

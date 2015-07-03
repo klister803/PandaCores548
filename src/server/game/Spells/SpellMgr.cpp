@@ -5676,6 +5676,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 89496: // Gnomish Gravity Well
                     spellInfo->AttributesEx4 &= ~SPELL_ATTR4_CAST_ONLY_IN_OUTLAND;
                     break;
+                case 100752: // Darkmoon: Using Steam Tonk Controller
+                    spellInfo->Effects[0].TargetB = TARGET_DEST_DB;
+                    break;
                 default:
                     break;
             }
