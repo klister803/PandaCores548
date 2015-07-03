@@ -2227,6 +2227,12 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
                         return;
                     }
                     break;
+                case SPELLFAMILY_DRUID:
+                {
+                    if (GetId() == 110621) // Mirror Image
+                        m_isPeriodic = false;
+                    break;
+                }
                 default:
                     break;
            }
