@@ -110,7 +110,7 @@ class npc_darkmoon_faire_gnoll_holder : public CreatureScript
                                 if (Creature* pTarget = creatures.front())
                                     DoCast(pTarget, Spells[rand], true);
                             }
-                            events.ScheduleEvent(EVENT_SUMMON_GNOLL, 3000);
+                            events.ScheduleEvent(EVENT_SUMMON_GNOLL, 2000);
                             break;
                         }
                     }

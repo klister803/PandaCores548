@@ -27,7 +27,10 @@ INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`,
 (13076, 5, 0, 'Fortune teller?', 1, 1, 13082, 0, 0, 0, ''),
 (13113, 0, 0, 'May I have another Darkmoon Adventurer\'s Guide?', 1, 1, 0, 0, 0, 0, '');
 
--- 'Исправлены порталы в Элвиннский лес и Мулгор
+-- Исправлены порталы в Элвиннский лес и Мулгор
+update gameobject_template set faction = 1732 where entry = 210175;
+update gameobject_template set faction = 1735 where entry = 210176;
+
 delete from spell_target_position where id in (101260, 103582);
 INSERT INTO `spell_target_position` (`id`, `target_map`, `target_position_x`, `target_position_y`, `target_position_z`, `target_orientation`) VALUES 
 (101260, 0, -9516.52, 82.46, 59.571, 2.92068),
@@ -131,8 +134,8 @@ INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`,
 (13352, 0, 0, 'Teleport me to the cannon.', 1, 1, 0, 0, 0, 500, 'Teleportation to the cannon will cost:'),
 (13352, 1, 0, 'I don\'t need a teleport.', 1, 1, 0, 0, 0, 0, '');
 
--- 'quest He Shoots, He Scores http://www.wowhead.com/quest=29438
-update creature_template set AIName = 'npc_darkmoon_faire_rinling' where entry = 14841;
+-- quest He Shoots, He Scores http://www.wowhead.com/quest=29438
+update creature_template set ScriptName = 'npc_darkmoon_faire_rinling' where entry = 14841;
 
 update creature_template set InhabitType = 7, AIName = 'SmartAI' where entry = 24171;
 delete from smart_scripts where entryorguid = 24171;
@@ -156,7 +159,7 @@ delete from gameobject where id = 300129;
 INSERT INTO `gameobject` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `isActive`) VALUES 
 (300129, 974, 5861, 5870, 1, 1, -4072, 6351, 13.1011, 0.845177, 0, 0, 0.410123, 0.91203, -300, 0, 1, 0);
 
--- 'Tonk Commander http://www.wowhead.com/quest=29434
+-- Tonk Commander http://www.wowhead.com/quest=29434
 delete from creature where id = 33081;
 INSERT INTO `creature` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) VALUES 
 (33081, 974, 5861, 5870, 1, 1, 0, 0, -4129.63, 6301.34, 13.1165, 4.2443, 1, 0, 0, 0, 1000, 0, 0, 0, 0, 0, 0),
@@ -273,7 +276,7 @@ INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`,
 (13012, 1, 0, 'Ready to play! |cFF0008E8(Darkmoon Game Token)|r', 1, 1, 0, 0, 0, 0, ''),
 (13013, 1, 0, 'I understand.', 1, 1, 13012, 0, 0, 0, '');
 
--- Quest Talkin' Tonks http://www.wowhead.com/quest=29511
+-- Quest Talkin Tonks http://www.wowhead.com/quest=29511
 delete from creature where id = 54504;
 INSERT INTO `creature` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`) VALUES 
 (54504, 974, 0, 0, 1, 1, 15381, 0, -4133.97, 6326.1, 13.2084, 1.69297, 120, 0, 0, 100, 100, 0, 0, 0, 0),
@@ -359,3 +362,19 @@ INSERT INTO `locales_creature_text` (`entry`, `textGroup`, `id`, `text_loc8`) VA
 (55402, 0, 0, 'Внимание! Дорогие гости! До начала поединка Новолуния остались считанные секунды! Сундук с призом вот-вот появится в центре арены!'),
 (55402, 1, 0, 'Начать поединок Новолуния!'),
 (55402, 2, 0, 'Итак, поединок Новолуния закончился! Победитель $n!');
+
+-- Кладбище
+delete from game_graveyard_zone where id = 3212;
+INSERT INTO `game_graveyard_zone` (`id`, `ghost_zone`, `faction`) VALUES 
+(3212, 5861, 0);
+
+delete from creature where id = 6491 and map = 974;
+INSERT INTO `creature` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `dynamicflags`) VALUES 
+(6491, 974, 0, 0, 1, 1, 0, 0, -4246.83, 6387.35, 13.2001, 4.67748, 7200, 0, 0, 1, 0, 0, 0, 0, 0);
+
+-- I Was Promised a Pony http://www.wowhead.com/achievement=6025
+update creature_template set npcflag = 16777216 where entry = 55715;
+
+delete from npc_spellclick_spells where npc_entry = 55715;
+INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES 
+(55715, 104515, 1, 0);
