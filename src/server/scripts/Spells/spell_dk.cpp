@@ -879,8 +879,8 @@ class spell_dk_plague_leech : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        target->RemoveAura(DK_SPELL_FROST_FEVER);
-                        target->RemoveAura(DK_SPELL_BLOOD_PLAGUE);
+                        target->RemoveAura(DK_SPELL_FROST_FEVER, _player->GetGUID());
+                        target->RemoveAura(DK_SPELL_BLOOD_PLAGUE, _player->GetGUID());
 
                         int32 runesRestor = 0;
                         RuneType runesBan = GetRuneBan(_player);
