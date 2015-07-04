@@ -620,6 +620,25 @@ int32 AuraEffect::CalculateAmount(Unit* caster, int32 &m_aura_amount)
                 }
             }
             break;
+        case SPELL_AURA_MOD_SPEED_ALWAYS:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 11327:  // Vanish
+                case 1784:   // Stealth
+                case 115191: // Stealth
+                case 5215:   // Prowl
+                {
+                    if (Aura* aura = caster->GetAura(21009)) // Elusiveness
+                        if (AuraEffect* eff = aura->GetEffect(EFFECT_0))
+                            amount = eff->GetAmount();
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELL_AURA_MOD_BASE_RESISTANCE_PCT:
         {
             if (!caster)
