@@ -27650,7 +27650,7 @@ void Player::SetTitle(CharTitlesEntry const* title, bool lost)
         SetFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK, title->ID);
-        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE, title->bit_index);
+        //UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE, title->bit_index);
     }
 
     WorldPacket data(lost ? SMSG_TITLE_REMOVED: SMSG_TITLE_EARNED, 4);

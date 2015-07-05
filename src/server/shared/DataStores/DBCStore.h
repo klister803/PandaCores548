@@ -40,23 +40,22 @@ struct SqlDbc
         sqlTableName = *_filename;
         for (uint32 i = 0; i< sqlTableName.size(); ++i)
         {
-            if (isalpha(sqlTableName[i]))
-                sqlTableName[i] = char(tolower(sqlTableName[i]));
-            else if (sqlTableName[i] == '.')
+            if (sqlTableName[i] == '.')
                 sqlTableName[i] = '_';
+            else
+                sqlTableName[i] = (char)tolower(sqlTableName[i]);
         }
 
         // Get sql index position
         DBCFileLoader::GetFormatRecordSize(fmt, &indexPos);
         if (indexPos >= 0)
         {
-            uint32 uindexPos = uint32(indexPos);
             for (uint32 x = 0; x < formatString->size(); ++x)
             {
                 // Count only fields present in sql
                 if ((*formatString)[x] == FT_SQL_PRESENT)
                 {
-                    if (x == uindexPos)
+                    if (x == (uint32)indexPos)
                         break;
                     ++sqlIndexPos;
                 }
@@ -106,11 +105,8 @@ class DBCStorage
                 std::string query = "SELECT * FROM " + sql->sqlTableName;
                 if (sql->indexPos >= 0)
                     query +=" ORDER BY " + *sql->indexName + " DESC";
-                query += ';';
 
-
-                result = WorldDatabase.Query(query.c_str());
-                if (result)
+                if (result = WorldDatabase.Query(query.c_str()))
                 {
                     sqlRecordCount = uint32(result->GetRowCount());
                     if (sql->indexPos >= 0)
@@ -152,9 +148,11 @@ class DBCStorage
                             uint32 id = fields[sql->sqlIndexPos].GetUInt32();
                             if (indexTable.asT[id])
                             {
-                                sLog->outError(LOG_FILTER_GENERAL, "Index %d already exists in dbc:'%s'", id, sql->sqlTableName.c_str());
-                                return false;
+                                sLog->outError(LOG_FILTER_GENERAL, "Index %d already exists in dbc '%s', overwriting", id, sql->sqlTableName.c_str());
+                                //delete indexTable.asT[id];
+                                //return false;
                             }
+
                             indexTable.asT[id]=(T*)&sqlDataTable[offset];
                         }
                         else
