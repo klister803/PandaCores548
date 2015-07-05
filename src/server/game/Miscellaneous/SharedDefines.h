@@ -771,7 +771,7 @@ enum SpellAttr10
     SPELL_ATTR10_UNK26                            = 0x04000000, // 26
     SPELL_ATTR10_UNK27                            = 0x08000000, // 27
     SPELL_ATTR10_UNK28                            = 0x10000000, // 28
-    SPELL_ATTR10_SOME_MOUNT                       = 0x20000000, // 29 some mount spell
+    SPELL_ATTR10_MOUNT_IS_NOT_ACCOUNT_WIDE        = 0x20000000, // 29 This mount is stored per-character
     SPELL_ATTR10_UNK30                            = 0x40000000, // 30
     SPELL_ATTR10_UNK31                            = 0x80000000  // 31
 };
@@ -794,7 +794,7 @@ enum SpellAttr11
     SPELL_ATTR11_UNK13                            = 0x00002000, // 13
     SPELL_ATTR11_UNK14                            = 0x00004000, // 14   Player Farm Quest Invisibility 27
     SPELL_ATTR11_UNK15                            = 0x00008000, // 15
-    SPELL_ATTR11_UNK16                            = 0x00010000, // 16   set bonuses
+    SPELL_ATTR11_NOT_USABLE_IN_CHALLENGE_MODE     = 0x00010000, // 16
     SPELL_ATTR11_UNK17                            = 0x00020000, // 17   Headbutt
     SPELL_ATTR11_UNK18                            = 0x00040000, // 18
     SPELL_ATTR11_UNK19                            = 0x00080000, // 19
@@ -1157,7 +1157,7 @@ enum SpellEffects
     SPELL_EFFECT_REMOVE_AURA                        = 164,
     SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT         = 165,
     SPELL_EFFECT_GIVE_CURRENCY                      = 166,
-    SPELL_EFFECT_167                                = 167, // phase shift related
+    SPELL_EFFECT_UPDATE_PLAYER_PHASE                = 167,
     SPELL_EFFECT_CONTROL_PET                        = 168, // allow hunter and warlock control pet
     SPELL_EFFECT_DESTROY_ITEM                       = 169,
     SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES       = 170,
