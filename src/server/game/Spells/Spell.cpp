@@ -2187,6 +2187,9 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             break;
     }
 
+    if (Player* modOwner = m_caster->GetSpellModOwner())
+        modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_JUMP_DISTANCE, jumpRadius);
+
     // chain lightning/heal spells and similar - allow to jump at larger distance and go out of los
     bool isBouncingFar = (AttributesCustomEx4 & SPELL_ATTR4_AREA_TARGET_CHAIN
         || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE
