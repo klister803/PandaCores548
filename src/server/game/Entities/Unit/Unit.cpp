@@ -17828,6 +17828,23 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             else
                                 triggeredByAura->SetAmount(damageLeft - dmgInfoProc->GetDamage() - dmgInfoProc->GetAbsorb());
                         }
+
+                        switch (triggeredByAura->GetId())
+                        {
+                            case 1776: // Gouge
+                            case 2094: // Blind
+                            {
+                                if (procExtra & PROC_EX_INTERNAL_DOT)
+                                    if (procSpell->SpellFamilyName == SPELLFAMILY_ROGUE)
+                                        if (Unit* rogue = dmgInfoProc->GetAttacker())
+                                            if (rogue->HasAura(108216)) // Dirty Tricks
+                                                if (triggeredByAura->GetCasterGUID() == rogue->GetGUID())
+                                                    takeCharges = false;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
                         break;
                     }
                     case SPELL_AURA_MOD_STEALTH:
