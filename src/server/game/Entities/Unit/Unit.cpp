@@ -4370,7 +4370,7 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
     for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
     {
         SpellInfo const* spell = iter->second->GetBase()->GetSpellInfo();
-        if (spell->Attributes & flags)
+        if (spell && spell->Attributes & flags)
             RemoveAura(iter);
         else
             ++iter;
