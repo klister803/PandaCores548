@@ -1573,6 +1573,10 @@ bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool caster) const
             return !(AttributesCu & SPELL_ATTR0_CU_NEGATIVE_EFF1);
         case 2:
             return !(AttributesCu & SPELL_ATTR0_CU_NEGATIVE_EFF2);
+        case 3:
+            return !(AttributesCu & SPELL_ATTR0_CU_NEGATIVE_EFF3);
+        case 4:
+            return !(AttributesCu & SPELL_ATTR0_CU_NEGATIVE_EFF4);
     }
 }
 

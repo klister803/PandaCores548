@@ -3809,6 +3809,12 @@ void SpellMgr::LoadSpellCustomAttr()
             if (!spellInfo->_IsPositiveEffect(EFFECT_2, false))
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
 
+            if (!spellInfo->_IsPositiveEffect(EFFECT_3, false))
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF3;
+
+            if (!spellInfo->_IsPositiveEffect(EFFECT_4, false))
+                spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF4;
+
             if (spellInfo->HasEffect(SPELL_EFFECT_APPLY_AREA_AURA_ENEMY))
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_POSITIVE_FOR_CASTER;
 
