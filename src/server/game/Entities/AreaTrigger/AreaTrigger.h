@@ -58,13 +58,14 @@ enum AreaTriggerTargetFlags
     AT_TARGET_FLAG_PLAYER            = 0x0008,             // casted only on players
     AT_TARGET_FLAG_NOT_PET           = 0x0010,             // casted on everyone except pets
     AT_TARGET_FLAG_CAST_AT_SRC       = 0x0020,             // casted on areatrigger position as dest
-    AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x0040,             // casted on areatrigger position as dest
+    AT_TARGET_FLAG_CASTER_IS_TARGET  = 0x0040,             // casted on areatrigger caster is target
     AT_TARGET_FLAG_NOT_FULL_HP       = 0x0080,             // casted on targets if not full hp
     AT_TARGET_FLAG_ALWAYS_TRIGGER    = 0x0100,             // casted always at any action on owner
     AT_TARGET_FLAT_IN_FRONT          = 0x0200,             // WARNING! If target come from back he not get cast. ToDo it..
     AT_TARGET_FLAG_NOT_FULL_ENERGY   = 0x0400,             // casted on targets if not full enegy
     AT_TARGET_FLAG_GROUP_OR_RAID     = 0x0800,             // casted on targets that in group to areatrigger owner
     AT_TARGET_FLAG_HOSTILE           = 0x1000,             // casted on targets that are hostile to areatrigger owner
+    AT_TARGET_FLAG_TARGET_IS_CASTER  = 0x2000,             // casted on areatrigger targert is caster
 
     AT_TARGET_MASK_REQUIRE_TARGET = 
         AT_TARGET_FLAG_FRIENDLY | AT_TARGET_FLAG_HOSTILE | AT_TARGET_FLAG_OWNER | AT_TARGET_FLAG_PLAYER |

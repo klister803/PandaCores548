@@ -2193,10 +2193,12 @@ class spell_hun_explosive_shot : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                if (Unit* target = GetHitUnit())
                 if (Unit* caster = GetCaster())
                 {
                     float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
                     int32 damage = int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod) + 487;
+                    damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE, EFFECT_0);
                     SetHitDamage(damage);
                 }
             }
@@ -2215,8 +2217,15 @@ class spell_hun_explosive_shot : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
-                    amount = int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod) + 487;
+                    if(!GetOwner())
+                        return;
+
+                    if (Unit* target = GetOwner()->ToUnit())
+                    {
+                        float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
+                        amount = int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod) + 487;
+                        amount = caster->SpellDamageBonusDone(target, GetSpellInfo(), amount, DOT, EFFECT_1);
+                    }
                 }
             }
 

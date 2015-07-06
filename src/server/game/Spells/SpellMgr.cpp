@@ -4453,6 +4453,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 34936:  // Backlash
                 case 124430: // Divine Insight (Shadow)
                 case 93400:  // Shooting Stars
+                case 144569:  // Bastion of Power
+                case 144595:  // Divine Crusader
                     spellInfo->ProcCharges = 1;
                     break;
                 case 89485:  // Inner Focus

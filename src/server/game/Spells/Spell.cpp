@@ -2849,6 +2849,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         unitTarget->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
         m_healing = gain;
 
+        //sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: m_spellInfo->Id %i, mask %i, addhealth %i, m_healing %i, canEffectTrigger %i, m_damage %i, m_addpower %i, procEx %i",
+        //m_spellInfo->Id, mask, addhealth, m_healing, canEffectTrigger, m_damage, m_addpower, procEx);
+
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (canEffectTrigger && missInfo != SPELL_MISS_REFLECT)
         {
@@ -4125,9 +4128,18 @@ void Spell::_handle_immediate_phase()
             // Apply duration mod
             if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
             // Apply haste mods
             if (AttributesCustomEx5 & SPELL_ATTR5_HASTE_AFFECT_TICK_AND_CASTTIME)
                 m_caster->ModSpellCastTime(m_spellInfo, duration, this);
+            if (AttributesCustomEx8 & SPELL_ATTR8_HASTE_AFFECT_DURATION)
+                m_caster->ModSpellCastTime(m_spellInfo, duration, this);
+
+            if(m_spellInfo->Id == 115294)
+            {
+                if (Aura* manaTeaStacks = m_caster->GetAura(115867))
+                    duration = 500 * manaTeaStacks->GetStackAmount();
+            }
 
             m_spellState = SPELL_STATE_CASTING;
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);

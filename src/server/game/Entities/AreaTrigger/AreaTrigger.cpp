@@ -465,6 +465,9 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (action.action->targetFlags & AT_TARGET_FLAG_GROUP_OR_RAID)
         if (!unit->IsInRaidWith(caster))
             return;
+    //action on self
+    if (action.action->targetFlags & AT_TARGET_FLAG_TARGET_IS_CASTER)
+        unit = caster;
 
     if (action.action->targetFlags & AT_TARGET_FLAT_IN_FRONT)
         if (!HasInArc(static_cast<float>(M_PI), unit))

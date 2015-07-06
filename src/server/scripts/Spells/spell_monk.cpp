@@ -1364,13 +1364,10 @@ class spell_monk_flying_serpent_kick : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
-                    {
-                        if (_player->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
-                            _player->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
+                    if (caster->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
+                        caster->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
 
-                        _player->CastSpell(_player, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
-                    }
+                    caster->CastSpell(caster, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
                 }
             }
 
