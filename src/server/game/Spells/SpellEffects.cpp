@@ -2086,6 +2086,9 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
         o = pTarget ? pTarget->GetOrientation() : m_caster->GetOrientation();
     }
 
+    if (Player* plr = m_caster->ToPlayer())
+        plr->SetFallInformation(0, z);
+
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
     // Death Grip and Wild Charge (no form)
