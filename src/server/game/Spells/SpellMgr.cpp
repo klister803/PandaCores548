@@ -4387,12 +4387,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 108212: // Burst of Speed
                     spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH;
                     break;
-                case 130493:// Nightstalker
-                    spellInfo->Effects[EFFECT_1].Effect = 0;
-                    spellInfo->Effects[EFFECT_1].ApplyAuraName = 0;
-                    spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-                    spellInfo->Effects[EFFECT_0].MiscValue = SPELL_SCHOOL_MASK_ALL;
-                    break;
                 case 84745: // Shallow Insight
                 case 84746: // Moderate Insight
                 case 84747: // Deep Insight
