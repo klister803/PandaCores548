@@ -139,7 +139,7 @@ class spell_hun_dash : public SpellScriptLoader
 };
 
 // Called by Arcane Shot - 3044, Chimera Shot - 53209
-// Kill Command - 34026 and Explosive Shot - 53301
+// Explosive Shot - 53301
 // Glyph of Marked for Die - 132106
 class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
 {
@@ -154,7 +154,14 @@ class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetHitUnit())
-                        caster->AddAura(HUNTER_SPELL_HUNTERS_MARK, target);
+                        if(Aura* aura = caster->AddAura(HUNTER_SPELL_HUNTERS_MARK, target))
+                        {
+                            if(target->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                aura->SetMaxDuration(30000);
+                                aura->SetDuration(30000);
+                            }
+                        }
             }
 
             void Register()
@@ -168,6 +175,43 @@ class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
             return new spell_hun_glyph_of_marked_for_die_SpellScript();
         }
 };
+
+// Kill Command - 34026
+class spell_hun_glyph_of_marked_for_die_pet : public SpellScriptLoader
+{
+    public:
+        spell_hun_glyph_of_marked_for_die_pet() : SpellScriptLoader("spell_hun_glyph_of_marked_for_die_pet") { }
+
+        class spell_hun_glyph_of_marked_for_die_pet_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glyph_of_marked_for_die_pet_SpellScript);
+
+            void HandleOnHit(SpellEffIndex effIndex)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetHitUnit())
+                        if(Aura* aura = caster->AddAura(HUNTER_SPELL_HUNTERS_MARK, target))
+                        {
+                            if(target->GetTypeId() == TYPEID_PLAYER)
+                            {
+                                aura->SetMaxDuration(30000);
+                                aura->SetDuration(30000);
+                            }
+                        }
+            }
+
+            void Register()
+            {
+               OnEffectHitTarget += SpellEffectFn(spell_hun_glyph_of_marked_for_die_pet_SpellScript::HandleOnHit, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glyph_of_marked_for_die_pet_SpellScript();
+        }
+};
+
 
 // Stampede - 121818
 #define STAMPED_COUNT 5
@@ -2223,7 +2267,7 @@ class spell_hun_explosive_shot : public SpellScriptLoader
                     if (Unit* target = GetOwner()->ToUnit())
                     {
                         float apmod = float(GetSpellInfo()->Effects[EFFECT_2].BasePoints) / 1000.0f;
-                        amount = int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod) + 487;
+                        amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * apmod);
                         amount = caster->SpellDamageBonusDone(target, GetSpellInfo(), amount, DOT, EFFECT_1);
                     }
                 }
@@ -2250,6 +2294,7 @@ void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dash();
     new spell_hun_glyph_of_marked_for_die();
+    new spell_hun_glyph_of_marked_for_die_pet();
     new spell_hun_stampede();
     new spell_hun_dire_beast();
     new spell_hun_a_murder_of_crows();

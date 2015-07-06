@@ -669,6 +669,12 @@ enum BuyBackSlots                                           // 12 slots
     BUYBACK_SLOT_END            = 86
 };
 
+enum ReagentSlots
+{
+    REAGENT_SLOT_START          = 87,
+    REAGENT_SLOT_END            = 184,
+};
+
 enum EquipmentSetUpdateState
 {
     EQUIPMENT_SET_UNCHANGED = 0,

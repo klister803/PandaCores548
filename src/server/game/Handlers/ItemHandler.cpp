@@ -115,7 +115,7 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recvData)
     if (sObjectMgr->IsPlayerInLogList(GetPlayer()))
     {
         sObjectMgr->DumpDupeConstant(GetPlayer());
-        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSwapInvItemOpcode; src %u, dst %u", src, dst);
+        sLog->outDebug(LOG_FILTER_DUPE, "---HandleSwapInvItemOpcode; src %u, dst %u, srcslot %u, dstslot %u count %u", src, dst, srcslot, dstslot, count);
     }
 
     _player->SwapItem(src, dst);

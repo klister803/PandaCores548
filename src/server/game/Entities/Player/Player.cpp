@@ -14717,12 +14717,12 @@ void Player::SwapItem(uint16 src, uint16 dst)
     if (sObjectMgr->IsPlayerInLogList(this))
     {
         sObjectMgr->DumpDupeConstant(this);
-        sLog->outDebug(LOG_FILTER_DUPE, "---Player::SwapItem pSrcItem %u; count = %u playerGUID %u IsNotEmptyBag %u",
-            pSrcItem->GetEntry(), pSrcItem->GetCount(), GetGUID(), pSrcItem->IsNotEmptyBag());
+        sLog->outDebug(LOG_FILTER_DUPE, "---Player::SwapItem pSrcItem %u; count = %u GUID %u GetSlot %u",
+            pSrcItem->GetEntry(), pSrcItem->GetCount(), pSrcItem->GetGUID(), pSrcItem->GetSlot());
 
         if(pDstItem)
-            sLog->outDebug(LOG_FILTER_DUPE, "Player::SwapItem pDstItem %u; count = %u playerGUID %u IsNotEmptyBag %u IsNotEmptyBag %u",
-                pDstItem->GetEntry(), pDstItem->GetCount(), GetGUID(), pDstItem->IsNotEmptyBag(), pSrcItem->IsNotEmptyBag());
+            sLog->outDebug(LOG_FILTER_DUPE, "Player::SwapItem pDstItem %u; count = %u GUID %u GetSlot %u",
+                pDstItem->GetEntry(), pDstItem->GetCount(), pDstItem->GetGUID(), pDstItem->GetSlot());
     }
 
     // DST checks
@@ -21906,6 +21906,12 @@ void Player::_SaveAuras(SQLTransaction& trans)
 
 void Player::_SaveInventory(SQLTransaction& trans)
 {
+    if (sObjectMgr->IsPlayerInLogList(this))
+    {
+        sObjectMgr->DumpDupeConstant(this);
+        sLog->outDebug(LOG_FILTER_DUPE, "---_SaveInventory;");
+    }
+
     PreparedStatement* stmt = NULL;
     // force items in buyback slots to new state
     // and remove those that aren't already
@@ -22011,6 +22017,11 @@ void Player::_SaveInventory(SQLTransaction& trans)
                 stmt->setUInt8 (2, item->GetSlot());
                 stmt->setUInt32(3, item->GetGUIDLow());
                 trans->Append(stmt);
+                if (sObjectMgr->IsPlayerInLogList(this))
+                {
+                    sObjectMgr->DumpDupeConstant(this);
+                    sLog->outDebug(LOG_FILTER_DUPE, "---_SaveInventory item Guid %u Slot %u Entry %u State %u BagSlot %u", item->GetGUIDLow(), item->GetSlot(), item->GetEntry(), item->GetState(), item->GetBagSlot());
+                }
                 break;
             case ITEM_REMOVED:
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
