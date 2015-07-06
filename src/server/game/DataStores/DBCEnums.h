@@ -97,6 +97,7 @@ enum
     MAX_CRITERIA_REQUIREMENTS          = 1,
     MAX_ADDITIONAL_CRITERIA_CONDITIONS = 3
 };
+
 enum AchievementCriteriaCondition
 {
     ACHIEVEMENT_CRITERIA_CONDITION_NONE            = 0,
@@ -215,7 +216,7 @@ enum AchievementCriteriaTimedTypes
     ACHIEVEMENT_TIMED_TYPE_EVENT2           = 13,   // Timer is started by internal event with id in timerStartEvent
     ACHIEVEMENT_TIMED_TYPE_SCENARIO_STAGE   = 14,   // Timer is started by changing stages in a scenario
 
-    ACHIEVEMENT_TIMED_TYPE_MAX,
+    ACHIEVEMENT_TIMED_TYPE_MAX
 };
 
 enum AchievementCriteriaTypes
@@ -350,7 +351,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_INITIATED_KICK_IN_LFR         = 147, // Number of times the player kicked someone in LFR, initiating the kick
     ACHIEVEMENT_CRITERIA_TYPE_VOTED_KICK_IN_LFR             = 148, // Number of times the player kicked someone in LFR voting, but not initiating
     ACHIEVEMENT_CRITERIA_TYPE_BEING_KICKED_IN_LFR           = 149, // Number of times the player has been kicked by someone in LFR
-    ACHIEVEMENT_CRITERIA_TYPE_UNK150                        = 150, // Number of times the player joined an LFR dungeon with a tank that leaves early
+    ACHIEVEMENT_CRITERIA_TYPE_COUNT_OF_LFR_QUEUE_BOOSTS_BY_TANK = 150,
     ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS            = 151,
     ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY   = 152,
     ACHIEVEMENT_CRITERIA_TYPE_REACH_SCENARIO_BOSS           = 153,
@@ -361,10 +362,10 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN                 = 158,
     ACHIEVEMENT_CRITERIA_TYPE_UNK159                        = 159,
     ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP            = 160,
-    ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET            = 161,
-    ACHIEVEMENT_CRITERIA_TYPE_UNK162                        = 162,
-    // 0..162 => 163 criteria types total
-    ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 163
+    ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT     = 161,
+    ACHIEVEMENT_CRITERIA_TYPE_LEVEL_BATTLE_PET_CREDIT       = 162,
+
+    ACHIEVEMENT_CRITERIA_TYPE_TOTAL
 };
 
 enum AchievementCriteriaTreeOperator
