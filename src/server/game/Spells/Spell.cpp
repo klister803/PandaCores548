@@ -2737,7 +2737,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
             (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
-            m_spellInfo->Id == 57879 ||                     // Snake Trap - done this way to avoid double proc
+            m_spellInfo->Id == 57879 || m_spellInfo->Id == 13810 ||                     // Snake Trap - done this way to avoid double proc
             m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
             procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
@@ -3899,7 +3899,7 @@ void Spell::cast(bool skipCheck)
             // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
             if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
                 (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
-                m_spellInfo->Id == 57879 ||                     // Snake Trap - done this way to avoid double proc
+                m_spellInfo->Id == 57879 || m_spellInfo->Id == 13810 ||                     // Snake Trap - done this way to avoid double proc
                 m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
                 procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
 
@@ -4165,6 +4165,13 @@ void Spell::_handle_immediate_phase()
     uint32 procAttacker = m_procAttacker;
     if (!procAttacker)
     {
+        // Hunter trap spells - activation proc for Lock and Load, Entrapment and Misdirection
+        if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
+            (m_spellInfo->SpellFamilyFlags[0] & 0x18 ||     // Freezing and Frost Trap, Freezing Arrow
+            m_spellInfo->Id == 57879 || m_spellInfo->Id == 13810 ||                     // Snake Trap - done this way to avoid double proc
+            m_spellInfo->SpellFamilyFlags[2] & 0x00024000)) // Explosive and Immolation Trap
+            procAttacker |= PROC_FLAG_DONE_TRAP_ACTIVATION;
+
         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_CLASS_POS;
         procAttacker |= PROC_FLAG_DONE_SPELL_MAGIC_DMG_POS_NEG;
     }
