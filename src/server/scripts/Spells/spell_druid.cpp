@@ -1071,6 +1071,10 @@ class spell_dru_rip_duration : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
+                    //Hack
+                    if (Aura* cenarius = _player->GetAura(145152))
+                        cenarius->DropCharge();
+
                     if (Unit* target = GetHitUnit())
                     {
                         // Each time you Shred, Ravage, or Mangle the target while in Cat Form ...
@@ -2230,7 +2234,15 @@ class spell_dru_teleport_moonglade : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->TeleportTo(1, 7964.063f, -2491.099f, 487.83f, _player->GetOrientation());
+                {
+                    if(_player->GetDistance(7964.063f, -2491.099f, 487.83f) > 100.0f)
+                    {
+                        _player->SaveRecallPosition();
+                        _player->TeleportTo(1, 7964.063f, -2491.099f, 487.83f, _player->GetOrientation());
+                    }
+                    else
+                        _player->TeleportTo(_player->m_recallMap, _player->m_recallX, _player->m_recallY, _player->m_recallZ, _player->m_recallO);
+                }
             }
 
             void Register()
@@ -3131,9 +3143,12 @@ class spell_dru_tooth_and_claw : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        int32 bp = int32(std::max(float((caster->GetTotalAttackPowerValue(BASE_ATTACK) - 2 * caster->GetTotalStatValue(STAT_AGILITY)) * 2.2), float(((caster->GetTotalStatValue(STAT_STAMINA) * 250) / 100) * 0.4f)));
-                        caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
-                        caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
+                        if(caster->HasAura(135286))
+                        {
+                            int32 bp = int32(std::max(float((caster->GetTotalAttackPowerValue(BASE_ATTACK) * caster->GetTotalStatValue(STAT_AGILITY)) * 2.2), float(((caster->GetTotalStatValue(STAT_STAMINA) * 250) / 100.0f))) * 0.4f);
+                            caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
+                            caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
+                        }
 
                         if (target->HasAuraWithMechanic((1<<MECHANIC_BLEED)))
                             SetHitDamage(int32(GetHitDamage() * 1.2f));

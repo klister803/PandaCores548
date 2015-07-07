@@ -6007,19 +6007,13 @@ void Spell::EffectAddComboPoints(SpellEffIndex /*effIndex*/)
 
     if (m_spellInfo->IsTargetingArea())
     {
-        if (uint64 combotarget = m_caster->m_movedPlayer->GetComboTarget())
+        if (Unit* target = m_caster->m_movedPlayer->GetSelectedUnit())
         {
-            if (unitTarget->GetGUID() != combotarget)
+            if (unitTarget->GetGUID() != target->GetGUID())
                 return;
         }
         else
-        {
-            if (Unit * target = m_caster->m_movedPlayer->GetSelectedUnit())
-            {
-                if (unitTarget->GetGUID() != target->GetGUID())
-                    return;
-            }
-        }
+            return;
     }
 
     if (m_spellInfo->Id == 139546 || m_spellInfo->Id == 144859) //Add CP after use old CP
