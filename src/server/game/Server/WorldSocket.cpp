@@ -833,8 +833,10 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     if (opcode != CMSG_MOVE_START_FORWARD)
     {
         sLog->outInfo(LOG_FILTER_OPCODES, "C->S: %s", opcodeName.c_str());
-        if (m_Session && sObjectMgr->IsPlayerInLogList(m_Session->GetPlayer()))
-            sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", opcodeName.c_str());
+        if (m_Session)
+            if(Player* _player = m_Session->GetPlayer())
+                if (sObjectMgr->IsPlayerInLogList(_player))
+                    sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", opcodeName.c_str());
     }
 
     try
