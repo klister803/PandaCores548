@@ -2777,6 +2777,19 @@ class spell_druid_barkskin : public SpellScriptLoader
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->RemoveAurasDueToSpell(63058);
+                if (Unit* caster = GetCaster())
+                    if(caster->HasAura(144879)) //Item - Druid T16 Guardian 2P Bonus
+                    {
+                        if (Aura* aura = caster->GetAura(SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT))
+                        {
+                            int32 newDur = aura->GetDuration() + 6 * IN_MILLISECONDS;
+                            if(newDur > aura->GetMaxDuration())
+                                aura->SetMaxDuration(newDur);
+                            aura->SetDuration(newDur);
+                        }
+                        else
+                            caster->CastSpell(caster, SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT, true);
+                    }
             }
 
             void Register()
@@ -2993,7 +3006,8 @@ class spell_druid_berserk_tiger_fury_buff : public SpellScriptLoader
                 if (!target)
                     return;
 
-                target->RemoveAurasDueToSpell(114235);
+                if((GetSpellInfo()->Id == 5217 && !target->HasAura(106951)) || (GetSpellInfo()->Id == 106951 && !target->HasAura(5217)))
+                    target->RemoveAurasDueToSpell(114235);
             }
 
             void Register()
@@ -3145,7 +3159,7 @@ class spell_dru_tooth_and_claw : public SpellScriptLoader
                     {
                         if(caster->HasAura(135286))
                         {
-                            int32 bp = int32(std::max(float((caster->GetTotalAttackPowerValue(BASE_ATTACK) * caster->GetTotalStatValue(STAT_AGILITY)) * 2.2), float(((caster->GetTotalStatValue(STAT_STAMINA) * 250) / 100.0f))) * 0.4f);
+                            int32 bp = int32(std::max(caster->GetTotalAttackPowerValue(BASE_ATTACK) * caster->GetTotalStatValue(STAT_AGILITY) * 2.2, caster->GetTotalStatValue(STAT_STAMINA) * 2.5) * 0.4f);
                             caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
                             caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
                         }
