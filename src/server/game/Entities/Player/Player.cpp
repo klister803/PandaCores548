@@ -4730,7 +4730,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LINE, _spell_idx->second->skillId);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS, _spell_idx->second->skillId);
 
-            if (_spell_idx->second->skillId == 778)
+            if (_spell_idx->second->skillId == 778) // battle pets
                 UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET);
         }
 

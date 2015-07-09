@@ -1645,7 +1645,6 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
             case ACHIEVEMENT_CRITERIA_TYPE_CATCH_FROM_POOL:
             case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM:
-            case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, init ? 0 : 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -1883,10 +1882,13 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                 break;
             }
             case ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL:
-                {
-                    SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->GetGuildLevel(), referencePlayer, PROGRESS_SET);
-                    break;
-                }
+            {
+                SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->GetGuildLevel(), referencePlayer, PROGRESS_SET);
+                break;
+            }
+            case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
+                SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->GetBattlePetMgr()->GetPetJournal().size(), referencePlayer);
+                break;
 
             // FIXME: not triggered in code as result, need to implement
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETED_LFG_DUNGEONS:
