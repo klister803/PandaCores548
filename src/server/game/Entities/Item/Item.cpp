@@ -1495,13 +1495,17 @@ uint32 Item::GetSellPrice(ItemTemplate const* proto, bool& normalSellPrice)
                 break;
             }
             case INVTYPE_WEAPONMAINHAND:
-                wepType = 0;             // unk enum, fall back
+                //wepType = 0;             // unk enum, fall back .... 0 seems incorrect value... we use here 0-4, should not here be 1-5?
+                //break;
             case INVTYPE_WEAPONOFFHAND:
-                wepType = 1;             // unk enum, fall back
+                //wepType = 1;             // unk enum, fall back
+                //break;
             case INVTYPE_WEAPON:
-                wepType = 2;             // unk enum, fall back
+                //wepType = 2;             // unk enum, fall back
+                //break;
             case INVTYPE_2HWEAPON:
-                wepType = 3;             // unk enum, fall back
+                //wepType = 3;             // unk enum, fall back
+                //break;
             case INVTYPE_RANGED:
             case INVTYPE_RANGEDRIGHT:
             case INVTYPE_RELIC:

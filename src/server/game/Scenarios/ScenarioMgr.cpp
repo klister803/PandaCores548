@@ -24,7 +24,7 @@
 
 ScenarioProgress::ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData)
     : instanceId(_instanceId), dungeonData(_dungeonData),
-    m_achievementMgr(this), currentStep(0), currentTree(0)
+    m_achievementMgr(this), currentStep(0), currentTree(0), bonusRewarded(false), rewarded(false)
 {
     type = ScenarioMgr::GetScenarioType(GetScenarioId());
     ScenarioSteps const* _steps = sScenarioMgr->GetScenarioSteps(GetScenarioId());

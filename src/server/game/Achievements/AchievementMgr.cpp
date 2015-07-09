@@ -1906,7 +1906,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_INITIATED_KICK_IN_LFR:
             case ACHIEVEMENT_CRITERIA_TYPE_VOTED_KICK_IN_LFR:
             case ACHIEVEMENT_CRITERIA_TYPE_BEING_KICKED_IN_LFR:
-            case ACHIEVEMENT_CRITERIA_TYPE_UNK150:
+            case ACHIEVEMENT_CRITERIA_TYPE_COUNT_OF_LFR_QUEUE_BOOSTS_BY_TANK:
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS:
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY:
             case ACHIEVEMENT_CRITERIA_TYPE_REACH_SCENARIO_BOSS:
@@ -1917,8 +1917,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK159:
             case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP:
-            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET:
-            case ACHIEVEMENT_CRITERIA_TYPE_UNK162:
+            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
+            case ACHIEVEMENT_CRITERIA_TYPE_LEVEL_BATTLE_PET_CREDIT:
                 break;                                   // Not implemented yet :(
         }
 
@@ -2888,7 +2888,7 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
 
 struct VisibleAchievementPred
 {
-    bool operator()(CompletedAchievementMap::value_type const& val)
+    bool operator()(CompletedAchievementMap::value_type const& val) const
     {
         AchievementEntry const* achievement = sAchievementMgr->GetAchievement(val.first);
         return achievement && !(achievement->flags & ACHIEVEMENT_FLAG_HIDDEN);
@@ -2969,7 +2969,6 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
         data.WriteGuidBytes<7, 1>(firstAccountGuid);
     }
 
-    time_t now = time(NULL);
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
         CriteriaTreeEntry const* criteriaTree = sAchievementMgr->GetAchievementCriteriaTree(itr->first);
@@ -3295,12 +3294,8 @@ bool AchievementMgr<T>::HasAchieved(uint32 achievementId) const
 {
     if (m_completedAchievements.empty())
         return false;
-
-    CompletedAchievementMap::const_iterator itr = m_completedAchievements.find(achievementId);
-    if (itr == m_completedAchievements.end())
-        return false;
-
-    return true;
+    
+    return m_completedAchievements.find(achievementId) != m_completedAchievements.end();
 }
 
 template<class T>
@@ -3747,7 +3742,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             {
                 if (referencePlayer->GetMapId() != achievementCriteria->timedCriteriaMiscId)
                     return false;
-                break;
+
                 // map specific case (BG in fact) expected player targeted damage/heal
                 if (!unit || unit->GetTypeId() != TYPEID_PLAYER)
                     return false;
@@ -3850,9 +3845,9 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
     for (std::list<uint32>::const_iterator itr = modifierList->begin(); itr != modifierList->end(); ++itr)
     {
         ModifierTreeEntry const* modifier = sModifierTreeStore.LookupEntry(*itr);
-        int32 const reqType = modifier->additionalConditionType;
-        int32 const reqValue = modifier->additionalConditionValue;
-        int32 const reqCount = modifier->additionalConditionCount;
+        uint32 const reqType = modifier->additionalConditionType;
+        uint32 const reqValue = modifier->additionalConditionValue;
+        uint32 const reqCount = modifier->additionalConditionCount;
         bool check = true;
 
         //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::AdditionalRequirementsSatisfied cheker start Modify %i, reqType %i reqValue %i reqCount %i saveCheck %i saveReqType %i operatorFlags %i check %i", (*itr), reqType, reqValue, reqCount, saveCheck, saveReqType, modifier->operatorFlags, check);

@@ -37,6 +37,8 @@ BattlegroundRV::BattlegroundRV()
     StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_ARENA_THIRTY_SECONDS;
     StartMessageIds[BG_STARTING_EVENT_THIRD]  = LANG_ARENA_FIFTEEN_SECONDS;
     StartMessageIds[BG_STARTING_EVENT_FOURTH] = LANG_ARENA_HAS_BEGUN;
+	
+    PillarCollision = false;
 }
 
 BattlegroundRV::~BattlegroundRV()

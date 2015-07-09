@@ -134,9 +134,9 @@ enum SpellModOp
     SPELLMOD_STACKAMOUNT            = 31,
     SPELLMOD_EFFECT4                = 32,
     SPELLMOD_EFFECT5                = 33,
-    SPELLMOD_UNK34                  = 34,
-    SPELLMOD_UNK35                  = 35,
-    SPELLMOD_JUMP_DISTANCE          = 36,
+    SPELLMOD_SPELL_COST2            = 34,
+    SPELLMOD_JUMP_DISTANCE          = 35,
+    SPELLMOD_STACK_AMOUNT2          = 37
 };
 
 enum PetSpellModOp // aura SPELL_AURA_MOD_PET_STATS_MODIFIER
@@ -2518,6 +2518,10 @@ class Unit : public WorldObject
         void SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown = 0);
         void SetDynamicPassiveSpells(uint32 spellId, uint32 slot);
         uint32 GetDynamicPassiveSpells(uint32 slot);
+
+        void SetDynamicWorldEffects(uint32 effect, uint32 slot);
+
+        uint32 m_sequenceIndex;
 
     protected:
         explicit Unit (bool isWorldObject);

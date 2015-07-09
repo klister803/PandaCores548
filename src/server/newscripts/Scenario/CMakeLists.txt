@@ -18,6 +18,10 @@ set(scripts_STAT_SRCS
   Scenario/ArenaofAnnihilation/boss_chagan_firehoof.cpp
   Scenario/ArenaofAnnihilation/arena_of_annihilation.cpp
   Scenario/ArenaofAnnihilation/arena_of_annihilation.h
+  
+  Scenario/FallofShanBu/fall_of_shan_bu.cpp
+  Scenario/FallofShanBu/instance_fall_of_shan_bu.cpp
+  Scenario/FallofShanBu/fall_of_shan_bu.h
 )
 
 message("  -> Prepared: Scenario")

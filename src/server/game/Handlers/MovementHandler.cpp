@@ -1219,6 +1219,17 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
         !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
         MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY);
 
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_CAN_FLY) && mi->HasMovementFlag(MOVEMENTFLAG_FALLING),
+        MOVEMENTFLAG_FALLING);
+
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING) && (!mi->hasFallData || !mi->hasFallDirection), MOVEMENTFLAG_FALLING);
+
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION) &&
+        (!mi->hasSplineElevation || G3D::fuzzyEq(mi->splineElevation, 0.0f)), MOVEMENTFLAG_SPLINE_ELEVATION);
+
+    if (mi->hasSplineElevation)
+        mi->AddMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
+
     #undef REMOVE_VIOLATING_FLAGS
 }
 
@@ -1424,7 +1435,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                     data << mi->unkInt32;
                 break;
             case MSECounter:
-                data << uint32(0);
+                data << uint32(unit ? unit->m_sequenceIndex++ : 0);
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");

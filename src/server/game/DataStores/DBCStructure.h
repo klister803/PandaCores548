@@ -2298,7 +2298,7 @@ struct SpellPowerEntry
 {
     uint32    Id;                                           // 0        m_ID
     uint32    SpellId;                                      // 1
-    //uint32    unk505                                      // 2 use in mob spell
+    uint32    PowerIndex;                                   // 2
     uint32    powerType;                                    // 3
     uint32    powerCost;                                    // 4
     //uint32    unk;                                        // 5 m_manaCostPerLevel
@@ -2856,7 +2856,7 @@ typedef std::vector<DigSitePosition> DigSitePositionVector;
 
 struct ResearchSiteData
 {
-    ResearchSiteData() : zone(0), level(0xFF), branch_id(0) { }
+    ResearchSiteData() : zone(0), level(0xFF), branch_id(0), entry(NULL) { }
 
     ResearchSiteEntry const* entry;
     uint16 zone;

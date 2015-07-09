@@ -18,7 +18,6 @@ bin/
 *.vcxproj
 *.vcxproj.*
 *.rule
-*.cmake
 *.bin
 *.log
 *.c

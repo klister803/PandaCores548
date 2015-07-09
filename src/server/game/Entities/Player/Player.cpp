@@ -1718,7 +1718,7 @@ DrunkenState Player::GetDrunkenstateByValue(uint8 value)
 void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
 {
     bool isSobering = newDrunkValue < GetDrunkValue();
-    uint32 oldDrunkenState = Player::GetDrunkenstateByValue(GetDrunkValue());
+    uint32 oldDrunkenState = GetDrunkenstateByValue(GetDrunkValue());
     if (newDrunkValue > 100)
         newDrunkValue = 100;
 
@@ -1732,7 +1732,7 @@ void Player::SetDrunkValue(uint8 newDrunkValue, uint32 itemId /*= 0*/)
     else if (!HasAuraType(SPELL_AURA_MOD_FAKE_INEBRIATE) && !newDrunkValue)
         m_invisibilityDetect.DelFlag(INVISIBILITY_DRUNK);
 
-    uint32 newDrunkenState = Player::GetDrunkenstateByValue(newDrunkValue);
+    uint32 newDrunkenState = GetDrunkenstateByValue(newDrunkValue);
     SetByteValue(PLAYER_BYTES_3, 1, newDrunkValue);
     UpdateObjectVisibility();
 
@@ -1855,7 +1855,7 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
                 if (!replacementMeleeAttacks.empty())
                 {
                     for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
@@ -1918,7 +1918,7 @@ void Player::Update(uint32 p_time)
                 bool canCancel = true;
                 bool isWithinMeleeRange = IsWithinMeleeRange(victim);
 
-                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_367);
+                AuraEffectList const& replacementMeleeAttacks = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AUTOATTACK);
                 if (!replacementMeleeAttacks.empty())
                 {
                     for (AuraEffectList::const_iterator itr = replacementMeleeAttacks.begin(); itr != replacementMeleeAttacks.end(); ++itr)
@@ -2551,7 +2551,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!GetSession()->PlayerLogout())
         {
             Position newPos;
-            newPos.Relocate(x, y, z, orientation);
+            if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+                z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
+            Relocate(x, y, z, orientation);
             SendTeleportPacket(newPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
     }
@@ -3539,7 +3541,7 @@ void Player::RemoveFromGroup(Group* group, uint64 guid, RemoveMethod method /* =
     if (group)
     {
         group->RemoveMember(guid, method, kicker, reason);
-        group = NULL;
+        delete group;
     }
 }
 
@@ -6301,6 +6303,10 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // set health/powers (0- will be set in caller)
     if (restore_percent > 0.0f)
     {
+        AuraEffectList const& mResurrectedHealthByGuildMember = GetAuraEffectsByType(SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER);
+        for (AuraEffectList::const_iterator i = mResurrectedHealthByGuildMember.begin(); i != mResurrectedHealthByGuildMember.end(); ++i)
+            AddPct(restore_percent, (*i)->GetAmount());
+
         SetHealth(uint32(GetMaxHealth()*restore_percent));
         SetPower(POWER_MANA, uint32(GetMaxPower(POWER_MANA)*restore_percent));
         SetPower(POWER_RAGE, 0);
@@ -19057,26 +19063,33 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         if (m_bgData.bgInstanceID)                                                //saved in Battleground
             currentBg = sBattlegroundMgr->GetBattleground(m_bgData.bgInstanceID, BATTLEGROUND_TYPE_NONE);
 
-        bool player_at_bg = currentBg && currentBg->IsPlayerInBattleground(GetGUID());
+        bool player_at_bg = false;
+        
+        if (currentBg)
+            if (currentBg->IsPlayerInBattleground(GetGUID()))
+                player_at_bg = true;
 
-        if (player_at_bg && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
+        if (player_at_bg && currentBg)
         {
-            BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
-            AddBattlegroundQueueId(bgQueueTypeId);
+            if (currentBg->GetStatus() != STATUS_WAIT_LEAVE)
+            {
+                BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
+                AddBattlegroundQueueId(bgQueueTypeId);
 
-            m_bgData.bgTypeID = currentBg->GetTypeID();
+                m_bgData.bgTypeID = currentBg->GetTypeID();
 
-            //join player to battleground group
-            currentBg->EventPlayerLoggedIn(this);
-            currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
+                //join player to battleground group
+                currentBg->EventPlayerLoggedIn(this);
+                currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
 
-            SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
+                SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
+            }
         }
         // Bg was not found - go to Entry Point
         else
         {
             // leave bg
-            if (player_at_bg)
+            if (player_at_bg && currentBg)
                 currentBg->RemovePlayerAtLeave(GetGUID(), false, true);
 
             // Do not look for instance if bg not found
@@ -29196,7 +29209,6 @@ void Player::ActivateSpec(uint8 spec)
 
 void Player::ResetTimeSync()
 {
-    m_timeSyncCounter = 0;
     m_timeSyncTimer = 0;
     m_timeSyncClient = 0;
     m_timeSyncServer = getMSTime();
@@ -29204,8 +29216,10 @@ void Player::ResetTimeSync()
 
 void Player::SendTimeSync()
 {
+    m_timeSyncQueue.push(m_sequenceIndex++);
+
     WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-    data << uint32(m_timeSyncCounter++);
+    data << uint32(m_timeSyncQueue.back());
     GetSession()->SendPacket(&data);
 
     // Schedule next sync in 10 sec
@@ -30118,7 +30132,7 @@ void Player::_LoadStore()
 
             uint32 learnId = 0;
 
-            for(SpellSkillingList::iterator itr = sSpellSkillingList.begin(); itr != sSpellSkillingList.end(); itr++)
+            for(SpellSkillingList::iterator itr = sSpellSkillingList.begin(); itr != sSpellSkillingList.end(); ++itr)
             {
                 SpellEntry const* spell = (*itr);
 

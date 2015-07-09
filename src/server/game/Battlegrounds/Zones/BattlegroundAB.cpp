@@ -30,6 +30,10 @@
 
 BattlegroundAB::BattlegroundAB()
 {
+    for (int8 i = 0; i < 2; i++)
+        m_TeamScores500Disadvantage[i] = false;
+
+    m_IsInformedNearVictory = false;
     m_BuffChange = true;
     BgObjects.resize(BG_AB_OBJECT_MAX);
     BgCreatures.resize(BG_AB_ALL_NODES_COUNT + 5);//+5 for aura triggers
@@ -361,7 +365,7 @@ void BattlegroundAB::_NodeOccupied(uint8 node, Team team)
     uint8 capturedNodes = 0;
     for (uint8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
     {
-        if (m_Nodes[node] == GetTeamIndexByTeamId(team) + BG_AB_NODE_TYPE_OCCUPIED && !m_NodeTimers[i])
+        if (m_Nodes[node] == GetTeamIndexByTeamId(team) + BG_AB_NODE_TYPE_OCCUPIED && !m_NodeTimers[i]) // wrong
             ++capturedNodes;
     }
 

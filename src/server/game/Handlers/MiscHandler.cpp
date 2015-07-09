@@ -230,6 +230,8 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     for (uint8 i = 0; i < str_count; i++)
         unkLens[i] = recvData.ReadBits(7);
 
+    delete unkLens;
+
     std::wstring str[4];                                    // 4 is client limit
     for (uint32 i = 0; i < str_count; ++i)
     {
@@ -277,6 +279,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     std::wstring wguild_name;
     if (!(Utf8toWStr(player_name, wplayer_name) && Utf8toWStr(guild_name, wguild_name)))
         return;
+
     wstrToLower(wplayer_name);
     wstrToLower(wguild_name);
 
@@ -1902,7 +1905,7 @@ void WorldSession::HandleTimeSyncResp(WorldPacket& recvData)
     uint32 counter, clientTicks;
     recvData >> clientTicks >> counter;
 
-    if (counter != _player->m_timeSyncCounter - 1)
+    if (counter != _player->m_timeSyncQueue.front())
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Wrong time sync counter from player %s (cheater?)", _player->GetName());
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
@@ -1913,6 +1916,7 @@ void WorldSession::HandleTimeSyncResp(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
 
     _player->m_timeSyncClient = clientTicks;
+    _player->m_timeSyncQueue.pop();
 }
 
 void WorldSession::HandleResetInstancesOpcode(WorldPacket& /*recvData*/)

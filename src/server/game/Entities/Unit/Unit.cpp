@@ -307,6 +307,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
+
+    m_sequenceIndex = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -2330,7 +2332,7 @@ uint32 Unit::CalcAbsorb(Unit* victim, SpellInfo const* spellProto, uint32 amount
             amount += int32(bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK));
     }
 
-    AuraEffectList const& mAbsorbReducedDamage = victim->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB);
+    AuraEffectList const& mAbsorbReducedDamage = victim->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB_AMOUNT);
     for (AuraEffectList::const_iterator i = mAbsorbReducedDamage.begin(); i != mAbsorbReducedDamage.end(); ++i)
         AddPct(amount, (*i)->GetAmount());
 
@@ -9061,11 +9063,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     if(modify)
                         procDmg += int32((procDmg * modify) / 100);
 
-                    if(procSpell)
+                    if(procSpell) //< wtf?
                         pPet->CastSpell(pPet->getVictim(), procSpell->Id, true);
                     else
                     {
-                        pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
+                        if (procSpell)
+                            pPet->SendSpellNonMeleeDamageLog(pPet->getVictim(), procSpell->Id, procDmg, procSpell->GetSchoolMask(), 0, 0, false, 0, false);
                         pPet->DealDamage(pPet->getVictim(), procDmg);
                     }
                     break;
@@ -12022,18 +12025,20 @@ void Unit::SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 
 int32 Unit::HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHealth, bool critical)
 {
     uint32 absorb = 0;
+    int32 gain = 0;
     // calculate heal absorb and reduce healing
     CalcHealAbsorb(victim, spellInfo, addHealth, absorb);
 
-    if(spellInfo)
+    if (spellInfo)
     {
         SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellInfo->Id);
         if(bonus && bonus->heal_bonus)
             addHealth *= bonus->heal_bonus;
+        
+        gain = DealHeal(victim, addHealth, spellInfo);
+        SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     }
 
-    int32 gain = DealHeal(victim, addHealth, spellInfo);
-    SendHealSpellLog(victim, spellInfo->Id, addHealth, uint32(addHealth - gain), absorb, critical);
     return gain;
 }
 
@@ -13733,7 +13738,7 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     }
     else
     {
-        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_MOD_AUTOATTACK_DAMAGE_TARGET);
         for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
             if ((*i)->GetCasterGUID() == attacker->GetGUID())
                 AddPct(TakenTotalMod, (*i)->GetAmount());
@@ -13829,7 +13834,7 @@ uint32 Unit::MeleeDamageBonusForDamageBeforeHit(Unit* attacker, uint32 damageBef
     }
     else
     {
-        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_343);
+        AuraEffectList const& mMeleeDamageFromCaster = GetAuraEffectsByType(SPELL_AURA_MOD_AUTOATTACK_DAMAGE_TARGET);
         for (AuraEffectList::const_iterator i = mMeleeDamageFromCaster.begin(); i != mMeleeDamageFromCaster.end(); ++i)
             if ((*i)->GetCasterGUID() == attacker->GetGUID())
                 if ((*i)->GetAmount() > 0)
@@ -22192,7 +22197,7 @@ void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float 
     data << float(speedXY);
     data << float(vcos);
     data << float(speedZ);
-    data << uint32(0);
+    data << uint32(player->m_sequenceIndex++);
     data << float(vsin);
     
     data.WriteGuidMask<7, 2, 4, 3, 0, 6, 1, 5>(guid);
@@ -23761,31 +23766,30 @@ bool Unit::SetFeatherFall(bool enable, bool packetOnly)
 
 bool Unit::SetHover(bool enable, bool packetOnly)
 {
-    if (!packetOnly && enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-        return false;
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SendMovementSetHover(enable);
-    //for creature using virtual function
-
-    if (packetOnly)
-        return false;
-
-    if (enable)
+    if (!packetOnly)
     {
-        //! No need to check height on ascent
-        AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
-        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
-            UpdateHeight(GetPositionZ() + hh);
-    }
-    else
-    {
-        RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
-        if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+        if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+            return false;
+
+        if (GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->SendMovementSetHover(enable);
+
+        if (enable)
         {
-            float newZ = GetPositionZ() - hh;
-            UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
-            UpdateHeight(newZ);
+            //! No need to check height on ascent
+            AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
+            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+                UpdateHeight(GetPositionZ() + hh);
+        }
+        else
+        {
+            RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
+            if (float hh = GetFloatValue(UNIT_FIELD_HOVERHEIGHT))
+            {
+                float newZ = GetPositionZ() - hh;
+                UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
+                UpdateHeight(newZ);
+            }
         }
     }
 
@@ -24630,6 +24634,11 @@ void Unit::SetDynamicPassiveSpells(uint32 spellId, uint32 slot)
 {
     //from sniff 1-3 enable spell, 0-2 disable
     SetDynamicUInt32Value(UNIT_DYNAMIC_PASSIVE_SPELLS, slot, spellId);
+}
+
+void Unit::SetDynamicWorldEffects(uint32 effect, uint32 slot)
+{
+    SetDynamicUInt32Value(UNIT_DYNAMIC_WORLD_EFFECTS, slot, effect);
 }
 
 uint32 Unit::GetDynamicPassiveSpells(uint32 slot)

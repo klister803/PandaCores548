@@ -1290,18 +1290,6 @@ void Battleground::AddPlayer(Player* player)
 
         // Set arena faction client-side to display arena unit frame
         player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
-
-        Pet* pet = player->GetPet();
-        uint64 petGUID = pet ? pet->GetGUID() : 0;
-
-        //On MOP SMSG_ARENA_OPPONENT_UPDATE event destroy fraim
-        //WorldPacket op1(SMSG_ARENA_OPPONENT_UPDATE, 8);             //send opponents info about us
-        //op1.WriteGuidMask<5, 4, 7, 0, 6, 1, 2, 3>(petGUID);
-        //op1.WriteGuidBytes<6, 7, 0, 1, 3, 2, 4, 5>(petGUID);
-
-        //not shure if we should to it at join.
-        SendOpponentSpecialization(team);
-        SendOpponentSpecialization(GetOtherTeam(team));
     }
     else
     {

@@ -2410,7 +2410,8 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             case 84747: caster->RemoveAura(84746); break;
                         }
                     }
-                    else caster->insightCount = 0;
+                    else if (caster)
+                        caster->insightCount = 0;
                     break;
                 }
                 case 50720: // Vigilance
