@@ -226,12 +226,19 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
 
     size_t size = pct->wpos();
 
-    // Dump outgoing packet
-    if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
-
     if (pct->GetOpcode() != SMSG_MONSTER_MOVE)
+    {
+        if (m_Session)
+            if(Player* _player = m_Session->GetPlayer())
+                if (sObjectMgr->IsPlayerInLogList(_player))
+                {
+                    // Dump outgoing packet
+                    if (sPacketLog->CanLogPacket())
+                        sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
+                    sLog->outDebug(LOG_FILTER_DUPE, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());
+                }
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
+    }
 
     uint32 packetSize = pct->size();
     uint32 sizeOfHeader = SizeOfServerHeader[m_Crypt.IsInitialized()];
@@ -825,10 +832,6 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     if (closing_)
         return -1;
 
-    // Dump received packet.
-    if (sPacketLog->CanLogPacket())
-        sPacketLog->LogPacket(*new_pct, CLIENT_TO_SERVER);
-
     std::string opcodeName = GetOpcodeNameForLogging(opcode);
     if (opcode != CMSG_MOVE_START_FORWARD)
     {
@@ -836,7 +839,12 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
         if (m_Session)
             if(Player* _player = m_Session->GetPlayer())
                 if (sObjectMgr->IsPlayerInLogList(_player))
+                {
+                    // Dump received packet.
+                    if (sPacketLog->CanLogPacket())
+                        sPacketLog->LogPacket(*new_pct, CLIENT_TO_SERVER);
                     sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", opcodeName.c_str());
+                }
     }
 
     try
