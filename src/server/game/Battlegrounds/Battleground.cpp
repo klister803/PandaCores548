@@ -560,8 +560,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     }
                 }
 
-            SendOpponentSpecialization(ALLIANCE);
-            SendOpponentSpecialization(HORDE);
+            //SendOpponentSpecialization(ALLIANCE);
+            //SendOpponentSpecialization(HORDE);
 
             CheckArenaWinConditions();
         }
@@ -1290,6 +1290,13 @@ void Battleground::AddPlayer(Player* player)
 
         // Set arena faction client-side to display arena unit frame
         player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
+
+        Pet* pet = player->GetPet();
+        uint64 petGUID = pet ? pet->GetGUID() : 0;
+
+        //not shure if we should to it at join.
+        SendOpponentSpecialization(team);
+        SendOpponentSpecialization(GetOtherTeam(team));
     }
     else
     {

@@ -2553,7 +2553,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             Position newPos;
             if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
                 z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-            Relocate(x, y, z, orientation);
+            newPos.Relocate(x, y, z, orientation);
             SendTeleportPacket(newPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
         }
     }
@@ -19063,33 +19063,26 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         if (m_bgData.bgInstanceID)                                                //saved in Battleground
             currentBg = sBattlegroundMgr->GetBattleground(m_bgData.bgInstanceID, BATTLEGROUND_TYPE_NONE);
 
-        bool player_at_bg = false;
-        
-        if (currentBg)
-            if (currentBg->IsPlayerInBattleground(GetGUID()))
-                player_at_bg = true;
+        bool player_at_bg = currentBg && currentBg->IsPlayerInBattleground(GetGUID());
 
-        if (player_at_bg && currentBg)
+        if (player_at_bg && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
         {
-            if (currentBg->GetStatus() != STATUS_WAIT_LEAVE)
-            {
-                BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
-                AddBattlegroundQueueId(bgQueueTypeId);
+            BattlegroundQueueTypeId bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetJoinType());
+            AddBattlegroundQueueId(bgQueueTypeId);
 
-                m_bgData.bgTypeID = currentBg->GetTypeID();
+            m_bgData.bgTypeID = currentBg->GetTypeID();
 
-                //join player to battleground group
-                currentBg->EventPlayerLoggedIn(this);
-                currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
+            //join player to battleground group
+            currentBg->EventPlayerLoggedIn(this);
+            currentBg->AddOrSetPlayerToCorrectBgGroup(this, m_bgData.bgTeam);
 
-                SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
-            }
+            SetInviteForBattlegroundQueueType(bgQueueTypeId, currentBg->GetInstanceID());
         }
         // Bg was not found - go to Entry Point
         else
         {
             // leave bg
-            if (player_at_bg && currentBg)
+            if (player_at_bg)
                 currentBg->RemovePlayerAtLeave(GetGUID(), false, true);
 
             // Do not look for instance if bg not found
