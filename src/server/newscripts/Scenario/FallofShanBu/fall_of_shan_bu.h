@@ -93,7 +93,7 @@ enum eCreatures
     NPC_SHA_AMALGAMATION                = 70228,
     NPC_SHA_FIEND                       = 70039,
     NPC_SHA_BEAST                       = 70048,
-    NPC_THUNDER_FORGE                   = 70061,
+    NPC_THUNDER_FORGE3                  = 70061,
 };
 
 enum eGameObects
