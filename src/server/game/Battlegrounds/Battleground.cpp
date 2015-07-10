@@ -140,6 +140,8 @@ Battleground::Battleground()
     m_InvitedHorde      = 0;
     m_JoinType         = 0;
     m_IsArena           = false;
+    m_needFirstUpdateVision  = true;
+    m_needSecondUpdateVision = true;
     m_Winner            = 2;
     m_StartTime         = 0;
     m_ResetStatTimer    = 0;
@@ -265,9 +267,11 @@ void Battleground::Update(uint32 diff)
     switch (GetStatus())
     {
         case STATUS_WAIT_JOIN:
+        {
             if (GetPlayersSize())
                 _ProcessJoin(diff);
             break;
+        }
         case STATUS_IN_PROGRESS:
         {
             uint8 dumpeningTime = m_JoinType == 2 ? 6 : 11;
@@ -276,6 +280,17 @@ void Battleground::Update(uint32 diff)
             // after 47 minutes without one team losing, the arena closes with no winner and no rating change
             if (isArena())
             {
+                if (m_StartTime >= 60200 && m_needSecondUpdateVision)
+                {
+                    UpdateArenaVision();
+                    m_needSecondUpdateVision = false;
+                }
+                if (m_needFirstUpdateVision)
+                {
+                    UpdateArenaVision();
+                    m_needFirstUpdateVision = false;
+                }
+
                 //! Patch 5.4: If neither team has won after 20 minutes, the Arena match will end in a draw.
                 if (GetElapsedTime() >= 20 * MINUTE*IN_MILLISECONDS)
                 {
@@ -528,17 +543,7 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
                     // After getting status plr should get updates for all players in any way
                     // Remove preparation send plr updates, but on some cases it not work
-                    for (BattlegroundPlayerMap::const_iterator itr2 = GetPlayers().begin(); itr2 != GetPlayers().end(); ++itr2)
-                    {
-                        if (itr2->first == itr->first)
-                            continue;
-                        if (Player* _player = ObjectAccessor::FindPlayer(itr2->first))
-                        {
-                            _player->SendUpdateToPlayer(player);
-                            _player->SendInitialVisiblePackets(player);
-                            player->AddClient(_player);
-                        }
-                    }
+                    
 
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();
@@ -2174,4 +2179,14 @@ void Battleground::SendOpponentSpecialization(uint32 team)
     spec.PutBits<uint32>(0, opCoun, 21);
 
     SendPacketToTeam(GetOtherTeam(team), &spec);
+}
+
+void Battleground::UpdateArenaVision()
+{
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+        if (Player* player = sObjectAccessor->FindPlayer(itr->first))
+        {
+            player->AddAura(108887, player);
+            player->CastSpell(player, 108888, true);
+        }
 }
