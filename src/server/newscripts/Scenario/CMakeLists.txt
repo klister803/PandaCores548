@@ -22,6 +22,10 @@ set(scripts_STAT_SRCS
   Scenario/FallofShanBu/fall_of_shan_bu.cpp
   Scenario/FallofShanBu/instance_fall_of_shan_bu.cpp
   Scenario/FallofShanBu/fall_of_shan_bu.h
+  
+  Scenario/PursuingTheBlackHarvest/pursuing_the_black_harvest.cpp
+  Scenario/PursuingTheBlackHarvest/instance_pursuing_the_black_harvest.cpp
+  Scenario/PursuingTheBlackHarvest/pursuing_the_black_harvest.h
 )
 
 message("  -> Prepared: Scenario")

@@ -1009,9 +1009,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     uint32 triggerId;
     recvData >> triggerId;
     bool enter = recvData.ReadBit();
-    bool b2 = recvData.ReadBit();
+    bool fromClient = recvData.ReadBit();
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u enter %u, bit2 %u", triggerId, enter, b2);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u enter %u, FromClient %u", triggerId, enter, fromClient);
 
     Player* player = GetPlayer();
     if (player->isInFlight())
