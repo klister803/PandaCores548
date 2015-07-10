@@ -44,6 +44,11 @@ enum Data
     DATA_LR_STAGE_2,
 };
 
+enum Actions
+{
+    ACTION_EVADE = 9,
+};
+
 enum eCreatures
 {
     NPC_WRATHION                        = 70100,
@@ -93,7 +98,9 @@ enum eCreatures
     NPC_SHA_AMALGAMATION                = 70228,
     NPC_SHA_FIEND                       = 70039,
     NPC_SHA_BEAST                       = 70048,
-    NPC_THUNDER_FORGE                   = 70061,
+    NPC_THUNDER_FORGE_2                 = 70061,
+    NPC_LIGHTING_SPEAR_FLOAT_STALKER    = 70500,
+    NPC_LIGHTING_LANCE                  = 70460,
 };
 
 enum eGameObects

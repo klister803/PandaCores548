@@ -94,6 +94,7 @@ enum Spells
     SPELL_FIND_AVNIL_STALKER_BEST_DUMMY         = 140140, //< SS
     SPELL_ELECTIC_DISCHARGE                     = 140047,
     SPELL_ANVIL_ACTIVATE_COSMETIC_DND           = 140134,
+    SPELL_THUNDER_SURGE                         = 138834,
 
     //< Sha Amalgamation
     SPELL_INSANITY                              = 139382, //< 30S COOLDOWN
@@ -182,6 +183,14 @@ enum Events
     EVENT_LR_27,
     EVENT_LR_28,
     EVENT_LR_29,
+    EVENT_LR_30,
+    EVENT_LR_31,
+    EVENT_LR_32,
+    EVENT_LR_33,
+    EVENT_LR_34,
+    EVENT_LR_35,
+    EVENT_LR_36,
+    EVENT_LR_37,
 
     EVENT_NSANITY,
     EVENT_SHADOW_BURST,
@@ -197,7 +206,7 @@ enum Events
     EVENT_ABSORB_EVIL,
 };
 
-enum Actions
+enum Action
 {
     ACTION_NONE,
 
@@ -211,14 +220,14 @@ enum Actions
     ACTION_CHARGING_3,
     ACTION_CHARGING_4,
 
-    ACTION_EVADE,
-    ACTION_COMPLETE_FIRST_PART,
+    ACTION_COMPLETE_FIRST_PART = 10,
 
     ACTION_LR_P1,
 
     ACTION_CB_START_MOVING,
     ACTION_FORGE_CAST,
     ACTION_CANCEL_FORGE_EVENTS,
+    ACTION_M_ENERGY,
 
     ACTION_SCENARIO_COMPLETED
 
@@ -452,86 +461,86 @@ Position const cBlacksmithPositions[]
 
 Position const shaFinedsPositions[]
 {
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7312.857, 5209.722, 65.48965, 5.4242920f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7356.898, 5186.524, 49.56894, 5.8754060f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7351.568, 5187.763, 49.62176, 5.7390580f},
-    {7341.887, 5193.620, 51.39300, 5.7391410f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7342.526, 5193.744, 51.20268, 5.8395330f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7335.335, 5202.951, 56.86404, 5.5179640f},
-    {7319.052, 5216.208, 65.49776, 5.6599760f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
-    {7417.073, 5111.687, 55.45368, 2.2810680f},
-    {7310.219, 5212.780, 65.59111, 4.6407990f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7417.035, 5203.043, 55.45367, 3.7625580f},
-    {7412.241, 5209.885, 55.45366, 3.9634490f},
-    {7319.145, 5110.835, 55.45368, 0.6222018f},
-    {7315.756, 5218.577, 65.59111, 5.0987890f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7312.857f, 5209.722f, 65.48965f, 5.4242920f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7356.898f, 5186.524f, 49.56894f, 5.8754060f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7351.568f, 5187.763f, 49.62176f, 5.7390580f},
+    {7341.887f, 5193.620f, 51.39300f, 5.7391410f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7342.526f, 5193.744f, 51.20268f, 5.8395330f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7335.335f, 5202.951f, 56.86404f, 5.5179640f},
+    {7319.052f, 5216.208f, 65.49776f, 5.6599760f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
+    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
+    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
+    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
+    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
+    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
 };
 
 Position const shaBeastPositions[]
@@ -576,7 +585,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 /*action*/)
     {
         InstanceScript* instance = player->GetInstanceScript();
         if (!instance)
@@ -638,8 +647,13 @@ public:
                     me->SummonCreature(NPC_CELESTIAL_BLACKSMITH, celestialBlacksmithPoints[0]);
                     me->SummonCreature(NPC_CELESTIAL_DEFENDER, celestialDefenderPoints[0]);
                     break;
+                case ACTION_M_ENERGY:
+                    me->PlayDistanceSound(36406);
+                    Talk(13);
+                    events.ScheduleEvent(EVENT_LR_37, 5 * IN_MILLISECONDS);
+                    break;
                 case ACTION_SCENARIO_COMPLETED:
-                    // add quest giver flag and quest?
+                    events.ScheduleEvent(EVENT_LR_30, 3 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -674,6 +688,24 @@ public:
             {
                 switch (eventId)
                 {
+                    case EVENT_LR_30:
+                        events.ScheduleEvent(EVENT_LR_31, 3 * IN_MILLISECONDS);
+                        me->PlayDistanceSound(36054);
+                        Talk(24);
+                        break;
+                    case EVENT_LR_31:
+                        events.ScheduleEvent(EVENT_LR_32, 3 * IN_MILLISECONDS);
+                        me->PlayDistanceSound(36055);
+                        Talk(25);
+                        break;
+                    case EVENT_LR_32:
+                        //< disable this - should be called just after quest accepting
+                        if (Player* plr = me->FindNearestPlayer(100.0f))
+                            me->DestroyForPlayer(plr);
+                        break;
+                    case EVENT_LR_37:
+                        me->SummonCreature(NPC_SHA_AMALGAMATION, 7348.246f, 5179.011f, 49.38733f, 2.254864f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30 * IN_MILLISECONDS);
+                        break;
                     case EVENT_LR_0:
                         events.CancelEvent(EVENT_FORGE_CAST);
                         events.ScheduleEvent(EVENT_LR_EMOTE_1, 9 * IN_MILLISECONDS);
@@ -687,8 +719,8 @@ public:
                         Talk(6);
                         break;
                     case EVENT_WIPE_CHECK_2:
-                        //if (instance->IsWipe() || instance->GetData(DATA_LR_STAGE_2) == FAIL)
-                        //    events.RescheduleEvent(EVENT_LR_EMOTE_2, 10 * IN_MILLISECONDS);
+                        if (instance->IsWipe() || instance->GetData(DATA_LR_STAGE_2) == FAIL)
+                            events.RescheduleEvent(EVENT_LR_EMOTE_2, 10 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_EMOTE_2:
                         events.ScheduleEvent(EVENT_LR_EMOTE_3, 9 * IN_MILLISECONDS);
@@ -946,22 +978,22 @@ public:
                         events.ScheduleEvent(EVENT_LR_0, 30 * IN_MILLISECONDS);
                         break;
                     case EVENT_CHECK_WIPE:
-                        //if (instance->IsWipe())
-                        //{
-                        //    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        if (instance->IsWipe())
+                        {
+                            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-                        //    if (instance->GetData(DATA_EVENT_PART_2) != DONE)
-                        //        instance->SetData(DATA_START_EVENT, NOT_STARTED);
+                            if (instance->GetData(DATA_EVENT_PART_2) != DONE)
+                                instance->SetData(DATA_START_EVENT, NOT_STARTED);
 
-                        //    if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == IN_PROGRESS)
-                        //        instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, NOT_STARTED);
-                        //}
-                        //else
-                        //{
-                        //    events.ScheduleEvent(EVENT_CHECK_WIPE, 2 * IN_MILLISECONDS);
-                        //    if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == SPECIAL)
-                        //        events.CancelEvent(EVENT_CHECK_WIPE);
-                        //}
+                            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == IN_PROGRESS)
+                                instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, NOT_STARTED);
+                        }
+                        else
+                        {
+                            events.ScheduleEvent(EVENT_CHECK_WIPE, 2 * IN_MILLISECONDS);
+                            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == SPECIAL)
+                                events.CancelEvent(EVENT_CHECK_WIPE);
+                        }
                         break;
                     case EVENT_WRATHION_MOVE_1:
                         events.ScheduleEvent(EVENT_WRATHION_MOVE_2, 3 * IN_MILLISECONDS);
@@ -981,11 +1013,8 @@ public:
                         break;
                     case EVENT_INTRO_PART_1:
                     {
-                        std::list<Creature*> creatures;
-                        GetCreatureListWithEntryInGrid(creatures, me, NPC_SHADO_PAN_DEFENDER, 200.0f);
-                        if (!creatures.empty())
-                            for (std::list<Creature*>::iterator defender = creatures.begin(); defender != creatures.end(); ++defender)
-                                (*defender)->AI()->DoAction(ACTION_JOIN_PARTY);
+                        if (Creature* defender = me->FindNearestCreature(NPC_SHADO_PAN_DEFENDER, 200.0f))
+                            defender->AI()->DoAction(ACTION_JOIN_PARTY);
 
                         std::list<Creature*> creatures2;
                         GetCreatureListWithEntryInGrid(creatures2, me, NPC_SHADO_PAN_WARRIOR, 200.0f);
@@ -1103,9 +1132,10 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(Unit* /*who*/)
         {
             events.ScheduleEvent(EVENT_HEALING_ORB, urand(3, 7) * IN_MILLISECONDS);
+            me->CallForHelp(100.0f);
         }
 
         void EnterEvadeMode()
@@ -1187,25 +1217,25 @@ public:
                                     me->SummonCreature(NPC_SHANZE_WARRIOR, addsPositions[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
 
                                 me->SummonCreature(NPC_SHANZE_PYROMANCER, addsPositions[5], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                instance->SetData(DATA_SUMMONS_COUNTER, 3);
+                                instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 3);
                                 break;
                             }
                             case 2:
                                 me->SummonCreature(NPC_SHANZE_BATTLEMASTER, addsPositions[3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                instance->SetData(DATA_SUMMONS_COUNTER, 1);
+                                instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
                                 break;
                             case 3:
                                 me->SummonCreature(NPC_SHANZE_WARRIOR, addsPositions[urand(1, 2)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
                                 me->SummonCreature(NPC_SHANZE_PYROMANCER, addsPositions[5], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                instance->SetData(DATA_SUMMONS_COUNTER, 2);
+                                instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 2);
                                 break;
                             case 4:
                                 me->SummonCreature(NPC_SHANZE_ELECTRO_COUTIONER, addsPositions[4], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                instance->SetData(DATA_SUMMONS_COUNTER, 1);
+                                instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
                                 break;
                             case 5:
                                 me->SummonCreature(NPC_SHANZE_SHADOWCASTER, addsPositions[5], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS);
-                                instance->SetData(DATA_SUMMONS_COUNTER, 1);
+                                instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
                                 break;
                             default:
                                 break;
@@ -1268,6 +1298,11 @@ public:
                 default:
                     break;
             }
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            me->CallForHelp(100.0f);
         }
 
         void EnterEvadeMode()
@@ -1491,7 +1526,7 @@ public:
                     break;
                 case ACTION_CHARGING_4:
                     me->SummonCreature(NPC_FORGEMASTER_VULKON, 7207.826f, 5262.409f, 66.06776f, 6.170584f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS);
-                    instance->SetData(DATA_SUMMONS_COUNTER, 1);
+                    instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
                     break;
                 default:
                     break;
@@ -1555,24 +1590,6 @@ public:
         return GetInstanceAI<npc_lighting_pilar_spark_stalkerAI>(creature);
     }
 };
-
-void AttakersCounter(Creature* me, InstanceScript* instance)
-{
-    instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) - 1);
-
-    if (me->isInCombat() || instance->GetData(DATA_SUMMONS_COUNTER) > 0)
-        return;
-
-    std::list<Creature*> creatures;
-    GetCreatureListWithEntryInGrid(creatures, me, NPC_SHADO_PAN_WARRIOR, 200.0f);
-    if (!creatures.empty())
-        for (std::list<Creature*>::iterator forge = creatures.begin(); forge != creatures.end(); ++forge)
-            (*forge)->AI()->DoAction(ACTION_EVADE);
-
-    if (Creature* defender = me->FindNearestCreature(NPC_SHADO_PAN_DEFENDER, 100.0f))
-        if (!defender->getVictim())
-            defender->AI()->DoAction(ACTION_EVADE);
-}
 
 class npc_forgemaster_vulkon : public CreatureScript
 {
@@ -1983,6 +2000,7 @@ public:
         npc_celestial_blacksmithAI(Creature* creature) : CreatureAI(creature)
         {
             instance = creature->GetInstanceScript();
+            me->SetReactState(REACT_PASSIVE);
         }
 
         void DoAction(int32 const action)
@@ -1996,6 +2014,10 @@ public:
                     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 94564);
                     me->CastSpell(me, SPELL_JOIN_PLAYER_PARTY);
                     instance->SetData(DATA_LR_STAGE_2, IN_PROGRESS);
+
+                    if (Player* plr = me->FindNearestPlayer(200.0f))
+                        plr->AddAura(SPELL_THUNDER_FORGE_CHARGING, plr);
+
                     break;
                 default:
                     break;
@@ -2040,6 +2062,7 @@ public:
                         events.ScheduleEvent(EVENT_LR_7, t += 34 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_1:
+                        DoCast(SPELL_DEACTIVATE_ALL_AVNILS);
                         AvnilHelper(0);
                         break;
                     case EVENT_LR_2:
@@ -2061,28 +2084,30 @@ public:
                         AvnilHelper(6);
 
                         if (Unit* plr = me->FindNearestPlayer(150.0f))
-                            if (plr->GetPower(POWER_ALTERNATE_POWER) < 100)
+                            if (plr->GetPower(POWER_ALTERNATE_POWER) < 190)
                                 events.ScheduleEvent(EVENT_LR_0, 1 * IN_MILLISECONDS);
 
                         break;
-
                     case EVENT_LR_8:
                         me->GetMotionMaster()->Clear();
 
                         if (Unit* stalker = me->FindNearestCreature(NPC_ANVIL_STALKER, 8.0f))
                             me->SetFacingTo(stalker);
-                        
+
                         me->AddAura(SPELL_FORGING, me);
-                        //me->CastSpell(me, SPELL_STRIKE_ANVIL_COSMETIC);
 
                         if (Unit* plr = me->FindNearestPlayer(150.0f))
-                            me->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
+                            for (uint32 i = 0; i < 5; i++)
+                                me->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
 
                         break;
                     case EVENT_LR_9:
-                        me->CastSpell(me, SPELL_ACTIVATE_CLOSEST_AVNIL);
+                    {
                         if (Unit* stalker = me->FindNearestCreature(NPC_ANVIL_STALKER, 8.0f))
-                            me->CastSpell(stalker, SPELL_ANVIL_ACTIVATE_COSMETIC_DND);
+                        {
+                            me->AddAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND, stalker);
+                            me->AddAura(SPELL_ACTIVATE_CLOSEST_AVNIL, stalker);
+                        }
 
                         if (!talk)
                         {
@@ -2092,7 +2117,55 @@ public:
                         else
                             Talk(1);
 
+                        int32 pwr = 0;
+                        if (Player* plr = me->FindNearestPlayer(100.0f))
+                            pwr = plr->GetPower(POWER_ALTERNATE_POWER);
+
+                        if (pwr == 50)
+                        {
+                            if (Player* plr = me->FindNearestPlayer(100.0f))
+                                plr->RemoveAura(SPELL_THUNDER_FORGE_CHARGING);
+                                                        
+                            if (Creature* wrathion = me->FindNearestCreature(NPC_WRATHION, 150.0f))
+                                wrathion->AI()->DoAction(ACTION_M_ENERGY);
+                        }
+                        else
+                        {
+                            uint32 point = 0;
+                            Unit* target = me->FindNearestCreature(0, 150.0f);
+                            if (!target)
+                                break;
+
+                            for (uint32 i = 0; i < 5; i++)
+                            {
+                                point = urand(0, 79);
+                                if (Unit* mover = me->SummonCreature(NPC_SHA_FIEND, shaFinedsPositions[point], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS))
+                                {
+                                    if (mover->GetDistance2d(target) > 10.0f)
+                                        mover->GetMotionMaster()->MoveChase(target);
+                                    else
+                                        mover->GetMotionMaster()->Clear();
+
+                                }
+
+                            }
+
+                            point = urand(0, 22);
+                            if (Unit* mover = me->SummonCreature(NPC_SHA_BEAST, shaBeastPositions[point], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15 * IN_MILLISECONDS))
+                            {
+                                if (mover->GetDistance2d(target) > 10.0f)
+                                    mover->GetMotionMaster()->MoveChase(target);
+                                else
+                                    mover->GetMotionMaster()->Clear();
+
+                            }
+                        }
+                        if (pwr == 90)
+                            if (Unit* stalker = me->SummonCreature(NPC_LIGHTING_SPEAR_FLOAT_STALKER, 7368.375f, 5181.912f, 52.79837f, 0.f))
+                                if (Unit* lance = me->SummonCreature(NPC_LIGHTING_LANCE, 7368.375f, 5181.912f, 55.04837f, 0.f))
+                                    stalker->CastSpell(lance, VEHICLE_SPELL_RIDE_HARDCODED);
                         break;
+                    }
                     default:
                         break;
                 }
@@ -2270,8 +2343,7 @@ public:
         }
 
         void JustDied(Unit* /*killer*/)
-        {
-        }
+        { }
 
         void EnterCombat(Unit* /*who*/)
         {
@@ -2348,8 +2420,7 @@ public:
         }
 
         void JustDied(Unit* /*killer*/)
-        {
-        }
+        { }
 
         void EnterCombat(Unit* /*who*/)
         {
@@ -2455,7 +2526,7 @@ public:
         void UpdateAI(uint32 diff)
         {
             if (!UpdateVictim())
-                 return;
+                return;
 
             events.Update(diff);
 
@@ -2655,64 +2726,40 @@ public:
     }
 };
 
-class spell_thundder_forge_charging_2 : public SpellScriptLoader
+class spell_avnil_click_dummy : public SpellScriptLoader
 {
 public:
-    spell_thundder_forge_charging_2() : SpellScriptLoader("spell_thundder_forge_charging_2") { }
+    spell_avnil_click_dummy() : SpellScriptLoader("spell_avnil_click_dummy") { }
 
-    class spell_thundder_forge_charging_2_AuraScript : public AuraScript
+    class spell_avnil_click_dummy_SpellScript : public SpellScript
     {
-        PrepareAuraScript(spell_thundder_forge_charging_2_AuraScript);
+        PrepareSpellScript(spell_avnil_click_dummy_SpellScript);
 
-        void OnTick(AuraEffect const* aurEff)
+        void HandleScriptEffect(SpellEffIndex effIndex)
         {
-            Unit* target = GetTarget();
-            if (!target)
+            Unit* caster = GetCaster();
+            if (!caster)
                 return;
 
-            if (InstanceScript* instance = target->GetInstanceScript())
+            if (caster->GetInstanceScript())
             {
-                switch (target->GetPower(POWER_ALTERNATE_POWER))
+                if (Unit* stalker = caster->FindNearestCreature(NPC_ANVIL_STALKER, 10.0f))
                 {
-                    case 10:
-                    case 20:
-                    case 30:
-                    case 40:
-                    case 50:
-                    case 60:
-                    case 70:
-                    case 80:
-                    case 90:
-                    {
-                        uint32 point = 0;
-                        for (uint32 i = 0; i < 10; i++)
-                        {
-                            point = urand(0, 79);
-                            target->SummonCreature(NPC_SHA_AMALGAMATION, shaFinedsPositions[point], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS);
-                        }
-
-                        point = urand(0, 22);
-                        target->SummonCreature(NPC_SHA_BEAST, shaBeastPositions[point], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15 * IN_MILLISECONDS);
-                        break;
-                    }
-                    case 100:
-                        target->SummonCreature(NPC_SHA_AMALGAMATION, 7348.246f, 5179.011f, 49.38733f, 2.254864f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30 * IN_MILLISECONDS);
-                        break;
-                    default:
-                        break;
+                    stalker->CastSpell(stalker->GetPositionX(), stalker->GetPositionY(), stalker->GetPositionZ(), SPELL_THUNDER_SURGE);
+                    stalker->RemoveAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND);
                 }
             }
         }
 
         void Register()
         {
-            OnEffectPeriodic += AuraEffectPeriodicFn(spell_thundder_forge_charging_2_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_ENERGIZE);
+            OnEffectLaunch += SpellEffectFn(spell_avnil_click_dummy_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
         }
     };
 
-    AuraScript* GetAuraScript() const
+    SpellScript* GetSpellScript() const
     {
-        return new spell_thundder_forge_charging_2_AuraScript();
+        return new spell_avnil_click_dummy_SpellScript();
     }
 };
 
@@ -2721,12 +2768,12 @@ class at_healing_orb : public AreaTriggerScript
 public:
     at_healing_orb() : AreaTriggerScript("at_healing_orb") { }
 
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool /*enter*/)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
     {
-        if (InstanceScript* instance = player->GetInstanceScript())
+        if (player->GetInstanceScript() && enter)
         {
             player->CastSpell(player, SPELL_HEALING_ORB_TRIGGER, true);
-            return false;
+            return true;
         }
         return false;
     }
@@ -2737,12 +2784,12 @@ class at_thunder_forge_buff : public AreaTriggerScript
 public:
     at_thunder_forge_buff() : AreaTriggerScript("at_thunder_forge_buff") { }
 
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool /*enter*/)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
     {
-        if (InstanceScript* instance = player->GetInstanceScript())
+        if (player->GetInstanceScript() && enter)
         {
             //player->CastSpell(player, 1111, true);
-            return false;
+            return true;
         }
         return false;
     }
@@ -2753,12 +2800,12 @@ class at_power_surge : public AreaTriggerScript
 public:
     at_power_surge() : AreaTriggerScript("at_power_surge") { }
 
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool /*enter*/)
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
     {
-        if (InstanceScript* instance = player->GetInstanceScript())
+        if (player->GetInstanceScript() && enter)
         {
             player->CastSpell(player, SPELL_POWER_SURGE_TRIGGER, true);
-            return false;
+            return true;
         }
         return false;
     }
@@ -2795,5 +2842,5 @@ void AddSC_fall_of_shan_bu()
     new spell_phase_shift_update();
     new spell_thundder_forge_charging();
     new spell_forging();
-    new spell_thundder_forge_charging_2();
+    new spell_avnil_click_dummy();
 }

@@ -64,17 +64,6 @@ public:
             lrStage2 = 0;
         }
 
-        bool SetBossState(uint32 type, EncounterState state)
-        {
-            if (!InstanceScript::SetBossState(type, state))
-                return false;
-
-            //switch (type)
-            //{
-            //}
-            return true;
-        }
-
         void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
@@ -90,9 +79,37 @@ public:
 
         void OnCreatureCreate(Creature* creature)
         {
-            //switch (creature->GetEntry())
-            //{
-            //}
+            switch (creature->GetEntry())
+            {
+                case NPC_SHANZE_SHADOWCASTER:
+                case NPC_SHANZE_WARRIOR:
+                case NPC_SHANZE_BATTLEMASTER:
+                case NPC_SHANZE_ELECTRO_COUTIONER:
+                case NPC_SHANZE_PYROMANCER:
+                    ++counter;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void CreatureDies(Creature* creature, Unit* /*killer*/)
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_SHANZE_SHADOWCASTER:
+                case NPC_SHANZE_WARRIOR:
+                case NPC_SHANZE_BATTLEMASTER:
+                case NPC_SHANZE_ELECTRO_COUTIONER:
+                case NPC_SHANZE_PYROMANCER:
+                    --counter;
+                    break;
+                case NPC_FORGEMASTER_VULKON:
+                    DoUseDoorOrButton(GetData64(DATA_TRUNDER_FORGE_DOOR));
+                    break;
+                default:
+                    break;
+            }
         }
 
         void SetData(uint32 type, uint32 data)
@@ -119,6 +136,7 @@ public:
                     break;
                 case DATA_LR_STAGE_2:
                     lrStage2 = data;
+                    break;
                 default:
                     break;
             }
@@ -161,6 +179,24 @@ public:
         }
     };
 };
+
+void AttakersCounter(Creature* me, InstanceScript* instance)
+{
+    instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) - 1);
+
+    if (instance->GetData(DATA_SUMMONS_COUNTER) > 0)
+        return;
+
+    std::list<Creature*> creatures;
+    GetCreatureListWithEntryInGrid(creatures, me, NPC_SHADO_PAN_WARRIOR, 200.0f);
+    if (!creatures.empty())
+        for (std::list<Creature*>::iterator forge = creatures.begin(); forge != creatures.end(); ++forge)
+            (*forge)->AI()->DoAction(ACTION_EVADE);
+
+    if (Creature* defender = me->FindNearestCreature(NPC_SHADO_PAN_DEFENDER, 100.0f))
+        if (!defender->getVictim())
+            defender->AI()->DoAction(ACTION_EVADE);
+}
 
 void AddSC_instance_fall_of_shan_bu()
 {

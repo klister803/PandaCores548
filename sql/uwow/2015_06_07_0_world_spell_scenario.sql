@@ -156,9 +156,9 @@ INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
 (503, 'at_healing_orb'),
 (868, 'at_power_surge');
 
-DELETE FROM `spell_script_names` WHERE (`spell_id`=140487 AND `ScriptName`='spell_thundder_forge_charging_2') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
+DELETE FROM `spell_script_names` WHERE (`spell_id`=138805 AND `ScriptName`='spell_avnil_click_dummy') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('134715', 'spell_phase_shift_update'),
 ('138869', 'spell_forging'),
-('140487', 'spell_thundder_forge_charging_2'),
+('138805', 'spell_avnil_click_dummy'),
 ('140382', 'spell_thundder_forge_charging');
