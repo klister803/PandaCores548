@@ -457,7 +457,7 @@ class boss_algalon_the_observer : public CreatureScript
             {
                 _JustDied();
                 if (instance)
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_CREDIT, 0, me); //Observed
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_CREDIT, 0, 0, me); //Observed
 
                 me->setFaction(35);
                 me->SetPhaseMask(65535, true);

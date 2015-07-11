@@ -407,7 +407,7 @@ public:
                                                 pAerialUnit->DisappearAndDie();
                                                 me->Kill(me, true);
                                                 //Kill credit
-                                                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33432, 1, me);
+                                                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33432, 1, 0, me);
                                             }
                                         }
                 }
@@ -1571,7 +1571,7 @@ public:
             // Achievement Not-So-Friendly Fire
             if (spell->Id == SPELL_ROCKET_STRIKE_DMG && pInstance)
             {
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65040, 0, me);
+                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65040, 0, 0, me);
                 me->Kill(me, true);
             }
         }

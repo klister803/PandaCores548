@@ -193,7 +193,7 @@ class boss_murozond : public CreatureScript
                 if (instance)
                 {
                     // Achievement
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_MUROZOND, 0, me); 
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_KILL_MUROZOND, 0, 0, me); 
                     
                     // Guild Achievement
                     Map::PlayerList const &PlayerList = instance->instance->GetPlayers();

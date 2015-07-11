@@ -473,11 +473,11 @@ struct CriteriaEntry
             // uint32  duelCount;                           // treeCount in CriteriaTree
         } win_duel;
 
-        // ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_POWER          = 96
+        // ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL = 96
         struct
         {
-            uint32  powerType;                              // 2 mana=0, 1=rage, 3=energy, 6=runic power
-        } highest_power;
+            uint32  journal;
+        } battle_pet_journal;
 
         // ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_STAT           = 97
         struct

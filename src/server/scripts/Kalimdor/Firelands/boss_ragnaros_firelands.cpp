@@ -466,7 +466,7 @@ class boss_ragnaros_firelands : public CreatureScript
 
                 // Achievement Ragnar'os
                 if (Lavalogged >= 3)
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT, 0, me); 
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT, 0, 0, me); 
                 
                 if (Creature* pMalfurion = me->FindNearestCreature(NPC_MALFURION_STORMRAGE, 300.0f))
                     pMalfurion->AI()->DoAction(ACTION_WIN);
@@ -1001,10 +1001,10 @@ class boss_ragnaros_firelands : public CreatureScript
                 
                 // Achievement Ragnar'os
                 if (Lavalogged >= 3)
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT, 0, me); 
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ACHIEVEMENT, 0, 0, me); 
 
                 // Achievement
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ENCOUNTER_COMPLETE, 0, me); 
+                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_ENCOUNTER_COMPLETE, 0, 0, me); 
                     
                 // Guild Achievement
                 Map::PlayerList const &plrList = instance->instance->GetPlayers();

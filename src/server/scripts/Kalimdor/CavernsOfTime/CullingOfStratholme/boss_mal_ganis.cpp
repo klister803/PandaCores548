@@ -128,8 +128,8 @@ public:
                 damage = me->GetHealth()-1;
                 if (instance)
                 {
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 26533, 0, me);
-                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630, 0, me);
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 26533, 0, 0, me);
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630, 0, 0, me);
                 }
             }
         }
@@ -245,7 +245,7 @@ public:
         {
             if (instance)
             {
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 1, SPELL_KILL_CREDIT, me);
+                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 1, SPELL_KILL_CREDIT, 0, me);
                 instance->SetData(DATA_MAL_GANIS_EVENT, DONE);
                 DoCastAOE(SPELL_MAL_GANIS_KILL_CREDIT);
                 // give achievement credit and LFG rewards to players. criteria use spell 58630 which doesn't exist, but it was created in spell_dbc

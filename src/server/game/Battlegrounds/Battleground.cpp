@@ -902,11 +902,11 @@ void Battleground::EndBattleground(uint32 winner)
                 if (uint32 guildId = GetBgMap()->GetOwnerGuildId(player->GetTeam()))
                     if (Guild* guild = sGuildMgr->GetGuildById(guildId))
                     {
-                        guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1, 0, NULL, player);
+                        guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, 1, 0, 0, NULL, player);
                         if (isArena() && isRated() && winner != WINNER_NONE)
                         {
                             ASSERT(bracket);
-                            guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, std::max<uint32>(bracket->getRating(), 1), 0, NULL, player);
+                            guild->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, std::max<uint32>(bracket->getRating(), 1), 0, 0, NULL, player);
                         }
                     }
             }

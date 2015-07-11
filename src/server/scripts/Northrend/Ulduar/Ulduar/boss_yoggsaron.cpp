@@ -1270,7 +1270,7 @@ class npc_guardian_yoggsaron : public CreatureScript
             if (pInstance)
             {
                 pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_CREATURE, 33136);
-                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33136, 0, me);
+                pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, 33136, 0, 0, me);
                 DoCast(me, RAID_MODE(SPELL_SHADOW_NOVA_10, SPELL_SHADOW_NOVA_25), true);
                 me->DespawnOrUnsummon(3000);
             }

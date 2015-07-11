@@ -288,7 +288,7 @@ public:
             _JustDied();
             me->setFaction(35);
             if (instance) // Kill credit
-                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65074, 0, me);
+                instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65074, 0, 0, me);
             // Hard mode chest
             uint32 chest;
             switch (EldersCount)
@@ -380,8 +380,8 @@ public:
                     {
                         me->MonsterTextEmote("Deforestation is Done", 0, true);
                         DeforesTimer = 0;
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, 65015, 0, me);
-                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65015, 0, me);
+                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, 65015, 0, 0, me);
+                        instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 65015, 0, 0, me);
                     }
                     else
                     {

@@ -82,14 +82,16 @@ public:
         char* criteriatr = strtok((char*)args, " ");
         char* miscValueStr1 = strtok(NULL, " ");
         char* miscValueStr2 = strtok(NULL, " ");
+        char* miscValueStr3 = strtok(NULL, " ");
 
         uint32 criteriaType = criteriatr ? atoi(criteriatr) : 0;
         uint32 miscValue1 = miscValueStr1 ? atoi(miscValueStr1) : 0;
         uint32 miscValue2 = miscValueStr2 ? atoi(miscValueStr2) : 0;
-        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "HandleAchievementCriteriaCommand criteriaType %i miscValue1 %i miscValue2 %i", criteriaType, miscValue1, miscValue2);
+        uint32 miscValue3 = miscValueStr3 ? atoi(miscValueStr2) : 0;
+        sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "HandleAchievementCriteriaCommand criteriaType %i miscValue1 %i miscValue2 %i, miscValue3 %i", criteriaType, miscValue1, miscValue2, miscValue3);
 
         if(Player* player = handler->GetSession()->GetPlayer())
-            player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, handler->getSelectedUnit());
+            player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, handler->getSelectedUnit());
 
         return true;
     }

@@ -1801,6 +1801,7 @@ public:
         uint32 criteriaType = 0;
         uint32 miscValue1 = 0;
         uint32 miscValue2 = 0;
+        uint32 miscValue3 = 0;
         Unit* unit = NULL;
         for (uint32 i = 0; i < tokens.size(); ++i)
         {
@@ -1816,12 +1817,15 @@ public:
                     miscValue2 = std::atoi(tokens[i]);
                     break;
                 case 3:
+                    miscValue3 = std::atoi(tokens[i]);
+                    break;
+                case 4:
                     unit = player;
                     break;
             }
         }
 
-        player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, unit, true);
+        player->UpdateAchievementCriteria(AchievementCriteriaTypes(criteriaType), miscValue1, miscValue2, miscValue3, unit, true);
         return true;
     }
 };

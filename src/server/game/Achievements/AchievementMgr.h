@@ -251,7 +251,7 @@ class AchievementMgr
         void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = NULL, PreparedQueryResult criteriaAccountResult = NULL);
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
-        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
+        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
         void CompletedAchievement(AchievementEntry const* entry, Player* referencePlayer);
         bool IsCompletedAchievement(AchievementEntry const* entry);
         void CheckAllAchievementCriteria(Player* referencePlayer);
@@ -295,13 +295,13 @@ class AchievementMgr
         void CompletedCriteriaFor(AchievementEntry const* achievement, Player* referencePlayer);
         bool CanCompleteCriteria(AchievementEntry const* achievement);
 
-        bool CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer);
+        bool CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer);
 
         void SendPacket(WorldPacket* data) const;
 
         bool ConditionsSatisfied(CriteriaEntry const *criteria, Player* referencePlayer) const;
-        bool RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
-        bool AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
+        bool RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const;
+        bool AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const;
 
         T* _owner;
         CriteriaProgressMap m_criteriaProgress;

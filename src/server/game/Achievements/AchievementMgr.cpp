@@ -1529,7 +1529,7 @@ void AchievementMgr<T>::CheckAllAchievementCriteria(Player* referencePlayer)
 {
     // suppress sending packets
     for (uint32 i = 0; i < ACHIEVEMENT_CRITERIA_TYPE_TOTAL; ++i)
-        UpdateAchievementCriteria(AchievementCriteriaTypes(i), 0, 0, NULL, referencePlayer, true);
+        UpdateAchievementCriteria(AchievementCriteriaTypes(i), 0, 0, 0, NULL, referencePlayer, true);
 }
 
 static const uint32 achievIdByArenaSlot[MAX_ARENA_SLOT] = {1057, 1107, 1108};
@@ -1548,9 +1548,9 @@ static const uint32 achievIdForDungeon[][4] =
  * this function will be called whenever the user might have done a criteria relevant action
  */
 template<class T>
-void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, Unit const* unit /*= NULL*/, Player* referencePlayer /*= NULL*/, bool init /*=false*/)
+void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, uint32 miscValue3 /*= 0*/,Unit const* unit /*= NULL*/, Player* referencePlayer /*= NULL*/, bool init /*=false*/)
 {
-    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria(%u, %u, %u) CriteriaSort %u", type, miscValue1, miscValue2, GetCriteriaSort());
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateAchievementCriteria(%u, %u, %u) CriteriaSort %u", type, miscValue1, miscValue2, miscValue3, GetCriteriaSort());
 
     // disable for gamemasters with GM-mode enabled
     if (referencePlayer->isGameMaster())
@@ -1584,7 +1584,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
         //if (achievement && HasAchieved(achievement->ID)) //Don`t update complete achievement
             //continue;
 
-        if (!CanUpdateCriteria(criteriaTree, achievementCriteria, achievement, miscValue1, miscValue2, unit, referencePlayer))
+        if (!CanUpdateCriteria(criteriaTree, achievementCriteria, achievement, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
             continue;
 
         // requirements not found in the dbc
@@ -1645,6 +1645,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
             case ACHIEVEMENT_CRITERIA_TYPE_CATCH_FROM_POOL:
             case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM:
+            case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
+            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
+            case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, init ? 0 : 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -1914,12 +1918,9 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY:
             case ACHIEVEMENT_CRITERIA_TYPE_REACH_SCENARIO_BOSS:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK154:
-            case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
-            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
             case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK159:
             case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP:
-            case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
             case ACHIEVEMENT_CRITERIA_TYPE_LEVEL_BATTLE_PET_CREDIT:
                 break;                                   // Not implemented yet :(
         }
@@ -2085,7 +2086,11 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         case ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING:
         case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
         case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+        case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
+        case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
         case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
+        case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+        case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
             return progress->counter >= criteriaTree->requirement_count;
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
@@ -2241,7 +2246,11 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING:
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+                case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
+                case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
                     check = count >= criteriaTree->requirement_count;
                     break;
                 // handle all statistic-only criteria here
@@ -2415,7 +2424,11 @@ bool AchievementMgr<T>::IsCompletedScenarioTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_REACH_RBG_RATING:
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT:
                 case ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2:
+                case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
+                case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+                case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
                     check = progress->counter >= criteriaTree->requirement_count;
                     break;
                 // handle all statistic-only criteria here
@@ -2783,8 +2796,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
 
     _achievementPoints += achievement->points;
 
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, NULL, referencePlayer);
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, NULL, referencePlayer);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, 0, NULL, referencePlayer);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
 
     // reward items and titles if any
     AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement);
@@ -2886,9 +2899,9 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
 
     _achievementPoints += achievement->points;
 
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, NULL, referencePlayer);
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, NULL, referencePlayer);
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_GUILD_ACHIEVEMENT_POINTS, achievement->points, 0, NULL, referencePlayer);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, 0, NULL, referencePlayer);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_GUILD_ACHIEVEMENT_POINTS, achievement->points, 0, 0, NULL, referencePlayer);
 }
 
 struct VisibleAchievementPred
@@ -3324,7 +3337,7 @@ uint64 AchievementMgr<T>::GetFirstAchievedCharacterOnAccount(uint32 achievementI
 }
 
 template<class T>
-bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer)
+bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer)
 {
     if(!achievement && GetCriteriaSort() != SCENARIO_CRITERIA)
         return false;
@@ -3365,14 +3378,14 @@ bool AchievementMgr<T>::CanUpdateCriteria(CriteriaTreeEntry const* treeEntry, Cr
         return false;
     }
 
-    if (!RequirementsSatisfied(achievement, criteria, miscValue1, miscValue2, unit, referencePlayer))
+    if (!RequirementsSatisfied(achievement, criteria, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
     {
         // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Requirements not satisfied",
             // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
         return false;
     }
 
-    if (!AdditionalRequirementsSatisfied(criteria->ModifyTree, miscValue1, miscValue2, unit, referencePlayer))
+    if (!AdditionalRequirementsSatisfied(criteria->ModifyTree, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
     {
         // sLog->outTrace(LOG_FILTER_ACHIEVEMENTSYS, "CanUpdateCriteria: %s (Id: %u Type %s) Additional requirements not satisfied",
             // treeEntry->name, criteria->ID, AchievementGlobalMgr::GetCriteriaTypeString(criteria->type));
@@ -3437,7 +3450,7 @@ bool AchievementMgr<T>::ConditionsSatisfied(CriteriaEntry const *criteria, Playe
 }
 
 template<class T>
-bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *achievementCriteria, uint64 miscValue1, uint64 miscValue2, Unit const *unit, Player* referencePlayer) const
+bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievement, CriteriaEntry const *achievementCriteria, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const *unit, Player* referencePlayer) const
 {
     //if(achievementCriteria->worldStateId && GetMap()->getWorldState(achievementCriteria->worldStateId) != achievementCriteria->worldStateValue)
         //return false;
@@ -3505,6 +3518,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         case ACHIEVEMENT_CRITERIA_TYPE_EARN_GUILD_ACHIEVEMENT_POINTS:
         case ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_EMBLEM:
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD:
+        case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
         case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
@@ -3831,6 +3845,10 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
             if (!miscValue1 || miscValue1 != achievementCriteria->script_event.unkValue)
                 return false;
             break;
+        case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
+            if (!miscValue1 || miscValue1 != achievementCriteria->battle_pet_journal.journal)
+                return false;
+            break;
         default:
             break;
     }
@@ -3838,7 +3856,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
 }
 
 template<class T>
-bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const
+bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint64 miscValue1, uint64 miscValue2, uint64 miscValue3, Unit const* unit, Player* referencePlayer) const
 {
     if(!ModifyTree)
         return true;
@@ -3860,7 +3878,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
 
         if(modifier->operatorFlags & (MODIFIERTREE_FLAG_MAIN | MODIFIERTREE_FLAG_PARENT))
         {
-            if(!AdditionalRequirementsSatisfied(*itr, miscValue1, miscValue2, unit, referencePlayer))
+            if(!AdditionalRequirementsSatisfied(*itr, miscValue1, miscValue2, miscValue3, unit, referencePlayer))
                 return false;
         }
         else
@@ -4145,6 +4163,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 {
                     if (!unit || unit->getLevel() >= reqValue)
                         check = false;
+                    break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_TARGET_MAX_LEVEL: // 71
                 {
@@ -4154,9 +4173,16 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_FEMALY: // 78
                 {
-                    BattlePetSpeciesEntry const* entry = sBattlePetSpeciesStore.LookupEntry(miscValue1);
-                    if (!entry || entry->petType != reqValue)
+                    if (!miscValue3 || miscValue3 != reqValue)
                         check = false;
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_HP_LOW_THAT: // 79
+                {
+                    PetBattleWild* petBattle = referencePlayer->GetBattlePetMgr()->GetPetBattleWild();
+                    if (!petBattle || petBattle->GetFrontPet(TEAM_ENEMY)->GetHealthPct() >= reqValue)
+                        check = false;
+                    break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_MASTER_PET_TAMER: // 81
                 {
@@ -4173,14 +4199,28 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_QUALITY: // 89
                 {
-                    if (!miscValue1)
-                        check = false;
-                    else
+                    uint8 qPet = 0;
+                    for (uint32 i = 0; i < sBattlePetBreedQualityStore.GetNumRows(); ++i)
                     {
-                        BattlePetSpeciesEntry const* bp = referencePlayer->GetBattlePetMgr()->GetBattlePetSpeciesEntry(miscValue1);
-                        if (!bp || bp->ID != reqValue)
+                        BattlePetBreedQualityEntry const* qEntry = sBattlePetBreedQualityStore.LookupEntry(i);
+                        if (!qEntry)
+                            continue;
+
+                        if (miscValue2 == qEntry->quality)
+                            qPet = qEntry->ID;
+
+                        if (qPet != reqValue)
                             check = false;
+                        else
+                            check = true;
                     }
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_SPECIES: // 91
+                {
+                    if (!miscValue1 || miscValue1 != reqValue)
+                        check = false;
+                    break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_EXPANSION_LESS: // 92
                 {
@@ -4488,8 +4528,6 @@ char const* AchievementGlobalMgr::GetCriteriaTypeString(AchievementCriteriaTypes
             return "HONORABLE_KILLS_GUILD";
         case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE_GUILD:
             return "KILL_CREATURE_TYPE_GUILD";
-        case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
-            return "COLLECT_BATTLEPET";
         default:
             return "MISSING_TYPE";
     }

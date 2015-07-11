@@ -215,7 +215,7 @@ public:
             me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
 
             me->AddAura(SPELL_MUNITION_EXPLOSION_AURA, me);
-            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_ACHIEV_CREDIT, 0, me);
+            instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_ACHIEV_CREDIT, 0, 0, me);
         }
 
         void DamageTaken(Unit* attacker, uint32& damage)
