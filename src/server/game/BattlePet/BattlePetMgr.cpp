@@ -45,8 +45,8 @@ bool BattlePetMgr::SlotIsLocked(uint8 index)
     switch (index)
     {
         case 0: locked = !m_player->HasSpell(119467); break;
-        case 1: locked = /*!m_player->GetAchievementMgr().HasAchieved(7433)*/false; break;
-        case 2: locked = /*!m_player->GetAchievementMgr().HasAchieved(6566)*/false; break;
+        case 1: locked = !m_player->GetAchievementMgr().HasAchieved(7433), false; break;
+        case 2: locked = !m_player->GetAchievementMgr().HasAchieved(6566), false; break;
         default: break;
     }
 
@@ -1654,6 +1654,16 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE, pb->GetSpeciesID(), pb->GetQuality(), pb->GetType());
                 m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT);
             }
+
+            if (GetWinner() == TEAM_ALLY)
+            {
+                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN, 0, 0, pb->GetType());
+
+                if (pb->GetNewLevel() > pb->GetLevel())
+                    m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP, pb->GetNewLevel());
+            }
+            else
+                m_player->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN, ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE_PET_BATTLE);
         }
     }
 

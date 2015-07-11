@@ -100,16 +100,17 @@ enum
 
 enum AchievementCriteriaCondition
 {
-    ACHIEVEMENT_CRITERIA_CONDITION_NONE            = 0,
-    ACHIEVEMENT_CRITERIA_CONDITION_NO_DEATH        = 1,    // reset progress on death
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK2            = 2,    // only used in "Complete a daily quest every day for five consecutive days"
-    ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP          = 3,    // requires you to be on specific map, reset at change
-    ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE         = 4,    // only used in "Win 10 arenas without losing"
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK5            = 5,    // Have spell?
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK8            = 8,
-    ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT    = 9,    // requires the player not to be hit by specific spell
-    ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP    = 10,   // requires the player not to be in group
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK13           = 13    // unk
+    ACHIEVEMENT_CRITERIA_CONDITION_NONE                 = 0,
+    ACHIEVEMENT_CRITERIA_CONDITION_NO_DEATH             = 1,    // reset progress on death
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK2                 = 2,    // only used in "Complete a daily quest every day for five consecutive days"
+    ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP               = 3,    // requires you to be on specific map, reset at change
+    ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE              = 4,    // only used in "Win 10 arenas without losing"
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK5                 = 5,    // Have spell?
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK8                 = 8,
+    ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT         = 9,    // requires the player not to be hit by specific spell
+    ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP         = 10,   // requires the player not to be in group
+    ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE_PET_BATTLE   = 11,   // only used in "Win 10 consecutive pet battles."
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK13                = 13    // unk
 };
 
 enum AchievementCriteriaAdditionalCondition
@@ -362,7 +363,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE         = 157,
     ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN                 = 158,
     ACHIEVEMENT_CRITERIA_TYPE_UNK159                        = 159,
-    ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP            = 160,
+    ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP            = 160,
     ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT     = 161,
     ACHIEVEMENT_CRITERIA_TYPE_LEVEL_BATTLE_PET_CREDIT       = 162,
 

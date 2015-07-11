@@ -1649,6 +1649,8 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
             case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
             case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
+            case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
+            case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, init ? 0 : 1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             // std case: increment at miscValue1
@@ -1918,9 +1920,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIOS_SATURDAY:
             case ACHIEVEMENT_CRITERIA_TYPE_REACH_SCENARIO_BOSS:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK154:
-            case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             case ACHIEVEMENT_CRITERIA_TYPE_UNK159:
-            case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVLE_UP:
             case ACHIEVEMENT_CRITERIA_TYPE_LEVEL_BATTLE_PET_CREDIT:
                 break;                                   // Not implemented yet :(
         }
@@ -2090,7 +2090,9 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
         case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
         case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+        case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
         case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
+        case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP:
             return progress->counter >= criteriaTree->requirement_count;
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
@@ -2250,7 +2252,9 @@ bool AchievementMgr<T>::IsCompletedCriteriaTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+                case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
                 case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
+                case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP:
                     check = count >= criteriaTree->requirement_count;
                     break;
                 // handle all statistic-only criteria here
@@ -2428,7 +2432,9 @@ bool AchievementMgr<T>::IsCompletedScenarioTree(CriteriaTreeEntry const* criteri
                 case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
                 case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE:
+                case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
                 case ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT:
+                case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP:
                     check = progress->counter >= criteriaTree->requirement_count;
                     break;
                 // handle all statistic-only criteria here
@@ -3520,6 +3526,7 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_GUILD:
         case ACHIEVEMENT_CRITERIA_TYPE_OBTAIN_BATTLEPET:
         case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
+        case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_WIN:
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT:
             if (m_completedAchievements.find(achievementCriteria->complete_achievement.linkedAchievement) == m_completedAchievements.end())
@@ -3846,7 +3853,10 @@ bool AchievementMgr<T>::RequirementsSatisfied(AchievementEntry const* achievemen
                 return false;
             break;
         case ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL:
-            if (!miscValue1 || miscValue1 != achievementCriteria->battle_pet_journal.journal)
+            if (!miscValue1 || miscValue1 != achievementCriteria->battle_pet_journal.add_pet)
+                return false;
+        case ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP:
+            if (!miscValue1 || miscValue1 != achievementCriteria->battlepet_level.level_up)
                 return false;
             break;
         default:
@@ -4214,6 +4224,12 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                         else
                             check = true;
                     }
+                    break;
+                }
+                case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_WIN_IN_PVP: // 90
+                {
+                    if (!miscValue1 || miscValue1 != reqValue)
+                        check = false;
                     break;
                 }
                 case ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_BATTLEPET_SPECIES: // 91

@@ -476,7 +476,7 @@ struct CriteriaEntry
         // ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL = 96
         struct
         {
-            uint32  journal;
+            uint32  add_pet;
         } battle_pet_journal;
 
         // ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_STAT           = 97
@@ -517,6 +517,12 @@ struct CriteriaEntry
             uint32  unused;                                 // 2
             // uint32  killCount;                           // treeCount in CriteriaTree
         } honorable_kill;
+        
+        // ACHIEVEMENT_CRITERIA_TYPE_BATTLEPET_LEVEL_UP     = 160
+        struct
+        {
+            uint32  level_up;
+        } battlepet_level;
 
         struct
         {
