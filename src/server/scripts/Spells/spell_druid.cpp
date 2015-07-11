@@ -3160,7 +3160,7 @@ class spell_dru_tooth_and_claw : public SpellScriptLoader
                     {
                         if(caster->HasAura(135286))
                         {
-                            int32 bp = int32(std::max(caster->GetTotalAttackPowerValue(BASE_ATTACK) * caster->GetTotalStatValue(STAT_AGILITY) * 2.2, caster->GetTotalStatValue(STAT_STAMINA) * 2.5) * 0.4f);
+                            int32 bp = int32(std::max(caster->GetTotalAttackPowerValue(BASE_ATTACK) - caster->GetTotalStatValue(STAT_AGILITY) * 2.2, caster->GetTotalStatValue(STAT_STAMINA) * 2.5) * 0.4f);
                             caster->CastCustomSpell(caster, 135597, &bp, NULL, NULL, true);
                             caster->CastCustomSpell(target, 135601, &bp, NULL, NULL, true);
                         }
