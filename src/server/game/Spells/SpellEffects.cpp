@@ -3758,6 +3758,10 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
 
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
 
+                    // not flag for summons battle pets
+                    if (summon->GetCreatureTemplate()->type == CREATURE_TYPE_WILD_PET)
+                        summon->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+
                     // handle unique pets with the only creatureEntry and existing summonSpellID
                     if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id != 118301 && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
                     {
