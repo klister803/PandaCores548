@@ -607,16 +607,16 @@ void Player::UpdateAllCritPercentages()
 const float m_diminishing_k[MAX_CLASSES] =
 {
     0.9560f,  // Warrior
-    0.9560f,  // Paladin
+    0.8860f,  // Paladin
     0.9880f,  // Hunter
     0.9880f,  // Rogue
-    0.9830f,  // Priest
+    0.9560f,  // Priest
     0.9560f,  // DK
     0.9880f,  // Shaman
     0.9830f,  // Mage
     0.9830f,  // Warlock
-    0.9560f,  // Monk  @todo: find me !
-    0.9720f   // Druid
+    1.4220f,  // Monk  @todo: find me !
+    1.2220f   // Druid
 };
 
 void Player::UpdateParryPercentage()
@@ -625,15 +625,30 @@ void Player::UpdateParryPercentage()
     {
         65.631440f,     // Warrior
         65.631440f,     // Paladin
-        145.560408f,    // Hunter
+        0.0f,           // Hunter
         145.560408f,    // Rogue
         0.0f,           // Priest
         65.631440f,     // DK
         145.560408f,    // Shaman
         0.0f,           // Mage
         0.0f,           // Warlock
-        65.631440f,     // Monk  @todo: find me !
+        91.631440f,     // Monk  @todo: find me !
         0.0f            // Druid
+    };
+
+    const bool mainStr[MAX_CLASSES] =
+    {
+        true,  // Warrior
+        true,  // Paladin
+        false, // Hunter
+        false, // Rogue
+        false, // Priest
+        true,  // DK
+        false, // Shaman
+        false, // Mage
+        false, // Warlock
+        false, // Monk  @todo: find me !
+        false  // Druid
     };
 
     // No parry
@@ -641,15 +656,18 @@ void Player::UpdateParryPercentage()
     uint32 pclass = getClass()-1;
     if (CanParry() && parry_cap[pclass] > 0.0f)
     {
-        float nondiminishing  = 3.0f;
-        // Parry from rating
-        float diminishing = GetRatingBonusValue(CR_PARRY);
-        diminishing += GetStat(STAT_STRENGTH) / 951.158596f;
-        // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
-        nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
-        nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT2);
-        // apply diminishing formula to diminishing parry chance
-        value = nondiminishing + diminishing * parry_cap[pclass] / (diminishing + parry_cap[pclass] * m_diminishing_k[pclass]);
+        uint32 pclass = getClass() - 1;
+        float baseParry = 3.0f + GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT) + GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT2);
+        float scaling = 951.158596f;
+        float base_strength = GetCreateStat(STAT_STRENGTH) * m_auraModifiersGroup[UNIT_MOD_STAT_START + STAT_STRENGTH][BASE_PCT];
+        float ratingParry = GetRatingBonusValue(CR_PARRY);
+        float total_strength = GetTotalStatValue(STAT_STRENGTH);
+
+        float parryFromStrength = mainStr[pclass] ? ((total_strength - base_strength) / scaling) : 0.0f;
+        float parryFromBaseStrength = mainStr[pclass] ? (base_strength / scaling) : 0.0f;
+
+        value = pow((1 / parry_cap[pclass]) + (m_diminishing_k[pclass] / (parryFromStrength + ratingParry)), -1);
+        value += baseParry + parryFromBaseStrength;
         value = value < 0.0f ? 0.0f : value;
     }
     SetStatFloatValue(PLAYER_PARRY_PERCENTAGE, value);
@@ -659,31 +677,49 @@ void Player::UpdateDodgePercentage()
 {
     const float dodge_cap[MAX_CLASSES] =
     {
-        65.631440f,     // Warrior
-        65.631440f,     // Paladin
+        90.6425f,       // Warrior
+        66.5674f,       // Paladin
         145.560408f,    // Hunter
-        98.2f,          // Rogue
-        150.375940f,    // Priest
-        65.631440f,     // DK
+        145.560408f,    // Rogue
+        66.5674f,       // Priest
+        90.6425f,       // DK
         145.560408f,    // Shaman
         150.375940f,    // Mage
         150.375940f,    // Warlock
-        17.43f,         // Monk  @todo: find me !
-        116.890707f     // Druid
+        501.25f,        // Monk  @todo: find me !
+        150.375940f     // Druid
     };
 
-    float diminishing = 0.0f, nondiminishing = 0.0f;
-    GetDodgeFromAgility(diminishing, nondiminishing);
-    // Dodge from SPELL_AURA_MOD_DODGE_PERCENT aura
-    nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
-    // Dodge from rating
-    diminishing += GetRatingBonusValue(CR_DODGE);
-    // apply diminishing formula to diminishing dodge chance
-    uint32 pclass = getClass()-1;
-    float value = nondiminishing + (diminishing * dodge_cap[pclass] / (diminishing + dodge_cap[pclass] * m_diminishing_k[pclass]));
+    const bool mainAgi[MAX_CLASSES] =
+    {
+        false, // Warrior
+        false, // Paladin
+        true,  // Hunter
+        true,  // Rogue
+        false, // Priest
+        false, // DK
+        true,  // Shaman
+        false, // Mage
+        false, // Warlock
+        true,  // Monk  @todo: find me !
+        true   // Druid
+    };
 
-    value = value < 0.0f ? 0.0f : value;
-    SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, value);
+    uint32 pclass = getClass() - 1;
+    float baseDodge = 3.0f + GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
+    float scaling = 951.158596f;
+    float base_agility = GetCreateStat(STAT_AGILITY) * m_auraModifiersGroup[UNIT_MOD_STAT_START + STAT_AGILITY][BASE_PCT];
+    float ratingDodge = GetRatingBonusValue(CR_DODGE);
+    float total_agility = GetTotalStatValue(STAT_AGILITY);
+
+    float dodgeFromAgility     = mainAgi[pclass] ? ((total_agility - base_agility) / scaling) : 0.0f;
+    float dodgeFromBaseAgility = mainAgi[pclass] ? (base_agility / scaling) : 0.0f;
+
+    float val = pow((1 / dodge_cap[pclass]) + (m_diminishing_k[pclass] / (dodgeFromAgility + ratingDodge)), -1);
+    val += baseDodge + dodgeFromBaseAgility;
+    val = val < 0.0f ? 0.0f : val;
+
+    SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, val);
 }
 
 void Player::UpdateSpellCritChance(uint32 school)
