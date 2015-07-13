@@ -517,7 +517,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         if (Player* pl = me->GetPlayer(*me, fplGuid))
                         {
                             me->AddThreat(pl, 50000000.0f);
-                            me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+                            me->SetReactState(REACT_AGGRESSIVE);
                             me->Attack(pl, true);
                             me->GetMotionMaster()->MoveChase(pl);
                             findtargets = 700;

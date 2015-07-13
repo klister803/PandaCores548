@@ -33,7 +33,7 @@ enum eData
     DATA_KORKRON_D_SHAMAN           = 6,
     DATA_GENERAL_NAZGRIM            = 7,
     DATA_MALKOROK                   = 8,
-    DATA_SPOLLS_OF_PANDARIA         = 9,
+    DATA_SPOILS_OF_PANDARIA         = 9,
     DATA_THOK                       = 10,
     DATA_BLACKFUSE                  = 11,
     DATA_KLAXXI                     = 12,
@@ -223,12 +223,31 @@ enum eCreatures
     //
 
     NPC_MALKOROK                    = 71454,
+
     //Spoils of Pandaria
+    NPC_SSOP_SPOILS                 = 71889, //Secured Stockpile of Pandaren Spoils
+
+    //Spoils, needed for frame engage
+    NPC_MOGU_SPOILS                 = 73720,
+    NPC_MOGU_SPOILS2                = 73722,
+    NPC_MANTIS_SPOILS               = 71512,
+    NPC_MANTIS_SPOILS2              = 73721,
+    
     //Big mogu
     NPC_JUN_WEI                     = 73723,
     NPC_ZU_YIN                      = 73724,
     NPC_XIANG_LIN                   = 73725,
     NPC_KUN_DA                      = 71408,
+    //Medium mogu
+    NPC_MODIFIED_ANIMA_GOLEM        = 71395,
+    NPC_MOGU_SHADOW_RITUALIST       = 71393,
+    NPC_SHADOW_RITUALIST_PHYLACTERY = 71392,
+    //Small mogu
+    NPC_ANIMATED_STONE_MOGU         = 71380,
+
+    //Special
+    NPC_LEVER                       = 72281,
+    NPC_LIFT_HOOK                   = 72972,
     //
 
     NPC_THOK                        = 71529,
@@ -346,6 +365,35 @@ enum eGameObjects
     GO_ENT_DOOR_RIGHT               = 221801,
     GO_EX_DOOR_RIGHT                = 221798,
     GO_EX_DOOR_LEFT                 = 221799,
+
+    //Entrance to room
+    GO_ROOM_GATE                    = 221794, //NPC_MOGU_SPOILS
+    GO_ROOM_GATE2                   = 221795, //NPC_MOGU_SPOILS2, pull
+    GO_ROOM_GATE3                   = 221796, //NPC_MANTIS_SPOILS
+    GO_ROOM_GATE4                   = 221797, //NPC_MANTIS_SPOILS2, pull
+
+    //Right
+    GO_IRON_DOOR_R                  = 223032, 
+    GO_LEVER_R                      = 221771, 
+    GO_LEVER_R2                     = 221772, 
+
+    //Left
+    GO_IRON_DOOR_L                  = 223033,
+    GO_LEVER_L                      = 221773,
+    GO_LEVER_L2                     = 221774,
+
+    //Boxes
+    //Mogu
+    GO_SMALL_MOGU_BOX               = 221906,
+    GO_MEDIUM_MOGU_BOX              = 221893,
+    GO_BIG_MOGU_BOX                 = 221885,
+    //Mantis
+    GO_SMALL_MANTIS_BOX             = 221816,
+    GO_MEDIUM_MANTIS_BOX            = 221820,
+    GO_BIG_MANTIS_BOX               = 221804,
+    //Pandaren
+    GO_PANDAREN_RELIC_BOX           = 221878,
+    //
 
     GO_SP_EX_DOOR                   = 223058, //Pre Enter Thok
 

@@ -64,6 +64,9 @@ public:
         uint64 nazgrimdoorGuid;
         uint64 nazgrimexdoorGuid;
         std::vector<uint64> malkorokfenchGuids;
+        std::vector<uint64> roomgateGuids;
+        std::vector<uint64> sopboxGuids;
+        std::vector<uint64> spoilsGuids;
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
         std::vector<uint64> jaillistGuids;
@@ -126,6 +129,9 @@ public:
             nazgrimdoorGuid         = 0;
             nazgrimexdoorGuid       = 0;
             malkorokfenchGuids.clear();
+            roomgateGuids.clear();
+            sopboxGuids.clear();
+            spoilsGuids.clear();
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
             jaillistGuids.clear();
@@ -412,6 +418,13 @@ public:
                 case NPC_ANCIENT_MIASMA:
                     amGuid = creature->GetGUID();
                     break;
+                //Spoils of Pandaria
+                case NPC_MOGU_SPOILS:
+                case NPC_MOGU_SPOILS2:
+                case NPC_MANTIS_SPOILS:
+                case NPC_MANTIS_SPOILS2:
+                    spoilsGuids.push_back(creature->GetGUID());
+                    break;
                 //Thok
                 case NPC_THOK:
                     thokGuid = creature->GetGUID();
@@ -529,7 +542,6 @@ public:
                 case GO_THOK_ENT_DOOR:
                     thokentdoorGuid = go->GetGUID();
                     break;
-                //jails
                 case GO_JINUI_JAIL:
                 case GO_JINUI_JAIL2:
                 case GO_SAUROK_JAIL:
@@ -537,6 +549,22 @@ public:
                 case GO_YAUNGOLIAN_JAIL:
                 case GO_YAUNGOLIAN_JAIL2:
                     jaillistGuids.push_back(go->GetGUID());
+                    break;
+                //Spoils of pandaria
+                case GO_SMALL_MOGU_BOX:
+                case GO_MEDIUM_MOGU_BOX:
+                case GO_BIG_MOGU_BOX:
+                case GO_SMALL_MANTIS_BOX:
+                case GO_MEDIUM_MANTIS_BOX:
+                case GO_BIG_MANTIS_BOX:
+                case GO_PANDAREN_RELIC_BOX:
+                    sopboxGuids.push_back(go->GetGUID());
+                    break;
+                case GO_ROOM_GATE:
+                case GO_ROOM_GATE2:
+                case GO_ROOM_GATE3:
+                case GO_ROOM_GATE4:
+                    roomgateGuids.push_back(go->GetGUID());
                     break;
             }
         }
@@ -740,6 +768,41 @@ public:
                         for (std::vector<uint64>::const_iterator itr = malkorokfenchGuids.begin(); itr != malkorokfenchGuids.end(); itr++)
                             HandleGameObject(*itr, true);
                         HandleGameObject(spexdoorGuid, true);
+                        break;
+                    }
+                    break;
+                }
+                case DATA_SPOILS_OF_PANDARIA:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                        for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, spoil);
+                        
+                        for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
+                            HandleGameObject(*itr, false);
+                        
+                        for (std::vector<uint64>::const_iterator itr = sopboxGuids.begin(); itr != sopboxGuids.end(); itr++)
+                        {
+                            if (GameObject* box = instance->GetGameObject(*itr))
+                            {
+                                box->SetGoState(GO_STATE_READY);
+                                box->SetLootState(GO_READY);
+                                box->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                            }
+                        }
+                        break;
+                    case IN_PROGRESS:
+                        break;
+                    case DONE:
+                        for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, spoil);
+
+                        for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
+                            HandleGameObject(*itr, true);
                         break;
                     }
                     break;

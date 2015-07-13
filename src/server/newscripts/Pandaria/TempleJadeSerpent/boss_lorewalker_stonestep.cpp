@@ -495,23 +495,8 @@ class mob_haunting_sha : public CreatureScript
 
             void UpdateAI(uint32 diff)
             {
-                if (!me->getVictim())
-                {
-                    Map::PlayerList const& PlayerList = me->GetInstanceScript()->instance->GetPlayers();
-
-                    if (!PlayerList.isEmpty())
-                    {
-                        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        {
-                            Player* plr = i->getSource();
-                            if( !plr)
-                                continue;
-                            me->getThreatManager().addThreat(plr, 1.0f);
-                        }
-                    }
-                    if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                        me->AI()->AttackStart(target);
-                }
+                if (!UpdateVictim())
+                    return;
 
                 events.Update(diff);
 
@@ -520,14 +505,12 @@ class mob_haunting_sha : public CreatureScript
                     switch (eventId)
                     {
                     case 1:
-                        if (!me->getVictim())
-                            return;
-                        me->CastSpell(me->getVictim(), 114646, false);
+                        if (me->getVictim())
+                            DoCastVictim(114646, false);
                         events.ScheduleEvent(1, 2000);
                         break;
                     }
                 }
-
                 DoMeleeAttackIfReady();
             }
         };

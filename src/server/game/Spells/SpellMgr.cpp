@@ -5165,6 +5165,19 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER;
                     spellInfo->Effects[0].TargetB = 0;
                     break;
+                //Spoils of Pandaria
+                case 148515: //Shadow Volley Dummy
+                    spellInfo->Effects[1].TargetA = 22;
+                    spellInfo->Effects[1].TargetB = 15;
+                    break;
+                case 148582: //Jade Tempest AT
+                    spellInfo->Effects[2].Effect = 0;
+                    spellInfo->Effects[3].Effect = 0;
+                    spellInfo->Effects[4].Effect = 0;
+                    break;
+                case 148583: //Jade Tempest Dmg
+                    spellInfo->Effects[0].BasePoints = 105000;
+                    break;
                 //Thok Bloodthirsty
                 case 147607: //Cannon Ball AT Dmg
                     spellInfo->Effects[0].TargetA = 25;

@@ -1201,6 +1201,10 @@ SpellEffectInfo const& SpellInfo::GetEffect(uint8 effect, uint8 difficulty) cons
     case 142890: //Blood Rage Dmg
     case 142906: //Ancient Miasma Dmg
     case 143848: //Essence of yshaarj
+    //Spoils of Pandaria
+    case 148515: //Shadow Volley Dummy
+    case 148582: //Jade Tempest AT
+    case 148583: //Jade Tempest Dmg
     //Tok Bloodthirsty
     case 147607: //Cannon Ball AT Dmg
     case 147906: //Cannon Ball Dest Dmg

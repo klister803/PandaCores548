@@ -6210,6 +6210,8 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
 
     switch (m_spellInfo->Id)
     {
+        case 144229: //spoils_of_pandaria open box
+            return;
         case 105847: // Seal Armor Breach (left), Spine of Deathwing, Dragon Soul
         case 105848: // Seal Armor Breach (right), Spine of Deathwing, Dragon Soul
         case 105363: // Breach Armor (left), Spine of Deathwing, Dragon Soul
