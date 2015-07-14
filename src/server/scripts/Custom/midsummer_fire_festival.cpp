@@ -9,6 +9,133 @@
 #define SPELL_JUGGLE_TORCH 45638
 #define SPELL_TORCHES_CAUGHT 45693
 #define GO_RIBBON_POLE 181605
+const Position mfPos[22] =
+{
+    // Snarler spawn
+    {-3924.37f, 6303.53f, 17.59f, 1.88f},
+    {-4011.98f, 6416.34f, 14.75f, 3.73f},
+    {-4097.92f, 6458.10f, 14.80f, 3.19f},
+    {-4170.17f, 6503.14f, 13.41f, 1.55f},
+    {-4266.80f, 6521.71f, 14.39f, 2.68f},
+    {-4318.40f, 6601.40f, 9.853f, 1.47f},
+    {-4056.26f, 6664.42f, 13.22f, 2.99f},
+    {-4009.05f, 6561.04f, 17.15f, 4.37f},
+    {-3932.42f, 6584.56f, 12.91f, 3.70f},
+    {-3838.57f, 6461.64f, 11.91f, 3.92f},
+    {-4268.83f, 6678.51f, 9.731f, 4.84f},
+    // Dreadhowl spawn
+    {-4225.82f, 6556.37f, 14.61f, 5.84f},
+    {-4141.07f, 6523.72f, 16.81f, 6.06f},
+    {-4073.94f, 6580.90f, 16.70f, 0.27f},
+    {-3957.37f, 6617.45f, 12.66f, 0.43f},
+    {-3865.21f, 6524.91f, 18.89f, 2.94f},
+    {-3872.48f, 6498.26f, 17.90f, 3.39f},
+    {-3914.52f, 6398.61f, 13.61f, 4.04f},
+    {-4038.38f, 6514.68f, 13.36f, 3.01f},
+    {-4344.90f, 6583.72f, 10.64f, 1.75f},
+    {-4193.76f, 6122.50f, 13.00f, 6.06f},
+    {-4082.68f, 6121.38f, 17.41f, 5.37f},
+};
+
+// 71992 - Moonfang <Darkmoon Den Mother>
+class boss_darkmoon_moonfang_mother : public CreatureScript
+{
+
+enum eCreatures
+{
+    NPC_MOONFANG_SNARLER        = 56160,
+    NPC_MOONFANG_DREADHOWL      = 71982,
+};
+
+enum eSpells
+{
+    
+};
+
+public:
+    boss_darkmoon_moonfang_mother() : CreatureScript("boss_darkmoon_moonfang_mother") { }
+
+    struct boss_darkmoon_moonfang_motherAI : public ScriptedAI
+    {
+        boss_darkmoon_moonfang_motherAI(Creature* creature) : ScriptedAI(creature), summons(me) 
+        {
+            me->SetVisible(false);
+            prevEvent1 = true;
+            prevEvent2 = false;
+            sDiedCount = 0;
+        }
+
+        EventMap events;
+        SummonList summons;
+
+        bool prevEvent1;
+        bool prevEvent2;
+        uint8 sDiedCount;
+
+        void Reset()
+        {
+            if (prevEvent1)
+                SummonMoonfang();
+        }
+
+        void SummonMoonfang()
+        {
+            if (prevEvent1)
+            {
+                for (uint8 i = 0; i < 11; i++)
+                {
+                    me->SummonCreature(NPC_MOONFANG_SNARLER, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                }
+            }
+
+            if (prevEvent2)
+            {
+                for (uint8 i = 11; i < 22; i++)
+                {
+                    me->SummonCreature(NPC_MOONFANG_DREADHOWL, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                }
+            }
+        }
+
+        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+        {
+            if (prevEvent1 || prevEvent2)
+                sDiedCount++;
+            
+            if (sDiedCount == 11)
+            {
+                prevEvent1 = false;
+                prevEvent2 = true;
+                SummonMoonfang();
+            }
+            if (sDiedCount == 22)
+            {
+                prevEvent2 = false;
+                me->SetVisible(true);
+            }
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            summons.Summon(summon);
+        }
+
+        void UpdateAI(uint32 uiDiff)
+        {
+            if (!UpdateVictim() && me->isInCombat())
+                return;
+        }
+    };
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new boss_darkmoon_moonfang_motherAI(creature);
+    }
+};
 
 // Darkmoon Faire Gnolls - 54444, 54466, 54549
 class npc_darkmoon_faire_gnolls : public CreatureScript
@@ -813,6 +940,7 @@ class spell_darkmoon_deathmatch_teleport : public SpellScriptLoader
 
 void AddSC_midsummer_fire_festival()
 {
+    new boss_darkmoon_moonfang_mother();
     new npc_darkmoon_faire_gnolls();
     new npc_darkmoon_faire_gnoll_holder();
     new npc_darkmoon_faire_rinling();

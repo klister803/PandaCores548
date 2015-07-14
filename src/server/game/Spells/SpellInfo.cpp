@@ -1260,6 +1260,12 @@ bool SpellInfo::IsMountOrCompanions() const
                 return true;
         if (Effects[i].Effect == SPELL_EFFECT_BATTLE_PET)
             return true;
+        
+        switch (Id)
+        {
+            case 125439:
+                return true;
+        }
     }
     return false;
 }
