@@ -5199,6 +5199,13 @@ void Player::RemoveAllSpellCooldown()
         m_spellCooldowns.clear();
     }
 
+    for (UCSpellChargeDataMap::iterator itr = m_uncategorySpellChargeData.begin(); itr != m_uncategorySpellChargeData.end(); ++itr)
+        if (UncategorySpellChargeData* data = itr->second)
+        {
+            data->charges = data->maxCharges;
+            data->timer = 0;
+        }
+
     RestoreSpellCategoryCharges();
 }
 
