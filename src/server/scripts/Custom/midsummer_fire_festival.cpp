@@ -41,6 +41,13 @@ const Position mfPos[22] =
 class boss_darkmoon_moonfang_mother : public CreatureScript
 {
 
+enum eSay
+{
+    SAY_SUMM_SNARLER    = 0,
+    SAY_SUMM_DREADHOWL  = 1,
+    SAY_SUMM_MOTHER     = 2,
+};
+
 enum eCreatures
 {
     NPC_MOONFANG_SNARLER        = 56160,
@@ -49,92 +56,145 @@ enum eCreatures
 
 enum eSpells
 {
-    
+    SPELL_LEAP_FOR_THE_KILL     = 144546,
+    SPELL_FANGS_OF_THE_MOON     = 144700,
+    SPELL_MOONFANG_TEARS        = 144702,
+    SPELL_CALL_THE_PACK         = 144602,
+    SPELL_MOONFANG_CURSE        = 144590,
 };
 
-public:
-    boss_darkmoon_moonfang_mother() : CreatureScript("boss_darkmoon_moonfang_mother") { }
+    public:
+        boss_darkmoon_moonfang_mother() : CreatureScript("boss_darkmoon_moonfang_mother") { }
 
-    struct boss_darkmoon_moonfang_motherAI : public ScriptedAI
-    {
-        boss_darkmoon_moonfang_motherAI(Creature* creature) : ScriptedAI(creature), summons(me) 
+        struct boss_darkmoon_moonfang_motherAI : public ScriptedAI
         {
-            me->SetVisible(false);
-            prevEvent1 = true;
-            prevEvent2 = false;
-            sDiedCount = 0;
-        }
-
-        EventMap events;
-        SummonList summons;
-
-        bool prevEvent1;
-        bool prevEvent2;
-        uint8 sDiedCount;
-
-        void Reset()
-        {
-            if (prevEvent1)
-                SummonMoonfang();
-        }
-
-        void SummonMoonfang()
-        {
-            if (prevEvent1)
+            boss_darkmoon_moonfang_motherAI(Creature* creature) : ScriptedAI(creature), summons(me) 
             {
-                for (uint8 i = 0; i < 11; i++)
-                {
-                    me->SummonCreature(NPC_MOONFANG_SNARLER, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-                }
-            }
-
-            if (prevEvent2)
-            {
-                for (uint8 i = 11; i < 22; i++)
-                {
-                    me->SummonCreature(NPC_MOONFANG_DREADHOWL, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-                }
-            }
-        }
-
-        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
-        {
-            if (prevEvent1 || prevEvent2)
-                sDiedCount++;
-            
-            if (sDiedCount == 11)
-            {
-                prevEvent1 = false;
-                prevEvent2 = true;
-                SummonMoonfang();
-            }
-            if (sDiedCount == 22)
-            {
+                me->SetVisible(false);
+                prevEvent1 = true;
                 prevEvent2 = false;
-                me->SetVisible(true);
+                sDiedCount = 0;
             }
-        }
 
-        void EnterCombat(Unit* /*who*/)
-        {
-            
-        }
+            EventMap events;
+            SummonList summons;
 
-        void JustSummoned(Creature* summon)
-        {
-            summons.Summon(summon);
-        }
+            bool prevEvent1;
+            bool prevEvent2;
+            uint8 sDiedCount;
 
-        void UpdateAI(uint32 uiDiff)
+            void Reset()
+            {
+                events.Reset();
+                summons.DespawnAll();
+
+                if (prevEvent1)
+                {
+                    SummonMoonfang();
+                    ZoneTalk(SAY_SUMM_SNARLER);
+                }
+            }
+
+            void SummonMoonfang()
+            {
+                if (prevEvent1)
+                {
+                    for (uint8 i = 0; i < 11; i++)
+                    {
+                        me->SummonCreature(NPC_MOONFANG_SNARLER, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                    }
+                }
+
+                if (prevEvent2)
+                {
+                    for (uint8 i = 11; i < 22; i++)
+                    {
+                        me->SummonCreature(NPC_MOONFANG_DREADHOWL, mfPos[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                    }
+                }
+            }
+
+            void SummonedCreatureDies(Creature* summon, Unit* /*killer*/)
+            {
+                if (prevEvent1 || prevEvent2)
+                    sDiedCount++;
+                
+                if (sDiedCount == 11)
+                {
+                    prevEvent1 = false;
+                    prevEvent2 = true;
+                    ZoneTalk(SAY_SUMM_DREADHOWL);
+                    SummonMoonfang();
+                }
+                if (sDiedCount == 22)
+                {
+                    prevEvent2 = false;
+                    me->SetVisible(true);
+                    ZoneTalk(SAY_SUMM_MOTHER);
+                }
+            }
+
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_1, 0);       // cast leap
+                events.ScheduleEvent(EVENT_2, 10000);   // cast stuns the target
+                events.ScheduleEvent(EVENT_3, 8000);    // cast tears AOE
+                events.ScheduleEvent(EVENT_4, 64000);   // summon moonfangs
+                events.ScheduleEvent(EVENT_5, 180000);  // cast mind control
+            }
+
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (!UpdateVictim() && me->isInCombat())
+                    return;
+                
+                events.Update(diff);
+    
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+    
+                if (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_1:
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                                DoCast(pTarget, SPELL_LEAP_FOR_THE_KILL);
+                            events.ScheduleEvent(EVENT_1, 12000);
+                            break;
+                        case EVENT_2:
+                            if (Unit* pTarget = me->getVictim())
+                                DoCast(pTarget, SPELL_FANGS_OF_THE_MOON);
+                            events.ScheduleEvent(EVENT_2, 10000);
+                            break;
+                        case EVENT_3:
+                            DoCast(SPELL_MOONFANG_TEARS);
+                            events.ScheduleEvent(EVENT_3, 22000);
+                            break;
+                        case EVENT_4:
+                            DoCast(SPELL_CALL_THE_PACK);
+                            events.ScheduleEvent(EVENT_4, 64000);
+                            break;
+                        case EVENT_5:
+                            DoCast(SPELL_MOONFANG_CURSE);
+                            events.ScheduleEvent(EVENT_5, 180000);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+        CreatureAI* GetAI(Creature* creature) const
         {
-            if (!UpdateVictim() && me->isInCombat())
-                return;
+            return new boss_darkmoon_moonfang_motherAI(creature);
         }
-    };
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new boss_darkmoon_moonfang_motherAI(creature);
-    }
 };
 
 // Darkmoon Faire Gnolls - 54444, 54466, 54549

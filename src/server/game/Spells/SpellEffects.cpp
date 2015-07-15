@@ -1284,6 +1284,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         {
             switch (m_spellInfo->Id)
             {
+                case 145111: // Moonfang's Curse
+                {
+                    if (roll_chance_i(30))
+                        m_caster->CastSpell(m_caster, 145112, true); // Free Your Mind
+                    break;
+                }
                 case 92679: // Flask of Battle
                 {
                     uint32 spellid;
