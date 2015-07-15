@@ -163,7 +163,7 @@ enum eSpells
                     switch (eventId)
                     {
                         case EVENT_1:
-                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 40.0f, true))
                                 DoCast(pTarget, SPELL_LEAP_FOR_THE_KILL);
                             events.ScheduleEvent(EVENT_1, 12000);
                             break;
