@@ -48,6 +48,7 @@ enum Actions
 {
     ACTION_EVADE = 9,
     ACTION_COMPLETE_FIRST_PART = 10,
+    ACTION_CANCEL_SUMMONS,
 };
 
 enum eCreatures

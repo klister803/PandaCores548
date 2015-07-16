@@ -89,8 +89,11 @@ public:
                     --counter;
                     if (!counter)
                     {
-                        doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_EVADE);
-                        doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_EVADE);
+                        if (GetData(DATA_COMPLETE_EVENT_STAGE_1) != SPECIAL)
+                        {
+                            doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_EVADE);
+                            doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_EVADE);
+                        }
                     }
                     break;
                 case NPC_FORGEMASTER_VULKON:
