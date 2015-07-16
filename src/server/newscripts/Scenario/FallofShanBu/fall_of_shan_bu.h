@@ -57,6 +57,10 @@ enum eCreatures
     NPC_SHADO_PAN_DEFENDER              = 70099,
 
     NPC_THUNDER_FORGE                   = 70577,
+    NPC_THUNDER_FORGE_3                 = 70292,
+    NPC_THUNDER_FORGE2                  = 70283,
+    NPC_THUNDER_FORGE_CRUCIBLE          = 70556,
+
     NPC_FORGEMASTER_VULKON              = 70074,
 
     NPC_SHANZE_SHADOWCASTER             = 69827,
@@ -83,8 +87,6 @@ enum eCreatures
     NPC_LIGHTING_PILAR_SPARK_STALKER    = 69813,
     NPC_SLAVEMASTER_SHIAXU              = 69923,
     NPC_SCOUT_CAPTAIN_ELSIA             = 70042,
-    NPC_THUNDER_FORGE2                  = 70283,
-    NPC_THUNDER_FORGE_CRUCIBLE          = 70556,
     
     //< VEH
     NPC_ZANDALARI_SKYSCREAMER           = 69156,

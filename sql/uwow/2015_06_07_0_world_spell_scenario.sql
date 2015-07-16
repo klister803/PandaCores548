@@ -150,11 +150,14 @@ UPDATE `creature_template` SET `ScriptName` ='npc_sha_beast' WHERE (`entry`='700
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_fiend' WHERE (`entry`='70039');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entry`='70228');
 
-DELETE FROM areatrigger_scripts where entry in (840, 503, 868);
-INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES 
-(840, 'at_thunder_forge_buff'),
-(503, 'at_healing_orb'),
-(868, 'at_power_surge');
+DELETE FROM `areatrigger_scripts` where `entry` in (840, 503, 868);
+
+DELETE FROM `areatrigger_actions` where `entry` in (840, 503, 868);
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES
+('503', '0', '1', '0', '8', '132744', '1', '0', '0', '0', '0', '0', 'Healing Orb'),
+('840', '0', '1', '0', '8', '139397', '1', '0', '0', '0', '0', '0', 'Overcharged'),
+('868', '0', '1', '0', '8', '140068', '1', '0', '0', '0', '0', '0', 'Power Surge');
+
 
 DELETE FROM `spell_script_names` WHERE (`spell_id`=138805 AND `ScriptName`='spell_avnil_click_dummy') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES

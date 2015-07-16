@@ -42,7 +42,7 @@ enum Spells
     SPELL_LIGHTING_PILAR_SPARK_COSMETIC_3       = 138091,
 
     SPELL_LIGHTING_STRIKE_COSMETIC_2            = 140857,
-    SPELL_THUNDER_FORGE_BUFF_SUMMON             = 139401,
+    SPELL_THUNDER_FORGE_BUFF_PEREODIC           = 139422,
     SPELL_THUNDER_FORGE_BUFF                    = 139431, //< AT
     SPELL_OVERCHARGED                           = 139397,
 
@@ -141,6 +141,7 @@ enum Events
     EVENT_LIGHTING_SMASH,
     EVENT_FORGE_CAST,
     EVENT_FORGE_CAST_P2,
+    EVENT_FORGE_CAST_P3,
     EVENT_THUNDER_SMASH,
 
     EVENT_METEOR,
@@ -788,7 +789,7 @@ public:
                     }
                     case EVENT_LR_7:
                         me->GetMotionMaster()->MovePoint(EVENT_LR_7, wrathionS2Points[10]);
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_8, 2 * IN_MILLISECONDS);
                         break;
@@ -832,7 +833,7 @@ public:
                         break;
                     case EVENT_LR_12:
                         me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_13, 1 * IN_MILLISECONDS);
                         break;
@@ -892,7 +893,7 @@ public:
                     case EVENT_LR_16:
                         me->GetMotionMaster()->MovePoint(EVENT_LR_16, wrathionS2Points[32]);
                         me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_17, 2 * IN_MILLISECONDS);
                         break;
@@ -933,7 +934,7 @@ public:
                     case EVENT_LR_19:
                         me->GetMotionMaster()->MovePoint(EVENT_LR_19, wrathionS2Points[44]);
                         me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_20, 2 * IN_MILLISECONDS);
                         break;
@@ -957,12 +958,12 @@ public:
                     case EVENT_LR_21:
                         me->GetMotionMaster()->MovePoint(EVENT_LR_21, wrathionS2Points[49]);
                         me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_COSMETIC);
-                        events.ScheduleEvent(EVENT_LR_22, 1 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_LR_22, 2 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_22:
-                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 10.0f))
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_COSMETIC);
                         events.ScheduleEvent(EVENT_LR_23, 1 * IN_MILLISECONDS);
                         break;
@@ -1035,7 +1036,7 @@ public:
                         Talk(3);
                         break;
                     case EVENT_FORGE_CAST:
-                        events.ScheduleEvent(EVENT_FORGE_CAST, 30 * IN_MILLISECONDS);
+                        //events.ScheduleEvent(EVENT_FORGE_CAST, 30 * IN_MILLISECONDS);
                         doAction(me, NPC_THUNDER_FORGE2, ACTION_FORGE_CAST);
                         break;
                     default:
@@ -1381,7 +1382,6 @@ public:
                     break;
                 case ACTION_CANCEL_FORGE_EVENTS:
                     events.CancelEvent(EVENT_FORGE_CAST);
-                    events.CancelEvent(EVENT_FORGE_CAST_P2);
                     break;
                 default:
                     break;
@@ -1397,15 +1397,22 @@ public:
                 switch (eventId)
                 {
                     case EVENT_FORGE_CAST:
-                        me->CastSpell(me, SPELL_LIGHTING_STRIKE_COSMETIC_2);
-                        me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF_SUMMON);
-                        Talk(0);
-                        events.ScheduleEvent(EVENT_FORGE_CAST_P2, 2 * IN_MILLISECONDS);
+                        me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF_PEREODIC);
+                        events.ScheduleEvent(EVENT_FORGE_CAST_P2, 5 * IN_MILLISECONDS);
                         break;
                     case EVENT_FORGE_CAST_P2:
+                        events.ScheduleEvent(EVENT_FORGE_CAST, 5 * IN_MILLISECONDS);
+                        if (rand()%3)
+                            events.ScheduleEvent(EVENT_FORGE_CAST_P3, 5 * IN_MILLISECONDS);
+                        if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE_3, 200.0f))
+                        {
+                            me->AddAura(SPELL_LIGHTING_STRIKE_COSMETIC_2, target);
+                            target->DestroyForNearbyPlayers();
+                        }
+                        break;
+                    case EVENT_FORGE_CAST_P3:
                         me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF);
-                        if (Player* plr = me->FindNearestPlayer(100.0f))
-                            me->CastSpell(plr, SPELL_OVERCHARGED);
+                        Talk(0);
                         break;
                     default:
                         break;
@@ -1999,7 +2006,7 @@ public:
             switch (action)
             {
                 case ACTION_CB_START_MOVING:
-                    events.ScheduleEvent(EVENT_LR_0, 5 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_LR_0, 2 * IN_MILLISECONDS);
 
                     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 45123);
                     me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 94564);
@@ -2009,7 +2016,7 @@ public:
                     
                     if (Player* plr = me->FindNearestPlayer(200.0f))
                     {
-                        plr->RemoveAura(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
+                        plr->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
                         plr->AddAura(SPELL_THUNDER_FORGE_CHARGING, plr);
                     }
 
@@ -2053,7 +2060,7 @@ public:
                 switch (eventId)
                 {
                     case EVENT_LR_0:
-                        t = 0;
+                        t = 5;
                         events.ScheduleEvent(EVENT_LR_1, t += 0 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_LR_2, t += 40 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_LR_3, t += 32 * IN_MILLISECONDS);
@@ -2082,11 +2089,8 @@ public:
                         break;
                     case EVENT_LR_7:
                         AvnilHelper(6);
-
-                        if (Unit* plr = me->FindNearestPlayer(150.0f))
-                            if (plr->GetPower(POWER_ALTERNATE_POWER) < 90)
-                                events.ScheduleEvent(EVENT_LR_0, 1 * IN_MILLISECONDS);
-
+                        if (power < 90)
+                            events.ScheduleEvent(EVENT_LR_0, 1 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_8:
                         me->GetMotionMaster()->Clear();
@@ -2115,7 +2119,7 @@ public:
                         if (Unit* plr = me->FindNearestPlayer(150.0f))
                             for (uint32 i = 0; i < 5; i++)
                             {
-                                me->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
+                                plr->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
                                 ++power;
                             }
 
@@ -2126,7 +2130,7 @@ public:
                         }
 
                         uint32 point = 0;
-                        Unit* target = me->FindNearestCreature(0, 150.0f);
+                        Unit* target = me->FindNearestCreature(NPC_CELESTIAL_BLACKSMITH, 150.0f);
                         if (!target)
                             break;
 
@@ -2175,7 +2179,7 @@ public:
                             case 100:
                             {
                                 if (Player* plr = me->FindNearestPlayer(200.0f))
-                                    plr->RemoveAura(SPELL_THUNDER_FORGE_CHARGING);
+                                    plr->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGING);
 
                                 events.CancelEvent(EVENT_LR_0);
                                 break;
@@ -2685,7 +2689,7 @@ public:
                         beam->AI()->DoAction(ACTION_CHARGING_3);
                         spark->AI()->DoAction(ACTION_CHARGING_3);
                         break;
-                    case 190:
+                    case 200:
                     {
                         beam->AI()->DoAction(ACTION_CHARGING_4);
                         for (auto const& itr : target->GetMap()->GetPlayers())
@@ -2724,7 +2728,7 @@ public:
     {
         PrepareAuraScript(spell_forging_AuraScript);
 
-        void OnTick(AuraEffect const* aurEff)
+        void OnTick(AuraEffect const* /*aurEff*/)
         {
             Unit* caster = GetCaster();
             if (!caster)
@@ -2754,19 +2758,16 @@ public:
     {
         PrepareSpellScript(spell_avnil_click_dummy_SpellScript);
 
-        void HandleScriptEffect(SpellEffIndex effIndex)
+        void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             Unit* caster = GetCaster();
             if (!caster)
                 return;
 
-            if (caster->GetInstanceScript())
+            if (Unit* stalker = caster->FindNearestCreature(NPC_ANVIL_STALKER, 15.0f))
             {
-                if (Unit* stalker = caster->FindNearestCreature(NPC_ANVIL_STALKER, 15.0f))
-                {
-                    stalker->CastSpell(stalker->GetPositionX(), stalker->GetPositionY(), stalker->GetPositionZ(), SPELL_THUNDER_SURGE);
-                    stalker->RemoveAura(SPELL_ANVIL_ACTIVATE_COSMETIC_DND);
-                }
+                stalker->CastSpell(stalker->GetPositionX(), stalker->GetPositionY(), stalker->GetPositionZ(), SPELL_THUNDER_SURGE);
+                stalker->RemoveAurasDueToSpell(SPELL_ANVIL_ACTIVATE_COSMETIC_DND);
             }
         }
 
@@ -2779,54 +2780,6 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_avnil_click_dummy_SpellScript();
-    }
-};
-
-class at_healing_orb : public AreaTriggerScript
-{
-public:
-    at_healing_orb() : AreaTriggerScript("at_healing_orb") { }
-
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
-    {
-        if (player->GetInstanceScript() && enter)
-        {
-            player->CastSpell(player, SPELL_HEALING_ORB_TRIGGER, true);
-            return true;
-        }
-        return false;
-    }
-};
-
-class at_thunder_forge_buff : public AreaTriggerScript
-{
-public:
-    at_thunder_forge_buff() : AreaTriggerScript("at_thunder_forge_buff") { }
-
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
-    {
-        if (player->GetInstanceScript() && enter)
-        {
-            //player->CastSpell(player, 1111, true);
-            return true;
-        }
-        return false;
-    }
-};
-
-class at_power_surge : public AreaTriggerScript
-{
-public:
-    at_power_surge() : AreaTriggerScript("at_power_surge") { }
-
-    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
-    {
-        if (player->GetInstanceScript() && enter)
-        {
-            player->CastSpell(player, SPELL_POWER_SURGE_TRIGGER, true);
-            return true;
-        }
-        return false;
     }
 };
 
@@ -2853,10 +2806,6 @@ void AddSC_fall_of_shan_bu()
     new npc_sha_beast();
     new npc_sha_fiend();
     new npc_sha_amalgamation();
-
-    new at_healing_orb();
-    new at_thunder_forge_buff();
-    new at_power_surge();
 
     new spell_phase_shift_update();
     new spell_thundder_forge_charging();
