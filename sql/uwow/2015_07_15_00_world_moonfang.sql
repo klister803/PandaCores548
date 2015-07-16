@@ -3,7 +3,7 @@ delete from creature where id = 71992;
 INSERT INTO `creature` (`id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `isActive`) VALUES 
 (71992, 974, 5861, 5861, 1, 1, 0, 0, -3872.23, 6531.77, 17.8533, 3.72523, 3300, 0, 0, 174454800, 1000, 0, 0, 0, 0, 0, 0);
 
-update creature_template set ScriptName = 'boss_darkmoon_moonfang_mother', mechanic_immune_mask = 650854399 where entry = 71992;
+update creature_template set speed_walk = 2, speed_run = 2, dmg_multiplier = 200, ScriptName = 'boss_darkmoon_moonfang_mother', mechanic_immune_mask = 650854399, flags_extra = 512 where entry = 71992;
 
 update creature_template set AIName = 'SmartAI' where entry = 72038;
 delete from smart_scripts where entryorguid = 72038;
@@ -34,3 +34,13 @@ INSERT INTO `locales_creature_text` (`entry`, `textGroup`, `id`, `text_loc8`) VA
 (71992, 0, 0, '|Cffff0000ОСТОРОЖНО:|r Рычуны Лунной волчицы рыщут по лесу!'),
 (71992, 1, 0, '|Cffff0000ОСТОРОЖНО:|r Завыватели Лунной волчицы рыщут по лесу!'),
 (71992, 2, 0, '|Cffff0000ОСТОРОЖНО:|r В лесу появилась мать стаи Лунная волчица!');
+
+delete from creature_loot_template where entry = 71992;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES 
+(71992, 81194, 50, 0, 0, 2, 4, 0),
+(71992, 81212, 50, 0, 0, 2, 4, 0),
+(71992, 101570, 10, 0, 0, 1, 1, 0),
+(71992, 101571, 10, 0, 0, 1, 1, 0),
+(71992, 101675, 10, 0, 0, 1, 1, 0),
+(71992, 105891, 50, 0, 0, 1, 1, 0),
+(71992, 105898, 10, 0, 0, 1, 1, 0);
