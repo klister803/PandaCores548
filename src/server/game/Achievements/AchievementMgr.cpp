@@ -482,7 +482,7 @@ void AchievementMgr<T>::ResetAchievementCriteria(AchievementCriteriaTypes type, 
             continue;
 
         // don't update already completed criteria if not forced or achievement already complete
-        if ((IsCompletedCriteria(criteriaTree, achievement) && !evenIfCriteriaComplete) || HasAchieved(achievement->ID))
+        if ((IsCompletedCriteria(criteriaTree, achievement) && !evenIfCriteriaComplete)/* || HasAchieved(achievement->ID)*/)
             continue;
 
         if (achievementCriteria->timedCriteriaStartType == miscValue1 &&

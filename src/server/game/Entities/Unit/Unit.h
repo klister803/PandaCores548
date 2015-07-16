@@ -2521,8 +2521,6 @@ class Unit : public WorldObject
 
         void SetDynamicWorldEffects(uint32 effect, uint32 slot);
 
-        uint32 m_sequenceIndex;
-
     protected:
         explicit Unit (bool isWorldObject);
 

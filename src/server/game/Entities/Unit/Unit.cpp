@@ -307,8 +307,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     for (uint8 i = 0; i < MAX_COMBAT_RATING; i++)
         m_baseRatingValue[i] = 0;
-
-    m_sequenceIndex = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -22197,7 +22195,7 @@ void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float 
     data << float(speedXY);
     data << float(vcos);
     data << float(speedZ);
-    data << uint32(player->m_sequenceIndex++);
+    data << uint32(0);
     data << float(vsin);
     
     data.WriteGuidMask<7, 2, 4, 3, 0, 6, 1, 5>(guid);

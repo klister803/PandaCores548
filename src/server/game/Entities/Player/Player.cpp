@@ -29205,6 +29205,7 @@ void Player::ActivateSpec(uint8 spec)
 
 void Player::ResetTimeSync()
 {
+    m_timeSyncCounter = 0;
     m_timeSyncTimer = 0;
     m_timeSyncClient = 0;
     m_timeSyncServer = getMSTime();
@@ -29212,10 +29213,8 @@ void Player::ResetTimeSync()
 
 void Player::SendTimeSync()
 {
-    m_timeSyncQueue.push(m_sequenceIndex++);
-
     WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-    data << uint32(m_timeSyncQueue.back());
+    data << uint32(m_timeSyncCounter++);
     GetSession()->SendPacket(&data);
 
     // Schedule next sync in 10 sec

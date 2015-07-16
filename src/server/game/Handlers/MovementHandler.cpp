@@ -1435,7 +1435,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                     data << mi->unkInt32;
                 break;
             case MSECounter:
-                data << uint32(unit ? unit->m_sequenceIndex++ : 0);
+                data << uint32(0);
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at WriteMovementInfo");
