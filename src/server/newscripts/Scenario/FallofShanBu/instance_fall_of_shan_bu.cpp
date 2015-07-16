@@ -77,22 +77,6 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
-        {
-            switch (creature->GetEntry())
-            {
-                case NPC_SHANZE_SHADOWCASTER:
-                case NPC_SHANZE_WARRIOR:
-                case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_ELECTRO_COUTIONER:
-                case NPC_SHANZE_PYROMANCER:
-                    ++counter;
-                    break;
-                default:
-                    break;
-            }
-        }
-
         void CreatureDies(Creature* creature, Unit* /*killer*/)
         {
             switch (creature->GetEntry())
@@ -103,9 +87,15 @@ public:
                 case NPC_SHANZE_ELECTRO_COUTIONER:
                 case NPC_SHANZE_PYROMANCER:
                     --counter;
+                    if (!counter)
+                    {
+                        doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_EVADE);
+                        doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_EVADE);
+                    }
                     break;
                 case NPC_FORGEMASTER_VULKON:
-                    DoUseDoorOrButton(GetData64(DATA_TRUNDER_FORGE_DOOR));
+                    doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_COMPLETE_FIRST_PART);
+                    doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_COMPLETE_FIRST_PART);
                     break;
                 default:
                     break;
@@ -180,22 +170,13 @@ public:
     };
 };
 
-void AttakersCounter(Creature* me, InstanceScript* instance)
+void doAction(Unit* unit, uint32 creature, uint8 action, float range /*= 200.0f*/)
 {
-    instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) - 1);
-
-    if (instance->GetData(DATA_SUMMONS_COUNTER) > 0)
-        return;
-
     std::list<Creature*> creatures;
-    GetCreatureListWithEntryInGrid(creatures, me, NPC_SHADO_PAN_WARRIOR, 200.0f);
+    GetCreatureListWithEntryInGrid(creatures, unit, creature, range);
     if (!creatures.empty())
-        for (std::list<Creature*>::iterator forge = creatures.begin(); forge != creatures.end(); ++forge)
-            (*forge)->AI()->DoAction(ACTION_EVADE);
-
-    if (Creature* defender = me->FindNearestCreature(NPC_SHADO_PAN_DEFENDER, 100.0f))
-        if (!defender->getVictim())
-            defender->AI()->DoAction(ACTION_EVADE);
+        for (std::list<Creature*>::iterator creature = creatures.begin(); creature != creatures.end(); ++creature)
+            (*creature)->AI()->DoAction(action);
 }
 
 void AddSC_instance_fall_of_shan_bu()

@@ -23,7 +23,7 @@
 class instance_pursuing_the_black_harvest : public InstanceMapScript
 {
 public:
-    instance_pursuing_the_black_harvest() : InstanceMapScript("instance_pursuing_the_black_harvest", 1126) { }
+    instance_pursuing_the_black_harvest() : InstanceMapScript("instance_pursuing_the_black_harvest", 1112) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {

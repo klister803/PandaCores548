@@ -47,6 +47,7 @@ enum Data
 enum Actions
 {
     ACTION_EVADE = 9,
+    ACTION_COMPLETE_FIRST_PART = 10,
 };
 
 enum eCreatures
@@ -120,6 +121,6 @@ CreatureAI* GetInstanceAI(Creature* creature)
     return NULL;
 }
 
-void AttakersCounter(Creature* me, InstanceScript* instance);
+void doAction(Unit* unit, uint32 creature, uint8 action, float range = 200.0f);
 
 #endif

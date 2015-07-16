@@ -23,7 +23,79 @@ enum Texts
 { };
 
 enum Spells
-{ };
+{
+    //< Misc
+    SPELL_PLACE_EMPOWED_SOULCORE        = 138680, //< SS
+    SPELL_DRAIN_FEL_ENERGY              = 139200,
+
+    //< S0
+    SPELL_SEARCHING_FOR_INTRUDERS       = 134110, //< AT
+
+    //< S1
+    SPELL_NETTED                        = 134111,
+    SPELL_BLACKOUT                      = 134112,
+
+    //< S2
+    SPELL_UPDATE_PLAYER_PHASE_AURAS     = 134209,
+
+    //< S3 - NO SPELLS
+    //< S4 - NO SPELLS
+
+    //< S5
+    SPELL_SPELLFLAME                    = 134234, //< SS
+    SPELL_SPELLFLAME_TRIGGER            = 134235,
+    SPELL_HELLFIRE                      = 134225,
+    SPELL_HELLFIRE_TRIGGER              = 134224,
+
+    //< S6
+    SPELL_SHOOT                         = 41188,
+    SPELL_MULTI_SHOOT                   = 41187,
+    SPELL_CLEAVE                        = 15284,
+    SPELL_SWEEPING_WING_CLIP            = 39584,
+    SPELL_SONIC_STRIKE                  = 41168,
+    SPELL_SHADOW_BOLT                   = 34344,
+    SPELL_DAZED                         = 1604,
+    SPELL_FIREBOLT                      = 134245,
+    SPELL_LIGHTING_BOLT                 = 42024,
+
+    //< S7
+    SPELL_SUMMON_SHADOWFIEND            = 41159,
+    SPELL_SHADOW_INFERNO                = 39646,
+    SPELL_SMELT_FLASH                   = 37629,
+
+    //< S8
+    SPELL_DEMONIC_GATEWAY               = 138649, //< SS
+    SPELL_BURNING_EMBERS                = 138557, //< SS
+    SPELL_SOULSHARDS                    = 138556, //< SS
+    SPELL_METAMORPHOSIS                 = 138555,
+    SPELL_FACE_PLAYER                   = 139053, //< SS
+    SPELL_RITUAL_ENSLAVEMENT            = 22987,  //< SS
+    SPELL_DOOMGUARD_SUMMON_DND          = 42010,  //< SS
+    SPELL_DOOM_BOLT                     = 85692,  //< SS
+    SPELL_SUMMONING_PIT_LORD            = 138789, //< SS
+    SPELL_FEL_FLAME_BREATH              = 138814,
+    SPELL_FEL_FLAME_BREATH_DUMMY        = 138813,
+    SPELL_RAID_OF_FIRE                  = 138561,
+    SPELL_SEED_OF_TERRIBLE_DESTRUCTION  = 138587,
+    SPELL_CLEAVE_2                      = 138794,
+    SPELL_AURA_OF_OMNIPOTENCE           = 138563,
+    SPELL_CURSE_OF_ULTIMATE_DOOM        = 138558,
+    SPELL_EXCRUCIATING_AGONY            = 138560,
+    SPELL_DEMONIC_SIPHON                = 138829,
+    SPELL_CHAOS_BOLT                    = 138559,
+    SPELL_BACKFIRE                      = 138619,
+    SPELL_SOULFIRE                      = 138554,
+    SPELL_CATACLYSM                     = 138564,
+    SPELL_CHARGE                        = 138796,
+    SPELL_CHARGE_TRIGGER                = 138827,
+    SPELL_FEL_FIREBOLT                  = 138747,
+
+    //< Last Step
+    SPELL_ANNIHILATE_DEMONS             = 139141,
+    SPELL_DEMONIC_GRASP                 = 139142,
+    SPELL_ETERNAL_BANISHMENT            = 139186,
+
+};
 
 enum Events
 {
@@ -39,79 +111,32 @@ enum Actions
 enum Sounds
 { };
 
-//Area Trigger Id: 8696
-class at_stage_1: public AreaTriggerScript
+class at_stage_8696: public AreaTriggerScript
 {
 public:
-    at_stage_1() : AreaTriggerScript("at_stage_1") { }
+    at_stage_8696() : AreaTriggerScript("at_stage_8696") { }
 
     bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
     {
         if (enter)
         {
-            // как добавить ебаный прогресс? шаг должен смениться =/
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);
+            return true;
+        }
+        return false;
+    }
+};
 
-            //ServerToClient: SMSG_CRITERIA_UPDATE (0x1904) Length: 37 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3133
-            //Id: 22336
-            //Quantity: 1
-            //Guid: Full: 0x08190800000000000000000007BFF135 Player/0 R1602/S0 Map: 0 Low: 130019637
-            //Flags: 0
-            //Date: 01/29/2015 08:42:00
-            //TimeFromStart: 01/01/1970 00:00:00
-            //TimeFromCreate: 01/01/1970 00:00:00
+class at_stage_8698: public AreaTriggerScript
+{
+public:
+    at_stage_8698() : AreaTriggerScript("at_stage_8698") { }
 
-            //ServerToClient: SMSG_SCENARIO_PROGRESS_UPDATE (0x0324) Length: 37 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3134
-            //(Progress) Id: 22336
-            //(Progress) Quantity: 1
-            //(Progress) Player: Full: 0x40313C8B00003200002935000049F152 Scenario/0 R3151/S10549 Map: 1112 Low: 4845906
-            //(Progress) Date: 01/29/2015 09:42:00
-            //(Progress) TimeFromStart: 01/01/1970 00:00:00
-            //(Progress) TimeFromCreate: 01/01/1970 00:00:00
-            //(Progress) Flags: 0
-
-            //ServerToClient: SMSG_SCENARIO_STATE (0x152D) Length: 33 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3135
-            //ScenarioID: 200
-            //CurrentStep: 1
-            //DifficultyID: 0
-            //WaveCurrent: 0
-            //WaveMax: 0
-            //TimerDuration: 0
-            //CriteriaProgressCount: 0
-            //BonusObjectiveDataCount: 0
-            //ScenarioComplete: False
-
-            //ClientToServer: CMSG_QUERY_SCENARIO_POI (0x09A1) Length: 12 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3136
-            //MissingScenarioPOITreeCount: 2
-            //[0] MissingScenarioPOITreeIDs: 31011
-            //[1] MissingScenarioPOITreeIDs: 32958
-
-            //ServerToClient: SMSG_CRITERIA_UPDATE (0x1904) Length: 37 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3137
-            //Id: 21594
-            //Quantity: 0
-            //Guid: Full: 0x08190800000000000000000007BFF135 Player/0 R1602/S0 Map: 0 Low: 130019637
-            //Flags: 0
-            //Date: 01/29/2015 08:42:00
-            //TimeFromStart: 01/01/1970 00:00:00
-            //TimeFromCreate: 01/01/1970 00:00:00
-
-            //ServerToClient: SMSG_CRITERIA_UPDATE (0x1904) Length: 37 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3138
-            //Id: 23348
-            //Quantity: 0
-            //Guid: Full: 0x08190800000000000000000007BFF135 Player/0 R1602/S0 Map: 0 Low: 130019637
-            //Flags: 0
-            //Date: 01/29/2015 08:42:00
-            //TimeFromStart: 01/01/1970 00:00:00
-            //TimeFromCreate: 01/01/1970 00:00:00
-
-            //ServerToClient: SMSG_CRITERIA_UPDATE (0x1904) Length: 37 ConnIdx: 0 Time: 01/29/2015 08:42:29.000 Number: 3139
-            //Id: 23724
-            //Quantity: 0
-            //Guid: Full: 0x08190800000000000000000007BFF135 Player/0 R1602/S0 Map: 0 Low: 130019637
-            //Flags: 0
-            //Date: 01/29/2015 08:42:00
-            //TimeFromStart: 01/01/1970 00:00:00
-            //TimeFromCreate: 01/01/1970 00:00:00
-
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*at*/, bool enter)
+    {
+        if (enter)
+        {
+            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1);
             return true;
         }
         return false;
@@ -120,5 +145,6 @@ public:
 
 void AddSC_pursing_the_black_harvest()
 {
-    new at_stage_1();
+    new at_stage_8696();
+    new at_stage_8698();
 }
