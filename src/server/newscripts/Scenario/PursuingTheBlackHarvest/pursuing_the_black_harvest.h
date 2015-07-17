@@ -35,10 +35,16 @@ enum Data
 };
 
 enum eCreatures
-{ };
+{
+    NPC_AKAMA               = 68137,
+    NPC_ASTHONGUE_PRIMALIST = 68096,
+    NPC_ASHTONGUE_WORKER    = 68098,
+};
 
 enum eGameObects
-{ };
+{
+    GO_CONSPICUOUS_ILLIDARI_SCROLL  = 216364,
+};
 
 template<class AI>
 CreatureAI* GetInstanceAI(Creature* creature)
