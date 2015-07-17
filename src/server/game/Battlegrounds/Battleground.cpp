@@ -555,8 +555,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     }
                 }
 
-            SendOpponentSpecialization(ALLIANCE);
-            SendOpponentSpecialization(HORDE);
 
             CheckArenaWinConditions();
         }
@@ -1226,6 +1224,9 @@ void Battleground::AddPlayer(Player* player)
         {
             player->CastSpell(player, SPELL_ARENA_PREPARATION, true);
             player->ResetAllPowers(true);
+
+            SendOpponentSpecialization(ALLIANCE);
+            SendOpponentSpecialization(HORDE);
         }
 
         // Set arena faction client-side to display arena unit frame
