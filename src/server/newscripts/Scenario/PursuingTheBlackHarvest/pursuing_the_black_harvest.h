@@ -32,18 +32,39 @@
 enum Data
 {
     DATA_NONE,
+
+    DATA_ESSENCE_OF_ORDER_EVENT,
+    DATA_AKAMA,
+    DATA_NOBEL_EVENT,
 };
 
 enum eCreatures
 {
-    NPC_AKAMA               = 68137,
-    NPC_ASTHONGUE_PRIMALIST = 68096,
-    NPC_ASHTONGUE_WORKER    = 68098,
+    NPC_AKAMA                       = 68137,
+    NPC_ASTHONGUE_PRIMALIST         = 68096,
+    NPC_ASHTONGUE_WORKER            = 68098,
+    NPC_SUFFERING_SOUL_FRAGMENT     = 68139,
+    NPC_HUNGERING_SOUL_FRAGMENT     = 68140,
+    NPC_ESSENCE_OF_ORDER            = 68151,
+    NPC_LOST_SOULS                  = 68156,
+    NPC_UNBOUND_NIGHTLORD           = 68174,
+    NPC_UNBOUND_CENTURION           = 68176,
+    NPC_UNBOUND_BONEMENDER          = 68175,
+    NPC_FREED_IMP                   = 68173,
 };
 
 enum eGameObects
 {
     GO_CONSPICUOUS_ILLIDARI_SCROLL  = 216364,
+};
+
+enum Actions
+{
+    ACTION_NONE,
+
+    ACTION_1,
+    ACTION_2,
+    ACTION_3,
 };
 
 template<class AI>

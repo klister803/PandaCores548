@@ -67,3 +67,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (68151, 0, 2, 'Узри же души, которые погубили твои собратья, чернокнижники!', 14, 0, 100, 0, 0, 0, 'Сущность порядка to 0'),
 (68151, 0, 3, 'Ты так любишь демонов?.. Теперь у тебя будет возможность встретиться с ними!', 14, 0, 100, 0, 0, 0, 'Сущность порядка to 58964');
 
+DELETE FROM `creature_loot_template` WHERE `entry` = 68151;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES
+('68151', '92556', '100', '0', '0', '1', '1', '0');
+

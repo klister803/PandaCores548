@@ -36,27 +36,73 @@ public:
         { }
 
         void Initialize()
-        { }
+        {
+            essenceData = 0;
+            akamaGUID = 0;
+            nodelData = 0;
+        }
 
         void OnCreatureCreate(Creature* creature)
         {
-            //switch (creature->GetEntry())
-            //{
-            //}
+            switch (creature->GetEntry())
+            {
+                case NPC_ESSENCE_OF_ORDER:
+                    creature->SetVisible(false);
+                    break;
+                case NPC_AKAMA:
+                    akamaGUID = creature->GetGUID();
+                    break;
+                default:
+                    break;
+            }
         }
 
         void SetData(uint32 type, uint32 data)
-        { }
+        {
+            switch (type)
+            {
+                case DATA_ESSENCE_OF_ORDER_EVENT:
+                    essenceData = data;
+                    if (data == DONE)
+                        if (Creature* akama = instance->GetCreature(DATA_AKAMA))
+                            akama->AI()->DoAction(ACTION_3);
+                    break;
+                case DATA_AKAMA:
+                    nodelData = data;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         uint64 GetData64(uint32 type)
         {
-            return 0;
+            switch (type)
+            {
+                case DATA_AKAMA:
+                    return akamaGUID;
+                default:
+                    return 0;
+            }
         }
 
         uint32 GetData(uint32 type)
         {
-            return 0;
+            switch (type)
+            {
+                case DATA_ESSENCE_OF_ORDER_EVENT:
+                    return essenceData;
+                case DATA_NOBEL_EVENT:
+                    return nodelData;
+                default:
+                    return 0;
+            }
         }
+
+    private:
+        uint32 essenceData;
+        uint32 nodelData;
+        uint64 akamaGUID;
     };
 };
 
