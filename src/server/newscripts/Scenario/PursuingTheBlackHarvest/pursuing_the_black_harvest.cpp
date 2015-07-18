@@ -39,6 +39,7 @@ enum Spells
     SPELL_UPDATE_PLAYER_PHASE_AURAS     = 134209,
     SPELL_SAP                           = 134205,
     SPELL_STEALTH                       = 86603,
+    SPELL_TRUSTED_BY_THE_ASHTONGUE      = 134206,
 
     //< S3 - NO SPELLS
     //< S4 - NO SPELLS
@@ -108,6 +109,21 @@ enum Events
     EVENT_3,
     EVENT_4,
     EVENT_5,
+    EVENT_6,
+    EVENT_7,
+    EVENT_8,
+    EVENT_9,
+    EVENT_10,
+    EVENT_11,
+    EVENT_12,
+    EVENT_13,
+    EVENT_14,
+    EVENT_15,
+    EVENT_16,
+    EVENT_17,
+    EVENT_18,
+    EVENT_19,
+    EVENT_20,
 };
 
 enum Actions
@@ -115,6 +131,7 @@ enum Actions
     ACTION_NONE,
 
     ACTION_1,
+    ACTION_2,
 };
 
 Position const atPos[]
@@ -125,6 +142,22 @@ Position const atPos[]
 enum Sounds
 { };
 
+Position const akamaWP[]
+{
+    {721.4444f, 355.3133f, 125.3953f}, //<  +0
+    {734.1794f, 343.3147f, 125.4458f}, //<  +2
+    {749.3447f, 321.5173f, 125.4249f}, //<  +3
+    {763.5404f, 314.8681f, 125.3804f}, //<  +3
+    {792.8096f, 306.7504f, 113.0866f}, //<  +4
+    {802.1400f, 278.0078f, 112.9999f}, //<  +4
+    {804.4133f, 246.3474f, 113.0019f}, //<  +5
+    {804.2388f, 128.3550f, 112.5224f}, //<  +13
+    {792.6276f, 99.26649f, 113.0114f}, //<  +17
+    {757.0466f, 65.21021f, 112.9879f}, //<  +6
+    {754.4785f, 64.58849f, 112.9997f}, //<  +5
+    {694.0858f, 67.66933f, 112.8861f}, //<  +3
+};
+
 class npc_akama : public CreatureScript
 {
 public:
@@ -134,7 +167,7 @@ public:
     {
         if (InstanceScript* instance = player->GetInstanceScript())
         {
-            player->ADD_GOSSIP_ITEM_DB(1111111, 2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->ADD_GOSSIP_ITEM(1, "Король Ринн разыскивает членов совета Мрачной Жатвы, которые недавно были здесь.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
             return true;
         }
@@ -142,12 +175,21 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 /*action*/)
-    { 
-        creature->AI()->DoAction(1);
-        creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        player->CLOSE_GOSSIP_MENU();
-
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    {
+        switch(action)
+        {
+            case GOSSIP_ACTION_INFO_DEF + 1:
+                player->ADD_GOSSIP_ITEM(1, "Акама, покажи дорогу!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
+                break;
+            case GOSSIP_ACTION_INFO_DEF + 2:
+                creature->AI()->DoAction(ACTION_2);
+                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
+                break;
+            default:
+                break;
+        }
         return true;
     }
 
@@ -161,6 +203,7 @@ public:
         void Reset()
         {
             events.Reset();
+            timer = 0;
         }
 
         void DoAction(int32 const action)
@@ -169,6 +212,9 @@ public:
             {
                 case ACTION_1:
                     events.ScheduleEvent(EVENT_1, 2 * IN_MILLISECONDS, 1);
+                    break;
+                case ACTION_2:
+                    events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS, 1);
                     break;
                 default:
                     break;
@@ -189,10 +235,13 @@ public:
                             me->AddAura(SPELL_SAP, plr);
                         break;
                     case EVENT_2:
-                        events.ScheduleEvent(EVENT_3, 1 * IN_MILLISECONDS, 1);
+                        events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS, 1);
                         me->RemoveAura(SPELL_STEALTH);
                         if (Player* plr = me->FindNearestPlayer(50.0f))
-                            me->CastSpell(plr, SPELL_UPDATE_PLAYER_PHASE_AURAS);
+                        {
+                            plr->CastSpell(plr, SPELL_UPDATE_PLAYER_PHASE_AURAS);
+                            plr->AddAura(SPELL_TRUSTED_BY_THE_ASHTONGUE, plr);
+                        }
                         break;
                     case EVENT_3:
                         events.ScheduleEvent(EVENT_4, 2 * IN_MILLISECONDS, 1);
@@ -203,6 +252,72 @@ public:
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         events.CancelEventGroup(1);
                         break;
+                    case EVENT_5:
+                        events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS, 1);
+                        Talk(7);
+                        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        break;
+                    case EVENT_6:
+                        events.ScheduleEvent(EVENT_7, timer= + 0 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_8, timer= + 2 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_9, timer= + 3 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_10, timer += 3 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_11, timer += 4 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_12, timer += 4 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_13, timer += 5 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_14, timer += 13 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_15, timer += 17 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_16, timer += 6 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_17, timer += 5 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_18, timer += 3 * IN_MILLISECONDS);
+                        break;
+                    case EVENT_7:
+                        Talk(8);
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[0]);
+                        break;
+                    case EVENT_8:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[1]);
+                        break;
+                    case EVENT_9:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[2]);
+                        break;
+                    case EVENT_10:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[3]);
+                        break;
+                    case EVENT_11:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[4]);
+                        break;
+                    case EVENT_12:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[5]);
+                        break;
+                    case EVENT_13:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[6]);
+                        Talk(0);
+                        break;
+                    case EVENT_14:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[7]);
+                        break;
+                    case EVENT_15:
+                        Talk(1);
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[8]);
+                        break;
+                    case EVENT_16:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[9]);
+                        break;
+                    case EVENT_17:
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[10]);
+                        break;
+                    case EVENT_18:
+                        events.ScheduleEvent(EVENT_19, 11 * IN_MILLISECONDS);
+                        me->GetMotionMaster()->MovePoint(1, akamaWP[11]);
+                        break;
+                    case EVENT_19:
+                        events.ScheduleEvent(EVENT_20, 6 * IN_MILLISECONDS);
+                        Talk(2);
+                        break;
+                    case EVENT_20:
+                        Talk(3);
+                        break;
                     default:
                         break;
                 }
@@ -212,6 +327,7 @@ public:
     private:
         InstanceScript* instance;
         EventMap events;
+        uint32 timer;
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -265,9 +381,18 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/)
+        void MoveInLineOfSight(Unit* who)
         {
+            if (who->HasAura(SPELL_TRUSTED_BY_THE_ASHTONGUE))
+                return;
+
             if (!me->GetDistance(atPos[0]) < 50.0f && !talk)
+            {
+                Talk(1);
+                talk = true;
+            }
+
+            if (me->GetDistance(atPos[0]) < 50.0f || (me->GetDistance(atPos[0]) < 50.0f && who->GetEntry() == 1860) || who->GetEntry() == 58960)
             {
                 Talk(1);
                 talk = true;
@@ -327,8 +452,6 @@ public:
 
         void Reset()
         {
-            events.Reset();
-
             callForHelp = false;
         }
 
@@ -339,28 +462,17 @@ public:
                 Talk(0);
                 me->CallForHelp(50.0f);
                 me->DoFleeToGetAssistance();
+                callForHelp = true;
             }
         }
 
         void UpdateAI(uint32 diff)
         {
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    default:
-                        break;
-                }
-            }
-
             DoMeleeAttackIfReady();
         }
 
     private:
         InstanceScript* instance;
-        EventMap events;
         bool callForHelp;
     };
 
@@ -382,11 +494,14 @@ public:
             switch (at->id)
             {
                 case 8696:
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
                     return true;
                 case 8698:
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1);
                     return true;
+                case 8699:
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34545, 1);  //< set stage 4
+                    break;
                 default:
                     return false;
             }
