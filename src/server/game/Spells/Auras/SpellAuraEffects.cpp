@@ -8802,7 +8802,7 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
 
-    Player* target = aurApp->GetTarget()->ToPlayer();
+    Unit* target = aurApp->GetTarget();
 
     if (!target)
         return;
@@ -8864,6 +8864,10 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         case 149:
         case 195:
             maxPower = 90;
+            break;
+        case 259: //
+        case 267: //Spoils of Pandaria
+            maxPower = 50;
             break;
         case 23:
         case 37:
@@ -8960,6 +8964,10 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
             break;
         case 178:
             startPower = 100;
+            break;
+        case 259: //
+        case 267: //Spoils of Pandaria
+            startPower = 0;
             break;
         default:
             startPower = 0;

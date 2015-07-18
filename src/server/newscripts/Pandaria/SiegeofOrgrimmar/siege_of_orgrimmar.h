@@ -16,9 +16,10 @@ enum globalSpells
     SPELL_TP_ORGRIMMAR_2            = 148034, //Aliance
 };
 
-enum sActions
+enum ssActions
 {
     ACTION_RESET                    = 255,
+    ACTION_IN_PROGRESS              = 256,
 };
 
 enum eData
@@ -60,6 +61,8 @@ enum eData
 
     // Additional data
     DATA_IMMERSEUS_INTRO,
+    DATA_SPOIL_MANTIS,
+    DATA_SPOIL_MOGU,
 };
 
 enum eCreatures
@@ -227,23 +230,45 @@ enum eCreatures
     //Spoils of Pandaria
     NPC_SSOP_SPOILS                 = 71889, //Secured Stockpile of Pandaren Spoils
 
-    //Spoils, needed for frame engage
+    //Spoils 
     NPC_MOGU_SPOILS                 = 73720,
     NPC_MOGU_SPOILS2                = 73722,
     NPC_MANTIS_SPOILS               = 71512,
     NPC_MANTIS_SPOILS2              = 73721,
     
-    //Big mogu
+    //Big 
+    //Mogu
     NPC_JUN_WEI                     = 73723,
     NPC_ZU_YIN                      = 73724,
     NPC_XIANG_LIN                   = 73725,
     NPC_KUN_DA                      = 71408,
-    //Medium mogu
+    //Mantis
+    NPC_COMMANDER_ZAKTAR            = 71409,
+    NPC_COMMANDER_IKTAL             = 73948,
+    NPC_COMMANDER_NAKAZ             = 73949,
+    NPC_COMMANDER_TIK               = 73951,
+    //
+
+    //Medium 
+    //Mogu
     NPC_MODIFIED_ANIMA_GOLEM        = 71395,
     NPC_MOGU_SHADOW_RITUALIST       = 71393,
     NPC_SHADOW_RITUALIST_PHYLACTERY = 71392,
-    //Small mogu
+    //Mantis
+    NPC_ZARTHIK_AMBER_PRIEST        = 71397,
+    NPC_SETTHIK_WIND_WIELDER        = 71405,
+    //
+
+    //Small 
+    //Mogu
     NPC_ANIMATED_STONE_MOGU         = 71380,
+    NPC_BURIAL_URN                  = 71382,
+    NPC_QUILEN_GUARDIANS            = 72223, 
+    //Mantis
+    NPC_SRITHIK_BOMBARDIER          = 71385,
+    NPC_AMBER_ENCASED_KUNCHONG      = 71388,
+    NPC_KORTHIK_WARCALLER           = 71383,
+    //
 
     //Special
     NPC_LEVER                       = 72281,
@@ -374,13 +399,11 @@ enum eGameObjects
 
     //Right
     GO_IRON_DOOR_R                  = 223032, 
-    GO_LEVER_R                      = 221771, 
-    GO_LEVER_R2                     = 221772, 
+    GO_LEVER_R                      = 221771,  
 
     //Left
     GO_IRON_DOOR_L                  = 223033,
     GO_LEVER_L                      = 221773,
-    GO_LEVER_L2                     = 221774,
 
     //Boxes
     //Mogu

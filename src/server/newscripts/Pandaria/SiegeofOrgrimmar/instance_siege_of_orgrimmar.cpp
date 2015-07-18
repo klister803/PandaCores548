@@ -65,8 +65,12 @@ public:
         uint64 nazgrimexdoorGuid;
         std::vector<uint64> malkorokfenchGuids;
         std::vector<uint64> roomgateGuids;
+        std::vector<uint64> roomdoorGuids;
+        std::vector<uint64> irondoorGuids;
+        std::vector<uint64> leverGuids;
         std::vector<uint64> sopboxGuids;
-        std::vector<uint64> spoilsGuids;
+        std::vector<uint64> spoilsGuids;  //for send frames
+        std::vector<uint64> spoils2Guids; //find players and send aura bar in radius
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
         std::vector<uint64> jaillistGuids;
@@ -130,8 +134,12 @@ public:
             nazgrimexdoorGuid       = 0;
             malkorokfenchGuids.clear();
             roomgateGuids.clear();
+            roomdoorGuids.clear();
+            irondoorGuids.clear();
+            leverGuids.clear();
             sopboxGuids.clear();
             spoilsGuids.clear();
+            spoils2Guids.clear();
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
             jaillistGuids.clear();
@@ -423,7 +431,10 @@ public:
                 case NPC_MOGU_SPOILS2:
                 case NPC_MANTIS_SPOILS:
                 case NPC_MANTIS_SPOILS2:
-                    spoilsGuids.push_back(creature->GetGUID());
+                    if (uint32(creature->GetPositionZ()) == -271)
+                        spoilsGuids.push_back(creature->GetGUID());
+                    else
+                        spoils2Guids.push_back(creature->GetGUID());
                     break;
                 //Thok
                 case NPC_THOK:
@@ -560,11 +571,25 @@ public:
                 case GO_PANDAREN_RELIC_BOX:
                     sopboxGuids.push_back(go->GetGUID());
                     break;
+                case GO_ENT_DOOR_LEFT:
+                case GO_ENT_DOOR_RIGHT:
+                case GO_EX_DOOR_RIGHT:
+                case GO_EX_DOOR_LEFT:
+                    roomdoorGuids.push_back(go->GetGUID());
+                    break;
                 case GO_ROOM_GATE:
                 case GO_ROOM_GATE2:
                 case GO_ROOM_GATE3:
                 case GO_ROOM_GATE4:
                     roomgateGuids.push_back(go->GetGUID());
+                    break;
+                case GO_IRON_DOOR_R:
+                case GO_IRON_DOOR_L:
+                    irondoorGuids.push_back(go->GetGUID());
+                    break;
+                case GO_LEVER_R:
+                case GO_LEVER_L:
+                    leverGuids.push_back(go->GetGUID());
                     break;
             }
         }
@@ -777,13 +802,36 @@ public:
                     switch (state)
                     {
                     case NOT_STARTED:
+                        //Clear Frames
                         for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
                             if (Creature* spoil = instance->GetCreature(*itr))
-                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, spoil);
-                        
+                                spoil->AI()->DoAction(ACTION_RESET);
+
+                        //Reset Spoils
+                        for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                spoil->AI()->DoAction(ACTION_RESET);
+
+                        //Reset All levers
+                        for (std::vector<uint64>::const_iterator itr = leverGuids.begin(); itr != leverGuids.end(); itr++)
+                        {
+                            if (GameObject* lever = instance->GetGameObject(*itr))
+                            {
+                                lever->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                                lever->SetGoState(GO_STATE_READY);
+                                lever->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                            }
+                        }
+
+                        //Close All Room's Gates
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             HandleGameObject(*itr, false);
-                        
+
+                        //Close All Room's Doors
+                        for (std::vector<uint64>::const_iterator itr = irondoorGuids.begin(); itr != irondoorGuids.end(); itr++)
+                            HandleGameObject(*itr, false);
+
+                        //Reset All Boxes
                         for (std::vector<uint64>::const_iterator itr = sopboxGuids.begin(); itr != sopboxGuids.end(); itr++)
                         {
                             if (GameObject* box = instance->GetGameObject(*itr))
@@ -795,14 +843,59 @@ public:
                         }
                         break;
                     case IN_PROGRESS:
-                        break;
-                    case DONE:
+                        //Open Gates In Room
+                        for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
+                            if (GameObject* gate = instance->GetGameObject(*itr))
+                                if (gate->GetEntry() == GO_ROOM_GATE2 || gate->GetEntry() == GO_ROOM_GATE4)
+                                    gate->SetGoState(GO_STATE_ACTIVE);
+
+                        //Send Frames
                         for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
                             if (Creature* spoil = instance->GetCreature(*itr))
-                                SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, spoil);
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
+                                    spoil->AI()->DoAction(ACTION_IN_PROGRESS);                            
+                        break;
+                    case DONE:
+                        //Clear Frames
+                        for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                spoil->AI()->DoAction(ACTION_RESET);
 
+                        //Reset Spoils
+                        for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                spoil->AI()->DoAction(ACTION_RESET);
+
+                        //Open Room's Doors
+                        for (std::vector<uint64>::const_iterator itr = roomdoorGuids.begin(); itr != roomdoorGuids.end(); itr++)
+                            HandleGameObject(*itr, true);
+
+                        //Open All Gates (for safe)
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             HandleGameObject(*itr, true);
+                        break;
+                    case SPECIAL: //first room done, start second
+                        //Open Next Gates In Room
+                        for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
+                            if (GameObject* gate = instance->GetGameObject(*itr))
+                                if (gate->GetEntry() == GO_ROOM_GATE || gate->GetEntry() == GO_ROOM_GATE3)
+                                    gate->SetGoState(GO_STATE_ACTIVE);
+
+                        //Clear Frames
+                        for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                spoil->AI()->DoAction(ACTION_RESET);
+
+                        //Reset Spoils
+                        for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                spoil->AI()->DoAction(ACTION_RESET);
+
+                        //Send Next Frames
+                        for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                            if (Creature* spoil = instance->GetCreature(*itr))
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS || spoil->GetEntry() == NPC_MANTIS_SPOILS)
+                                    spoil->AI()->DoAction(ACTION_IN_PROGRESS);
                         break;
                     }
                     break;
@@ -1121,6 +1214,95 @@ public:
                 //
                 case NPC_ANCIENT_MIASMA:
                     return amGuid;
+                //Spoils of Pandaria
+                case GO_LEVER_R:
+                case GO_LEVER_L:
+                    for (std::vector<uint64>::const_iterator itr = leverGuids.begin(); itr != leverGuids.end(); itr++)
+                        if (GameObject* lever = instance->GetGameObject(*itr))
+                            if (lever->GetEntry() == type)
+                                return lever->GetGUID();
+                case GO_IRON_DOOR_R:
+                case GO_IRON_DOOR_L:
+                    for (std::vector<uint64>::const_iterator itr = irondoorGuids.begin(); itr != irondoorGuids.end(); itr++)
+                        if (GameObject* door = instance->GetGameObject(*itr))
+                            if (door->GetEntry() == type)
+                                return door->GetGUID();
+                case DATA_SPOIL_MANTIS: 
+                    for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                    {
+                        if (Creature* spoil = instance->GetCreature(*itr))
+                        {
+                            if (GetBossState(DATA_SPOILS_OF_PANDARIA) == IN_PROGRESS)
+                            {
+                                if (spoil->GetEntry() == NPC_MANTIS_SPOILS2)
+                                    return spoil->GetGUID();
+                            }
+                            else if (GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                if (spoil->GetEntry() == NPC_MANTIS_SPOILS)
+                                    return spoil->GetGUID();
+                        }
+                    }
+                case DATA_SPOIL_MOGU: 
+                    for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
+                    {
+                        if (Creature* spoil = instance->GetCreature(*itr))
+                        {
+                            if (GetBossState(DATA_SPOILS_OF_PANDARIA) == IN_PROGRESS)
+                            {
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS2)
+                                    return spoil->GetGUID();
+                            }
+                            else if (GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS)
+                                    return spoil->GetGUID();
+                        }
+                    }
+                case NPC_MOGU_SPOILS:    
+                case NPC_MOGU_SPOILS2:   
+                case NPC_MANTIS_SPOILS:
+                case NPC_MANTIS_SPOILS2: 
+                    for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                        if (Creature* spoil2 = instance->GetCreature(*itr))
+                            if (spoil2->GetEntry() == type)
+                                return spoil2->GetGUID();
+                //Mogu
+                case GO_SMALL_MOGU_BOX:
+                case GO_MEDIUM_MOGU_BOX:
+                case GO_BIG_MOGU_BOX:
+                    for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                    {
+                        if (Creature* spoil = instance->GetCreature(*itr))
+                        {
+                            if (GetBossState(DATA_SPOILS_OF_PANDARIA) == IN_PROGRESS)
+                            {
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS2)
+                                    return spoil->GetGUID();
+                            }
+                            else if (GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                if (spoil->GetEntry() == NPC_MOGU_SPOILS)
+                                    return spoil->GetGUID();
+                        }
+                    }
+                //Mantis
+                case GO_SMALL_MANTIS_BOX:
+                case GO_MEDIUM_MANTIS_BOX:
+                case GO_BIG_MANTIS_BOX:
+                    for (std::vector<uint64>::const_iterator itr = spoils2Guids.begin(); itr != spoils2Guids.end(); itr++)
+                    {
+                        if (Creature* spoil = instance->GetCreature(*itr))
+                        {
+                            if (GetBossState(DATA_SPOILS_OF_PANDARIA) == IN_PROGRESS)
+                            {
+                                if (spoil->GetEntry() == NPC_MANTIS_SPOILS2)
+                                    return spoil->GetGUID();
+                            }
+                            else if (GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                if (spoil->GetEntry() == NPC_MANTIS_SPOILS)
+                                    return spoil->GetGUID();
+                        }
+                    }
+                case GO_PANDAREN_RELIC_BOX:
+                    return 0; //test
                 case NPC_THOK:
                     return thokGuid;
                 case NPC_BODY_STALKER:
