@@ -36,6 +36,7 @@ enum Data
     DATA_ESSENCE_OF_ORDER_EVENT,
     DATA_AKAMA,
     DATA_NOBEL_EVENT,
+    DATA_KANRETHAD,
 };
 
 enum eCreatures
@@ -51,6 +52,10 @@ enum eCreatures
     NPC_UNBOUND_CENTURION           = 68176,
     NPC_UNBOUND_BONEMENDER          = 68175,
     NPC_FREED_IMP                   = 68173,
+    NPC_DEMONIC_SOULWELL            = 70052,
+    NPC_KANRETHAD_EBONLOCKE         = 69964,
+    NPC_DEMONIC_GATEWAY             = 70028,
+    NPC_JUBEKA_SHADOWBREAKER        = 70166,
 };
 
 enum eGameObects

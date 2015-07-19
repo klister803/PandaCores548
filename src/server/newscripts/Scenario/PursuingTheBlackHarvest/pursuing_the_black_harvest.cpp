@@ -26,7 +26,7 @@ enum Spells
 {
     //< Misc
     SPELL_PLACE_EMPOWED_SOULCORE        = 138680, //< SS
-    SPELL_DRAIN_FEL_ENERGY              = 139200,
+    SPELL_DRAIN_FEL_ENERGY              = 139200, //< dummy
 
     //< S0
     SPELL_SEARCHING_FOR_INTRUDERS       = 134110, //< AT
@@ -100,7 +100,7 @@ enum Spells
     SPELL_CHEAP_COLOGNE                 = 134282,
     SPELL_RUBY_NEACKABLE                = 134286,
 
-    //< S8
+    //< Last Step
     SPELL_DEMONIC_GATEWAY               = 138649, //< SS
     SPELL_BURNING_EMBERS                = 138557, //< SS
     SPELL_SOULSHARDS                    = 138556, //< SS
@@ -109,7 +109,7 @@ enum Spells
     SPELL_RITUAL_ENSLAVEMENT            = 22987,  //< SS
     SPELL_DOOMGUARD_SUMMON_DND          = 42010,  //< SS
     SPELL_DOOM_BOLT                     = 85692,  //< SS
-    SPELL_SUMMONING_PIT_LORD            = 138789, //< SS
+    SPELL_SUMMONING_PIT_LORD            = 138789,
     SPELL_FEL_FLAME_BREATH              = 138814,
     SPELL_FEL_FLAME_BREATH_DUMMY        = 138813,
     SPELL_RAID_OF_FIRE                  = 138561,
@@ -127,11 +127,10 @@ enum Spells
     SPELL_CHARGE_TRIGGER                = 138827,
     SPELL_FEL_FIREBOLT                  = 138747,
 
-    //< Last Step
+    
     SPELL_ANNIHILATE_DEMONS             = 139141,
     SPELL_DEMONIC_GRASP                 = 139142,
     SPELL_ETERNAL_BANISHMENT            = 139186,
-
 };
 
 enum Events
@@ -823,6 +822,311 @@ public:
     }
 };
 
+class npc_demonic_gateway : public CreatureScript
+{
+public:
+    npc_demonic_gateway() : CreatureScript("npc_demonic_gateway") { }
+
+    struct npc_hungering_soul_fragmentAI : public ScriptedAI
+    {
+        npc_hungering_soul_fragmentAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        void Reset()
+        {
+            events.Reset();
+            events.ScheduleEvent(EVENT_1, 10 * IN_MILLISECONDS);
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        me->AddAura(SPELL_DEMONIC_GATEWAY, me);
+                        if (Creature* cre = me->SummonCreature(NPC_KANRETHAD_EBONLOCKE, 638.1178f, 306.8426f, 353.1956f, 6.221907f))
+                            cre->AI()->DoAction(ACTION_1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+    private:
+        InstanceScript* instance;
+        EventMap events;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<npc_hungering_soul_fragmentAI>(creature);
+    }
+};
+
+class npc_kanrethad_ebonlocke : public CreatureScript
+{
+public:
+    npc_kanrethad_ebonlocke() : CreatureScript("npc_kanrethad_ebonlocke") { }
+
+    struct npc_essence_of_orderAI : public ScriptedAI
+    {
+        npc_essence_of_orderAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        void Reset()
+        {
+            events.Reset();
+
+            summons.DespawnAll();
+
+            completed = false;
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            instance->SetData(DATA_KANRETHAD, IN_PROGRESS);
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+                case ACTION_1:
+                    events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
+                    break;
+                case ACTION_2:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void EnterEvadeMode()
+        {
+            summons.DespawnAll();
+
+            instance->SetData(DATA_KANRETHAD, TO_BE_DECIDED);
+
+            me->Respawn(true);
+        }
+
+        void DamageTaken(Unit* /*attacker*/, uint32 &damage)
+        {
+            if (damage && me->GetHealthPct() < 2.0f && !completed)
+            {
+                events.ScheduleEvent(EVENT_25, 5 * IN_MILLISECONDS);
+
+                completed = true;
+                summons.DespawnAll();
+                instance->SetData(DATA_KANRETHAD, DONE);
+                me->SetReactState(REACT_PASSIVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
+                Talk(5); //< Ха-ха-ха… у тебя была надежда на победу? Теперь меня НИЧТО не сможет убить, жалкое смертное существо!
+                
+                if (Player* plr = me->FindNearestPlayer(150.0f))
+                    me->AddAura(SPELL_DEMONIC_GRASP, plr);
+            }
+        }
+
+        void WaypointReached(uint32 id)
+        {
+            switch (id)
+            {
+                case EVENT_1:
+                    events.ScheduleEvent(EVENT_2, 5 * IN_MILLISECONDS);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                    Talk(0); //< БОЙСЯ! Теперь я овладел всеми энергиями Скверны этого мира! Демоническая сила, которой я управляю… невероятна! Безгранична! Я ВСЕМОГУЩ!
+                    break;
+                case EVENT_2:
+                    if (Player* plr = me->FindNearestPlayer(150.0f))
+                        me->AddAura(SPELL_FACE_PLAYER, plr);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        me->SetReactState(REACT_PASSIVE);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
+                        me->AddAura(SPELL_BURNING_EMBERS, me);
+                        me->AddAura(SPELL_SOULSHARDS, me);
+                        me->AddAura(SPELL_METAMORPHOSIS, me);
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 660.0f, 305.5f, 354.1158f);
+                        break;
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_3, 5 * IN_MILLISECONDS);
+                        me->GetMotionMaster()->MovePoint(EVENT_2, 662.0f, 315.0f, 354.0903f);
+                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                        Talk(1); //< Думаешь, я слишком далеко зашел? Нет такого понятия. Мрачная Жатва поработит самых могущественных демонов и уничтожит всех, кто станет противостоять ей – в этом мире и на Азероте! И ТЫ хочешь остановить меня, кроха?
+                        break;
+                    case EVENT_3:
+                        events.ScheduleEvent(EVENT_4, 10 * IN_MILLISECONDS);
+                        Talk(2); //< Ну-ну, попытайся.
+                        break;
+                    case EVENT_4:
+                        events.ScheduleEvent(EVENT_5, 6 * IN_MILLISECONDS);
+                        Talk(3); //< Ха! Твои слабые попытки ранить меня никуда не годятся. Хочешь посмотреть на одного из моих новых питомцев?
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
+                        if (Creature* target = me->FindNearestCreature(0, 50.0f))
+                        {
+                            me->AddAura(SPELL_SUMMONING_PIT_LORD, target);
+                            me->CastSpell(target, SPELL_SUMMONING_PIT_LORD);
+                        }
+                        break;
+                    case EVENT_5:
+                        events.ScheduleEvent(EVENT_6, 10 * IN_MILLISECONDS);
+                        Talk(4); //< Разрушение у искоренителей в крови. Огромная сила и мощь делают их непобедимыми.
+                        break;
+                    case EVENT_6:
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        break;
+
+                        //< last stage
+                    case EVENT_25:
+                        events.ScheduleEvent(EVENT_26, 1 * IN_MILLISECONDS);
+                        Talk(6); //< А теперь твоя сказка с грустным концом закончится!
+                        if (Creature* cre = me->SummonCreature(NPC_JUBEKA_SHADOWBREAKER, 635.8455f, 288.1264f, 353.0794f, 0.7989526f))
+                            cre->AI()->DoAction(ACTION_1);
+                        break;
+                    case EVENT_26:
+                        events.ScheduleEvent(EVENT_27, 3 * IN_MILLISECONDS);
+                        Talk(7); //< Джубека?! Что ты…
+                        break;
+                    case EVENT_27:
+                        Talk(8); //< ДАААААААААА!
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+
+    private:
+        InstanceScript* instance;
+        EventMap events;
+        SummonList summons;
+        bool completed;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<npc_essence_of_orderAI>(creature);
+    }
+};
+
+class npc_jubeka_shadowbreaker : public CreatureScript
+{
+public:
+    npc_jubeka_shadowbreaker() : CreatureScript("npc_jubeka_shadowbreaker") { }
+
+    struct npc_essence_of_orderAI : public ScriptedAI
+    {
+        npc_essence_of_orderAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+                case ACTION_1:
+                    events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void WaypointReached(uint32 id)
+        {
+            switch (id)
+            {
+                case EVENT_1:
+                    if (Creature* target = me->FindNearestCreature(NPC_KANRETHAD_EBONLOCKE, 50.0f))
+                    {
+                        me->CastSpell(target, SPELL_ETERNAL_BANISHMENT);
+                        target->AI()->DoAction(ACTION_2);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            events.Update(diff);
+
+            if (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_2, 4 * IN_MILLISECONDS);
+                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+                        Talk(0); //< НЕТ!
+                        me->GetMotionMaster()->MovePoint(EVENT_1, 655.026f, 307.8343f, 354.2209f);
+                        break;
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
+                        Talk(1); //< Я сделала лишь то, о чем ты сам просил меня раньше, Канретад. Ты сам во всем виноват.
+                        break;
+                    case EVENT_3:
+                        Talk(2); //< Канретад настолько погрузился в энергию Скверны, что она полностью подчинила его. Но лишь глоток его силы не должен повредить. Испей ее.
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+
+    private:
+        InstanceScript* instance;
+        EventMap events;
+        SummonList summons;
+        bool completed;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return GetInstanceAI<npc_essence_of_orderAI>(creature);
+    }
+};
+
 class at_pursuing_the_black_harvest_main : public AreaTriggerScript
 {
 public:
@@ -951,6 +1255,9 @@ void AddSC_pursing_the_black_harvest()
     new npc_suffering_soul_fragment();
     new npc_hungering_soul_fragment();
     new npc_essence_of_order();
+    new npc_demonic_gateway();
+    new npc_kanrethad_ebonlocke();
+    new npc_jubeka_shadowbreaker();
 
     new at_pursuing_the_black_harvest_main();
 
