@@ -844,6 +844,10 @@ void AddSC_arena_of_annihilation();
 void AddSC_fall_of_shan_bu();
 void AddSC_instance_fall_of_shan_bu();
 
+//< Pursuing the Black Harvest
+void AddSC_pursing_the_black_harvest();
+void AddSC_instance_pursuing_the_black_harvest();
+
 // battlegrounds
 
 // outdoor pvp
@@ -1723,6 +1727,10 @@ void AddPandarieScripts()
     //< Fall of Shan'bu
     AddSC_fall_of_shan_bu();
     AddSC_instance_fall_of_shan_bu();
+
+    //< Pursuing the Black Harvest
+    AddSC_pursing_the_black_harvest();
+    AddSC_instance_pursuing_the_black_harvest();
 
 #endif
 }

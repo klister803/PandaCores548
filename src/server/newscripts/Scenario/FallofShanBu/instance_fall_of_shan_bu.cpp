@@ -64,17 +64,6 @@ public:
             lrStage2 = 0;
         }
 
-        bool SetBossState(uint32 type, EncounterState state)
-        {
-            if (!InstanceScript::SetBossState(type, state))
-                return false;
-
-            //switch (type)
-            //{
-            //}
-            return true;
-        }
-
         void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
@@ -88,11 +77,32 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void CreatureDies(Creature* creature, Unit* /*killer*/)
         {
-            //switch (creature->GetEntry())
-            //{
-            //}
+            switch (creature->GetEntry())
+            {
+                case NPC_SHANZE_SHADOWCASTER:
+                case NPC_SHANZE_WARRIOR:
+                case NPC_SHANZE_BATTLEMASTER:
+                case NPC_SHANZE_ELECTRO_COUTIONER:
+                case NPC_SHANZE_PYROMANCER:
+                    --counter;
+                    if (!counter)
+                    {
+                        if (GetData(DATA_COMPLETE_EVENT_STAGE_1) != SPECIAL)
+                        {
+                            doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_EVADE);
+                            doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_EVADE);
+                        }
+                    }
+                    break;
+                case NPC_FORGEMASTER_VULKON:
+                    doAction(creature, NPC_SHADO_PAN_WARRIOR, ACTION_COMPLETE_FIRST_PART);
+                    doAction(creature, NPC_SHADO_PAN_DEFENDER, ACTION_COMPLETE_FIRST_PART);
+                    break;
+                default:
+                    break;
+            }
         }
 
         void SetData(uint32 type, uint32 data)
@@ -119,6 +129,7 @@ public:
                     break;
                 case DATA_LR_STAGE_2:
                     lrStage2 = data;
+                    break;
                 default:
                     break;
             }
@@ -161,6 +172,15 @@ public:
         }
     };
 };
+
+void doAction(Unit* unit, uint32 creature, uint8 action, float range /*= 200.0f*/)
+{
+    std::list<Creature*> creatures;
+    GetCreatureListWithEntryInGrid(creatures, unit, creature, range);
+    if (!creatures.empty())
+        for (std::list<Creature*>::iterator creature = creatures.begin(); creature != creatures.end(); ++creature)
+            (*creature)->AI()->DoAction(action);
+}
 
 void AddSC_instance_fall_of_shan_bu()
 {

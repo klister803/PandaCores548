@@ -14,12 +14,12 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (70100, 9, 0, '""Выявлена аномалия."" Какая еще аномалия?', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 (70100, 10, 0, 'Смотри-ка… технологии титанов притягивают ша как магнит!', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 (70100, 11, 0, 'Ты уже наверняка знаешь, как с ними справиться. Убери их отсюда!', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
-(70100, 12, 0, 'Нет, нет, так не пойдет. Уходим отсюда! -> Исчадье ша', 14, 0, 100, 0, 0, 0, 'Гневион to Исчадье ша'),
-(70100, 13, 0, 'Может, если увеличить подачу энергии, проблема с ша решится? Давай попробуем. -> Небесный кузнец', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
-(70100, 14, 0, 'Отлично! Получилось. -> Небесный кузнец', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
-(70100, 15, 0, 'Ой, кажется, я поторопился. Сила ша растет! Уничтожь его! -> Небесный кузнец', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
-(70100, 16, 0, 'Ты же не слишком сердишься, правда? -> Небесный кузнец', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
-(70100, 17, 0, 'Наковальни заряжены. Теперь их можно использовать против ша, но каждую лишь один раз! -> Небесный кузнец', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
+(70100, 12, 0, 'Нет, нет, так не пойдет. Уходим отсюда!', 14, 0, 100, 0, 0, 0, 'Гневион to Исчадье ша'),
+(70100, 13, 0, 'Может, если увеличить подачу энергии, проблема с ша решится? Давай попробуем.', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
+(70100, 14, 0, 'Отлично! Получилось.', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
+(70100, 15, 0, 'Ой, кажется, я поторопился. Сила ша растет! Уничтожь его!', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
+(70100, 16, 0, 'Ты же не слишком сердишься, правда?', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
+(70100, 17, 0, 'Наковальни заряжены. Теперь их можно использовать против ша, но каждую лишь один раз!', 12, 0, 100, 0, 0, 0, 'Гневион to Небесный кузнец'),
 (70100, 18, 0, 'Копье выковано. Скорее брось его в ша!', 12, 0, 100, 0, 0, 0, 'Гневион'),
 (70100, 19, 0, 'Все! Мы сделали это! Выковали настоящий шедевр!', 12, 0, 100, 0, 0, 0, 'Гневион'),
 (70100, 20, 0, 'Тут мы закончили, но оружие еще надо закалить.', 12, 0, 100, 0, 0, 0, 'Гневион'),
@@ -129,7 +129,7 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 
 DELETE FROM `instance_template` WHERE (`map`=1126);
 INSERT INTO `instance_template` (`map`, `parent`, `script`, `allowMount`, `bonusChance`) VALUES
-('1126', '0', 'instance_fall_of_shan_bu', '1', '20');
+('1126', '0', 'instance_fall_of_shan_bu', '0', '20');
 
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_defender' WHERE (`entry`='70099');
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_warrior' WHERE (`entry`='70106');
@@ -150,15 +150,17 @@ UPDATE `creature_template` SET `ScriptName` ='npc_sha_beast' WHERE (`entry`='700
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_fiend' WHERE (`entry`='70039');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entry`='70228');
 
-DELETE FROM areatrigger_scripts where entry in (840, 503, 868);
-INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES 
-(840, 'at_thunder_forge_buff'),
-(503, 'at_healing_orb'),
-(868, 'at_power_surge');
+DELETE FROM `areatrigger_scripts` where `entry` in (840, 503, 868);
+DELETE FROM `areatrigger_actions` where `entry` in (840, 503, 868);
+INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES
+('503', '0', '1', '0', '8', '132744', '1', '0', '0', '0', '0', '0', 'Healing Orb'),
+('840', '0', '1', '0', '8', '139397', '1', '0', '0', '0', '0', '0', 'Overcharged'),
+('868', '0', '1', '0', '8', '140068', '1', '140068', '0', '0', '0', '0', 'Power Surge');
 
-DELETE FROM `spell_script_names` WHERE (`spell_id`=140487 AND `ScriptName`='spell_thundder_forge_charging_2') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
+
+DELETE FROM `spell_script_names` WHERE (`spell_id`=138805 AND `ScriptName`='spell_avnil_click_dummy') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('134715', 'spell_phase_shift_update'),
 ('138869', 'spell_forging'),
-('140487', 'spell_thundder_forge_charging_2'),
+('138805', 'spell_avnil_click_dummy'),
 ('140382', 'spell_thundder_forge_charging');

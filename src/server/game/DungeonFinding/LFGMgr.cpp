@@ -1617,7 +1617,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, const uint32 dungeonId)
         LFGDungeonData const* dungeonDone = GetLFGDungeon(dungeonId, player->GetTeam());
         if(!dungeonDone)
         {
-            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: dungeonDone %i not found or CanBeRewarded %i", dungeonId, dungeonDone->dbc->CanBeRewarded());
+            sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FinishDungeon: dungeonDone %i not found", dungeonId);
             continue;
         }
         if(!dungeonDone->dbc->CanBeRewarded())

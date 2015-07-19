@@ -168,6 +168,7 @@ public:
                     break;
                 case NPC_GURGTHOCK:
                     gurgthockGUID = creature->GetGUID();
+                    break;
             }
         }
 

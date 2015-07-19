@@ -565,9 +565,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     }
                 }
 
-            //SendOpponentSpecialization(ALLIANCE);
-            //SendOpponentSpecialization(HORDE);
-
             CheckArenaWinConditions();
         }
         else
