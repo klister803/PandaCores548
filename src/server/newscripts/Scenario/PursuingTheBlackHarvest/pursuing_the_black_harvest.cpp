@@ -133,41 +133,6 @@ enum Spells
     SPELL_ETERNAL_BANISHMENT            = 139186,
 };
 
-enum Events
-{
-    EVENT_NONE,
-
-    EVENT_1,
-    EVENT_2,
-    EVENT_3,
-    EVENT_4,
-    EVENT_5,
-    EVENT_6,
-    EVENT_7,
-    EVENT_8,
-    EVENT_9,
-    EVENT_10,
-    EVENT_11,
-    EVENT_12,
-    EVENT_13,
-    EVENT_14,
-    EVENT_15,
-    EVENT_16,
-    EVENT_17,
-    EVENT_18,
-    EVENT_19,
-    EVENT_20,
-    EVENT_21,
-    EVENT_22,
-    EVENT_23,
-    EVENT_24,
-    EVENT_25,
-    EVENT_26,
-    EVENT_27,
-    EVENT_28,
-    EVENT_29,
-};
-
 Position const atPos[]
 {
     {703.721f, 574.901f, 112.628f} //< 8696
