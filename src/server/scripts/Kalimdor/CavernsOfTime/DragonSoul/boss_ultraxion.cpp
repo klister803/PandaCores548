@@ -118,6 +118,7 @@ enum Events
     EVENT_WIPE_1                = 17,
     EVENT_WIPE_2                = 18,
     EVENT_NOZDORMU_2            = 19,
+    EVENT_BERSERK               = 20,
 };
 
 enum Adds
@@ -244,7 +245,7 @@ class boss_ultraxion: public CreatureScript
                 events.ScheduleEvent(EVENT_YSERA, 155000);
                 events.ScheduleEvent(EVENT_KALECGOS, 215000);
                 events.ScheduleEvent(EVENT_NOZDORMU, 5 * MINUTE * IN_MILLISECONDS);
-
+                events.ScheduleEvent(EVENT_BERSERK, 6 * MINUTE * IN_MILLISECONDS);
                 DoZoneInCombat();
                 instance->SetBossState(DATA_ULTRAXION, IN_PROGRESS);
             }
@@ -481,16 +482,13 @@ class boss_ultraxion: public CreatureScript
                                     break;
                             }
                             if (unstableCount > 1)
-                            {
                                 Talk(ANN_UNSTABLE);
-                            }
-                            if (unstableCount >= 7)
-                            {
-                                Talk(SAY_BERSERK);
-                                DoCast(SPELL_TWILIGHT_ERUPTION);
-                            }
                             else
                                 events.ScheduleEvent(EVENT_UNSTABLE_MONSTROSITY, MINUTE * IN_MILLISECONDS);
+                            break;
+                        case EVENT_BERSERK:
+                            Talk(SAY_BERSERK);
+                            DoCast(SPELL_TWILIGHT_ERUPTION);
                             break;
                         case EVENT_HOUR_OF_TWILIGHT:
                             Talk(SAY_TWILIGHT);
