@@ -569,15 +569,18 @@ void Map::Update(const uint32 t_diff)
 {
     //_dynamicTree.update(t_diff);
     /// update worldsessions for existing players
-    for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
+    if (sWorld->getBoolConfig(CONFIG_CHECK_MT_SESSION))
     {
-        Player* player = m_mapRefIter->getSource();
-        if (player && player->IsInWorld())
+        for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
         {
-            //player->Update(t_diff);
-            WorldSession* session = player->GetSession();
-            MapSessionFilter updater(session);
-            session->Update(t_diff, updater);
+            Player* player = m_mapRefIter->getSource();
+            if (player && player->IsInWorld())
+            {
+                //player->Update(t_diff);
+                WorldSession* session = player->GetSession();
+                MapSessionFilter updater(session);
+                session->Update(t_diff, updater);
+            }
         }
     }
     /// update active cells around players and active objects
