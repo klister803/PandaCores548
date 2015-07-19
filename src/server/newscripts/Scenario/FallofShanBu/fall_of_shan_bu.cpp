@@ -2455,7 +2455,7 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-            events.ScheduleEvent(EVENT_NSANITY, 1 * MINUTE + 30 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_NSANITY, 1 * MINUTE * IN_MILLISECONDS + 30 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_SHADOW_BURST, urand(40, 50) * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_DARK_BINDING, urand(15, 30) * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_METEOR_STORM, 6 * MINUTE);
@@ -2497,7 +2497,7 @@ public:
                         me->AddAura(SPELL_METEOR_STORM, me);
                         break;
                     case EVENT_SHADOW_CRASH:
-                        events.ScheduleEvent(EVENT_SHADOW_CRASH, 1 * MINUTE + 30 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_SHADOW_CRASH, 1 * MINUTE * IN_MILLISECONDS + 30 * IN_MILLISECONDS);
                         DoCast(SPELL_SHADOW_CRASH);
                         break;
                     default:

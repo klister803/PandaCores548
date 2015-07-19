@@ -196,7 +196,7 @@ public:
         switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF + 1:
-                player->ADD_GOSSIP_ITEM(1, "Акама, покажи дорогу!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->ADD_GOSSIP_ITEM(1, "Акама, покажи дорогу!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
                 player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
@@ -440,13 +440,13 @@ public:
             if (who->HasAura(SPELL_TRUSTED_BY_THE_ASHTONGUE))
                 return;
 
-            if (!me->GetDistance(atPos[0]) < 50.0f && !talk)
+            if ((me->GetDistance(atPos[0]) < 50.0f) && !talk)
             {
                 Talk(1);
                 talk = true;
             }
 
-            if (me->GetDistance(atPos[0]) < 50.0f || (me->GetDistance(atPos[0]) < 50.0f && who->GetEntry() == 1860) || who->GetEntry() == 58960)
+            if (!talk && (me->GetDistance(atPos[0]) < 50.0f || (me->GetDistance(atPos[0]) < 50.0f && who->GetEntry() == 1860) || who->GetEntry() == 58960))
             {
                 Talk(1);
                 talk = true;
@@ -629,14 +629,14 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    default:
-                        break;
-                }
-            }
+            //if (uint32 eventId = events.ExecuteEvent())
+            //{
+            //    switch (eventId)
+            //    {
+            //        default:
+            //            break;
+            //    }
+            //}
 
             DoMeleeAttackIfReady();
         }
@@ -670,7 +670,7 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    events.ScheduleEvent(EVENT_1, 2 * MINUTE + 42 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_1, 2 * MINUTE * IN_MILLISECONDS + 42 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -787,14 +787,14 @@ public:
     }
 };
 
-class npc_demonic_gateway : public CreatureScript
+class npc_demonic_gateway_scen : public CreatureScript
 {
 public:
-    npc_demonic_gateway() : CreatureScript("npc_demonic_gateway") { }
+    npc_demonic_gateway_scen() : CreatureScript("npc_demonic_gateway_scen") { }
 
-    struct npc_hungering_soul_fragmentAI : public ScriptedAI
+    struct npc_demonic_gateway_scenAI : public ScriptedAI
     {
-        npc_hungering_soul_fragmentAI(Creature* creature) : ScriptedAI(creature)
+        npc_demonic_gateway_scenAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -802,6 +802,7 @@ public:
         void Reset()
         {
             events.Reset();
+            me->AddAura(SPELL_DEMONIC_GATEWAY, me);
             events.ScheduleEvent(EVENT_1, 10 * IN_MILLISECONDS);
         }
 
@@ -814,7 +815,6 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
-                        me->AddAura(SPELL_DEMONIC_GATEWAY, me);
                         if (Creature* cre = me->SummonCreature(NPC_KANRETHAD_EBONLOCKE, 638.1178f, 306.8426f, 353.1956f, 6.221907f))
                             cre->AI()->DoAction(ACTION_1);
                         break;
@@ -831,7 +831,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_hungering_soul_fragmentAI>(creature);
+        return GetInstanceAI<npc_demonic_gateway_scenAI>(creature);
     }
 };
 
@@ -1220,7 +1220,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_suffering_soul_fragment();
     new npc_hungering_soul_fragment();
     new npc_essence_of_order();
-    new npc_demonic_gateway();
+    new npc_demonic_gateway_scen();
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
 
