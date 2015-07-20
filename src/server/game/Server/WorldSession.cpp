@@ -71,9 +71,6 @@ bool MapSessionFilter::Process(WorldPacket* packet)
 //OR packet handler is not thread-safe!
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
-    if (!sWorld->getBoolConfig(CONFIG_CHECK_MT_SESSION))
-        return true;
-
     Opcodes opcode = DropHighBytes(packet->GetOpcode());
     OpcodeHandler const* opHandle = opcodeTable[CMSG][opcode];
     //check if packet handler is supposed to be safe
@@ -233,7 +230,6 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
         }
     }
 
-    uint32 start_time = getMSTime();
     const_cast<WorldPacket*>(packet)->FlushBits();
 
 
@@ -273,8 +269,6 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     if (m_Socket->SendPacket(packet) == -1)
         m_Socket->CloseSocket();
-    if ((getMSTime() - start_time) > 10)
-        sLog->outU(" >> SendPacket DIFF %u", getMSTime() - start_time);
 }
 
 uint32 WorldSession::CompressPacket(uint8* buffer, WorldPacket const& packet)

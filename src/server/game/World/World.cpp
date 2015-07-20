@@ -1409,8 +1409,6 @@ void World::LoadConfigSettings(bool reload)
     // Battle Pets
     m_bool_configs[CONFIG_PET_BATTLES_ENABLED] = ConfigMgr::GetBoolDefault("PetBattles.Enabled", true);
 
-    m_bool_configs[CONFIG_CHECK_MT_SESSION] = ConfigMgr::GetBoolDefault("World.MT.Session", false);
-
     if (reload)
         sScriptMgr->OnConfigLoad(reload);
 }
