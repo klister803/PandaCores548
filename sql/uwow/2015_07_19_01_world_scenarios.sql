@@ -50,20 +50,21 @@ UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='1771
 UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='1771', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `dynamicflags`='4481344', `unit_flags`='33554432', `HoverHeight`='1' WHERE (`entry`='70023');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='1', `speed_run`='0.992063', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `dynamicflags`='4481792', `unit_flags`='33554688', `unit_flags2`='4229152', `HoverHeight`='1' WHERE (`entry`='70028');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `Health_mod`='35' WHERE (`entry`='70075');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `unit_class`='8', `dynamicflags`='4481344', `unit_flags`='33554432' WHERE (`entry`='70166');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35' WHERE (`entry`='70166');
 
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN ('70052', '69964');
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
 ('70052', '138680', '1', '0'),
 ('69964', '139200', '1', '0');
 
-DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680', '139141');
+DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680', '139141', '140164', '139200');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('138680', 'spell_place_empowered_soulcore'),
-('139141', 'spell_anihilate_demons');
+('139141', 'spell_anihilate_demons'),
+('139200', 'spell_drain_fel_enegry'),
+('140164', 'spell_fel_enery');
 
-DELETE FROM `creature_text` WHERE `entry` IN ('70166', '69964');
-
+DELETE FROM `creature_text` WHERE `entry` IN ('70166', '69964', '68137', '58959', '68096', '68098');
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (70166, 0, 0, 'НЕТ!', 12, 0, 100, 0, 0, 0, 'to Player'),
 (70166, 1, 0, 'Я сделала лишь то, о чем ты сам просил меня раньше, Канретад. Ты сам во всем виноват.', 12, 0, 100, 0, 0, 0, 'to Player'),
@@ -86,4 +87,38 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (69964, 13, 0, 'Ха-ха-ха… у тебя была надежда на победу? Теперь меня НИЧТО не сможет убить, жалкое смертное существо!', 12, 0, 100, 0, 0, 0, 'to Player'),
 (69964, 14, 0, 'А теперь твоя сказка с грустным концом закончится!', 12, 0, 100, 0, 0, 0, 'to Player'),
 (69964, 15, 0, 'Джубека?! Что ты…', 12, 0, 100, 0, 0, 0, 'to Player'),
-(69964, 16, 0, 'АААААААААА!', 12, 0, 100, 0, 0, 0, 'to Player');
+(69964, 16, 0, 'АААААААААА!', 12, 0, 100, 0, 0, 0, 'to Player'),
+
+('68137', '0', '0', 'Погоди... Ты не из тех чернокнижников, что были здесь раньше. Зачем ты здесь?', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '1', '0', 'Прошло уже много месяцев с тех пор, как двое чернокнижников проникли в храм. И я до сих пор не знаю, что им было нужно здесь...', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '2', '0', 'Следуй за мной. Они побывали и в Святилище Потерянных Душ, и на верхнем этаже храма.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '3', '0', 'Я решил, что $gэтому чернокнижнику:этой чернокнижнице; можно доверять. $gОн:Она; может свободно перемещаться по храму.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '4', '0', 'Пройдет еще много лет, прежде чем мы сможем устранить ущерб, нанесенный этому святому месту Магтериодном, Иллиданом и орками Скверны.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '5', '0', 'Здесь находится Святилище Потерянных Душ. В нем пребывают души тысяч моих погибших братьев.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '6', '0', 'Будь $gосторожен:осторожна;. Многие из ловушек все еще действуют. Может быть, какое-то из твоих демонических заклинаний поможет тебе разведать обстановку, прежде чем двигаться вперед.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '7', '0', '$n! Мои воины оказались в ловушке там, внизу. Времени мало. Помоги мне спасти их!', '14', '0', '100', '0', '0', '0', 'Акама to Player'),
+
+('58959', '0', '0', 'Эй, $n! Помнишь меня? Ладно, ладно... Эй, послушай... Мы совсем не обязаны помогать этому парню...', '12', '0', '100', '0', '0', '0', 'Кеппико to Player'),
+('58959', '1', '0', 'В этом месте наверняка есть, чем поживиться... Ну же, $gначальник:начальница;! Тебе же этого хочется...', '12', '0', '100', '0', '0', '0', 'Кеппико to Player'),
+
+('68096', '0', '0', 'Этот храм находится во владении пеплоустов. Я вынужден просить тебя уйти и немедленно.', '12', '0', '100', '0', '0', '0', 'Пеплоуст-охотник to Player'),
+('68096', '1', '0', 'Что ты видишь, брат?', '12', '0', '100', '0', '0', '0', 'Пеплоуст-охотник to Пеплоуст-рабочий'),
+('68096', '2', '0', 'Еще Чернокнижник? После того, что случилось в прошлый раз, ты должен быть рад, что мы не убили тебя сразу.', '12', '0', '100', '0', '0', '0', 'Пеплоуст-охотник to Player - кастомный текст, в снифах был пропущен ( на основе видео и комментариев )'),
+
+('68098', '0', '0', '%s призывает ближайшего стража на помощь!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player');
+
+
+DELETE FROM `gameobject_template` WHERE `entry`=216364;
+INSERT INTO `gameobject_template` (`entry`,  `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `Data24`, `Data25`, `Data26`, `Data27`, `Data28`, `Data29`, `Data30`, `Data31`, `unkInt32`) VALUES
+('216364', '3', '13421', 'Заметный иллидарский свиток', '', '', '', '0',  '0', '1', '0', '0', '0', '0', '0', '0', '1690', '45601', '30', '1',      '0', '0', '34540', '0', '0', '0', '0', '0', '0', '0', '0', '0',    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '', '0', '0', '1');
+
+DELETE FROM `gameobject_template` WHERE `entry`=216366;
+INSERT INTO `gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `Data24`, `Data25`, `Data26`, `Data27`, `Data28`, `Data29`, `Data30`, `Data31`, `unkInt32`) VALUES
+(216366, 6, 13485, 'Разлом душ', '', '', '', 3, 0, 0, 0, 0, 0, 0, 0, 90, 4, 134208, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 5793, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); -- 216366
+
+ INSERT INTO `gameobject_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES
+('216364', '92550', '100', '1', '0', '1', '1', '0');
+
+DELETE FROM `spell_scene` WHERE `ScenePackageId`=291;
+INSERT INTO `spell_scene` (`ScenePackageId`, `MiscValue`, `hasO`, `SceneInstanceID`, `PlaybackFlags`, `bit16`, `x`, `y`, `z`, `o`, `transport`, `comment`) VALUES
+('291', '130', '0', '1', '0', '0', '496.248', '135.59', '96.5593', '1.78539', '0', 'Scenario: Pursuing the Black Harvest - Memory of the Reliquary');

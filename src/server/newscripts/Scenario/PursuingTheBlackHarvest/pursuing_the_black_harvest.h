@@ -34,9 +34,13 @@ enum Data
     DATA_NONE,
 
     DATA_ESSENCE_OF_ORDER_EVENT,
+    DATA_SCENE_EVENT,
+    DATA_PLUNDER_EVENT,
     DATA_AKAMA,
     DATA_NOBEL_EVENT,
     DATA_KANRETHAD,
+    DATA_MAIN_DOORS,
+    DATA_SECOND_DOOR,
 };
 
 enum eCreatures
@@ -58,12 +62,15 @@ enum eCreatures
     NPC_JUBEKA_SHADOWBREAKER        = 70166,
     NPC_WILD_IMP                    = 70071,
     NPC_PIT_LORD                    = 70075,
-
+    NPC_PORTALS_VISUAL              = 24925,
 };
 
 enum eGameObects
 {
     GO_CONSPICUOUS_ILLIDARI_SCROLL  = 216364,
+    GO_MAIN_TEMPLATE_DOORS          = 185882,
+    GO_SECOND_DOOR                  = 185479,
+    GO_TRAP                         = 216366,
 };
 
 enum Actions

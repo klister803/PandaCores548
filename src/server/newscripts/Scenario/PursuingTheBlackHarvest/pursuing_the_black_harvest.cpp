@@ -131,6 +131,14 @@ enum Spells
     SPELL_ANNIHILATE_DEMONS             = 139141,
     SPELL_DEMONIC_GRASP                 = 139142,
     SPELL_ETERNAL_BANISHMENT            = 139186,
+    
+    //< Gree fire learning
+    SPELL_THE_CODEX_OF_XERRATH          = 101508,
+    SPELL_THE_CODEX_OF_XERRATH_2        = 137206,
+    SPELL_PURGE_XERRATH                 = 139366,
+    SPELL_FEL_ENERGY_DUMMY              = 140164,
+    SPELL_FEL_ENERGY_2                  = 140116,
+
 };
 
 Position const atPos[]
@@ -156,6 +164,7 @@ Position const akamaWP[]
     {777.0364f, 71.70834f, 112.8220f}, //<  +0
     {778.7274f, 92.57291f, 112.7408f}, //<  +5
     {772.1349f, 110.3631f, 112.7561f}, //<  +2
+    {753.3282f, 148.8767f, 112.9570f},
 };
 
 Position const soulsPositions[]
@@ -231,7 +240,6 @@ public:
                     events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS, 1);
                     break;
                 case ACTION_3:
-                    events.ScheduleEvent(EVENT_21, 2 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -240,10 +248,33 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 30.0f) && !stage7)
+            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 20.0f) && !stage7)
             {
-                Talk(4);
+                events.ScheduleEvent(EVENT_21, 2 * IN_MILLISECONDS);
                 stage7 = true;
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
+            {
+                case EVENT_22:
+                    me->GetMotionMaster()->MovePoint(EVENT_23, akamaWP[14]);
+                    Talk(7);
+                    break;
+                case EVENT_23:
+                    me->GetMotionMaster()->MovePoint(EVENT_24, akamaWP[15]);
+                    break;
+                case EVENT_24:
+                    me->SetVisible(false);
+                    events.ScheduleEvent(EVENT_25, 2 * IN_MILLISECONDS, 1);
+                    break;  
+                default:
+                    break;
             }
         }
 
@@ -271,16 +302,16 @@ public:
                         break;
                     case EVENT_3:
                         events.ScheduleEvent(EVENT_4, 2 * IN_MILLISECONDS, 1);
-                        Talk(5);
+                        Talk(0);
                         break;
                     case EVENT_4:
-                        Talk(6);
+                        Talk(1);
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         events.CancelEventGroup(1);
                         break;
                     case EVENT_5:
                         events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS, 1);
-                        Talk(7);
+                        Talk(2);
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_6:
@@ -298,7 +329,7 @@ public:
                         events.ScheduleEvent(EVENT_18, timer += 3 * IN_MILLISECONDS);
                         break;
                     case EVENT_7:
-                        Talk(8);
+                        Talk(3);
                         me->GetMotionMaster()->MovePoint(EVENT_7, akamaWP[0]);
                         break;
                     case EVENT_8:
@@ -318,7 +349,7 @@ public:
                         break;
                     case EVENT_13:
                         me->GetMotionMaster()->MovePoint(EVENT_13, akamaWP[6]);
-                        Talk(0);
+                        Talk(4);
                         break;
                     case EVENT_14:
                         me->GetMotionMaster()->MovePoint(EVENT_14, akamaWP[7]);
@@ -339,10 +370,10 @@ public:
                         break;
                     case EVENT_19:
                         events.ScheduleEvent(EVENT_20, 5 * IN_MILLISECONDS);
-                        Talk(2);
+                        Talk(5);
                         break;
                     case EVENT_20:
-                        Talk(3);
+                        Talk(6);
                         break;
                     case EVENT_21:
                         events.ScheduleEvent(EVENT_22, 5 * IN_MILLISECONDS);
@@ -350,12 +381,18 @@ public:
                         me->SetOrientation(3.266473f);
                         break;
                     case EVENT_22:
-                        events.ScheduleEvent(EVENT_23, 2 * IN_MILLISECONDS);
                         me->GetMotionMaster()->MovePoint(EVENT_22, akamaWP[13]);
                         break;
-                    case EVENT_23:
-                        me->GetMotionMaster()->MovePoint(EVENT_23, akamaWP[14]);
-                        me->DespawnOrUnsummon(8 * IN_MILLISECONDS);
+                    case EVENT_25:
+                        events.ScheduleEvent(EVENT_26, 3 * IN_MILLISECONDS);
+                        if (Creature* imp = me->FindNearestCreature(58959, 150.0f))
+                            imp->AI()->Talk(0);
+                        break;
+                    case EVENT_26:
+                        if (Creature* imp = me->FindNearestCreature(58959, 150.0f))
+                            imp->AI()->Talk(1);
+
+                        me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
                         break;
                     default:
                         break;
@@ -649,6 +686,21 @@ public:
         {
             instance = creature->GetInstanceScript();
             me->SetVisible(false);
+
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DAZE, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
         }
 
         void DoAction(const int32 action)
@@ -656,7 +708,8 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    events.ScheduleEvent(EVENT_1, 2 * MINUTE * IN_MILLISECONDS + 42 * IN_MILLISECONDS);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
+                    events.ScheduleEvent(EVENT_1, 2 * MINUTE * IN_MILLISECONDS + 40 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -674,9 +727,9 @@ public:
         {
             instance->SetData(DATA_ESSENCE_OF_ORDER_EVENT, IN_PROGRESS);
 
-            events.ScheduleEvent(EVENT_4, 15 * IN_MILLISECONDS);
-            events.ScheduleEvent(EVENT_5, 35 * IN_MILLISECONDS);
-            events.ScheduleEvent(EVENT_6, 45 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_4, 5 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_5, 10 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_6, 15 * IN_MILLISECONDS);
         }
 
         void JustDied(Unit* /*killer*/)
@@ -718,7 +771,7 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
@@ -732,24 +785,26 @@ public:
                         me->SetVisible(true);
                         break;
                     case EVENT_2:
-                        events.ScheduleEvent(EVENT_3, 5 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS);
                         Talk(0);
                         break;
                     case EVENT_3:
                         Talk(1);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                         break;
                     case EVENT_4:
-                        events.ScheduleEvent(EVENT_4, 15 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_4, 7 * IN_MILLISECONDS);
                         events.DelayEvents(3 * IN_MILLISECONDS);
                         DoCast(SPELL_SPELLFLAME);
+                        DoCast(134235);
                         break;
                     case EVENT_5:
-                        events.ScheduleEvent(EVENT_5, 35 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_5, 20 * IN_MILLISECONDS);
                         events.DelayEvents(2 * IN_MILLISECONDS);
                         DoCast(SPELL_HELLFIRE);
                         break;
                     case EVENT_6:
-                        events.ScheduleEvent(EVENT_6, 45 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_6, 25 * IN_MILLISECONDS);
                         for (uint8 i = 0; i < 8; i++)
                             me->SummonCreature(NPC_LOST_SOULS, soulsPositions[i]);
                         break;
@@ -894,7 +949,23 @@ public:
         {
             if (damage && HealthBelowPct(2) && !completed)
             {
+                events.CancelEvent(EVENT_6);
+                events.CancelEvent(EVENT_7);
+                events.CancelEvent(EVENT_8);
+                events.CancelEvent(EVENT_9);
+                events.CancelEvent(EVENT_10);
+                events.CancelEvent(EVENT_11);
+                events.CancelEvent(EVENT_12);
+                events.CancelEvent(EVENT_13);
+                events.CancelEvent(EVENT_14);
+                events.CancelEvent(EVENT_15);
+                events.CancelEvent(EVENT_16);
+
                 events.ScheduleEvent(EVENT_25, 5 * IN_MILLISECONDS);
+
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_SEED_OF_TERRIBLE_DESTRUCTION);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CURSE_OF_ULTIMATE_DOOM);
+                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_EXCRUCIATING_AGONY);
 
                 DoCast(SPELL_ANNIHILATE_DEMONS);
                 completed = true;
@@ -1051,10 +1122,16 @@ public:
                         Talk(14);
                         break;
                     case EVENT_26:
-                        events.ScheduleEvent(EVENT_27, 3 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_27, 5 * IN_MILLISECONDS);
                         Talk(15);
                         break;
                     case EVENT_27:
+                        me->setFaction(35);
+                        me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                        
+                        if (Player* plr = me->FindNearestPlayer(150.0f))
+                            plr->RemoveAura(SPELL_DEMONIC_GRASP);
+
                         Talk(16);
                         break;
                     default:
@@ -1116,14 +1193,11 @@ public:
             switch (pointId)
             {
                 case EVENT_1:
-                    if (Creature* target = me->FindNearestCreature(NPC_KANRETHAD_EBONLOCKE, 50.0f))
+                    if (Creature* target = me->FindNearestCreature(NPC_KANRETHAD_EBONLOCKE, 100.0f))
                     {
-                        me->CastSpell(target, SPELL_ETERNAL_BANISHMENT);
+                        me->AddAura(SPELL_ETERNAL_BANISHMENT, target);
                         target->AI()->DoAction(ACTION_2);
                     }
-
-                    if (Player* plr = me->FindNearestPlayer(150.0f))
-                        plr->RemoveAura(SPELL_DEMONIC_GRASP);
 
                     events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
                     Talk(1);
@@ -1145,7 +1219,13 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
+                        events.ScheduleEvent(EVENT_1, 5 * IN_MILLISECONDS);
                         Talk(2);
+                        break;
+                    case EVENT_2:
+                        Talk(3);
+                        if (Player* plr = me->FindNearestPlayer(200.0f))
+                            plr->CastSpell(plr, SPELL_PURGE_XERRATH);
                         break;
                     default:
                         break;
@@ -1176,6 +1256,11 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
         }
 
+        void EnterCombat(Unit* /*who*/)
+        {
+            me->CallForHelp(50.0f);
+        }
+
         void Reset()
         {
             me->SetReactState(REACT_AGGRESSIVE);
@@ -1199,61 +1284,79 @@ public:
 class at_pursuing_the_black_harvest_main : public AreaTriggerScript
 {
 public:
-    at_pursuing_the_black_harvest_main() : AreaTriggerScript("at_pursuing_the_black_harvest_main") { }
+    at_pursuing_the_black_harvest_main() : AreaTriggerScript("at_pursuing_the_black_harvest_main")
+    { }
 
     bool OnTrigger(Player* player, AreaTriggerEntry const* at, bool enter)
     {
-        if (enter && player->GetInstanceScript())
+        instance = player->GetInstanceScript();
+        if (enter && instance)
         {
             switch (at->id)
             {
                 case 8696:
+                    instance->HandleGameObject(instance->GetData64(DATA_MAIN_DOORS), true);
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
                     return true;
                 case 8699:
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34545, 1);  //< set stage 4
                     return true;
                 case 8698:
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1); //< set stage 5
-                    player->CastSpell(player, SPELL_MEMORY_OF_THE_RELIQUARY);
-                    player->CastSpell(player, SPELL_SPAWN_THE_RELIQUARY);
-                    if (Creature* essence = player->FindNearestCreature(NPC_ESSENCE_OF_ORDER, 200.0f))
-                        essence->AI()->DoAction(ACTION_1);
-                    return true;
+                    if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != DONE || instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != TO_BE_DECIDED)
+                    {
+                        if (instance->GetData(DATA_SCENE_EVENT) == DONE)
+                            return false;
+
+                        instance->SetData(DATA_SCENE_EVENT, DONE);
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1); //< set stage 5
+                        player->CastSpell(player, SPELL_MEMORY_OF_THE_RELIQUARY);
+                        player->CastSpell(player, SPELL_SPAWN_THE_RELIQUARY);
+                        if (Creature* essence = player->FindNearestCreature(NPC_ESSENCE_OF_ORDER, 200.0f))
+                            essence->AI()->DoAction(ACTION_1);
+                        return true;
+                    }
                 case 8701:
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7
+                    if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7
                     return true;
                 case 8706:
-                    if (player->GetInstanceScript()->GetData(DATA_NOBEL_EVENT) == NOT_STARTED)
+                    if (instance->GetData(DATA_NOBEL_EVENT) == NOT_STARTED && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
                     {
                         player->AddAura(SPELL_INTERRUPTED, player);
-                        player->GetInstanceScript()->SetData(DATA_NOBEL_EVENT, DONE);
+                        player->CastSpell(player, SPELL_SUMMON_FEL_IMP, true);
+                        instance->SetData(DATA_NOBEL_EVENT, DONE);
                     }
                     return true;
                 case 8702:
-                    //ServerToClient: SMSG_PHASE_SHIFT_CHANGE (0x00D1) Length: 43 ConnIdx: 0 Time: 01/29/2015 09:00:05.000 Number: 2159
-                    //PhaseShiftFlags: 16
-                    //PhaseShiftCount: 2
-                    //PersonalGUID: Full: 0x0
-                    //[0] PhaseFlags: 0
-                    //[0] Id: 1982
-                    //[1] PhaseFlags: 1
-                    //[1] Id: 2387
-                    //PreloadMapIDsCount: 0
-                    //UiWorldMapAreaIDSwap: 0
-                    //VisibleMapIDsCount: 4
-                    //[0] VisibleMapID: 992 (992)
-                    //[1] VisibleMapID: 683 (683)
+                    if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                    {
+                        if (instance->GetData(DATA_PLUNDER_EVENT) == DONE)
+                            return false;
 
-                    player->AddAura(SPELL_UPDATE_PHASE_SHIFT, player);
-                    player->AddAura(SPELL_PLUNDER, player);
-                    player->PlayerTalkClass->SendQuestQueryResponse(32340); //< i hope it's right way... SMSG_QUEST_GIVER_QUEST_DETAILS in sniffs
-                    return true;
+                        std::set<uint32> phaseIds;
+                        std::set<uint32> terrainswaps;
+                        std::set<uint32> WorldMapAreaIds;
+                        WorldMapAreaIds.insert(992);
+                        WorldMapAreaIds.insert(683);
+                        phaseIds.insert(1982);
+                        phaseIds.insert(2387);
+                        player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, 16);
+                        player->AddAura(SPELL_UPDATE_PHASE_SHIFT, player);
+
+                        instance->HandleGameObject(instance->GetData64(DATA_SECOND_DOOR), true);
+                        instance->SetData(DATA_PLUNDER_EVENT, DONE);
+
+                        player->AddAura(SPELL_PLUNDER, player);
+                        player->PlayerTalkClass->SendQuestQueryResponse(32340); //< i hope it's right way... SMSG_QUEST_GIVER_QUEST_DETAILS in sniffs
+                        return true;
+                    }
                 case 8708:
-                    player->TeleportTo(1112, 786.0955f, 304.3524f, 319.7598f, 0.0f);
+                    if (instance->GetData(DATA_NOBEL_EVENT) == DONE && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                        player->TeleportTo(1112, 786.0955f, 304.3524f, 319.7598f, 0.0f);
                     return true;
                 case 8908:
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34559, 1); //< set final stage
+                    if (instance->GetData(DATA_NOBEL_EVENT) == DONE && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34559, 1); //< set final stage
                     return true;
                 default:
                     return false;
@@ -1262,6 +1365,9 @@ public:
 
         return false;
     }
+
+private:
+    InstanceScript* instance;
 };
 
 class go_cospicuous_illidari_scroll : public GameObjectScript
@@ -1269,17 +1375,12 @@ class go_cospicuous_illidari_scroll : public GameObjectScript
 public:
     go_cospicuous_illidari_scroll() : GameObjectScript("go_cospicuous_illidari_scroll") { }
 
-    bool OnGossipHello(Player* player, GameObject* go)
+    void OnLootStateChanged(GameObject* go, uint32 /*state*/, Unit* /*unit*/)
     {
-        if (InstanceScript* instance = player->GetInstanceScript())
-        {
-            if (Creature* akama = go->FindNearestCreature(NPC_AKAMA, 50.0f))
-                akama->AI()->DoAction(ACTION_1);
+        if (Creature* akama = go->FindNearestCreature(NPC_AKAMA, 50.0f))
+            akama->AI()->DoAction(ACTION_1);
 
-            return true;
-        }
-
-        return false;
+        return;
     }
 };
 
@@ -1412,6 +1513,84 @@ public:
     }
 };
 
+class spell_drain_fel_enegry : public SpellScriptLoader
+{
+public:
+    spell_drain_fel_enegry() : SpellScriptLoader("spell_drain_fel_enegry") { }
+
+    class spell_drain_fel_enegry_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_drain_fel_enegry_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* target = GetTarget())
+            {
+                //if (Creature* veh = target->SummonCreature(70504, 660.1176f, 313.6469f, 355.0672f, 3.764802f))
+                //    veh->EnterVehicle(target);
+
+                //target->CastSpell(target, SPELL_FEL_ENERGY_DUMMY, true);
+
+                target->CastSpell(target, SPELL_THE_CODEX_OF_XERRATH);
+                target->CastSpell(target, SPELL_THE_CODEX_OF_XERRATH_2);
+
+                if (Unit* caster = GetCaster())
+                    caster->ToCreature()->DespawnOrUnsummon(3 * IN_MILLISECONDS);
+            }
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_drain_fel_enegry_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_drain_fel_enegry_AuraScript();
+    }
+};
+
+class spell_fel_enery : public SpellScriptLoader
+{
+public:
+    spell_fel_enery() : SpellScriptLoader("spell_fel_enery") { }
+
+    class spell_fel_enery_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_fel_enery_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Player* player = GetTarget()->ToPlayer();
+            if (!player)
+                return;
+
+            player->CastSpell(player, SPELL_FEL_ENERGY_2);
+        }
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Player* player = GetTarget()->ToPlayer();
+            if (!player)
+                return;
+
+            player->SendOnCancelExpectedVehicleRideAura();
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_fel_enery_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            OnEffectRemove += AuraEffectRemoveFn(spell_fel_enery_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_fel_enery_AuraScript();
+    }
+};
+
 void AddSC_pursing_the_black_harvest()
 {
     new npc_akama();
@@ -1432,4 +1611,6 @@ void AddSC_pursing_the_black_harvest()
 
     new spell_place_empowered_soulcore();
     new spell_anihilate_demons();
+    new spell_drain_fel_enegry();
+    new spell_fel_enery();
 }

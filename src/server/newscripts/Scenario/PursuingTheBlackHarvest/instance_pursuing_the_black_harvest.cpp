@@ -40,9 +40,16 @@ public:
             essenceData = 0;
             nodelData = 0;
             kanrethadData = 0;
+            sceneEventData = 0;
+            plunderData = 0;
 
             akamaGUID = 0;
             jubekaGUID = 0;
+            doorGUID = 0;
+            secondDoorGUID = 0;
+            trashP2GUIDs.clear();
+            trapGUIDs.clear();
+            soulGUIDs.clear();
         }
 
         void OnPlayerEnter(Player* player)
@@ -70,6 +77,34 @@ public:
                     creature->SetVisible(false);
                     jubekaGUID = creature->GetGUID();
                     break;
+                case NPC_UNBOUND_NIGHTLORD:
+                case NPC_UNBOUND_CENTURION:
+                case NPC_UNBOUND_BONEMENDER:
+                case NPC_PORTALS_VISUAL:
+                    creature->SetVisible(false);
+                    trashP2GUIDs.push_back(creature->GetGUID());
+                    break;
+                case NPC_SUFFERING_SOUL_FRAGMENT:
+                    soulGUIDs.push_back(creature->GetGUID());
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void OnGameObjectCreate(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+                case GO_MAIN_TEMPLATE_DOORS:
+                    doorGUID = go->GetGUID();
+                    break;
+                case GO_SECOND_DOOR:
+                    secondDoorGUID = go->GetGUID();
+                    break;
+                case GO_TRAP:
+                    trapGUIDs.push_back(go->GetGUID());
+                    break;
                 default:
                     break;
             }
@@ -82,8 +117,25 @@ public:
                 case DATA_ESSENCE_OF_ORDER_EVENT:
                     essenceData = data;
                     if (data == DONE)
+                    {
                         if (Creature* akama = instance->GetCreature(akamaGUID))
                             akama->AI()->DoAction(ACTION_3);
+                            
+                        for (std::vector<uint64>::const_iterator itr = trashP2GUIDs.begin(); itr != trashP2GUIDs.end(); itr++)
+                            if (Creature* trash = instance->GetCreature(*itr))
+                                trash->SetVisible(true);
+
+                        for (std::vector<uint64>::const_iterator itr = soulGUIDs.begin(); itr != soulGUIDs.end(); itr++)
+                            if (Creature* soul = instance->GetCreature(*itr))
+                                soul->RemoveFromWorld();
+
+                        for (std::vector<uint64>::const_iterator itr = trapGUIDs.begin(); itr != trapGUIDs.end(); itr++)
+                            if (GameObject* trap = instance->GetGameObject(*itr))
+                            {
+                                trap->SetVisible(false);
+                                trap->RemoveFromWorld();
+                            }
+                    }
                     break;
                 case DATA_AKAMA:
                     nodelData = data;
@@ -93,6 +145,15 @@ public:
                     if (data == DONE)
                         if (Creature* jubeka = instance->GetCreature(jubekaGUID))
                             jubeka->AI()->DoAction(ACTION_1);
+                    break;
+                case DATA_SCENE_EVENT:
+                    sceneEventData = data;
+                    break;
+                case DATA_NOBEL_EVENT:
+                    nodelData = data;
+                    break;
+                case DATA_PLUNDER_EVENT:
+                    plunderData = data;
                     break;
                 default:
                     break;
@@ -105,6 +166,10 @@ public:
             {
                 case DATA_AKAMA:
                     return akamaGUID;
+                case DATA_MAIN_DOORS:
+                    return doorGUID;
+                case DATA_SECOND_DOOR:
+                    return secondDoorGUID;
                 default:
                     return 0;
             }
@@ -118,6 +183,10 @@ public:
                     return essenceData;
                 case DATA_NOBEL_EVENT:
                     return nodelData;
+                case DATA_SCENE_EVENT:
+                    return sceneEventData;
+                case DATA_PLUNDER_EVENT:
+                    return plunderData;
                 default:
                     return 0;
             }
@@ -127,9 +196,16 @@ public:
         uint32 essenceData;
         uint32 nodelData;
         uint32 kanrethadData;
+        uint32 sceneEventData;
+        uint32 plunderData;
 
         uint64 akamaGUID;
         uint64 jubekaGUID;
+        uint64 doorGUID;
+        uint64 secondDoorGUID;
+        std::vector<uint64> trashP2GUIDs;
+        std::vector<uint64> trapGUIDs;
+        std::vector<uint64> soulGUIDs;
     };
 };
 

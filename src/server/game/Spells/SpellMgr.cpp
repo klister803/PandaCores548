@@ -5687,6 +5687,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 100752: // Darkmoon: Using Steam Tonk Controller
                     spellInfo->Effects[0].TargetB = TARGET_DEST_DB;
                     break;
+                case 134210: // Memory of the Reliquary
+                    spellInfo->AreaGroupId = -1;
+                    break;
                 default:
                     break;
             }
