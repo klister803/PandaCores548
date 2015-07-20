@@ -3647,7 +3647,9 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         return 0;
     float totalmul = 1.0f;
     int32 totalflat = 0;
-    int32 value = 0;
+    T savevalue = basevalue;
+    SpellModifier* modCost = NULL;
+    SpellModifier* modCast = NULL;
 
     // Drop charges for triggering spells instead of triggered ones
     if (m_spellModTakingSpell)
@@ -3691,16 +3693,44 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                     continue;
             }
 
-            value = mod->value;
+            if (mod->op == SPELLMOD_CASTING_TIME && mod->value < 0)
+            {
+                if(!modCast || mod->value <= modCast->value)
+                    modCast = mod;
+                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_CASTING_TIME totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
+                continue;
+            }
+            if (mod->op == SPELLMOD_COST && mod->value < 0)
+            {
+                if(!modCost || mod->value <= modCost->value)
+                    modCost = mod;
+                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_COST totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
+                continue;
+            }
 
-            totalmul += CalculatePct(1.0f, value);
+            totalmul += CalculatePct(1.0f, mod->value);
         }
 
         DropModCharge(mod, spell);
     }
 
-    float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
-    basevalue = T((float)basevalue + diff);
+    if(modCast)
+    {
+        totalmul += CalculatePct(1.0f, modCast->value);
+        DropModCharge(modCast, spell);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCast->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCast->spellId);
+    }
+    if(modCost)
+    {
+        totalmul += CalculatePct(1.0f, modCost->value);
+        DropModCharge(modCost, spell);
+        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCost->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCost->spellId);
+    }
+    //float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
+    //basevalue = T((float)basevalue + diff);
+    basevalue = ((float)basevalue + (float)totalflat) * totalmul;
+    float diff = float(savevalue - basevalue);
+
     return T(diff);
 }
 

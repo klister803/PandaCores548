@@ -4448,6 +4448,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 93400:  // Shooting Stars
                 case 144569:  // Bastion of Power
                 case 144595:  // Divine Crusader
+                case 144871:  // Sage Mender
                     spellInfo->ProcCharges = 1;
                     break;
                 case 89485:  // Inner Focus

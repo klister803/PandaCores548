@@ -640,7 +640,7 @@ class spell_dru_symbiosis : public SpellScriptLoader
                 if (!target)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if (!_player->IsFriendlyTo(target) || !_player->IsInPartyWith(target))
+                if (!_player->IsFriendlyTo(target) || (!_player->IsInPartyWith(target) && !_player->IsInRaidWith(target)))
                     return SPELL_FAILED_BAD_TARGETS;
 
                 return SPELL_CAST_OK;
@@ -1072,10 +1072,6 @@ class spell_dru_rip_duration : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    //Hack
-                    if (Aura* cenarius = _player->GetAura(145152))
-                        cenarius->DropCharge();
-
                     if (Unit* target = GetHitUnit())
                     {
                         // Each time you Shred, Ravage, or Mangle the target while in Cat Form ...
@@ -1307,6 +1303,10 @@ class spell_dru_rip : public SpellScriptLoader
                 Player* player = caster->ToPlayer();
                 if (!player)
                     return;
+
+                //Hack
+                if (Aura* cenarius = caster->GetAura(145152))
+                    cenarius->DropCharge();
 
                 // Soul of the Forest
                 if (player->HasAura(114107) && player->GetSpecializationId(player->GetActiveSpec()) == SPEC_DRUID_CAT)
@@ -2490,7 +2490,14 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if(GetCaster() && GetCaster()->HasAura(146655))
+                if(!GetCaster())
+                {
+                    targets.clear();
+                    return;
+                }
+
+                targets.remove_if(Trinity::UnitCheckCCAura(true, GetCaster()));
+                if(GetCaster()->HasAura(146655))
                     targets.remove_if(AuraCheck());
 
                 Trinity::Containers::RandomResizeList(targets, 2);
@@ -2508,8 +2515,8 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
                 }
 
                 // Any effect which causes you to lose control of your character will supress the starfall effect.
-                if (caster->HasUnitState(UNIT_STATE_CONTROLLED))
-                    return;
+                //if (caster->HasUnitState(UNIT_STATE_CONTROLLED))
+                    //return;
 
                 caster->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
@@ -3781,6 +3788,34 @@ class spell_dru_mangle : public SpellScriptLoader
         }
 };
 
+// 34299 - Leader of the Pack
+class spell_dru_leader_of_the_pack : public SpellScriptLoader
+{
+    public:
+        spell_dru_leader_of_the_pack() : SpellScriptLoader("spell_dru_leader_of_the_pack") { }
+
+        class spell_dru_leader_of_the_pack_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_leader_of_the_pack_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    SetHitHeal(int32(CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->Effects[EFFECT_0].BasePoints)));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_leader_of_the_pack_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_leader_of_the_pack_SpellScript();
+        }
+};
+
 void AddSC_druid_spell_scripts()
 {
     new spell_dru_play_death();
@@ -3854,4 +3889,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_anti_magic_shell();
     new spell_dru_fortifying_brew();
     new spell_dru_mangle();
+    new spell_dru_leader_of_the_pack();
 }

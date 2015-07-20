@@ -7926,11 +7926,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     cooldown_spell_id = dummySpell->Id;
 
-                    if (SpellInfo const* healSpellInfo = sSpellMgr->GetSpellInfo(34299))
-                    {
-                        int32 healbp = CalculatePct(GetMaxHealth(), healSpellInfo->Effects[EFFECT_0].BasePoints);
-                        CastCustomSpell(this, 34299, &healbp, NULL, NULL, true, castItem, triggeredByAura);
-                    }
+                    CastSpell(this, 34299, true);
                     
                     basepoints0 = CountPctFromMaxMana(triggerAmount);
                     triggered_spell_id = 68285;
@@ -7946,7 +7942,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     // ignore when in Solar and Lunar Eclipse, Celestial Alignment
-                    if (HasAura(48517) || HasAura(48518) || HasAura(112071))
+                    if (HasAura(48517) || HasAura(48518)/* || HasAura(112071)*/)
                         return false;
 
                     triggered_spell_id = 95746;
