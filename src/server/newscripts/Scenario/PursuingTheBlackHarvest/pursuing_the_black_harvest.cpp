@@ -126,7 +126,7 @@ enum Spells
     SPELL_CHARGE                        = 138796,
     SPELL_CHARGE_TRIGGER                = 138827,
     SPELL_FEL_FIREBOLT                  = 138747,
-
+    SPELL_SUMMON_WILD_IMPS              = 138685,
     
     SPELL_ANNIHILATE_DEMONS             = 139141,
     SPELL_DEMONIC_GRASP                 = 139142,
@@ -137,9 +137,6 @@ Position const atPos[]
 {
     {703.721f, 574.901f, 112.628f} //< 8696
 };
-
-enum Sounds
-{ };
 
 Position const akamaWP[]
 {
@@ -243,22 +240,10 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER && me->GetDistance2d(who) < 30.0f && !stage7)
+            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 30.0f) && !stage7)
             {
                 Talk(4);
                 stage7 = true;
-            }
-        }
-
-        void WaypointReached(uint32 id)
-        {
-            switch (id)
-            {
-                case EVENT_23:
-                    me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -266,7 +251,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -299,9 +284,9 @@ public:
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_6:
-                        events.ScheduleEvent(EVENT_7, timer = +0 * IN_MILLISECONDS);
-                        events.ScheduleEvent(EVENT_8, timer = +2 * IN_MILLISECONDS);
-                        events.ScheduleEvent(EVENT_9, timer = +3 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_7, timer += 0 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_8, timer += 2 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_9, timer += 3 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_10, timer += 3 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_11, timer += 4 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_12, timer += 4 * IN_MILLISECONDS);
@@ -370,6 +355,7 @@ public:
                         break;
                     case EVENT_23:
                         me->GetMotionMaster()->MovePoint(EVENT_23, akamaWP[14]);
+                        me->DespawnOrUnsummon(8 * IN_MILLISECONDS);
                         break;
                     default:
                         break;
@@ -386,7 +372,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_akamaAI>(creature);
+        return new npc_akamaAI(creature);
     }
 };
 
@@ -457,7 +443,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -488,7 +474,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_asthongue_primalistAI>(creature);
+        return new npc_asthongue_primalistAI(creature);
     }
 };
 
@@ -532,7 +518,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_ashtongue_workerAI>(creature);
+        return new npc_ashtongue_workerAI(creature);
     }
 };
 
@@ -568,7 +554,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -595,7 +581,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_suffering_soul_fragmentAI>(creature);
+        return new npc_suffering_soul_fragmentAI(creature);
     }
 };
 
@@ -629,7 +615,7 @@ public:
         {
             events.Update(diff);
 
-            //if (uint32 eventId = events.ExecuteEvent())
+            //while (uint32 eventId = events.ExecuteEvent())
             //{
             //    switch (eventId)
             //    {
@@ -648,7 +634,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_hungering_soul_fragmentAI>(creature);
+        return new npc_hungering_soul_fragmentAI(creature);
     }
 };
 
@@ -737,7 +723,7 @@ public:
 
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -783,7 +769,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_essence_of_orderAI>(creature);
+        return new npc_essence_of_orderAI(creature);
     }
 };
 
@@ -803,19 +789,25 @@ public:
         {
             events.Reset();
             me->AddAura(SPELL_DEMONIC_GATEWAY, me);
-            events.ScheduleEvent(EVENT_1, 10 * IN_MILLISECONDS);
+            start = false;
         }
 
         void UpdateAI(uint32 diff)
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            if (!start)
+            {
+                events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
+                start = true;
+            }
+
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                     case EVENT_1:
-                        if (Creature* cre = me->SummonCreature(NPC_KANRETHAD_EBONLOCKE, 638.1178f, 306.8426f, 353.1956f, 6.221907f))
+                        if (Creature* cre = me->SummonCreature(NPC_KANRETHAD_EBONLOCKE, 641.84f, 306.321f, 353.411f, 6.2351f))
                             cre->AI()->DoAction(ACTION_1);
                         break;
                     default:
@@ -827,11 +819,12 @@ public:
     private:
         InstanceScript* instance;
         EventMap events;
+        bool start;
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_demonic_gateway_scenAI>(creature);
+        return new npc_demonic_gateway_scenAI(creature);
     }
 };
 
@@ -840,26 +833,40 @@ class npc_kanrethad_ebonlocke : public CreatureScript
 public:
     npc_kanrethad_ebonlocke() : CreatureScript("npc_kanrethad_ebonlocke") { }
 
-    struct npc_essence_of_orderAI : public ScriptedAI
+    struct npc_kanrethad_ebonlockeAI : public ScriptedAI
     {
-        npc_essence_of_orderAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        npc_kanrethad_ebonlockeAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+
+            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FEAR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_ROOT, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_FREEZE, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_HORROR, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_SAPPED, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_CHARM, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DAZE, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_TURN, true);
+            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
         }
 
         void Reset()
         {
             events.Reset();
 
-            summons.DespawnAll();
-
+            me->SetReactState(REACT_PASSIVE);
             completed = false;
+            start = false;
         }
 
         void EnterCombat(Unit* /*who*/)
-        {
-            instance->SetData(DATA_KANRETHAD, IN_PROGRESS);
-        }
+        { }
 
         void DoAction(int32 const action)
         {
@@ -877,8 +884,6 @@ public:
 
         void EnterEvadeMode()
         {
-            summons.DespawnAll();
-
             instance->SetData(DATA_KANRETHAD, TO_BE_DECIDED);
 
             me->Respawn(true);
@@ -886,34 +891,56 @@ public:
 
         void DamageTaken(Unit* /*attacker*/, uint32 &damage)
         {
-            if (damage && me->GetHealthPct() < 2.0f && !completed)
+            if (damage && HealthBelowPct(2) && !completed)
             {
                 events.ScheduleEvent(EVENT_25, 5 * IN_MILLISECONDS);
 
+                DoCast(SPELL_ANNIHILATE_DEMONS);
                 completed = true;
-                summons.DespawnAll();
                 instance->SetData(DATA_KANRETHAD, DONE);
                 me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
-                Talk(5); //< Ха-ха-ха… у тебя была надежда на победу? Теперь меня НИЧТО не сможет убить, жалкое смертное существо!
+                Talk(13);
                 
                 if (Player* plr = me->FindNearestPlayer(150.0f))
                     me->AddAura(SPELL_DEMONIC_GRASP, plr);
             }
+
+            if (HealthBelowPct(2))
+                damage = 0;
         }
 
-        void WaypointReached(uint32 id)
+        void MovementInform(uint32 type, uint32 pointId)
         {
-            switch (id)
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
             {
                 case EVENT_1:
-                    events.ScheduleEvent(EVENT_2, 5 * IN_MILLISECONDS);
-                    me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-                    Talk(0); //< БОЙСЯ! Теперь я овладел всеми энергиями Скверны этого мира! Демоническая сила, которой я управляю… невероятна! Безгранична! Я ВСЕМОГУЩ!
+                    instance->SetData(DATA_KANRETHAD, IN_PROGRESS);
+                    Talk(0);
+                    me->AddAura(SPELL_BURNING_EMBERS, me);
+                    me->AddAura(SPELL_SOULSHARDS, me);
+                    me->AddAura(SPELL_METAMORPHOSIS, me);
                     break;
                 case EVENT_2:
+                    events.ScheduleEvent(EVENT_6,  1  * MINUTE * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_7,  2  * MINUTE * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_8,  30 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_11, 1  * MINUTE * IN_MILLISECONDS + 10 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_13, 15 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_14, 1  * MINUTE * IN_MILLISECONDS + 45 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_15, 5  * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_16, 25 * IN_MILLISECONDS);
+
+                    me->StopMoving();
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1);
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    Talk(1);
                     if (Player* plr = me->FindNearestPlayer(150.0f))
                         me->AddAura(SPELL_FACE_PLAYER, plr);
+                   
                     break;
                 default:
                     break;
@@ -922,83 +949,132 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                     case EVENT_1:
-                        me->SetReactState(REACT_PASSIVE);
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
-                        me->AddAura(SPELL_BURNING_EMBERS, me);
-                        me->AddAura(SPELL_SOULSHARDS, me);
-                        me->AddAura(SPELL_METAMORPHOSIS, me);
+                        events.ScheduleEvent(EVENT_2, 3 * IN_MILLISECONDS);
                         me->GetMotionMaster()->MovePoint(EVENT_1, 660.0f, 305.5f, 354.1158f);
                         break;
                     case EVENT_2:
                         events.ScheduleEvent(EVENT_3, 5 * IN_MILLISECONDS);
                         me->GetMotionMaster()->MovePoint(EVENT_2, 662.0f, 315.0f, 354.0903f);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-                        Talk(1); //< Думаешь, я слишком далеко зашел? Нет такого понятия. Мрачная Жатва поработит самых могущественных демонов и уничтожит всех, кто станет противостоять ей – в этом мире и на Азероте! И ТЫ хочешь остановить меня, кроха?
                         break;
                     case EVENT_3:
                         events.ScheduleEvent(EVENT_4, 10 * IN_MILLISECONDS);
-                        Talk(2); //< Ну-ну, попытайся.
+                        Talk(2);
                         break;
                     case EVENT_4:
+                        me->SetReactState(REACT_AGGRESSIVE);
                         events.ScheduleEvent(EVENT_5, 6 * IN_MILLISECONDS);
-                        Talk(3); //< Ха! Твои слабые попытки ранить меня никуда не годятся. Хочешь посмотреть на одного из моих новых питомцев?
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_IMMUNE_TO_PC);
-                        if (Creature* target = me->FindNearestCreature(0, 50.0f))
-                        {
-                            me->AddAura(SPELL_SUMMONING_PIT_LORD, target);
-                            me->CastSpell(target, SPELL_SUMMONING_PIT_LORD);
-                        }
+                        Talk(3);
                         break;
                     case EVENT_5:
-                        events.ScheduleEvent(EVENT_6, 10 * IN_MILLISECONDS);
-                        Talk(4); //< Разрушение у искоренителей в крови. Огромная сила и мощь делают их непобедимыми.
+                        Talk(4);
                         break;
                     case EVENT_6:
-                        me->SetReactState(REACT_AGGRESSIVE);
+                        events.ScheduleEvent(EVENT_6, 1 * MINUTE * IN_MILLISECONDS);
+                        DoCast(SPELL_CHAOS_BOLT);
+                        Talk(9);
+                        break;
+                    case EVENT_7:
+                        Talk(6);
+                        break;
+                    case EVENT_8:
+                        events.ScheduleEvent(EVENT_9, 4 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_10, 15 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_8, 45 * IN_MILLISECONDS);
+                        DoCast(SPELL_SEED_OF_TERRIBLE_DESTRUCTION);
+                        Talk(7);
+                        break;
+                    case EVENT_9:
+                        DoCast(SPELL_CURSE_OF_ULTIMATE_DOOM);
+                        break;
+                    case EVENT_10:
+                        DoCast(SPELL_EXCRUCIATING_AGONY);
+                        break;
+                    case EVENT_11:
+                        events.ScheduleEvent(EVENT_12, 5 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_11, 1 * MINUTE * IN_MILLISECONDS + 40 * IN_MILLISECONDS);
+                        Talk(10);
+                        break;
+                    case EVENT_12:
+                        DoCast(SPELL_CATACLYSM);
+                        Talk(11);
+                        break;
+                    case EVENT_13:
+                        events.ScheduleEvent(EVENT_13, 10 * IN_MILLISECONDS);
+                        switch (urand(1, 4))
+                        {
+                            case 1:
+                                DoCast(SPELL_AURA_OF_OMNIPOTENCE);
+                                break;
+                            case 2:
+                                DoCast(SPELL_BACKFIRE);
+                                break;
+                            case 3:
+                                Talk(8);
+                                DoCast(SPELL_RAID_OF_FIRE);
+                                break;
+                            case 4:
+                                DoCast(SPELL_FEL_FLAME_BREATH);
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case EVENT_16:
+                        events.ScheduleEvent(EVENT_16, 5 * IN_MILLISECONDS);
+                        DoCast(SPELL_SOULFIRE);
                         break;
 
+                    case EVENT_14:
+                        events.ScheduleEvent(EVENT_14, 1 * MINUTE * IN_MILLISECONDS + 15 * IN_MILLISECONDS);
+                        Talk(12);
+                        if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
+                            me->CastSpell(target, SPELL_SUMMON_WILD_IMPS);
+                        break;
+                    case EVENT_15:
+                        if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
+                            me->CastSpell(target, SPELL_SUMMONING_PIT_LORD);
+                        break;
+                        
                         //< last stage
                     case EVENT_25:
-                        events.ScheduleEvent(EVENT_26, 1 * IN_MILLISECONDS);
-                        Talk(6); //< А теперь твоя сказка с грустным концом закончится!
-                        if (Creature* cre = me->SummonCreature(NPC_JUBEKA_SHADOWBREAKER, 635.8455f, 288.1264f, 353.0794f, 0.7989526f))
+                        events.ScheduleEvent(EVENT_26, 2 * IN_MILLISECONDS);
+                        Talk(14);
+                        if (Creature* cre = me->FindNearestCreature(NPC_JUBEKA_SHADOWBREAKER, 200.0f))
                             cre->AI()->DoAction(ACTION_1);
                         break;
                     case EVENT_26:
                         events.ScheduleEvent(EVENT_27, 3 * IN_MILLISECONDS);
-                        Talk(7); //< Джубека?! Что ты…
+                        Talk(15);
                         break;
                     case EVENT_27:
-                        Talk(8); //< ДАААААААААА!
+                        Talk(16);
                         break;
                     default:
                         break;
                 }
             }
-
-            DoMeleeAttackIfReady();
         }
 
     private:
         InstanceScript* instance;
         EventMap events;
-        SummonList summons;
         bool completed;
+        bool start;
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_essence_of_orderAI>(creature);
+        return new npc_kanrethad_ebonlockeAI(creature);
     }
 };
 
@@ -1007,9 +1083,9 @@ class npc_jubeka_shadowbreaker : public CreatureScript
 public:
     npc_jubeka_shadowbreaker() : CreatureScript("npc_jubeka_shadowbreaker") { }
 
-    struct npc_essence_of_orderAI : public ScriptedAI
+    struct npc_jubeka_shadowbreakerAI : public ScriptedAI
     {
-        npc_essence_of_orderAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        npc_jubeka_shadowbreakerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1024,16 +1100,22 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
+                    me->SetVisible(true);
+                    events.ScheduleEvent(EVENT_2, 4 * IN_MILLISECONDS);
+                    Talk(0);
+                    me->GetMotionMaster()->MovePoint(EVENT_1, 655.026f, 307.8343f, 354.2209f);
                     break;
                 default:
                     break;
             }
         }
 
-        void WaypointReached(uint32 id)
+        void MovementInform(uint32 type, uint32 pointId)
         {
-            switch (id)
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
             {
                 case EVENT_1:
                     if (Creature* target = me->FindNearestCreature(NPC_KANRETHAD_EBONLOCKE, 50.0f))
@@ -1041,6 +1123,12 @@ public:
                         me->CastSpell(target, SPELL_ETERNAL_BANISHMENT);
                         target->AI()->DoAction(ACTION_2);
                     }
+
+                    if (Player* plr = me->FindNearestPlayer(150.0f))
+                        plr->RemoveAura(SPELL_DEMONIC_GRASP);
+
+                    events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
+                    Talk(1);
                     break;
                 default:
                     break;
@@ -1049,46 +1137,32 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                     case EVENT_1:
-                        events.ScheduleEvent(EVENT_2, 4 * IN_MILLISECONDS);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-                        Talk(0); //< НЕТ!
-                        me->GetMotionMaster()->MovePoint(EVENT_1, 655.026f, 307.8343f, 354.2209f);
-                        break;
-                    case EVENT_2:
-                        events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS);
-                        Talk(1); //< Я сделала лишь то, о чем ты сам просил меня раньше, Канретад. Ты сам во всем виноват.
-                        break;
-                    case EVENT_3:
-                        Talk(2); //< Канретад настолько погрузился в энергию Скверны, что она полностью подчинила его. Но лишь глоток его силы не должен повредить. Испей ее.
+                        Talk(2);
                         break;
                     default:
                         break;
                 }
             }
-
-            DoMeleeAttackIfReady();
         }
 
     private:
         InstanceScript* instance;
         EventMap events;
-        SummonList summons;
-        bool completed;
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_essence_of_orderAI>(creature);
+        return new npc_jubeka_shadowbreakerAI(creature);
     }
 };
 
@@ -1127,6 +1201,20 @@ public:
                     }
                     return true;
                 case 8702:
+                    //ServerToClient: SMSG_PHASE_SHIFT_CHANGE (0x00D1) Length: 43 ConnIdx: 0 Time: 01/29/2015 09:00:05.000 Number: 2159
+                    //PhaseShiftFlags: 16
+                    //PhaseShiftCount: 2
+                    //PersonalGUID: Full: 0x0
+                    //[0] PhaseFlags: 0
+                    //[0] Id: 1982
+                    //[1] PhaseFlags: 1
+                    //[1] Id: 2387
+                    //PreloadMapIDsCount: 0
+                    //UiWorldMapAreaIDSwap: 0
+                    //VisibleMapIDsCount: 4
+                    //[0] VisibleMapID: 992 (992)
+                    //[1] VisibleMapID: 683 (683)
+
                     player->AddAura(SPELL_UPDATE_PHASE_SHIFT, player);
                     player->AddAura(SPELL_PLUNDER, player);
                     player->PlayerTalkClass->SendQuestQueryResponse(32340); //< i hope it's right way... SMSG_QUEST_GIVER_QUEST_DETAILS in sniffs
@@ -1178,6 +1266,18 @@ public:
 
             player->CastSpell(player, SPELL_APPRAISAL);
 
+            //ServerToClient: SMSG_PHASE_SHIFT_CHANGE (0x00D1) Length: 39 ConnIdx: 0 Time: 01/29/2015 09:05:50.000 Number: 20113
+            //PhaseShiftFlags: 16
+            //PhaseShiftCount: 1
+            //PersonalGUID: Full: 0x0
+            //[0] PhaseFlags: 0
+            //[0] Id: 1982
+            //PreloadMapIDsCount: 0
+            //UiWorldMapAreaIDSwap: 0
+            //VisibleMapIDsCount: 4
+            //[0] VisibleMapID: 992 (992)
+            //[1] VisibleMapID: 683 (683)
+
             for (uint8 i = 0; i < 20; i++)
             {
                 player->CastSpell(player, SPELL_GOLD_RING);
@@ -1212,6 +1312,36 @@ public:
     }
 };
 
+class spell_place_empowered_soulcore : public SpellScriptLoader
+{
+public:
+    spell_place_empowered_soulcore() : SpellScriptLoader("spell_place_empowered_soulcore") { }
+
+    class spell_place_empowered_soulcore_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_place_empowered_soulcore_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (!GetTarget())
+                return;
+
+            if (Creature* summoner = GetTarget()->FindNearestCreature(NPC_DEMONIC_SOULWELL, 150.0f))
+                summoner->SummonCreature(NPC_DEMONIC_GATEWAY, 641.84f, 306.321f, 353.411f, 6.2351f);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_place_empowered_soulcore_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_place_empowered_soulcore_AuraScript();
+    }
+};
+
 void AddSC_pursing_the_black_harvest()
 {
     new npc_akama();
@@ -1228,4 +1358,6 @@ void AddSC_pursing_the_black_harvest()
 
     new go_cospicuous_illidari_scroll();
     new go_treasure_chest();
+
+    new spell_place_empowered_soulcore();
 }

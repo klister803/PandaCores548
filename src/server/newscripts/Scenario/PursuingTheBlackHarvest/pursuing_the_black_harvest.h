@@ -72,15 +72,4 @@ enum Actions
     ACTION_3,
 };
 
-template<class AI>
-CreatureAI* GetInstanceAI(Creature* creature)
-{
-    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
-        if (instance->GetInstanceScript())
-            if (instance->GetScriptId() == sObjectMgr->GetScriptId("instance_pursing_the_black_harvest"))
-                return new AI(creature);
-
-    return NULL;
-}
-
 #endif

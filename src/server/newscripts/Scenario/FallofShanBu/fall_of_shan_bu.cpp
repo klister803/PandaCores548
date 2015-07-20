@@ -710,7 +710,7 @@ public:
                 instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, DONE);
             }
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1085,7 +1085,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1218,7 +1218,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1304,7 +1304,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1441,7 +1441,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1557,7 +1557,7 @@ public:
 
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1642,7 +1642,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1701,7 +1701,7 @@ public:
         {
             events.Update(diff);
 
-            /*if (uint32 eventId = events.ExecuteEvent())
+            /*while (uint32 eventId = events.ExecuteEvent())
             {
             switch (eventId)
             {
@@ -1754,7 +1754,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1815,7 +1815,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1877,7 +1877,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -1996,7 +1996,7 @@ public:
         {
             events.Update(diff);
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -2201,7 +2201,7 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -2296,7 +2296,7 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -2380,7 +2380,7 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
@@ -2472,7 +2472,7 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (uint32 eventId = events.ExecuteEvent())
+            while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {

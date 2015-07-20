@@ -42,6 +42,17 @@ public:
             nodelData = 0;
         }
 
+        void OnPlayerEnter(Player* player)
+        {
+            std::set<uint32> phaseIds;
+            std::set<uint32> terrainswaps;
+            std::set<uint32> WorldMapAreaIds;
+            WorldMapAreaIds.insert(992);
+            WorldMapAreaIds.insert(683);
+            phaseIds.insert(1982);
+            player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, 16);
+        }
+
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
@@ -102,6 +113,7 @@ public:
     private:
         uint32 essenceData;
         uint32 nodelData;
+
         uint64 akamaGUID;
     };
 };
