@@ -787,14 +787,14 @@ public:
     }
 };
 
-class npc_hungering_soul_fragment : public CreatureScript
+class npc_hungering_soul_fragment2 : public CreatureScript
 {
 public:
-    npc_hungering_soul_fragment() : CreatureScript("npc_hungering_soul_fragment") { }
+    npc_hungering_soul_fragment2() : CreatureScript("npc_hungering_soul_fragment2") { }
 
-    struct npc_hungering_soul_fragmentAI : public ScriptedAI
+    struct npc_hungering_soul_fragment2AI : public ScriptedAI
     {
-        npc_hungering_soul_fragmentAI(Creature* creature) : ScriptedAI(creature)
+        npc_hungering_soul_fragment2AI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -831,7 +831,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_hungering_soul_fragmentAI>(creature);
+        return GetInstanceAI<npc_hungering_soul_fragment2AI>(creature);
     }
 };
 
@@ -1220,7 +1220,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_suffering_soul_fragment();
     new npc_hungering_soul_fragment();
     new npc_essence_of_order();
-    new npc_hungering_soul_fragment();
+    new npc_hungering_soul_fragment2();
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
 
