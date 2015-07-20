@@ -16294,6 +16294,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_PETITIONER:
                 case GOSSIP_OPTION_TABARDDESIGNER:
                 case GOSSIP_OPTION_AUCTIONEER:
+                case GOSSIP_OPTION_SCENARIO:
 //                case 17:
                     break;                                  // no checks
                 case GOSSIP_OPTION_OUTDOORPVP:
@@ -16506,6 +16507,13 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
 
             GetSession()->SendBattleGroundList(guid, bgTypeId);
             break;
+        }
+        case GOSSIP_OPTION_SCENARIO:
+        {
+            lfg::LfgDungeonSet dungeons;
+            dungeons.insert(cost);
+            sLFGMgr->JoinLfg(this, uint8(lfg::PLAYER_ROLE_LEADER), dungeons, "Start scenario");
+            return;
         }
     }
 
