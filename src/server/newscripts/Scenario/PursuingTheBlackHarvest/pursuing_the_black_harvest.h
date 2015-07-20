@@ -56,6 +56,9 @@ enum eCreatures
     NPC_KANRETHAD_EBONLOCKE         = 69964,
     NPC_DEMONIC_GATEWAY             = 70028,
     NPC_JUBEKA_SHADOWBREAKER        = 70166,
+    NPC_WILD_IMP                    = 70071,
+    NPC_PIT_LORD                    = 70075,
+
 };
 
 enum eGameObects

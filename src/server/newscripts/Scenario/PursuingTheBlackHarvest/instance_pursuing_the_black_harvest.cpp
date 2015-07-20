@@ -38,8 +38,11 @@ public:
         void Initialize()
         {
             essenceData = 0;
-            akamaGUID = 0;
             nodelData = 0;
+            kanrethadData = 0;
+
+            akamaGUID = 0;
+            jubekaGUID = 0;
         }
 
         void OnPlayerEnter(Player* player)
@@ -63,6 +66,10 @@ public:
                 case NPC_AKAMA:
                     akamaGUID = creature->GetGUID();
                     break;
+                case NPC_JUBEKA_SHADOWBREAKER:
+                    creature->SetVisible(false);
+                    jubekaGUID = creature->GetGUID();
+                    break;
                 default:
                     break;
             }
@@ -75,11 +82,17 @@ public:
                 case DATA_ESSENCE_OF_ORDER_EVENT:
                     essenceData = data;
                     if (data == DONE)
-                        if (Creature* akama = instance->GetCreature(DATA_AKAMA))
+                        if (Creature* akama = instance->GetCreature(akamaGUID))
                             akama->AI()->DoAction(ACTION_3);
                     break;
                 case DATA_AKAMA:
                     nodelData = data;
+                    break;
+                case DATA_KANRETHAD:
+                    kanrethadData = data;
+                    if (data == DONE)
+                        if (Creature* jubeka = instance->GetCreature(jubekaGUID))
+                            jubeka->AI()->DoAction(ACTION_1);
                     break;
                 default:
                     break;
@@ -113,8 +126,10 @@ public:
     private:
         uint32 essenceData;
         uint32 nodelData;
+        uint32 kanrethadData;
 
         uint64 akamaGUID;
+        uint64 jubekaGUID;
     };
 };
 

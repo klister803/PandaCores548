@@ -876,6 +876,7 @@ public:
                     events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
                     break;
                 case ACTION_2:
+                    events.ScheduleEvent(EVENT_26, 2 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -900,7 +901,7 @@ public:
                 instance->SetData(DATA_KANRETHAD, DONE);
                 me->SetReactState(REACT_PASSIVE);
                 Talk(13);
-                
+
                 if (Player* plr = me->FindNearestPlayer(150.0f))
                     me->AddAura(SPELL_DEMONIC_GRASP, plr);
             }
@@ -924,13 +925,13 @@ public:
                     me->AddAura(SPELL_METAMORPHOSIS, me);
                     break;
                 case EVENT_2:
-                    events.ScheduleEvent(EVENT_6,  1  * MINUTE * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_7,  2  * MINUTE * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_8,  30 * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_11, 1  * MINUTE * IN_MILLISECONDS + 10 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_6, 1 * MINUTE * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_7, 2 * MINUTE * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_8, 30 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_11, 1 * MINUTE * IN_MILLISECONDS + 10 * IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_13, 15 * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_14, 1  * MINUTE * IN_MILLISECONDS + 45 * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_15, 5  * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_14, 1 * MINUTE * IN_MILLISECONDS + 45 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_15, 5 * IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_16, 25 * IN_MILLISECONDS);
 
                     me->StopMoving();
@@ -940,7 +941,7 @@ public:
                     Talk(1);
                     if (Player* plr = me->FindNearestPlayer(150.0f))
                         me->AddAura(SPELL_FACE_PLAYER, plr);
-                   
+
                     break;
                 default:
                     break;
@@ -1044,13 +1045,10 @@ public:
                         if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
                             me->CastSpell(target, SPELL_SUMMONING_PIT_LORD);
                         break;
-                        
+
                         //< last stage
                     case EVENT_25:
-                        events.ScheduleEvent(EVENT_26, 2 * IN_MILLISECONDS);
                         Talk(14);
-                        if (Creature* cre = me->FindNearestCreature(NPC_JUBEKA_SHADOWBREAKER, 200.0f))
-                            cre->AI()->DoAction(ACTION_1);
                         break;
                     case EVENT_26:
                         events.ScheduleEvent(EVENT_27, 3 * IN_MILLISECONDS);
@@ -1163,6 +1161,38 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_jubeka_shadowbreakerAI(creature);
+    }
+};
+
+class npc_wild_imp_scenario : public CreatureScript
+{
+public:
+    npc_wild_imp_scenario() : CreatureScript("npc_wild_imp_scenario") { }
+
+    struct npc_wild_imp_scenarioAI : public ScriptedAI
+    {
+        npc_wild_imp_scenarioAI(Creature* creature) : ScriptedAI(creature)
+        {
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void Reset()
+        {
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void UpdateAI(uint32 /*diff*/)
+        {
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            DoSpellAttackIfReady(SPELL_FEL_FIREBOLT);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_wild_imp_scenarioAI(creature);
     }
 };
 
@@ -1342,6 +1372,46 @@ public:
     }
 };
 
+class CreatureTargetFilter
+{
+public:
+    bool operator()(WorldObject* target) const
+    {
+        if (Unit* unit = target->ToCreature())
+            if (unit->GetEntry() != NPC_WILD_IMP || unit->GetEntry() != NPC_PIT_LORD)
+                return false;
+
+        return true;
+    }
+};
+
+class spell_anihilate_demons : public SpellScriptLoader
+{
+public:
+    spell_anihilate_demons() : SpellScriptLoader("spell_anihilate_demons") { }
+
+    class spell_anihilate_demons_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_anihilate_demons_SpellScript);
+
+        void FilterTargets(std::list<WorldObject*>& unitList)
+        {
+            unitList.remove_if(CreatureTargetFilter());
+        }
+
+        void Register()
+        {
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_anihilate_demons_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENTRY);
+            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_anihilate_demons_SpellScript::FilterTargets, EFFECT_1, TARGET_UNIT_DEST_AREA_ENTRY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_anihilate_demons_SpellScript();
+    }
+};
+
 void AddSC_pursing_the_black_harvest()
 {
     new npc_akama();
@@ -1353,6 +1423,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_demonic_gateway_scen();
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
+    new npc_wild_imp_scenario();
 
     new at_pursuing_the_black_harvest_main();
 
@@ -1360,4 +1431,5 @@ void AddSC_pursing_the_black_harvest()
     new go_treasure_chest();
 
     new spell_place_empowered_soulcore();
+    new spell_anihilate_demons();
 }

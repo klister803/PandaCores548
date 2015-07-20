@@ -18,6 +18,7 @@ UPDATE `creature_template` SET `ScriptName` ='npc_essence_of_order' WHERE (`entr
 UPDATE `creature_template` SET `ScriptName` ='npc_demonic_gateway_scen' WHERE (`entry`='70028');
 UPDATE `creature_template` SET `ScriptName` ='npc_kanrethad_ebonlocke' WHERE (`entry`='69964');
 UPDATE `creature_template` SET `ScriptName` ='npc_jubeka_shadowbreaker' WHERE (`entry`='70166');
+UPDATE `creature_template` SET `ScriptName` ='npc_wild_imp_scenario' WHERE (`entry`='70071');
 
 DELETE FROM `areatrigger_scripts` WHERE `entry` IN ('8696', '8699', '8698', '8701', '8706', '8702', '8708', '8908');
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
@@ -49,15 +50,17 @@ UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='1771
 UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='1771', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `dynamicflags`='4481344', `unit_flags`='33554432', `HoverHeight`='1' WHERE (`entry`='70023');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='1', `speed_run`='0.992063', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `dynamicflags`='4481792', `unit_flags`='33554688', `unit_flags2`='4229152', `HoverHeight`='1' WHERE (`entry`='70028');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `Health_mod`='35' WHERE (`entry`='70075');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `unit_class`='8', `dynamicflags`='4481344', `unit_flags`='33554432' WHERE (`entry`='70166');
 
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN ('70052', '69964');
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
 ('70052', '138680', '1', '0'),
 ('69964', '139200', '1', '0');
 
-DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680');
+DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680', '139141');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
-('138680', 'spell_place_empowered_soulcore');
+('138680', 'spell_place_empowered_soulcore'),
+('139141', 'spell_anihilate_demons');
 
 DELETE FROM `creature_text` WHERE `entry` IN ('70166', '69964');
 
