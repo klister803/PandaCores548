@@ -787,10 +787,10 @@ public:
     }
 };
 
-class npc_demonic_gateway : public CreatureScript
+class npc_hungering_soul_fragment : public CreatureScript
 {
 public:
-    npc_demonic_gateway() : CreatureScript("npc_demonic_gateway") { }
+    npc_hungering_soul_fragment() : CreatureScript("npc_hungering_soul_fragment") { }
 
     struct npc_hungering_soul_fragmentAI : public ScriptedAI
     {
@@ -1220,7 +1220,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_suffering_soul_fragment();
     new npc_hungering_soul_fragment();
     new npc_essence_of_order();
-    new npc_demonic_gateway();
+    new npc_hungering_soul_fragment();
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
 
