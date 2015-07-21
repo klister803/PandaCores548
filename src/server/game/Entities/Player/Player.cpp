@@ -22588,9 +22588,9 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     {
         if (pet->second->GetState() == STATE_DELETED)
         {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BATTLE_PET_JOURNAL);
-            stmt->setUInt64(0, pet->first);
-            stmt->setUInt32(1, GetSession()->GetAccountId());
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACCOUNT_BATTLE_PET_LIST);
+            stmt->setUInt32(0, GetSession()->GetAccountId());
+            stmt->setUInt64(1, pet->first);
             trans->Append(stmt);
             continue;
         }
@@ -22598,9 +22598,9 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
         if (pet->second->GetState() != STATE_UPDATED)
             continue;
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_JOURNAL);
-        stmt->setUInt64(0, pet->first);
-        stmt->setUInt32(1, GetSession()->GetAccountId());
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_ACCOUNT_BATTLE_PET_LIST);
+        stmt->setUInt32(0, GetSession()->GetAccountId());
+        stmt->setUInt64(1, pet->first);
         stmt->setString(2, pet->second->GetCustomName());
         stmt->setUInt32(3, pet->second->GetCreatureEntry());
         stmt->setInt32(4, pet->second->GetSpeciesID());
@@ -22625,7 +22625,7 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
 void Player::_SaveBattlePetSlots(SQLTransaction& trans)
 {
     // save slots
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_BATTLE_PET_SLOTS);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_ACCOUNT_BATTLE_PET_SLOTS);
     stmt->setUInt32(0, GetSession()->GetAccountId());
     for (int i = 0; i < 3; ++i)
     {

@@ -33,7 +33,7 @@
 #define MAX_ACTIVE_BATTLE_PET_ABILITIES 3
 #define MAX_BATTLE_PET_LEVEL 25
 
-enum BattlePetInternalStates
+enum BattlePetStates
 {
     STATE_NORMAL  = 0,
     STATE_UPDATED = 1,
@@ -158,7 +158,7 @@ public:
     uint16 GetFlags() { return flags; }
     void RemoveFlag(uint16 _flag) { flags &= ~_flag; }
     void SetState(uint8 _state) { state = _state; }
-    BattlePetInternalStates GetState() { return BattlePetInternalStates(state); }
+    BattlePetStates GetState() { return BattlePetStates(state); }
     void SetXP(uint16 _xp) { xp = _xp; }
     uint16 GetXP() { return xp; }
     void SetLevel(uint8 _level) { level = _level; }

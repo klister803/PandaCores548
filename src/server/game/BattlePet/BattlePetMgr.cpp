@@ -1628,9 +1628,6 @@ void PetBattleWild::UpdatePetsAfterBattle()
             // update trapped pets and added in journal
             else
             {
-                if (!pb->Captured())
-                    continue;
-
                 uint64 petguid = sObjectMgr->GenerateBattlePetGuid();
 
                 BattlePetStatAccumulator* accumulator = new BattlePetStatAccumulator(pb->GetSpeciesID(), pb->GetBreedID());

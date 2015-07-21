@@ -640,11 +640,11 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_REP_CUF_PROFILES, "REPLACE INTO character_cuf_profiles (guid, profileId, profileName, frameHeight, frameWidth, sortBy, healthText, someOptions, unk146, unk147, unk148, unk150, unk152, unk154) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
     // Battle Pets
-    PREPARE_STATEMENT(CHAR_SAVE_BATTLE_PET_JOURNAL, "REPLACE INTO character_battle_pet_journal (guid, ownerAccID, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags, breedID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_LOAD_BATTLE_PET_JOURNAL, "SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags, breedID FROM character_battle_pet_journal WHERE ownerAccID = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_DEL_BATTLE_PET_JOURNAL, "DELETE FROM character_battle_pet_journal WHERE guid = ? AND ownerAccID = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_SAVE_BATTLE_PET_SLOTS, "REPLACE INTO character_battle_pet (ownerAccID, slot_0, slot_1, slot_2) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_LOAD_BATTLE_PET_SLOTS, "SELECT slot_0, slot_1, slot_2 FROM character_battle_pet WHERE ownerAccID = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SAVE_ACCOUNT_BATTLE_PET_LIST, "REPLACE INTO account_battle_pet_journal (ownerAccID, guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags, breedID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_BATTLE_PET_LIST, "SELECT guid, customName, creatureEntry, speciesID, spell, level, displayID, power, speed, health, maxHealth, quality, xp, flags, breedID FROM account_battle_pet_journal WHERE ownerAccID = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_DEL_ACCOUNT_BATTLE_PET_LIST, "DELETE FROM account_battle_pet_journal WHERE ownerAccID = ? AND guid = ?", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SAVE_ACCOUNT_BATTLE_PET_SLOTS, "REPLACE INTO account_battle_pet (ownerAccID, slot_0, slot_1, slot_2) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_BATTLE_PET_SLOTS, "SELECT slot_0, slot_1, slot_2 FROM account_battle_pet WHERE ownerAccID = ?", CONNECTION_ASYNC);
 
     // Scenario Criterias
     PREPARE_STATEMENT(CHAR_SEL_SCENARIO_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM scenario_criteria_progress WHERE instanceId = ?", CONNECTION_SYNCH);
