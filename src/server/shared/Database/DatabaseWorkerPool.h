@@ -429,7 +429,7 @@ class DatabaseWorkerPool
         //! This object is not tied to the prepared statement on the MySQL context yet until execution.
         PreparedStatement* GetPreparedStatement(uint32 index)
         {
-            return new PreparedStatement(index);
+            return new PreparedStatement(index, _connections[IDX_SYNCH][0]->m_queries[index].capacity);
         }
 
         //! Apply escape string'ing for current collation. (utf8)
