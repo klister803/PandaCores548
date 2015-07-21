@@ -77,6 +77,8 @@ enum Spells
     SPELL_DAZED                         = 1604,
     SPELL_FIREBOLT                      = 134245,
     SPELL_LIGHTING_BOLT                 = 42024,
+    SPELL_SHADOW_INFERNO2               = 39645,
+    SPELL_SUMMON_SHADOWFIENDS           = 39649,
 
     //< S7
     SPELL_SUMMON_SHADOWFIEND            = 41159,
@@ -180,6 +182,7 @@ enum Data
 {
     DATA_NONE,
 
+    DATA_STAGE_2,
     DATA_ESSENCE_OF_ORDER_EVENT,
     DATA_SCENE_EVENT,
     DATA_PLUNDER_EVENT,
@@ -202,6 +205,7 @@ enum eCreatures
     NPC_UNBOUND_NIGHTLORD           = 68174,
     NPC_UNBOUND_CENTURION           = 68176,
     NPC_UNBOUND_BONEMENDER          = 68175,
+    NPC_UNBOUND_SUCCUB              = 68205,
     NPC_FREED_IMP                   = 68173,
     NPC_DEMONIC_SOULWELL            = 70052,
     NPC_KANRETHAD_EBONLOCKE         = 69964,
@@ -212,7 +216,6 @@ enum eCreatures
     NPC_PORTALS_VISUAL              = 24925,
     NPC_FEL_IMP                     = 58959,
     NPC_ASHTONGUE_SHAMAN            = 68129,
-
 };
 
 enum eGameObects

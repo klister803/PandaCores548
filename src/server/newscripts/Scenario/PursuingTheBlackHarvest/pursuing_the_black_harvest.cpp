@@ -82,10 +82,10 @@ public:
             case GOSSIP_ACTION_INFO_DEF + 1:
                 player->ADD_GOSSIP_ITEM(1, "Акама, покажи дорогу!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
                 player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
+                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
                 creature->AI()->DoAction(ACTION_2);
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
                 break;
             default:
                 break;
@@ -115,7 +115,7 @@ public:
                     events.ScheduleEvent(EVENT_1, 2 * IN_MILLISECONDS, 1);
                     break;
                 case ACTION_2:
-                    events.ScheduleEvent(EVENT_5, 1 * IN_MILLISECONDS, 1);
+                    events.ScheduleEvent(EVENT_5, 2 * IN_MILLISECONDS, 1);
                     break;
                 case ACTION_3:
                     break;
@@ -126,7 +126,7 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 20.0f) && !stage7 && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 10.0f) && !stage7 && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
             {
                 events.ScheduleEvent(EVENT_21, 2 * IN_MILLISECONDS);
                 stage7 = true;
@@ -145,11 +145,10 @@ public:
                     Talk(7);
                     break;
                 case EVENT_23:
-                    me->GetMotionMaster()->MovePoint(EVENT_24, akamaWP[15]);
+                    events.ScheduleEvent(EVENT_28, 2 * IN_MILLISECONDS, 1);
                     break;
                 case EVENT_24:
                     me->SetVisible(false);
-                    events.ScheduleEvent(EVENT_25, 2 * IN_MILLISECONDS, 1);
                     break;
                 default:
                     break;
@@ -171,27 +170,27 @@ public:
                         me->SetVisible(true);
                         break;
                     case EVENT_2:
-                        events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS, 1);
+                        events.ScheduleEvent(EVENT_3, 3 * IN_MILLISECONDS, 1);
                         me->RemoveAura(SPELL_STEALTH);
                         if (Player* plr = me->FindNearestPlayer(50.0f))
                         {
+                            Talk(8);
                             plr->CastSpell(plr, SPELL_UPDATE_PLAYER_PHASE_AURAS);
                             plr->AddAura(SPELL_TRUSTED_BY_THE_ASHTONGUE, plr);
                             plr->AddAura(SPELL_INVISIBILITY_DETECTION, plr);
                         }
                         break;
                     case EVENT_3:
-                        events.ScheduleEvent(EVENT_4, 2 * IN_MILLISECONDS, 1);
+                        events.ScheduleEvent(EVENT_4, 3 * IN_MILLISECONDS, 1);
                         Talk(0);
                         break;
                     case EVENT_4:
-                        Talk(1);
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         events.CancelEventGroup(1);
                         break;
                     case EVENT_5:
-                        events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS, 1);
-                        Talk(2);
+                        events.ScheduleEvent(EVENT_6, 4 * IN_MILLISECONDS);
+                        Talk(1);
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_6:
@@ -209,7 +208,7 @@ public:
                         events.ScheduleEvent(EVENT_18, timer += 3 * IN_MILLISECONDS);
                         break;
                     case EVENT_7:
-                        Talk(3);
+                        Talk(2);
                         me->GetMotionMaster()->MovePoint(EVENT_7, akamaWP[0]);
                         break;
                     case EVENT_8:
@@ -228,14 +227,14 @@ public:
                         me->GetMotionMaster()->MovePoint(EVENT_12, akamaWP[5]);
                         break;
                     case EVENT_13:
+                        Talk(3);
                         me->GetMotionMaster()->MovePoint(EVENT_13, akamaWP[6]);
-                        Talk(4);
                         break;
                     case EVENT_14:
                         me->GetMotionMaster()->MovePoint(EVENT_14, akamaWP[7]);
                         break;
                     case EVENT_15:
-                        Talk(1);
+                        Talk(4);
                         me->GetMotionMaster()->MovePoint(EVENT_15, akamaWP[8]);
                         break;
                     case EVENT_16:
@@ -263,6 +262,9 @@ public:
                     case EVENT_22:
                         me->GetMotionMaster()->MovePoint(EVENT_22, akamaWP[13]);
                         break;
+                    case EVENT_28:
+                        me->GetMotionMaster()->MovePoint(EVENT_24, akamaWP[15]);
+                        break;
                     case EVENT_25:
                         events.ScheduleEvent(EVENT_26, 3 * IN_MILLISECONDS);
                         if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
@@ -271,7 +273,6 @@ public:
                     case EVENT_26:
                         if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
                             imp->AI()->Talk(1);
-
                         me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
                         break;
                     default:
@@ -308,24 +309,14 @@ public:
         void Reset()
         {
             events.Reset();
-
             talk = false;
         }
 
         void EnterCombat(Unit* who)
         {
-            if (me->GetDistance(atPos[0]) < 50.0f)
-            {
-                me->AttackStop();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                Talk(2);
-            }
-            else
-            {
-                events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
-                events.ScheduleEvent(EVENT_2, 6 * IN_MILLISECONDS);
-                events.ScheduleEvent(EVENT_2, 10 * IN_MILLISECONDS);
-            }
+            Talk(2);
+            events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_2, 6 * IN_MILLISECONDS);
         }
 
         void MoveInLineOfSight(Unit* who)
@@ -335,6 +326,12 @@ public:
 
             if ((me->GetDistance(atPos[0]) < 30.0f) && !talk)
             {
+                events.CancelEvent(EVENT_1);
+                events.CancelEvent(EVENT_2);
+                me->AttackStop();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_PASSIVE);
+                me->CombatStop();
                 Talk(1);
                 talk = true;
             }
@@ -1132,6 +1129,65 @@ public:
     }
 };
 
+class npc_unbound_night_lord : public CreatureScript
+{
+public:
+    npc_unbound_night_lord() : CreatureScript("npc_unbound_night_lord") { }
+
+    struct npc_unbound_night_lordAI : public ScriptedAI
+    {
+        npc_unbound_night_lordAI(Creature* creature) : ScriptedAI(creature)
+        {
+            instance = creature->GetInstanceScript();
+        }
+
+        void Reset()
+        {
+            events.Reset();
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            events.ScheduleEvent(EVENT_1, 15 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_2, 7 * IN_MILLISECONDS);
+            
+        }
+
+        void UpdateAI(uint32 diff)
+        {
+            events.Update(diff);
+
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_1, 25 * IN_MILLISECONDS);
+                        me->AddAura(SPELL_SHADOW_INFERNO2, me);
+                        break;
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_2, 30 * IN_MILLISECONDS);
+                        DoCast(SPELL_SUMMON_SHADOWFIENDS);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+
+    private:
+        InstanceScript* instance;
+        EventMap events;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_unbound_night_lordAI(creature);
+    }
+};
+
 class at_pursuing_the_black_harvest_main : public AreaTriggerScript
 {
 public:
@@ -1146,9 +1202,13 @@ public:
             switch (at->id)
             {
                 case 8696:
-                    instance->HandleGameObject(instance->GetData64(DATA_MAIN_DOORS), true);
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
-                    return true;
+                    if (instance->GetData(DATA_STAGE_2) != DONE)
+                    {
+                        instance->SetData(DATA_STAGE_2, DONE);
+                        instance->HandleGameObject(instance->GetData64(DATA_MAIN_DOORS), true);
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
+                        return true;
+                    }
                 case 8699:
                     player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34545, 1);  //< set stage 4
                     return true;
@@ -1519,6 +1579,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
     new npc_wild_imp_scenario();
+    new npc_unbound_night_lord();
 
     new at_pursuing_the_black_harvest_main();
 

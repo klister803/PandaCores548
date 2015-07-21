@@ -16,6 +16,7 @@ UPDATE `creature_template` SET `ScriptName` ='npc_demonic_gateway_scen' WHERE (`
 UPDATE `creature_template` SET `ScriptName` ='npc_kanrethad_ebonlocke' WHERE (`entry`='69964');
 UPDATE `creature_template` SET `ScriptName` ='npc_jubeka_shadowbreaker' WHERE (`entry`='70166');
 UPDATE `creature_template` SET `ScriptName` ='npc_wild_imp_scenario' WHERE (`entry`='70071');
+UPDATE `creature_template` SET `ScriptName` ='npc_unbound_night_lord' WHERE (`entry`='68174');
 
 DELETE FROM `areatrigger_scripts` WHERE `entry` IN ('8696', '8699', '8698', '8701', '8706', '8702', '8708', '8908');
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
@@ -43,9 +44,40 @@ UPDATE `creature_template` SET `gossip_menu_id`='0', `minlevel`='90', `maxlevel`
 UPDATE `creature_template` SET `gossip_menu_id`='0', `minlevel`='93', `maxlevel`='93', `faction`='1771', `npcflag`='16777216', `speed_walk`='0.944444', `speed_run`='1.11111', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `dynamicflags`='4477696', `unit_flags`='256', `unit_flags2`='4194304', `VehicleId`='2745', `HoverHeight`='1' WHERE (`entry`='69964');
 UPDATE `creature_template` SET `gossip_menu_id`='0', `minlevel`='91', `maxlevel`='91', `faction`='1771', `npcflag`='0', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `dynamicflags`='4481344', `unit_flags`='33554432', `unit_flags2`='0', `VehicleId`='0', `HoverHeight`='1' WHERE (`entry`='70023');
 UPDATE `creature_template` SET `gossip_menu_id`='0', `minlevel`='90', `maxlevel`='90', `faction`='35', `npcflag`='0', `speed_walk`='1', `speed_run`='0.992063', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `dynamicflags`='4481792', `unit_flags`='33554688', `unit_flags2`='4229152', `VehicleId`='0', `HoverHeight`='1' WHERE (`entry`='70028');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='0', `npcflag`='0', `speed_walk`='2', `speed_run`='0.8571429', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `dynamicflags`='0', `unit_flags`='2048', `unit_flags2`='4363072'  WHERE (`entry`='68173');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='1786', `npcflag`='0', `speed_walk`='1.714286', `speed_run`='0.8571429', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `dynamicflags`='32832', `unit_flags`='2099200', `unit_flags2`='4363008'  WHERE (`entry`='68174');
 
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `Health_mod`='35' WHERE (`entry`='70075');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35' WHERE (`entry`='70166');
+
+DELETE FROM `creature_loot_template` WHERE `entry` = 68151;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES
+('68151', '92556', '100', '0', '0', '1', '1', '0');
+
+DELETE FROM `lfg_entrances` WHERE `dungeonId` = '594';
+INSERT INTO `lfg_entrances` (`dungeonId`, `name`, `position_x`, `position_y`, `position_z`, `orientation`) VALUES
+('594', 'Pursuing the Black Harvest', '710.279', '988.731', '52.8447', '4.71239');
+
+UPDATE `instance_template` SET `script`='instance_pursuing_the_black_harvest', `allowMount`='1' WHERE `map`='1112';
+
+DELETE FROM `areatrigger_polygon` WHERE `entry` = '3764';
+INSERT INTO  `areatrigger_polygon` (`entry`, `spellId`, `id`, `x`, `y`) VALUES
+('3764', '134110', '0', '30', '0'),
+('3764', '134110', '1', '27.71631', '11.48047'),
+('3764', '134110', '2', '21.21338', '21.21338'),
+('3764', '134110', '3', '11.48047', '27.71631'),
+('3764', '134110', '4', '0', '30'),
+('3764', '134110', '5', '-11.48047', '27.71631'),
+('3764', '134110', '6', '-21.21338', '21.21338'),
+('3764', '134110', '7', '-27.71631', '11.48047'),
+('3764', '134110', '8', '-30', '0'),
+('3764', '134110', '9', '-27.71631', '-11.48047'),
+('3764', '134110', '10', '-21.21338', '-21.21338'),
+('3764', '134110', '11', '-11.48047', '-27.71631'),
+('3764', '134110', '12', '0', '-30'),
+('3764', '134110', '13', '11.48047', '-27.71631'),
+('3764', '134110', '14', '21.21338', '-21.21338'),
+('3764', '134110', '15', '27.71631', '-11.48047');
 
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry` IN ('70052', '69964');
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
@@ -120,6 +152,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 ('68137', '5', '0', 'Здесь находится Святилище Потерянных Душ. В нем пребывают души тысяч моих погибших братьев.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
 ('68137', '6', '0', 'Будь $gосторожен:осторожна;. Многие из ловушек все еще действуют. Может быть, какое-то из твоих демонических заклинаний поможет тебе разведать обстановку, прежде чем двигаться вперед.', '12', '0', '100', '0', '0', '0', 'Акама to Player'),
 ('68137', '7', '0', '$n! Мои воины оказались в ловушке там, внизу. Времени мало. Помоги мне спасти их!', '14', '0', '100', '0', '0', '0', 'Акама to Player'),
+('68137', '8', '0', 'Глупые чернокнижники! Я знал, что вы предпримете еще одну попытку разграбить наш храм!..', '14', '0', '100', '0', '0', '0', 'Акама to Player'),
 
 ('58959', '0', '0', 'Эй, $n! Помнишь меня? Ладно, ладно... Эй, послушай... Мы совсем не обязаны помогать этому парню...', '12', '0', '100', '0', '0', '0', 'Кеппико to Player'),
 ('58959', '1', '0', 'В этом месте наверняка есть, чем поживиться... Ну же, $gначальник:начальница;! Тебе же этого хочется...', '12', '0', '100', '0', '0', '0', 'Кеппико to Player'),
@@ -1379,8 +1412,6 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+9, 68096, 1112, 3, 1, 656.9948, 618.4983, 93.379, 1.361666, 7200, 0, 0), -- 68096 (Area: 6614) (Auras: 134110 - 134110)
 (@CGUID+10, 68096, 1112, 3, 1, 721.4531, 791.8264, 62.92337, 1.564428, 7200, 0, 0), -- 68096 (Area: 6614) (Auras: 134110 - 134110)
 (@CGUID+11, 68096, 1112, 3, 1, 652.1082, 834.8557, 61.20424, 3.563231, 7200, 0, 0), -- 68096 (Area: 6614) (Auras: 134110 - 134110)
-(@CGUID+12, 70028, 1112, 3, 1, 641.8403, 306.3212, 352.4543, 0, 7200, 0, 0), -- 70028 (Area: 0) (Auras: 138649 - 138649)
-(@CGUID+13, 69964, 1112, 3, 1, 638.1178, 306.8426, 353.1956, 6.221907, 7200, 0, 0), -- 69964 (Area: 0) (Auras: 138557 - 138557)
 (@CGUID+14, 70023, 1112, 3, 1, 662.7712, 272.688, 355.0708, 2.46421, 7200, 0, 0), -- 70023 (Area: 0) (Auras: 46598 - 46598)
 (@CGUID+15, 68156, 1112, 3, 1, 445.816, 136.8576, 94.91354, 0.454208, 7200, 0, 0), -- 68156 (Area: 0) (Auras: )
 (@CGUID+16, 68156, 1112, 3, 1, 531.6129, 218.2778, 94.89791, 4.344406, 7200, 0, 0), -- 68156 (Area: 0) (Auras: )
@@ -1450,8 +1481,6 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+9, 0, 0x0, 0x1, '134110'), -- 68096 - 134110 - 134110
 (@CGUID+10, 0, 0x0, 0x1, '134110'), -- 68096 - 134110 - 134110
 (@CGUID+11, 0, 0x0, 0x1, '134110'), -- 68096 - 134110 - 134110
-(@CGUID+12, 0, 0x0, 0x1, '138649'), -- 70028 - 138649 - 138649
-(@CGUID+13, 0, 0x0, 0x16000001, '138557'), -- 69964 - 138557 - 138557
 (@CGUID+14, 0, 0x0, 0x1, '46598'), -- 70023 - 46598 - 46598
 (@CGUID+15, 0, 0x3000000, 0x1, ''), -- 68156
 (@CGUID+16, 0, 0x3000000, 0x1, ''), -- 68156
@@ -1725,4 +1754,24 @@ INSERT INTO `creature_equip_template` (`entry`, `itemEntry1`, `itemEntry2`, `ite
 (68176, 32729, 0, 0), -- 68176
 (68098, 14707, 0, 0), -- 68098
 (68204, 32731, 32731, 0); -- 68204
+
+DELETE FROM `scenario_poi` WHERE `criteriaTreeId` IN (31009, 31011, 31013, 31020, 31018, 31022, 31035);
+INSERT INTO `scenario_poi` (`criteriaTreeId`, `id`, `mapid`, `WorldMapAreaId`, `unk12`, `unk16`, `unk20`, `unk24`, `unk28`) VALUES
+('31009', '0', '1112', '919', '0', '0', '0', '1359', '0'),
+('31011', '1', '1112', '919', '2', '0', '0', '1566', '0'),
+('31013', '2', '1112', '919', '3', '0', '0', '0', '0'),
+('31020', '3', '1112', '919', '3', '0', '0', '0', '0'),
+('31018', '4', '1112', '919', '3', '0', '0', '658', '0'),
+('31022', '5', '1112', '919', '3', '0', '0', '0', '0'),
+('31035', '5', '1112', '919', '7', '0', '0', '0', '0');
+
+DELETE FROM `scenario_poi_points` WHERE `criteriaTreeId` IN (31009, 31011, 31013, 31020, 31018, 31022, 31035);
+INSERT INTO `scenario_poi_points` (`criteriaTreeId`, `id`, `idx`, `x`, `y`) VALUES 
+('31009', '0', '0', '702', '593'),
+('31011', '0', '0', '702', '364'),
+('31013', '0', '0', '687', '62'),
+('31020', '0', '0', '496', '168'),
+('31018', '0', '0', '494', '164'),
+('31022', '0', '0', '779', '62'),
+('31035', '0', '0', '677', '305');
 

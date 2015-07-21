@@ -42,6 +42,7 @@ public:
             kanrethadData = 0;
             sceneEventData = 0;
             plunderData = 0;
+            stage2Data = 0;
 
             akamaGUID = 0;
             jubekaGUID = 0;
@@ -55,10 +56,6 @@ public:
 
         void OnPlayerEnter(Player* player)
         {
-            player->CastSpell(player, SPELL_ENTER_THE_BLACK_TEMPLE);
-            player->CastSpell(player, SPELL_CSA_AT_DUMMY_TIMED_AURA);
-            player->CastSpell(player, SPELL_WHAT_THE_DRAENEI_FOUND_INTRO);
-
             std::set<uint32> phaseIds;
             std::set<uint32> terrainswaps;
             std::set<uint32> WorldMapAreaIds;
@@ -66,6 +63,10 @@ public:
             WorldMapAreaIds.insert(683);
             phaseIds.insert(1982);
             player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, 16);
+
+            player->CastSpell(player, SPELL_ENTER_THE_BLACK_TEMPLE);
+            player->CastSpell(player, SPELL_CSA_AT_DUMMY_TIMED_AURA);
+            player->CastSpell(player, SPELL_WHAT_THE_DRAENEI_FOUND_INTRO);
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -91,6 +92,7 @@ public:
                 case NPC_UNBOUND_BONEMENDER:
                 case NPC_PORTALS_VISUAL:
                 case NPC_FREED_IMP:
+                case NPC_UNBOUND_SUCCUB:
                     creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     creature->SetReactState(REACT_PASSIVE);
@@ -212,6 +214,9 @@ public:
                                 trap->SetVisible(true);
                     }
                     break;
+                case DATA_STAGE_2:
+                    stage2Data = data;
+                    break;
                 default:
                     break;
             }
@@ -244,6 +249,8 @@ public:
                     return sceneEventData;
                 case DATA_PLUNDER_EVENT:
                     return plunderData;
+                case DATA_STAGE_2:
+                    return stage2Data;
                 default:
                     return 0;
             }
@@ -255,6 +262,7 @@ public:
         uint32 kanrethadData;
         uint32 sceneEventData;
         uint32 plunderData;
+        uint32 stage2Data;
 
         uint64 akamaGUID;
         uint64 jubekaGUID;
