@@ -20,6 +20,7 @@
 #define TRINITY_OBJECTDEFINES_H
 
 #include "Define.h"
+#include <unordered_set>
 
 // used for creating values for respawn for example
 #define MAKE_PAIR64(l, h)  uint64(uint32(l) | (uint64(h) << 32))
@@ -75,6 +76,8 @@ enum HighGuid
 #define IS_GUILD(Guid)               (GUID_HIPART(Guid) == HIGHGUID_GUILD)
 #define IS_AREATRIGGER_GUID(Guid)    (GUID_HIPART(Guid) == HIGHGUID_AREATRIGGER)
 #define IS_LOOT_GUID(Guid)           (GUID_HIPART(Guid) == HIGHGUID_LOOT)
+
+typedef std::unordered_set<uint64> GuidUnorderedSet;
 
 // l - OBJECT_FIELD_GUID
 // e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets

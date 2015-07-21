@@ -225,7 +225,9 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
         OpcodeHandler* handler = opcodeTable[SMSG][packet->GetOpcode()];
         if (!handler || handler->status == STATUS_UNHANDLED)
         {
+            #ifdef WIN32
             sLog->outError(LOG_FILTER_OPCODES, "Prevented sending disabled opcode %s to %s", GetOpcodeNameForLogging(packet->GetOpcode(), SMSG).c_str(), GetPlayerName(false).c_str());
+            #endif
             return;
         }
     }
@@ -315,15 +317,19 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
 /// Logging helper for unexpected opcodes
 void WorldSession::LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason)
 {
+    #ifdef WIN32
     sLog->outError(LOG_FILTER_OPCODES, "Received unexpected opcode %s Status: %s Reason: %s from %s",
         GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), status, reason, GetPlayerName(false).c_str());
+    #endif
 }
 
 /// Logging helper for unexpected opcodes
 void WorldSession::LogUnprocessedTail(WorldPacket* packet)
 {
+    #ifdef WIN32
     sLog->outError(LOG_FILTER_OPCODES, "Unprocessed tail data (read stop at %u from %u) Opcode %s from %s",
         uint32(packet->rpos()), uint32(packet->wpos()), GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), GetPlayerName(false).c_str());
+    #endif
     packet->print_storage();
 }
 
@@ -396,16 +402,20 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             deletePacket = false;
                             QueuePacket(packet);
                             //! Log
+                            #ifdef WIN32
                                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
                                     "Player is currently not in world yet.", GetOpcodeNameForLogging(packet->GetOpcode(), CMSG).c_str());
+                            #endif
                         }
                     }
                     else if (_player->IsInWorld())
                     {
                         sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
                         (this->*opHandle->handler)(*packet);
+                        #ifdef WIN32
                         if (sLog->ShouldLog(LOG_FILTER_NETWORKIO, LOG_LEVEL_TRACE) && packet->rpos() < packet->wpos())
                             LogUnprocessedTail(packet);
+                        #endif
                     }
                     // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                     break;
@@ -424,9 +434,13 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     break;
                 case STATUS_TRANSFER:
                     if (!_player)
+                    {
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player has not logged in yet");
+                    }
                     else if (_player->IsInWorld())
+                    {
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player is still in world");
+                    }
                     else
                     {
                         sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
@@ -454,12 +468,16 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         LogUnprocessedTail(packet);
                     break;
                 case STATUS_NEVER:
+                    #ifdef WIN32
                         sLog->outError(LOG_FILTER_OPCODES, "Received not allowed opcode %s from %s", GetOpcodeNameForLogging(packet->GetOpcode()).c_str()
                             , GetPlayerName(false).c_str());
+                    #endif
                     break;
                 case STATUS_UNHANDLED:
+                    #ifdef WIN32
                         sLog->outError(LOG_FILTER_OPCODES, "Received not handled opcode %s from %s", GetOpcodeNameForLogging(packet->GetOpcode()).c_str()
                             , GetPlayerName(false).c_str());
+                    #endif
                     break;
             }
         }

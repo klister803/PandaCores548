@@ -237,7 +237,9 @@ int WorldSocket::SendPacket(WorldPacket const* pct)
                         sPacketLog->LogPacket(*pct, SERVER_TO_CLIENT);
                     sLog->outDebug(LOG_FILTER_DUPE, "S->C: %s", GetOpcodeNameForLogging(pct->GetOpcode()).c_str());
                 }
+        #ifdef WIN32
         sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s len %u", GetOpcodeNameForLogging(pct->GetOpcode()).c_str(), pct->wpos());
+        #endif
     }
 
     uint32 packetSize = pct->size();
@@ -832,10 +834,11 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     if (closing_)
         return -1;
 
-    std::string opcodeName = GetOpcodeNameForLogging(opcode);
     if (opcode != CMSG_MOVE_START_FORWARD)
     {
-        sLog->outInfo(LOG_FILTER_OPCODES, "C->S: %s", opcodeName.c_str());
+        #ifdef WIN32
+        sLog->outInfo(LOG_FILTER_OPCODES, "C->S: %s", GetOpcodeNameForLogging(opcode).c_str());
+        #endif
         if (m_Session)
             if(Player* _player = m_Session->GetPlayer())
                 if (sObjectMgr->IsPlayerInLogList(_player))
@@ -843,7 +846,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                     // Dump received packet.
                     if (sPacketLog->CanLogPacket())
                         sPacketLog->LogPacket(*new_pct, CLIENT_TO_SERVER);
-                    sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", opcodeName.c_str());
+                    sLog->outDebug(LOG_FILTER_DUPE, "C->S: %s", GetOpcodeNameForLogging(opcode).c_str());
                 }
     }
 
@@ -863,12 +866,16 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
             return HandleAuthSession(*new_pct);
         case CMSG_KEEP_ALIVE:
+            #ifdef WIN32
             sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", GetOpcodeNameForLogging(opcode).c_str());
+            #endif
             sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
             return 0;
         case CMSG_LOG_DISCONNECT:
             new_pct->rfinish(); // contains uint32 disconnectReason;
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", opcodeName.c_str());
+            #ifdef WIN32
+            sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", GetOpcodeNameForLogging(opcode).c_str());
+            #endif
             sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
             return 0;
         case CMSG_REORDER_CHARACTERS:
@@ -884,7 +891,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             // first 4 bytes become the opcode (2 dropped)
         case MSG_VERIFY_CONNECTIVITY:
             {
-                sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", opcodeName.c_str());
+                #ifdef WIN32
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", GetOpcodeNameForLogging(opcode).c_str());
+                #endif
                 sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
                 std::string str;
                 *new_pct >> str;
@@ -894,7 +903,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             }
         case CMSG_ENABLE_NAGLE:
             {
-                sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", opcodeName.c_str());
+                #ifdef WIN32
+                sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", GetOpcodeNameForLogging(opcode).c_str());
+                #endif
                 sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
                 return m_Session ? m_Session->HandleEnableNagleAlgorithm() : -1;
             }
@@ -914,7 +925,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                 OpcodeHandler* handler = opcodeTable[CMSG][opcode];
                 if (!handler || handler->status == STATUS_UNHANDLED)
                 {
+                    #ifdef WIN32
                     sLog->outError(LOG_FILTER_OPCODES, "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(new_pct->GetOpcode()).c_str(), m_Session->GetPlayerName(false).c_str());
+                    #endif
                     return 0;
                 }
 
@@ -934,7 +947,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     catch (ByteBufferException &)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::ProcessIncoming ByteBufferException occured while parsing an instant handled packet %s from client %s, accountid=%i. Disconnected client.",
-            opcodeName.c_str(), GetRemoteAddress().c_str(), m_Session ? int32(m_Session->GetAccountId()) : -1);
+            GetOpcodeNameForLogging(opcode).c_str(), GetRemoteAddress().c_str(), m_Session ? int32(m_Session->GetAccountId()) : -1);
         new_pct->hexlike();
         return -1;
     }

@@ -80,6 +80,7 @@ class Log
         AppenderMap appenders;
         LoggerMap loggers;
         uint8 AppenderId;
+        LogLevel lowestLogLevel;
         FILE* openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode);
         FILE* arenaLogFile;
         FILE* spammLogFile;
