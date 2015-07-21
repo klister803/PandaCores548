@@ -474,7 +474,6 @@ public:
     }
 };
 
-//< should be summoned by SPELL_SUMMON_HUNGERING_SOUL_FRAGMENT and cast some spells, but this data missed in sniffs ;(
 class npc_hungering_soul_fragment : public CreatureScript
 {
 public:
@@ -1350,7 +1349,7 @@ public:
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (Unit* target = GetTarget())
+            if (Player* target = GetCaster()->ToPlayer())
             {
                 //if (Creature* veh = target->SummonCreature(70504, 660.1176f, 313.6469f, 355.0672f, 3.764802f))
                 //    veh->EnterVehicle(target);
@@ -1360,8 +1359,8 @@ public:
                 target->CastSpell(target, SPELL_THE_CODEX_OF_XERRATH);
                 target->CastSpell(target, SPELL_THE_CODEX_OF_XERRATH_2);
 
-                if (Unit* caster = GetCaster())
-                    caster->ToCreature()->DespawnOrUnsummon(3 * IN_MILLISECONDS);
+                if (Creature* caster = GetTarget()->ToCreature())
+                    caster->DespawnOrUnsummon(3 * IN_MILLISECONDS);
             }
         }
 
@@ -1388,20 +1387,14 @@ public:
 
         void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            Player* player = GetTarget()->ToPlayer();
-            if (!player)
-                return;
-
-            player->CastSpell(player, SPELL_FEL_ENERGY_DUMMY_2);
+            if (Player* player = GetTarget()->ToPlayer())
+                player->CastSpell(player, SPELL_FEL_ENERGY_DUMMY_2);
         }
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            Player* player = GetTarget()->ToPlayer();
-            if (!player)
-                return;
-
-            player->SendOnCancelExpectedVehicleRideAura();
+            if (Player* player = GetTarget()->ToPlayer())
+                player->SendOnCancelExpectedVehicleRideAura(); 
         }
 
         void Register()
