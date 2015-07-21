@@ -50,10 +50,15 @@ public:
             trashP2GUIDs.clear();
             trapGUIDs.clear();
             soulGUIDs.clear();
+            treasuresGUIDs.clear();
         }
 
         void OnPlayerEnter(Player* player)
         {
+            player->CastSpell(player, SPELL_ENTER_THE_BLACK_TEMPLE);
+            player->CastSpell(player, SPELL_CSA_AT_DUMMY_TIMED_AURA);
+            player->CastSpell(player, SPELL_WHAT_THE_DRAENEI_FOUND_INTRO);
+
             std::set<uint32> phaseIds;
             std::set<uint32> terrainswaps;
             std::set<uint32> WorldMapAreaIds;
@@ -68,12 +73,16 @@ public:
             switch (creature->GetEntry())
             {
                 case NPC_ESSENCE_OF_ORDER:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     break;
                 case NPC_AKAMA:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                    creature->SetVisible(false);
                     akamaGUID = creature->GetGUID();
                     break;
                 case NPC_JUBEKA_SHADOWBREAKER:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
                     jubekaGUID = creature->GetGUID();
                     break;
@@ -81,11 +90,21 @@ public:
                 case NPC_UNBOUND_CENTURION:
                 case NPC_UNBOUND_BONEMENDER:
                 case NPC_PORTALS_VISUAL:
+                case NPC_FREED_IMP:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     creature->SetVisible(false);
+                    creature->SetReactState(REACT_PASSIVE);
                     trashP2GUIDs.push_back(creature->GetGUID());
                     break;
                 case NPC_SUFFERING_SOUL_FRAGMENT:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     soulGUIDs.push_back(creature->GetGUID());
+                    break;
+                case NPC_ASHTONGUE_SHAMAN:
+                    creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                    break;
+                case NPC_LOST_SOULS:
+                    creature->SetReactState(REACT_PASSIVE);
                     break;
                 default:
                     break;
@@ -105,6 +124,32 @@ public:
                 case GO_TRAP:
                     trapGUIDs.push_back(go->GetGUID());
                     break;
+                case GO_TREASURE_CHEST:
+                case GO_GOLDEN_HIGH_ELF_STATUETTE:
+                case GO_GOLD_PLATTER:
+                case GO_SHINY_YARN:
+                case GO_GORGEOUS_GEM:
+                case GO_GOLD_FRUIT_BOWL:
+                case GO_DUSTY_PAINTING:
+                case GO_FLUFFY_PILLOW:
+                case GO_ANCIENT_ORCISH_SHIELD:
+                case GO_RUSTED_SWORD:
+                case GO_FRAGRANT_PERFUME:
+                case GO_COLOGNE:
+                case GO_EXPENSIVE_RUBY:
+                case GO_SPARKLING_SAPPHIRE:
+                case GO_JADE_KITTEN:
+                case GO_RUBY_NECKLACE:
+                case GO_SPELLSTONE_NECKLACE:
+                case GO_DIAMOND_RING:
+                case GO_RUBY_RING:
+                case GO_GOLD_RING:
+                case GO_SMALL_PILE_OF_COINS:
+                case GO_LARGE_PILE_OF_COINS:
+                case GO_GOLDEN_GOBLET:
+                    go->SetVisible(false);
+                    treasuresGUIDs.push_back(go->GetGUID());
+                    break;
                 default:
                     break;
             }
@@ -120,14 +165,20 @@ public:
                     {
                         if (Creature* akama = instance->GetCreature(akamaGUID))
                             akama->AI()->DoAction(ACTION_3);
-                            
+
                         for (std::vector<uint64>::const_iterator itr = trashP2GUIDs.begin(); itr != trashP2GUIDs.end(); itr++)
                             if (Creature* trash = instance->GetCreature(*itr))
+                            {
                                 trash->SetVisible(true);
+                                trash->SetReactState(REACT_AGGRESSIVE);
+                            }
 
                         for (std::vector<uint64>::const_iterator itr = soulGUIDs.begin(); itr != soulGUIDs.end(); itr++)
                             if (Creature* soul = instance->GetCreature(*itr))
+                            {
                                 soul->RemoveFromWorld();
+                                soul->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                            }
 
                         for (std::vector<uint64>::const_iterator itr = trapGUIDs.begin(); itr != trapGUIDs.end(); itr++)
                             if (GameObject* trap = instance->GetGameObject(*itr))
@@ -154,6 +205,12 @@ public:
                     break;
                 case DATA_PLUNDER_EVENT:
                     plunderData = data;
+                    if (data == DONE)
+                    {
+                        for (std::vector<uint64>::const_iterator itr = treasuresGUIDs.begin(); itr != treasuresGUIDs.end(); itr++)
+                            if (GameObject* trap = instance->GetGameObject(*itr))
+                                trap->SetVisible(true);
+                    }
                     break;
                 default:
                     break;
@@ -206,6 +263,7 @@ public:
         std::vector<uint64> trashP2GUIDs;
         std::vector<uint64> trapGUIDs;
         std::vector<uint64> soulGUIDs;
+        std::vector<uint64> treasuresGUIDs;
     };
 };
 

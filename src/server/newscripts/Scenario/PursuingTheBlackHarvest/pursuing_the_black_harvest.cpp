@@ -19,128 +19,6 @@
 #include "pursuing_the_black_harvest.h"
 #include "ScriptedCreature.h"
 
-enum Texts
-{ };
-
-enum Spells
-{
-    //< Misc
-    SPELL_PLACE_EMPOWED_SOULCORE        = 138680, //< SS
-    SPELL_DRAIN_FEL_ENERGY              = 139200, //< dummy
-
-    //< S0
-    SPELL_SEARCHING_FOR_INTRUDERS       = 134110, //< AT
-
-    //< S1
-    SPELL_NETTED                        = 134111,
-    SPELL_BLACKOUT                      = 134112,
-
-    //< S2
-    SPELL_UPDATE_PLAYER_PHASE_AURAS     = 134209,
-    SPELL_SAP                           = 134205,
-    SPELL_STEALTH                       = 86603,
-
-    //< S3
-    SPELL_TRUSTED_BY_THE_ASHTONGUE      = 134206,
-
-    //< S4
-    SPELL_SHADOW_BOLT_2                 = 12739,
-    SPELL_SOUL_BLAST                    = 50992,
-    SPELL_SUMMON_HUNGERING_SOUL_FRAGMENT = 134207, //< SS
-    SPELL_MEMORY_OF_THE_RELIQUARY       = 134210, //< Scene
-    SPELL_SPAWN_THE_RELIQUARY           = 134211,
-
-    //< S5
-    SPELL_SPELLFLAME                    = 134234, //< dummy
-    SPELL_SPELLFLAME_TRIGGER            = 134235,
-    SPELL_HELLFIRE                      = 134225,
-    SPELL_HELLFIRE_TRIGGER              = 134224,
-
-    //< S6
-    SPELL_SHOOT                         = 41188,
-    SPELL_MULTI_SHOOT                   = 41187,
-    SPELL_CLEAVE                        = 15284,
-    SPELL_SWEEPING_WING_CLIP            = 39584,
-    SPELL_SONIC_STRIKE                  = 41168,
-    SPELL_SHADOW_BOLT                   = 34344,
-    SPELL_DAZED                         = 1604,
-    SPELL_FIREBOLT                      = 134245,
-    SPELL_LIGHTING_BOLT                 = 42024,
-
-    //< S7
-    SPELL_SUMMON_SHADOWFIEND            = 41159,
-    SPELL_SHADOW_INFERNO                = 39646,
-    SPELL_SMELT_FLASH                   = 37629,
-    SPELL_SUMMON_FEL_IMP                = 112866,
-    SPELL_INTERRUPTED                   = 134340,
-    SPELL_PLUNDER                       = 134323,
-    SPELL_UPDATE_PHASE_SHIFT            = 82238,
-    SPELL_APPRAISAL                     = 134280,
-    SPELL_GOLD_RING                     = 134290,
-    SPELL_HIGH_ELF_STATUE               = 134294,
-    SPELL_FAMILY_JEWELS                 = 134298,
-    SPELL_ANCIENT_ORC_SHIELD            = 134302,
-    SPELL_EXPENSIVE_RUBY                = 134283,
-    SPELL_SPELLSTONE_NECKABLE           = 134287,
-    SPELL_SMALL_PILE_OF_GOLD            = 134291,
-    SPELL_GOLDON_POTION                 = 134295,
-    SPELL_FRUIT_BOWL                    = 134299,
-    SPELL_RUNEBLADE                     = 134303,
-    SPELL_SPARKLING_SAPPHIRE            = 134284,
-    SPELL_DIAMONG_RING                  = 134288,
-    SPELL_LARGE_PILE_OF_GOLD            = 134292,
-    SPELL_GOLDER_PLATTER                = 134296,
-    SPELL_ORNATE_PORTRAIT               = 134300,
-    SPELL_FRAGRANT_PERFUME              = 134281,
-    SPELL_JADE_KITTEN                   = 134285,
-    SPELL_RUBY_RING                     = 134289,
-    SPELL_GOLDEN_GOBLET                 = 134293,
-    SPELL_YARN                          = 134297,
-    SPELL_ROPE_BINDINGS                 = 134301,
-    SPELL_CHEAP_COLOGNE                 = 134282,
-    SPELL_RUBY_NEACKABLE                = 134286,
-
-    //< Last Step
-    SPELL_DEMONIC_GATEWAY               = 138649, //< SS
-    SPELL_BURNING_EMBERS                = 138557, //< SS
-    SPELL_SOULSHARDS                    = 138556, //< SS
-    SPELL_METAMORPHOSIS                 = 138555,
-    SPELL_FACE_PLAYER                   = 139053, //< SS
-    SPELL_RITUAL_ENSLAVEMENT            = 22987,  //< SS
-    SPELL_DOOMGUARD_SUMMON_DND          = 42010,  //< SS
-    SPELL_DOOM_BOLT                     = 85692,  //< SS
-    SPELL_SUMMONING_PIT_LORD            = 138789,
-    SPELL_FEL_FLAME_BREATH              = 138814,
-    SPELL_FEL_FLAME_BREATH_DUMMY        = 138813,
-    SPELL_RAID_OF_FIRE                  = 138561,
-    SPELL_SEED_OF_TERRIBLE_DESTRUCTION  = 138587,
-    SPELL_CLEAVE_2                      = 138794,
-    SPELL_AURA_OF_OMNIPOTENCE           = 138563,
-    SPELL_CURSE_OF_ULTIMATE_DOOM        = 138558,
-    SPELL_EXCRUCIATING_AGONY            = 138560,
-    SPELL_DEMONIC_SIPHON                = 138829,
-    SPELL_CHAOS_BOLT                    = 138559,
-    SPELL_BACKFIRE                      = 138619,
-    SPELL_SOULFIRE                      = 138554,
-    SPELL_CATACLYSM                     = 138564,
-    SPELL_CHARGE                        = 138796,
-    SPELL_CHARGE_TRIGGER                = 138827,
-    SPELL_FEL_FIREBOLT                  = 138747,
-    SPELL_SUMMON_WILD_IMPS              = 138685,
-    
-    SPELL_ANNIHILATE_DEMONS             = 139141,
-    SPELL_DEMONIC_GRASP                 = 139142,
-    SPELL_ETERNAL_BANISHMENT            = 139186,
-    
-    //< Gree fire learning
-    SPELL_THE_CODEX_OF_XERRATH          = 101508,
-    SPELL_THE_CODEX_OF_XERRATH_2        = 137206,
-    SPELL_PURGE_XERRATH                 = 139366,
-    SPELL_FEL_ENERGY_DUMMY              = 140164,
-    SPELL_FEL_ENERGY_2                  = 140116,
-
-};
-
 Position const atPos[]
 {
     {703.721f, 574.901f, 112.628f} //< 8696
@@ -248,7 +126,7 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 20.0f) && !stage7)
+            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 20.0f) && !stage7 && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
             {
                 events.ScheduleEvent(EVENT_21, 2 * IN_MILLISECONDS);
                 stage7 = true;
@@ -272,7 +150,7 @@ public:
                 case EVENT_24:
                     me->SetVisible(false);
                     events.ScheduleEvent(EVENT_25, 2 * IN_MILLISECONDS, 1);
-                    break;  
+                    break;
                 default:
                     break;
             }
@@ -290,6 +168,7 @@ public:
                         events.ScheduleEvent(EVENT_2, 3 * IN_MILLISECONDS, 1);
                         if (Player* plr = me->FindNearestPlayer(50.0f))
                             me->AddAura(SPELL_SAP, plr);
+                        me->SetVisible(true);
                         break;
                     case EVENT_2:
                         events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS, 1);
@@ -298,6 +177,7 @@ public:
                         {
                             plr->CastSpell(plr, SPELL_UPDATE_PLAYER_PHASE_AURAS);
                             plr->AddAura(SPELL_TRUSTED_BY_THE_ASHTONGUE, plr);
+                            plr->AddAura(SPELL_INVISIBILITY_DETECTION, plr);
                         }
                         break;
                     case EVENT_3:
@@ -385,11 +265,11 @@ public:
                         break;
                     case EVENT_25:
                         events.ScheduleEvent(EVENT_26, 3 * IN_MILLISECONDS);
-                        if (Creature* imp = me->FindNearestCreature(58959, 150.0f))
+                        if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
                             imp->AI()->Talk(0);
                         break;
                     case EVENT_26:
-                        if (Creature* imp = me->FindNearestCreature(58959, 150.0f))
+                        if (Creature* imp = me->FindNearestCreature(NPC_FEL_IMP, 150.0f))
                             imp->AI()->Talk(1);
 
                         me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
@@ -429,22 +309,12 @@ public:
         {
             events.Reset();
 
-            callForHelp = false;
             talk = false;
-        }
-
-        void DamageTaken(Unit* /*attacker*/, uint32 &damage)
-        {
-            if (damage && me->GetHealthPct() < 50.0f && !callForHelp)
-            {
-                me->CallForHelp(50.0f);
-                me->AttackStop();
-            }
         }
 
         void EnterCombat(Unit* who)
         {
-            if (me->GetDistance(atPos[0]) < 50.0f && (who->GetEntry() == 1860) || who->GetEntry() == 58960)
+            if (me->GetDistance(atPos[0]) < 50.0f)
             {
                 me->AttackStop();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -463,13 +333,7 @@ public:
             if (who->HasAura(SPELL_TRUSTED_BY_THE_ASHTONGUE))
                 return;
 
-            if ((me->GetDistance(atPos[0]) < 50.0f) && !talk)
-            {
-                Talk(1);
-                talk = true;
-            }
-
-            if (!talk && (me->GetDistance(atPos[0]) < 50.0f || (me->GetDistance(atPos[0]) < 50.0f && who->GetEntry() == 1860) || who->GetEntry() == 58960))
+            if ((me->GetDistance(atPos[0]) < 30.0f) && !talk)
             {
                 Talk(1);
                 talk = true;
@@ -505,7 +369,6 @@ public:
     private:
         InstanceScript* instance;
         EventMap events;
-        bool callForHelp;
         bool talk;
     };
 
@@ -525,22 +388,12 @@ public:
         npc_ashtongue_workerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-        }
-
-        void Reset()
-        {
-            callForHelp = false;
+            me->SetReactState(REACT_AGGRESSIVE);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
-            if (!callForHelp)
-            {
-                Talk(0);
-                me->CallForHelp(50.0f);
-                me->DoFleeToGetAssistance();
-                callForHelp = true;
-            }
+            me->CallForHelp(50.0f);
         }
 
         void UpdateAI(uint32 diff)
@@ -550,7 +403,6 @@ public:
 
     private:
         InstanceScript* instance;
-        bool callForHelp;
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -1128,7 +980,7 @@ public:
                     case EVENT_27:
                         me->setFaction(35);
                         me->SetFlag(UNIT_NPC_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                        
+
                         if (Player* plr = me->FindNearestPlayer(150.0f))
                             plr->RemoveAura(SPELL_DEMONIC_GRASP);
 
@@ -1311,6 +1163,7 @@ public:
                         player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1); //< set stage 5
                         player->CastSpell(player, SPELL_MEMORY_OF_THE_RELIQUARY);
                         player->CastSpell(player, SPELL_SPAWN_THE_RELIQUARY);
+                        player->AddAura(SPELL_INVISIBILITY_DETECTION, player);
                         if (Creature* essence = player->FindNearestCreature(NPC_ESSENCE_OF_ORDER, 200.0f))
                             essence->AI()->DoAction(ACTION_1);
                         return true;
@@ -1408,33 +1261,6 @@ public:
             //VisibleMapIDsCount: 4
             //[0] VisibleMapID: 992 (992)
             //[1] VisibleMapID: 683 (683)
-
-            for (uint8 i = 0; i < 20; i++)
-            {
-                player->CastSpell(player, SPELL_GOLD_RING);
-                player->CastSpell(player, SPELL_HIGH_ELF_STATUE);
-                player->CastSpell(player, SPELL_FAMILY_JEWELS);
-                player->CastSpell(player, SPELL_ANCIENT_ORC_SHIELD);
-                player->CastSpell(player, SPELL_EXPENSIVE_RUBY);
-                player->CastSpell(player, SPELL_SPELLSTONE_NECKABLE);
-                player->CastSpell(player, SPELL_SMALL_PILE_OF_GOLD);
-                player->CastSpell(player, SPELL_GOLDON_POTION);
-                player->CastSpell(player, SPELL_FRUIT_BOWL);
-                player->CastSpell(player, SPELL_RUNEBLADE);
-                player->CastSpell(player, SPELL_SPARKLING_SAPPHIRE);
-                player->CastSpell(player, SPELL_DIAMONG_RING);
-                player->CastSpell(player, SPELL_LARGE_PILE_OF_GOLD);
-                player->CastSpell(player, SPELL_GOLDER_PLATTER);
-                player->CastSpell(player, SPELL_ORNATE_PORTRAIT);
-                player->CastSpell(player, SPELL_FRAGRANT_PERFUME);
-                player->CastSpell(player, SPELL_JADE_KITTEN);
-                player->CastSpell(player, SPELL_RUBY_RING);
-                player->CastSpell(player, SPELL_GOLDEN_GOBLET);
-                player->CastSpell(player, SPELL_YARN);
-                player->CastSpell(player, SPELL_ROPE_BINDINGS);
-                player->CastSpell(player, SPELL_CHEAP_COLOGNE);
-                player->CastSpell(player, SPELL_RUBY_NEACKABLE);
-            }
 
             return true;
         }
@@ -1566,7 +1392,7 @@ public:
             if (!player)
                 return;
 
-            player->CastSpell(player, SPELL_FEL_ENERGY_2);
+            player->CastSpell(player, SPELL_FEL_ENERGY_DUMMY_2);
         }
 
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1588,6 +1414,103 @@ public:
     AuraScript* GetAuraScript() const
     {
         return new spell_fel_enery_AuraScript();
+    }
+};
+
+class spell_appraisal : public SpellScriptLoader
+{
+public:
+    spell_appraisal() : SpellScriptLoader("spell_appraisal") { }
+
+    class spell_appraisal_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_appraisal_SpellScript);
+
+        void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+        {
+            Player* player = GetCaster()->ToPlayer();
+            if (!player)
+                return;
+
+            for (uint8 i = 0; i < player->GetItemCount(92582); i++)
+                player->CastSpell(player, SPELL_CHEAP_COLOGNE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92590); i++)
+                player->CastSpell(player, SPELL_RUBY_NEACKABLE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92620); i++)
+                player->CastSpell(player, SPELL_ROPE_BINDINGS);
+
+            for (uint8 i = 0; i < player->GetItemCount(92612); i++)
+                player->CastSpell(player, SPELL_YARN);
+
+            for (uint8 i = 0; i < player->GetItemCount(92604); i++)
+                player->CastSpell(player, SPELL_GOLDEN_GOBLET);
+
+            for (uint8 i = 0; i < player->GetItemCount(92596); i++)
+                player->CastSpell(player, SPELL_RUBY_RING);
+
+            for (uint8 i = 0; i < player->GetItemCount(92588); i++)
+                player->CastSpell(player, SPELL_JADE_KITTEN);
+
+            for (uint8 i = 0; i < player->GetItemCount(92580); i++)
+                player->CastSpell(player, SPELL_FRAGRANT_PERFUME);
+
+            for (uint8 i = 0; i < player->GetItemCount(92618); i++)
+                player->CastSpell(player, SPELL_ORNATE_PORTRAIT);
+
+            for (uint8 i = 0; i < player->GetItemCount(92610); i++)
+                player->CastSpell(player, SPELL_GOLDER_PLATTER);
+
+            for (uint8 i = 0; i < player->GetItemCount(92602); i++)
+                player->CastSpell(player, SPELL_LARGE_PILE_OF_GOLD);
+
+            for (uint8 i = 0; i < player->GetItemCount(92594); i++)
+                player->CastSpell(player, SPELL_DIAMONG_RING);
+
+            for (uint8 i = 0; i < player->GetItemCount(92586); i++)
+                player->CastSpell(player, SPELL_SPARKLING_SAPPHIRE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92624); i++)
+                player->CastSpell(player, SPELL_RUNEBLADE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92616); i++)
+                player->CastSpell(player, SPELL_FRUIT_BOWL);
+
+            for (uint8 i = 0; i < player->GetItemCount(92608); i++)
+                player->CastSpell(player, SPELL_GOLDON_POTION);
+
+            for (uint8 i = 0; i < player->GetItemCount(92600); i++)
+                player->CastSpell(player, SPELL_SMALL_PILE_OF_GOLD);
+
+            for (uint8 i = 0; i < player->GetItemCount(92592); i++)
+                player->CastSpell(player, SPELL_SPELLSTONE_NECKABLE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92584); i++)
+                player->CastSpell(player, SPELL_EXPENSIVE_RUBY);
+
+            for (uint8 i = 0; i < player->GetItemCount(92622); i++)
+                player->CastSpell(player, SPELL_ANCIENT_ORC_SHIELD);
+
+            for (uint8 i = 0; i < player->GetItemCount(92614); i++)
+                player->CastSpell(player, SPELL_FAMILY_JEWELS);
+
+            for (uint8 i = 0; i < player->GetItemCount(92606); i++)
+                player->CastSpell(player, SPELL_HIGH_ELF_STATUE);
+
+            for (uint8 i = 0; i < player->GetItemCount(92598); i++)
+                player->CastSpell(player, SPELL_GOLD_RING);
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_appraisal_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_appraisal_SpellScript();
     }
 };
 
@@ -1613,4 +1536,5 @@ void AddSC_pursing_the_black_harvest()
     new spell_anihilate_demons();
     new spell_drain_fel_enegry();
     new spell_fel_enery();
+    new spell_appraisal();
 }
