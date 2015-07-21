@@ -20691,6 +20691,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
             health = maxHealth;
 
         GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID, STATE_NORMAL);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, creatureEntry);
     }
     while (result->NextRow());
 }
