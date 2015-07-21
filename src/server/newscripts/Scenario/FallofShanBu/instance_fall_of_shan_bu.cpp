@@ -84,7 +84,7 @@ public:
                 case NPC_SHANZE_SHADOWCASTER:
                 case NPC_SHANZE_WARRIOR:
                 case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_ELECTRO_COUTIONER:
+                case NPC_SHANZE_ELECTRO_CUTIONER:
                 case NPC_SHANZE_PYROMANCER:
                     --counter;
                     if (!counter)

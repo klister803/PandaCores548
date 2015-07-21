@@ -26,93 +26,194 @@ enum Texts
 
 enum Spells
 {
-    SPELL_LIGHTING_STRIKE                       = 140678,
-    SPELL_JOIN_PLAYER_PARTY                     = 139282,
-    SPELL_LEAVE_PLAYER_PARTY                    = 141057,
-
-    SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1  = 140334,
-    SPELL_THUNDER_FORGE_CHARGE                  = 140382,
-    SPELL_THUNDER_FORGE_CHARGE_TRIGGER          = 140489,
-
-    SPELL_UPDATE_PHASE_SHIFT                    = 134715,
-    SPELL_COSMETIC_LIGHTING_PILLAR_BEAM         = 138090,
-
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC         = 138152,
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_2       = 138153,
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_3       = 138091,
-
-    SPELL_LIGHTING_STRIKE_COSMETIC_2            = 140857,
-    SPELL_THUNDER_FORGE_BUFF_PEREODIC           = 139422,
-    SPELL_THUNDER_FORGE_BUFF                    = 139431, //< AT
-    SPELL_OVERCHARGED                           = 139397,
-
-    SPELL_POWER_SURGE                           = 140067, //< AT
+    //< player self
+    SPELL_ATTACKED_PLAYER                       = 138952,
     SPELL_POWER_SURGE_TRIGGER                   = 140068,
 
-    SPELL_METEOR                                = 138168,
-    SPELL_METEOR_TARGETING                      = 139301,
-    SPELL_FIREBALL                              = 9053,
-    SPELL_CALL_LIGHTING                         = 138741,
-    SPELL_LUMBERING_CHARGE                      = 142587, //< AT
-    SPELL_SHADOW_BOLT                           = 12471,
+    //< NPC_SHANZE_ELECTRO_CUTIONER2
+    SPELL_LIGHTING_CHARGE                       = 136495,
 
-    //< Defender
+    //< NPC_SHADO_PAN_DEFENDER
+    SPELL_TAUNT                                 = 138937,
+    SPELL_WOUNDED                               = 138919,
+    SPELL_JOIN_PLAYER_PARTY                     = 139282,
+    SPELL_PERIODIC_TAUNT_TARGETTING             = 139245,
     SPELL_HEALING_ORB                           = 139249, //< AT
     SPELL_HEALING_ORB_TRIGGER                   = 132744,
-    SPELL_WOUNDED                               = 138919,
-    SPELL_PERIODIC_TAUNT_TARGETTING             = 139245,
-    SPELL_TAUNT                                 = 138937,
+    SPELL_LEAVE_PLAYER_PARTY                    = 141057,
 
-    //< Vulkon
+    //< NPC_SHANZE_WARRIOR
+    SPELL_LUMBERING_CHARGE3                     = 120051,
+    SPELL_LUMBERING_CHARGE2                     = 120052,
+    SPELL_LUMBERING_CHARGE                      = 142587, //< AT
+    SPELL_CLEAVE                                = 59992,
+
+    //< NPC_INVISIBLE_STALKER
+    SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1  = 140334,
+
+    //< NPC_LIGHTING_PILAR_BEAM_STALKER
+    SPELL_THUNDER_FORGE_CHARGE                  = 140382,
+    SPELL_COSMETIC_LIGHTING_PILLAR_BEAM         = 138090,
+
+    //< NPC_SHANZE_BATTLEMASTER
+    SPELL_STORM_STRIKE                          = 138712,
+    SPELL_STORM_STRIKE2                         = 32175,
+    SPELL_STORM_STRIKE_OFF_HAND                 = 32175,
+    SPELL_FIXATE_BEAM_COSMETIC                  = 142477,
+    SPELL_FIXATE                                = 139034,
+    SPELL_LIGHTING_WHIRLWIND                    = 138198,
+    SPELL_LIGHTING_WHIRLWIND2                   = 138191,
+    SPELL_LIGHTING_WHIRLWIND3                   = 138190,
+
+    //< NPC_THUNDER_FORGE_2
+    SPELL_GROUNDED                              = 139252,
+    SPELL_LIGHTING_CHASE                        = 138721,
+    SPELL_LIGHTING_STRIKE_TRIGGERED_BY_CHASE    = 138720,
+
+    //< NPC_FORGEMASTER_VULKON
+    SPELL_LIGHTING_STRIKE_2                     = 138826,
+    SPELL_FACE_PLAYER                           = 139359,
     SPELL_FORGEMASTER_SPAWN_COSMETIC            = 142594,
     SPELL_ELECTRIFIED                           = 138821,
+    SPELL_DISCHARGE                             = 138820,
     SPELL_LIGHTING_BOLT                         = 15801,
     SPELL_LIGHTING_STRIKE_TARGETTING            = 139302,
-    SPELL_LIGHTING_STRIKE_2                     = 138826,
     SPELL_THUNDER_SMASH_DUMMY                   = 139357,
-    SPELL_FACE_PLAYER                           = 139359,
-    SPELL_LIGHTING_SMASH                        = 138832,
+    SPELL_LIGHTING_SMASH                        = 138831,
+    SPELL_LIGHTING_SMASH_TRIGGER                = 138832,
 
-    //< Last room
-    SPELL_LIGHTING_STRIKE_3                     = 140540,
-    SPELL_LIGHTING_STRIKE_COSMETIC              = 140101,
-    SPELL_WRATHION_TRUE_FORM                    = 109924,
-
-    //< Celestial BlackSmith 
-    SPELL_THUNDER_FORGE_CHARGING                = 140487,
-    SPELL_FORGING                               = 138869,
-    SPELL_STRIKE_ANVIL_COSMETIC                 = 138875,
-    SPELL_ACTIVATE_CLOSEST_AVNIL                = 140343,
-
-    //< Celestial Defender
-    SPELL_ASTRAL_ENDURANCE                      = 139127,
-    SPELL_DAMAGE_SELF_50_PERCENT                = 136890,
-
-    SPELL_DEACTIVATE_ALL_AVNILS                 = 140350,
-    SPELL_DEACTIVATE_ALL_AVNILS_TRIGGER         = 140545, //< SS
-    SPELL_ACTIVATE_ALL_AVNILS                   = 140027,
-    SPELL_FIND_AVNIL_STALKER_BEST_DUMMY         = 140140, //< SS
-    SPELL_ELECTIC_DISCHARGE                     = 140047,
-    SPELL_ANVIL_ACTIVATE_COSMETIC_DND           = 140134,
-    SPELL_THUNDER_SURGE                         = 138834,
-
-    //< Sha Amalgamation
-    SPELL_INSANITY                              = 139382, //< 30S COOLDOWN
-    SPELL_SHADOW_BURST                          = 139375, //< 5S COOLDOWN
-    SPELL_DARK_BINDING                          = 139358, //< 5S
-    SPELL_METEOR_STORM                          = 139447, //< 5S COOLDOWN
-    SPELL_SHADOW_CRASH                          = 139312,
-
-    //< Sha Fiend
+    //< NPC_SHA_FIEND
     SPELL_SMALL_SHA_FIXATE                      = 138692,
     SPELL_DARK_SUNDER                           = 138677,
     SPELL_SHA_BLAST                             = 138681,
 
-    //< Sha Beast
+    //< NPC_CELESTIAL_BLACKSMITH
+    SPELL_THUNDER_FORGE_CHARGING                = 140487,
+    SPELL_FORGING                               = 138869,
+    SPELL_STRIKE_ANVIL_COSMETIC                 = 138875,
+    SPELL_THUNDER_FORGE_CHARGE_TRIGGER          = 140489,
+    SPELL_ACTIVATE_CLOSEST_AVNIL                = 140343,
+
+    //< NPC_CELESTIAL_DEFENDER
+    SPELL_COSMIC_SLASH                          = 138232,
+    SPELL_COSMIC_SLASH_TRIGGER                  = 138229,
+    SPELL_STAR_SLAM                             = 138935,
+    SPELL_CELESTIAL_ROAR                        = 138624,
+    SPELL_ASTRAL_ENDURANCE                      = 139127,
+    SPELL_DAMAGE_SELF_50_PERCENT                = 136890,
+    SPELL_POWER_SURGE                           = 140067, //< AT
+    SPELL_CELESTIAL_STORM                       = 138634,
+    SPELL_CELESTIAL_STORM_TRIGGER               = 138637,
+    SPELL_SUMMON_CONSTELATIONS                  = 138940,
+    SPELL_SUMMON_CONSTELATIONS_TRIGGER          = 138723,
+    SPELL_ASTRAL_DEFENCE                        = 138630,
+    SPELL_DEFENDER_HIGH_HP_COSMETIC             = 140337,
+    SPELL_CELESTIAL_RESTORATION                 = 140065,
+
+    //< NPC_SHA_BEAST
     SPELL_EMPOWERED                             = 138947,
     SPELL_DARK_BITE                             = 138956,
-    SPELL_LETHARGY                              = 138949,
     SPELL_ABSORB_EVIL                           = 138950, //< AURA
+    SPELL_LETHARGY                              = 138949,
+
+    //< NPC_ANVIL_STALKER
+    SPELL_THUNDER_SURGE                         = 138834,
+    SPELL_ANVIL_ACTIVATE_COSMETIC_DND           = 140134,
+    SPELL_LIGHTING_STRIKE_COSMETIC              = 140101,
+
+    //< NPC_PHASE3_ROOM_CENTER_STALKER
+    SPELL_DEACTIVATE_ALL_AVNILS_TRIGGER         = 140545, //< SS
+    SPELL_FIND_AVNIL_STALKER_BEST_DUMMY         = 140140, //< SS
+    SPELL_DEACTIVATE_ALL_AVNILS                 = 140350,
+    SPELL_ACTIVATE_ALL_AVNILS                   = 140027,
+    SPELL_ELECTIC_DISCHARGE                     = 140047,
+    SPELL_ELECTRIC_DISCHARGE_VISUAL             = 140061,
+
+    //< NPC_LIGHTING_LANCE
+    SPELL_RIDE_VEHICLE_HARDCODED                = 46598,
+    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_LSTRIKES = 140100,
+    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_SPARKLES = 139956,
+
+    //< NPC_SHA_AMALGAMATION
+    SPELL_INSANITY_TRIGGER                      = 139381,
+    SPELL_INSANITY                              = 139382, //< 30S COOLDOWN
+    SPELL_SHADOW_BURST                          = 139375, //< 5S COOLDOWN
+    SPELL_DARK_BINDING                          = 139358, //< 5S
+    SPELL_METEOR_SOTRM_TRIGGER                  = 139602,
+    SPELL_METEOR_STORM_PLAYER_TARGETING         = 139606,
+    SPELL_METEOR_STORM                          = 139447, //< 5S COOLDOWN
+    SPELL_METEOR_STORM_2                        = 139445,
+    SPELL_SUMMON_LEECHING_SHA                   = 139990,
+    SPELL_SHADOW_CRASH_TARGETING                = 139360,
+    SPELL_SHADOW_CRASH                          = 139312,
+    SPELL_SHADOW_CRASH_TRIGGER                  = 139351,
+    SPELL_SHADOW_CRASH_CAST                     = 139353,
+
+    //< NPC_DEBILITATING_SHA - 70462
+    SPELL_DEBILITATE                            = 139966,
+
+    //< NPC_SHANZE_ELECTRO_CUTIONER
+    SPELL_CALL_LIGHTING                         = 138741,
+
+    //< NPC_THUNDER_FORGE
+    SPELL_LIGHTING_STRIKE                       = 140678,
+    SPELL_LIGHTING_STRIKE_COSMETIC_3            = 140681,
+    SPELL_LIGHTING_STRIKE_COSMETIC_4            = 140507,
+    SPELL_LIGHTING_STRIKE_COSMETIC_2            = 140857,
+
+    //< NPC_WRATHION
+    SPELL_SPEC_TEST                             = 138928,
+    SPELL_UPDATE_PHASE_SHIFT                    = 134715,
+    SPELL_LIGHTING_STRIKE_COSMETIC_5            = 140527,
+    SPELL_WRATHION_TRUE_FORM                    = 109924,
+    SPELL_LIGHTING_STRIKE_3                     = 140540,
+    // SPELL_LIGHTING_STRIKE_COSMETIC
+
+    //< NPC_SHADO_PAN_WARRIOR
+    // SPELL_WOUNDED
+    // SPELL_JOIN_PLAYER_PARTY
+    // SPELL_LEAVE_PLAYER_PARTY
+
+    //< NPC_SHANZE_PYROMANCER
+    SPELL_METEOR_TARGETING                      = 139301,
+    SPELL_METEOR_AURA                           = 138168,
+    SPELL_METEOR_AT                             = 140660,
+    SPELL_FIREBALL                              = 9053,
+    
+    //< NPC_LIGHTING_PILAR_SPARK_STALKER
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC         = 138152,
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_3       = 138091,
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_2       = 138153,
+
+    //< NPC_THUNDER_FORGE2
+    SPELL_THUNDER_FORGE_BUFF_PEREODIC           = 139422,
+    SPELL_THUNDER_FORGE_BUFF                    = 139401,
+
+    //< NPC_SHANZE_SHADOWCASTER
+    SPELL_SHADOW_BOLT                           = 12471,
+    SPELL_CORRUPTION                            = 138174,
+    
+    // NPC_THUNDER_FORGE_3
+    SPELL_THUNDER_FORGE_BUFF                    = 139431, //< AT
+    SPELL_OVERCHARGED                           = 139397,
+    
+    //< NPC_NALAK
+    SPELL_STATIC_SHIELD_TRIGGER                 = 136343,
+    SPELL_STATIC_SHIELD                         = 136342,
+
+    //< NPC_CONSTELLATION
+    SPELL_ARCANE_OVERLOAD                       = 138715,
+    SPELL_ARCANE_OVERLOAD_TRIGGER               = 138716,
+
+    //< NPC_COSMETIC_SHA_BOSS
+    SPELL_SHA_BOSS_STALKER_COSMETIC             = 139908,
+    SPELL_SHA_BOSS_COSMETIC_SPAWN               = 139444,
+    SPELL_SHA_BOSS_COSMETIC_MISSLE              = 139907,
+
+    //< NPC_METEOR_SUMMONER_STALKER
+    SPELL_METEOR_STORM_3                          = 139443,
+    SPELL_METEOR_STORM_4                          = 139658,
+    // SPELL_METEOR_STORM_2
 };
 
 enum Events
@@ -1072,7 +1173,7 @@ public:
                 case NPC_SHANZE_SHADOWCASTER:
                 case NPC_SHANZE_WARRIOR:
                 case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_ELECTRO_COUTIONER:
+                case NPC_SHANZE_ELECTRO_CUTIONER:
                 case NPC_SHANZE_PYROMANCER:
                     instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
                     break;
@@ -1138,7 +1239,7 @@ public:
                                     me->SummonCreature(NPC_SHANZE_PYROMANCER, addsPositions[urand(2, 4)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
                                     break;
                                 case 4:
-                                    me->SummonCreature(NPC_SHANZE_ELECTRO_COUTIONER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
+                                    me->SummonCreature(NPC_SHANZE_ELECTRO_CUTIONER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
                                     break;
                                 case 5:
                                     me->SummonCreature(NPC_SHANZE_SHADOWCASTER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS);
@@ -1884,7 +1985,7 @@ public:
                     case EVENT_METEOR:
                         events.ScheduleEvent(EVENT_METEOR, 19 * IN_MILLISECONDS);
                         DoCastVictim(SPELL_METEOR_TARGETING);
-                        DoCastVictim(SPELL_METEOR, true);
+                        DoCastVictim(SPELL_METEOR_AT, true);
                         break;
                     case EVENT_FIREBALL:
                         events.ScheduleEvent(EVENT_FIREBALL, 10 * IN_MILLISECONDS);

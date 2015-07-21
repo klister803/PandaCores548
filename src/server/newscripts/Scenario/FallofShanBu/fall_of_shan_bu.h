@@ -67,7 +67,8 @@ enum eCreatures
     NPC_SHANZE_SHADOWCASTER             = 69827,
     NPC_SHANZE_WARRIOR                  = 69833,
     NPC_SHANZE_BATTLEMASTER             = 69835,
-    NPC_SHANZE_ELECTRO_COUTIONER        = 70070,
+    NPC_SHANZE_ELECTRO_CUTIONER         = 70070,
+    NPC_SHANZE_ELECTRO_CUTIONER2        = 69216,
     NPC_SHANZE_PYROMANCER               = 69824,
 
     NPC_INVISIBLE_STALKER               = 62142,
@@ -88,7 +89,11 @@ enum eCreatures
     NPC_LIGHTING_PILAR_SPARK_STALKER    = 69813,
     NPC_SLAVEMASTER_SHIAXU              = 69923,
     NPC_SCOUT_CAPTAIN_ELSIA             = 70042,
-    
+    NPC_NALAK                           = 69099,
+    NPC_CONSTELLATION                   = 70058,
+    NPC_COSMETIC_SHA_BOSS               = 70449,
+    NPC_METEOR_SUMMONER_STALKER         = 70299,
+
     //< VEH
     NPC_ZANDALARI_SKYSCREAMER           = 69156,
     NPC_ZANDALARI_SKYSCREAMER2          = 69411,
