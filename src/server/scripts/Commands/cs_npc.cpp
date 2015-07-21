@@ -46,7 +46,6 @@ struct EnumName
 
 EnumName<Mechanics> const mechanicImmunes[MAX_MECHANIC] =
 {
-    CREATE_NAMED_ENUM(MECHANIC_NONE),
     CREATE_NAMED_ENUM(MECHANIC_CHARM),
     CREATE_NAMED_ENUM(MECHANIC_DISORIENTED),
     CREATE_NAMED_ENUM(MECHANIC_DISARM),
@@ -139,7 +138,6 @@ EnumName<CreatureFlagsExtra> const flagsExtra[FLAGS_EXTRA_COUNT] =
 
 EnumName<UnitDynFlags> const dynFlags[MAX_UNIT_DYNFLAGS] =
 {
-    CREATE_NAMED_ENUM(UNIT_DYNFLAG_NONE),
     CREATE_NAMED_ENUM(UNIT_DYNFLAG_DISABLE_CLIENT_SIDE),
     CREATE_NAMED_ENUM(UNIT_DYNFLAG_LOOTABLE),
     CREATE_NAMED_ENUM(UNIT_DYNFLAG_TRACK_UNIT),
@@ -774,6 +772,10 @@ public:
             if (fieldFlags & unitFlags[i].Value)
                 handler->PSendSysMessage("%s (0x%X)", unitFlags[i].Name, unitFlags[i].Value);
 
+        for (uint8 i = 0; i < MAX_UNIT_DYNFLAGS; ++i)
+            if (dynamicFlags & dynFlags[i].Value)
+                handler->PSendSysMessage("%s (0x%X)", dynFlags[i].Name, dynFlags[i].Value);
+
         handler->PSendSysMessage(LANG_NPCINFO_FLAGS_EXTRA, cInfo->flags_extra);
         for (uint8 i = 0; i < FLAGS_EXTRA_COUNT; ++i)
             if (cInfo->flags_extra & flagsExtra[i].Value)
@@ -783,10 +785,6 @@ public:
         for (uint8 i = 1; i < MAX_MECHANIC; ++i)
             if (mechanicImmuneMask & (1 << (mechanicImmunes[i].Value - 1)))
                 handler->PSendSysMessage("%s (0x%X)", mechanicImmunes[i].Name, mechanicImmunes[i].Value);
-
-        for (uint8 i = 0; i < MAX_UNIT_DYNFLAGS; ++i)
-            if (dynamicFlags & dynFlags[i].Value)
-                handler->PSendSysMessage("%s (0x%X)", dynFlags[i].Name, dynFlags[i].Value);
 
         return true;
     }
