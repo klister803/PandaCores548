@@ -523,6 +523,8 @@ enum TrinityStrings
     LANG_NPCINFO_VENDOR                 = 545,
     LANG_NPCINFO_TRAINER                = 546,
     LANG_NPCINFO_DUNGEON_ID             = 547,
+    LANG_NPCINFO_FLAGS_EXTRA            = 556,
+    LANG_NPCINFO_MECHANIC_IMMUNE        = 714,
 
     LANG_PINFO_ACCOUNT                  = 548,
     LANG_PINFO_LEVEL                    = 549,
@@ -537,9 +539,6 @@ enum TrinityStrings
     LANG_YOURS_EXPLORE_SET_NOTHING      = 554,
 
     LANG_NPC_SETDATA                    = 555,
-
-    //! Old ones now free:
-    // LANG_HOVER_DISABLED              = 556,
 
     LANG_YOURS_LEVEL_UP                 = 557,
     LANG_YOURS_LEVEL_DOWN               = 558,
@@ -683,9 +682,7 @@ enum TrinityStrings
     LANG_BG_QUEUE_ANNOUNCE_SELF         = 711,
     LANG_BG_QUEUE_ANNOUNCE_WORLD        = 712,
     LANG_YOUR_ARENA_LEVEL_REQ_ERROR     = 713,
-//                                      = 714, see LANG_PINFO_MAP_ONLINE
     LANG_YOUR_BG_LEVEL_REQ_ERROR        = 715,
-//                                      = 716, see LANG_PINFO_MAP_OFFLINE
     LANG_BG_STARTED_ANNOUNCE_WORLD      = 717,
     LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN= 718,
     LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT= 719,

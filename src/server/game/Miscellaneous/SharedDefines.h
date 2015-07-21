@@ -1730,7 +1730,9 @@ enum Mechanics
     MECHANIC_MAGICAL_IMMUNITY = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
     MECHANIC_SAPPED           = 30,
     MECHANIC_ENRAGED          = 31,
-    MECHANIC_WOUNDED          = 32
+    MECHANIC_WOUNDED          = 32,
+
+    MAX_MECHANIC
 };
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967ca6)

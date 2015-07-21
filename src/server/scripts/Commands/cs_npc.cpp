@@ -30,6 +30,127 @@ EndScriptData */
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "CreatureAI.h"
 
+template<typename E, typename T = char const*>
+struct EnumName
+{
+    E Value;
+    T Name;
+};
+
+#define CREATE_NAMED_ENUM(VALUE) { VALUE, STRINGIZE(VALUE) }
+
+#define NPCFLAG_COUNT       24
+#define FLAGS_EXTRA_COUNT   16
+#define MAX_UNIT_FLAGS      33
+#define MAX_UNIT_DYNFLAGS   10
+
+EnumName<Mechanics> const mechanicImmunes[MAX_MECHANIC] =
+{
+    CREATE_NAMED_ENUM(MECHANIC_NONE),
+    CREATE_NAMED_ENUM(MECHANIC_CHARM),
+    CREATE_NAMED_ENUM(MECHANIC_DISORIENTED),
+    CREATE_NAMED_ENUM(MECHANIC_DISARM),
+    CREATE_NAMED_ENUM(MECHANIC_DISTRACT),
+    CREATE_NAMED_ENUM(MECHANIC_FEAR),
+    CREATE_NAMED_ENUM(MECHANIC_GRIP),
+    CREATE_NAMED_ENUM(MECHANIC_ROOT),
+    CREATE_NAMED_ENUM(MECHANIC_COMBAT_SLOW),
+    CREATE_NAMED_ENUM(MECHANIC_SILENCE),
+    CREATE_NAMED_ENUM(MECHANIC_SLEEP),
+    CREATE_NAMED_ENUM(MECHANIC_SNARE),
+    CREATE_NAMED_ENUM(MECHANIC_STUN),
+    CREATE_NAMED_ENUM(MECHANIC_FREEZE),
+    CREATE_NAMED_ENUM(MECHANIC_INCAPACITATE),
+    CREATE_NAMED_ENUM(MECHANIC_BLEED),
+    CREATE_NAMED_ENUM(MECHANIC_PROVOKE),
+    CREATE_NAMED_ENUM(MECHANIC_POLYMORPH),
+    CREATE_NAMED_ENUM(MECHANIC_BANISH),
+    CREATE_NAMED_ENUM(MECHANIC_SHIELD),
+    CREATE_NAMED_ENUM(MECHANIC_SHACKLE),
+    CREATE_NAMED_ENUM(MECHANIC_MOUNT),
+    CREATE_NAMED_ENUM(MECHANIC_ENCOUNTER),
+    CREATE_NAMED_ENUM(MECHANIC_TURN),
+    CREATE_NAMED_ENUM(MECHANIC_HORROR),
+    CREATE_NAMED_ENUM(MECHANIC_INVULNERABILITY),
+    CREATE_NAMED_ENUM(MECHANIC_INTERRUPT),
+    CREATE_NAMED_ENUM(MECHANIC_DAZE),
+    CREATE_NAMED_ENUM(MECHANIC_DISCOVERY),
+    CREATE_NAMED_ENUM(MECHANIC_MAGICAL_IMMUNITY),
+    CREATE_NAMED_ENUM(MECHANIC_SAPPED),
+    CREATE_NAMED_ENUM(MECHANIC_ENRAGED),
+    CREATE_NAMED_ENUM(MECHANIC_WOUNDED)
+};
+
+EnumName<UnitFlags> const unitFlags[MAX_UNIT_FLAGS] =
+{
+    CREATE_NAMED_ENUM(UNIT_FLAG_SERVER_CONTROLLED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_NON_ATTACKABLE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_DISABLE_MOVE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PVP_ATTACKABLE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_RENAME),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PREPARATION),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_6),
+    CREATE_NAMED_ENUM(UNIT_FLAG_NOT_ATTACKABLE_1),
+    CREATE_NAMED_ENUM(UNIT_FLAG_IMMUNE_TO_PC),
+    CREATE_NAMED_ENUM(UNIT_FLAG_IMMUNE_TO_NPC),
+    CREATE_NAMED_ENUM(UNIT_FLAG_LOOTING),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PET_IN_COMBAT),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PVP),
+    CREATE_NAMED_ENUM(UNIT_FLAG_SILENCED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_14),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_15),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_16),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PACIFIED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_STUNNED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_IN_COMBAT),
+    CREATE_NAMED_ENUM(UNIT_FLAG_TAXI_FLIGHT),
+    CREATE_NAMED_ENUM(UNIT_FLAG_DISARMED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_CONFUSED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_FLEEING),
+    CREATE_NAMED_ENUM(UNIT_FLAG_PLAYER_CONTROLLED),
+    CREATE_NAMED_ENUM(UNIT_FLAG_NOT_SELECTABLE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_SKINNABLE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_NOT_SELECTABLE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_28),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_29),
+    CREATE_NAMED_ENUM(UNIT_FLAG_SHEATHE),
+    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_31)
+};
+
+EnumName<CreatureFlagsExtra> const flagsExtra[FLAGS_EXTRA_COUNT] =
+{
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_INSTANCE_BIND),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_CIVILIAN),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_PARRY),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_BLOCK),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_CRUSH),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_XP_AT_KILL),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_TRIGGER),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_TAUNT),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_WORLDEVENT),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_GUARD),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_CRIT),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_SKILLGAIN),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_TAUNT_DIMINISH),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_ALL_DIMINISH),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_DUNGEON_BOSS)
+};
+
+EnumName<UnitDynFlags> const dynFlags[MAX_UNIT_DYNFLAGS] =
+{
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_NONE),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_DISABLE_CLIENT_SIDE),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_LOOTABLE),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_TRACK_UNIT),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_TAPPED),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_TAPPED_BY_PLAYER),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_SPECIALINFO),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_DEAD),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_REFER_A_FRIEND),
+    CREATE_NAMED_ENUM(UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST)
+};
+
 class npc_commandscript : public CommandScript
 {
 public:
@@ -84,6 +205,7 @@ public:
         static ChatCommand npcCommandTable[] =
         {
             { "info",           SEC_ADMINISTRATOR,  false, &HandleNpcInfoCommand,              "", NULL },
+            { "flags",          SEC_ADMINISTRATOR,  false, &HandleNpcFlagsInfoCommand,         "", NULL },
             { "move",           SEC_GAMEMASTER,     false, &HandleNpcMoveCommand,              "", NULL },
             { "playemote",      SEC_ADMINISTRATOR,  false, &HandleNpcPlayEmoteCommand,         "", NULL },
             { "say",            SEC_MODERATOR,      false, &HandleNpcSayCommand,               "", NULL },
@@ -628,6 +750,43 @@ public:
 
         if (cInfo->VehicleId)
             handler->PSendSysMessage("Vehicle Id: %u", cInfo->VehicleId);
+
+        return true;
+    }
+
+    static bool HandleNpcFlagsInfoCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        Creature* target = handler->getSelectedCreature();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        CreatureTemplate const* cInfo = target->GetCreatureTemplate();
+        uint32 mechanicImmuneMask = cInfo->MechanicImmuneMask;
+        uint32 dynamicFlags = target->GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS);
+        uint32 fieldFlags = target->GetUInt32Value(UNIT_FIELD_FLAGS);
+
+        handler->PSendSysMessage(LANG_NPCINFO_FLAGS, fieldFlags, dynamicFlags, target->getFaction());
+        for (uint8 i = 0; i < MAX_UNIT_FLAGS; ++i)
+            if (fieldFlags & unitFlags[i].Value)
+                handler->PSendSysMessage("%s (0x%X)", unitFlags[i].Name, unitFlags[i].Value);
+
+        handler->PSendSysMessage(LANG_NPCINFO_FLAGS_EXTRA, cInfo->flags_extra);
+        for (uint8 i = 0; i < FLAGS_EXTRA_COUNT; ++i)
+            if (cInfo->flags_extra & flagsExtra[i].Value)
+                handler->PSendSysMessage("%s (0x%X)", flagsExtra[i].Name, flagsExtra[i].Value);
+
+        handler->PSendSysMessage(LANG_NPCINFO_MECHANIC_IMMUNE, mechanicImmuneMask);
+        for (uint8 i = 1; i < MAX_MECHANIC; ++i)
+            if (mechanicImmuneMask & (1 << (mechanicImmunes[i].Value - 1)))
+                handler->PSendSysMessage("%s (0x%X)", mechanicImmunes[i].Name, mechanicImmunes[i].Value);
+
+        for (uint8 i = 0; i < MAX_UNIT_DYNFLAGS; ++i)
+            if (dynamicFlags & dynFlags[i].Value)
+                handler->PSendSysMessage("%s (0x%X)", dynFlags[i].Name, dynFlags[i].Value);
 
         return true;
     }
