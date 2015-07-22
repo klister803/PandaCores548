@@ -1,10 +1,8 @@
-DELETE FROM `creature_text` WHERE `entry` IN 
-(70100, 70500, 70070, 69835, 69828, 70061, 69837, 70228, 69833, 70283, 70074, 70099);
-
+DELETE FROM `creature_text` WHERE `entry` IN (70100, 70500, 70070, 69835, 69828, 70061, 69837, 70228, 69833, 70283, 70074, 70099);
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (70100, 0, 0, 'Принесенный тобой триллий надо сначала очистить.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
-(70100, 1, 0, 'Эта плавильня вполне подойдет. Помоги мне с формами.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
-(70100, 2, 0, 'Эта плавильня вполне подойдет. Мы усилим металл электрическим зарядом.', 12, 0, 100, 0, 0, 0, 'Гневион'),
+(70100, 1, 0, 'Эта плавильня вполне подойдет. Помоги мне с формами.', 12, 0, 100, 25, 36022, 0, 'Гневион to Player'),
+(70100, 2, 0, 'Эта плавильня вполне подойдет. Мы усилим металл электрическим зарядом.', 12, 0, 100, 1, 0, 36405, 'Гневион'),
 (70100, 3, 0, 'Придется драться, если нас заметят.', 12, 0, 100, 0, 0, 0, 'Гневион'),
 (70100, 4, 0, 'Прекрасно. Материалы готовы. Следуй за мной.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 (70100, 5, 0, 'Как интересно! Эта кузня выстроена поверх древнего механизма титанов. Ах, Лэй Шэнь, ты умен!', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
@@ -28,6 +26,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (70100, 23, 0, 'Бросай его прямо перед тем, как зверь умрет – ни секундой раньше, ни секундой позже!', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 (70100, 24, 0, 'Мне надо кое-что сделать на материке. Когда закончишь дело, приходи на Сокрытую лестницу.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 (70100, 25, 0, 'И постарайся не умереть.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
+(70100, 26, 0, 'Шадо-Пан! Они могут на пригодиться. Надо им помочь.', 12, 0, 100, 0, 0, 0, 'Гневион to Player'),
 
 (70500, 0, 0, '|cFFFF2222[Копье молний]|r заряжено. Прикончите слияние ша!', 41, 0, 100, 0, 0, 0, 'Lightning Spear Float Stalker to 0'),
 
@@ -61,36 +60,36 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (70099, 2, 0, 'Кузня в безопасности, нам нужно возвращаться. Удачи тебе в твоих дальнейших приключениях.', 12, 0, 100, 2, 0, 0, 'Защитник Шадо-Пан to Гневион');
 
 
-UPDATE `creature_template` SET  `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70556');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70283');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70148');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='14', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70299');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70162');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='2.8', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70577');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='14', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70449');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70039');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33555200', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69217');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70048');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `npcflag`='16777216', `speed_walk`='1', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33555200', `HoverHeight`='1' WHERE (`entry`='70460');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70481');
-UPDATE `creature_template` SET `minlevel`='92', `maxlevel`='92', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70070');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='0.4', `speed_run`='0.142857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69798');
-UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70074');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='1665', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70079');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69813');
-UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction_A`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `unit_flags2`='67108864', `HoverHeight`='1' WHERE (`entry`='62142');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `speed_walk`='2.8', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `VehicleId`='2772', `HoverHeight`='1' WHERE (`entry`='70500');
-UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction_A`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `unit_flags2`='4196352', `HoverHeight`='1' WHERE (`entry`='70228');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69824');
-UPDATE `creature_template` SET `maxlevel`='91', `faction_A`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `HoverHeight`='1' WHERE (`entry`='70099');
-UPDATE `creature_template` SET `gossip_menu_id`='15615', `minlevel`='90', `maxlevel`='90', `faction_A`='35', `npcflag`='1', `speed_walk`='1.6', `speed_run`='0.571429', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33536', `unit_flags2`='2048', `HoverHeight`='1', `ScriptName` ='npc_wrathion' WHERE (`entry`='70100');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69827');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='2580', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='4196352', `HoverHeight`='1' WHERE (`entry`='69828');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `HoverHeight`='1' WHERE (`entry`='70106');
-UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69833');
-UPDATE `creature_template` SET `minlevel`='92', `maxlevel`='92', `faction_A`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69835');
-UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction_A`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='4194304', `HoverHeight`='1' WHERE (`entry`='69837');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction_A`='35', `npcflag`='32768', `speed_walk`='1', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='65183');
+UPDATE `creature_template` SET  `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70556');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70283');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70148');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='14', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70299');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70162');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='2.8', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70577');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='14', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70449');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70039');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33555200', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69217');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70048');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `npcflag`='16777216', `speed_walk`='1', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33555200', `HoverHeight`='1' WHERE (`entry`='70460');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70481');
+UPDATE `creature_template` SET `minlevel`='92', `maxlevel`='92', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70070');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='0.4', `speed_run`='0.142857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69798');
+UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70074');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='1665', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70079');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69813');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `unit_flags2`='67108864', `HoverHeight`='1' WHERE (`entry`='62142');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='2.8', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `VehicleId`='2772', `HoverHeight`='1' WHERE (`entry`='70500');
+UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='14', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `unit_flags2`='4196352', `HoverHeight`='1' WHERE (`entry`='70228');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69824');
+UPDATE `creature_template` SET `maxlevel`='91', `faction`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `HoverHeight`='1' WHERE (`entry`='70099');
+UPDATE `creature_template` SET `gossip_menu_id`='15615', `minlevel`='90', `maxlevel`='90', `faction`='35', `npcflag`='1', `speed_walk`='1.6', `speed_run`='0.571429', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33536', `unit_flags2`='2048', `HoverHeight`='1', `ScriptName` ='npc_wrathion' WHERE (`entry`='70100');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69827');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='2580', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='800', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='4196352', `HoverHeight`='1' WHERE (`entry`='69828');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `HoverHeight`='1' WHERE (`entry`='70106');
+UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69833');
+UPDATE `creature_template` SET `minlevel`='92', `maxlevel`='92', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69835');
+UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='1665', `speed_walk`='1', `speed_run`='1.42857', `speed_fly`='1.14286', `baseattacktime`='1500', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='4194304', `HoverHeight`='1' WHERE (`entry`='69837');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `npcflag`='32768', `speed_walk`='1', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='65183');
 
 
 DELETE FROM `gossip_menu` WHERE (`entry`=15535 AND `text_id`=22315) OR (`entry`=15615 AND `text_id`=22423) OR (`entry`=15618 AND `text_id`=22441) OR (`entry`=15607 AND `text_id`=22414);
@@ -158,9 +157,395 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 ('868', '0', '1', '0', '8', '140068', '1', '140068', '0', '0', '0', '0', 'Power Surge');
 
 
-DELETE FROM `spell_script_names` WHERE (`spell_id`=138805 AND `ScriptName`='spell_avnil_click_dummy') OR(`spell_id`=134715 AND `ScriptName`='spell_phase_shift_update') OR (`spell_id`=138869 AND `ScriptName`='spell_forging') OR (`spell_id`=140382  AND `ScriptName`='spell_thundder_forge_charging');
+DELETE FROM `spell_script_names` WHERE spell_id IN (134715, 138869, 138805, 138928, 140382);
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('134715', 'spell_phase_shift_update'),
 ('138869', 'spell_forging'),
 ('138805', 'spell_avnil_click_dummy'),
+('138928', 'spell_spec_test'),
 ('140382', 'spell_thundder_forge_charging');
+
+DELETE FROM `gameobject` WHERE `map` = '1126';
+INSERT INTO `gameobject` (`id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`) VALUES
+(218709, 1126, 3, 1, 7374.324, 5154.569, 50.52546, 0.7853947, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218709 (Area: 6677)
+(218707, 1126, 3, 1, 7374.224, 5166.111, 50.52546, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218707 (Area: 6677)
+(218710, 1126, 3, 1, 7362.681, 5154.571, 50.52546, 5.497789, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218710 (Area: 6677)
+(218708, 1126, 3, 1, 7362.682, 5166.214, 50.52546, 3.926991, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218708 (Area: 6677)
+(218752, 1126, 3, 1, 7374.793, 5160.338, 48.6681, 3.141593, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218752 (Area: 6677)
+(218754, 1126, 3, 1, 7362.213, 5160.446, 48.6681, 0, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218754 (Area: 6677)
+(218917, 1126, 3, 1, 7223.84, 5236.132, 64.80622, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218917 (Area: 6677)
+(218911, 1126, 3, 1, 7169.64, 5290.399, 64.80723, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218911 (Area: 6677)
+(218910, 1126, 3, 1, 7182.022, 5277.958, 64.80556, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218910 (Area: 6677)
+(218908, 1126, 3, 1, 7236.141, 5223.792, 64.80622, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218908 (Area: 6677)
+(218909, 1126, 3, 1, 7236.141, 5223.792, 66.73969, 0.7853968, 0, 0, 0, 1, 7200, 255, 1), -- 218909 (Area: 6677)
+(218753, 1126, 3, 1, 7368.557, 5166.682, 48.6681, 4.712392, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218753 (Area: 6677)
+(218916, 1126, 3, 1, 7223.84, 5236.132, 66.73901, 0.7853968, 0, 0, 0, 1, 7200, 255, 1), -- 218916 (Area: 6677)
+(218913, 1126, 3, 1, 7157.116, 5302.848, 66.7393, 0.7853968, 0, 0, 0, 1, 7200, 255, 1), -- 218913 (Area: 6677)
+(218914, 1126, 3, 1, 7169.64, 5290.399, 66.74004, 0.7853968, 0, 0, 0, 1, 7200, 255, 1), -- 218914 (Area: 6677)
+(218915, 1126, 3, 1, 7182.022, 5277.958, 66.73903, 0.7853968, 0, 0, 0, 1, 7200, 255, 1), -- 218915 (Area: 6677)
+(218728, 1126, 3, 1, 7041.547, 5237.245, 84.29315, 5.497789, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218728 (Area: 6677)
+(218744, 1126, 3, 1, 7040.955, 5079.214, 23.34534, 3.926996, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218744 (Area: 6677)
+(218726, 1126, 3, 1, 7197.783, 5081.424, 76.04965, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218726 (Area: 6677)
+(218727, 1126, 3, 1, 7302.575, 5226.308, 65.33392, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218727 (Area: 6677)
+(218628, 1126, 3, 1, 6834.797, 5056.838, 10.48683, 5.497787, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218628 (Area: 6677)
+(218751, 1126, 3, 1, 7368.449, 5154.101, 48.6681, 1.570798, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218751 (Area: 6677)
+(218912, 1126, 3, 1, 7157.116, 5302.848, 64.8065, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218912 (Area: 6677)
+(218729, 1126, 3, 1, 6805.447, 5473.829, 31.62734, 2.35619, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218729 (Area: 6677)
+(218538, 1126, 3, 1, 6986.18, 5527.066, 29.53299, 1.570796, 2.214052E-43, 0, 0, 1, 7200, 255, 1), -- 218538 (Area: 6677)
+(218976, 1126, 3, 1, 6170.397, 4990.396, 32.28986, 2.556905, 2.228065E-43, 0, 0, 1, 7200, 255, 1), -- 218976 (Area: 6677)
+(218696, 1126, 3, 1, 6963.055, 5315.902, 87.09985, 2.35619, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218696 (Area: 6677)
+(218697, 1126, 3, 1, 6972.695, 5244.008, 86.44685, 3.926996, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218697 (Area: 6677)
+(218698, 1126, 3, 1, 7034.987, 5306.051, 86.44685, 0.7853989, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218698 (Area: 6677)
+(218975, 1126, 3, 1, 7160.901, 6316.171, 9.180073, 0.7853968, 2.242078E-43, 0, 0, 1, 7200, 255, 1), -- 218975 (Area: 6677)
+(218717, 1126, 3, 1, 6819.336, 5072.299, 10.48683, 2.35619, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218717 (Area: 6677)
+(218730, 1126, 3, 1, 7234.712, 5431.668, 50.67706, 2.35619, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218730 (Area: 6677)
+(218832, 1126, 3, 1, 7302.569, 5226.24, 65.34456, 2.337233, 0, 0, 0, 1, 7200, 255, 1), -- 218832 (Area: 6677)
+(218198, 1126, 3, 1, 7356.8, 5410.202, 47.86681, 0.8255808, 0, 0, 0, 1, 7200, 255, 1), -- 218198 (Area: 6677)
+(218706, 1126, 3, 1, 7390.33, 5160.446, 49.68689, 3.141593, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218706 (Area: 6677)
+(218705, 1126, 3, 1, 7368.557, 5138.565, 49.68689, 1.570798, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218705 (Area: 6677)
+(218704, 1126, 3, 1, 7346.677, 5160.337, 49.68689, 0, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218704 (Area: 6677)
+(218703, 1126, 3, 1, 7383.898, 5175.864, 49.68689, 3.926996, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218703 (Area: 6677)
+(218702, 1126, 3, 1, 7383.975, 5144.996, 49.68689, 2.356195, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218702 (Area: 6677)
+(218701, 1126, 3, 1, 7353.107, 5144.919, 49.68689, 0.7853989, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218701 (Area: 6677)
+(218740, 1126, 3, 1, 7368.503, 5160.392, 60.7435, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218740 (Area: 6677)
+(218741, 1126, 3, 1, 7368.449, 5182.218, 49.68689, 4.712392, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218741 (Area: 6677)
+(218462, 1126, 3, 1, 7310.269, 5214.783, 65.51264, 6.239733, 0, 0, 0, 1, 7200, 255, 1), -- 218462 (Area: 6677)
+(213251, 1126, 3, 1, 7302.394, 5226.38, 65.15009, 5.514209, 0, 0, 0, 1, 7200, 255, 1); -- 213251 (Area: 6677)
+
+UPDATE `gameobject` SET `spawnMask`='4096' WHERE `map` = '1126';
+
+DELETE FROM `creature` WHERE `map` = '1126';
+SET @CGUID := 1151900;
+DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+187;
+INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `MovementType`) VALUES
+(@CGUID+0, 70556, 1126, 3, 1, 7182.018, 5277.963, 68.1808, 0, 7200, 0, 0), -- 70556 (Area: 6677) (Auras: )
+(@CGUID+1, 70577, 1126, 3, 1, 7186.507, 5281.804, 66.35448, 0.7079705, 7200, 0, 0), -- 70577 (Area: 6677) (Auras: 140678 - 140678)
+(@CGUID+2, 70100, 1126, 3, 1, 7216.692, 5296.011, 66.06776, 1.324494, 7200, 5, 1), -- 70100 (Area: 6677) (Auras: 109924 - 109924) (possible waypoints or random movement)
+(@CGUID+3, 69798, 1126, 3, 1, 7195.71, 5249.874, 67.64626, 0, 7200, 5, 1), -- 69798 (Area: 6677) (Auras: 138090 - 138090) (possible waypoints or random movement)
+(@CGUID+4, 70577, 1126, 3, 1, 7195.93, 5249.743, 85.89191, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+5, 62142, 1126, 3, 1, 7202.491, 5242.387, 66.06776, 0, 7200, 0, 0), -- 62142 (Area: 6677)
+(@CGUID+6, 69813, 1126, 3, 1, 7196.897, 5252.677, 66.06777, 0, 7200, 5, 1), -- 69813 (Area: 6677) (Auras: 138152 - 138152) (possible waypoints or random movement)
+(@CGUID+10, 69824, 1126, 3, 1, 7266.987, 5324.924, 66.10201, 3.974203, 7200, 0, 0), -- 69824 (Area: 6677) (Auras: )
+(@CGUID+11, 69217, 1126, 3, 1, 7342.043, 5370.661, 49.23515, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+12, 69217, 1126, 3, 1, 7338.482, 5367.695, 48.98612, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+13, 69217, 1126, 3, 1, 7291.238, 5412.547, 49.26095, 1.208475, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+14, 69833, 1126, 3, 1, 7266.683, 5325.157, 66.07448, 3.676479, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+15, 69833, 1126, 3, 1, 7268.239, 5327.411, 66.38251, 3.69156, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+16, 69217, 1126, 3, 1, 7294.707, 5411.833, 49.29826, 6.161801, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+17, 69217, 1126, 3, 1, 7338.566, 5369.512, 49.40574, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+18, 69217, 1126, 3, 1, 7291.027, 5409.651, 49.3648, 1.208475, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+19, 69824, 1126, 3, 1, 7208.137, 5316.194, 66.04639, 5.238442, 7200, 0, 0), -- 69824 (Area: 6677) (Auras: )
+(@CGUID+20, 70283, 1126, 3, 1, 7237.304, 5291.855, 66.06776, 0, 7200, 0, 0), -- 70283 (Area: 6677) (Auras: 139422 - 139422)
+(@CGUID+21, 69833, 1126, 3, 1, 7255.153, 5307.322, 66.06771, 5.238442, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+22, 69824, 1126, 3, 1, 7208.137, 5316.194, 66.04639, 5.238442, 7200, 0, 0), -- 69824 (Area: 6677) (Auras: )
+(@CGUID+23, 69833, 1126, 3, 1, 7256.335, 5268.132, 66.06771, 5.238442, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+24, 69835, 1126, 3, 1, 7257.758, 5271.01, 66.06776, 2.210946, 7200, 0, 0), -- 69835 (Area: 6677) (Auras: )
+(@CGUID+25, 69217, 1126, 3, 1, 7340.7, 5380.243, 49.36794, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+26, 69217, 1126, 3, 1, 7338.674, 5380.248, 49.12809, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+27, 69217, 1126, 3, 1, 7339.89, 5378.694, 49.00018, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+28, 69833, 1126, 3, 1, 7208.137, 5316.194, 66.04639, 5.238442, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+29, 69827, 1126, 3, 1, 7255.153, 5307.322, 66.06771, 5.238442, 7200, 0, 0), -- 69827 (Area: 6677) (Auras: )
+(@CGUID+30, 69217, 1126, 3, 1, 7311.607, 5412.239, 49.11797, 1.345706, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+31, 69217, 1126, 3, 1, 7313.891, 5412.119, 49.27747, 1.345706, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+32, 69217, 1126, 3, 1, 7284.254, 5438.185, 49.14133, 6.161801, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+33, 69217, 1126, 3, 1, 7312.784, 5410.182, 49.34801, 1.345706, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+34, 69217, 1126, 3, 1, 7351.824, 5383.955, 50.94715, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+35, 69217, 1126, 3, 1, 7351.096, 5383.035, 50.82228, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+36, 69217, 1126, 3, 1, 7293.607, 5424.427, 49.08494, 6.161801, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+37, 69217, 1126, 3, 1, 7293.022, 5422.567, 49.03603, 1.208475, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+38, 69217, 1126, 3, 1, 7284.92, 5431.379, 50.54184, 1.208475, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+39, 69217, 1126, 3, 1, 7350.444, 5383.804, 50.82554, 0, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+40, 69217, 1126, 3, 1, 7289.235, 5438.115, 49.53886, 1.208475, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+41, 69217, 1126, 3, 1, 7292.333, 5428.276, 49.23653, 5.862174, 7200, 0, 0), -- 69217 (Area: 6677)
+(@CGUID+42, 70070, 1126, 3, 1, 7217.198, 5311.208, 65.88635, 4.696098, 7200, 0, 0), -- 70070 (Area: 6677) (Auras: )
+(@CGUID+43, 69833, 1126, 3, 1, 7256.335, 5268.132, 66.06771, 5.238442, 7200, 0, 0), -- 69833 (Area: 6677) (Auras: )
+(@CGUID+44, 69827, 1126, 3, 1, 7255.153, 5307.322, 66.06771, 5.238442, 7200, 0, 0), -- 69827 (Area: 6677) (Auras: )
+(@CGUID+45, 70074, 1126, 3, 1, 7207.826, 5262.409, 66.06776, 6.170584, 7200, 0, 0), -- 70074 (Area: 6677) (Auras: 138821 - 138821)
+(@CGUID+46, 70577, 1126, 3, 1, 7362.676, 5154.479, 51.60539, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+47, 70577, 1126, 3, 1, 7362.483, 5166.262, 51.60539, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+48, 70577, 1126, 3, 1, 7374.323, 5154.493, 51.60539, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+49, 70577, 1126, 3, 1, 7374.53, 5166.298, 51.60539, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+50, 70577, 1126, 3, 1, 7375.59, 5160.448, 50.32215, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+51, 70577, 1126, 3, 1, 7361.682, 5160.647, 50.32215, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+52, 70577, 1126, 3, 1, 7368.504, 5153.417, 50.32215, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+53, 70577, 1126, 3, 1, 7368.596, 5167.352, 50.32215, 0, 7200, 0, 0), -- 70577 (Area: 6677)
+(@CGUID+54, 69828, 1126, 3, 1, 7323.568, 5114.839, 55.45367, 0.6870306, 7200, 0, 0), -- 69828 (Area: 6677) (Auras: )
+(@CGUID+55, 70079, 1126, 3, 1, 7368.688, 5138.772, 51.1924, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+56, 70481, 1126, 3, 1, 7368.49, 5160.354, 49.66591, 0, 7200, 0, 0), -- 70481 (Area: 6677)
+(@CGUID+57, 70079, 1126, 3, 1, 7383.854, 5145.223, 51.18703, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+58, 70079, 1126, 3, 1, 7368.323, 5181.96, 51.11091, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+59, 70079, 1126, 3, 1, 7346.741, 5160.249, 51.10029, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+60, 70079, 1126, 3, 1, 7390.086, 5160.494, 51.15352, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+61, 70079, 1126, 3, 1, 7383.682, 5175.76, 51.00207, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+62, 70079, 1126, 3, 1, 7353.362, 5144.927, 51.21231, 0, 7200, 0, 0), -- 70079 (Area: 6677) (Auras: 140134 - 140134)
+(@CGUID+63, 70148, 1126, 3, 1, 7354.41, 5174.482, 49.66591, 0, 7200, 0, 0), -- 70148 (Area: 6677)
+(@CGUID+64, 69837, 1126, 3, 1, 7412.179, 5204.663, 55.41367, 3.80821, 7200, 0, 0), -- 69837 (Area: 6677) (Auras: 139127 - 139127)
+(@CGUID+65, 70162, 1126, 3, 1, 7352.938, 5172.305, 49.66591, 0, 7200, 0, 0), -- 70162 (Area: 6677)
+(@CGUID+66, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+67, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+68, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+69, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+70, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+71, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+72, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+73, 70048, 1126, 3, 1, 7317.721, 5109.741, 55.45368, 0.87884, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+74, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+75, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+76, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+77, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+78, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+79, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+80, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+81, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+82, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+83, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+84, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+85, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+86, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+87, 70039, 1126, 3, 1, 7312.857, 5209.722, 65.48965, 5.424292, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+88, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+89, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+90, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+91, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+92, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+93, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+94, 70048, 1126, 3, 1, 7317.721, 5109.741, 55.45368, 0.87884, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+95, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+96, 70039, 1126, 3, 1, 7356.898, 5186.524, 49.56894, 5.875406, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: )
+(@CGUID+97, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+98, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+99, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+100, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+101, 70039, 1126, 3, 1, 7351.568, 5187.763, 49.62176, 5.739058, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+102, 70039, 1126, 3, 1, 7341.887, 5193.62, 51.393, 5.739141, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+103, 70048, 1126, 3, 1, 7317.721, 5109.741, 55.45368, 0.87884, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+104, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+105, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+106, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+107, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+108, 70048, 1126, 3, 1, 7312.302, 5217.17, 65.59111, 5.390892, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+109, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+110, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+111, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+112, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+113, 69828, 1126, 3, 1, 7323.568, 5114.839, 55.45367, 0.6870306, 7200, 0, 0), -- 69828 (Area: 6677) (Auras: )
+(@CGUID+114, 69837, 1126, 3, 1, 7411.527, 5204.15, 55.40028, 3.80821, 7200, 5, 1), -- 69837 (Area: 6677) (Auras: 139127 - 139127) (possible waypoints or random movement)
+(@CGUID+115, 70162, 1126, 3, 1, 7352.938, 5172.305, 49.66591, 0, 7200, 0, 0), -- 70162 (Area: 6677)
+(@CGUID+116, 70148, 1126, 3, 1, 7354.41, 5174.482, 49.66591, 0, 7200, 0, 0), -- 70148 (Area: 6677)
+(@CGUID+117, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+118, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+119, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+120, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+121, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+122, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+123, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+124, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+125, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+126, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+127, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+128, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+129, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+130, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+131, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+132, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+133, 70048, 1126, 3, 1, 7312.302, 5217.17, 65.59111, 5.390892, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+134, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+135, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+136, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+137, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+138, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+139, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+140, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+141, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+142, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+143, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+144, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+145, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+146, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+147, 70039, 1126, 3, 1, 7342.526, 5193.744, 51.20268, 5.839533, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+148, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+149, 70039, 1126, 3, 1, 7335.335, 5202.951, 56.86404, 5.517964, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+150, 70039, 1126, 3, 1, 7319.052, 5216.208, 65.49776, 5.659976, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+151, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+152, 70048, 1126, 3, 1, 7312.302, 5217.17, 65.59111, 5.69125, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692, 138947 - 138947, 138948 - 138948)
+(@CGUID+153, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+154, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+155, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+156, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+157, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+158, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+159, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+160, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+161, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+162, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+163, 70039, 1126, 3, 1, 7417.073, 5111.687, 55.45368, 2.281068, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+164, 70048, 1126, 3, 1, 7415.53, 5208.013, 55.45368, 3.720318, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+165, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+166, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+167, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+168, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+169, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+170, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
+(@CGUID+171, 70460, 1126, 3, 1, 7368.375, 5181.912, 55.04837, 0, 7200, 5, 1), -- 70460 (Area: 6677) (Auras: 140100 - 140100) (possible waypoints or random movement)
+(@CGUID+172, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: )
+(@CGUID+173, 70500, 1126, 3, 1, 7368.375, 5181.912, 52.79837, 0, 7200, 0, 0), -- 70500 (Area: 6677) (Auras: )
+(@CGUID+174, 70299, 1126, 3, 1, 7342.775, 5133.769, 49.77427, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+175, 70299, 1126, 3, 1, 7411.531, 5201.643, 55.45366, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+176, 70299, 1126, 3, 1, 7378.28, 5149.649, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+177, 70299, 1126, 3, 1, 7358.299, 5150.396, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+178, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: )
+(@CGUID+179, 70299, 1126, 3, 1, 7394.218, 5134.989, 49.76205, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+180, 70299, 1126, 3, 1, 7354.231, 5174.95, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+181, 70299, 1126, 3, 1, 7378.084, 5169.983, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+182, 70299, 1126, 3, 1, 7314.1, 5212.71, 65.59363, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
+(@CGUID+183, 70449, 1126, 3, 1, 7348.575, 5178.655, 49.47066, 0, 7200, 0, 0), -- 70449 (Area: 6677) (Auras: 139908 - 139908)
+(@CGUID+185, 65183, 1126, 3, 1, 7306.868, 5222.081, 65.37994, 5.399889, 7200, 0, 0), -- 65183 (Area: 6677) (Auras: 22011 - 22011)
+(@CGUID+186, 70449, 1126, 3, 1, 7348.575, 5178.655, 49.47066, 0, 7200, 0, 0); -- 70449 (Area: 6677) (Auras: 139908 - 139908)
+
+DELETE FROM `creature_addon` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+187;
+INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALUES
+(@CGUID+0, 0, 0x3000000, 0x1, ''), -- 70556
+(@CGUID+1, 0, 0x3000000, 0x1, '140678'), -- 70577 - 140678 - 140678
+(@CGUID+2, 0, 0x0, 0x1, '109924'), -- 70100 - 109924 - 109924
+(@CGUID+3, 0, 0x3000000, 0x1, '138090'), -- 69798 - 138090 - 138090
+(@CGUID+4, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+6, 0, 0x3000000, 0x1, '138152'), -- 69813 - 138152 - 138152
+(@CGUID+20, 0, 0x3000000, 0x1, '139422'), -- 70283 - 139422 - 139422
+(@CGUID+45, 0, 0x0, 0x1, '138821'), -- 70074 - 138821 - 138821
+(@CGUID+46, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+47, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+48, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+49, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+50, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+51, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+52, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+53, 0, 0x3000000, 0x1, ''), -- 70577
+(@CGUID+55, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+56, 0, 0x2000000, 0x1, ''), -- 70481
+(@CGUID+57, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+58, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+59, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+60, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+61, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+62, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
+(@CGUID+63, 0, 0x2000000, 0x1, ''), -- 70148
+(@CGUID+64, 0, 0x0, 0x1, '139127'), -- 69837 - 139127 - 139127
+(@CGUID+65, 0, 0x2000000, 0x1, ''), -- 70162
+(@CGUID+66, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+67, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+68, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+69, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+70, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+71, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+72, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+73, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+74, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+75, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+76, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+77, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+78, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+79, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+80, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+81, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+82, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+83, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+84, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+85, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+86, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+87, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+88, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+89, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+90, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+91, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+92, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+93, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+94, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+95, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+97, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+98, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+99, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+100, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+101, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+102, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+103, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+104, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+105, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+106, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+107, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+108, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+109, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+110, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+111, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+112, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+114, 0, 0x0, 0x1, '139127'), -- 69837 - 139127 - 139127
+(@CGUID+115, 0, 0x2000000, 0x1, ''), -- 70162
+(@CGUID+116, 0, 0x2000000, 0x1, ''), -- 70148
+(@CGUID+117, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+118, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+119, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+120, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+121, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+122, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+123, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+124, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+125, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+126, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+127, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+128, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+129, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+130, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+131, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+132, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+133, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+134, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+135, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+136, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+137, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+138, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+139, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+140, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+141, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+142, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+143, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+144, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+145, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+146, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+147, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+148, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+149, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+150, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+151, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+152, 0, 0x0, 0x1, '138692 138947 138948'), -- 70048 - 138692 - 138692, 138947 - 138947, 138948 - 138948
+(@CGUID+153, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+154, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+155, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+156, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+157, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+158, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+159, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+160, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+161, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+162, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+163, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+164, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+165, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+166, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+167, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+168, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
+(@CGUID+169, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+170, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
+(@CGUID+171, 0, 0x2000000, 0x1, '140100'), -- 70460 - 140100 - 140100
+(@CGUID+173, 0, 0x3000000, 0x1, ''), -- 70500
+(@CGUID+174, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+175, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+176, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+177, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+179, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+180, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+181, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+182, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
+(@CGUID+183, 0, 0x2000000, 0x1, '139908'), -- 70449 - 139908 - 139908
+(@CGUID+185, 0, 0x10000, 0x1, '22011'), -- 65183 - 22011 - 22011
+(@CGUID+186, 0, 0x2000000, 0x1, '139908'); -- 70449 - 139908 - 139908
+
+UPDATE `creature` SET `spawnMask`='4096' WHERE `map` = '1126';

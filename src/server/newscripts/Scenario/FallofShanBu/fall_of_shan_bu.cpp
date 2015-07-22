@@ -29,9 +29,58 @@ enum Spells
     //< player self
     SPELL_ATTACKED_PLAYER                       = 138952,
     SPELL_POWER_SURGE_TRIGGER                   = 140068,
+    
+    //< NPC_WRATHION
+    SPELL_SPEC_TEST                             = 138928,
+    SPELL_UPDATE_PHASE_SHIFT                    = 134715,
+    SPELL_LIGHTING_STRIKE_COSMETIC_5            = 140527,
+    SPELL_WRATHION_TRUE_FORM                    = 109924,
+    SPELL_LIGHTING_STRIKE_3                     = 140540,
+    // SPELL_LIGHTING_STRIKE_COSMETIC
+
+    //< NPC_INVISIBLE_STALKER
+    SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1  = 140334,
+
+    //< NPC_THUNDER_FORGE_2
+    SPELL_GROUNDED                              = 139252,
+    SPELL_LIGHTING_CHASE                        = 138721,
+    SPELL_LIGHTING_STRIKE_TRIGGERED_BY_CHASE    = 138720,
+
+    //< NPC_LIGHTING_LANCE
+    SPELL_RIDE_VEHICLE_HARDCODED                = 46598,
+    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_LSTRIKES = 140100,
+    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_SPARKLES = 139956,
+
+    //< NPC_THUNDER_FORGE2
+    SPELL_THUNDER_FORGE_BUFF_PEREODIC           = 139422,
+    SPELL_THUNDER_FORGE_BUFF                    = 139401,
+
+    // NPC_THUNDER_FORGE_3
+    SPELL_THUNDER_FORGE_BUFF_3                  = 139431, //< AT
+    SPELL_OVERCHARGED                           = 139397,
+
+    //< NPC_LIGHTING_PILAR_BEAM_STALKER
+    SPELL_THUNDER_FORGE_CHARGE                  = 140382,
+    SPELL_COSMETIC_LIGHTING_PILLAR_BEAM         = 138090,
 
     //< NPC_SHANZE_ELECTRO_CUTIONER2
     SPELL_LIGHTING_CHARGE                       = 136495,
+
+    //< NPC_LIGHTING_PILAR_SPARK_STALKER
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC         = 138152,
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_3       = 138091,
+    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_2       = 138153,
+
+    //< NPC_THUNDER_FORGE
+    SPELL_LIGHTING_STRIKE                       = 140678,
+    SPELL_LIGHTING_STRIKE_COSMETIC_3            = 140681,
+    SPELL_LIGHTING_STRIKE_COSMETIC_4            = 140507,
+    SPELL_LIGHTING_STRIKE_COSMETIC_2            = 140857,
+    
+    //< NPC_SHADO_PAN_WARRIOR
+    // SPELL_WOUNDED
+    // SPELL_JOIN_PLAYER_PARTY
+    // SPELL_LEAVE_PLAYER_PARTY
 
     //< NPC_SHADO_PAN_DEFENDER
     SPELL_TAUNT                                 = 138937,
@@ -48,13 +97,6 @@ enum Spells
     SPELL_LUMBERING_CHARGE                      = 142587, //< AT
     SPELL_CLEAVE                                = 59992,
 
-    //< NPC_INVISIBLE_STALKER
-    SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1  = 140334,
-
-    //< NPC_LIGHTING_PILAR_BEAM_STALKER
-    SPELL_THUNDER_FORGE_CHARGE                  = 140382,
-    SPELL_COSMETIC_LIGHTING_PILLAR_BEAM         = 138090,
-
     //< NPC_SHANZE_BATTLEMASTER
     SPELL_STORM_STRIKE                          = 138712,
     SPELL_STORM_STRIKE2                         = 32175,
@@ -65,10 +107,23 @@ enum Spells
     SPELL_LIGHTING_WHIRLWIND2                   = 138191,
     SPELL_LIGHTING_WHIRLWIND3                   = 138190,
 
-    //< NPC_THUNDER_FORGE_2
-    SPELL_GROUNDED                              = 139252,
-    SPELL_LIGHTING_CHASE                        = 138721,
-    SPELL_LIGHTING_STRIKE_TRIGGERED_BY_CHASE    = 138720,
+    //< NPC_SHANZE_ELECTRO_CUTIONER
+    SPELL_CALL_LIGHTING                         = 138741,
+
+    //< NPC_SHANZE_PYROMANCER
+    SPELL_METEOR_TARGETING                      = 139301,
+    SPELL_METEOR_AURA                           = 138168,
+    SPELL_METEOR_AT                             = 140660,
+    SPELL_FIREBALL                              = 9053,
+    
+    //< NPC_SHANZE_SHADOWCASTER
+    SPELL_SHADOW_BOLT                           = 12471,
+    SPELL_CORRUPTION                            = 138174,
+        
+    //< NPC_METEOR_SUMMONER_STALKER
+    SPELL_METEOR_STORM_3                          = 139443,
+    SPELL_METEOR_STORM_4                          = 139658,
+    // SPELL_METEOR_STORM_2
 
     //< NPC_FORGEMASTER_VULKON
     SPELL_LIGHTING_STRIKE_2                     = 138826,
@@ -81,6 +136,9 @@ enum Spells
     SPELL_THUNDER_SMASH_DUMMY                   = 139357,
     SPELL_LIGHTING_SMASH                        = 138831,
     SPELL_LIGHTING_SMASH_TRIGGER                = 138832,
+
+
+    //< lr
 
     //< NPC_SHA_FIEND
     SPELL_SMALL_SHA_FIXATE                      = 138692,
@@ -129,11 +187,6 @@ enum Spells
     SPELL_ELECTIC_DISCHARGE                     = 140047,
     SPELL_ELECTRIC_DISCHARGE_VISUAL             = 140061,
 
-    //< NPC_LIGHTING_LANCE
-    SPELL_RIDE_VEHICLE_HARDCODED                = 46598,
-    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_LSTRIKES = 140100,
-    SPELL_THUNDER_FORGE_SPEAR_COSMETIC_SPARKLES = 139956,
-
     //< NPC_SHA_AMALGAMATION
     SPELL_INSANITY_TRIGGER                      = 139381,
     SPELL_INSANITY                              = 139382, //< 30S COOLDOWN
@@ -152,51 +205,6 @@ enum Spells
     //< NPC_DEBILITATING_SHA - 70462
     SPELL_DEBILITATE                            = 139966,
 
-    //< NPC_SHANZE_ELECTRO_CUTIONER
-    SPELL_CALL_LIGHTING                         = 138741,
-
-    //< NPC_THUNDER_FORGE
-    SPELL_LIGHTING_STRIKE                       = 140678,
-    SPELL_LIGHTING_STRIKE_COSMETIC_3            = 140681,
-    SPELL_LIGHTING_STRIKE_COSMETIC_4            = 140507,
-    SPELL_LIGHTING_STRIKE_COSMETIC_2            = 140857,
-
-    //< NPC_WRATHION
-    SPELL_SPEC_TEST                             = 138928,
-    SPELL_UPDATE_PHASE_SHIFT                    = 134715,
-    SPELL_LIGHTING_STRIKE_COSMETIC_5            = 140527,
-    SPELL_WRATHION_TRUE_FORM                    = 109924,
-    SPELL_LIGHTING_STRIKE_3                     = 140540,
-    // SPELL_LIGHTING_STRIKE_COSMETIC
-
-    //< NPC_SHADO_PAN_WARRIOR
-    // SPELL_WOUNDED
-    // SPELL_JOIN_PLAYER_PARTY
-    // SPELL_LEAVE_PLAYER_PARTY
-
-    //< NPC_SHANZE_PYROMANCER
-    SPELL_METEOR_TARGETING                      = 139301,
-    SPELL_METEOR_AURA                           = 138168,
-    SPELL_METEOR_AT                             = 140660,
-    SPELL_FIREBALL                              = 9053,
-    
-    //< NPC_LIGHTING_PILAR_SPARK_STALKER
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC         = 138152,
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_3       = 138091,
-    SPELL_LIGHTING_PILAR_SPARK_COSMETIC_2       = 138153,
-
-    //< NPC_THUNDER_FORGE2
-    SPELL_THUNDER_FORGE_BUFF_PEREODIC           = 139422,
-    SPELL_THUNDER_FORGE_BUFF                    = 139401,
-
-    //< NPC_SHANZE_SHADOWCASTER
-    SPELL_SHADOW_BOLT                           = 12471,
-    SPELL_CORRUPTION                            = 138174,
-    
-    // NPC_THUNDER_FORGE_3
-    SPELL_THUNDER_FORGE_BUFF_3                  = 139431, //< AT
-    SPELL_OVERCHARGED                           = 139397,
-    
     //< NPC_NALAK
     SPELL_STATIC_SHIELD_TRIGGER                 = 136343,
     SPELL_STATIC_SHIELD                         = 136342,
@@ -209,24 +217,16 @@ enum Spells
     SPELL_SHA_BOSS_STALKER_COSMETIC             = 139908,
     SPELL_SHA_BOSS_COSMETIC_SPAWN               = 139444,
     SPELL_SHA_BOSS_COSMETIC_MISSLE              = 139907,
-
-    //< NPC_METEOR_SUMMONER_STALKER
-    SPELL_METEOR_STORM_3                          = 139443,
-    SPELL_METEOR_STORM_4                          = 139658,
-    // SPELL_METEOR_STORM_2
 };
 
 enum Events
 {
     EVENT_NONE,
 
-    EVENT_CHECK_WIPE,
+    EVENT_CHECK_WIPE = 30,
 
-    EVENT_WRATHION_MOVE_1,
-    EVENT_WRATHION_MOVE_2,
     EVENT_WRATHION_MOVE_3,
 
-    EVENT_INTRO_PART_1,
     EVENT_JOIN_PARTY,
     EVENT_INTRO_PART_2,
     EVENT_HELPERS_MOVE,
@@ -311,33 +311,6 @@ enum Events
     EVENT_ABSORB_EVIL,
 };
 
-enum Action
-{
-    ACTION_NONE,
-
-    ACTION_WRATHION_START,
-    ACTION_EVENT_PART_1,
-    ACTION_JOIN_PARTY,
-    ACTION_INISIBLE_HUNTER_AURA,
-
-    ACTION_CHARGING_1,
-    ACTION_CHARGING_2,
-    ACTION_CHARGING_3,
-    ACTION_CHARGING_4,
-
-    ACTION_LR_P1 = 11,
-
-    ACTION_CB_START_MOVING,
-    ACTION_FORGE_CAST,
-    ACTION_CANCEL_FORGE_EVENTS,
-    ACTION_M_ENERGY,
-    ACTION_SHA_FIXATE,
-    ACTION_FIRST_WAVE,
-
-    ACTION_SCENARIO_COMPLETED
-
-};
-
 enum Phases
 {
     PHASE_NONE,
@@ -387,315 +360,6 @@ enum Sounds
     SOUND_25 = 36411
 };
 
-Position const addsPositions[]
-{
-    {7255.153f, 5307.322f, 66.06771f},
-    {7266.683f, 5325.157f, 66.07448f},
-    {7268.239f, 5327.411f, 66.38251f},
-    {7257.758f, 5271.01f, 66.06776f},
-    {7217.198f, 5311.208f, 65.88635f},
-    {7266.987f, 5324.924f, 66.10201f},
-};
-
-Position const WrathionWP[]
-{
-    {7214.340f, 5285.522f, 66.05622f},
-    {7207.432f, 5270.125f, 66.05622f},
-    {7204.241f, 5266.851f, 66.05622f},
-    {7200.241f, 5255.292f, 65.98731f}
-};
-
-Position const DefenderPoints[]
-{
-    {7213.67f, 5266.370f, 65.98440f}, //< Jump to this position
-    {7221.26f, 5276.239f, 66.05622f}  //< move here after jump
-};
-
-Position const warriorPoints[]
-{
-    {7210.650f, 5247.510f, 65.98440f}, //< Jump to this position right
-    {7223.458f, 5262.069f, 65.98731f}, //< right
-};
-
-Position const dHomePoints2[]
-{
-    {7196.58f, 5233.76f, 85.5807f},
-    {7175.76f, 5255.42f, 85.5464f},
-    {7166.76f, 5264.76f, 85.5331f}
-};
-
-Position const warriorPoints2[]
-{
-    {7210.650f, 5247.510f, 65.98440f}, //< Jump to this position right
-    {7223.458f, 5262.069f, 65.98731f}, //< right
-};
-
-float const cosmeticPilarPos[4][3]
-{
-    {7195.710f, 5249.874f, 67.64626f},
-    {7195.721f, 5250.080f, 69.25357f},
-    {7195.720f, 5250.080f, 73.64575f},
-    {7195.721f, 5250.080f, 80.91364f}
-};
-
-Position const sparkStalker[]
-{
-    {7195.72f, 5250.08f, 75.0836f},
-};
-
-int32 const phasingTargets[]
-{
-    70100, 70106, 70106, 70099, 70577, 62142, 65183, 69162, 69170, 69200, 69217,
-    69223, 69244, 69269, 69379, 69397, 69404, 69412, 69481, 69798, 69813, 69827,
-    69833, 69835, 69923, 70042, 70070, 70074, 70283, 70556, 69156, 69411, 69509
-};
-
-Position const centerPos[]
-{
-    {7368.795898f, 5160.241211f, 49.531322f}
-};
-G3D::Vector3 const dPoints3[]
-{
-    {7380.517090f, 5190.142578f, 49.614887f},
-    {7363.884277f, 5190.941406f, 49.616081f},
-    {7346.669434f, 5185.123535f, 49.633316f},
-    {7338.504395f, 5168.315430f, 49.615425f},
-    {7339.720703f, 5145.416504f, 49.617168f},
-    {7353.019531f, 5132.396484f, 49.613995f},
-    {7368.584473f, 5129.186035f, 49.628078f},
-    {7383.784180f, 5131.549805f, 49.620625f},
-    {7394.010254f, 5140.544922f, 49.623112f},
-    {7400.024414f, 5150.685059f, 49.626301f},
-    {7398.979492f, 5169.995605f, 49.615177f},
-};
-
-G3D::Vector3 const wPoints3[]
-{
-    {7199.381836f, 5263.923828f, 65.985260f},
-    {7216.750488f, 5266.845215f, 65.985695f},
-    {7235.419922f, 5262.388672f, 64.806145f},
-    {7251.270508f, 5258.604980f, 64.806145f},
-    {7265.938965f, 5251.916992f, 65.985840f},
-    {7280.606445f, 5241.892090f, 65.958626f},
-    {7294.209961f, 5232.281250f, 65.984169f},
-    {7314.681641f, 5212.746582f, 65.507530f},
-    {7350.040039f, 5178.683594f, 49.388092f},
-    //< 
-    {7368.597168f, 5171.087891f, 49.585335f}, //< 9
-    {7360.373535f, 5169.993164f, 49.583530f},
-    {7356.601074f, 5160.032227f, 49.387676f},
-};
-
-Position const wrathionS2Points[]
-{
-    //< 0
-    {7367.086f, 5171.830f, 49.83737f}, //< 0
-    {7368.374f, 5170.050f, 49.59216f},
-    //< 1
-    {7365.798f, 5171.189f, 49.83737f}, //< 2
-    {7364.298f, 5171.939f, 49.58737f},
-    {7362.798f, 5172.689f, 49.83737f},
-    {7360.548f, 5170.439f, 49.83737f},
-    //< 2
-    {7359.222f, 5169.328f, 49.58258f}, //< 6
-    //< 3
-    {7364.523f, 5172.068f, 49.50574f}, //< 7
-    {7362.523f, 5172.818f, 49.75574f},
-    {7360.523f, 5170.568f, 49.75574f},
-    //< 4
-    {7359.222f, 5169.328f, 49.58258f}, //< 10
-    //< 5
-    {7358.805f, 5168.212f, 49.83258f}, //< 11
-    {7358.305f, 5166.212f, 49.58258f},
-    {7358.055f, 5164.712f, 49.83258f},
-    {7357.555f, 5163.212f, 49.83258f},
-    {7357.305f, 5161.962f, 49.83258f},
-    {7357.055f, 5160.712f, 49.83258f},
-    {7356.555f, 5159.212f, 49.58258f}, //< 17
-    //< 6
-    {7356.554f, 5159.073f, 49.55445f}, //< 18
-    {7356.054f, 5157.073f, 49.80445f},
-    {7357.804f, 5155.073f, 49.80445f},
-    {7358.304f, 5154.323f, 49.55445f},
-    {7360.054f, 5151.573f, 49.55445f}, //< 22
-    //< 7
-    {7360.411f, 5151.082f, 49.58258f}, //< 23
-    //< 8
-    {7362.169f, 5150.341f, 49.58258f}, //< 24
-    {7365.169f, 5149.091f, 49.58258f},
-    {7366.419f, 5148.591f, 49.58258f},
-    //< 9
-    {7369.137f, 5147.261f, 49.75739f}, //<  27
-    {7371.887f, 5148.261f, 49.75739f},
-    //< 10
-    {7372.073f, 5148.054f, 49.83258f}, //< 29
-    {7374.073f, 5148.804f, 49.83258f},
-    {7376.323f, 5150.554f, 49.83258f}, //< 31
-    //< 11
-    {7377.702f, 5151.790f, 49.58258f}, //< 32
-    //< 12
-    {7378.202f, 5153.209f, 49.58288f}, //< 33
-    {7378.952f, 5154.709f, 49.58288f},
-    {7379.702f, 5156.959f, 49.83288f},
-    {7379.952f, 5158.459f, 49.83288f},
-    {7380.702f, 5160.459f, 49.58288f},
-    {7381.202f, 5161.959f, 49.83288f}, //< 38
-    //< 13
-    {7381.265f, 5162.115f, 49.7605f}, //< 39
-    {7381.765f, 5163.365f, 49.7605f},
-    {7381.015f, 5164.365f, 49.7605f},
-    {7379.515f, 5166.365f, 49.7605f},
-    {7378.765f, 5168.115f, 49.7605f}, //< 43
-    //< 14
-    {7377.641f, 5169.406f, 49.58258f}, //< 44
-    //< 15
-    {7376.432f, 5170.843f, 49.83258f}, //< 45
-    {7374.682f, 5171.593f, 49.83258f},
-    {7372.432f, 5172.843f, 49.83258f},
-    {7370.182f, 5172.843f, 49.83258f}, //< 48
-    //< 16
-    {7368.723f, 5172.779f, 49.58258f}, //< 49
-};
-
-Position const celestialDefenderPoints[]
-{
-    {7412.179f, 5204.663f, 55.41367f},
-
-    /* 0 */  {7401.632f, 5196.375f, 54.60491f},
-    /* 1 */  {7398.632f, 5192.875f, 52.60491f},
-    /* 2 */  {7397.382f, 5191.125f, 51.60491f},
-    /* 3 */  {7395.632f, 5190.875f, 50.85491f},
-    /* 4 */  {7393.632f, 5190.625f, 50.10491f},
-    /* 5 */  {7383.132f, 5189.375f, 50.10491f},
-};
-
-Position const celestialBlacksmithPoints[]
-{
-    {7323.568f, 5114.839f, 55.45367f},
-};
-
-Position const cBlacksmithPositions[]
-{
-    {7339.918f, 5160.253f, 49.58442f}, // t = 0;
-    {7348.574f, 5140.081f, 49.57350f}, // t += 40;
-    {7368.478f, 5132.272f, 49.58466f}, // t += 32;
-    {7388.370f, 5140.493f, 49.58445f}, // t += 35;
-    {7396.211f, 5160.753f, 49.58324f}, // t += 35;
-    {7388.043f, 5180.270f, 49.58472f}, // t += 36;
-    {7368.527f, 5187.700f, 49.58317f}, // t += 34;
-};
-
-Position const shaFinedsPositions[]
-{
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7312.857f, 5209.722f, 65.48965f, 5.4242920f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7356.898f, 5186.524f, 49.56894f, 5.8754060f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7351.568f, 5187.763f, 49.62176f, 5.7390580f},
-    {7341.887f, 5193.620f, 51.39300f, 5.7391410f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7342.526f, 5193.744f, 51.20268f, 5.8395330f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7335.335f, 5202.951f, 56.86404f, 5.5179640f},
-    {7319.052f, 5216.208f, 65.49776f, 5.6599760f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-    {7417.073f, 5111.687f, 55.45368f, 2.2810680f},
-    {7310.219f, 5212.780f, 65.59111f, 4.6407990f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7417.035f, 5203.043f, 55.45367f, 3.7625580f},
-    {7412.241f, 5209.885f, 55.45366f, 3.9634490f},
-    {7319.145f, 5110.835f, 55.45368f, 0.6222018f},
-    {7315.756f, 5218.577f, 65.59111f, 5.0987890f},
-};
-
-Position const shaBeastPositions[]
-{
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7317.721f, 5109.741f, 55.45368f, 0.878840f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7317.721f, 5109.741f, 55.45368f, 0.878840f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7317.721f, 5109.741f, 55.45368f, 0.878840f},
-    {7312.302f, 5217.170f, 65.59111f, 5.390892f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7312.302f, 5217.170f, 65.59111f, 5.390892f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-    {7312.302f, 5217.170f, 65.59111f, 5.691250f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7415.530f, 5208.013f, 55.45368f, 3.720318f},
-    {7418.579f, 5110.358f, 55.45368f, 2.369927f},
-};
-
 class npc_wrathion : public CreatureScript
 {
 public:
@@ -717,20 +381,19 @@ public:
         if (!instance)
             return false;
 
-        if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == DONE)
+        if (Helper::IsNextStageAllowed(instance, STAGE_2))
         {
-            instance->SetData(DATA_LR_START, SPECIAL);
+            creature->CastSpell(player, SPELL_SPEC_TEST);
+            creature->AI()->DoAction(ACTION_WRATHION_START);
             creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            creature->AI()->DoAction(ACTION_LR_P1);
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
         else
         {
-            instance->SetData(DATA_START_EVENT, IN_PROGRESS);
-            instance->SetData(DATA_EVENT_PART_1, NOT_STARTED);
-            creature->AI()->DoAction(ACTION_WRATHION_START);
+            instance->SetData(DATA_LR_START, SPECIAL);
             creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            creature->AI()->DoAction(ACTION_LR_P1);
             player->CLOSE_GOSSIP_MENU();
             return true;
         }
@@ -739,7 +402,7 @@ public:
 
     struct npc_wrathionAI : public ScriptedAI
     {
-        npc_wrathionAI(Creature* creature) : ScriptedAI(creature), summon(me)
+        npc_wrathionAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -754,20 +417,16 @@ public:
             switch (action)
             {
                 case ACTION_WRATHION_START:
-                    events.ScheduleEvent(EVENT_WRATHION_MOVE_1, 1 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
                     break;
-                case ACTION_EVENT_PART_1:
-                {
-                    events.ScheduleEvent(EVENT_INTRO_PART_1, 1 * IN_MILLISECONDS);
-
-                    std::list<Creature*> creatures;
-                    GetCreatureListWithEntryInGrid(creatures, me, NPC_THUNDER_FORGE, 200.0f);
-                    if (!creatures.empty())
-                        for (std::list<Creature*>::iterator forge = creatures.begin(); forge != creatures.end(); ++forge)
-                            (*forge)->CastSpell((*forge), SPELL_LIGHTING_STRIKE);
-
+                case ACTION_1:
+                    events.ScheduleEvent(EVENT_5, 15 * IN_MILLISECONDS);
                     break;
-                }
+                case ACTION_2:
+                    events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS);
+                    break;
+
+
                 case ACTION_LR_P1:
                     events.ScheduleEvent(EVENT_MOVE_TO_LR, 2 * IN_MILLISECONDS);
                     instance->SetData(DATA_SUMMONS_COUNTER, 0);
@@ -789,12 +448,71 @@ public:
 
         void JustSummoned(Creature* sum)
         {
-            summon.Summon(sum);
+            summons.Summon(sum);
+
             switch (sum->GetEntry())
             {
+                case NPC_THUNDER_FORGE:
+                    sum->CastSpell(sum, SPELL_LIGHTING_STRIKE_COSMETIC_3);
+                    sum->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+                    break;
+                case NPC_SHADO_PAN_WARRIOR:
+                case NPC_SHADO_PAN_DEFENDER:
+                {
+                    sum->AddAura(SPELL_WOUNDED, sum);
+                    sum->CastSpell(sum, SPELL_JOIN_PLAYER_PARTY);
+
+                    float x = sum->GetPositionX();
+                    float y = sum->GetPositionY();
+
+                    if (x == 7198.407f && y == 5233.008f)
+                        sum->GetMotionMaster()->MoveJump(7210.65f, 5247.51f, 65.9844f, 15.0f, 25.0f);
+                    if (x == 7176.257f && y == 5253.797f)
+                        sum->GetMotionMaster()->MoveJump(7195.13f, 5266.81f, 65.9844f, 15.0f, 25.0f);
+                    if (x == 7167.824f && y == 5263.123f)
+                        sum->GetMotionMaster()->MoveJump(7213.67f, 5266.37f, 65.9844f, 15.0f, 25.0f);
+                    
+                    sum->AI()->DoAction(ACTION_1);
+                    break;
+                }
+
+
+
+
+
                 case NPC_CELESTIAL_BLACKSMITH:
                 case NPC_CELESTIAL_DEFENDER:
                     sum->AI()->DoAction(ACTION_CB_START_MOVING);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
+            {
+                case EVENT_1:
+                    events.ScheduleEvent(EVENT_2, 3 * IN_MILLISECONDS);
+                    break;
+                case EVENT_2:
+                    events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS);
+                    me->PlayDistanceSound(SOUND_8);
+                    Talk(1);
+                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MOGU_CRUCIBLE)))
+                        me->SetFacingToObject(go);
+                    break;
+                case EVENT_7:
+                    me->GetMotionMaster()->MovePoint(EVENT_1 + NPC_THUNDER_FORGE, 7200.241f, 5255.292f, 65.98731f);
+                    break;
+                case EVENT_1 + NPC_THUNDER_FORGE:
+                    events.ScheduleEvent(EVENT_2 + NPC_THUNDER_FORGE, 4 * IN_MILLISECONDS);
+                    if (Creature* forge = Creature::GetCreature(*me, instance->GetData64(DATA_THUNDER_FORGE)))
+                        me->CastSpell(forge, SPELL_LIGHTING_STRIKE_COSMETIC_5);
                     break;
                 default:
                     break;
@@ -805,16 +523,65 @@ public:
         {
             events.Update(diff);
 
-            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == SPECIAL)
-            {
-                events.ScheduleEvent(EVENT_STAGE_1_COMPLETED, 3 * IN_MILLISECONDS);
-                instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, DONE);
-            }
-
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
+                    case EVENT_1:
+                        me->GetMotionMaster()->MovePoint(EVENT_1, WrathionWP[1]);
+                        Talk(0);
+                        break;
+                    case EVENT_2:
+                        me->GetMotionMaster()->MovePoint(EVENT_2, WrathionWP[2]);
+                        break;
+                    case EVENT_3:
+                        me->SummonCreature(NPC_LIGHTING_PILAR_BEAM_STALKER, 7195.71f, 5249.874f, 67.64626f);
+                        me->SummonCreature(NPC_INVISIBLE_STALKER, 7202.491f, 5242.387f, 66.06776f);
+                        me->SummonCreature(NPC_THUNDER_FORGE, 7195.93f, 5249.743f, 85.89191f);
+                        me->SummonCreature(NPC_LIGHTING_PILAR_SPARK_STALKER, 7196.897f, 5252.677f, 66.06777f);
+
+                        if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MOGU_CRUCIBLE)))
+                            go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        break;
+                    case EVENT_4:
+                        me->SetOrientation(0.7853982f);
+                        me->SummonCreature(NPC_SHADO_PAN_WARRIOR, 7198.407f, 5233.008f, 85.62053f);
+                        me->SummonCreature(NPC_SHADO_PAN_WARRIOR, 7176.257f, 5253.797f, 85.67552f);
+                        me->SummonCreature(NPC_SHADO_PAN_DEFENDER, 7167.824f, 5263.123f, 85.63942f, 0.4716682f);
+                        break;
+                    case EVENT_5:
+                        Talk(26);
+                        break;
+                    case EVENT_6:
+                        events.ScheduleEvent(EVENT_7, 6 * IN_MILLISECONDS);
+                        me->GetMotionMaster()->MovePoint(EVENT_6, 7195.7f, 5255.59f, 66.05624f);
+                        Talk(2);
+                        if (Creature* stalker = me->FindNearestCreature(NPC_INVISIBLE_STALKER, 150.0f))
+                        {
+                            stalker->CastSpell(stalker, SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
+                            if (Player* plr = me->FindNearestPlayer(200.0f))
+                                stalker->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
+                        }
+                        break;
+                    case EVENT_7:
+                        me->GetMotionMaster()->MovePoint(EVENT_7, 7199.577f, 5254.172f, 66.27177f);
+                        Talk(3);
+                        break;
+                    case EVENT_2 + NPC_THUNDER_FORGE:
+                        events.ScheduleEvent(EVENT_2 + NPC_THUNDER_FORGE, 10 * IN_MILLISECONDS);
+                        if (Creature* forge = Creature::GetCreature(*me, instance->GetData64(DATA_THUNDER_FORGE)))
+                        {
+                            me->CastSpell(forge, SPELL_LIGHTING_STRIKE_COSMETIC_5);
+                            forge->CastSpell(forge, SPELL_LIGHTING_STRIKE_COSMETIC_4);
+                        }
+                        break;
+
+
+
+
+
+
+
                     case EVENT_LR_30:
                         events.ScheduleEvent(EVENT_LR_31, 3 * IN_MILLISECONDS);
                         me->PlayDistanceSound(36054);
@@ -968,6 +735,7 @@ public:
                         break;
                     case EVENT_STAGE_1_COMPLETED:
                     {
+                        instance->HandleGameObject(instance->GetData64(GO_THUNDER_FORGE_DOOR), true);
                         doAction(me, NPC_THUNDER_FORGE2, ACTION_CANCEL_FORGE_EVENTS);
                         instance->SetData(DATA_LR_START, IN_PROGRESS);
                         Talk(4);
@@ -987,56 +755,14 @@ public:
                     }
                     case EVENT_CHECK_WIPE:
                         if (instance->IsWipe())
-                        {
                             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-
-                            if (instance->GetData(DATA_EVENT_PART_2) != DONE)
-                                instance->SetData(DATA_START_EVENT, NOT_STARTED);
-
-                            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == IN_PROGRESS)
-                                instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, NOT_STARTED);
-                        }
-                        else
-                        {
-                            events.ScheduleEvent(EVENT_CHECK_WIPE, 2 * IN_MILLISECONDS);
-                            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == SPECIAL)
-                                events.CancelEvent(EVENT_CHECK_WIPE);
-                        }
-                        break;
-                    case EVENT_WRATHION_MOVE_1:
-                        events.ScheduleEvent(EVENT_WRATHION_MOVE_2, 3 * IN_MILLISECONDS);
-                        me->GetMotionMaster()->MovePoint(EVENT_WRATHION_MOVE_1, WrathionWP[1]);
-                        Talk(0);
-                        break;
-                    case EVENT_WRATHION_MOVE_2:
-                        events.ScheduleEvent(EVENT_WRATHION_MOVE_3, 5 * IN_MILLISECONDS);
-                        me->GetMotionMaster()->MovePoint(EVENT_WRATHION_MOVE_2, WrathionWP[2]);
-                        break;
-                    case EVENT_WRATHION_MOVE_3:
-                        Talk(1);
-                        me->SetFacingTo(0.7853982f);
-                        me->SetHomePosition(WrathionWP[3].m_positionX, WrathionWP[3].m_positionY, WrathionWP[3].m_positionZ, 0.7853982f);
-                        break;
-                    case EVENT_INTRO_PART_1:
-                        doAction(me, NPC_SHADO_PAN_DEFENDER, ACTION_JOIN_PARTY);
-                        doAction(me, NPC_SHADO_PAN_WARRIOR, ACTION_JOIN_PARTY);
-
-                        events.ScheduleEvent(EVENT_INTRO_PART_2, 5 * IN_MILLISECONDS);
-                        instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, IN_PROGRESS);
-                        Talk(2);
                         break;
                     case EVENT_INTRO_PART_2:
-                        if (Creature* stalker = me->FindNearestCreature(NPC_INVISIBLE_STALKER, 50.0f))
-                        {
-                            stalker->AI()->DoAction(ACTION_INISIBLE_HUNTER_AURA);
-                            stalker->NearTeleportTo(cosmeticPilarPos[0][0], cosmeticPilarPos[0][1], cosmeticPilarPos[0][2], 0.0f);
-                        }
+                        
 
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 2 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_FORGE_CAST, 15 * IN_MILLISECONDS);
 
-                        instance->SetData(DATA_EVENT_PART_1, DONE);
-                        instance->SetData(DATA_START_EVENT, DONE);
                         instance->SetData(DATA_EVENT_PART_2, IN_PROGRESS);
 
                         Talk(3);
@@ -1054,16 +780,16 @@ public:
     private:
         InstanceScript* instance;
         EventMap events;
-        SummonList summon;
+        SummonList summons;
+        Position pos;
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_wrathionAI>(creature);
+        return new npc_wrathionAI(creature);
     }
 };
 
-//< 218910
 class go_mogu_crucible : public GameObjectScript
 {
 public:
@@ -1071,19 +797,12 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* go)
     {
-        //ServerToClient: SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT (0x0C8A) Length: 12 - build 18414
-        //unk bit: True
-        //unk int32: 3809
-        //Guid: Full: 0xF113571E0000489C Type: GameObject Entry: 218910 Low: 18588
-
         if (InstanceScript* instance = player->GetInstanceScript())
         {
-            if (instance->GetData(DATA_START_EVENT) == IN_PROGRESS)
+            if (Helper::IsNextStageAllowed(instance, STAGE_3))
             {
-                instance->SetData(DATA_EVENT_PART_1, IN_PROGRESS);
-                if (Creature* wrathion = go->FindNearestCreature(NPC_WRATHION, 50.0f))
-                    wrathion->AI()->DoAction(ACTION_EVENT_PART_1);
-
+                go->SendGameObjectActivateAnimKit(3809, true);
+                go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 return true;
             }
         }
@@ -1108,24 +827,39 @@ public:
             events.Reset();
         }
 
+        void MovementInform(uint32 type, uint32 pointId)
+        {
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
+            {
+                case 2:
+                    instance->SetData(DATA_WAVE_COUNTER, 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         void DoAction(int32 const action)
         {
             switch (action)
             {
-                case ACTION_JOIN_PARTY:
-                    events.ScheduleEvent(EVENT_JOIN_PARTY, 1 * IN_MILLISECONDS);
-                    me->CastSpell(me->FindNearestPlayer(200.0f), SPELL_JOIN_PLAYER_PARTY);
-                    me->AddAura(SPELL_WOUNDED, me);
+                case ACTION_1:
+                    if (me->GetPositionX() == 7213.67f && me->GetPositionY() == 5266.37f)
+                        me->GetMotionMaster()->MovePoint(2, 7221.26f, 5276.239f, 66.05622f);
                     break;
+
+
+
                 case ACTION_EVADE:
                     EnterEvadeMode();
                     break;
                 case ACTION_COMPLETE_FIRST_PART:
                     events.ScheduleEvent(EVENT_COMPLETE_FIRST_PART, 3 * IN_MILLISECONDS);
                     break;
-                case ACTION_CANCEL_SUMMONS:
-                    events.CancelEvent(EVENT_SUMMONS);
-                    break;
+
                 default:
                     break;
             }
@@ -1142,9 +876,6 @@ public:
             Talk(1);
 
             me->GetMotionMaster()->MovePoint(POINT_EVADE_POS, DefenderPoints[1]);
-
-            if (instance->GetData(DATA_COMPLETE_EVENT_STAGE_1) == IN_PROGRESS)
-                events.ScheduleEvent(EVENT_SUMMONS, 5 * IN_MILLISECONDS);
         }
 
         void JustSummoned(Creature* summon)
@@ -1210,7 +941,6 @@ public:
                     case EVENT_HELPERS_MOVE:
                         me->GetMotionMaster()->MovePoint(EVENT_HELPERS_MOVE, DefenderPoints[1]);
                         me->SetHomePosition(DefenderPoints[1]);
-                        events.ScheduleEvent(EVENT_SUMMONS, 5 * IN_MILLISECONDS);
                         break;
                     case EVENT_HEALING_ORB:
                         DoCast(SPELL_HEALING_ORB);
@@ -1218,10 +948,7 @@ public:
                         break;
                     case EVENT_SUMMONS:
                     {
-                        if (instance->GetData(DATA_SUMMONS_COUNTER))
-                            events.ScheduleEvent(EVENT_SUMMONS, 10 * IN_MILLISECONDS);
-                        else
-                            switch (urand(1, 5))
+                        switch (urand(1, 5))
                         {
                                 case 1:
                                 {
@@ -1264,7 +991,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shado_pan_defenderAI>(creature);
+        return new npc_shado_pan_defenderAI(creature);
     }
 };
 
@@ -1289,11 +1016,15 @@ public:
         {
             switch (action)
             {
-                case ACTION_JOIN_PARTY:
-                    events.ScheduleEvent(EVENT_JOIN_PARTY, urand(3, 5) * IN_MILLISECONDS);
-                    me->CastSpell(me->FindNearestPlayer(200.0f), SPELL_JOIN_PLAYER_PARTY);
-                    me->AddAura(SPELL_WOUNDED, me);
+                case ACTION_1:
+                    if (me->GetPositionX() == 7210.65f && me->GetPositionY() == 5247.51f)
+                        me->GetMotionMaster()->MovePoint(2, 7223.458f, 5262.069f, 65.98731f);
+                    if (me->GetPositionX() == 7195.13f && me->GetPositionY() == 5266.81f)
+                        me->GetMotionMaster()->MovePoint(2, 7209.367f, 5279.108f, 66.05622f); //< or 7208.249 Y: 5278.209 Z: 66.27031 ?
                     break;
+
+
+
                 case ACTION_EVADE:
                     EnterEvadeMode();
                     break;
@@ -1362,7 +1093,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shado_pan_warriorAI>(creature);
+        return new npc_shado_pan_warriorAI(creature);
     }
 };
 
@@ -1375,9 +1106,6 @@ public:
     {
         npc_thunder_forge_secondAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            me->SetVisible(false);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-
             instance = creature->GetInstanceScript();
         }
 
@@ -1409,15 +1137,15 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_FORGE_CAST:
-                        events.ScheduleEvent(EVENT_FORGE_CAST, 30 * IN_MILLISECONDS);
-                        me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF_PEREODIC);
-                        events.ScheduleEvent(EVENT_FORGE_CAST_P3, 20 * IN_MILLISECONDS);
-                        break;
-                    case EVENT_FORGE_CAST_P3:
-                        me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF);
-                        Talk(0);
-                        break;
+                    //case EVENT_FORGE_CAST:
+                    //    events.ScheduleEvent(EVENT_FORGE_CAST, 30 * IN_MILLISECONDS);
+                    //    me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF_PEREODIC);
+                    //    events.ScheduleEvent(EVENT_FORGE_CAST_P3, 20 * IN_MILLISECONDS);
+                    //    break;
+                    //case EVENT_FORGE_CAST_P3:
+                    //    me->CastSpell(me, SPELL_THUNDER_FORGE_BUFF);
+                    //    Talk(0);
+                    //    break;
                     default:
                         break;
                 }
@@ -1433,7 +1161,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_thunder_forge_secondAI>(creature);
+        return new npc_thunder_forge_secondAI(creature);
     }
 };
 
@@ -1481,7 +1209,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_invisible_hunterAI>(creature);
+        return new npc_invisible_hunterAI(creature);
     }
 };
 
@@ -1567,7 +1295,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_lighting_pilar_beam_stalkerAI>(creature);
+        return new npc_lighting_pilar_beam_stalkerAI(creature);
     }
 };
 
@@ -1613,7 +1341,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_lighting_pilar_spark_stalkerAI>(creature);
+        return new npc_lighting_pilar_spark_stalkerAI(creature);
     }
 };
 
@@ -1698,7 +1426,6 @@ public:
         void JustDied(Unit* killer)
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-            instance->SetData(DATA_COMPLETE_EVENT_STAGE_1, SPECIAL);
         }
 
     private:
@@ -1708,7 +1435,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_forgemaster_vulkonAI>(creature);
+        return new npc_forgemaster_vulkonAI(creature);
     }
 };
 
@@ -1766,7 +1493,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shanze_shadowcasterAI>(creature);
+        return new npc_shanze_shadowcasterAI(creature);
     }
 };
 
@@ -1819,7 +1546,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shanze_battlemasterAI>(creature);
+        return new npc_shanze_battlemasterAI(creature);
     }
 };
 
@@ -1879,7 +1606,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shanze_warriorAI>(creature);
+        return new npc_shanze_warriorAI(creature);
     }
 };
 
@@ -1942,7 +1669,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shanze_electro_coutionerAI>(creature);
+        return new npc_shanze_electro_coutionerAI(creature);
     }
 };
 
@@ -2006,7 +1733,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_shanze_pyromancerAI>(creature);
+        return new npc_shanze_pyromancerAI(creature);
     }
 };
 
@@ -2247,7 +1974,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_celestial_blacksmithAI>(creature);
+        return new npc_celestial_blacksmithAI(creature);
     }
 };
 
@@ -2355,7 +2082,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_celestial_defenderAI>(creature);
+        return new npc_celestial_defenderAI(creature);
     }
 };
 
@@ -2432,7 +2159,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_sha_beastAI>(creature);
+        return new npc_sha_beastAI(creature);
     }
 };
 
@@ -2528,7 +2255,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_sha_fiendAI>(creature);
+        return new npc_sha_fiendAI(creature);
     }
 };
 
@@ -2616,24 +2343,8 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return GetInstanceAI<npc_sha_amalgamationAI>(creature);
+        return new npc_sha_amalgamationAI(creature);
     }
-};
-
-class TargetFilter
-{
-public:
-    TargetFilter(uint32 entry) { ID = entry; }
-    bool operator()(WorldObject* obj) const
-    {
-        if (!obj->ToCreature())
-            return true;
-
-        return (obj->ToCreature()->GetEntry() != ID);
-    }
-
-private:
-    uint32 ID;
 };
 
 class spell_phase_shift_update : public SpellScriptLoader
@@ -2660,6 +2371,22 @@ public:
         {
             OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_phase_shift_update_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
         }
+
+        class TargetFilter
+        {
+        public:
+            TargetFilter(uint32 entry) { ID = entry; }
+            bool operator()(WorldObject* obj) const
+            {
+                if (!obj->ToCreature())
+                    return true;
+
+                return (obj->ToCreature()->GetEntry() != ID);
+            }
+
+        private:
+            uint32 ID;
+        };
     };
 
     SpellScript* GetSpellScript() const
@@ -2709,7 +2436,6 @@ public:
                         break;
                     case 200:
                     {
-                        doAction(beam, NPC_SHADO_PAN_DEFENDER, ACTION_CANCEL_SUMMONS);
                         beam->AI()->DoAction(ACTION_CHARGING_4);
                         for (auto const& itr : target->GetMap()->GetPlayers())
                         {
@@ -2802,6 +2528,37 @@ public:
     }
 };
 
+class spell_spec_test : public SpellScriptLoader
+{
+public:
+    spell_spec_test() : SpellScriptLoader("spell_spec_test") { }
+
+    class spell_spec_test_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_spec_test_SpellScript);
+
+        void HandleScript(SpellEffIndex /*effIndex*/)
+        {
+            Player* player = GetHitUnit()->ToPlayer();
+            if (!GetCaster() || !player)
+                return;
+            
+            if (InstanceScript* instance = player->GetInstanceScript())
+                instance->SetData(DATA_PLAYER_ROLE, player->GetRoleForGroup(player->GetActiveSpec()));
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_spec_test_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_spec_test_SpellScript();
+    }
+};
+
 void AddSC_fall_of_shan_bu()
 {
     new npc_wrathion();
@@ -2830,4 +2587,5 @@ void AddSC_fall_of_shan_bu()
     new spell_thundder_forge_charging();
     new spell_forging();
     new spell_avnil_click_dummy();
+    new spell_spec_test();
 }
