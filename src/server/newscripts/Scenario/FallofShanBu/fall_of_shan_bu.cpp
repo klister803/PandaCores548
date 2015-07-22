@@ -194,7 +194,7 @@ enum Spells
     SPELL_CORRUPTION                            = 138174,
     
     // NPC_THUNDER_FORGE_3
-    SPELL_THUNDER_FORGE_BUFF                    = 139431, //< AT
+    SPELL_THUNDER_FORGE_BUFF_3                  = 139431, //< AT
     SPELL_OVERCHARGED                           = 139397,
     
     //< NPC_NALAK

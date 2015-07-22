@@ -57,12 +57,12 @@ enum Spells
     //< S4
     SPELL_SHADOW_BOLT_2                 = 12739,
     SPELL_SOUL_BLAST                    = 50992,
-    SPELL_SUMMON_HUNGERING_SOUL_FRAGMENT = 134207, //< triggered by 134208 from GO 216366
-    SPELL_MEMORY_OF_THE_RELIQUARY       = 134210, //< Scene
+    SPELL_SUMMON_HUNGERING_SOUL_FRAGMENT= 134207, //< triggered by 134208 from GO 216366
+    SPELL_MEMORY_OF_THE_RELIQUARY       = 134210,
     SPELL_SPAWN_THE_RELIQUARY           = 134211,
 
     //< S5
-    SPELL_SPELLFLAME                    = 134234, //< dummy
+    SPELL_SPELLFLAME_DUMMY              = 134234,
     SPELL_SPELLFLAME_TRIGGER            = 134235,
     SPELL_HELLFIRE                      = 134225,
     SPELL_HELLFIRE_TRIGGER              = 134224,
@@ -120,7 +120,7 @@ enum Spells
     SPELL_DOOMGUARD_SUMMON_DND          = 42010,  //< SS
     SPELL_DOOM_BOLT                     = 85692,  //< SS
 
-    //< 70075
+    //< NPC_PIT_LORD
     SPELL_FEL_FLAME_BREATH_DUMMY        = 138813,
     SPELL_FEL_FLAME_BREATH              = 138814,
     SPELL_CLEAVE_2                      = 138794,
@@ -131,14 +131,14 @@ enum Spells
     // 70023
     SPELL_ANNOUANCE                     = 138629,
 
-    // 70071
+    // NPC_WILD_IMP
     SPELL_FEL_FIREBOLT                  = 138747,
 
-    // 70166
+    // NPC_JUBEKA_SHADOWBREAKER
     SPELL_ETERNAL_BANISHMENT            = 139186,
     SPELL_FACE_PLAYER                   = 139053, //< SS
 
-    // 69964
+    // NPC_KANRETHAD_EBONLOCKE
     SPELL_BURNING_EMBERS                = 138557, //< SS
     SPELL_SOULSHARDS                    = 138556, //< SS
     SPELL_METAMORPHOSIS                 = 138555,
@@ -157,11 +157,21 @@ enum Spells
     SPELL_SUMMON_WILD_IMPS              = 138685,
     SPELL_ANNIHILATE_DEMONS             = 139141,
     SPELL_DEMONIC_GRASP                 = 139142,
+    SPELL_SUMMON_FELHUNTERS             = 138751,
+    SPELL_SUMMON_DOOM_LORD              = 138755,
+
+    //< NPC_DOOM_LORD
+    SPELL_DOOM_BOLT                     = 138753,
+
+    //< NPC_FELHUNTER
+    SPELL_DEVOUR_ENSLAVEMENT            = 139060,
+    SPELL_DEVOUR_MAGIC                  = 139059,
+    SPELL_SHADOW_BITE                   = 138750,
 
     SPELL_DEMONIC_GATEWAY               = 138649, //< SS
 
     //< Gree fire learning
-    SPELL_DRAIN_FEL_ENERGY              = 139200, //< dummy
+    SPELL_DRAIN_FEL_ENERGY_DUMMY        = 139200,
     SPELL_FEL_ENERGY_DUMMY              = 140164,
     SPELL_FEL_ENERGY_DUMMY_2            = 140116,
     SPELL_FEL_ENERGY_DUMMY_3            = 140137,
@@ -178,9 +188,26 @@ enum Spells
     SPELL_PURGE_XERRATH                 = 139366,
 };
 
+enum Stages
+{
+    STAGE_NONE,
+
+    STAGE_1,
+    STAGE_2,
+    STAGE_3,
+    STAGE_4,
+    STAGE_5,
+    STAGE_6,
+    STAGE_7,
+    STAGE_8,
+    STAGE_LAST
+};
+
 enum Data
 {
     DATA_NONE,
+
+    DATA_ALLOWED_STAGE,
 
     DATA_STAGE_2,
     DATA_ESSENCE_OF_ORDER_EVENT,
@@ -216,6 +243,8 @@ enum eCreatures
     NPC_PORTALS_VISUAL              = 24925,
     NPC_FEL_IMP                     = 58959,
     NPC_ASHTONGUE_SHAMAN            = 68129,
+    NPC_DOOM_LORD                   = 70073,
+    NPC_FELHUNTER                   = 70072,
 };
 
 enum eGameObects
@@ -258,7 +287,8 @@ enum Actions
 
     ACTION_1,
     ACTION_2,
-    ACTION_3,
 };
+
+bool IsNextStageAllowed(InstanceScript* instance, uint8 stage);
 
 #endif

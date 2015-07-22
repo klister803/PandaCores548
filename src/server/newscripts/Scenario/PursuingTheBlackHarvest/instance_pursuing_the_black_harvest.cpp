@@ -43,6 +43,7 @@ public:
             sceneEventData = 0;
             plunderData = 0;
             stage2Data = 0;
+            allowedStage = STAGE_1;
 
             akamaGUID = 0;
             jubekaGUID = 0;
@@ -105,9 +106,6 @@ public:
                 case NPC_ASHTONGUE_SHAMAN:
                     creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     break;
-                case NPC_LOST_SOULS:
-                    creature->SetReactState(REACT_PASSIVE);
-                    break;
                 default:
                     break;
             }
@@ -161,13 +159,13 @@ public:
         {
             switch (type)
             {
+                case DATA_ALLOWED_STAGE:
+                    allowedStage  = data;
+                    break;
                 case DATA_ESSENCE_OF_ORDER_EVENT:
                     essenceData = data;
                     if (data == DONE)
                     {
-                        if (Creature* akama = instance->GetCreature(akamaGUID))
-                            akama->AI()->DoAction(ACTION_3);
-
                         for (std::vector<uint64>::const_iterator itr = trashP2GUIDs.begin(); itr != trashP2GUIDs.end(); itr++)
                             if (Creature* trash = instance->GetCreature(*itr))
                             {
@@ -177,17 +175,11 @@ public:
 
                         for (std::vector<uint64>::const_iterator itr = soulGUIDs.begin(); itr != soulGUIDs.end(); itr++)
                             if (Creature* soul = instance->GetCreature(*itr))
-                            {
                                 soul->RemoveFromWorld();
-                                soul->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                            }
 
                         for (std::vector<uint64>::const_iterator itr = trapGUIDs.begin(); itr != trapGUIDs.end(); itr++)
                             if (GameObject* trap = instance->GetGameObject(*itr))
-                            {
-                                trap->SetVisible(false);
                                 trap->RemoveFromWorld();
-                            }
                     }
                     break;
                 case DATA_AKAMA:
@@ -208,11 +200,9 @@ public:
                 case DATA_PLUNDER_EVENT:
                     plunderData = data;
                     if (data == DONE)
-                    {
                         for (std::vector<uint64>::const_iterator itr = treasuresGUIDs.begin(); itr != treasuresGUIDs.end(); itr++)
                             if (GameObject* trap = instance->GetGameObject(*itr))
                                 trap->SetVisible(true);
-                    }
                     break;
                 case DATA_STAGE_2:
                     stage2Data = data;
@@ -241,6 +231,8 @@ public:
         {
             switch (type)
             {
+                case DATA_ALLOWED_STAGE:
+                    return allowedStage;
                 case DATA_ESSENCE_OF_ORDER_EVENT:
                     return essenceData;
                 case DATA_NOBEL_EVENT:
@@ -263,6 +255,7 @@ public:
         uint32 sceneEventData;
         uint32 plunderData;
         uint32 stage2Data;
+        uint32 allowedStage;
 
         uint64 akamaGUID;
         uint64 jubekaGUID;
@@ -274,6 +267,73 @@ public:
         std::vector<uint64> treasuresGUIDs;
     };
 };
+
+bool IsNextStageAllowed(InstanceScript* instance, uint8 stage)
+{
+    switch (stage)
+    {
+        case STAGE_2:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_1)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_2);
+                instance->HandleGameObject(instance->GetData64(DATA_MAIN_DOORS), true);
+                return true;
+            }
+            return false;
+        case STAGE_3:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_2)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_3);
+                return true;
+            }
+            return false;
+        case STAGE_4:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_3)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_4);
+                return true;
+            }
+            return false;
+        case STAGE_5:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_4)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_5);
+                return true;
+            }
+            return false;
+        case STAGE_6:
+            if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_6);
+                return true;
+            }
+            return false;
+        case STAGE_7:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_6)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_7);
+                return true;
+            }
+            return false;
+        case STAGE_8:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_7)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_8);
+                return true;
+            }
+            return false;
+        case STAGE_LAST:
+            if (instance->GetData(DATA_ALLOWED_STAGE) == STAGE_8)
+            {
+                instance->SetData(DATA_ALLOWED_STAGE, STAGE_LAST);
+                return true;
+            }
+            return false;
+        default:
+            return false;
+    }
+    return false;
+}
 
 void AddSC_instance_pursuing_the_black_harvest()
 {

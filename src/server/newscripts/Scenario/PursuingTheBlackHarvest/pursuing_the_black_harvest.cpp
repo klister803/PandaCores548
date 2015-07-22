@@ -80,9 +80,10 @@ public:
         switch (action)
         {
             case GOSSIP_ACTION_INFO_DEF + 1:
+                if (IsNextStageAllowed(creature->GetInstanceScript(), STAGE_3))
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
                 player->ADD_GOSSIP_ITEM(1, "Акама, покажи дорогу!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
                 player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
-                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34543, 1); //< set stage 3
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
                 creature->AI()->DoAction(ACTION_2);
@@ -104,7 +105,6 @@ public:
         {
             events.Reset();
             timer = 0;
-            stage7 = 0;
         }
 
         void DoAction(int32 const action)
@@ -115,9 +115,7 @@ public:
                     events.ScheduleEvent(EVENT_1, 2 * IN_MILLISECONDS, 1);
                     break;
                 case ACTION_2:
-                    events.ScheduleEvent(EVENT_5, 2 * IN_MILLISECONDS, 1);
-                    break;
-                case ACTION_3:
+                    events.ScheduleEvent(EVENT_5, 3 * IN_MILLISECONDS, 1);
                     break;
                 default:
                     break;
@@ -126,11 +124,8 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 10.0f) && !stage7 && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
-            {
-                events.ScheduleEvent(EVENT_21, 2 * IN_MILLISECONDS);
-                stage7 = true;
-            }
+            if (who->GetTypeId() == TYPEID_PLAYER && (me->GetDistance2d(who) < 10.0f) && instance->GetData(DATA_ALLOWED_STAGE) == STAGE_6)
+                events.ScheduleEvent(EVENT_21, 3 * IN_MILLISECONDS);
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -148,7 +143,7 @@ public:
                     events.ScheduleEvent(EVENT_28, 2 * IN_MILLISECONDS, 1);
                     break;
                 case EVENT_24:
-                    me->SetVisible(false);
+                    events.ScheduleEvent(EVENT_25, 4 * IN_MILLISECONDS);
                     break;
                 default:
                     break;
@@ -191,6 +186,7 @@ public:
                     case EVENT_5:
                         events.ScheduleEvent(EVENT_6, 4 * IN_MILLISECONDS);
                         Talk(1);
+                        timer = 5;
                         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_6:
@@ -285,7 +281,6 @@ public:
         InstanceScript* instance;
         EventMap events;
         uint32 timer;
-        bool stage7;
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -317,6 +312,7 @@ public:
             Talk(2);
             events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_2, 6 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_5, 3 * IN_MILLISECONDS);
         }
 
         void MoveInLineOfSight(Unit* who)
@@ -339,6 +335,9 @@ public:
 
         void UpdateAI(uint32 diff)
         {
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
             events.Update(diff);
 
             while (uint32 eventId = events.ExecuteEvent())
@@ -346,7 +345,18 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
-                        DoCast(SPELL_NETTED);
+                        events.ScheduleEvent(EVENT_4, 5 * IN_MILLISECONDS);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true))
+                            me->CastSpell(target, SPELL_NETTED);
+                        break;
+                    case EVENT_4:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true, SPELL_NETTED))
+                            me->CastSpell(target, SPELL_BLACKOUT);
+                        break;
+                    case EVENT_5:
+                        events.ScheduleEvent(EVENT_5, 8 * IN_MILLISECONDS);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true))
+                            me->CastSpell(target, SPELL_MULTI_SHOOT);
                         break;
                     case EVENT_2:
                         Talk(0);
@@ -360,7 +370,7 @@ public:
                 }
             }
 
-            DoMeleeAttackIfReady();
+            DoSpellAttackIfReady(SPELL_SHOOT);
         }
 
     private:
@@ -556,7 +566,6 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                     events.ScheduleEvent(EVENT_1, 2 * MINUTE * IN_MILLISECONDS + 40 * IN_MILLISECONDS);
                     break;
                 default:
@@ -582,7 +591,7 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            Talk(3);
+            Talk(2);
             summons.DespawnAll();
 
             instance->SetData(DATA_ESSENCE_OF_ORDER_EVENT, DONE);
@@ -629,6 +638,9 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
+                        if (Player* plr = me->FindNearestPlayer(300.0f))
+                            if (IsNextStageAllowed(instance, STAGE_5))
+                                plr->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34552, 1); //< set stage 5
                         events.ScheduleEvent(EVENT_2, 2 * IN_MILLISECONDS);
                         me->SetVisible(true);
                         break;
@@ -637,14 +649,12 @@ public:
                         Talk(0);
                         break;
                     case EVENT_3:
-                        Talk(1);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
                         break;
                     case EVENT_4:
-                        events.ScheduleEvent(EVENT_4, 7 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_4, 15 * IN_MILLISECONDS);
                         events.DelayEvents(3 * IN_MILLISECONDS);
-                        DoCast(SPELL_SPELLFLAME);
-                        DoCast(134235);
+                        DoCast(SPELL_SPELLFLAME_DUMMY);
                         break;
                     case EVENT_5:
                         events.ScheduleEvent(EVENT_5, 20 * IN_MILLISECONDS);
@@ -652,6 +662,7 @@ public:
                         DoCast(SPELL_HELLFIRE);
                         break;
                     case EVENT_6:
+                        Talk(1);
                         events.ScheduleEvent(EVENT_6, 25 * IN_MILLISECONDS);
                         for (uint8 i = 0; i < 8; i++)
                             me->SummonCreature(NPC_LOST_SOULS, soulsPositions[i]);
@@ -797,6 +808,8 @@ public:
         {
             if (damage && HealthBelowPct(2) && !completed)
             {
+                damage = 0;
+
                 events.CancelEvent(EVENT_6);
                 events.CancelEvent(EVENT_7);
                 events.CancelEvent(EVENT_8);
@@ -824,9 +837,6 @@ public:
                 if (Player* plr = me->FindNearestPlayer(150.0f))
                     me->AddAura(SPELL_DEMONIC_GRASP, plr);
             }
-
-            if (HealthBelowPct(2))
-                damage = 0;
         }
 
         void MovementInform(uint32 type, uint32 pointId)
@@ -839,9 +849,6 @@ public:
                 case EVENT_1:
                     instance->SetData(DATA_KANRETHAD, IN_PROGRESS);
                     Talk(0);
-                    me->AddAura(SPELL_BURNING_EMBERS, me);
-                    me->AddAura(SPELL_SOULSHARDS, me);
-                    me->AddAura(SPELL_METAMORPHOSIS, me);
                     break;
                 case EVENT_2:
                     events.ScheduleEvent(EVENT_6, 1 * MINUTE * IN_MILLISECONDS);
@@ -849,8 +856,8 @@ public:
                     events.ScheduleEvent(EVENT_8, 30 * IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_11, 1 * MINUTE * IN_MILLISECONDS + 10 * IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_13, 15 * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_14, 1 * MINUTE * IN_MILLISECONDS + 45 * IN_MILLISECONDS);
-                    events.ScheduleEvent(EVENT_15, 5 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_14, 1 * MINUTE * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_15, 10 * IN_MILLISECONDS);
                     events.ScheduleEvent(EVENT_16, 25 * IN_MILLISECONDS);
 
                     me->StopMoving();
@@ -883,6 +890,9 @@ public:
                         me->GetMotionMaster()->MovePoint(EVENT_1, 660.0f, 305.5f, 354.1158f);
                         break;
                     case EVENT_2:
+                        me->AddAura(SPELL_BURNING_EMBERS, me);
+                        me->AddAura(SPELL_SOULSHARDS, me);
+                        me->AddAura(SPELL_METAMORPHOSIS, me);
                         events.ScheduleEvent(EVENT_3, 5 * IN_MILLISECONDS);
                         me->GetMotionMaster()->MovePoint(EVENT_2, 662.0f, 315.0f, 354.0903f);
                         break;
@@ -955,17 +965,25 @@ public:
                         break;
 
                     case EVENT_14:
-                        events.ScheduleEvent(EVENT_14, 1 * MINUTE * IN_MILLISECONDS + 15 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_14, 4 * MINUTE * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_17, 1 * MINUTE * IN_MILLISECONDS);
                         Talk(12);
                         if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
                             me->CastSpell(target, SPELL_SUMMON_WILD_IMPS);
+                        break;
+                    case EVENT_17:
+                        events.ScheduleEvent(EVENT_18, 1 * MINUTE * IN_MILLISECONDS);
+                        if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
+                            me->CastSpell(target, SPELL_SUMMON_FELHUNTERS);
+                        break;
+                    case EVENT_18:
+                        if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
+                            me->CastSpell(target, SPELL_SUMMON_DOOM_LORD);
                         break;
                     case EVENT_15:
                         if (Creature* target = me->FindNearestCreature(NPC_DEMONIC_GATEWAY, 100.0f))
                             me->CastSpell(target, SPELL_SUMMONING_PIT_LORD);
                         break;
-
-                        //< last stage
                     case EVENT_25:
                         Talk(14);
                         break;
@@ -1129,6 +1147,93 @@ public:
     }
 };
 
+class npc_doom_lord_scenario : public CreatureScript
+{
+public:
+    npc_doom_lord_scenario() : CreatureScript("npc_doom_lord_scenario") { }
+
+    struct npc_doom_lord_scenarioAI : public ScriptedAI
+    {
+        npc_doom_lord_scenarioAI(Creature* creature) : ScriptedAI(creature)
+        {
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void Reset()
+        { }
+
+        void UpdateAI(uint32 /*diff*/)
+        {
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            DoSpellAttackIfReady(SPELL_DOOM_BOLT);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_doom_lord_scenarioAI(creature);
+    }
+};
+
+class npc_felhunter_scenario : public CreatureScript
+{
+public:
+    npc_felhunter_scenario() : CreatureScript("npc_felhunter_scenario") { }
+
+    struct npc_felhunter_scenarioAI : public ScriptedAI
+    {
+        npc_felhunter_scenarioAI(Creature* creature) : ScriptedAI(creature)
+        {
+            me->SetReactState(REACT_AGGRESSIVE);
+        }
+
+        void Reset()
+        { 
+            events.Reset();
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            events.ScheduleEvent(EVENT_1, 5 * IN_MILLISECONDS);
+            events.ScheduleEvent(EVENT_2, 15 * IN_MILLISECONDS);
+        }
+
+        void UpdateAI(uint32 /*diff*/)
+        {
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+            
+            while (uint32 eventId = events.ExecuteEvent())
+            {
+                switch (eventId)
+                {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_1, 15 * IN_MILLISECONDS);
+                        DoCast(SPELL_DEVOUR_ENSLAVEMENT);
+                        break;
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_2, 25 * IN_MILLISECONDS);
+                        DoCast(SPELL_DEVOUR_MAGIC);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            DoSpellAttackIfReady(SPELL_SHADOW_BITE);
+        }
+    private:
+        EventMap events;
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_felhunter_scenarioAI(creature);
+    }
+};
+
 class npc_unbound_night_lord : public CreatureScript
 {
 public:
@@ -1150,7 +1255,7 @@ public:
         {
             events.ScheduleEvent(EVENT_1, 15 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_2, 7 * IN_MILLISECONDS);
-            
+
         }
 
         void UpdateAI(uint32 diff)
@@ -1202,15 +1307,12 @@ public:
             switch (at->id)
             {
                 case 8696:
-                    if (instance->GetData(DATA_STAGE_2) != DONE)
-                    {
-                        instance->SetData(DATA_STAGE_2, DONE);
-                        instance->HandleGameObject(instance->GetData64(DATA_MAIN_DOORS), true);
+                    if (IsNextStageAllowed(instance, STAGE_2))
                         player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34539, 1);  //< set stage 2
-                        return true;
-                    }
+                    return true;
                 case 8699:
-                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34545, 1);  //< set stage 4
+                    if (IsNextStageAllowed(instance, STAGE_4))
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34545, 1);  //< set stage 4
                     return true;
                 case 8698:
                     if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != DONE || instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) != TO_BE_DECIDED)
@@ -1219,7 +1321,6 @@ public:
                             return false;
 
                         instance->SetData(DATA_SCENE_EVENT, DONE);
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT, 34547, 1); //< set stage 5
                         player->CastSpell(player, SPELL_MEMORY_OF_THE_RELIQUARY);
                         player->CastSpell(player, SPELL_SPAWN_THE_RELIQUARY);
                         player->AddAura(SPELL_INVISIBILITY_DETECTION, player);
@@ -1228,8 +1329,8 @@ public:
                         return true;
                     }
                 case 8701:
-                    if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
-                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7
+                    if (IsNextStageAllowed(instance, STAGE_7))
+                        player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34554, 1); //< set stage 7 
                     return true;
                 case 8706:
                     if (instance->GetData(DATA_NOBEL_EVENT) == NOT_STARTED && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
@@ -1240,11 +1341,8 @@ public:
                     }
                     return true;
                 case 8702:
-                    if (instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                    if (IsNextStageAllowed(instance, STAGE_7))
                     {
-                        if (instance->GetData(DATA_PLUNDER_EVENT) == DONE)
-                            return false;
-
                         std::set<uint32> phaseIds;
                         std::set<uint32> terrainswaps;
                         std::set<uint32> WorldMapAreaIds;
@@ -1254,20 +1352,17 @@ public:
                         phaseIds.insert(2387);
                         player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, 16);
                         player->AddAura(SPELL_UPDATE_PHASE_SHIFT, player);
-
                         instance->HandleGameObject(instance->GetData64(DATA_SECOND_DOOR), true);
-                        instance->SetData(DATA_PLUNDER_EVENT, DONE);
-
                         player->AddAura(SPELL_PLUNDER, player);
                         player->PlayerTalkClass->SendQuestQueryResponse(32340); //< i hope it's right way... SMSG_QUEST_GIVER_QUEST_DETAILS in sniffs
                         return true;
                     }
                 case 8708:
-                    if (instance->GetData(DATA_NOBEL_EVENT) == DONE && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                    if (IsNextStageAllowed(instance, STAGE_8))
                         player->TeleportTo(1112, 786.0955f, 304.3524f, 319.7598f, 0.0f);
                     return true;
                 case 8908:
-                    if (instance->GetData(DATA_NOBEL_EVENT) == DONE && instance->GetData(DATA_ESSENCE_OF_ORDER_EVENT) == DONE)
+                    if (IsNextStageAllowed(instance, STAGE_LAST))
                         player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34559, 1); //< set final stage
                     return true;
                 default:
@@ -1305,9 +1400,11 @@ public:
     {
         if (InstanceScript* instance = player->GetInstanceScript())
         {
-            player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34558, 1); //< set stage 8
-
-            player->CastSpell(player, SPELL_APPRAISAL);
+            if (IsNextStageAllowed(instance, STAGE_8))
+            {
+                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SCRIPT_EVENT_2, 34558, 1); //< set stage 8
+                player->CastSpell(player, SPELL_APPRAISAL);
+            }
 
             //ServerToClient: SMSG_PHASE_SHIFT_CHANGE (0x00D1) Length: 39 ConnIdx: 0 Time: 01/29/2015 09:05:50.000 Number: 20113
             //PhaseShiftFlags: 16
@@ -1454,7 +1551,7 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Player* player = GetTarget()->ToPlayer())
-                player->SendOnCancelExpectedVehicleRideAura(); 
+                player->SendOnCancelExpectedVehicleRideAura();
         }
 
         void Register()
@@ -1479,80 +1576,44 @@ public:
     {
         PrepareSpellScript(spell_appraisal_SpellScript);
 
+        void HandleEffect(uint32 item, uint32 spellID, Player* player)
+        {
+            uint32 itemCount = player->GetItemCount(item);
+            for (uint8 i = 0; i < itemCount; i++)
+                player->CastSpell(player, spellID);
+
+            player->DestroyItemCount(item, itemCount, true);
+        }
+
         void HandleScriptEffect(SpellEffIndex /*effIndex*/)
         {
             Player* player = GetCaster()->ToPlayer();
             if (!player)
                 return;
 
-            for (uint8 i = 0; i < player->GetItemCount(92582); i++)
-                player->CastSpell(player, SPELL_CHEAP_COLOGNE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92590); i++)
-                player->CastSpell(player, SPELL_RUBY_NEACKABLE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92620); i++)
-                player->CastSpell(player, SPELL_ROPE_BINDINGS);
-
-            for (uint8 i = 0; i < player->GetItemCount(92612); i++)
-                player->CastSpell(player, SPELL_YARN);
-
-            for (uint8 i = 0; i < player->GetItemCount(92604); i++)
-                player->CastSpell(player, SPELL_GOLDEN_GOBLET);
-
-            for (uint8 i = 0; i < player->GetItemCount(92596); i++)
-                player->CastSpell(player, SPELL_RUBY_RING);
-
-            for (uint8 i = 0; i < player->GetItemCount(92588); i++)
-                player->CastSpell(player, SPELL_JADE_KITTEN);
-
-            for (uint8 i = 0; i < player->GetItemCount(92580); i++)
-                player->CastSpell(player, SPELL_FRAGRANT_PERFUME);
-
-            for (uint8 i = 0; i < player->GetItemCount(92618); i++)
-                player->CastSpell(player, SPELL_ORNATE_PORTRAIT);
-
-            for (uint8 i = 0; i < player->GetItemCount(92610); i++)
-                player->CastSpell(player, SPELL_GOLDER_PLATTER);
-
-            for (uint8 i = 0; i < player->GetItemCount(92602); i++)
-                player->CastSpell(player, SPELL_LARGE_PILE_OF_GOLD);
-
-            for (uint8 i = 0; i < player->GetItemCount(92594); i++)
-                player->CastSpell(player, SPELL_DIAMONG_RING);
-
-            for (uint8 i = 0; i < player->GetItemCount(92586); i++)
-                player->CastSpell(player, SPELL_SPARKLING_SAPPHIRE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92624); i++)
-                player->CastSpell(player, SPELL_RUNEBLADE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92616); i++)
-                player->CastSpell(player, SPELL_FRUIT_BOWL);
-
-            for (uint8 i = 0; i < player->GetItemCount(92608); i++)
-                player->CastSpell(player, SPELL_GOLDON_POTION);
-
-            for (uint8 i = 0; i < player->GetItemCount(92600); i++)
-                player->CastSpell(player, SPELL_SMALL_PILE_OF_GOLD);
-
-            for (uint8 i = 0; i < player->GetItemCount(92592); i++)
-                player->CastSpell(player, SPELL_SPELLSTONE_NECKABLE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92584); i++)
-                player->CastSpell(player, SPELL_EXPENSIVE_RUBY);
-
-            for (uint8 i = 0; i < player->GetItemCount(92622); i++)
-                player->CastSpell(player, SPELL_ANCIENT_ORC_SHIELD);
-
-            for (uint8 i = 0; i < player->GetItemCount(92614); i++)
-                player->CastSpell(player, SPELL_FAMILY_JEWELS);
-
-            for (uint8 i = 0; i < player->GetItemCount(92606); i++)
-                player->CastSpell(player, SPELL_HIGH_ELF_STATUE);
-
-            for (uint8 i = 0; i < player->GetItemCount(92598); i++)
-                player->CastSpell(player, SPELL_GOLD_RING);
+            HandleEffect(92582, SPELL_CHEAP_COLOGNE, player);
+            HandleEffect(92590, SPELL_RUBY_NEACKABLE, player);
+            HandleEffect(92620, SPELL_ROPE_BINDINGS, player);
+            HandleEffect(92612, SPELL_YARN, player);
+            HandleEffect(92604, SPELL_GOLDEN_GOBLET, player);
+            HandleEffect(92596, SPELL_RUBY_RING, player);
+            HandleEffect(92588, SPELL_JADE_KITTEN, player);
+            HandleEffect(92580, SPELL_FRAGRANT_PERFUME, player);
+            HandleEffect(92618, SPELL_ORNATE_PORTRAIT, player);
+            HandleEffect(92610, SPELL_GOLDER_PLATTER, player);
+            HandleEffect(92602, SPELL_LARGE_PILE_OF_GOLD, player);
+            HandleEffect(92594, SPELL_DIAMONG_RING, player);
+            HandleEffect(92586, SPELL_SPARKLING_SAPPHIRE, player);
+            HandleEffect(92624, SPELL_RUNEBLADE, player);
+            HandleEffect(92616, SPELL_FRUIT_BOWL, player);
+            HandleEffect(92608, SPELL_GOLDON_POTION, player);
+            HandleEffect(92600, SPELL_SMALL_PILE_OF_GOLD, player);
+            HandleEffect(92592, SPELL_SPELLSTONE_NECKABLE, player);
+            HandleEffect(92584, SPELL_EXPENSIVE_RUBY, player);
+            HandleEffect(92622, SPELL_ANCIENT_ORC_SHIELD, player);
+            HandleEffect(92614, SPELL_FAMILY_JEWELS, player);
+            HandleEffect(92606, SPELL_HIGH_ELF_STATUE, player);
+            HandleEffect(92598, SPELL_GOLD_RING, player);
         }
 
         void Register() override
@@ -1564,6 +1625,61 @@ public:
     SpellScript* GetSpellScript() const
     {
         return new spell_appraisal_SpellScript();
+    }
+};
+
+class spell_spellflame_dummy : public SpellScriptLoader
+{
+public:
+    spell_spellflame_dummy() : SpellScriptLoader("spell_spellflame_dummy") { }
+
+    class spell_spellflame_dummy_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_spellflame_dummy_AuraScript);
+
+        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            Position offset;
+            caster->GetNearPosition(offset, step, 0);
+            caster->GetPosition(&pos);
+            vel = G3D::Vector2(offset.m_positionX - pos.m_positionX, offset.m_positionY - pos.m_positionY).direction();
+        }
+
+        void PeriodicTick(AuraEffect const* aurEff)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            uint32 tick = aurEff->GetTickNumber();
+            if (tick > 19)
+            {
+                caster->RemoveAura(SPELL_SPELLFLAME_DUMMY);
+                return;
+            }
+
+            caster->CastSpell(pos.m_positionX + vel.x * step * (tick - 1), pos.m_positionY + vel.y * step * (tick - 1), pos.m_positionZ, SPELL_SPELLFLAME_TRIGGER, true);
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_spellflame_dummy_AuraScript::OnApply, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_DEFAULT);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_spellflame_dummy_AuraScript::PeriodicTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+        }
+
+    private:
+        const float step = 2.0f;
+        G3D::Vector2 vel;
+        Position pos;
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_spellflame_dummy_AuraScript();
     }
 };
 
@@ -1579,6 +1695,8 @@ void AddSC_pursing_the_black_harvest()
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
     new npc_wild_imp_scenario();
+    new npc_doom_lord_scenario();
+    new npc_felhunter_scenario();
     new npc_unbound_night_lord();
 
     new at_pursuing_the_black_harvest_main();
@@ -1591,4 +1709,5 @@ void AddSC_pursing_the_black_harvest()
     new spell_drain_fel_enegry();
     new spell_fel_enery();
     new spell_appraisal();
+    new spell_spellflame_dummy();
 }

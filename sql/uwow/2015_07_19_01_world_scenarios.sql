@@ -17,6 +17,8 @@ UPDATE `creature_template` SET `ScriptName` ='npc_kanrethad_ebonlocke' WHERE (`e
 UPDATE `creature_template` SET `ScriptName` ='npc_jubeka_shadowbreaker' WHERE (`entry`='70166');
 UPDATE `creature_template` SET `ScriptName` ='npc_wild_imp_scenario' WHERE (`entry`='70071');
 UPDATE `creature_template` SET `ScriptName` ='npc_unbound_night_lord' WHERE (`entry`='68174');
+UPDATE `creature_template` SET `ScriptName` ='npc_doom_lord_scenario' WHERE (`entry`='70073');
+UPDATE `creature_template` SET `ScriptName` ='npc_felhunter_scenario' WHERE (`entry`='70072');
 
 DELETE FROM `areatrigger_scripts` WHERE `entry` IN ('8696', '8699', '8698', '8701', '8706', '8702', '8708', '8908');
 INSERT INTO `areatrigger_scripts` (`entry`, `ScriptName`) VALUES
@@ -84,13 +86,15 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 ('70052', '138680', '1', '0'),
 ('69964', '139200', '1', '0');
 
-DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680', '139141', '140164', '139200', '134280');
+DELETE FROM `spell_script_names` WHERE `spell_id` IN ('138680', '139141', '140164', '139200', '134280', '134234');
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('138680', 'spell_place_empowered_soulcore'),
 ('139141', 'spell_anihilate_demons'),
 ('139200', 'spell_drain_fel_enegry'),
 ('140164', 'spell_fel_enery'),
-('134280', 'spell_appraisal');
+('134280', 'spell_appraisal'),
+('134234', 'spell_spellflame_dummy');
+
 
 DELETE FROM `spell_loot_template` WHERE `entry` IN ('134290', '134294', '134298', '134302', '134283', '134287', '134291', '134295', '134299', '134303',
 '134284', '134284', '134288', '134292', '134296', '134281', '134300', '134285', '134289', '134293', '134297', '134301', '134282', '134286');
@@ -119,7 +123,7 @@ INSERT INTO `spell_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `loot
 ('134282', '92583', '100', '1', '1', '1', '1', '0'),
 ('134286', '92591', '100', '1', '1', '1', '1', '0');
 
-DELETE FROM `creature_text` WHERE `entry` IN ('70166', '69964', '68137', '58959', '68096', '68098');
+DELETE FROM `creature_text` WHERE `entry` IN ('70166', '69964', '68137', '58959', '68096', '68098', '68151');
 INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (70166, 0, 0, 'НЕТ!', 12, 0, 100, 0, 0, 0, 'to Player'),
 (70166, 1, 0, 'Я сделала лишь то, о чем ты сам просил меня раньше, Канретад. Ты сам во всем виноват.', 12, 0, 100, 0, 0, 0, 'to Player'),
@@ -161,7 +165,11 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 ('68096', '1', '0', 'Что ты видишь, брат?', '12', '0', '100', '0', '0', '0', 'Пеплоуст-охотник to Пеплоуст-рабочий'),
 ('68096', '2', '0', 'Еще Чернокнижник? После того, что случилось в прошлый раз, ты должен быть рад, что мы не убили тебя сразу.', '12', '0', '100', '0', '0', '0', 'Пеплоуст-охотник to Player - кастомный текст, в снифах был пропущен ( на основе видео и комментариев )'),
 
-('68098', '0', '0', '%s призывает ближайшего стража на помощь!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player');
+('68098', '0', '0', '%s призывает ближайшего стража на помощь!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player'),
+
+('68151', '0', '0', 'УМРИ!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player'),
+('68151', '1', '0', 'Узри же души, которые погубили твои собратья, чернокнижники!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player'),
+('68151', '2', '0', 'Ты так любишь демонов?.. Теперь у тебя будет возможность встретиться с ними!', '16', '0', '100', '0', '0', '0', 'Пеплоуст-рабочий to Player');
 
 DELETE FROM `gameobject_template` WHERE `entry` IN (216364, 216448, 216449, 216450, 216451, 216452, 216428, 216430, 216431, 216432, 216433, 216434, 216435, 216436, 216437, 216438, 216439, 216440, 216441, 216442, 216444, 216445, 216446, 216447,216454, 216366, 216481, 185892, 185478, 185479, 186152, 185480, 185482, 185483, 185905, 185882);
 INSERT INTO `gameobject_template` (`entry`, `type`, `displayId`, `name`, `IconName`, `castBarCaption`, `unk1`, `size`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `Data0`, `Data1`, `Data2`, `Data3`, `Data4`, `Data5`, `Data6`, `Data7`, `Data8`, `Data9`, `Data10`, `Data11`, `Data12`, `Data13`, `Data14`, `Data15`, `Data16`, `Data17`, `Data18`, `Data19`, `Data20`, `Data21`, `Data22`, `Data23`, `Data24`, `Data25`, `Data26`, `Data27`, `Data28`, `Data29`, `Data30`, `Data31`, `unkInt32`, `WDBVerified`) VALUES
