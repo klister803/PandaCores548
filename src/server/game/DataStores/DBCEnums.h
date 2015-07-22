@@ -105,7 +105,7 @@ enum AchievementCriteriaCondition
     ACHIEVEMENT_CRITERIA_CONDITION_UNK2                 = 2,    // only used in "Complete a daily quest every day for five consecutive days"
     ACHIEVEMENT_CRITERIA_CONDITION_BG_MAP               = 3,    // requires you to be on specific map, reset at change
     ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE              = 4,    // only used in "Win 10 arenas without losing"
-    ACHIEVEMENT_CRITERIA_CONDITION_NOT_LOSE_AURA        = 5,    // Aura lose - time limit or removed
+    ACHIEVEMENT_CRITERIA_CONDITION_NOT_LOSE_AURA        = 5,    // reset progress on removed aura
     ACHIEVEMENT_CRITERIA_CONDITION_UNK8                 = 8,
     ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT         = 9,    // requires the player not to be hit by specific spell
     ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP         = 10,   // requires the player not to be in group

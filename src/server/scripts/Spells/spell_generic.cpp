@@ -4127,7 +4127,7 @@ class spell_gen_bounce_achievement : public SpellScriptLoader
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* pCaster = GetCaster()->ToPlayer())
-                    pCaster->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_AURA_LOSE, 95529);
+                    pCaster->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NOT_LOSE_AURA, 95529);
             }
 
             void Register()
