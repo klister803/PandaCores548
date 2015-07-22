@@ -1167,7 +1167,7 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            DoSpellAttackIfReady(SPELL_DOOM_BOLT);
+            DoSpellAttackIfReady(SPELL_DOOM_BOLT2);
         }
     };
 

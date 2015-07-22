@@ -1014,7 +1014,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void CastSpell(Unit* target, uint32 spell);
         void SendCustomAnim(uint32 anim);
-        void SendActivateAnim(uint32 anim);
+        void SendGameObjectActivateAnimKit(uint32 animKitID, bool maintain);
         bool IsInRange(float x, float y, float z, float radius) const;
 
         void ModifyHealth(int32 change, Unit* attackerOrHealer = NULL, uint32 spellId = 0);

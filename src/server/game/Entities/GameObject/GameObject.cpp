@@ -1828,8 +1828,18 @@ void GameObject::SendCustomAnim(uint32 anim)
     SendMessageToSet(&data, true);
 }
 
-void GameObject::SendActivateAnim(uint32 anim)
+void GameObject::SendGameObjectActivateAnimKit(uint32 animKitID, bool maintain)
 {
+    ObjectGuid objectGUID = GetGUID();
+    bool Maintain = false;
+
+    WorldPacket data(SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT, 16 + 4);
+
+    data.WriteBit(Maintain);
+    data << objectGUID;
+    data << animKitID;
+
+    SendMessageToSet(&data, true);
 }
 
 bool GameObject::IsInRange(float x, float y, float z, float radius) const

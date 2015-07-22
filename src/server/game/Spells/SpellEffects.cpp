@@ -6227,7 +6227,7 @@ void Spell::EffectActivateObject(SpellEffIndex /*effIndex*/)
             if (gameObjTarget->GetEntry() == 209623 || gameObjTarget->GetEntry() == 209631 || gameObjTarget->GetEntry() == 209632)
             {
                 // Send anim kit
-                gameObjTarget->SendActivateAnim(m_spellInfo->Effects[0].MiscValueB);
+                gameObjTarget->SendGameObjectActivateAnimKit(m_spellInfo->Effects[0].MiscValueB, false);
                 return;
             }
             break;

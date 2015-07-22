@@ -161,7 +161,7 @@ enum Spells
     SPELL_SUMMON_DOOM_LORD              = 138755,
 
     //< NPC_DOOM_LORD
-    SPELL_DOOM_BOLT                     = 138753,
+    SPELL_DOOM_BOLT2                    = 138753,
 
     //< NPC_FELHUNTER
     SPELL_DEVOUR_ENSLAVEMENT            = 139060,
