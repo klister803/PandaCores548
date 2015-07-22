@@ -4530,6 +4530,58 @@ class npc_mirror_image : public CreatureScript
         }
 };
 
+enum eSpells
+{
+    SPELL_TRAMPOLINE_BOUNCE_1 = 79040,
+    SPELL_TRAMPOLINE_BOUNCE_2 = 79044,
+};
+
+class npc_hyjal_soft_target : public CreatureScript
+{
+    public:
+        npc_hyjal_soft_target() : CreatureScript("npc_hyjal_soft_target") { }
+
+        struct npc_hyjal_soft_targetAI : public ScriptedAI
+        {
+            npc_hyjal_soft_targetAI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->SetReactState(REACT_PASSIVE);
+            }
+
+            uint32 JumpTimer;
+
+            void Reset()
+            {
+                JumpTimer = 1000;
+            }
+
+            void UpdateAI(uint32 diff)
+            {
+                if (JumpTimer <= diff)
+                {
+                    JumpTimer = 1000;
+                    if (Player* pTarget = me->SelectNearestPlayer(2.0f))
+                    {
+                        uint32 spell;
+                        if (urand(0, 1) == 0)
+                            spell = SPELL_TRAMPOLINE_BOUNCE_1;
+                        else
+                            spell = SPELL_TRAMPOLINE_BOUNCE_2;
+
+                        DoCast(pTarget, spell);
+                    }
+                }
+                else
+                    JumpTimer -= diff;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_hyjal_soft_targetAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_storm_earth_and_fire();
@@ -4582,4 +4634,5 @@ void AddSC_npcs_special()
     new npc_guild_battle_standard();
     new npc_riggle_bassbait();
     new npc_mirror_image();
+    new npc_hyjal_soft_target();
 }

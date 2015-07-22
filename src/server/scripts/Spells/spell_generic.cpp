@@ -4115,6 +4115,33 @@ class spell_gen_bg_inactive : public SpellScriptLoader
         }
 };
 
+class spell_gen_bounce_achievement : public SpellScriptLoader
+{
+    public:
+        spell_gen_bounce_achievement() : SpellScriptLoader("spell_gen_bounce_achievement") { }
+
+        class spell_gen_bounce_achievement_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_bounce_achievement_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* pCaster = GetCaster()->ToPlayer())
+                    pCaster->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_AURA_LOSE, 95529);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_gen_bounce_achievement_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_bounce_achievement_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
 //    new spell_gen_protect();
@@ -4205,4 +4232,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_ic_seaforium_blast();
     new spell_gen_cooking_way();
     new spell_gen_bg_inactive();
+    new spell_gen_bounce_achievement();
 }
