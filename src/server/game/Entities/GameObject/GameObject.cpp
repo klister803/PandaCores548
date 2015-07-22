@@ -1831,11 +1831,9 @@ void GameObject::SendCustomAnim(uint32 anim)
 void GameObject::SendGameObjectActivateAnimKit(uint32 animKitID, bool maintain)
 {
     ObjectGuid objectGUID = GetGUID();
-    bool Maintain = false;
-
     WorldPacket data(SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT, 16 + 4);
 
-    data.WriteBit(Maintain);
+    data.WriteBit(maintain);
     data << objectGUID;
     data << animKitID;
 
