@@ -73,7 +73,7 @@ UPDATE `creature_template` SET `minlevel`='91', `maxlevel`='91', `faction`='14',
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `npcflag`='16777216', `speed_walk`='1', `speed_run`='1', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='33555200', `HoverHeight`='1' WHERE (`entry`='70460');
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70481');
 UPDATE `creature_template` SET `minlevel`='92', `maxlevel`='92', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70070');
-UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='0.4', `speed_run`='0.142857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69798');
+UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='0.4', `speed_run`='0.142857', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `MovementType`='0', `HoverHeight`='1' WHERE (`entry`='69798');
 UPDATE `creature_template` SET `minlevel`='93', `maxlevel`='93', `faction`='16', `speed_walk`='0.888888', `speed_run`='0.952381', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='8', `unit_flags`='32768', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70074');
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='1665', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70079');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='69813');
@@ -107,12 +107,12 @@ INSERT INTO `gossip_menu_option` (`menu_id`, `id`, `option_icon`, `option_text`,
 (15618, 2, 0, 'Запускай!', 0, 0, ''), -- 70100
 (15607, 0, 0, 'Я готова.', 0, 0, ''); -- 70438
 
+DELETE FROM `locales_gossip_menu_option` WHERE menu_id IN (15535, 15615, 15618, 15607);
 INSERT INTO `locales_gossip_menu_option` (`menu_id`, `id`, `option_text_loc1`, `option_text_loc2`, `option_text_loc3`, `option_text_loc4`, `option_text_loc5`, `option_text_loc6`, `option_text_loc7`, `option_text_loc8`, `option_text_loc9`, `option_text_loc10`, `box_text_loc1`, `box_text_loc2`, `box_text_loc3`, `box_text_loc4`, `box_text_loc5`, `box_text_loc6`, `box_text_loc7`, `box_text_loc8`, `box_text_loc9`, `box_text_loc10`) VALUES
 ('15535', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Пойдем!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('15615', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Давай сюда этих ша!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('15618', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Запускай!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 ('15607', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Я готова.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
 
 DELETE FROM `npc_text` WHERE ID IN (22315, 22423, 22441);
 INSERT INTO `npc_text` (`ID`, `text0_0`, `text0_1`, `lang0`, `prob0`, `em0_0`, `em0_1`, `em0_2`, `em0_3`, `em0_4`, `em0_5`, `text1_0`, `text1_1`, `lang1`, `prob1`, `em1_0`, `em1_1`, `em1_2`, `em1_3`, `em1_4`, `em1_5`, `text2_0`, `text2_1`, `lang2`, `prob2`, `em2_0`, `em2_1`, `em2_2`, `em2_3`, `em2_4`, `em2_5`, `text3_0`, `text3_1`, `lang3`, `prob3`, `em3_0`, `em3_1`, `em3_2`, `em3_3`, `em3_4`, `em3_5`, `text4_0`, `text4_1`, `lang4`, `prob4`, `em4_0`, `em4_1`, `em4_2`, `em4_3`, `em4_4`, `em4_5`, `text5_0`, `text5_1`, `lang5`, `prob5`, `em5_0`, `em5_1`, `em5_2`, `em5_3`, `em5_4`, `em5_5`, `text6_0`, `text6_1`, `lang6`, `prob6`, `em6_0`, `em6_1`, `em6_2`, `em6_3`, `em6_4`, `em6_5`, `text7_0`, `text7_1`, `lang7`, `prob7`, `em7_0`, `em7_1`, `em7_2`, `em7_3`, `em7_4`, `em7_5`, `WDBVerified`) VALUES 
@@ -133,7 +133,7 @@ INSERT INTO `instance_template` (`map`, `parent`, `script`, `allowMount`, `bonus
 
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_defender' WHERE (`entry`='70099');
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_warrior' WHERE (`entry`='70106');
-UPDATE `creature_template` SET `ScriptName` ='npc_invisible_hunter' WHERE (`entry`='62142');
+UPDATE `creature_template` SET `ScriptName` ='npc_invisible_stalker' WHERE (`entry`='62142');
 UPDATE `creature_template` SET `ScriptName` ='npc_lighting_pilar_spark_stalker' WHERE (`entry`='69813');
 UPDATE `creature_template` SET `ScriptName` ='npc_forgemaster_vulkon' WHERE (`entry`='70074');
 UPDATE `gameobject_template` SET `ScriptName` ='go_mogu_crucible' WHERE (`entry`='218910');
@@ -144,17 +144,18 @@ UPDATE `creature_template` SET `ScriptName` ='npc_shanze_electro_coutioner' WHER
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_pyromancer' WHERE (`entry`='69824');
 UPDATE `creature_template` SET `ScriptName` ='npc_celestial_blacksmith' WHERE (`entry`='69828');
 UPDATE `creature_template` SET `ScriptName` ='npc_celestial_defender' WHERE (`entry`='69837');
+UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge' WHERE (`entry`='70577');
 UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge_second' WHERE (`entry`='70283');
+UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge_third' WHERE (`entry`='70292');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_beast' WHERE (`entry`='70048');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_fiend' WHERE (`entry`='70039');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entry`='70228');
 
-DELETE FROM `areatrigger_scripts` where `entry` in (840, 503, 868);
 DELETE FROM `areatrigger_actions` where `entry` in (840, 503, 868);
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES
 ('503', '0', '1', '0', '8', '132744', '1', '0', '0', '0', '0', '0', 'Healing Orb'),
 ('840', '0', '1', '0', '8', '139397', '1', '0', '0', '0', '0', '0', 'Overcharged'),
-('868', '0', '1', '0', '8', '140068', '1', '140068', '0', '0', '0', '0', 'Power Surge');
+('868', '0', '1', '0', '8', '140068', '1', '0', '0', '0', '0', '0', 'Power Surge');
 
 
 DELETE FROM `spell_script_names` WHERE spell_id IN (134715, 138869, 138805, 138928, 140382);
@@ -221,10 +222,10 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+0, 70556, 1126, 3, 1, 7182.018, 5277.963, 68.1808, 0, 7200, 0, 0), -- 70556 (Area: 6677) (Auras: )
 (@CGUID+1, 70577, 1126, 3, 1, 7186.507, 5281.804, 66.35448, 0.7079705, 7200, 0, 0), -- 70577 (Area: 6677) (Auras: 140678 - 140678)
 (@CGUID+2, 70100, 1126, 3, 1, 7216.692, 5296.011, 66.06776, 1.324494, 7200, 5, 0), -- 70100 (Area: 6677) (Auras: 109924 - 109924) (possible waypoints or random movement)
-(@CGUID+3, 69798, 1126, 3, 1, 7195.71, 5249.874, 67.64626, 0, 7200, 5, 0), -- 69798 (Area: 6677) (Auras: 138090 - 138090) (possible waypoints or random movement)
+(@CGUID+3, 69798, 1126, 3, 1, 7195.71, 5249.874, 67.64626, 0, 7200, 5, 0), -- 69798 (Area: 6677) (Auras: 138090 - 138090)
 (@CGUID+4, 70577, 1126, 3, 1, 7195.93, 5249.743, 85.89191, 0, 7200, 0, 0), -- 70577 (Area: 6677)
 (@CGUID+5, 62142, 1126, 3, 1, 7202.491, 5242.387, 66.06776, 0, 7200, 0, 0), -- 62142 (Area: 6677)
-(@CGUID+6, 69813, 1126, 3, 1, 7196.897, 5252.677, 66.06777, 0, 7200, 5, 1), -- 69813 (Area: 6677) (Auras: 138152 - 138152) (possible waypoints or random movement)
+(@CGUID+6, 69813, 1126, 3, 1, 7196.897, 5252.677, 66.06777, 0, 7200, 0, 0), -- 69813 (Area: 6677) (Auras: 138152 - 138152)
 (@CGUID+7, 70099, 1126, 3, 1, 7167.824, 5263.123, 85.63942, 0.4716682, 7200, 0, 0), -- 70099 (Area: 6677) (Auras: 138919 - 138919)
 (@CGUID+8, 70106, 1126, 3, 1, 7198.407, 5233.008, 85.62053, 0.7678725, 7200, 0, 0), -- 70106 (Area: 6677) (Auras: 138919 - 138919)
 (@CGUID+9, 70106, 1126, 3, 1, 7176.257, 5253.797, 85.67552, 0.1837688, 7200, 0, 0), -- 70106 (Area: 6677) (Auras: 138919 - 138919)
@@ -555,3 +556,8 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+186, 0, 0x2000000, 0x1, '139908'); -- 70449 - 139908 - 139908
 
 UPDATE `creature` SET `spawnMask`='4096' WHERE `map` = '1126';
+
+DELETE FROM `creature_template` WHERE `entry` IN (70099, 70106);
+INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `exp_unk`, `faction`, `npcflag`, `npcflag2`, `speed_walk`, `speed_run`, `speed_fly`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `type_flags2`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `Health_mod`, `Mana_mod`, `Mana_mod_extra`, `Armor_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `WDBVerified`) VALUES
+('70099', '0', '0', '0', '0', '0', '41412', '0', '0', '0', 'Shado-Pan Defender', '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '70000', '50', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '16', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70099', '0', '0', 'npc_shado_pan_defender', '18414'),
+('70106', '0', '0', '0', '0', '0', '41829', '0', '0', '0', 'Shado-Pan Warrior',  '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '50000', '70', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '6', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70106', '0', '0', 'npc_shado_pan_warrior', '18414');

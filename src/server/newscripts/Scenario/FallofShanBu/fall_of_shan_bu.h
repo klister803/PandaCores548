@@ -34,7 +34,6 @@ enum Data
     DATA_NONE,
 
     DATA_PLAYER_ROLE,
-
     DATA_MOGU_CRUCIBLE,
     DATA_ALLOWED_STAGE,
     DATA_WAVE_COUNTER,
@@ -42,15 +41,9 @@ enum Data
     DATA_WARRIOR_1,
     DATA_WARRIOR_2,
     DATA_DEFENDER,
-
-
-
-    DATA_TRUNDER_FORGE_DOOR,
-    DATA_COMPLETE_EVENT_STAGE_1,
     DATA_STAGE1_P2,
-
-    DATA_LR_START,
-    DATA_LR_STAGE_2,
+    DATA_TRUNDER_FORGE_DOOR,
+    DATA_WRATHION,
 };
 
 enum Actions
@@ -87,9 +80,12 @@ enum eCreatures
     NPC_SHADO_PAN_DEFENDER              = 70099,
 
     NPC_THUNDER_FORGE                   = 70577,
+    NPC_THUNDER_FORGE_2                 = 70283,
     NPC_THUNDER_FORGE_3                 = 70292,
-    NPC_THUNDER_FORGE2                  = 70283,
     NPC_THUNDER_FORGE_CRUCIBLE          = 70556,
+    NPC_LIGHTING_PILAR_BEAM_STALKER     = 69798,
+    NPC_LIGHTING_PILAR_SPARK_STALKER    = 69813,
+    NPC_INVISIBLE_STALKER               = 62142,
 
     NPC_FORGEMASTER_VULKON              = 70074,
 
@@ -100,7 +96,6 @@ enum eCreatures
     NPC_SHANZE_ELECTRO_CUTIONER2        = 69216,
     NPC_SHANZE_PYROMANCER               = 69824,
 
-    NPC_INVISIBLE_STALKER               = 62142,
     NPC_SPIRIT_HEALER                   = 65183,
     NPC_JUVENILE_SKYSCREAMER            = 69162,
     NPC_ZANALARI_COMMONER               = 69170,
@@ -114,8 +109,6 @@ enum eCreatures
     NPC_JUVENILE_SKYSCREAMER2           = 69404,
     NPC_ZANDALARI_BEASTCALLER3          = 69412,
     NPC_LORTHEMAR_THERON                = 69481,
-    NPC_LIGHTING_PILAR_BEAM_STALKER     = 69798,
-    NPC_LIGHTING_PILAR_SPARK_STALKER    = 69813,
     NPC_SLAVEMASTER_SHIAXU              = 69923,
     NPC_SCOUT_CAPTAIN_ELSIA             = 70042,
     NPC_NALAK                           = 69099,
@@ -134,7 +127,7 @@ enum eCreatures
 
     NPC_PHASE3_ROOM_CENTER_STALKER      = 70481,
     NPC_ANVIL_STALKER                   = 70079,
-    NPC_THUNDER_FORGE_2                 = 70061,
+    NPC_THUNDER_FORGE_4                 = 70061,
     NPC_LIGHTING_SPEAR_FLOAT_STALKER    = 70500,
     NPC_LIGHTING_LANCE                  = 70460,
 
