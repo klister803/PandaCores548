@@ -71,6 +71,7 @@ public:
         std::vector<uint64> sopboxGuids;
         std::vector<uint64> spoilsGuids;  //for send frames
         std::vector<uint64> spoils2Guids; //find players and send aura bar in radius
+        uint64 spentdoorGuid;
         uint64 spexdoorGuid;
         uint64 thokentdoorGuid;
         std::vector<uint64> jaillistGuids;
@@ -140,6 +141,7 @@ public:
             sopboxGuids.clear();
             spoilsGuids.clear();
             spoils2Guids.clear();
+            spentdoorGuid           = 0;
             spexdoorGuid            = 0;
             thokentdoorGuid         = 0;
             jaillistGuids.clear();
@@ -545,6 +547,9 @@ public:
                 case GO_MALKOROK_FENCH_2:
                     malkorokfenchGuids.push_back(go->GetGUID());
                     break;
+                case GO_ENT_GATE:
+                    spentdoorGuid = go->GetGUID();
+                    break;
                 case GO_SP_EX_DOOR:
                     AddDoor(go, true);
                     spexdoorGuid = go->GetGUID();
@@ -836,6 +841,7 @@ public:
                         {
                             if (GameObject* box = instance->GetGameObject(*itr))
                             {
+                                box->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                                 box->SetGoState(GO_STATE_READY);
                                 box->SetLootState(GO_READY);
                                 box->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
@@ -853,7 +859,8 @@ public:
                         for (std::vector<uint64>::const_iterator itr = spoilsGuids.begin(); itr != spoilsGuids.end(); itr++)
                             if (Creature* spoil = instance->GetCreature(*itr))
                                 if (spoil->GetEntry() == NPC_MOGU_SPOILS2 || spoil->GetEntry() == NPC_MANTIS_SPOILS2)
-                                    spoil->AI()->DoAction(ACTION_IN_PROGRESS);                            
+                                    spoil->AI()->DoAction(ACTION_IN_PROGRESS);  
+                        HandleGameObject(spentdoorGuid, false);
                         break;
                     case DONE:
                         //Clear Frames
@@ -873,6 +880,8 @@ public:
                         //Open All Gates (for safe)
                         for (std::vector<uint64>::const_iterator itr = roomgateGuids.begin(); itr != roomgateGuids.end(); itr++)
                             HandleGameObject(*itr, true);
+                        HandleGameObject(spentdoorGuid, true);
+                        HandleGameObject(spexdoorGuid, true);
                         break;
                     case SPECIAL: //first room done, start second
                         //Open Next Gates In Room
