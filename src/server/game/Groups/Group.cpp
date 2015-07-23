@@ -382,6 +382,37 @@ Player* Group::GetInvited(const std::string& name) const
     return NULL;
 }
 
+bool Group::AddCreatureMember(Creature* creature)
+{
+    uint8 subGroup = 0;
+    if (m_subGroupsCounts)
+    {
+        bool groupFound = false;
+        for (; subGroup < MAX_RAID_SUBGROUPS; ++subGroup)
+        {
+            if (m_subGroupsCounts[subGroup] < MAXGROUPSIZE)
+            {
+                groupFound = true;
+                break;
+            }
+        }
+        if (!groupFound)
+            return false;
+    }
+
+    MemberSlot member;
+    member.guid      = creature->GetGUID();
+    member.name      = creature->GetName();
+    member.group     = subGroup;
+    member.flags     = 0;
+    member.roles     = 0;
+    m_memberSlots.push_back(member);
+
+    SubGroupCounterIncrease(subGroup);
+    SendUpdate();
+    return true;
+}
+
 bool Group::AddMember(Player* player)
 {
     // Get first not-full group
@@ -534,6 +565,25 @@ bool Group::AddMember(Player* player)
         if (m_maxEnchantingLevel < player->GetSkillValue(SKILL_ENCHANTING))
             m_maxEnchantingLevel = player->GetSkillValue(SKILL_ENCHANTING);
     }
+
+    return true;
+}
+
+bool Group::RemoveCreatureMember(uint64 guid)
+{
+    if (!guid)
+        return false;
+
+    BroadcastGroupUpdate();
+
+    member_witerator slot = _getMemberWSlot(guid);
+    if (slot != m_memberSlots.end())
+    {
+        SubGroupCounterDecrease(slot->group);
+        m_memberSlots.erase(slot);
+    }
+
+    SendUpdate();
 
     return true;
 }

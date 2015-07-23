@@ -42,20 +42,16 @@ public:
             doorGUID = 0;
             wrathionGUID = 0;
             thunderForgeGUID = 0;
+            forgemasterGUID = 0;
+
             shaBeastGUIDs.clear();
             shaFiendGUIDs.clear();
             firstPhaseTrashGUIDs.clear();
 
             stageData = STAGE_1;
             waveCounter = 0;
-            waveCounter2 = 0;
+            s1p2 = 0;
 
-
-            eventStage = 0;
-            eventStage2 = 0;
-            eventStage3 = 0;
-            counter = 0;
-            jumpPos = 0;
             lrStage2 = 0;
         }
 
@@ -86,6 +82,7 @@ public:
                 case NPC_THUNDER_FORGE_CRUCIBLE:
                 case NPC_INVISIBLE_STALKER:
                 case NPC_LIGHTING_PILAR_BEAM_STALKER:
+                case NPC_LIGHTING_PILAR_SPARK_STALKER:
                     creature->SetVisible(false);
                     break;
                 case NPC_SHA_BEAST:
@@ -102,12 +99,24 @@ public:
                 case NPC_SHANZE_ELECTRO_CUTIONER:
                 case NPC_SHANZE_ELECTRO_CUTIONER2:
                 case NPC_SHANZE_PYROMANCER:
-                    creature->SetVisible(false);
+                    creature->SetReactState(REACT_PASSIVE);
+                    creature->SetPhaseMask(12, true);
                     firstPhaseTrashGUIDs.push_back(creature->GetGUID());
                     break;
                 case NPC_THUNDER_FORGE:
                     creature->SetVisible(false);
                     thunderForgeGUID = creature->GetGUID();
+                    break;
+                case NPC_SHADO_PAN_WARRIOR:
+                    warriorGUIDs.push_back(creature->GetGUID());
+                    break;
+                case NPC_SHADO_PAN_DEFENDER:
+                    defenderGUID = creature->GetGUID();
+                    break;
+                case NPC_FORGEMASTER_VULKON:
+                    creature->SetReactState(REACT_PASSIVE);
+                    creature->SetPhaseMask(12, true);
+                    forgemasterGUID = creature->GetGUID();
                     break;
                 default:
                     break;
@@ -122,8 +131,9 @@ public:
                 case NPC_SHANZE_WARRIOR:
                 case NPC_SHANZE_BATTLEMASTER:
                 case NPC_SHANZE_ELECTRO_CUTIONER:
+                case NPC_SHANZE_ELECTRO_CUTIONER2:
                 case NPC_SHANZE_PYROMANCER:
-                    SetData(DATA_WAVE_COUNTER, GetData(DATA_WAVE_COUNTER) - 1);
+                    --waveCounter;
                     break;
                 case NPC_FORGEMASTER_VULKON:
                     break;
@@ -168,37 +178,36 @@ public:
                     switch(data)
                     {
                         case 0:
-                            if (waveCounter2 = 0)
-                            {
-                                if (Creature* cre = instance->GetCreature(wrathionGUID))
-                                    cre->AI()->DoAction(ACTION_2);
-                                break;
-                            }
-                            else
-                            {
-                                uint8 count = 0;
-                                uint8 amount = urand(1, 3);
-                                for (std::vector<uint64>::const_iterator itr = firstPhaseTrashGUIDs.begin(); itr != firstPhaseTrashGUIDs.end(); itr++)
-                                    if (Creature* cre = instance->GetCreature(*itr))
-                                    {
-                                        firstPhaseTrashGUIDs.erase(itr);
-                                        cre->SetVisible(true);
-                                        count++;
-                                        if (count > amount)
-                                            break;
-                                    }
-                            }
+                        {
+                            uint8 count = 0;
+                            uint8 amount = urand(1, 3);
+                            for (std::vector<uint64>::const_iterator itr = firstPhaseTrashGUIDs.begin(); itr != firstPhaseTrashGUIDs.end(); itr++)
+                                if (Creature* cre = instance->GetCreature(*itr))
+                                {
+                                    firstPhaseTrashGUIDs.erase(itr);
+                                    cre->SetPhaseMask(1, true);
+                                    cre->SetReactState(REACT_AGGRESSIVE);
+                                    cre->AI()->AttackStart(instance->GetCreature(defenderGUID));
+                                    count++;
+                                    if (count > amount)
+                                        break;
+                                }
+
+                            if (Creature* cre = instance->GetCreature(wrathionGUID))
+                                cre->AI()->DoAction(ACTION_2);
                             break;
+                        }
                         case 1:
                         {
                             waveCounter = 0;
-                            waveCounter2 = 1;
                             uint8 count = 0;
                             for (std::vector<uint64>::const_iterator itr = firstPhaseTrashGUIDs.begin(); itr != firstPhaseTrashGUIDs.end(); itr++)
                                 if (Creature* cre = instance->GetCreature(*itr))
                                 {
                                     firstPhaseTrashGUIDs.erase(itr);
-                                    cre->SetVisible(true);
+                                    cre->SetPhaseMask(1, true);
+                                    cre->SetReactState(REACT_AGGRESSIVE);
+                                    cre->AI()->AttackStart(instance->GetCreature(defenderGUID));
                                     count++;
                                     if (count > 3)
                                         break;
@@ -209,24 +218,24 @@ public:
                             break;
                     }
                     break;
+                case DATA_STAGE1_P2:
+                    s1p2 = data;
+                    switch (data)
+                    {
+                        case IN_PROGRESS:
+                            if (Creature* cre = instance->GetCreature(forgemasterGUID))
+                            {
+                                cre->SetReactState(REACT_AGGRESSIVE);
+                                cre->SetPhaseMask(1, true);
+                                cre->AI()->DoAction(ACTION_1);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
 
 
-
-                case DATA_START_EVENT:
-                    eventStage = data;
-                    break;
-                case DATA_EVENT_PART_1:
-                    eventStage2 = data;
-                    break;
-                case DATA_EVENT_PART_2:
-                    eventStage3 = data;
-                    break;
-                case DATA_SUMMONS_COUNTER:
-                    counter = data;
-                    break;
-                case DATA_JUMP_POS:
-                    jumpPos = data;
-                    break;
                 case DATA_LR_STAGE_2:
                     lrStage2 = data;
                     break;
@@ -245,17 +254,9 @@ public:
                     return stageData;
                 case DATA_WAVE_COUNTER:
                     return waveCounter;
+                case DATA_STAGE1_P2:
+                    return s1p2;
 
-                case DATA_START_EVENT:
-                    return eventStage;
-                case DATA_EVENT_PART_1:
-                    return eventStage2;
-                case DATA_EVENT_PART_2:
-                    return eventStage3;
-                case DATA_SUMMONS_COUNTER:
-                    return counter;
-                case DATA_JUMP_POS:
-                    return jumpPos;
                 case DATA_LR_STAGE_2:
                     return lrStage2;
                 default:
@@ -272,6 +273,13 @@ public:
                     return crucibleGUID;
                 case DATA_THUNDER_FORGE:
                     return thunderForgeGUID;
+                case DATA_WARRIOR_1:
+                    return warriorGUIDs[0];
+                case DATA_WARRIOR_2:
+                    return warriorGUIDs[1];
+                case DATA_DEFENDER:
+                    return defenderGUID;
+    
                 case DATA_TRUNDER_FORGE_DOOR:
                     return doorGUID;
                 default:
@@ -286,22 +294,20 @@ public:
         uint64 crucibleGUID;
         uint64 wrathionGUID;
         uint64 thunderForgeGUID;
+        uint64 defenderGUID;
+        uint64 forgemasterGUID;
 
         std::vector<uint64> shaBeastGUIDs;
         std::vector<uint64> shaFiendGUIDs;
         std::vector<uint64> firstPhaseTrashGUIDs;
+        std::vector<uint64> warriorGUIDs;
 
         uint32 stageData;
         uint32 waveCounter;
-        uint32 waveCounter2;
+        uint32 s1p2;
+        
 
-
-
-        int8 eventStage;
-        int8 eventStage2;
-        int8 eventStage3;
-        uint8 counter;
-        uint8 jumpPos;
+        
         uint8 lrStage2;
     };
 };

@@ -410,6 +410,7 @@ public:
         void Reset()
         {
             events.Reset();
+            step = 0;
         }
 
         void DoAction(int32 const action)
@@ -420,21 +421,23 @@ public:
                     events.ScheduleEvent(EVENT_1, 1 * IN_MILLISECONDS);
                     break;
                 case ACTION_1:
-                    events.ScheduleEvent(EVENT_5, 15 * IN_MILLISECONDS);
+                    events.ScheduleEvent(EVENT_5, 7 * IN_MILLISECONDS);
                     break;
                 case ACTION_2:
-                    events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS);
+                    if (step == 0)
+                    {
+                        events.ScheduleEvent(EVENT_6, 2 * IN_MILLISECONDS);
+                        step = 1;
+                    }
                     break;
 
 
                 case ACTION_LR_P1:
                     events.ScheduleEvent(EVENT_MOVE_TO_LR, 2 * IN_MILLISECONDS);
-                    instance->SetData(DATA_SUMMONS_COUNTER, 0);
                     me->SummonCreature(NPC_CELESTIAL_BLACKSMITH, celestialBlacksmithPoints[0]);
                     me->SummonCreature(NPC_CELESTIAL_DEFENDER, celestialDefenderPoints[0]);
                     break;
                 case ACTION_M_ENERGY:
-                    me->PlayDistanceSound(36406);
                     Talk(13);
                     events.ScheduleEvent(EVENT_LR_37, 5 * IN_MILLISECONDS);
                     break;
@@ -456,28 +459,6 @@ public:
                     sum->CastSpell(sum, SPELL_LIGHTING_STRIKE_COSMETIC_3);
                     sum->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
                     break;
-                case NPC_SHADO_PAN_WARRIOR:
-                case NPC_SHADO_PAN_DEFENDER:
-                {
-                    sum->AddAura(SPELL_WOUNDED, sum);
-                    sum->CastSpell(sum, SPELL_JOIN_PLAYER_PARTY);
-
-                    float x = sum->GetPositionX();
-                    float y = sum->GetPositionY();
-
-                    if (x == 7198.407f && y == 5233.008f)
-                        sum->GetMotionMaster()->MoveJump(7210.65f, 5247.51f, 65.9844f, 15.0f, 25.0f);
-                    if (x == 7176.257f && y == 5253.797f)
-                        sum->GetMotionMaster()->MoveJump(7195.13f, 5266.81f, 65.9844f, 15.0f, 25.0f);
-                    if (x == 7167.824f && y == 5263.123f)
-                        sum->GetMotionMaster()->MoveJump(7213.67f, 5266.37f, 65.9844f, 15.0f, 25.0f);
-                    
-                    sum->AI()->DoAction(ACTION_1);
-                    break;
-                }
-
-
-
 
 
                 case NPC_CELESTIAL_BLACKSMITH:
@@ -501,7 +482,6 @@ public:
                     break;
                 case EVENT_2:
                     events.ScheduleEvent(EVENT_3, 2 * IN_MILLISECONDS);
-                    me->PlayDistanceSound(SOUND_8);
                     Talk(1);
                     if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MOGU_CRUCIBLE)))
                         me->SetFacingToObject(go);
@@ -545,23 +525,62 @@ public:
                         break;
                     case EVENT_4:
                         me->SetOrientation(0.7853982f);
-                        me->SummonCreature(NPC_SHADO_PAN_WARRIOR, 7198.407f, 5233.008f, 85.62053f);
-                        me->SummonCreature(NPC_SHADO_PAN_WARRIOR, 7176.257f, 5253.797f, 85.67552f);
-                        me->SummonCreature(NPC_SHADO_PAN_DEFENDER, 7167.824f, 5263.123f, 85.63942f, 0.4716682f);
                         break;
                     case EVENT_5:
+                        events.ScheduleEvent(EVENT_8, 3 * IN_MILLISECONDS);
                         Talk(26);
+                        if (Creature* warrior = Creature::GetCreature(*me, instance->GetData64(DATA_WARRIOR_1)))
+                        {
+                            warrior->GetMotionMaster()->MoveJump(7210.65f, 5247.51f, 65.9844f, 15.0f, 25.0f);
+                            
+                            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+				            if (!players.isEmpty())
+				            {
+					            if (Player* plr = players.begin()->getSource())
+						            plr->GetGroup()->AddCreatureMember(warrior);
+				            }
+                        }
+
+                        if (Creature* warrior = Creature::GetCreature(*me, instance->GetData64(DATA_WARRIOR_2)))
+                        {
+                            warrior->GetMotionMaster()->MoveJump(7195.13f, 5266.81f, 65.9844f, 15.0f, 25.0f);
+                            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+				            if (!players.isEmpty())
+				            {
+					            if (Player* plr = players.begin()->getSource())
+						            plr->GetGroup()->AddCreatureMember(warrior);
+				            }
+                        }
+
+                        if (Creature* defender = Creature::GetCreature(*me, instance->GetData64(DATA_DEFENDER)))
+                        {
+                            defender->GetMotionMaster()->MoveJump(7213.67f, 5266.37f, 65.9844f, 15.0f, 25.0f);
+                            Map::PlayerList const& players = me->GetMap()->GetPlayers();
+				            if (!players.isEmpty())
+				            {
+					            if (Player* plr = players.begin()->getSource())
+						            plr->GetGroup()->AddCreatureMember(defender);
+				            }
+                        }
+
                         break;
                     case EVENT_6:
                         events.ScheduleEvent(EVENT_7, 6 * IN_MILLISECONDS);
+                        events.ScheduleEvent(EVENT_9, 200 * IN_MILLISECONDS);
                         me->GetMotionMaster()->MovePoint(EVENT_6, 7195.7f, 5255.59f, 66.05624f);
                         Talk(2);
                         if (Creature* stalker = me->FindNearestCreature(NPC_INVISIBLE_STALKER, 150.0f))
-                        {
-                            stalker->CastSpell(stalker, SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
-                            if (Player* plr = me->FindNearestPlayer(200.0f))
-                                stalker->CastSpell(plr, SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
-                        }
+                            stalker->AI()->DoAction(ACTION_1);
+                        break;
+                    case EVENT_8:
+                        if (Creature* warrior = Creature::GetCreature(*me, instance->GetData64(DATA_WARRIOR_1)))
+                            warrior->GetMotionMaster()->MovePoint(EVENT_8, 7223.458f, 5262.069f, 65.98731f);
+
+                        if (Creature* warrior = Creature::GetCreature(*me, instance->GetData64(DATA_WARRIOR_2)))
+                            warrior->GetMotionMaster()->MovePoint(EVENT_8, 7209.367f, 5279.108f, 66.05622f); //< or 7208.249 Y: 5278.209 Z: 66.27031 ?
+
+                        if (Creature* defender = Creature::GetCreature(*me, instance->GetData64(DATA_DEFENDER)))
+                            defender->GetMotionMaster()->MovePoint(EVENT_8, 7221.26f, 5276.239f, 66.05622f);
                         break;
                     case EVENT_7:
                         me->GetMotionMaster()->MovePoint(EVENT_7, 7199.577f, 5254.172f, 66.27177f);
@@ -575,8 +594,10 @@ public:
                             forge->CastSpell(forge, SPELL_LIGHTING_STRIKE_COSMETIC_4);
                         }
                         break;
-
-
+                    case EVENT_9:
+                        if (Creature* stalker = me->FindNearestCreature(NPC_INVISIBLE_STALKER, 150.0f))
+                            stalker->AI()->DoAction(ACTION_2);
+                        break;
 
 
 
@@ -584,12 +605,10 @@ public:
 
                     case EVENT_LR_30:
                         events.ScheduleEvent(EVENT_LR_31, 3 * IN_MILLISECONDS);
-                        me->PlayDistanceSound(36054);
                         Talk(24);
                         break;
                     case EVENT_LR_31:
                         events.ScheduleEvent(EVENT_LR_32, 3 * IN_MILLISECONDS);
-                        me->PlayDistanceSound(36055);
                         Talk(25);
                         break;
                     case EVENT_LR_32:
@@ -610,11 +629,9 @@ public:
                         events.ScheduleEvent(EVENT_LR_EMOTE_1, 9 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_WIPE_CHECK_2, 3 * IN_MILLISECONDS);
                         Talk(5);
-                        me->PlayDistanceSound(SOUND_12);
                         break;
                     case EVENT_LR_EMOTE_1:
                         events.ScheduleEvent(EVENT_LR_EMOTE_2, 9 * IN_MILLISECONDS);
-                        me->PlayDistanceSound(SOUND_13);
                         Talk(6);
                         break;
                     case EVENT_WIPE_CHECK_2:
@@ -623,44 +640,29 @@ public:
                         break;
                     case EVENT_LR_EMOTE_2:
                         events.ScheduleEvent(EVENT_LR_EMOTE_3, 9 * IN_MILLISECONDS);
-                        me->PlayDistanceSound(SOUND_14);
                         Talk(7);
                         break;
                     case EVENT_LR_EMOTE_3:
                         me->SetDynamicWorldEffects(505, 1);
-                        me->PlayDistanceSound(SOUND_15);
                         Talk(8);
                         me->SetFlag64(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         break;
                     case EVENT_LR_MOVE:
                         me->RemoveAurasDueToSpell(SPELL_WRATHION_TRUE_FORM);
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_MOVE, wrathionS2Points[1]);
                         events.ScheduleEvent(EVENT_LR_3, 8 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_3:
                     {
-                        Movement::MoveSplineInit init(*me);
-                        for (uint8 i = 9; i < 11; ++i)
-                            init.Path().push_back(wPoints3[i]);
-                        init.SetSmooth();
-                        init.Launch();
-
-                        me->PlayDistanceSound(SOUND_16);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_QUESTION);
                         Talk(9);
                         events.ScheduleEvent(EVENT_LR_4, 8 * IN_MILLISECONDS);
                         break;
                     }
                     case EVENT_LR_4:
-                        me->PlayDistanceSound(SOUND_17);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
                         Talk(10);
                         events.ScheduleEvent(EVENT_LR_5, 8 * IN_MILLISECONDS);
                         doAction(me, NPC_CELESTIAL_BLACKSMITH, ACTION_FIRST_WAVE);
                         break;
                     case EVENT_LR_5:
-                        me->PlayDistanceSound(SOUND_18);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_TALK_NO_SHEATHE);
                         Talk(11);
                         events.ScheduleEvent(EVENT_LR_6, 6 * IN_MILLISECONDS);
                         break;
@@ -668,7 +670,6 @@ public:
                         events.ScheduleEvent(EVENT_LR_7, 6 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_7:
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_7, wrathionS2Points[10]);
                         if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_8, 2 * IN_MILLISECONDS);
@@ -680,17 +681,14 @@ public:
                         events.ScheduleEvent(EVENT_LR_9, 8 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_11:
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_11, wrathionS2Points[23]);
                         events.ScheduleEvent(EVENT_LR_12, 5 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_12:
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
                         if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_13, 1 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_13:
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
                         events.ScheduleEvent(EVENT_LR_14, 4 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_14:
@@ -700,8 +698,6 @@ public:
                         events.ScheduleEvent(EVENT_LR_16, 4 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_16:
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_16, wrathionS2Points[32]);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
                         if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_17, 2 * IN_MILLISECONDS);
@@ -713,8 +709,6 @@ public:
                         events.ScheduleEvent(EVENT_LR_19, 5 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_19:
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_19, wrathionS2Points[44]);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
                         if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_3);
                         events.ScheduleEvent(EVENT_LR_20, 2 * IN_MILLISECONDS);
@@ -723,8 +717,6 @@ public:
                         events.ScheduleEvent(EVENT_LR_21, 5 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_21:
-                        me->GetMotionMaster()->MovePoint(EVENT_LR_21, wrathionS2Points[49]);
-                        me->HandleEmoteCommand(EMOTE_ONESHOT_LAUGH);
                         if (Unit* target = me->FindNearestCreature(NPC_THUNDER_FORGE, 200.0f))
                             me->CastSpell(target, SPELL_LIGHTING_STRIKE_COSMETIC);
                         events.ScheduleEvent(EVENT_LR_22, 2 * IN_MILLISECONDS);
@@ -742,13 +734,6 @@ public:
 
                         me->AddAura(SPELL_WRATHION_TRUE_FORM, me);
                         me->CastSpell(me, SPELL_WRATHION_TRUE_FORM);
-
-                        Movement::MoveSplineInit init(*me);
-                        for (uint8 i = 0; i < 8; ++i)
-                            init.Path().push_back(wPoints3[i]);
-                        init.SetSmooth();
-                        init.Launch();
-
                         events.ScheduleEvent(EVENT_LR_MOVE, 40 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_LR_0, 40 * IN_MILLISECONDS);
                         break;
@@ -762,8 +747,6 @@ public:
 
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 2 * IN_MILLISECONDS);
                         events.ScheduleEvent(EVENT_FORGE_CAST, 15 * IN_MILLISECONDS);
-
-                        instance->SetData(DATA_EVENT_PART_2, IN_PROGRESS);
 
                         Talk(3);
                         break;
@@ -782,6 +765,7 @@ public:
         EventMap events;
         SummonList summons;
         Position pos;
+        uint8 step;
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -834,32 +818,10 @@ public:
 
             switch (pointId)
             {
-                case 2:
+                case EVENT_8:
                     instance->SetData(DATA_WAVE_COUNTER, 1);
+                    me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                     break;
-                default:
-                    break;
-            }
-        }
-
-        void DoAction(int32 const action)
-        {
-            switch (action)
-            {
-                case ACTION_1:
-                    if (me->GetPositionX() == 7213.67f && me->GetPositionY() == 5266.37f)
-                        me->GetMotionMaster()->MovePoint(2, 7221.26f, 5276.239f, 66.05622f);
-                    break;
-
-
-
-                case ACTION_EVADE:
-                    EnterEvadeMode();
-                    break;
-                case ACTION_COMPLETE_FIRST_PART:
-                    events.ScheduleEvent(EVENT_COMPLETE_FIRST_PART, 3 * IN_MILLISECONDS);
-                    break;
-
                 default:
                     break;
             }
@@ -867,50 +829,18 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-            events.ScheduleEvent(EVENT_HEALING_ORB, urand(10, 17) * IN_MILLISECONDS);
-            me->CallForHelp(100.0f);
+            me->CallAssistance();
         }
 
         void EnterEvadeMode()
         {
             Talk(1);
 
-            me->GetMotionMaster()->MovePoint(POINT_EVADE_POS, DefenderPoints[1]);
-        }
-
-        void JustSummoned(Creature* summon)
-        {
-            Map::PlayerList const &PlList = summon->GetMap()->GetPlayers();
-            if (PlList.isEmpty())
-                return;
-
-            for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
-            {
-                if (Player* player = i->getSource())
-                {
-                    if (player->isAlive())
-                    {
-                        summon->SetInCombatWith(player);
-                        player->SetInCombatWith(summon);
-                    }
-                }
-            }
-
-            me->SetInCombatWithZone();
-            summon->GetMotionMaster()->MovePoint(1, DefenderPoints[1]);
-
-            switch (summon->GetEntry())
-            {
-                case NPC_SHANZE_SHADOWCASTER:
-                case NPC_SHANZE_WARRIOR:
-                case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_ELECTRO_CUTIONER:
-                case NPC_SHANZE_PYROMANCER:
-                    instance->SetData(DATA_SUMMONS_COUNTER, instance->GetData(DATA_SUMMONS_COUNTER) + 1);
-                    break;
-                default:
-                    break;
-            }
+            me->DeleteThreatList();
+            me->CombatStop(true);
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MovePoint(3, me->GetHomePosition());
+            events.ScheduleEvent(EVENT_HEALING_ORB, urand(5, 15) * IN_MILLISECONDS);
         }
 
         void UpdateAI(uint32 diff)
@@ -922,60 +852,18 @@ public:
                 switch (eventId)
                 {
                     case EVENT_COMPLETE_FIRST_PART:
-                        instance->HandleGameObject(instance->GetData64(DATA_TRUNDER_FORGE_DOOR), true);
-                        Talk(2);
-                        DoCast(SPELL_LEAVE_PLAYER_PARTY);
-                        me->GetMotionMaster()->MoveJump(dHomePoints2[2].m_positionX, dHomePoints2[2].m_positionY, dHomePoints2[2].m_positionZ,
-                            20.0f, 20.0f);
+                        //instance->HandleGameObject(instance->GetData64(DATA_TRUNDER_FORGE_DOOR), true);
+                        //Talk(2);
+                        //DoCast(SPELL_LEAVE_PLAYER_PARTY);
+                        //me->GetMotionMaster()->MoveJump(helpersLastJumpPos[2].m_positionX, helpersLastJumpPos[2].m_positionY, helpersLastJumpPos[2].m_positionZ,
+                        //    20.0f, 20.0f);
 
-                        me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
-                        break;
-                    case EVENT_JOIN_PARTY:
-                        me->GetMotionMaster()->MoveJump(DefenderPoints[0].m_positionX, DefenderPoints[0].m_positionY, DefenderPoints[0].m_positionZ,
-                            20.0f, 20.0f);
-
-                        me->CastSpell(me->FindNearestPlayer(200.0f), SPELL_JOIN_PLAYER_PARTY);
-
-                        events.ScheduleEvent(EVENT_HELPERS_MOVE, 1 * IN_MILLISECONDS);
-                        break;
-                    case EVENT_HELPERS_MOVE:
-                        me->GetMotionMaster()->MovePoint(EVENT_HELPERS_MOVE, DefenderPoints[1]);
-                        me->SetHomePosition(DefenderPoints[1]);
+                        //me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
                         break;
                     case EVENT_HEALING_ORB:
                         DoCast(SPELL_HEALING_ORB);
                         Talk(0);
                         break;
-                    case EVENT_SUMMONS:
-                    {
-                        switch (urand(1, 5))
-                        {
-                                case 1:
-                                {
-                                    for (uint8 i = 0; i < 1; ++i)
-                                        me->SummonCreature(NPC_SHANZE_WARRIOR, addsPositions[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-
-                                    me->SummonCreature(NPC_SHANZE_PYROMANCER, addsPositions[urand(2, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                    break;
-                                }
-                                case 2:
-                                    me->SummonCreature(NPC_SHANZE_BATTLEMASTER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                    break;
-                                case 3:
-                                    me->SummonCreature(NPC_SHANZE_WARRIOR, addsPositions[urand(0, 2)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                    me->SummonCreature(NPC_SHANZE_PYROMANCER, addsPositions[urand(2, 4)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                    break;
-                                case 4:
-                                    me->SummonCreature(NPC_SHANZE_ELECTRO_CUTIONER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3 * IN_MILLISECONDS);
-                                    break;
-                                case 5:
-                                    me->SummonCreature(NPC_SHANZE_SHADOWCASTER, addsPositions[urand(0, 5)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10 * IN_MILLISECONDS);
-                                    break;
-                                default:
-                                    break;
-                        }
-                        break;
-                    }
                     default:
                         break;
                 }
@@ -1012,24 +900,15 @@ public:
             events.Reset();
         }
 
-        void DoAction(int32 const action)
+        void MovementInform(uint32 type, uint32 pointId)
         {
-            switch (action)
+            if (type != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
             {
-                case ACTION_1:
-                    if (me->GetPositionX() == 7210.65f && me->GetPositionY() == 5247.51f)
-                        me->GetMotionMaster()->MovePoint(2, 7223.458f, 5262.069f, 65.98731f);
-                    if (me->GetPositionX() == 7195.13f && me->GetPositionY() == 5266.81f)
-                        me->GetMotionMaster()->MovePoint(2, 7209.367f, 5279.108f, 66.05622f); //< or 7208.249 Y: 5278.209 Z: 66.27031 ?
-                    break;
-
-
-
-                case ACTION_EVADE:
-                    EnterEvadeMode();
-                    break;
-                case ACTION_COMPLETE_FIRST_PART:
-                    events.ScheduleEvent(EVENT_COMPLETE_FIRST_PART, 3 * IN_MILLISECONDS);
+                case EVENT_8:
+                    me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                     break;
                 default:
                     break;
@@ -1038,12 +917,15 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         {
-            me->CallForHelp(100.0f);
+            me->CallAssistance();
         }
 
         void EnterEvadeMode()
         {
-            me->GetMotionMaster()->MovePoint(POINT_EVADE_POS, instance->GetData(DATA_JUMP_POS) == 1 ? warriorPoints[1] : warriorPoints2[1]);
+            me->DeleteThreatList();
+            me->CombatStop(true);
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MovePoint(3, me->GetHomePosition());
         }
 
         void UpdateAI(uint32 diff)
@@ -1054,30 +936,6 @@ public:
             {
                 switch (eventId)
                 {
-                    case EVENT_JOIN_PARTY:
-
-                        if (instance->GetData(DATA_JUMP_POS) == 1)
-                            me->GetMotionMaster()->MoveJump(warriorPoints[0].m_positionX, warriorPoints[0].m_positionY, warriorPoints[0].m_positionZ, 30.0f, 25.0f);
-                        else
-                        {
-                            me->GetMotionMaster()->MoveJump(warriorPoints2[0].m_positionX, warriorPoints2[0].m_positionY, warriorPoints2[0].m_positionZ, 30.0f, 25.0f);
-                            instance->SetData(DATA_JUMP_POS, instance->GetData(DATA_JUMP_POS) + 1);
-                        }
-                        events.ScheduleEvent(EVENT_HELPERS_MOVE, 1 * IN_MILLISECONDS);
-                        break;
-                    case EVENT_HELPERS_MOVE:
-                        me->GetMotionMaster()->MovePoint(POINT_NEW_HOME, instance->GetData(DATA_JUMP_POS) == 1 ? warriorPoints[1] : warriorPoints2[1]);
-                        me->SetHomePosition(instance->GetData(DATA_JUMP_POS) == 1 ? warriorPoints[1] : warriorPoints2[1]);
-                        break;
-                    case EVENT_COMPLETE_FIRST_PART:
-                        DoCast(SPELL_LEAVE_PLAYER_PARTY);
-                        if (instance->GetData(DATA_JUMP_POS) == 1)
-                            me->GetMotionMaster()->MoveJump(dHomePoints2[0].m_positionX, dHomePoints2[0].m_positionY, dHomePoints2[0].m_positionZ, 20.0f, 20.0f);
-                        else
-                            me->GetMotionMaster()->MoveJump(dHomePoints2[1].m_positionX, dHomePoints2[1].m_positionY, dHomePoints2[1].m_positionZ, 20.0f, 20.0f);
-
-                        me->DespawnOrUnsummon(3 * IN_MILLISECONDS);
-                        break;
                     default:
                         break;
                 }
@@ -1174,9 +1032,7 @@ public:
     {
         npc_invisible_hunterAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
-            me->SetVisible(false);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-
             instance = creature->GetInstanceScript();
         }
 
@@ -1187,13 +1043,19 @@ public:
         {
             switch (action)
             {
-                case ACTION_INISIBLE_HUNTER_AURA:
+                case ACTION_1:
                     if (Player* player = me->FindNearestPlayer(300.0f))
                     {
                         me->AddAura(SPELL_THUNDER_FORGE_CHARGE, player);
                         me->AddAura(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1, player);
-                        me->AddAura(SPELL_UPDATE_PHASE_SHIFT, player);
-                        DoCastAOE(SPELL_UPDATE_PHASE_SHIFT);
+                    }
+                    break;
+                case ACTION_2:
+                    instance->SetData(DATA_STAGE1_P2, IN_PROGRESS);
+                    if (Player* player = me->FindNearestPlayer(300.0f))
+                    {
+                        me->RemoveAura(SPELL_THUNDER_FORGE_CHARGE);
+                        me->RemoveAura(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
                     }
                     break;
                 default:
@@ -1224,6 +1086,7 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
+            me->GetMotionMaster()->Clear();
             instance = creature->GetInstanceScript();
         }
 
@@ -1350,33 +1213,56 @@ class npc_forgemaster_vulkon : public CreatureScript
 public:
     npc_forgemaster_vulkon() : CreatureScript("npc_forgemaster_vulkon") { }
 
-    struct npc_forgemaster_vulkonAI : public CreatureAI
+    struct npc_forgemaster_vulkonAI : public ScriptedAI
     {
-        npc_forgemaster_vulkonAI(Creature* creature) : CreatureAI(creature)
+        npc_forgemaster_vulkonAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            me->AddAura(SPELL_ELECTRIFIED, me);
+        }
+
+        void DoAction(int32 const action)
+        {
+            switch (action)
+            {
+                case ACTION_1:
+                    events.ScheduleEvent(EVENT_1, 3 * IN_MILLISECONDS, 0, PHASE_ONE);
+                    me->CastSpell(me, SPELL_FORGEMASTER_SPAWN_COSMETIC);
+                    break;
+                case ACTION_2:
+                    events.ScheduleEvent(EVENT_6, 3 * IN_MILLISECONDS, 0, PHASE_TWO);
+                    SetEquipmentSlots(false, 82347, 0);
+                    Talk(1);
+                    me->AddAura(SPELL_DISCHARGE, me);
+                    break;
+                default:
+                    break;
+            }
         }
 
         void Reset()
         {
-            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 94565);
-            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 94565);
-
             events.Reset();
+            phase = PHASE_ONE;
             events.SetPhase(PHASE_ONE);
 
             instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
+            SetEquipmentSlots(true);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
             instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
-
             DoZoneInCombat(me);
-
-            events.ScheduleEvent(EVENT_LIGHTING_BOLT, 18 * IN_MILLISECONDS, 0, PHASE_ONE);
-            events.ScheduleEvent(EVENT_CHANGE_WEAPON, 40 * IN_MILLISECONDS, 0, PHASE_ONE);
+        }
+        
+        void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+        {
+            if (HealthBelowPct(30) && phase != PHASE_TWO)
+            {
+                phase = PHASE_TWO;
+                events.SetPhase(PHASE_TWO);
+                DoAction(ACTION_2);
+            }
         }
 
         void UpdateAI(uint32 diff)
@@ -1390,25 +1276,35 @@ public:
             {
                 switch (eventId)
                 {
+                    case EVENT_1:
+                        events.ScheduleEvent(EVENT_LIGHTING_BOLT, 25 * IN_MILLISECONDS, 0, PHASE_ONE);
+
+                        if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST))
+                            me->AI()->AttackStart(target);
+
+                        SetEquipmentSlots(false, 94565, 94565);
+                        me->AddAura(SPELL_DISCHARGE, me);
+                        break;
                     case EVENT_LIGHTING_BOLT:
+                        events.ScheduleEvent(EVENT_2, 2 * IN_MILLISECONDS, 0, PHASE_ONE);
                         Talk(0);
-                        me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 89148);
-                        events.ScheduleEvent(EVENT_THUNDER_SMASH, 2 * IN_MILLISECONDS, 0, PHASE_ONE);
+                        SetEquipmentSlots(false, 89148, 0);
+                        me->RemoveAura(SPELL_DISCHARGE);
                         break;
-                    case EVENT_THUNDER_SMASH:
-                        events.ScheduleEvent(EVENT_THUNDER_SMASH, 10 * IN_MILLISECONDS, 0, PHASE_ONE);
-                        DoCastVictim(SPELL_LIGHTING_STRIKE_TARGETTING);
-                        DoCastVictim(SPELL_LIGHTING_STRIKE_2);
+                    case EVENT_2:
+                        events.ScheduleEvent(EVENT_3, 5 * IN_MILLISECONDS, 0, PHASE_ONE);
+                        DoCast(SPELL_LIGHTING_BOLT);
                         break;
-                    case EVENT_CHANGE_WEAPON:
-                        Talk(1);
-                        me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 82347);
-                        events.SetPhase(PHASE_TWO);
-                        DoCast(SPELL_THUNDER_SMASH_DUMMY);
-                        events.ScheduleEvent(EVENT_LIGHTING_SMASH, 2 * IN_MILLISECONDS, 0, PHASE_TWO);
+                    case EVENT_3:
+                        events.ScheduleEvent(EVENT_3, 15 * IN_MILLISECONDS, 0, PHASE_ONE);
+                        events.ScheduleEvent(EVENT_4, 1 * IN_MILLISECONDS, 0, PHASE_ONE);
+                        DoCast(SPELL_LIGHTING_STRIKE_TARGETTING);
                         break;
-                    case EVENT_LIGHTING_SMASH:
-                        events.ScheduleEvent(EVENT_LIGHTING_SMASH, 15 * IN_MILLISECONDS, 0, PHASE_TWO);
+                    case EVENT_4:
+                        DoCast(SPELL_LIGHTING_STRIKE_2);
+                        break;
+                    case EVENT_6:
+                        events.ScheduleEvent(EVENT_6, 15 * IN_MILLISECONDS, 0, PHASE_ONE);
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 10.0f, true))
                         {
                             me->CastSpell(target, SPELL_FACE_PLAYER);
@@ -1420,7 +1316,10 @@ public:
                 }
             }
 
-            DoMeleeAttackIfReady();
+            if (phase == PHASE_ONE)
+                DoSpellAttackIfReady(SPELL_LIGHTING_BOLT);
+            else
+                DoMeleeAttackIfReady();
         }
 
         void JustDied(Unit* killer)
@@ -1431,6 +1330,7 @@ public:
     private:
         InstanceScript* instance;
         EventMap events;
+        Phases phase;
     };
 
     CreatureAI* GetAI(Creature* creature) const
@@ -1767,14 +1667,7 @@ public:
                     DoCast(SPELL_DEACTIVATE_ALL_AVNILS);
 
                     if (Player* plr = me->FindNearestPlayer(200.0f))
-                    {
-                        plr->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
                         plr->AddAura(SPELL_THUNDER_FORGE_CHARGING, plr);
-                    }
-                    break;
-                case ACTION_FIRST_WAVE:
-                    SummonAdds(1);
-                    SummonAdds(2);
                     break;
                 default:
                     break;
@@ -1802,23 +1695,6 @@ public:
 
         void EnterCombat(Unit* /*who*/)
         { }
-
-        void JustSummoned(Creature* summon)
-        {
-            summons.Summon(summon);
-
-            switch (summon->GetEntry())
-            {
-                case NPC_SHA_FIEND:
-                    doAction(me, NPC_SHA_FIEND, ACTION_SHA_FIXATE);
-                    break;
-                case NPC_SHA_BEAST:
-                    summon->GetMotionMaster()->MovePoint(1, 7368.795898f, 5160.241211f, 49.531322f);
-                    break;
-                default:
-                    break;
-            }
-        }
 
         void UpdateAI(uint32 diff)
         {
@@ -1897,13 +1773,11 @@ public:
                             case 25:
                             case 35:
                             case 45:
-                                SummonAdds(1);
                                 break;
                             case 10:
                             case 20:
                             case 30:
                             case 40:
-                                SummonAdds(2);
                                 break;
                             case 50:
                                 doAction(me, NPC_WRATHION, ACTION_M_ENERGY);
@@ -1926,22 +1800,6 @@ public:
                     default:
                         break;
                 }
-            }
-        }
-
-        void SummonAdds(uint8 type)
-        {
-            switch (type)
-            {
-                case 1:
-                    for (uint32 i = 0; i < 8; i++)
-                        me->SummonCreature(NPC_SHA_FIEND, shaFinedsPositions[urand(0, 79)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15 * IN_MILLISECONDS);
-                    break;
-                case 2:
-                    me->SummonCreature(NPC_SHA_BEAST, shaBeastPositions[urand(0, 22)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15 * IN_MILLISECONDS);
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -2046,17 +1904,8 @@ public:
                         events.ScheduleEvent(EVENT_LR_3, 10 * IN_MILLISECONDS);
                         break;
                     case EVENT_LR_3:
-                    {
                         events.ScheduleEvent(EVENT_LR_3, 20 * IN_MILLISECONDS);
-
-                        Movement::MoveSplineInit init(*me);
-                        for (uint8 i = 0; i < 10; ++i)
-                            init.Path().push_back(dPoints3[i]);
-                        init.SetSmooth();
-                        init.SetCyclic();
-                        init.Launch();
                         break;
-                    }
                     case EVENT_LR_5:
                         events.ScheduleEvent(EVENT_LR_5, 40 * IN_MILLISECONDS);
                         me->AddAura(SPELL_POWER_SURGE, me);
@@ -2440,7 +2289,6 @@ public:
                         for (auto const& itr : target->GetMap()->GetPlayers())
                         {
                             itr.getSource()->SetPower(POWER_ALTERNATE_POWER, 0);
-                            itr.getSource()->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGING_EVENT_STAGE_1);
                             itr.getSource()->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGE);
                             itr.getSource()->RemoveAurasDueToSpell(SPELL_THUNDER_FORGE_CHARGE_TRIGGER);
                         }

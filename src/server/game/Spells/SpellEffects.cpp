@@ -8746,10 +8746,17 @@ void Spell::EffectJoinOrLeavePlayerParty(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    /*
-    if (EffectMiscValueA == 1)
-        Join
-    else
-        Leave
-    */
+    //if (!unitTarget || !m_caster)
+    //    return;
+
+    
+    //Group* group = m_caster->GetTargetUnit()->ToPlayer()->GetGroup();
+    //Creature* creature = m_caster->ToCreature();
+    //if (!group)
+    //    return;
+
+    //if (m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValue == 1)
+    //    group->AddCreatureMember(creature);
+    //else
+    //    group->RemoveCreatureMember(creature->GetGUID());
 }
