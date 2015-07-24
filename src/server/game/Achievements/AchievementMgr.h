@@ -220,12 +220,11 @@ typedef std::unordered_map<uint32, AchievementRewardLocale> AchievementRewardLoc
 
 struct CompletedAchievementData
 {
-    CompletedAchievementData() : date(0), first_guid(0), isAccountAchievement(false), changed(false) { }
+    CompletedAchievementData() : date(0), first_guid(0), changed(false) { }
 
     time_t date;
     std::set<uint64> guids;
     uint64 first_guid;
-    bool isAccountAchievement;
     bool changed;
 };
 

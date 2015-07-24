@@ -697,8 +697,11 @@ public:
                 if (GameObject* crystal = instance->GetGameObject(uiActivationCrystal[i]))
                     crystal->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
-            for (std::list<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
+            for (std::list<uint64>::const_iterator itr = trashMobs.begin(), next; itr != trashMobs.end(); itr = next)
             {
+                next = itr;
+                ++next;
+
                 if (Creature* creature = instance->GetCreature(*itr))
                     if (creature && creature->isAlive())
                         creature->DespawnOrUnsummon();
