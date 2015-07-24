@@ -382,7 +382,7 @@ struct SpellProcEventEntry
     uint32      effectMask;                                 // Effect Mask for aply to effect
 };
 
-typedef UNORDERED_MAP<int32, std::vector<SpellProcEventEntry> > SpellProcEventMap;
+typedef std::unordered_map<int32, std::vector<SpellProcEventEntry> > SpellProcEventMap;
 
 struct SpellProcEntry
 {
@@ -401,7 +401,7 @@ struct SpellProcEntry
     uint32      modcharges;                                 // if nonzero - procCharges field for given Spell.dbc entry, defines how many times proc can occur before aura remove, 0 - infinite
 };
 
-typedef UNORDERED_MAP<uint32, SpellProcEntry> SpellProcMap;
+typedef std::unordered_map<uint32, SpellProcEntry> SpellProcMap;
 
 struct SpellEnchantProcEntry
 {
@@ -410,7 +410,7 @@ struct SpellEnchantProcEntry
     uint32      procEx;
 };
 
-typedef UNORDERED_MAP<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
+typedef std::unordered_map<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
 
 struct SpellBonusEntry
 {
@@ -422,7 +422,7 @@ struct SpellBonusEntry
     float  heal_bonus;
 };
 
-typedef UNORDERED_MAP<uint32, SpellBonusEntry>     SpellBonusMap;
+typedef std::unordered_map<uint32, SpellBonusEntry>     SpellBonusMap;
 
 enum SpellGroup
 {
@@ -453,7 +453,7 @@ enum SpellGroupStackRule
 };
 #define SPELL_GROUP_STACK_RULE_MAX 4
 
-typedef UNORDERED_MAP<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
+typedef std::unordered_map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
 
 struct SpellThreatEntry
 {
@@ -462,7 +462,7 @@ struct SpellThreatEntry
     float       apPctMod;                                   // Pct of AP that is added as Threat - default: 0.0f
 };
 
-typedef UNORDERED_MAP<uint32, SpellThreatEntry> SpellThreatMap;
+typedef std::unordered_map<uint32, SpellThreatEntry> SpellThreatMap;
 
 // coordinates for spells (accessed using SpellMgr functions)
 struct SpellTargetPosition
@@ -536,7 +536,7 @@ enum EffectRadiusIndex
     EFFECT_RADIUS_80_YARDS_2    = 65
 };
 
-typedef UNORDERED_MAP<uint32, SpellTargetPosition> SpellTargetPositionMap;
+typedef std::unordered_map<uint32, SpellTargetPosition> SpellTargetPositionMap;
 
 // Spell pet auras
 struct PetAura
@@ -555,7 +555,7 @@ struct PetAura
     int32 fromspell;
 };
 
-typedef UNORDERED_MAP<int32, std::vector<PetAura> > SpellPetAuraMap;
+typedef std::unordered_map<int32, std::vector<PetAura> > SpellPetAuraMap;
 
 struct SpellArea
 {
@@ -593,7 +593,7 @@ struct SpellChainNode
     uint8  rank;
 };
 
-typedef UNORDERED_MAP<uint32, SpellChainNode> SpellChainMap;
+typedef std::unordered_map<uint32, SpellChainNode> SpellChainMap;
 
 //                   spell_id  req_spell
 typedef std::multimap<uint32, uint32> SpellRequiredMap;
@@ -612,7 +612,7 @@ struct SpellLearnSkillNode
     uint16 maxvalue;                                        // 0  - max skill value for player level
 };
 
-typedef UNORDERED_MAP<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
+typedef std::unordered_map<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
 
 struct SpellLearnSpellNode
 {
@@ -629,9 +629,9 @@ typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 typedef std::pair<SkillLineAbilityMap::const_iterator, SkillLineAbilityMap::const_iterator> SkillLineAbilityMapBounds;
 
 typedef std::multimap<uint32, uint32> PetLevelupSpellSet;
-typedef UNORDERED_MAP<uint32, PetLevelupSpellSet> PetLevelupSpellMap;
+typedef std::unordered_map<uint32, PetLevelupSpellSet> PetLevelupSpellMap;
 
-typedef UNORDERED_MAP<uint32, uint32> SpellDifficultySearcherMap;
+typedef std::unordered_map<uint32, uint32> SpellDifficultySearcherMap;
 
 struct PetDefaultSpellsEntry
 {
@@ -639,7 +639,7 @@ struct PetDefaultSpellsEntry
 };
 
 // < 0 for petspelldata id, > 0 for creature_id
-typedef UNORDERED_MAP<int32, PetDefaultSpellsEntry> PetDefaultSpellsMap;
+typedef std::unordered_map<int32, PetDefaultSpellsEntry> PetDefaultSpellsMap;
 
 typedef std::vector<uint32> SpellCustomAttribute;
 typedef std::vector<bool> EnchantCustomAttribute;
@@ -792,17 +792,17 @@ struct SpellScene
     int32 transport;
 };
 
-typedef UNORDERED_MAP<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellLinked> > SpellLinkedMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellVisual> > SpellVisualMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
-typedef UNORDERED_MAP<int32, SpellMountList* > SpellMountListMap;
-typedef UNORDERED_MAP<int32, std::vector<SpellScene> > SpellSceneMap;
+typedef std::unordered_map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
+typedef std::unordered_map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
+typedef std::unordered_map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
+typedef std::unordered_map<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
+typedef std::unordered_map<int32, std::vector<SpellLinked> > SpellLinkedMap;
+typedef std::unordered_map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
+typedef std::unordered_map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
+typedef std::unordered_map<int32, std::vector<SpellVisual> > SpellVisualMap;
+typedef std::unordered_map<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
+typedef std::unordered_map<int32, SpellMountList* > SpellMountListMap;
+typedef std::unordered_map<int32, std::vector<SpellScene> > SpellSceneMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -830,7 +830,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask= 0, bool nodamage = false);
 
 typedef std::vector<std::set<uint32> > SpellClassList;
-typedef UNORDERED_MAP<uint32, std::list<uint32> > SpellOverrideInfo;
+typedef std::unordered_map<uint32, std::list<uint32> > SpellOverrideInfo;
 typedef std::set<uint32> TalentSpellSet;
 typedef std::vector<std::list<uint32> > SpellPowerVector;
 
