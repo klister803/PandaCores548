@@ -4962,7 +4962,7 @@ AchievementEntry const* AchievementGlobalMgr::GetAchievement(uint32 achievementI
 
 AchievementEntry const* AchievementGlobalMgr::GetAchievementByCriteriaTree(uint32 criteriaTree) const
 {
-    return sAchievementStore.LookupEntry(GetsAchievementEntryByTreeList(criteriaTree));
+    return GetsAchievementEntryByTreeList(criteriaTree);
 }
 
 CriteriaEntry const* AchievementGlobalMgr::GetAchievementCriteria(uint32 criteriaId) const

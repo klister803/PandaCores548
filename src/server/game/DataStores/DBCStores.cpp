@@ -50,7 +50,7 @@ struct WMOAreaTableTripple
 static UNORDERED_MAP<uint32, std::list<uint32> > sCriteriaTreeEntryList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sModifierTreeEntryList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
-static UNORDERED_MAP<uint32, uint32 > sAchievementEntryParentList;
+static UNORDERED_MAP<uint32, AchievementEntry const* > sAchievementEntryParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 static UNORDERED_MAP<uint32, uint32 > sRevertLearnSpellList;
 static UNORDERED_MAP<uint32, uint32 > sReversTriggerSpellList;
@@ -388,7 +388,7 @@ void LoadDBCStores(const std::string& dataPath)
     {
         if (AchievementEntry const* as = sAchievementStore.LookupEntry(i))
             if (as->criteriaTree > 0)
-                sAchievementEntryParentList[as->criteriaTree] = i;
+                sAchievementEntryParentList[as->criteriaTree] = as;
     }
 
     for (uint32 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
@@ -939,9 +939,9 @@ void AddSpecdtoItem(uint32 ItemID, uint32 SpecID)
     sItemSpecsList[ItemID].push_back(SpecID);
 }
 
-uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree)
+AchievementEntry const* GetsAchievementEntryByTreeList(uint32 criteriaTree)
 {
-    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
+    UNORDERED_MAP<uint32, AchievementEntry const* >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
     if(itr != sAchievementEntryParentList.end())
         return itr->second;
     return 0;
