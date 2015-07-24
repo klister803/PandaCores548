@@ -37,13 +37,14 @@ enum Data
     DATA_MOGU_CRUCIBLE,
     DATA_ALLOWED_STAGE,
     DATA_WAVE_COUNTER,
-    DATA_THUNDER_FORGE,
     DATA_WARRIOR_1,
     DATA_WARRIOR_2,
     DATA_DEFENDER,
     DATA_STAGE1_P2,
     DATA_TRUNDER_FORGE_DOOR,
     DATA_WRATHION,
+    DATA_CELESTIAL_BLACKSMITH,
+    DATA_CELESTIAL_DEFENDER,
 };
 
 enum Actions
@@ -55,6 +56,12 @@ enum Actions
     ACTION_1,
     ACTION_2,
     ACTION_3,
+    ACTION_4,
+    ACTION_5,
+    ACTION_6,
+    ACTION_7,
+    ACTION_8,
+    ACTION_9,
 
 
     ACTION_INISIBLE_HUNTER_AURA,
@@ -112,9 +119,6 @@ enum eCreatures
     NPC_SLAVEMASTER_SHIAXU              = 69923,
     NPC_SCOUT_CAPTAIN_ELSIA             = 70042,
     NPC_NALAK                           = 69099,
-    NPC_CONSTELLATION                   = 70058,
-    NPC_COSMETIC_SHA_BOSS               = 70449,
-    NPC_METEOR_SUMMONER_STALKER         = 70299,
 
     //< VEH
     NPC_ZANDALARI_SKYSCREAMER           = 69156,
@@ -131,18 +135,65 @@ enum eCreatures
     NPC_LIGHTING_SPEAR_FLOAT_STALKER    = 70500,
     NPC_LIGHTING_LANCE                  = 70460,
 
+    NPC_CONSTELLATION                   = 70058,
+    NPC_COSMETIC_SHA_BOSS               = 70449,
+    NPC_METEOR_SUMMONER_STALKER         = 70299,
+    NPC_DEBILITATING_SHA                = 70462,
     NPC_SHA_AMALGAMATION                = 70228,
+    NPC_MEDIUM_SHA_SPAWNER_STALKER      = 70148,
     NPC_SHA_FIEND                       = 70039,
+    NPC_SMALL_SHA_SPAWNER_STALKER       = 70148,
     NPC_SHA_BEAST                       = 70048,
 };
 
 enum eGameObects
 {
-    GO_MOGU_CRICUBLE            = 218910,
-    GO_THUNDER_FORGE_DOOR       = 218832,
-    GO_THUNDER_FORGE_AVNIL      = 218741,
-};
+    GO_MOGU_CRICUBLE                = 218910,
 
+    GO_THUNDER_FORGE_DOOR           = 218832,
+    GO_INVISIBLE_WALL               = 213251,
+
+    GO_THUNDER_FORGE_AVNIL          = 218741,
+    GO_THUNDER_FORGE_AVNIL_2        = 218704,
+    GO_THUNDER_FORGE_AVNIL_3        = 218701,
+    GO_THUNDER_FORGE_AVNIL_4        = 218705,
+    GO_THUNDER_FORGE_AVNIL_5        = 218702,
+    GO_THUNDER_FORGE_AVNIL_6        = 218706,
+    GO_THUNDER_FORGE_AVNIL_7        = 218703,
+
+    GO_SMELTING_ROD_02              = 218916,
+    GO_SMELTING_ROD_01              = 218909,
+    GO_SMELTING_POT_01              = 218908,
+    GO_SMELTING_POT_02              = 218917,
+
+
+    GO_PORTAL_TO_THUNDER_ISLAND     = 218462,
+    //GameObjectEntry: 218538 Low: 18551
+    //GameObjectEntry: 218628 Low: 18621
+    //GameObjectEntry: 218696 Low: 18619
+    //GameObjectEntry: 218697 Low: 18618
+    //GameObjectEntry: 218698 Low: 18617
+    //GameObjectEntry: 218707 Low: 18603
+    //GameObjectEntry: 218708 Low: 18604
+    //GameObjectEntry: 218709 Low: 18605
+    //GameObjectEntry: 218710 Low: 18606
+    //GameObjectEntry: 218717 Low: 18622
+    //GameObjectEntry: 218726 Low: 18614
+    //GameObjectEntry: 218728 Low: 18596
+    //GameObjectEntry: 218729 Low: 18616
+    //GameObjectEntry: 218730 Low: 18620
+    //GameObjectEntry: 218744 Low: 18609
+    //GameObjectEntry: 218751 Low: 18610
+    //GameObjectEntry: 218752 Low: 18611
+    //GameObjectEntry: 218753 Low: 18612
+    //GameObjectEntry: 218754 Low: 18613
+
+
+    // seems like just cosmetic
+    GO_IOTTK_PROGRESSION_S_D_TOWER  = 218976,
+    GO_IOTTK_PROGRESSION_SUNWELL    = 218975,
+    GO_DOODAD_ITK_FORGE_FX_WRAPPP1  = 218740,
+};
 
 Position const WrathionWP[]
 {

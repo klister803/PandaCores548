@@ -137,6 +137,7 @@ UPDATE `creature_template` SET `ScriptName` ='npc_invisible_stalker' WHERE (`ent
 UPDATE `creature_template` SET `ScriptName` ='npc_lighting_pilar_spark_stalker' WHERE (`entry`='69813');
 UPDATE `creature_template` SET `ScriptName` ='npc_forgemaster_vulkon' WHERE (`entry`='70074');
 UPDATE `gameobject_template` SET `ScriptName` ='go_mogu_crucible' WHERE (`entry`='218910');
+UPDATE `gameobject_template` SET `ScriptName` ='go_thunder_forge_avnil_5' WHERE (`entry`='218702');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_shadowcaster' WHERE (`entry`='69827');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_battlemaster' WHERE (`entry`='69835');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_warrior' WHERE (`entry`='69833');
@@ -150,6 +151,8 @@ UPDATE `creature_template` SET `ScriptName` ='npc_thunder_forge_third' WHERE (`e
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_beast' WHERE (`entry`='70048');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_fiend' WHERE (`entry`='70039');
 UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entry`='70228');
+UPDATE `creature_template` SET `ScriptName` ='npc_lighting_spear_float_stalker' WHERE (`entry`='70500');
+UPDATE `creature_template` SET `ScriptName` ='npc_avnil_stalker' WHERE (`entry`='70079');
 
 DELETE FROM `areatrigger_actions` where `entry` in (840, 503, 868);
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES
@@ -187,7 +190,6 @@ INSERT INTO `gameobject` (`id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `
 (218728, 1126, 3, 1, 7041.547, 5237.245, 84.29315, 5.497789, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218728 (Area: 6677)
 (218744, 1126, 3, 1, 7040.955, 5079.214, 23.34534, 3.926996, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218744 (Area: 6677)
 (218726, 1126, 3, 1, 7197.783, 5081.424, 76.04965, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218726 (Area: 6677)
-(218727, 1126, 3, 1, 7302.575, 5226.308, 65.33392, 2.35619, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218727 (Area: 6677)
 (218628, 1126, 3, 1, 6834.797, 5056.838, 10.48683, 5.497787, 0, 0, 0.7071069, 0.7071066, 7200, 255, 1), -- 218628 (Area: 6677)
 (218751, 1126, 3, 1, 7368.449, 5154.101, 48.6681, 1.570798, 0, 0, 0.9238795, 0.3826836, 7200, 255, 1), -- 218751 (Area: 6677)
 (218912, 1126, 3, 1, 7157.116, 5302.848, 64.8065, 2.356195, 0, 0, 0, 1, 7200, 255, 1), -- 218912 (Area: 6677)
@@ -332,8 +334,6 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+110, 70039, 1126, 3, 1, 7315.756, 5218.577, 65.59111, 5.098789, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
 (@CGUID+111, 70039, 1126, 3, 1, 7310.219, 5212.78, 65.59111, 4.640799, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
 (@CGUID+112, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
-(@CGUID+113, 69828, 1126, 3, 1, 7323.568, 5114.839, 55.45367, 0.6870306, 7200, 0, 0), -- 69828 (Area: 6677) (Auras: )
-(@CGUID+114, 69837, 1126, 3, 1, 7411.527, 5204.15, 55.40028, 3.80821, 7200, 5, 1), -- 69837 (Area: 6677) (Auras: 139127 - 139127) (possible waypoints or random movement)
 (@CGUID+115, 70162, 1126, 3, 1, 7352.938, 5172.305, 49.66591, 0, 7200, 0, 0), -- 70162 (Area: 6677)
 (@CGUID+116, 70148, 1126, 3, 1, 7354.41, 5174.482, 49.66591, 0, 7200, 0, 0), -- 70148 (Area: 6677)
 (@CGUID+117, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
@@ -390,7 +390,7 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+168, 70048, 1126, 3, 1, 7418.579, 5110.358, 55.45368, 2.369927, 7200, 0, 0), -- 70048 (Area: 6677) (Auras: 138692 - 138692)
 (@CGUID+169, 70039, 1126, 3, 1, 7417.035, 5203.043, 55.45367, 3.762558, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
 (@CGUID+170, 70039, 1126, 3, 1, 7412.241, 5209.885, 55.45366, 3.963449, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: 138692 - 138692)
-(@CGUID+171, 70460, 1126, 3, 1, 7368.375, 5181.912, 55.04837, 0, 7200, 5, 1), -- 70460 (Area: 6677) (Auras: 140100 - 140100) (possible waypoints or random movement)
+(@CGUID+171, 70460, 1126, 3, 1, 7368.375, 5181.912, 55.04837, 0, 7200, 5, 0), -- 70460 (Area: 6677) (Auras: 140100 - 140100) (possible waypoints or random movement)
 (@CGUID+172, 70039, 1126, 3, 1, 7319.145, 5110.835, 55.45368, 0.6222018, 7200, 0, 0), -- 70039 (Area: 6677) (Auras: )
 (@CGUID+173, 70500, 1126, 3, 1, 7368.375, 5181.912, 52.79837, 0, 7200, 0, 0), -- 70500 (Area: 6677) (Auras: )
 (@CGUID+174, 70299, 1126, 3, 1, 7342.775, 5133.769, 49.77427, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
@@ -402,7 +402,6 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+180, 70299, 1126, 3, 1, 7354.231, 5174.95, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
 (@CGUID+181, 70299, 1126, 3, 1, 7378.084, 5169.983, 49.66591, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
 (@CGUID+182, 70299, 1126, 3, 1, 7314.1, 5212.71, 65.59363, 0, 7200, 0, 0), -- 70299 (Area: 6677) (Auras: 139443 - 139443)
-(@CGUID+183, 70449, 1126, 3, 1, 7348.575, 5178.655, 49.47066, 0, 7200, 0, 0), -- 70449 (Area: 6677) (Auras: 139908 - 139908)
 (@CGUID+185, 65183, 1126, 3, 1, 7306.868, 5222.081, 65.37994, 5.399889, 7200, 0, 0), -- 65183 (Area: 6677) (Auras: 22011 - 22011)
 (@CGUID+186, 70449, 1126, 3, 1, 7348.575, 5178.655, 49.47066, 0, 7200, 0, 0); -- 70449 (Area: 6677) (Auras: 139908 - 139908)
 
@@ -427,14 +426,7 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+51, 0, 0x3000000, 0x1, ''), -- 70577
 (@CGUID+52, 0, 0x3000000, 0x1, ''), -- 70577
 (@CGUID+53, 0, 0x3000000, 0x1, ''), -- 70577
-(@CGUID+55, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
 (@CGUID+56, 0, 0x2000000, 0x1, ''), -- 70481
-(@CGUID+57, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
-(@CGUID+58, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
-(@CGUID+59, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
-(@CGUID+60, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
-(@CGUID+61, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
-(@CGUID+62, 0, 0x0, 0x1, '140134'), -- 70079 - 140134 - 140134
 (@CGUID+63, 0, 0x2000000, 0x1, ''), -- 70148
 (@CGUID+64, 0, 0x0, 0x1, '139127'), -- 69837 - 139127 - 139127
 (@CGUID+65, 0, 0x2000000, 0x1, ''), -- 70162
@@ -487,7 +479,6 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+114, 0, 0x0, 0x1, '139127'), -- 69837 - 139127 - 139127
 (@CGUID+115, 0, 0x2000000, 0x1, ''), -- 70162
 (@CGUID+116, 0, 0x2000000, 0x1, ''), -- 70148
-(@CGUID+117, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
 (@CGUID+118, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
 (@CGUID+119, 0, 0x0, 0x1, '138692'), -- 70039 - 138692 - 138692
 (@CGUID+120, 0, 0x0, 0x1, '138692'), -- 70048 - 138692 - 138692
@@ -551,7 +542,6 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+180, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
 (@CGUID+181, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
 (@CGUID+182, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
-(@CGUID+183, 0, 0x2000000, 0x1, '139908'), -- 70449 - 139908 - 139908
 (@CGUID+185, 0, 0x10000, 0x1, '22011'), -- 65183 - 22011 - 22011
 (@CGUID+186, 0, 0x2000000, 0x1, '139908'); -- 70449 - 139908 - 139908
 
@@ -559,5 +549,5 @@ UPDATE `creature` SET `spawnMask`='4096' WHERE `map` = '1126';
 
 DELETE FROM `creature_template` WHERE `entry` IN (70099, 70106);
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `exp_unk`, `faction`, `npcflag`, `npcflag2`, `speed_walk`, `speed_run`, `speed_fly`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `type_flags2`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `Health_mod`, `Mana_mod`, `Mana_mod_extra`, `Armor_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `WDBVerified`) VALUES
-('70099', '0', '0', '0', '0', '0', '41412', '0', '0', '0', 'Shado-Pan Defender', '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '70000', '50', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '16', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70099', '0', '0', 'npc_shado_pan_defender', '18414'),
-('70106', '0', '0', '0', '0', '0', '41829', '0', '0', '0', 'Shado-Pan Warrior',  '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '50000', '70', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '6', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70106', '0', '0', 'npc_shado_pan_warrior', '18414');
+('70099', '0', '0', '0', '0', '0', '41412', '0', '0', '0', 'Shado-Pan Defender', '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '70000', '80', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '16', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70099', '0', '0', 'npc_shado_pan_defender', '18414'),
+('70106', '0', '0', '0', '0', '0', '41829', '0', '0', '0', 'Shado-Pan Warrior',  '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '50000', '60', '1200', '1200', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '6', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70106', '0', '0', 'npc_shado_pan_warrior', '18414');

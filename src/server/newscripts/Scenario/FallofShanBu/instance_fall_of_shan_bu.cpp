@@ -41,8 +41,9 @@ public:
             crucibleGUID = 0;
             doorGUID = 0;
             wrathionGUID = 0;
-            thunderForgeGUID = 0;
             forgemasterGUID = 0;
+            celectialBlacksmithGUID = 0;
+            celectialDefenderGUID = 0;
 
             shaBeastGUIDs.clear();
             shaFiendGUIDs.clear();
@@ -51,7 +52,6 @@ public:
             stageData = STAGE_1;
             waveCounter = 0;
             s1p2 = 0;
-
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -63,6 +63,9 @@ public:
                     break;
                 case GO_THUNDER_FORGE_DOOR:
                     doorGUID = go->GetGUID();
+                    break;
+                case GO_INVISIBLE_WALL:
+                    invisibleWallGUID = go->GetGUID();
                     break;
                 default:
                     break;
@@ -77,16 +80,14 @@ public:
                     wrathionGUID = creature->GetGUID();
                     break;
                 case NPC_THUNDER_FORGE:
-                    thunderForgeGUID = creature->GetGUID();
-                    creature->SetVisible(false);
-                    break;
                 case NPC_THUNDER_FORGE_2:
                 case NPC_THUNDER_FORGE_3:
                 case NPC_THUNDER_FORGE_CRUCIBLE:
                 case NPC_INVISIBLE_STALKER:
                 case NPC_LIGHTING_PILAR_BEAM_STALKER:
                 case NPC_LIGHTING_PILAR_SPARK_STALKER:
-                    creature->SetVisible(false);
+                    creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SERVER_CONTROLLED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_SELECTABLE);
+                    creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_UNK1 | UNIT_FLAG2_ALLOW_ENEMY_INTERACT);
                     break;
                 case NPC_SHA_BEAST:
                     creature->SetReactState(REACT_PASSIVE);
@@ -119,23 +120,11 @@ public:
                     creature->SetPhaseMask(12, true);
                     forgemasterGUID = creature->GetGUID();
                     break;
-                default:
+                case NPC_CELESTIAL_BLACKSMITH:
+                    celectialBlacksmithGUID = creature->GetGUID();
                     break;
-            }
-        }
-
-        void CreatureDies(Creature* creature, Unit* /*killer*/)
-        {
-            switch (creature->GetEntry())
-            {
-                case NPC_SHANZE_SHADOWCASTER:
-                case NPC_SHANZE_WARRIOR:
-                case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_ELECTRO_CUTIONER:
-                case NPC_SHANZE_ELECTRO_CUTIONER2:
-                case NPC_SHANZE_PYROMANCER:
-                    break;
-                case NPC_FORGEMASTER_VULKON:
+                case NPC_CELESTIAL_DEFENDER:
+                    celectialDefenderGUID = creature->GetGUID();
                     break;
                 default:
                     break;
@@ -200,11 +189,18 @@ public:
                             }
                             break;
                         case DONE:
+                        {
                             HandleGameObject(GetData64(doorGUID), true);
+
+                            Map::PlayerList const& players = instance->GetPlayers();
+                            if (Player* plr = players.begin()->getSource())
+                                if (GameObject* obj = GameObject::GetGameObject(*plr, invisibleWallGUID))
+                                    obj->DestroyForPlayer(plr);
 
                             if (Creature* cre = instance->GetCreature(wrathionGUID))
                                 cre->AI()->DoAction(ACTION_3);
                             break;
+                        }
                         default:
                             break;
                     }
@@ -216,20 +212,20 @@ public:
 
         void AddCreaturesToBattle()
         {
-            uint8 count = 0;
-            uint8 amount = firstPhaseNormalTrashGUIDs.size() / 4;
+            uint8 specialCount = 0;
+            uint8 amount = urand(1, 3);
             for (std::vector<uint64>::const_iterator itr = firstPhaseNormalTrashGUIDs.begin(); itr != firstPhaseNormalTrashGUIDs.end(); itr++)
                 if (Creature* cre = instance->GetCreature(*itr))
                 {
+                    specialCount++;
+                    if (specialCount > amount)
+                        return;
+
                     cre->SetPhaseMask(1, true);
                     cre->SetReactState(REACT_AGGRESSIVE);
                     cre->AI()->AttackStart(instance->GetCreature(defenderGUID));
 
-                    firstPhaseNormalTrashGUIDs.erase(itr);
-
-                    count++;
-                    if (count > amount)
-                        return;
+                    //firstPhaseNormalTrashGUIDs.erase(itr);
                 }
 
             SetData(DATA_WAVE_COUNTER, SPECIAL);
@@ -260,8 +256,6 @@ public:
             {
                 case DATA_MOGU_CRUCIBLE:
                     return crucibleGUID;
-                case DATA_THUNDER_FORGE:
-                    return thunderForgeGUID;
                 case DATA_WARRIOR_1:
                     return warriorGUIDs[0];
                 case DATA_WARRIOR_2:
@@ -272,6 +266,10 @@ public:
                     return doorGUID;
                 case DATA_WRATHION:
                     return wrathionGUID;
+                case DATA_CELESTIAL_BLACKSMITH:
+                    return celectialBlacksmithGUID;
+                case DATA_CELESTIAL_DEFENDER:
+                    return celectialDefenderGUID;
                 default:
                     break;
             }
@@ -281,11 +279,13 @@ public:
     private:
         uint32 playerRole;
         uint64 doorGUID;
+        uint64 invisibleWallGUID;
         uint64 crucibleGUID;
         uint64 wrathionGUID;
-        uint64 thunderForgeGUID;
         uint64 defenderGUID;
         uint64 forgemasterGUID;
+        uint64 celectialBlacksmithGUID;
+        uint64 celectialDefenderGUID;
 
         std::vector<uint64> shaBeastGUIDs;
         std::vector<uint64> shaFiendGUIDs;

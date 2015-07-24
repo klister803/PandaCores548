@@ -342,6 +342,12 @@ enum c_events
     EVENT_27,
     EVENT_28,
     EVENT_29,
+    EVENT_30,
+    EVENT_31,
+    EVENT_32,
+    EVENT_33,
+    EVENT_34,
+    EVENT_35
 };
 
 class EventMap : private std::map<uint32, uint32>
