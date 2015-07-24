@@ -201,6 +201,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
     m_attackDist = MELEE_RANGE;
+    liquid_status = NULL;
+    Zliquid_status = LIQUID_MAP_NO_WATER;
 
     m_extraAttacks = 0;
     countCrit = 0;
@@ -3608,12 +3610,12 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return GetBaseMap()->IsInWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    return Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
 }
 
 bool Unit::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    return Zliquid_status & LIQUID_MAP_UNDER_WATER;
 }
 
 void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
@@ -3621,9 +3623,8 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
     if (!isPet() && !IsVehicle())
         return;
 
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, liquid_status);
+    if (!Zliquid_status)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
@@ -3633,7 +3634,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status.entry)
+    if (uint32 liqEntry = liquid_status->entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
@@ -3641,7 +3642,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -12466,6 +12467,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 tmpDamage *= GetModForHolyPowerSpell();
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellDamageBonusDone spellid %u in effIndex %u tmpDamage %f, pdamage %i DoneTotalMod %f DoneTotal %i", spellProto ? spellProto->Id : 0, effIndex, tmpDamage, pdamage, DoneTotalMod, DoneTotal);
+
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -12527,6 +12530,8 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     }
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellDamageBonusTaken spellid %u tmpDamage %f, pdamage %i TakenTotalMod %f TakenTotal %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, TakenTotalMod, TakenTotal);
 
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -13668,6 +13673,8 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
             AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "MeleeDamageBonusDone spellid %u in tmpDamage %f, pdamage %i DoneTotalMod %f DoneFlatBenefit %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, DoneTotalMod, DoneFlatBenefit);
+
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -13795,6 +13802,8 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     }
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenFlatBenefit) * TakenTotalMod;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "MeleeDamageBonusTaken spellid %u in tmpDamage %f, pdamage %i TakenTotalMod %f TakenFlatBenefit %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, TakenTotalMod, TakenFlatBenefit);
 
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
@@ -23235,12 +23244,12 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
             GetMap()->PlayerRelocation(ToPlayer(), x, y, z, orientation);
         else
             GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
+
+        // code block for underwater state update
+        UpdateUnderwaterState(GetMap(), x, y, z);
     }
     else if (turn)
         UpdateOrientation(orientation);
-
-    // code block for underwater state update
-    UpdateUnderwaterState(GetMap(), x, y, z);
 
     return (relocated || turn);
 }

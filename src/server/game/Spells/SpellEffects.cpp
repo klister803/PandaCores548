@@ -3184,8 +3184,8 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         return;
 
     // Do not energize when in Celestial Alignment
-    if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
-        return;
+    //if (power == POWER_ECLIPSE && m_caster->HasAura(112071))
+        //return;
 
     if (power == POWER_RAGE && m_caster->HasAura(138222) && unitTarget->HasAura(5229)) // Item - Druid T15 Guardian 4P Bonus
         damage *= 1.5;
@@ -4706,11 +4706,14 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
             case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == m_spellInfo->Effects[j].TargetA.GetTarget() && m_spellInfo->Effects[effIndex].TargetB.GetTarget() == m_spellInfo->Effects[j].TargetB.GetTarget())
+                if ((m_spellInfo->Effects[effIndex].TargetA.GetTarget() == m_spellInfo->Effects[j].TargetA.GetTarget() || m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_NONE)
+                    && (m_spellInfo->Effects[effIndex].TargetB.GetTarget() == m_spellInfo->Effects[j].TargetB.GetTarget() || m_spellInfo->Effects[effIndex].TargetB.GetTarget() == TARGET_NONE || m_spellInfo->Effects[j].TargetB.GetTarget() == TARGET_NONE))
                     return;     // we must calculate only at last weapon effect
             break;
         }
     }
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell EffectWeaponDmg spellid %u in Effect(%u) m_damage %i, damage %i", m_spellInfo->Id, effIndex, m_damage, damage);
 
     // some spell specific modifiers
     float totalDamagePercentMod  = 1.0f;                    // applied to final bonus+weapon damage
@@ -4900,6 +4903,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         }
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell EffectWeaponDmg spellid %u in Effect(%u) fixed_bonus %i, spell_bonus %i weaponDamagePercentMod %f", m_spellInfo->Id, effIndex, fixed_bonus, spell_bonus, weaponDamagePercentMod);
+
     // apply to non-weapon bonus weapon total pct effect, weapon total flat effect included in weapon damage
     if (fixed_bonus || spell_bonus)
     {
@@ -4972,9 +4977,11 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     uint32 eff_damage(std::max(weaponDamage, 0));
 
     // Add melee damage bonuses (also check for negative)
-    uint32 damage = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo, (1<<effIndex));
+    uint32 _damage = m_caster->MeleeDamageBonusDone(unitTarget, eff_damage, m_attackType, m_spellInfo, (1<<effIndex));
 
-    m_damage += damage;
+    m_damage += _damage;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell EffectWeaponDmg spellid %u in Effect(%u) weaponDamage %i, _damage %i m_damage %i effectHandleMode %i", m_spellInfo->Id, effIndex, weaponDamage, _damage, m_damage, effectHandleMode);
 
     switch (m_spellInfo->Id)
     {

@@ -2131,6 +2131,8 @@ class Unit : public WorldObject
         float m_modSpellHitChance;
         float m_expertise;
         int32 m_baseSpellCritChance;
+        LiquidData* liquid_status;
+        ZLiquidStatus Zliquid_status;
 
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];

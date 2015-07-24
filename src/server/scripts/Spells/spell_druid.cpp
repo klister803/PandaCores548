@@ -278,6 +278,7 @@ class spell_dru_soul_swap : public SpellScriptLoader
                                 rip->SetDuration(ripLast->GetDuration());
                                 rip->SetMaxDuration(ripLast->GetMaxDuration());
                                 rip->GetEffect(0)->SetAmount(ripLast->GetEffect(0)->GetAmount());
+                                rip->GetEffect(0)->SetCritAmount(ripLast->GetEffect(0)->GetCritAmount());
                             }
                             ripLast->Remove();
                         }
@@ -289,6 +290,7 @@ class spell_dru_soul_swap : public SpellScriptLoader
                                 rake->SetDuration(rakeLast->GetDuration());
                                 rake->SetMaxDuration(rakeLast->GetMaxDuration());
                                 rake->GetEffect(1)->SetAmount(rakeLast->GetEffect(1)->GetAmount());
+                                rake->GetEffect(1)->SetCritAmount(rakeLast->GetEffect(1)->GetCritAmount());
                             }
                             rakeLast->Remove();
                         }
