@@ -382,7 +382,7 @@ struct SpellProcEventEntry
     uint32      effectMask;                                 // Effect Mask for aply to effect
 };
 
-typedef std::map<int32, std::vector<SpellProcEventEntry> > SpellProcEventMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellProcEventEntry> > SpellProcEventMap;
 
 struct SpellProcEntry
 {
@@ -453,7 +453,7 @@ enum SpellGroupStackRule
 };
 #define SPELL_GROUP_STACK_RULE_MAX 4
 
-typedef std::map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
+typedef UNORDERED_MAP<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
 
 struct SpellThreatEntry
 {
@@ -462,7 +462,7 @@ struct SpellThreatEntry
     float       apPctMod;                                   // Pct of AP that is added as Threat - default: 0.0f
 };
 
-typedef std::map<uint32, SpellThreatEntry> SpellThreatMap;
+typedef UNORDERED_MAP<uint32, SpellThreatEntry> SpellThreatMap;
 
 // coordinates for spells (accessed using SpellMgr functions)
 struct SpellTargetPosition
@@ -612,7 +612,7 @@ struct SpellLearnSkillNode
     uint16 maxvalue;                                        // 0  - max skill value for player level
 };
 
-typedef std::map<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
+typedef UNORDERED_MAP<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
 
 struct SpellLearnSpellNode
 {
@@ -629,9 +629,9 @@ typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 typedef std::pair<SkillLineAbilityMap::const_iterator, SkillLineAbilityMap::const_iterator> SkillLineAbilityMapBounds;
 
 typedef std::multimap<uint32, uint32> PetLevelupSpellSet;
-typedef std::map<uint32, PetLevelupSpellSet> PetLevelupSpellMap;
+typedef UNORDERED_MAP<uint32, PetLevelupSpellSet> PetLevelupSpellMap;
 
-typedef std::map<uint32, uint32> SpellDifficultySearcherMap;
+typedef UNORDERED_MAP<uint32, uint32> SpellDifficultySearcherMap;
 
 struct PetDefaultSpellsEntry
 {
@@ -639,7 +639,7 @@ struct PetDefaultSpellsEntry
 };
 
 // < 0 for petspelldata id, > 0 for creature_id
-typedef std::map<int32, PetDefaultSpellsEntry> PetDefaultSpellsMap;
+typedef UNORDERED_MAP<int32, PetDefaultSpellsEntry> PetDefaultSpellsMap;
 
 typedef std::vector<uint32> SpellCustomAttribute;
 typedef std::vector<bool> EnchantCustomAttribute;
@@ -792,17 +792,17 @@ struct SpellScene
     int32 transport;
 };
 
-typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
-typedef std::map<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
-typedef std::map<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
-typedef std::map<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
-typedef std::map<int32, std::vector<SpellLinked> > SpellLinkedMap;
-typedef std::map<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
-typedef std::map<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
-typedef std::map<int32, std::vector<SpellVisual> > SpellVisualMap;
-typedef std::map<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
-typedef std::map<int32, SpellMountList* > SpellMountListMap;
-typedef std::map<int32, std::vector<SpellScene> > SpellSceneMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellTriggered> > SpellTriggeredMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellTriggered> > SpellTriggeredDummyMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellAuraDummy> > SpellAuraDummyMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellTargetFilter> > SpellTargetFilterMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellLinked> > SpellLinkedMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellTalentLinked> > SpellTalentLinkedMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellPrcoCheck> > SpellPrcoCheckMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellVisual> > SpellVisualMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellPendingCast> > SpellPendingCastMap;
+typedef UNORDERED_MAP<int32, SpellMountList* > SpellMountListMap;
+typedef UNORDERED_MAP<int32, std::vector<SpellScene> > SpellSceneMap;
 
 bool IsPrimaryProfessionSkill(uint32 skill);
 
@@ -830,7 +830,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask= 0, bool nodamage = false);
 
 typedef std::vector<std::set<uint32> > SpellClassList;
-typedef std::map<uint32, std::list<uint32> > SpellOverrideInfo;
+typedef UNORDERED_MAP<uint32, std::list<uint32> > SpellOverrideInfo;
 typedef std::set<uint32> TalentSpellSet;
 typedef std::vector<std::list<uint32> > SpellPowerVector;
 

@@ -201,7 +201,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
     m_attackDist = MELEE_RANGE;
-    liquid_status = NULL;
     Zliquid_status = LIQUID_MAP_NO_WATER;
 
     m_extraAttacks = 0;
@@ -3623,7 +3622,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
     if (!isPet() && !IsVehicle())
         return;
 
-    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, liquid_status);
+    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!Zliquid_status)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
@@ -3634,7 +3633,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status->entry)
+    if (uint32 liqEntry = liquid_status.entry)
     {
         LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
         if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
