@@ -453,7 +453,7 @@ enum SpellGroupStackRule
 };
 #define SPELL_GROUP_STACK_RULE_MAX 4
 
-typedef std::unordered_map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
+typedef std::map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
 
 struct SpellThreatEntry
 {
