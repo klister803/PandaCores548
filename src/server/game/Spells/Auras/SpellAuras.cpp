@@ -1840,10 +1840,12 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
         else
         {
             bool loginOut = false;
-            if(caster && caster->ToPlayer() && caster->ToPlayer()->GetSession() && caster->ToPlayer()->GetSession()->isLogingOut())
-                loginOut = true;
+
+            if (caster)
+                if (!caster->IsInWorld())
+                    loginOut = true;
             // remove linked auras
-            if(!loginOut)
+            if (!loginOut)
             {
                 if (std::vector<SpellLinked> const* spellTriggered = sSpellMgr->GetSpellLinked(-(int32)GetId()))
                 {
