@@ -5691,6 +5691,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 134210: // Memory of the Reliquary
                     spellInfo->AreaGroupId = -1;
                     break;
+                //< Scenario: Thunder forge
+                case 138869: // Forging
+                    spellInfo->Effects[EFFECT_1].Amplitude = 655 * 2;
+                    break;
                 default:
                     break;
             }

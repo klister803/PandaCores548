@@ -64,7 +64,13 @@ Map* ScenarioProgress::GetMap()
 
 uint32 ScenarioProgress::GetScenarioId() const
 {
-    return dungeonData->dbc->scenarioId;
+    uint32 ID = dungeonData->dbc->scenarioId;
+    //< YES - it's fucking evil shit.. but atm there's no way to get right scenarioID if we have multilple scenarios with same mapID:
+    //> add new table with conditions like: player should have quest -> get scenarioID to db
+    if (ID == 208 || ID == 207 || ID == 209 || ID == 207 || ID == 206 || ID == 205 || ID == 204 || ID == 212)
+        ID = 211;
+
+    return ID;
 }
 
 bool ScenarioProgress::IsCompleted(bool bonus) const

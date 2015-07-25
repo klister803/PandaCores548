@@ -136,8 +136,6 @@ UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_warrior' WHERE (`ent
 UPDATE `creature_template` SET `ScriptName` ='npc_invisible_stalker' WHERE (`entry`='62142');
 UPDATE `creature_template` SET `ScriptName` ='npc_lighting_pilar_spark_stalker' WHERE (`entry`='69813');
 UPDATE `creature_template` SET `ScriptName` ='npc_forgemaster_vulkon' WHERE (`entry`='70074');
-UPDATE `gameobject_template` SET `ScriptName` ='go_mogu_crucible' WHERE (`entry`='218910');
-UPDATE `gameobject_template` SET `ScriptName` ='go_thunder_forge_avnil_5' WHERE (`entry`='218702');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_shadowcaster' WHERE (`entry`='69827');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_battlemaster' WHERE (`entry`='69835');
 UPDATE `creature_template` SET `ScriptName` ='npc_shanze_warrior' WHERE (`entry`='69833');
@@ -154,6 +152,9 @@ UPDATE `creature_template` SET `ScriptName` ='npc_sha_amalgamation' WHERE (`entr
 UPDATE `creature_template` SET `ScriptName` ='npc_lighting_spear_float_stalker' WHERE (`entry`='70500');
 UPDATE `creature_template` SET `ScriptName` ='npc_avnil_stalker' WHERE (`entry`='70079');
 
+UPDATE `gameobject_template` SET `ScriptName` ='go_mogu_crucible' WHERE (`entry`='218910');
+UPDATE `gameobject_template` SET `ScriptName` ='go_thunder_forge_avnils' WHERE `entry IN (218741, 218704, 218701, 218705, 218702, 218706, 218703);
+
 DELETE FROM `areatrigger_actions` where `entry` in (840, 503, 868);
 INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targetFlags`, `spellId`, `maxCharges`, `aura`, `hasspell`, `chargeRecoveryTime`, `scale`, `hitMaxCount`, `comment`) VALUES
 ('503', '0', '1', '0', '8', '132744', '1', '0', '0', '0', '0', '0', 'Healing Orb'),
@@ -161,12 +162,15 @@ INSERT INTO `areatrigger_actions` (`entry`, `id`, `moment`, `actionType`, `targe
 ('868', '0', '1', '0', '8', '140068', '1', '0', '0', '0', '0', '0', 'Power Surge');
 
 
-DELETE FROM `spell_script_names` WHERE spell_id IN (134715, 138869, 138805, 138928, 140382);
+DELETE FROM `spell_script_names` WHERE spell_id IN (134715, 138869, 138805, 138928, 140382, 139698, 140343, 138834);
 INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
 ('134715', 'spell_phase_shift_update'),
 ('138869', 'spell_forging'),
 ('138805', 'spell_avnil_click_dummy'),
 ('138928', 'spell_spec_test'),
+('139698', 'spell_throw_lance_trigger'),
+('140343', 'spell_activate_closes_anvil'),
+('138834', 'spell_thunder_surge'),
 ('140382', 'spell_thundder_forge_charging');
 
 DELETE FROM `gameobject` WHERE `map` = '1126';
@@ -543,11 +547,11 @@ INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALU
 (@CGUID+181, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
 (@CGUID+182, 0, 0x2000000, 0x1, '139443'), -- 70299 - 139443 - 139443
 (@CGUID+185, 0, 0x10000, 0x1, '22011'), -- 65183 - 22011 - 22011
-(@CGUID+186, 0, 0x2000000, 0x1, '139908'); -- 70449 - 139908 - 139908
+(@CGUID+186, 0, 0x2000000, 0x1, ''); -- 70449
 
 UPDATE `creature` SET `spawnMask`='4096' WHERE `map` = '1126';
 
 DELETE FROM `creature_template` WHERE `entry` IN (70099, 70106);
 INSERT INTO `creature_template` (`entry`, `difficulty_entry_1`, `difficulty_entry_2`, `difficulty_entry_3`, `KillCredit1`, `KillCredit2`, `modelid1`, `modelid2`, `modelid3`, `modelid4`, `name`, `subname`, `IconName`, `gossip_menu_id`, `minlevel`, `maxlevel`, `exp`, `exp_unk`, `faction`, `npcflag`, `npcflag2`, `speed_walk`, `speed_run`, `speed_fly`, `scale`, `rank`, `mindmg`, `maxdmg`, `dmgschool`, `attackpower`, `dmg_multiplier`, `baseattacktime`, `rangeattacktime`, `unit_class`, `unit_flags`, `unit_flags2`, `dynamicflags`, `family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `minrangedmg`, `maxrangedmg`, `rangedattackpower`, `type`, `type_flags`, `type_flags2`, `lootid`, `pickpocketloot`, `skinloot`, `resistance1`, `resistance2`, `resistance3`, `resistance4`, `resistance5`, `resistance6`, `spell1`, `spell2`, `spell3`, `spell4`, `spell5`, `spell6`, `spell7`, `spell8`, `PetSpellDataId`, `VehicleId`, `mingold`, `maxgold`, `AIName`, `MovementType`, `InhabitType`, `HoverHeight`, `Health_mod`, `Mana_mod`, `Mana_mod_extra`, `Armor_mod`, `RacialLeader`, `questItem1`, `questItem2`, `questItem3`, `questItem4`, `questItem5`, `questItem6`, `movementId`, `RegenHealth`, `equipment_id`, `mechanic_immune_mask`, `flags_extra`, `ScriptName`, `WDBVerified`) VALUES
-('70099', '0', '0', '0', '0', '0', '41412', '0', '0', '0', 'Shado-Pan Defender', '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '70000', '80', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '16', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70099', '0', '0', 'npc_shado_pan_defender', '18414'),
-('70106', '0', '0', '0', '0', '0', '41829', '0', '0', '0', 'Shado-Pan Warrior',  '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '50000', '60', '1200', '1200', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '6', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70106', '0', '0', 'npc_shado_pan_warrior', '18414');
+('70099', '0', '0', '0', '0', '0', '41412', '0', '0', '0', 'Shado-Pan Defender', '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '70000', '60', '2000', '2000', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '16', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70099', '0', '0', 'npc_shado_pan_defender', '18414'),
+('70106', '0', '0', '0', '0', '0', '41829', '0', '0', '0', 'Shado-Pan Warrior',  '', '', '0', '91', '91', '4', '0', '1665', '0', '0', '1', '1.42857', '1.14286', '1', '0', '1268', '1952', '0', '50000', '40', '1200', '1200', '1', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '2101248', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '1', '6', '1', '1', '1', '0', '0', '0', '0', '0', '0', '0', '144', '1', '70106', '0', '0', 'npc_shado_pan_warrior', '18414');

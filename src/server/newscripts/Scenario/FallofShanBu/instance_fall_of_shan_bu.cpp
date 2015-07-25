@@ -37,6 +37,7 @@ public:
 
         void Initialize()
         {
+            specialCount = 0;
             playerRole = 0;
             crucibleGUID = 0;
             doorGUID = 0;
@@ -52,6 +53,8 @@ public:
             stageData = STAGE_1;
             waveCounter = 0;
             s1p2 = 0;
+            s2p1 = 0;
+            s2p2 = 0;
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -77,8 +80,10 @@ public:
             switch (creature->GetEntry())
             {
                 case NPC_WRATHION:
+                    creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                     wrathionGUID = creature->GetGUID();
                     break;
+                case NPC_LIGHTING_SPEAR_FLOAT_STALKER:
                 case NPC_THUNDER_FORGE:
                 case NPC_THUNDER_FORGE_2:
                 case NPC_THUNDER_FORGE_3:
@@ -167,10 +172,11 @@ public:
                     waveCounter = data;
                     switch (data)
                     {
-                        case DONE:
+                        case 0:
+                            if (Creature* cre = instance->GetCreature(defenderGUID))
+                                cre->AI()->DoAction(ACTION_1);
+
                             AddCreaturesToBattle();
-                            break;
-                        case SPECIAL:
                             break;
                         default:
                             break;
@@ -190,19 +196,50 @@ public:
                             break;
                         case DONE:
                         {
-                            HandleGameObject(GetData64(doorGUID), true);
-
+                            // HandleGameObject(GetData64(doorGUID), true); EVIL
                             Map::PlayerList const& players = instance->GetPlayers();
                             if (Player* plr = players.begin()->getSource())
+                            {
                                 if (GameObject* obj = GameObject::GetGameObject(*plr, invisibleWallGUID))
                                     obj->DestroyForPlayer(plr);
+
+                                if (GameObject* obj = GameObject::GetGameObject(*plr, doorGUID))
+                                    obj->DestroyForPlayer(plr);
+                            }
 
                             if (Creature* cre = instance->GetCreature(wrathionGUID))
                                 cre->AI()->DoAction(ACTION_3);
                             break;
                         }
+                        case DATA_SECOND_STAGE_FIRST_STEP:
+                            s2p1 = data;
+                            switch (data)
+                            {
+                                case FAIL:
+                                    if (Creature* cre = instance->GetCreature(wrathionGUID))
+                                        cre->AI()->DoAction(ACTION_1);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
                         default:
                             break;
+                    }
+                    break;
+                case DATA_COMPLETE_SECOND_STAGE_SECOND_STEP:
+                    s2p2 = data;
+                    if (data == DONE)
+                    {
+                        Map::PlayerList const& players = instance->GetPlayers();
+                        if (Player* plr = players.begin()->getSource())
+                            plr->KilledMonsterCredit(70094, 0); //< set quest 32593 completed
+
+                        if (Creature* cre = instance->GetCreature(wrathionGUID))
+                        {
+                            cre->AI()->DoAction(ACTION_9);
+                            cre->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+                        }
                     }
                     break;
                 default:
@@ -212,7 +249,6 @@ public:
 
         void AddCreaturesToBattle()
         {
-            uint8 specialCount = 0;
             uint8 amount = urand(1, 3);
             for (std::vector<uint64>::const_iterator itr = firstPhaseNormalTrashGUIDs.begin(); itr != firstPhaseNormalTrashGUIDs.end(); itr++)
                 if (Creature* cre = instance->GetCreature(*itr))
@@ -225,11 +261,8 @@ public:
                     cre->SetReactState(REACT_AGGRESSIVE);
                     cre->AI()->AttackStart(instance->GetCreature(defenderGUID));
 
-                    //firstPhaseNormalTrashGUIDs.erase(itr);
+                    firstPhaseNormalTrashGUIDs.erase(itr);
                 }
-
-            SetData(DATA_WAVE_COUNTER, SPECIAL);
-            return;
         }
 
         uint32 GetData(uint32 type)
@@ -277,7 +310,9 @@ public:
         }
 
     private:
+        uint32 specialCount;
         uint32 playerRole;
+
         uint64 doorGUID;
         uint64 invisibleWallGUID;
         uint64 crucibleGUID;
@@ -295,6 +330,8 @@ public:
         uint32 stageData;
         uint32 waveCounter;
         uint32 s1p2;
+        uint32 s2p1;
+        uint32 s2p2;
     };
 };
 

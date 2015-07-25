@@ -8869,6 +8869,9 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
         case 267: //Spoils of Pandaria
             maxPower = 50;
             break;
+        case 245:
+            maxPower = 160;
+            break;
         case 23:
         case 37:
         case 39:
