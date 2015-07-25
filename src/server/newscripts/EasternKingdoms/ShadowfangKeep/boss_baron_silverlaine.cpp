@@ -149,9 +149,10 @@ class npc_silverlaine_worgen : public CreatureScript
 
             void IsSummonedBy(Unit* summoner)
             {
-                if (Creature* _silverlaine = me->FindNearestCreature(NPC_SILVERLAINE, 200.0f))
-                    if (Unit* target = _silverlaine->AI()->SelectTarget(SELECT_TARGET_RANDOM))
-                        AttackStart(target);
+                if (Creature* _silverlaine = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_SILVERLAINE)))
+                    if(_silverlaine->AI())
+                        if (Unit* target = _silverlaine->AI()->SelectTarget(SELECT_TARGET_RANDOM))
+                            AttackStart(target);
             }
 
             void UpdateAI(uint32 diff)
