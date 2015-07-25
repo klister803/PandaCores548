@@ -2923,8 +2923,9 @@ class Player : public Unit, public GridObject<Player>
 
         bool CanSummonPet(uint32 entry) const;
         // currently visible objects at player client
-        GuidUnorderedSet m_clientGUIDs;
-        GuidUnorderedSet m_extraLookList;
+        typedef std::set<uint64> ClientGUIDs;
+        ClientGUIDs m_clientGUIDs;
+        ClientGUIDs m_extraLookList;
 
         bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
         void AddClient(WorldObject *u) { m_clientGUIDs.insert(u->GetGUID()); } 
