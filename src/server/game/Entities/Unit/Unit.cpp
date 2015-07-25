@@ -4019,7 +4019,7 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
     if (apply)
-        m_modAuras[aurEff->GetAuraType()].push_back(aurEff);
+        m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else if(!m_modAuras[aurEff->GetAuraType()].empty())
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
 }
