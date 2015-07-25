@@ -4560,7 +4560,7 @@ class npc_hyjal_soft_target : public CreatureScript
                 if (JumpTimer <= diff)
                 {
                     JumpTimer = 1000;
-                    if (Player* pTarget = me->SelectNearestPlayer(2.0f))
+                    if (Player* pTarget = me->SelectNearestPlayer(1.5f))
                     {
                         uint32 spell;
                         if (urand(0, 1) == 0)

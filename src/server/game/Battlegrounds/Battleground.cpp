@@ -36,6 +36,7 @@
 #include "GuildMgr.h"
 #include "Bracket.h"
 #include "BracketMgr.h"
+#include "GroupMgr.h"
 
 namespace Trinity
 {
@@ -1348,6 +1349,7 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
         group = new Group;
         SetBgRaid(team, group);
         group->Create(player);
+        sGroupMgr->AddGroup(group);
     }
     else                                            // raid already exist
     {
