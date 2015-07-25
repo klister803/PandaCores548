@@ -413,9 +413,7 @@ public:
                     trashMobs.push_back(data);
                     break;
                 case DATA_DEL_TRASH_MOB:
-                for (std::list<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
-                    if(*itr == data)
-                        trashMobs.erase(itr);
+                    trashMobs.remove(data);
                     break;
             }
         }
