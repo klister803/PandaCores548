@@ -59,7 +59,7 @@ INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language
 (70099, 1, 0, 'Спасибо за помощь, герой. Мы поможем тебе защититься от могу, чем только сможем.', 14, 0, 100, 0, 0, 0, 'Защитник Шадо-Пан to Гневион'),
 (70099, 2, 0, 'Кузня в безопасности, нам нужно возвращаться. Удачи тебе в твоих дальнейших приключениях.', 12, 0, 100, 2, 0, 0, 'Защитник Шадо-Пан to Гневион');
 
-UPDATE `creature_template` SET  `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70556');
+UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70556');
 UPDATE `creature_template` SET `minlevel`='90', `maxlevel`='90', `faction`='35', `speed_walk`='3.2', `speed_run`='2', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='2', `unit_flags`='33570816', `unit_flags2`='2048', `HoverHeight`='1' WHERE (`entry`='70283');
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='35', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='512', `HoverHeight`='1' WHERE (`entry`='70148');
 UPDATE `creature_template` SET `minlevel`='1', `maxlevel`='1', `faction`='14', `speed_walk`='1', `speed_run`='1.14286', `speed_fly`='1.14286', `baseattacktime`='2000', `rangeattacktime`='2000', `unit_class`='1', `unit_flags`='768', `HoverHeight`='1' WHERE (`entry`='70299');
@@ -255,8 +255,8 @@ INSERT INTO `creature` (`id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `po
 (69837, 1126, 3, 1, 7412.179, 5204.663, 55.41367, 3.80821, 7200, 0, 0); -- 69837 (Area: 6677)
 
 
-SET @CGUID := 1151900;
-DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+187;
+SET @CGUID := xxxxxxxx;
+DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+19;
 INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `MovementType`) VALUES
 (@CGUID+0, 70556, 1126, 3, 1, 7182.018, 5277.963, 68.1808, 0, 7200, 0, 0), -- 70556 (Area: 6677)
 (@CGUID+1, 70577, 1126, 3, 1, 7186.507, 5281.804, 66.35448, 0.7079705, 7200, 0, 0), -- 70577 (Area: 6677)
@@ -279,7 +279,7 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `spawnMask`, `phaseMask`, `position
 (@CGUID+18, 65183, 1126, 3, 1, 7306.868, 5222.081, 65.37994, 5.399889, 7200, 0, 0), -- 65183 (Area: 6677) (Auras: 22011 - 22011)
 (@CGUID+19, 70449, 1126, 3, 1, 7348.575, 5178.655, 49.47066, 0, 7200, 0, 0); -- 70449 (Area: 6677) (Auras: 139908 - 139908)
 
-DELETE FROM `creature_addon` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+187;
+DELETE FROM `creature_addon` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+19;
 INSERT INTO `creature_addon` (`guid`, `mount`, `bytes1`, `bytes2`, `auras`) VALUES
 (@CGUID+0, 0, 0x3000000, 0x1, ''), -- 70556
 (@CGUID+1, 0, 0x3000000, 0x1, ''), -- 70577
