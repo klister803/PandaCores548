@@ -37,18 +37,14 @@ public:
 
         void Initialize()
         {
-            specialCount = 0;
-            playerRole = 0;
+            playerRole = ROLES_DEFAULT;
+
             crucibleGUID = 0;
             doorGUID = 0;
             wrathionGUID = 0;
             forgemasterGUID = 0;
             celectialBlacksmithGUID = 0;
             celectialDefenderGUID = 0;
-
-            shaBeastGUIDs.clear();
-            shaFiendGUIDs.clear();
-            firstPhaseNormalTrashGUIDs.clear();
 
             stageData = STAGE_1;
             waveCounter = 0;
@@ -83,37 +79,6 @@ public:
                     creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                     wrathionGUID = creature->GetGUID();
                     break;
-                case NPC_LIGHTING_SPEAR_FLOAT_STALKER:
-                case NPC_THUNDER_FORGE:
-                case NPC_THUNDER_FORGE_2:
-                case NPC_THUNDER_FORGE_3:
-                case NPC_THUNDER_FORGE_CRUCIBLE:
-                case NPC_INVISIBLE_STALKER:
-                case NPC_LIGHTING_PILAR_BEAM_STALKER:
-                case NPC_LIGHTING_PILAR_SPARK_STALKER:
-                    creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SERVER_CONTROLLED | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NOT_SELECTABLE);
-                    creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_UNK1 | UNIT_FLAG2_ALLOW_ENEMY_INTERACT);
-                    break;
-                case NPC_SHA_BEAST:
-                    creature->SetReactState(REACT_PASSIVE);
-                    creature->SetPhaseMask(12, true);
-                    shaBeastGUIDs.push_back(creature->GetGUID());
-                    break;
-                case NPC_SHA_FIEND:
-                    creature->SetReactState(REACT_PASSIVE);
-                    creature->SetPhaseMask(12, true);
-                    shaFiendGUIDs.push_back(creature->GetGUID());
-                    break;
-                case NPC_SHANZE_BATTLEMASTER:
-                case NPC_SHANZE_SHADOWCASTER:
-                case NPC_SHANZE_WARRIOR:
-                case NPC_SHANZE_ELECTRO_CUTIONER:
-                case NPC_SHANZE_ELECTRO_CUTIONER2:
-                case NPC_SHANZE_PYROMANCER:
-                    creature->SetReactState(REACT_PASSIVE);
-                    creature->SetPhaseMask(12, true);
-                    firstPhaseNormalTrashGUIDs.push_back(creature->GetGUID());
-                    break;
                 case NPC_SHADO_PAN_WARRIOR:
                     warriorGUIDs.push_back(creature->GetGUID());
                     break;
@@ -121,8 +86,6 @@ public:
                     defenderGUID = creature->GetGUID();
                     break;
                 case NPC_FORGEMASTER_VULKON:
-                    creature->SetReactState(REACT_PASSIVE);
-                    creature->SetPhaseMask(12, true);
                     forgemasterGUID = creature->GetGUID();
                     break;
                 case NPC_CELESTIAL_BLACKSMITH:
@@ -142,19 +105,6 @@ public:
             {
                 case DATA_PLAYER_ROLE:
                     playerRole = data;
-                    switch (data)
-                    {
-                        case ROLES_DEFAULT:
-                            break;
-                        case ROLES_HEALER:
-                            break;
-                        case ROLES_DPS:
-                            break;
-                        case ROLES_TANK:
-                            break;
-                        default:
-                            break;
-                    }
                     break;
                 case DATA_ALLOWED_STAGE:
                     stageData = data;
@@ -175,8 +125,6 @@ public:
                         case 0:
                             if (Creature* cre = instance->GetCreature(defenderGUID))
                                 cre->AI()->DoAction(ACTION_1);
-
-                            AddCreaturesToBattle();
                             break;
                         default:
                             break;
@@ -211,22 +159,21 @@ public:
                                 cre->AI()->DoAction(ACTION_3);
                             break;
                         }
-                        case DATA_SECOND_STAGE_FIRST_STEP:
-                            s2p1 = data;
-                            switch (data)
-                            {
-                                case FAIL:
-                                    if (Creature* cre = instance->GetCreature(wrathionGUID))
-                                        cre->AI()->DoAction(ACTION_1);
-                                    break;
-                                default:
-                                    break;
-                            }
+                    }
+                case DATA_SECOND_STAGE_FIRST_STEP:
+                {
+                    s2p1 = data;
+                    switch (data)
+                    {
+                        case FAIL:
+                            if (Creature* cre = instance->GetCreature(wrathionGUID))
+                                cre->AI()->DoAction(ACTION_1);
                             break;
                         default:
                             break;
                     }
                     break;
+                }
                 case DATA_COMPLETE_SECOND_STAGE_SECOND_STEP:
                     s2p2 = data;
                     if (data == DONE)
@@ -245,24 +192,6 @@ public:
                 default:
                     break;
             }
-        }
-
-        void AddCreaturesToBattle()
-        {
-            uint8 amount = urand(1, 3);
-            for (std::vector<uint64>::const_iterator itr = firstPhaseNormalTrashGUIDs.begin(); itr != firstPhaseNormalTrashGUIDs.end(); itr++)
-                if (Creature* cre = instance->GetCreature(*itr))
-                {
-                    specialCount++;
-                    if (specialCount > amount)
-                        return;
-
-                    cre->SetPhaseMask(1, true);
-                    cre->SetReactState(REACT_AGGRESSIVE);
-                    cre->AI()->AttackStart(instance->GetCreature(defenderGUID));
-
-                    firstPhaseNormalTrashGUIDs.erase(itr);
-                }
         }
 
         uint32 GetData(uint32 type)
@@ -310,7 +239,6 @@ public:
         }
 
     private:
-        uint32 specialCount;
         uint32 playerRole;
 
         uint64 doorGUID;
@@ -322,9 +250,6 @@ public:
         uint64 celectialBlacksmithGUID;
         uint64 celectialDefenderGUID;
 
-        std::vector<uint64> shaBeastGUIDs;
-        std::vector<uint64> shaFiendGUIDs;
-        std::vector<uint64> firstPhaseNormalTrashGUIDs;
         std::vector<uint64> warriorGUIDs;
 
         uint32 stageData;

@@ -213,7 +213,7 @@ Position const helpersLastJumpPos[]
     {7166.76f, 5264.76f, 85.5331f}
 };
 
-float const cosmeticPilarPos[4][3]
+Position const cosmeticPilarPos[]
 {
     {7195.710f, 5249.874f, 67.64626f},
     {7195.721f, 5250.080f, 69.25357f},

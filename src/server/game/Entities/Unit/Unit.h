@@ -136,7 +136,9 @@ enum SpellModOp
     SPELLMOD_EFFECT5                = 33,
     SPELLMOD_SPELL_COST2            = 34,
     SPELLMOD_JUMP_DISTANCE          = 35,
-    SPELLMOD_STACK_AMOUNT2          = 37
+    SPELLMOD_STACK_AMOUNT2          = 37,
+
+    MAX_SPELLMOD
 };
 
 enum PetSpellModOp // aura SPELL_AURA_MOD_PET_STATS_MODIFIER
@@ -147,8 +149,6 @@ enum PetSpellModOp // aura SPELL_AURA_MOD_PET_STATS_MODIFIER
     PETSPELLMOD_ARMOR                  = 13,
     PETSPELLMOD_DOT                    = 24, //may be DOT?
 };
-
-#define MAX_SPELLMOD 37
 
 enum SpellValueMod
 {
