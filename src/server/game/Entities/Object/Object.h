@@ -30,6 +30,7 @@
 #include <set>
 #include <string>
 #include <sstream>
+#include <unordered_set>
 
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
@@ -997,13 +998,6 @@ class WorldObject : public Object, public WorldLocation
         template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
         template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
         template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
-#ifdef MAP_BASED_RAND_GEN
-        int32 irand(int32 min, int32 max) const     { return int32 (GetMap()->mtRand.randInt(max - min)) + min; }
-        uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min;}
-        int32 rand32() const                        { return GetMap()->mtRand.randInt();}
-        double rand_norm() const                    { return GetMap()->mtRand.randExc();}
-        double rand_chance() const                  { return GetMap()->mtRand.randExc(100.0);}
-#endif
 
         uint32  LastUsedScriptID;
 
@@ -1031,6 +1025,8 @@ class WorldObject : public Object, public WorldLocation
         void AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList);
         void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.remove(guid); }
 
+        void AddVisitor(Player* p) { visitors.insert(p); }
+        void RemoveVisitor(Player*p) { visitors.erase(p); }
     protected:
         std::string m_name;
         bool m_isActive;
@@ -1052,6 +1048,7 @@ class WorldObject : public Object, public WorldLocation
         //difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
         virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
 
+        std::unordered_set<Player*> visitors;             // Playrs who see us.
     private:
         Map* m_currMap;                                    //current object's Map location
 

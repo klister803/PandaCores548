@@ -3211,6 +3211,12 @@ class Player : public Unit, public GridObject<Player>
         //
         AreaTriggerEntry const* GetLastAreaTrigger() { return LastAreaTrigger; }
         void SetLastAreaTrigger(AreaTriggerEntry const* at) { LastAreaTrigger = at; }
+
+        //Message
+        void AddListner(WorldObject* o);
+        void RemoveListner(WorldObject* o);
+        void RemoveListners(std::set<uint64> const& list);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3634,6 +3640,8 @@ class Player : public Unit, public GridObject<Player>
         bool plrUpdate;
 
         AreaTriggerEntry const *LastAreaTrigger;
+
+        std::unordered_set<WorldObject*> listners;             // WorldObject who send us messages.
 };
 
 void AddItemsSetItem(Player*player, Item* item);
