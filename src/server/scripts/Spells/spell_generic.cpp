@@ -4167,45 +4167,6 @@ class spell_gen_bounce_achievement : public SpellScriptLoader
         }
 };
 
-// Powerball - http://www.wowhead.com/achievement=6950
-class spell_gen_powerball : public SpellScriptLoader
-{
-    public:
-        spell_gen_powerball() : SpellScriptLoader("spell_gen_powerball") { }
-
-        class spell_gen_powerball_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_gen_powerball_AuraScript);
-
-            void HandlePeriodicTick(AuraEffect const* aurEff)
-            {
-                uint32 ticks = aurEff->GetTickNumber();
-                if (Player* caster = GetCaster()->ToPlayer())
-                {
-                    if (caster->GetPositionX() > 1749 && caster->GetPositionX() < 1816 && caster->GetPositionY() > 1379 && caster->GetPositionY() < 1287)
-                        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>>>>>>11111");
-                    else
-                        sLog->outError(LOG_FILTER_SERVER_LOADING, ">>>>>>>22222");
-                    //position_x>5640 AND position_x<5988 AND position_y>440 AND position_y<800
-                    //x: 1751 Y: 1287
-                    //x: 1749 Y: 1378
-                    //x: 1816 Y: 1379
-                    //x: 1815 Y: 1287
-                }
-            }
-
-            void Register()
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_powerball_AuraScript::HandlePeriodicTick, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_gen_powerball_AuraScript();
-        }
-};
-
 void AddSC_generic_spell_scripts()
 {
 //    new spell_gen_protect();
@@ -4297,5 +4258,4 @@ void AddSC_generic_spell_scripts()
     new spell_gen_cooking_way();
     new spell_gen_bg_inactive();
     new spell_gen_bounce_achievement();
-    new spell_gen_powerball();
 }

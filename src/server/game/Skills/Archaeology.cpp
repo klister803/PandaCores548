@@ -619,7 +619,7 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
     if (gmCast)
         return true;
 
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, entry->ID, 1);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, entry->ID);
 
     ResearchProjectSet tempProjects;
     ResearchProjectSet tempRareProjects;

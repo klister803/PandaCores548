@@ -1664,7 +1664,6 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
-            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
             case ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE:
             case ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, miscValue2, referencePlayer, PROGRESS_ACCUMULATE);
@@ -1881,7 +1880,9 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->GetBattlePetMgr()->GetPetJournal().size(), referencePlayer);
                 break;
-
+            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
+                SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->_completedProjects.size(), referencePlayer);
+                break;
             // FIXME: not triggered in code as result, need to implement
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETED_LFG_DUNGEONS:
             case ACHIEVEMENT_CRITERIA_TYPE_INITIATED_KICK_IN_LFG:
@@ -4122,9 +4123,6 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     else
                     {
                         if (rp->rare != reqValue)
-                            check = false;
-
-                        if (referencePlayer->IsCompletedProject(rp->ID, false))
                             check = false;
                     }
                     break;
