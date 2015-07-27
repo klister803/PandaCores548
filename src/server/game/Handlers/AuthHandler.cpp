@@ -137,7 +137,7 @@ void WorldSession::SendClientCacheVersion(uint32 version)
 
 void WorldSession::SendBattlePay()
 {
-    WorldPacket data(SMSG_BATTLEPAY_PRODUCT_ITEM, 7);
+    WorldPacket data(SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE, 7);
     data << uint32(0);
     data.WriteBits(0, 19);
     data.FlushBits();

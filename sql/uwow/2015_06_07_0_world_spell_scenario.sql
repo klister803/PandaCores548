@@ -122,7 +122,7 @@ INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `use
 
 DELETE FROM `instance_template` WHERE (`map`=1126);
 INSERT INTO `instance_template` (`map`, `parent`, `script`, `allowMount`, `bonusChance`) VALUES
-('1126', '0', 'instance_fall_of_shan_bu', '0', '20');
+('1126', '0', 'instance_thunder_forge', '0', '20');
 
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_defender' WHERE (`entry`='70099');
 UPDATE `creature_template` SET `ScriptName` ='npc_shado_pan_warrior' WHERE (`entry`='70106');

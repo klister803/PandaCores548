@@ -25933,7 +25933,19 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetSession()->SendPacket(&data);
 
     // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
-    // SMSG_PET_GUIDS
+    /* 
+        smthng like this...
+
+        WorldPacket data(SMSG_PET_GUIDS);
+        data.WriteBits(m_petlist.size(), 24);
+        for (auto itr : m_petlist)
+        {
+            data.WriteGuidMask<4, 7, 6, 1, 0, 2, 3, 5>(itr->second.guid);
+            data.WriteGuidBytes<4, 2, 6, 5, 3, 0, 1, 7>(itr->second.guid);
+        }
+        GetSession()->SendPacket(&data);
+    */
+
     // SMSG_POWER_UPDATE
 
     CastSpell(this, 836, true);                             // LOGINEFFECT

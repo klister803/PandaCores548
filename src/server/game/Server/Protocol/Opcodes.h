@@ -605,7 +605,8 @@ enum Opcodes
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0x1404, // 5.4.1 17538
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x059C, // 5.4.1 17538
     SMSG_BATTLEGROUND_POINTS                          = 0x0587, // 5.4.1 17538
-    SMSG_BATTLEPAY_PRODUCT_ITEM                       = 0x0CAF, // 5.4.1 17538
+    SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE    = 0x0CAF, // 5.4.1 17538
+    SMSG_BATTLE_PAY_DISTRIBUTION_UPDATE               = 0x0116, // 5.4.1 17538
     SMSG_BINDER_CONFIRM                               = 0x080F, // 5.4.1 17538
     SMSG_BINDPOINTUPDATE                              = 0x0517, // 5.4.1 17538
     SMSG_BREAK_TARGET                                 = 0x08BC, // 5.4.1 17538
@@ -1081,6 +1082,7 @@ enum Opcodes
     SMSG_WORLD_STATE_TIMER_STOP                       = 0x1186, // 5.4.1 17538
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0x05AC, // 5.4.1 17538
     SMSG_ZONE_UNDER_ATTACK                            = 0x148D, // 5.4.1 17538
+    SMSG_PET_GUIDS                                    = 0x050F, // 5.4.1 17538
 
 
 
@@ -1146,8 +1148,6 @@ enum Opcodes
     SMSG_LFG_UPDATE_PLAYER                            = 0,      // Not found in 4.3.4
     SMSG_LFG_UPDATE_SEARCH                            = 0,      // Not found in 4.3.4
     SMSG_MONSTER_MOVE_TRANSPORT                       = 0,      // 5.4.1 17538 obsolete
-    SMSG_PET_GUIDS                                    = 0,      // 0x2D26 in 4.3.4 @todo : Find me and BACON !
-    SMSG_QUESTUPDATE_ADD_ITEM                         = 0,      // Not found in 4.3.4
     SMSG_RAID_READY_CHECK_THROTTLED_ERROR             = 0,      // 0x2607 in 4.3.4 @todo : Find me and BACON !
     SMSG_SETUP_RESEARCH_HISTORY                       = 0,      // Not found in TC
     SMSG_SET_AI_ANIM_KIT                              = 0,      // Not found in 4.3.4
