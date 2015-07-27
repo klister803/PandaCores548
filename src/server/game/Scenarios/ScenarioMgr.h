@@ -44,10 +44,6 @@ class ScenarioProgress
 public:
     ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const* _dungeonData);
 
-    void SaveToDB(SQLTransaction& trans);
-    void LoadFromDB();
-    void DeleteFromDB();
-
     uint32 GetInstanceId() const { return instanceId; }
     Map* GetMap();
     ScenarioType GetType() const { return type; }
@@ -100,9 +96,6 @@ public:
     void Initialize();
 
     void Update(uint32 diff);
-
-    void LoadFromDB();
-    void SaveToDB(SQLTransaction& trans);
 
     static ScenarioType GetScenarioType(uint32 scenarioId);
 

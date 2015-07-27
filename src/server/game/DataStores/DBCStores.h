@@ -32,10 +32,10 @@ void AddSpecdtoItem(uint32 ItemID, uint32 SpecID);
 uint32 GetLearnSpell(uint32 trigerSpell);
 uint32 GetSpellByTrigger(uint32 trigerSpell);
 
-std::list<uint32> const* GetCriteriaTreeList(uint32 parent);
-std::list<uint32> const* GetModifierTreeList(uint32 parent);
+std::vector<CriteriaTreeEntry const*> const* GetCriteriaTreeList(uint32 parent);
+std::vector<ModifierTreeEntry const*> const* GetModifierTreeList(uint32 parent);
 std::list<uint32> const* GetSpellProcsPerMinuteModList(uint32 PerMinId);
-AchievementEntry const* GetsAchievementEntryByTreeList(uint32 criteriaTree);
+AchievementEntry const* GetsAchievementByTreeList(uint32 criteriaTree);
 
 char const* GetPetName(uint32 petfamily, uint32 dbclang);
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint8 difficulty);

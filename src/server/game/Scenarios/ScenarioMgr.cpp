@@ -34,29 +34,6 @@ ScenarioProgress::ScenarioProgress(uint32 _instanceId, lfg::LFGDungeonData const
     currentTree = GetScenarioCriteriaByStep(currentStep);
 }
 
-void ScenarioProgress::LoadFromDB()
-{
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SCENARIO_CRITERIAPROGRESS);
-    stmt->setUInt32(0, instanceId);
-    PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-    m_achievementMgr.LoadFromDB(NULL, result);
-    UpdateCurrentStep(true);
-
-    rewarded = IsCompleted(false);
-    bonusRewarded = IsCompleted(true);
-}
-
-void ScenarioProgress::SaveToDB(SQLTransaction& trans)
-{
-    m_achievementMgr.SaveToDB(trans);
-}
-
-void ScenarioProgress::DeleteFromDB()
-{
-    m_achievementMgr.DeleteFromDB(instanceId, 0);
-}
-
 Map* ScenarioProgress::GetMap()
 {
     return sMapMgr->FindMap(dungeonData->map, instanceId);
@@ -127,9 +104,6 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
     if (currentStep != oldStep && !loading)
     {
         SendStepUpdate();
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        SaveToDB(trans);
-        CharacterDatabase.CommitTransaction(trans);
 
         if (IsCompleted(false))
             Reward(false);
@@ -351,14 +325,14 @@ void ScenarioProgress::BroadCastPacket(WorldPacket& data)
 
 bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*=0*/) const
 {
-    std::list<uint32> const* cTreeList = GetCriteriaTreeList(recursTree ? recursTree : currentTree);
-    for (std::list<uint32>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
+    std::vector<CriteriaTreeEntry const*> const* cTreeList = GetCriteriaTreeList(recursTree ? recursTree : currentTree);
+    for (std::vector<CriteriaTreeEntry const*>::const_iterator itr = cTreeList->begin(); itr != cTreeList->end(); ++itr)
     {
-        if(CriteriaTreeEntry const* criteriaTree = sCriteriaTreeStore.LookupEntry(*itr))
+        if(CriteriaTreeEntry const* criteriaTree = *itr)
         {
             if(criteriaTree->criteria == 0)
             {
-                if(CanUpdateCriteria(criteriaId, *itr))
+                if(CanUpdateCriteria(criteriaId, criteriaTree->ID))
                     return true;
             }
             else if(criteriaTree->ID == criteriaId)
@@ -386,15 +360,13 @@ ScenarioProgress* ScenarioMgr::GetScenarioProgress(uint32 instanceId)
     return itr != m_scenarioProgressMap.end() ? itr->second : NULL;
 }
 
-void ScenarioMgr::AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData const* dungeonData, bool loading)
+void ScenarioMgr::AddScenarioProgress(uint32 instanceId, lfg::LFGDungeonData const* dungeonData, bool /*loading*/)
 {
     if (m_scenarioProgressMap.find(instanceId) != m_scenarioProgressMap.end())
         return;
 
     ScenarioProgress* progress = new ScenarioProgress(instanceId, dungeonData);
     m_scenarioProgressMap[instanceId] = progress;
-    if (loading)
-        progress->LoadFromDB();
 }
 
 void ScenarioMgr::RemoveScenarioProgress(uint32 instanceId)
@@ -403,25 +375,8 @@ void ScenarioMgr::RemoveScenarioProgress(uint32 instanceId)
     if (itr == m_scenarioProgressMap.end())
         return;
 
-    itr->second->DeleteFromDB();
     delete itr->second;
     m_scenarioProgressMap.erase(itr);
-}
-
-void ScenarioMgr::SaveToDB(SQLTransaction& trans)
-{
-    bool commit = false;
-    if (!trans)
-    {
-        trans = CharacterDatabase.BeginTransaction();
-        commit = true;
-    }
-
-    for (ScenarioProgressMap::iterator itr = m_scenarioProgressMap.begin(); itr != m_scenarioProgressMap.end(); ++itr)
-        itr->second->SaveToDB(trans);
-
-    if (commit)
-        CharacterDatabase.CommitTransaction(trans);
 }
 
 ScenarioType ScenarioMgr::GetScenarioType(uint32 scenarioId)
@@ -456,8 +411,6 @@ void ScenarioMgr::Update(uint32 diff)
         return;
 
     updateDiff -= 5 * MINUTE * IN_MILLISECONDS;
-
-    /*SaveToDB(SQLTransaction(NULL));*/
 }
 
 ScenarioSteps const* ScenarioMgr::GetScenarioSteps(uint32 scenarioId)
