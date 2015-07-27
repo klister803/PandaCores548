@@ -2773,33 +2773,7 @@ void WorldObject::BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const*
 void WorldObject::SendMessageToSet(WorldPacket* data, bool self)
 {
     if (IsInWorld())
-    {
-        for (auto target : visitors)
-        {
-            // Send packet to all who are sharing the player's vision
-            /*if (!target->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-                for (; i != target->GetSharedVisionList().end(); ++i)
-                    if ((*i)->m_seer == target)
-                        SendPacket(*i);
-            }*/
-
-            if (target->m_seer == target || target->GetVehicle())
-            {
-                // never send packet to self
-                if (target == this /*|| (team && player->GetTeam() != team)*/)
-                    continue;
-
-                if (!target->HaveAtClient(this))
-                    continue;
-
-                if (WorldSession* session = target->GetSession())
-                    session->SendPacket(data);
-            }
-        }
-        //SendMessageToSetInRange(data, GetVisibilityRange(), self);
-    }
+        SendMessageToSetInRange(data, GetVisibilityRange(), self);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket* data, float dist, bool /*self*/)
@@ -3831,9 +3805,6 @@ void WorldObject::DestroyForNearbyPlayers()
         DestroyForPlayer(player);
         player->m_clientGUIDs.erase(GetGUID());
     }
-
-    for (auto player : visitors)
-        player->RemoveListner(this);    //remove from visitors too. 
 }
 
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)

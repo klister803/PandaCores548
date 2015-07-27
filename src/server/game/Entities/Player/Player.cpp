@@ -2812,14 +2812,6 @@ void Player::RemoveFromWorld()
         sBattlefieldMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
         m_zoneUpdateId = 0; //fix returning to wg
         m_extraLookList.clear();
-
-        for (auto object : listners)
-        {
-            if (!object)
-                continue;
-            RemoveListner(object);
-        }
-        listners.clear();
     }
 
     ///- Do not add/remove the player from the object storage
@@ -7903,35 +7895,10 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
 
-    for (auto target : visitors)
-    {
-        // Send packet to all who are sharing the player's vision
-        /*if (!target->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator i = target->GetSharedVisionList().begin();
-            for (; i != target->GetSharedVisionList().end(); ++i)
-                if ((*i)->m_seer == target)
-                    SendPacket(*i);
-        }*/
-
-        if (target->m_seer == target || target->GetVehicle())
-        {
-            // never send packet to self
-            if (target == this || skipped_rcvr == target)
-                continue;
-
-            if (!target->HaveAtClient(this))
-                continue;
-
-            if (WorldSession* session = target->GetSession())
-                session->SendPacket(data);
-        }
-    }
-
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    //Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-    //VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
+    VisitNearbyWorldObject(GetVisibilityRange(), notifier);
 }
 
 void Player::SendDirectMessage(WorldPacket* data)
@@ -25566,7 +25533,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             if (target->GetTypeId() == TYPEID_UNIT)
                 BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
 
-            RemoveListner(target);
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
@@ -25582,7 +25548,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle);
 
-            AddListner(target);
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
 
@@ -25646,7 +25611,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
 
             target->BuildOutOfRangeUpdateBlock(&data);
             m_clientGUIDs.erase(target->GetGUID());
-            RemoveListner(target);
 
             #ifdef TRINITY_DEBUG
                 sLog->outDebug(LOG_FILTER_MAPS, "Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), target->GetEntry(), GetGUIDLow(), GetDistance(target));
@@ -25660,7 +25624,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
             //if (target->isType(TYPEMASK_UNIT) && ((Unit*)target)->m_Vehicle)
             //    UpdateVisibilityOf(((Unit*)target)->m_Vehicle, data, visibleNow);
 
-            AddListner(target);
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs, target, visibleNow);
 
@@ -30964,28 +30927,5 @@ void Player::HandleArenaDeserter()
         }
         else
             AddAura(147303, this);
-    }
-}
-
-void Player::AddListner(WorldObject* o)
-{
-    listners.insert(o);
-    o->AddVisitor(this);
-}
-
-void Player::RemoveListner(WorldObject* o)
-{
-    listners.erase(o);
-    o->RemoveVisitor(this);
-}
-
-//! out of range objects.
-//! What will be if u sit on ground and creature come on u range and move out of it?
-void Player::RemoveListners(std::set<uint64> const& list)
-{
-    for (auto object : listners)
-    {
-        if (list.find(object->GetGUID()) != list.end())
-            RemoveListner(object);
     }
 }
