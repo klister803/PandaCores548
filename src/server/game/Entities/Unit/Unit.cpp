@@ -3420,7 +3420,9 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
         return;
 
     // break same type spell if it is not delayed
-    InterruptSpell(CSpellType, false);
+    if (SpellInfo const* _spellInfo = pSpell->GetSpellInfo())
+        if (!(_spellInfo->AttributesEx12 & SPELL_ATTR12_DOESENT_INTERRUPT_CHANNELING))
+            InterruptSpell(CSpellType, false);
 
     // special breakage effects:
     switch (CSpellType)
