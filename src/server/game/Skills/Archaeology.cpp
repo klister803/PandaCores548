@@ -608,6 +608,8 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
         }
     }
 
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, entry->ID, 1);
+
     uint32 newCount = AddCompletedProject(entry);
 
     WorldPacket data (SMSG_RESEARCH_COMPLETE, 4 * 3);
@@ -618,8 +620,6 @@ bool Player::SolveResearchProject(uint32 spellId, SpellCastTargets& targets)
 
     if (gmCast)
         return true;
-
-    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS, entry->ID);
 
     ResearchProjectSet tempProjects;
     ResearchProjectSet tempRareProjects;

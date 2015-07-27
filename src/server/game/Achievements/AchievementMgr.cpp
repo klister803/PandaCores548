@@ -1666,6 +1666,7 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             case ACHIEVEMENT_CRITERIA_TYPE_CURRENCY:
             case ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE:
             case ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD:
+            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, miscValue2, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
                 // std case: high value at miscValue1
@@ -1879,9 +1880,6 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
             }
             case ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET:
                 SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->GetBattlePetMgr()->GetPetJournal().size(), referencePlayer);
-                break;
-            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ARCHAEOLOGY_PROJECTS:
-                SetCriteriaProgress(criteriaTree, achievementCriteria, referencePlayer->_completedProjects.size(), referencePlayer);
                 break;
             // FIXME: not triggered in code as result, need to implement
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETED_LFG_DUNGEONS:
@@ -4123,6 +4121,9 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(uint32 ModifyTree, uint6
                     else
                     {
                         if (rp->rare != reqValue)
+                            check = false;
+
+                        if (referencePlayer->IsCompletedProject(rp->ID, false))
                             check = false;
                     }
                     break;
