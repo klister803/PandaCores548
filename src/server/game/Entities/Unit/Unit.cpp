@@ -12910,8 +12910,12 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     }
 
     // not critting spell
-    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT) || (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS))
+    if ((spellProto->AttributesEx2 & SPELL_ATTR2_CANT_CRIT))
         return false;
+
+    if (spellProto->AttributesEx6 & SPELL_ATTR6_NO_DONE_PCT_DAMAGE_MODS)
+        if ((spellProto->AttributesEx10 & SPELL_ATTR10_STACK_DAMAGE_OR_HEAL) || GetGUID() == victim->GetGUID())
+            return false;
 
     // percent done
     // only players use intelligence for critical chance computations
