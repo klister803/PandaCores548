@@ -1868,7 +1868,10 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
     if (!CanCompleteCriteria(achievement))
         return false;
 
-    if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(sAchievementMgr->GetParantTreeId(criteriaTree->parent)))
+    if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
+        if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
+            return IsCompletedCriteriaTree(pTree, achievement);
+    /*if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(sAchievementMgr->GetParantTreeId(criteriaTree->parent)))
     {
         if(pTree->requirement_count > 0)
         {
@@ -1877,10 +1880,7 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
             //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteria pTree %u, requirement_count %u checkCount %i check %u criteriaTree %i criteria %i", pTree->ID, pTree->requirement_count, checkCount, checkCount >= pTree->requirement_count, criteriaTree->ID, criteria->ID);
             return checkCount >= pTree->requirement_count;
         }
-    }
-    if(CriteriaTreeEntry const* pTree = sCriteriaTreeStore.LookupEntry(criteriaTree->parent))
-        if((pTree->flags & ACHIEVEMENT_CRITERIA_FLAG_SHOW_PROGRESS_BAR) || (criteriaTree->flags & ACHIEVEMENT_CRITERIA_FLAG_HIDDEN))
-            return IsCompletedCriteriaTree(pTree, achievement);
+    }*/
 
     if (criteriaTree->criteria == 0 || !criteria)
     {
@@ -2194,14 +2194,14 @@ uint32 AchievementMgr<T>::IsCompletedCriteriaTreeCounter(CriteriaTreeEntry const
                 if(saveCheck || check)
                 {
                     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTreeCounter criteriaTree %u, check %u saveCheck %i count %i requirement_count %i", criteriaTree->ID, check, saveCheck, count, criteriaTree->requirement_count);
-                    return count;
+                    return 1;
                 }
             }
         }
     }
 
     //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "IsCompletedCriteriaTreeCounter criteriaTree %u, achievement %u saveCheck %i count %i requirement_count %i", criteriaTree->ID, achievement ? achievement->ID : 0, saveCheck, count, criteriaTree->requirement_count);
-    return saveCheck ? count : 0;
+    return saveCheck ? 1 : 0;
 }
 
 template<class T>
