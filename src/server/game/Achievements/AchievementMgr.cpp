@@ -1928,7 +1928,7 @@ bool AchievementMgr<T>::IsCompletedCriteria(CriteriaTreeEntry const* criteriaTre
         return IsCompletedCriteriaTree(criteriaTree, achievement);
     }
 
-    CriteriaTreeProgress const* progress = GetCriteriaProgress(criteriaTree);
+    CriteriaTreeProgress const* progress = GetCriteriaProgress(criteriaTree, achievement->ID);
     if (!progress)
         return false;
 
