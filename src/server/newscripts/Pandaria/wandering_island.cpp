@@ -217,9 +217,9 @@ class mob_tushui_trainee : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (me->HealthBelowPctDamaged(5, damage))
+                if (attacker && me->HealthBelowPctDamaged(5, damage))
                 {
-                    if(attacker && attacker->GetTypeId() == TYPEID_PLAYER)
+                    if(attacker->GetTypeId() == TYPEID_PLAYER)
                         attacker->ToPlayer()->KilledMonsterCredit(54586, 0);
                     //me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                     sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, attacker->GetGUID());

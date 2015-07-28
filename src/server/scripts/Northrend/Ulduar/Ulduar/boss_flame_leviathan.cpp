@@ -1275,7 +1275,10 @@ public:
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         InstanceScript* instance = pCreature->GetInstanceScript();
-        if ((pPlayer && instance && instance->GetBossState(BOSS_LEVIATHAN) != DONE && 
+        if (!instance)
+            return false;
+
+        if ((instance->GetBossState(BOSS_LEVIATHAN) != DONE && 
             instance->GetBossState(BOSS_LEVIATHAN) != SPECIAL) || pPlayer->isGameMaster())
         {
             pPlayer->PrepareGossipMenu(pCreature);

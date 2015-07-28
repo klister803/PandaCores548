@@ -230,7 +230,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     for (uint8 i = 0; i < str_count; i++)
         unkLens[i] = recvData.ReadBits(7);
 
-    delete unkLens;
+    delete[] unkLens;
 
     std::wstring str[4];                                    // 4 is client limit
     for (uint32 i = 0; i < str_count; ++i)

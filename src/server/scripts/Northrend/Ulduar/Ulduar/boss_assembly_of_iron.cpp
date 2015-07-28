@@ -648,7 +648,7 @@ public:
         {
             if (achivstunned)
             {
-                if (target->GetTypeId() == TYPEID_PLAYER && (spell->Id == SPELL_LIGHTNING_WHIRL || SPELL_CHAIN_LIGHTNING))
+                if (target->GetTypeId() == TYPEID_PLAYER && (spell->Id == SPELL_LIGHTNING_WHIRL || spell->Id == SPELL_CHAIN_LIGHTNING))
                     achivstunned = false;
             }
         }

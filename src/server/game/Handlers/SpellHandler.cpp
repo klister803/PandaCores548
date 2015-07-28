@@ -1170,7 +1170,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 {
-    uint32 spellId;
+    uint32 spellId = 0;
 
     bool hasSpell = !recvPacket.ReadBit();
     bool hasCastCount = !recvPacket.ReadBit();

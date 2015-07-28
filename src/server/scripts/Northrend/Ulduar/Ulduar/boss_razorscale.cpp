@@ -454,7 +454,7 @@ public:
     bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         InstanceScript* pInstance = pCreature->GetInstanceScript();
-        if (pInstance && pInstance->GetBossState(BOSS_RAZORSCALE) == NOT_STARTED && pPlayer)
+        if (pInstance && pInstance->GetBossState(BOSS_RAZORSCALE) == NOT_STARTED)
         {
             pPlayer->PrepareGossipMenu(pCreature);
 

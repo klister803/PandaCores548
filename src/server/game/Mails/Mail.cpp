@@ -125,7 +125,7 @@ void MailDraft::deleteIncludedItems(SQLTransaction& trans, bool inDB /*= false*/
     {
         Item* item = mailItemIter->second;
 
-        if (inDB)
+        if (inDB && item)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
             stmt->setUInt32(0, item->GetGUIDLow());

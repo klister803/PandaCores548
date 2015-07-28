@@ -1191,8 +1191,7 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                 if (!done)
                     m_combatStarted = false;
 
-                if (pInstance)
-                    pInstance->SetBossState(DATA_MADNESS, (done ? DONE : NOT_STARTED));
+                pInstance->SetBossState(DATA_MADNESS, (done ? DONE : NOT_STARTED));
 
                 if (pInstance->GetBossState(DATA_MADNESS) != DONE)
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_SPELLCLICK);

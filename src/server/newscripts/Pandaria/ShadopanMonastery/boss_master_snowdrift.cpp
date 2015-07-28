@@ -682,8 +682,7 @@ class npc_snowdrift_miniboss : public CreatureScript
                     me->SetReactState(REACT_PASSIVE);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                     stillInFight = false;
-                    if (pInstance)
-                        pInstance->SetData(DATA_DEFEATED_MINIBOSS, 1);
+                    pInstance->SetData(DATA_DEFEATED_MINIBOSS, 1);
 
                     if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_MINIBOSS_POS)))
                     {

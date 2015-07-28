@@ -299,6 +299,8 @@ class npc_coldflame : public CreatureScript
 
                 Creature* creOwner = owner->ToCreature();
                 Position pos;
+                pos.m_positionX = 0.f;
+                pos.m_positionY = 0.f;
                 // random target case
                 if (owner->HasAura(SPELL_BONE_STORM))
                 {
