@@ -47,10 +47,10 @@ struct WMOAreaTableTripple
     int32 adtId;
 };
 
-static UNORDERED_MAP<uint32, std::list<uint32> > sCriteriaTreeEntryList;
-static UNORDERED_MAP<uint32, std::list<uint32> > sModifierTreeEntryList;
+static UNORDERED_MAP<uint32, std::vector<CriteriaTreeEntry const*> > sCriteriaTreeList;
+static UNORDERED_MAP<uint32, std::vector<ModifierTreeEntry const*> > sModifierTreeList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sSpellProcsPerMinuteModEntryList;
-static UNORDERED_MAP<uint32, uint32 > sAchievementEntryParentList;
+static UNORDERED_MAP<uint32, AchievementEntry const* > sAchievementParentList;
 static UNORDERED_MAP<uint32, std::list<uint32> > sItemSpecsList;
 static UNORDERED_MAP<uint32, uint32 > sRevertLearnSpellList;
 static UNORDERED_MAP<uint32, uint32 > sReversTriggerSpellList;
@@ -388,21 +388,21 @@ void LoadDBCStores(const std::string& dataPath)
     {
         if (AchievementEntry const* as = sAchievementStore.LookupEntry(i))
             if (as->criteriaTree > 0)
-                sAchievementEntryParentList[as->criteriaTree] = i;
+                sAchievementParentList[as->criteriaTree] = as;
     }
 
     for (uint32 i = 0; i < sCriteriaTreeStore.GetNumRows(); ++i)
     {
         if (CriteriaTreeEntry const* ct = sCriteriaTreeStore.LookupEntry(i))
             if (ct->parent > 0)
-                sCriteriaTreeEntryList[ct->parent].push_back(i);
+                sCriteriaTreeList[ct->parent].push_back(ct);
     }
 
     for (uint32 i = 0; i < sModifierTreeStore.GetNumRows(); ++i)
     {
         if (ModifierTreeEntry const* mt = sModifierTreeStore.LookupEntry(i))
             if (mt->parent > 0)
-                sModifierTreeEntryList[mt->parent].push_back(i);
+                sModifierTreeList[mt->parent].push_back(mt);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//14545
@@ -939,13 +939,14 @@ void AddSpecdtoItem(uint32 ItemID, uint32 SpecID)
     sItemSpecsList[ItemID].push_back(SpecID);
 }
 
-uint32 GetsAchievementEntryByTreeList(uint32 criteriaTree)
+AchievementEntry const* GetsAchievementByTreeList(uint32 criteriaTree)
 {
-    UNORDERED_MAP<uint32, uint32 >::const_iterator itr = sAchievementEntryParentList.find(criteriaTree);
-    if(itr != sAchievementEntryParentList.end())
+    UNORDERED_MAP<uint32, AchievementEntry const* >::const_iterator itr = sAchievementParentList.find(criteriaTree);
+    if(itr != sAchievementParentList.end())
         return itr->second;
     return 0;
 }
+
 
 uint32 GetLearnSpell(uint32 trigerSpell)
 {
@@ -963,18 +964,18 @@ uint32 GetSpellByTrigger(uint32 trigerSpell)
     return 0;
 }
 
-std::list<uint32> const* GetCriteriaTreeList(uint32 parent)
+std::vector<CriteriaTreeEntry const*> const* GetCriteriaTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sCriteriaTreeEntryList.find(parent);
-    if(itr != sCriteriaTreeEntryList.end())
+    UNORDERED_MAP<uint32, std::vector<CriteriaTreeEntry const*> >::const_iterator itr = sCriteriaTreeList.find(parent);
+    if(itr != sCriteriaTreeList.end())
         return &itr->second;
     return NULL;
 }
 
-std::list<uint32> const* GetModifierTreeList(uint32 parent)
+std::vector<ModifierTreeEntry const*> const* GetModifierTreeList(uint32 parent)
 {
-    UNORDERED_MAP<uint32, std::list<uint32> >::const_iterator itr = sModifierTreeEntryList.find(parent);
-    if(itr != sModifierTreeEntryList.end())
+    UNORDERED_MAP<uint32, std::vector<ModifierTreeEntry const*> >::const_iterator itr = sModifierTreeList.find(parent);
+    if(itr != sModifierTreeList.end())
         return &itr->second;
     return NULL;
 }

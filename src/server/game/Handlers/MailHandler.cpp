@@ -683,8 +683,9 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
     // create raw byte data
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
+        Mail* mail = (*itr);
         // Only first 50 mails are displayed
-        if (shownCount >= 50)
+        if (!mail || shownCount >= 50)
         {
             totalCount += 1;
             continue;
@@ -694,13 +695,14 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
             continue;
 
-        uint8 item_count = (*itr)->items.size();                 // max count is MAX_MAIL_ITEMS (12)
-        bool normalMail = (*itr)->messageType == MAIL_NORMAL;
-        bool otherMail = (*itr)->messageType != MAIL_NORMAL;
+        uint8 item_count = mail->items.size();                 // max count is MAX_MAIL_ITEMS (12)
+        bool normalMail = mail->messageType == MAIL_NORMAL;
+        bool otherMail = mail->messageType != MAIL_NORMAL;
 
         for (uint8 i = 0; i < item_count; i++)
         {
-            Item* item = player->GetMItem((*itr)->items[i].item_guid);
+            MailItemInfo* MailItem = &mail->items[i];
+            Item* item = MailItem ? player->GetMItem(MailItem->item_guid) : NULL;
 
             data << uint32((item ? item->GetCount() : 0));   // stack count
             data << uint8(i);                                // item index, order in attachments
@@ -725,26 +727,26 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData)
             data << uint32((item ? item->GetSpellCharges() : 0));
         }
 
-        data << uint32((*itr)->messageID);                       // message ID?
-        data << uint8((*itr)->messageType);                      // message type
+        data << uint32(mail->messageID);                       // message ID?
+        data << uint8(mail->messageType);                      // message type
 
         if (normalMail)
         {
-            ObjectGuid plSender = MAKE_NEW_GUID((*itr)->sender, 0, HIGHGUID_PLAYER);
+            ObjectGuid plSender = MAKE_NEW_GUID(mail->sender, 0, HIGHGUID_PLAYER);
             data.WriteGuidBytes<2, 6, 0, 5, 4, 7, 3, 1>(plSender);
         }
 
-        data.WriteString((*itr)->body);                          // mail body
-        data << uint64((*itr)->money);                           // money
-        data << uint32((*itr)->mailTemplateId);                  // mail template ID (MailTemplate.dbc)
-        data.WriteString((*itr)->subject);                       // mail subject
+        data.WriteString(mail->body);                          // mail body
+        data << uint64(mail->money);                           // money
+        data << uint32(mail->mailTemplateId);                  // mail template ID (MailTemplate.dbc)
+        data.WriteString(mail->subject);                       // mail subject
         if (otherMail)
-            data << uint32((*itr)->sender);                      // non-player sender : creatureID or AuctionHouseID
+            data << uint32(mail->sender);                      // non-player sender : creatureID or AuctionHouseID
         data << uint32(0);                                       // package, 2 - some interesting icon (Package.dbc)
-        data << uint64((*itr)->COD);                             // COD
-        data << uint32((*itr)->checked);                         // checked
-        data << uint32((*itr)->stationery);                      // stationery (Stationery.dbc)
-        data << float(((*itr)->expire_time-time(NULL))/DAY);     // time to expire
+        data << uint64(mail->COD);                             // COD
+        data << uint32(mail->checked);                         // checked
+        data << uint32(mail->stationery);                      // stationery (Stationery.dbc)
+        data << float((mail->expire_time-time(NULL))/DAY);     // time to expire
 
         ++totalCount;
         ++shownCount;

@@ -107,7 +107,7 @@ class AuctionHouseObject
             delete itr->second;
     }
 
-    typedef std::map<uint32, AuctionEntry*> AuctionEntryMap;
+    typedef std::unordered_map<uint32, AuctionEntry*> AuctionEntryMap;
 
     uint32 Getcount() const { return AuctionsMap.size(); }
 

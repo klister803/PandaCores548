@@ -312,12 +312,9 @@ void PhaseData::SendPhaseshiftToPlayer()
 
     player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, WorldMapAreaIds, flags);
 
-    uint32 zoneid, areaid;
-    player->GetZoneAndAreaId(zoneid, areaid);
-
     WorldPacket data(SMSG_INIT_WORLD_STATES, (15));
-    data << uint32(zoneid);                                 // zone id
-    data << uint32(areaid);                                 // area id, new 2.1.0
+    data << uint32(player->GetZoneId());                                 // zone id
+    data << uint32(player->GetAreaId());                                 // area id, new 2.1.0
     data << uint32(player->GetMapId());                                  // mapid
     data.WriteBits(0, 21);
     data.FlushBits();

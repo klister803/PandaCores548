@@ -53,12 +53,6 @@ void InstanceScript::SaveToDB()
     stmt->setUInt32(3, instance->GetInstanceId());
     CharacterDatabase.Execute(stmt);
 
-    if (ScenarioProgress* progress = sScenarioMgr->GetScenarioProgress(instance->GetInstanceId()))
-    {
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        progress->SaveToDB(trans);
-        CharacterDatabase.CommitTransaction(trans);
-    }
     if(InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(instance->GetInstanceId()))
         save->SetCompletedEncountersMask(GetCompletedEncounterMask());
 }

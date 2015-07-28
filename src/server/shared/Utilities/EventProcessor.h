@@ -60,10 +60,13 @@ class EventProcessor
         void Update(uint32 p_time);
         void KillAllEvents(bool force);
         void AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime = true);
+        void AddEventsFromQueue();
         uint64 CalculateTime(uint64 t_offset) const;
+        bool Empty() const { return m_events.empty(); }
     protected:
         uint64 m_time;
         EventList m_events;
+        EventList m_events_queue;
         bool m_aborting;
 };
 #endif

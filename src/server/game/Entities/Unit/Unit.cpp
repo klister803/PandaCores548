@@ -201,6 +201,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
     m_attackDist = MELEE_RANGE;
+    Zliquid_status = LIQUID_MAP_NO_WATER;
 
     m_extraAttacks = 0;
     countCrit = 0;
@@ -3608,12 +3609,12 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return GetBaseMap()->IsInWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    return Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER);
 }
 
 bool Unit::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    return Zliquid_status & LIQUID_MAP_UNDER_WATER;
 }
 
 void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
@@ -3621,9 +3622,8 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
     if (!isPet() && !IsVehicle())
         return;
 
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    if (!Zliquid_status)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
@@ -3641,7 +3641,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -4019,7 +4019,7 @@ void Unit::_RemoveNoStackAurasDueToAura(Aura* aura)
 void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
 {
     if (apply)
-        m_modAuras[aurEff->GetAuraType()].push_back(aurEff);
+        m_modAuras[aurEff->GetAuraType()].emplace_back(aurEff);
     else if(!m_modAuras[aurEff->GetAuraType()].empty())
         m_modAuras[aurEff->GetAuraType()].remove(aurEff);
 }
@@ -7926,11 +7926,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
 
                     cooldown_spell_id = dummySpell->Id;
 
-                    if (SpellInfo const* healSpellInfo = sSpellMgr->GetSpellInfo(34299))
-                    {
-                        int32 healbp = CalculatePct(GetMaxHealth(), healSpellInfo->Effects[EFFECT_0].BasePoints);
-                        CastCustomSpell(this, 34299, &healbp, NULL, NULL, true, castItem, triggeredByAura);
-                    }
+                    CastSpell(this, 34299, true);
                     
                     basepoints0 = CountPctFromMaxMana(triggerAmount);
                     triggered_spell_id = 68285;
@@ -7946,7 +7942,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                         return false;
 
                     // ignore when in Solar and Lunar Eclipse, Celestial Alignment
-                    if (HasAura(48517) || HasAura(48518) || HasAura(112071))
+                    if (HasAura(48517) || HasAura(48518)/* || HasAura(112071)*/)
                         return false;
 
                     triggered_spell_id = 95746;
@@ -12473,6 +12469,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 tmpDamage *= GetModForHolyPowerSpell();
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellDamageBonusDone spellid %u in effIndex %u tmpDamage %f, pdamage %i DoneTotalMod %f DoneTotal %i", spellProto ? spellProto->Id : 0, effIndex, tmpDamage, pdamage, DoneTotalMod, DoneTotal);
+
     return uint32(std::max(tmpDamage, 0.0f));
 }
 
@@ -12534,6 +12532,8 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     }
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenTotal) * TakenTotalMod;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellDamageBonusTaken spellid %u tmpDamage %f, pdamage %i TakenTotalMod %f TakenTotal %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, TakenTotalMod, TakenTotal);
 
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -13675,6 +13675,8 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
             AddPct(DoneTotalMod, GetShapeshiftForm() == FORM_METAMORPHOSIS ? aurEff->GetAmount() * 3 : aurEff->GetAmount());
     }
 
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "MeleeDamageBonusDone spellid %u in tmpDamage %f, pdamage %i DoneTotalMod %f DoneFlatBenefit %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, DoneTotalMod, DoneFlatBenefit);
+
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
 }
@@ -13802,6 +13804,8 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     }
     if (!tmpDamage)
         tmpDamage = (float(pdamage) + TakenFlatBenefit) * TakenTotalMod;
+
+    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "MeleeDamageBonusTaken spellid %u in tmpDamage %f, pdamage %i TakenTotalMod %f TakenFlatBenefit %i", spellProto ? spellProto->Id : 0, tmpDamage, pdamage, TakenTotalMod, TakenFlatBenefit);
 
     // bonus result can be negative
     return uint32(std::max(tmpDamage, 0.0f));
@@ -14062,9 +14066,6 @@ void Unit::UpdateMount()
 
     if (mountType)
     {
-        uint32 zoneId, areaId;
-        GetZoneAndAreaId(zoneId, areaId);
-
         uint32 ridingSkill = 5000;
         if (GetTypeId() == TYPEID_PLAYER)
             ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14082,9 +14083,9 @@ void Unit::UpdateMount()
             else
             {
                 AreaTableEntry const* entry;
-                entry = GetAreaEntryByAreaID(areaId);
+                entry = GetAreaEntryByAreaID(GetAreaId());
                 if (!entry)
-                    entry = GetAreaEntryByAreaID(zoneId);
+                    entry = GetAreaEntryByAreaID(GetZoneId());
 
                 if (entry)
                     currentMountFlags = entry->mountFlags;
@@ -14138,7 +14139,7 @@ void Unit::UpdateMount()
             if (mountCapability->RequiredMap != -1 && GetMapId() != uint32(mountCapability->RequiredMap))
                 continue;
 
-            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
+            if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
                 continue;
 
             if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
@@ -14195,8 +14196,6 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
     if (!mountTypeEntry)
         return NULL;
 
-    uint32 zoneId, areaId;
-    GetZoneAndAreaId(zoneId, areaId);
     uint32 ridingSkill = 5000;
     if (GetTypeId() == TYPEID_PLAYER)
         ridingSkill = ToPlayer()->GetSkillValue(SKILL_RIDING);
@@ -14229,7 +14228,7 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
         if (mountCapability->RequiredMap != -1 && int32(GetMapId()) != mountCapability->RequiredMap)
             continue;
 
-        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != zoneId && mountCapability->RequiredArea != areaId))
+        if (mountCapability->RequiredArea && (mountCapability->RequiredArea != GetZoneId() && mountCapability->RequiredArea != GetAreaId()))
             continue;
 
         if (mountCapability->RequiredAura && !HasAura(mountCapability->RequiredAura))
@@ -23242,12 +23241,12 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
             GetMap()->PlayerRelocation(ToPlayer(), x, y, z, orientation);
         else
             GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
+
+        // code block for underwater state update
+        UpdateUnderwaterState(GetMap(), x, y, z);
     }
     else if (turn)
         UpdateOrientation(orientation);
-
-    // code block for underwater state update
-    UpdateUnderwaterState(GetMap(), x, y, z);
 
     return (relocated || turn);
 }

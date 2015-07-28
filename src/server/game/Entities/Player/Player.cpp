@@ -765,11 +765,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
 
-    m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
     m_zoneUpdateAllow = false;
-
-    m_areaUpdateId = 0;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
@@ -2119,7 +2116,7 @@ void Player::Update(uint32 p_time)
 
     if (m_knockBackTimer)
     {
-        if (m_knockBackTimer + 2000 < getMSTime())
+        if (m_knockBackTimer + 1000 < getMSTime())
         {
             m_knockBackTimer = 0;
             ClearUnitState(UNIT_STATE_JUMPING);
@@ -2781,7 +2778,11 @@ void Player::ProcessDelayedOperations()
     {
         if (Group *g = GetGroup())
             g->SendUpdateToPlayer(GetGUID());
+        RecalcArenaAuras();
     }
+
+    if (m_DelayedOperations & DELAYED_UPDATE_AURAS_TO_BG)
+        RecalcArenaAuras();
 
     //we have executed ALL delayed ops, so clear the flag
     m_DelayedOperations = 0;
@@ -5198,6 +5199,13 @@ void Player::RemoveAllSpellCooldown()
 
         m_spellCooldowns.clear();
     }
+
+    for (UCSpellChargeDataMap::iterator itr = m_uncategorySpellChargeData.begin(); itr != m_uncategorySpellChargeData.end(); ++itr)
+        if (UncategorySpellChargeData* data = itr->second)
+        {
+            data->charges = data->maxCharges;
+            data->timer = 0;
+        }
 
     RestoreSpellCategoryCharges();
 }
@@ -10577,9 +10585,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
             bones->lootForBody = true;
             uint32 pLevel = bones->loot.gold;
             bones->loot.clear();
-            if (Battleground* bg = GetBattleground())
-                if (bg->GetTypeID(true) == BATTLEGROUND_AV)
-                    loot->FillLoot(1, LootTemplates_Creature, this, true, false, bones);
+            if (GetBattleground())
+                loot->FillLoot(1, LootTemplates_Creature, this, true, false, bones);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = uint32(urand(50, 150) * 0.016f * pow(float(pLevel)/5.76f, 2.5f) * sWorld->getRate(RATE_DROP_MONEY));
@@ -16294,6 +16301,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_PETITIONER:
                 case GOSSIP_OPTION_TABARDDESIGNER:
                 case GOSSIP_OPTION_AUCTIONEER:
+                case GOSSIP_OPTION_SCENARIO:
 //                case 17:
                     break;                                  // no checks
                 case GOSSIP_OPTION_OUTDOORPVP:
@@ -16506,6 +16514,13 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
 
             GetSession()->SendBattleGroundList(guid, bgTypeId);
             break;
+        }
+        case GOSSIP_OPTION_SCENARIO:
+        {
+            lfg::LfgDungeonSet dungeons;
+            dungeons.insert(cost);
+            sLFGMgr->JoinLfg(this, uint8(lfg::PLAYER_ROLE_LEADER), dungeons, "Start scenario");
+            return;
         }
     }
 
@@ -20683,6 +20698,7 @@ void Player::_LoadBattlePets(PreparedQueryResult result)
             health = maxHealth;
 
         GetBattlePetMgr()->AddPetToList(guid, speciesID, creatureEntry, level, displayID, power, speed, health, maxHealth, quality, xp, flags, spell, customName, breedID, STATE_NORMAL);
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, creatureEntry);
     }
     while (result->NextRow());
 }
@@ -27391,9 +27407,8 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    if (!Zliquid_status)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWARER_INDARKWATER);
         if (_lastLiquid && _lastLiquid->SpellId)
@@ -27411,7 +27426,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
         if (liquid && liquid->SpellId)
         {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -27432,7 +27447,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     // All liquids type - check under water position
     if (liquid_status.type_flags & (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME))
     {
-        if (res & LIQUID_MAP_UNDER_WATER)
+        if (Zliquid_status & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
@@ -27447,7 +27462,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     // in lava check, anywhere in lava level
     if (liquid_status.type_flags & MAP_LIQUID_TYPE_MAGMA)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
@@ -27455,7 +27470,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     // in slime check, anywhere in slime level
     if (liquid_status.type_flags & MAP_LIQUID_TYPE_SLIME)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (Zliquid_status & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
@@ -30185,13 +30200,11 @@ void Player::_LoadStore()
 
 void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 {
-    uint32 zone = 0, area = 0;
+    uint32 zone = GetZoneId(), area = GetAreaId();
 
     SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)
@@ -30211,9 +30224,6 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
     saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        if (!zone || !area)
-            GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)
