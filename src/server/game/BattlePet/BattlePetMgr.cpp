@@ -63,6 +63,8 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
     uint32 bit_pos = data->bitwpos();
     data->WriteBits(count, 19);
 
+    ByteBuffer byteData;
+
     for (PetJournal::const_iterator itr = m_PetJournal.begin(); itr != m_PetJournal.end(); ++itr)
     {
         PetJournalInfo* petInfo = itr->second;
@@ -89,12 +91,41 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteGuidMask<2>(guid);
         data->WriteBit(1);                          // hasUnk (bool noRename?), inverse
 
+        if (petInfo->GetBreedID())
+            byteData << uint16(petInfo->GetBreedID());            // breedID
+        byteData << uint32(petInfo->GetSpeciesID());              // speciesID
+        byteData << uint32(petInfo->GetSpeed());                  // speed
+        byteData.WriteGuidBytes<1, 6, 4>(guid);
+        byteData << uint32(petInfo->GetDisplayID());
+        byteData << uint32(petInfo->GetMaxHealth());              // max health
+        byteData << uint32(petInfo->GetPower());                  // power
+        byteData.WriteGuidBytes<2>(guid);
+        byteData << uint32(petInfo->GetCreatureEntry());          // Creature ID
+        byteData << uint16(petInfo->GetLevel());                  // level
+        if (len > 0)
+            byteData.WriteString(petInfo->GetCustomName());       // custom name
+        byteData << uint32(petInfo->GetHealth());                 // health
+        byteData << uint16(petInfo->GetXP());                     // xp
+        if (petInfo->GetQuality())
+            byteData << uint8(petInfo->GetQuality());             // quality
+        byteData.WriteGuidBytes<3, 7, 0>(guid);
+        if (petInfo->GetFlags())
+            byteData << uint16(petInfo->GetFlags());              // flags
+        byteData.WriteGuidBytes<5>(guid);
+
         ++count;
     }
 
     data->WriteBits(MAX_ACTIVE_BATTLE_PETS, 25);
 
     // fill battle slots data
+    ByteBuffer byteSlotData;
+
+    // pointer to last element
+    PetBattleSlots::const_iterator itr2 = m_battleSlots.end();
+    if (!m_battleSlots.empty())
+        --itr2;
+
     for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
     {
         uint8 slotIndex = itr->first;
@@ -108,12 +139,24 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteBit(!slot->IsEmpty());                                // empty slot, inverse
         data->WriteGuidMask<7, 1, 3, 2, 5, 0, 4, 6>(slot->GetPet());     // pet guid in slot
         data->WriteBit(SlotIsLocked(slotIndex));                         // locked slot
+
+        if (itr == itr2)
+            data->WriteBit(1);                      // !hasJournalLock
+
+        byteSlotData.WriteGuidBytes<3, 7, 5, 1, 4, 0, 6, 2>(slot->GetPet());
+        if (slotIndex)
+            byteSlotData << uint8(slotIndex);        // SlotIndex
     }
 
-    data->WriteBit(1);                      // !hasJournalLock
+    /*data->WriteBit(1);                      // !hasJournalLock
 
     for (PetBattleSlots::const_iterator itr = m_battleSlots.begin(); itr != m_battleSlots.end(); ++itr)
     {
+        // pointer to last element
+        PetBattleSlots::const_iterator itr2 = m_battleSlots.end();
+        if (!m_battleSlots.empty())
+            --itr2;
+
         uint8 slotIndex = itr->first;
         PetBattleSlot* slot = itr->second;
 
@@ -165,13 +208,16 @@ bool BattlePetMgr::BuildPetJournal(WorldPacket *data)
         data->WriteGuidBytes<5>(guid);
 
         ++count2;
-    }
+    }*/
+
+    data->append(byteSlotData);
+    data->append(byteData);
 
     *data << uint16(0);                                        // trapLevel
 
     // some check - rewrite in future
-    if (count != count2)
-        return false;
+    //if (count != count2)
+        //return false;
 
     data->PutBits<uint8>(bit_pos, count, 19);
     return true;
