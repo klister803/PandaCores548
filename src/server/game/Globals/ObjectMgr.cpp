@@ -6808,7 +6808,7 @@ void ObjectMgr::LoadBattlePetGuid()
 {
     uint32 oldMSTime = getMSTime();
 
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM character_battle_pet_journal");
+    QueryResult result = CharacterDatabase.Query("SELECT MAX(guid) FROM account_battle_pet_journal");
     if (result)
     {
         Field* fields = result->Fetch();
