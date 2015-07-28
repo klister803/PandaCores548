@@ -727,7 +727,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 {
     PreparedStatement* stmt;
     std::ostringstream guidstr;
-    for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
+    for (CompletedAchievementMap::iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
         if (!itr->second.changed)
             continue;
@@ -741,6 +741,7 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 
         stmt->setString(3, guidstr.str());
         trans->Append(stmt);
+        itr->second.changed = false;
 
         guidstr.str("");
     }
@@ -750,19 +751,32 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
     if (!progressMap)
         return;
 
-    for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
+    for (CriteriaProgressMap::iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
     {
-        if (!itr->second.changed && !itr->second.updated)
-            continue;
+        if (itr->second.changed)
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA);
+            stmt->setUInt32(0, GetOwner()->GetId());
+            stmt->setUInt32(1, itr->first);
+            stmt->setUInt32(2, itr->second.counter);
+            stmt->setUInt32(3, itr->second.date);
+            stmt->setUInt32(4, GUID_LOPART(itr->second.CompletedGUID));
+            stmt->setUInt32(5, itr->second.achievement ? itr->second.achievement->ID : 0);
+            trans->Append(stmt);
+            itr->second.changed = false;
+        }
 
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA);
-        stmt->setUInt32(0, GetOwner()->GetId());
-        stmt->setUInt32(1, itr->first);
-        stmt->setUInt32(2, itr->second.counter);
-        stmt->setUInt32(3, itr->second.date);
-        stmt->setUInt32(4, GUID_LOPART(itr->second.CompletedGUID));
-        stmt->setUInt32(5, itr->second.achievement ? itr->second.achievement->ID : 0);
-        trans->Append(stmt);
+        if (itr->second.updated)
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_ACHIEVEMENT_CRITERIA);
+            stmt->setUInt32(0, itr->second.counter);
+            stmt->setUInt32(1, itr->second.date);
+            stmt->setUInt32(2, itr->second.achievement ? itr->second.achievement->ID : 0);
+            stmt->setUInt32(3, GetOwner()->GetId());
+            stmt->setUInt32(4, itr->first);
+            trans->Append(stmt);
+            itr->second.updated = false;
+        }
     }
 }
 
