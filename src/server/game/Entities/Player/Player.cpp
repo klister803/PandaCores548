@@ -2781,7 +2781,11 @@ void Player::ProcessDelayedOperations()
     {
         if (Group *g = GetGroup())
             g->SendUpdateToPlayer(GetGUID());
+        RecalcArenaAuras();
     }
+
+    if (m_DelayedOperations & DELAYED_UPDATE_AURAS_TO_BG)
+        RecalcArenaAuras();
 
     //we have executed ALL delayed ops, so clear the flag
     m_DelayedOperations = 0;
