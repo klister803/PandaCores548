@@ -10,7 +10,7 @@ UPDATE `creature_template` SET `ScriptName` ='npc_akama' WHERE (`entry`='68137')
 UPDATE `creature_template` SET `ScriptName` ='npc_asthongue_primalist' WHERE (`entry`='68096');
 UPDATE `creature_template` SET `ScriptName` ='npc_ashtongue_worker' WHERE (`entry`='68098');
 UPDATE `creature_template` SET `ScriptName` ='npc_suffering_soul_fragment' WHERE (`entry`='68139');
-UPDATE `creature_template` SET `ScriptName` ='npc_hungering_soul_fragment' WHERE (`entry`='68140');
+UPDATE `creature_template` SET `ScriptName` ='npc_hungering_soul_fragment2' WHERE (`entry`='68140');
 UPDATE `creature_template` SET `ScriptName` ='npc_essence_of_order' WHERE (`entry`='68151');
 UPDATE `creature_template` SET `ScriptName` ='npc_demonic_gateway_scen' WHERE (`entry`='70028');
 UPDATE `creature_template` SET `ScriptName` ='npc_kanrethad_ebonlocke' WHERE (`entry`='69964');
