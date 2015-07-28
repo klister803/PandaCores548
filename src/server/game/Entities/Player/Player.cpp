@@ -22586,39 +22586,42 @@ void Player::_SaveBattlePets(SQLTransaction& trans)
     // save journal
     for (PetJournal::const_iterator pet = journal.begin(); pet != journal.end(); ++pet)
     {
-        if (pet->second->GetState() == STATE_DELETED)
+        PetJournalInfo* pjInfo = pet->second;
+
+        if (!pjInfo)
+            continue;
+
+        if (pjInfo->GetState() == STATE_DELETED)
         {
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACCOUNT_BATTLE_PET_LIST);
             stmt->setUInt32(0, GetSession()->GetAccountId());
             stmt->setUInt64(1, pet->first);
             trans->Append(stmt);
-            continue;
         }
+        else if (pjInfo->GetState() == STATE_UPDATED)
+        {
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_ACCOUNT_BATTLE_PET_LIST);
+            stmt->setUInt32(0, GetSession()->GetAccountId());
+            stmt->setUInt64(1, pet->first);
+            stmt->setString(2, pjInfo->GetCustomName());
+            stmt->setUInt32(3, pjInfo->GetCreatureEntry());
+            stmt->setInt32(4, pjInfo->GetSpeciesID());
+            stmt->setInt32(5, pjInfo->GetSummonSpell());
+            stmt->setUInt8(6, pjInfo->GetLevel());
+            stmt->setInt32(7, pjInfo->GetDisplayID());
+            stmt->setUInt16(8, pjInfo->GetPower());
+            stmt->setUInt16(9, pjInfo->GetSpeed());
+            stmt->setInt32(10, pjInfo->GetHealth());
+            stmt->setInt32(11, pjInfo->GetMaxHealth());
+            stmt->setUInt8(12, pjInfo->GetQuality());
+            stmt->setUInt16(13, pjInfo->GetXP());
+            stmt->setUInt16(14, pjInfo->GetFlags());
+            stmt->setInt16(15, pjInfo->GetBreedID());
 
-        if (pet->second->GetState() != STATE_UPDATED)
-            continue;
+            trans->Append(stmt);
 
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SAVE_ACCOUNT_BATTLE_PET_LIST);
-        stmt->setUInt32(0, GetSession()->GetAccountId());
-        stmt->setUInt64(1, pet->first);
-        stmt->setString(2, pet->second->GetCustomName());
-        stmt->setUInt32(3, pet->second->GetCreatureEntry());
-        stmt->setInt32(4, pet->second->GetSpeciesID());
-        stmt->setInt32(5, pet->second->GetSummonSpell());
-        stmt->setUInt8(6, pet->second->GetLevel());
-        stmt->setInt32(7, pet->second->GetDisplayID());
-        stmt->setUInt16(8, pet->second->GetPower());
-        stmt->setUInt16(9, pet->second->GetSpeed());
-        stmt->setInt32(10, pet->second->GetHealth());
-        stmt->setInt32(11, pet->second->GetMaxHealth());
-        stmt->setUInt8(12, pet->second->GetQuality());
-        stmt->setUInt16(13, pet->second->GetXP());
-        stmt->setUInt16(14, pet->second->GetFlags());
-        stmt->setInt16(15, pet->second->GetBreedID());
-
-        trans->Append(stmt);
-
-        pet->second->SetState(STATE_NORMAL);
+            pjInfo->SetState(STATE_NORMAL);
+        }
     }
 }
 
