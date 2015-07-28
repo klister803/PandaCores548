@@ -765,11 +765,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_needUpdateRangeHastMod = false;
     m_needUpdateHastMod = false;
 
-    m_zoneUpdateId = 0;
     m_zoneUpdateTimer = 0;
     m_zoneUpdateAllow = false;
-
-    m_areaUpdateId = 0;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
@@ -30191,13 +30188,11 @@ void Player::_LoadStore()
 
 void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 {
-    uint32 zone = 0, area = 0;
+    uint32 zone = GetZoneId(), area = GetAreaId();
 
     SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)
@@ -30217,9 +30212,6 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
     saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
     if (saBounds.first != saBounds.second)
     {
-        if (!zone || !area)
-            GetZoneAndAreaId(zone, area);
-
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
             if (zone != itr->second->areaId && area != itr->second->areaId)

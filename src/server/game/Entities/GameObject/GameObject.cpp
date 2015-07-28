@@ -245,6 +245,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMa
     }
     LastUsedScriptID = GetGOInfo()->ScriptId;
     AIM_Initialize();
+    UpdateZoneAndAreaId();
 
     return true;
 }
@@ -631,15 +632,12 @@ void GameObject::Delete()
 void GameObject::getFishLoot(Loot* fishloot, Player* loot_owner)
 {
     fishloot->clear();
-
-    uint32 zone, subzone;
-    GetZoneAndAreaId(zone, subzone);
     fishloot->objGuid = GetGUID();
 
     // if subzone loot exist use it
-    if (!fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner, true, true, this))
+    if (!fishloot->FillLoot(GetAreaId(), LootTemplates_Fishing, loot_owner, true, true, this))
         // else use zone loot (must exist in like case)
-        fishloot->FillLoot(zone, LootTemplates_Fishing, loot_owner, true, false, this);
+        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, loot_owner, true, false, this);
 }
 
 void GameObject::SaveToDB()
@@ -668,15 +666,13 @@ void GameObject::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     // update in loaded data (changing data only in this place)
     GameObjectData& data = sObjectMgr->NewGOData(m_DBTableGuid);
 
-    uint32 zoneId = 0;
-    uint32 areaId = 0;
-    sMapMgr->GetZoneAndAreaId(zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
+    UpdateZoneAndAreaId();
 
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
-    data.zoneId = zoneId;
-    data.areaId = areaId;
+    data.zoneId = GetZoneId();
+    data.areaId = GetAreaId();
     data.phaseMask = phaseMask;
     data.posX = GetPositionX();
     data.posY = GetPositionY();
@@ -705,8 +701,8 @@ void GameObject::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, m_DBTableGuid);
     stmt->setUInt32(index++, GetEntry());
     stmt->setUInt16(index++, uint16(mapid));
-    stmt->setUInt16(index++, zoneId);
-    stmt->setUInt16(index++, areaId);
+    stmt->setUInt16(index++, GetZoneId());
+    stmt->setUInt16(index++, GetAreaId());
     stmt->setUInt32(index++, spawnMask);
     stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setFloat(index++, GetPositionX());
@@ -1375,16 +1371,13 @@ void GameObject::Use(Unit* user)
             {
                 case GO_READY:                              // ready for loot
                 {
-                    uint32 zone, subzone;
-                    GetZoneAndAreaId(zone, subzone);
-
-                    int32 zone_skill = sObjectMgr->GetFishingBaseSkillLevel(subzone);
+                    int32 zone_skill = sObjectMgr->GetFishingBaseSkillLevel(GetAreaId());
                     if (!zone_skill)
-                        zone_skill = sObjectMgr->GetFishingBaseSkillLevel(zone);
+                        zone_skill = sObjectMgr->GetFishingBaseSkillLevel(GetZoneId());
 
                     //provide error, no fishable zone or area should be 0
                     if (!zone_skill)
-                        sLog->outError(LOG_FILTER_SQL, "Fishable areaId %u are not properly defined in `skill_fishing_base_level`.", subzone);
+                        sLog->outError(LOG_FILTER_SQL, "Fishable areaId %u are not properly defined in `skill_fishing_base_level`.", GetAreaId());
 
                     int32 skill = player->GetSkillValue(SKILL_FISHING);
 
