@@ -13,6 +13,10 @@ enum eSpells
 
     SPELL_THROW_SPEAR               = 137660,
     SPELL_SUMMON_ESSENCE_OF_STORM   = 137883,
+    SPELL_SIPHON_ESSENCE            = 137889,
+    SPELL_FIXATE_DEMON_CREATOR      = 130357,
+    SPELL_FIXATE_DEMON_CREATOR_2    = 101199,
+    SPELL_COMPLETE_QUEST            = 137887,
 };
 
 enum eEvents
@@ -75,6 +79,8 @@ public:
         {
             summoned->AI()->AttackStart(me->GetTargetUnit());
             summoned->GetMotionMaster()->MoveChase(me->GetTargetUnit());
+            summoned->AddAura(SPELL_SIPHON_ESSENCE, summoned);
+
         }
 
         void EnterCombat(Unit* unit)
@@ -133,7 +139,7 @@ public:
                     events.ScheduleEvent(EVENT_7, 2 * IN_MILLISECONDS);
                     Talk(0);
                     //DoCast(SPELL_SUMMON_ESSENCE_OF_STORM);
-                    me->SummonCreature(69739, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+                    me->SummonCreature(69739, 7112.963f, 5168.82f, 120.6497f, me->GetOrientation());
                     break;
                 case EVENT_7:
                     me->SetVisible(false);
@@ -165,11 +171,17 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
-            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
         }
 
         void Reset()
-        { }
+        {
+            if (Player* player = me->GetTargetUnit()->ToPlayer())
+            {
+                me->AddAura(SPELL_SIPHON_ESSENCE, me);
+                me->AddAura(SPELL_FIXATE_DEMON_CREATOR_2, player);
+            }
+        }
 
         void EnterCombat(Unit* /*unit*/)
         { }
@@ -180,7 +192,7 @@ public:
                 nalak->AI()->DoAction(ACTION_1);
 
             if (Player* player = me->GetTargetUnit()->ToPlayer())
-                player->CompleteQuest(32594);
+                me->CastSpell(player, SPELL_COMPLETE_QUEST);
         }
 
         void UpdateAI(uint32 diff)
