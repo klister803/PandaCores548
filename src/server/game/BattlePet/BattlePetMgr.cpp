@@ -1650,6 +1650,7 @@ void PetBattleWild::UpdatePetsAfterBattle()
                 newPets.push_back(petguid);
 
                 m_player->GetBattlePetMgr()->SendUpdatePets(newPets, true);
+                m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_ADD_BATTLE_PET_JOURNAL, pb->GetCreatureEntry());
                 m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COLLECT_BATTLEPET);
                 m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_PET_IN_BATTLE, pb->GetSpeciesID(), pb->GetQuality(), pb->GetType());
                 m_player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLE_PET_CREDIT);

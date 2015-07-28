@@ -3741,6 +3741,14 @@ class spell_gen_orb_of_power : public SpellScriptLoader
         {
             PrepareAuraScript(spell_gen_orb_of_powerAuraScript);
 
+            uint8 ticks;
+
+            bool Load()
+            {
+                ticks = 0;
+                return true;
+            }
+
             void HandleEffectPeriodicUpdate(AuraEffect* aurEff)
             {
                 if (AuraEffect* aurEff0 = aurEff->GetBase()->GetEffect(EFFECT_0))
@@ -3760,9 +3768,26 @@ class spell_gen_orb_of_power : public SpellScriptLoader
                 }
             }
 
+            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (caster->GetPositionX() > 1749 && caster->GetPositionX() < 1816 && caster->GetPositionY() > 1287 && caster->GetPositionY() < 1379)
+                    {
+                        ticks++;
+
+                        if (ticks == 6)
+                            caster->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 128768); // Credit Achieve - Powerball
+                    }
+                    else
+                        ticks = 0;
+                }
+            }
+
             void Register()
             {
                 OnEffectUpdatePeriodic += AuraEffectUpdatePeriodicFn(spell_gen_orb_of_powerAuraScript::HandleEffectPeriodicUpdate, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_gen_orb_of_powerAuraScript::HandlePeriodicTick, EFFECT_3, SPELL_AURA_PERIODIC_DUMMY);
             }
         };
 
@@ -4115,6 +4140,33 @@ class spell_gen_bg_inactive : public SpellScriptLoader
         }
 };
 
+class spell_gen_bounce_achievement : public SpellScriptLoader
+{
+    public:
+        spell_gen_bounce_achievement() : SpellScriptLoader("spell_gen_bounce_achievement") { }
+
+        class spell_gen_bounce_achievement_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_bounce_achievement_AuraScript);
+
+            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* pCaster = GetCaster()->ToPlayer())
+                    pCaster->GetAchievementMgr().ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEVEMENT_CRITERIA_CONDITION_NOT_LOSE_AURA, 95529);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_gen_bounce_achievement_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_bounce_achievement_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
 //    new spell_gen_protect();
@@ -4205,4 +4257,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_ic_seaforium_blast();
     new spell_gen_cooking_way();
     new spell_gen_bg_inactive();
+    new spell_gen_bounce_achievement();
 }

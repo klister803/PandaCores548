@@ -2756,7 +2756,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
                 if (mask & (1<<i))
                 {
                     if (!m_spellInfo->IsPositiveEffect(i))
+                    {
+                        if(m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE)
+                            dmgSpell = true;
                         positive = false;
+                    }
                     else if (!dmgSpell)
                         dmgSpell = m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB;
                     break;
@@ -3895,7 +3899,11 @@ void Spell::cast(bool skipCheck)
                     if (mask & (1 << i))
                     {
                         if (!m_spellInfo->IsPositiveEffect(i))
+                        {
+                            if(m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE)
+                                dmgSpell = true;
                             positive = false;
+                        }
                         else if (!dmgSpell)
                             dmgSpell = m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB;
                         break;
@@ -6915,10 +6923,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // zone check
     if (m_caster->GetTypeId() == TYPEID_UNIT || !m_caster->ToPlayer()->isGameMaster())
     {
-        uint32 zone, area;
-        m_caster->GetZoneAndAreaId(zone, area);
-
-        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), zone, area,
+        SpellCastResult locRes= m_spellInfo->CheckLocation(m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId(),
             m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : NULL);
         if (locRes != SPELL_CAST_OK)
             return locRes;

@@ -530,10 +530,7 @@ void PathFinderMovementGenerator::updateFilter()
 
 NavTerrain PathFinderMovementGenerator::getNavTerrain(float x, float y, float z)
 {
-    LiquidData data;
-    m_sourceUnit->GetBaseMap()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data);
-
-    switch (data.type_flags)
+    switch (m_sourceUnit->liquid_status.type_flags)
     {
         case MAP_LIQUID_TYPE_WATER:
         case MAP_LIQUID_TYPE_OCEAN:

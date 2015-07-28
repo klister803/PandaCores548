@@ -249,12 +249,20 @@ OutdoorPvP::~OutdoorPvP()
 
 void OutdoorPvP::HandlePlayerEnterZone(Player* player, uint32 /*zone*/)
 {
+    PlayerSet::iterator itrSet = m_players[player->GetTeamId()].find(player);
+    if(itrSet != m_players[player->GetTeamId()].end())
+        return;
+
     if (player && player->GetTeamId() < 2)
         m_players[player->GetTeamId()].insert(player);
 }
 
 void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
 {
+    PlayerSet::iterator itrSet = m_players[player->GetTeamId()].find(player);
+    if(itrSet == m_players[player->GetTeamId()].end())
+        return;
+
     // inform the objectives of the leaving
     for (OPvPCapturePointMap::iterator itr = m_capturePoints.begin(); itr != m_capturePoints.end(); ++itr)
         itr->second->HandlePlayerLeave(player);
@@ -263,7 +271,7 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
         SendRemoveWorldStates(player);
 
     if (player->GetTeamId() < 2)
-        m_players[player->GetTeamId()].erase(player);
+        m_players[player->GetTeamId()].erase(itrSet);
 
     sLog->outDebug(LOG_FILTER_OUTDOORPVP, "Player %s left an outdoorpvp zone", player->GetName());
 }

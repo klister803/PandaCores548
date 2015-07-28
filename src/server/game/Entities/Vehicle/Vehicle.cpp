@@ -736,14 +736,7 @@ void Vehicle::CalculatePassengerOffset(float& x, float& y, float& z, float& o)
 
 void Vehicle::RemovePendingEvent(VehicleJoinEvent* e)
 {
-    for (PendingJoinEventContainer::iterator itr = _pendingJoinEvents.begin(); itr != _pendingJoinEvents.end(); ++itr)
-    {
-        if (*itr == e)
-        {
-            _pendingJoinEvents.erase(itr);
-            break;
-        }
-    }
+    _pendingJoinEvents.remove(e);
 }
 
 /**
@@ -960,7 +953,8 @@ void VehicleJoinEvent::Abort(uint64)
     if(!Passenger)
         return;
     /// Check if the Vehicle was already uninstalled, in which case all auras were removed already
-    if (Target)
+    //if (Target)
+    if (Unit* targetBase = ObjectAccessor::GetUnit(*Passenger, targetGuid))
     {
         //sLog->outDebug(LOG_FILTER_VEHICLES, "Passenger GuidLow: %u, Entry: %u, board on vehicle GuidLow: %u, Entry: %u SeatId: %d cancelled",
             //Passenger->GetGUIDLow(), Passenger->GetEntry(), Target->GetBase()->GetGUIDLow(), Target->GetBase()->GetEntry(), (int32)Seat->first);
@@ -968,8 +962,8 @@ void VehicleJoinEvent::Abort(uint64)
         /// @SPELL_AURA_CONTROL_VEHICLE auras can be applied even when the passenger is not (yet) on the vehicle.
         /// When this code is triggered it means that something went wrong in @Vehicle::AddPassenger, and we should remove
         /// the aura manually.
-        if(Unit* targetBase = Target->GetBase())
-            if (targetBase->IsInWorld())
+        //if(Unit* targetBase = Target->GetBase())
+            //if (targetBase->IsInWorld())
                 targetBase->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE, Passenger->GetGUID());
     }
     else

@@ -119,9 +119,6 @@ void OutdoorPvPMgr::HandlePlayerEnterZone(Player* player, uint32 zoneid)
     if (itr == m_OutdoorPvPMap.end())
         return;
 
-    if (itr->second->HasPlayer(player))
-        return;
-
     itr->second->HandlePlayerEnterZone(player, zoneid);
     sLog->outDebug(LOG_FILTER_OUTDOORPVP, "Player %u entered outdoorpvp id %u", player->GetGUIDLow(), itr->second->GetTypeId());
 }
@@ -130,10 +127,6 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player* player, uint32 zoneid)
 {
     OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneid);
     if (itr == m_OutdoorPvPMap.end())
-        return;
-
-    // teleport: remove once in removefromworld, once in updatezone
-    if (!itr->second->HasPlayer(player))
         return;
 
     itr->second->HandlePlayerLeaveZone(player, zoneid);

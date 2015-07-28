@@ -181,6 +181,50 @@ public:
                 power = power + data > 50 ? 50 : power + data;
         }
 
+        void ActivateOrOfflineBoxes(bool state)
+        {
+            std::list<GameObject*> boxlist;
+            boxlist.clear();
+            switch (me->GetEntry())
+            {
+            case NPC_MOGU_SPOILS:
+            case NPC_MOGU_SPOILS2:
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_SMALL_MOGU_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_MEDIUM_MOGU_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_BIG_MOGU_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_PANDAREN_RELIC_BOX, 50.0f);
+                if (!boxlist.empty())
+                {
+                    for (std::list<GameObject*>::const_iterator itr = boxlist.begin(); itr != boxlist.end(); itr++)
+                    {
+                        if (state)
+                            (*itr)->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        else
+                            (*itr)->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                    }
+
+                }
+                break;
+            case NPC_MANTIS_SPOILS:
+            case NPC_MANTIS_SPOILS2:
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_SMALL_MANTIS_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_MEDIUM_MANTIS_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_BIG_MANTIS_BOX, 50.0f);
+                GetGameObjectListWithEntryInGrid(boxlist, me, GO_PANDAREN_RELIC_BOX, 50.0f);
+                if (!boxlist.empty())
+                {
+                    for (std::list<GameObject*>::const_iterator itr = boxlist.begin(); itr != boxlist.end(); itr++)
+                    {
+                        if (state)
+                            (*itr)->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                        else
+                            (*itr)->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+                    }
+                }
+                break;
+            }
+        }
+
         void SetGUID(uint64 guid, int32 type)
         {
             if (type == 1)
@@ -194,9 +238,10 @@ public:
                     break;
                 case NPC_MANTIS_SPOILS:
                 case NPC_MANTIS_SPOILS2:
-                    othermspoilguid = instance->GetData64(DATA_SPOIL_MANTIS);
+                    othermspoilguid = instance->GetData64(DATA_SPOIL_MOGU);
                     break;
                 }
+                ActivateOrOfflineBoxes(true);
                 events.ScheduleEvent(EVENT_FIND_PLAYERS, 1000);
             }
         }
@@ -223,6 +268,7 @@ public:
                         spoiltrigger->AI()->SetGUID(me->GetGUID(), 1);
                     break;
                 case ACTION_SECOND_ROOM:
+                    ActivateOrOfflineBoxes(false);
                     if (GameObject* go = me->GetMap()->GetGameObject(instance->GetData64(me->GetEntry() == NPC_MOGU_SPOILS2 ? GO_LEVER_R : GO_LEVER_L)))
                         go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                     break;
@@ -239,6 +285,9 @@ public:
                 switch (eventId)
                 {
                 case EVENT_FIND_PLAYERS:
+                    if (!instance)
+                        return;
+
                     std::list<Player*> pllist;
                     pllist.clear();
                     GetPlayerListInGrid(pllist, me, 55.0f);
@@ -255,19 +304,20 @@ public:
                         if (Creature* mspoil = me->GetCreature(*me, mspoilGuid))
                             if (mspoil->HasAura(SPELL_AURA_BAR_S))
                                 mspoil->SetPower(POWER_ALTERNATE_POWER, power, true);
-
-                        //Check spoils, if power 50, go second room
-                        if (power == 50)
+                    }
+                    //Check spoils, if power 50, go second room
+                    if (power == 50)
+                    {
+                        if (Creature* omspoil = me->GetCreature(*me, othermspoilguid))
                         {
-                            if (Creature* omspoil = me->GetCreature(*me, othermspoilguid))
+                            if (omspoil->HasAura(SPELL_AURA_BAR_S) && omspoil->GetPower(POWER_ALTERNATE_POWER) == 50)
                             {
-                                if (omspoil->HasAura(SPELL_AURA_BAR_S) && omspoil->GetPower(POWER_ALTERNATE_POWER) == 50)
-                                {
-                                    DoAction(ACTION_SECOND_ROOM);
-                                    break;
-                                }
+                                if (instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == SPECIAL)
+                                    instance->SetBossState(DATA_SPOILS_OF_PANDARIA, DONE);
+                                else
+                                 DoAction(ACTION_SECOND_ROOM);
+                                 break;
                             }
-                                
                         }
                     }
                     events.ScheduleEvent(EVENT_FIND_PLAYERS, 1000);
@@ -434,12 +484,14 @@ public:
         npc_generic_sop_unitsAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
-            //me->SetReactState(REACT_PASSIVE);
-            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            srpGuid = 0;
+            me->SetReactState(REACT_PASSIVE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
         InstanceScript* instance;
         EventMap events;
+        uint64 srpGuid;
 
         void Reset()
         {
@@ -478,12 +530,30 @@ public:
             case NPC_KUN_DA:
                 events.ScheduleEvent(EVENT_FRACTURE, 5000);
                 break;
+            //Medoum
+            case NPC_MOGU_SHADOW_RITUALIST:
+                if (Creature* srp = me->SummonCreature(NPC_SHADOW_RITUALIST_PHYLACTERY, me->GetPositionX() + 5.0f, me->GetPositionY(), me->GetPositionZ()))
+                    srpGuid = srp->GetGUID();
             //Small 
             case NPC_ANIMATED_STONE_MOGU:
                 events.ScheduleEvent(EVENT_EARTHEN_SHARD, 5000);
                 break;
             default:
                 break;
+            }
+        }
+
+        void DamageTaken(Unit* attacker, uint32 &damage)
+        {
+            if (me->GetEntry() == NPC_MOGU_SHADOW_RITUALIST)
+            {
+                if (Creature* srp = me->GetCreature(*me, srpGuid))
+                {
+                    if (damage >= me->GetHealth())
+                        me->Kill(srp, true);
+                    else
+                        srp->SetHealth(srp->GetHealth() - damage);
+                }
             }
         }
 
@@ -605,11 +675,6 @@ class go_generic_sop_box : public GameObjectScript
 {
 public:
     go_generic_sop_box() : GameObjectScript("go_generic_sop_box") { }
-
-  /*ћаленький Ч 18 шт.дает 1 ед.энергии;
-    —редний Ч 6 шт.дает 4 ед.энергии;
-    Ѕольшой Ч 2 шт.дает 14 ед.энергии;
-    ѕандаренский €щик Ч не дает энергии, но после убийства ада, дает бафф игроку, в зависимости от убитого моба.*/
 
     bool OnGossipHello(Player* player, GameObject* go)
     {

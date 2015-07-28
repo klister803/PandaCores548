@@ -36,6 +36,7 @@
 #include "GuildMgr.h"
 #include "Bracket.h"
 #include "BracketMgr.h"
+#include "GroupMgr.h"
 
 namespace Trinity
 {
@@ -1057,7 +1058,6 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (realTeam != team)
                 player->setFactionForRace(player->getRace());
         }
-        player->RecalcArenaAuras();
         player->RemoveAura(SPELL_BATTLE_FATIGUE);
     }
 
@@ -1332,7 +1332,7 @@ void Battleground::AddPlayer(Player* player)
     AddOrSetPlayerToCorrectBgGroup(player, team);
 
     //Recal amaunt in auras
-    player->RecalcArenaAuras();
+    player->ScheduleDelayedOperation(DELAYED_UPDATE_AURAS_TO_BG);
 
     // Log
     sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Player %s joined the battle.", player->GetName());
@@ -1348,6 +1348,7 @@ void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
         group = new Group;
         SetBgRaid(team, group);
         group->Create(player);
+        sGroupMgr->AddGroup(group);
     }
     else                                            // raid already exist
     {

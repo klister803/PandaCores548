@@ -110,8 +110,8 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_GUILD_MEMBER, "SELECT guildid, rank FROM guild_member WHERE guid = ?", CONNECTION_BOTH)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_ACHIEVEMENTS, "SELECT achievement, date FROM character_achievement WHERE guid = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_ACHIEVEMENTS, "SELECT first_guid, achievement, date FROM account_achievement WHERE account = ?", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM character_achievement_progress WHERE guid = ?", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_CRITERIAPROGRESS, "SELECT criteria, counter, date FROM account_achievement_progress WHERE account = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_SEL_CHARACTER_CRITERIAPROGRESS, "SELECT criteria, counter, date, achievID FROM character_achievement_progress WHERE guid = ?", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_SEL_ACCOUNT_CRITERIAPROGRESS, "SELECT criteria, counter, date, achievID FROM account_achievement_progress WHERE account = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_EQUIPMENTSETS, "SELECT setguid, setindex, name, iconname, ignore_mask, item0, item1, item2, item3, item4, item5, item6, item7, item8, "
     "item9, item10, item11, item12, item13, item14, item15, item16, item17, item18 FROM character_equipmentsets WHERE guid = ? ORDER BY setindex", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_BGDATA, "SELECT instanceId, team, joinX, joinY, joinZ, joinO, joinMapId, taxiStart, taxiEnd, mountSpell FROM character_battleground_data WHERE guid = ?", CONNECTION_ASYNC)
@@ -257,12 +257,13 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_UPD_GUILD_RANK_BANK_TIME7, "UPDATE guild_member SET BankResetTimeTab7 = 0 WHERE guildid = ? AND rank = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_CHAR_DATA_FOR_GUILD, "SELECT name, level, class, zone, account, re.standing, gender FROM characters c LEFT JOIN character_reputation re ON re.guid = c.guid AND re.faction = 1168 WHERE c.guid = ?", CONNECTION_SYNCH)
     PREPARE_STATEMENT(CHAR_REP_GUILD_ACHIEVEMENT, "REPLACE INTO guild_achievement (guildId, achievement, date, guids) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC)
-    PREPARE_STATEMENT(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA, "REPLACE INTO guild_achievement_progress (guildId, criteria, counter, date, completedGuid) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_REP_GUILD_ACHIEVEMENT_CRITERIA, "REPLACE INTO guild_achievement_progress (guildId, criteria, counter, date, completedGuid, achievID) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC)
+    PREPARE_STATEMENT(CHAR_UPD_GUILD_ACHIEVEMENT_CRITERIA, "UPDATE guild_achievement_progress SET counter = ?, `date` = ?, achievID = ? WHERE guildId = ? AND criteria = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_DEL_GUILD_INVALID_ACHIEV_PROGRESS_CRITERIA, "DELETE FROM guild_achievement_progress WHERE criteria = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_DEL_ALL_GUILD_ACHIEVEMENTS, "DELETE FROM guild_achievement WHERE guildId = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_DEL_ALL_GUILD_ACHIEVEMENT_CRITERIA, "DELETE FROM guild_achievement_progress WHERE guildId = ?", CONNECTION_ASYNC)
     PREPARE_STATEMENT(CHAR_SEL_GUILD_ACHIEVEMENT, "SELECT achievement, date, guids FROM guild_achievement WHERE guildId = ?", CONNECTION_SYNCH)
-    PREPARE_STATEMENT(CHAR_SEL_GUILD_ACHIEVEMENT_CRITERIA, "SELECT criteria, counter, date, completedGuid FROM guild_achievement_progress WHERE guildId = ?", CONNECTION_SYNCH)
+    PREPARE_STATEMENT(CHAR_SEL_GUILD_ACHIEVEMENT_CRITERIA, "SELECT criteria, counter, date, completedGuid, achievID FROM guild_achievement_progress WHERE guildId = ?", CONNECTION_SYNCH)
     PREPARE_STATEMENT(CHAR_UPD_GUILD_EXPERIENCE, "UPDATE guild SET level = ?, experience = ?, todayExperience = ? WHERE guildId = ?", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UPD_GUILD_RESET_TODAY_EXPERIENCE, "UPDATE guild SET todayExperience = 0", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_LOAD_GUILD_NEWS, "SELECT id, eventType, playerGuid, data, flags, date FROM guild_news_log WHERE guild = ? ORDER BY id DESC LIMIT 100", CONNECTION_SYNCH);

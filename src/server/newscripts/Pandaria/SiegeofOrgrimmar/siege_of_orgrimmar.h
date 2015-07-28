@@ -411,7 +411,7 @@ enum eGameObjects
     GO_MEDIUM_MOGU_BOX              = 221893,
     GO_BIG_MOGU_BOX                 = 221885,
     //Mantis
-    GO_SMALL_MANTIS_BOX             = 221816,
+    GO_SMALL_MANTIS_BOX             = 221822, 
     GO_MEDIUM_MANTIS_BOX            = 221820,
     GO_BIG_MANTIS_BOX               = 221804,
     //Pandaren

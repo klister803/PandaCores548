@@ -27,9 +27,18 @@
 #include "DBCEnums.h"
 #include "DBCStores.h"
 
-typedef std::list<CriteriaTreeEntry const*> CriteriaTreeEntryList;
-typedef std::list<AchievementEntry const*>         AchievementEntryList;
-typedef std::unordered_map<uint32, AchievementEntryList>         AchievementListByReferencedId;
+struct CriteriaTreeInfo
+{
+    uint32 criteriaTreeID = 0;
+    uint32 parentID = 0;
+    AchievementEntry const* achievement = NULL;
+    CriteriaTreeEntry const* criteriaTree = NULL;
+    CriteriaEntry const* criteria = NULL;
+};
+
+typedef std::vector<CriteriaTreeInfo> CriteriaTreeList;
+typedef std::vector<AchievementEntry const*> AchievementEntryList;
+typedef std::unordered_map<uint32, AchievementEntryList> AchievementListByReferencedId;
 
 struct CriteriaTreeProgress
 {
@@ -37,10 +46,12 @@ struct CriteriaTreeProgress
     time_t date;                                            // latest update time.
     uint64 CompletedGUID;                                   // GUID of the player that completed this criteria (guild achievements)
     bool changed;
+    bool updated;
 
     // ToDo: make cleanup after achieve getting and store Criteria there - no need find it every time.
-    uint32 criteria;
-    uint32 achievID;
+    AchievementEntry const* achievement = NULL;
+    CriteriaTreeEntry const* criteriaTree = NULL;
+    CriteriaEntry const* criteria = NULL;
 };
 
 enum AchievementCriteriaDataType
@@ -220,13 +231,13 @@ typedef std::unordered_map<uint32, AchievementRewardLocale> AchievementRewardLoc
 
 struct CompletedAchievementData
 {
-    CompletedAchievementData() : date(0), first_guid(0), isAccountAchievement(false), changed(false) { }
+    CompletedAchievementData() : date(0), first_guid(0), changed(false), isAccountAchievement(false) { }
 
     time_t date;
     std::set<uint64> guids;
     uint64 first_guid;
-    bool isAccountAchievement;
     bool changed;
+    bool isAccountAchievement;
 };
 
 typedef std::unordered_map<uint32, CriteriaTreeProgress> CriteriaProgressMap;
@@ -252,8 +263,8 @@ class AchievementMgr
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,Unit const* unit = NULL, Player* referencePlayer = NULL, bool init = false);
-        void CompletedAchievement(AchievementEntry const* entry, Player* referencePlayer);
-        bool IsCompletedAchievement(AchievementEntry const* entry);
+        void CompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer);
+        bool IsCompletedAchievement(AchievementEntry const* achievement, Player* referencePlayer);
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver);
         void SendAllAccountCriteriaData(Player* receiver);
@@ -261,23 +272,16 @@ class AchievementMgr
         bool HasAchieved(uint32 achievementId) const;
         bool HasAccountAchieved(uint32 achievementId) const;
         uint64 GetFirstAchievedCharacterOnAccount(uint32 achievementId) const;
+        bool CanDeleteOrUpdateCreteria(uint32 achievementId, uint64 guid) const;
         T* GetOwner() const { return _owner; }
 
         void UpdateTimedAchievements(uint32 timeDiff);
         void StartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry, uint32 timeLost = 0);
         void RemoveTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);   // used for quest and scripted timed achievements
         uint32 GetAchievementPoints() const { return _achievementPoints; }
-        uint32 GetParantTreeId(uint32 parent)
-        {
-            CriteriaTreeEntry const* cTree = sCriteriaTreeStore.LookupEntry(parent);
-            if(cTree && cTree->criteria == 0 && cTree->parent != 0)
-                return cTree->parent;
-
-            return parent;
-        }
-
         CriteriaSort GetCriteriaSort() const;
-        bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
+        bool IsCompletedCriteria(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement, CriteriaEntry const* criteria);
+        uint32 IsCompletedCriteriaTreeCounter(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
         bool IsCompletedCriteriaTree(CriteriaTreeEntry const* criteriaTree, AchievementEntry const* achievement);
         bool IsCompletedScenarioTree(CriteriaTreeEntry const* criteriaTree);
         CriteriaProgressMap* GetCriteriaProgressMap();
@@ -285,13 +289,13 @@ class AchievementMgr
     private:
         enum ProgressType { PROGRESS_SET, PROGRESS_ACCUMULATE, PROGRESS_HIGHEST };
         void SendAchievementEarned(AchievementEntry const* achievement) const;
-        void SendCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
-        void SendAccountCriteriaUpdate(CriteriaEntry const* entry, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
+        void SendCriteriaUpdate(CriteriaEntry const* criteria, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
+        void SendAccountCriteriaUpdate(CriteriaEntry const* criteria, CriteriaTreeProgress const* progress, uint32 timeElapsed, bool timedCompleted) const;
 
         CriteriaTreeProgress* GetCriteriaProgress(uint32 entry);
-        CriteriaTreeProgress* GetCriteriaProgress(CriteriaTreeEntry const* entry);
-        void SetCriteriaProgress(CriteriaTreeEntry const* treeEntry, CriteriaEntry const* entry, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
-        void RemoveCriteriaProgress(CriteriaTreeEntry const* entry);
+        CriteriaTreeProgress* GetCriteriaProgress(CriteriaTreeEntry const* criteriaTree);
+        bool SetCriteriaProgress(AchievementEntry const* achievement, CriteriaTreeEntry const* treeEntry, CriteriaEntry const* criteria, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
+        void RemoveCriteriaProgress(CriteriaTreeEntry const* criteriaTree);
         void CompletedCriteriaFor(AchievementEntry const* achievement, Player* referencePlayer);
         bool CanCompleteCriteria(AchievementEntry const* achievement);
 
@@ -321,7 +325,7 @@ class AchievementGlobalMgr
         static char const* GetCriteriaTypeString(AchievementCriteriaTypes type);
         static char const* GetCriteriaTypeString(uint32 type);
 
-        CriteriaTreeEntryList const& GetCriteriaTreeByType(AchievementCriteriaTypes type, CriteriaSort sort) const
+        CriteriaTreeList const& GetCriteriaTreeByType(AchievementCriteriaTypes type, CriteriaSort sort) const
         {
             if (sort == PLAYER_CRITERIA)
                 return m_CriteriaTreesByType[type];
@@ -331,7 +335,7 @@ class AchievementGlobalMgr
                 return m_ScenarioCriteriaTreesByType[type];
         }
 
-        CriteriaTreeEntryList const& GetTimedCriteriaTreeByType(AchievementCriteriaTimedTypes type) const
+        CriteriaTreeList const& GetTimedCriteriaTreeByType(AchievementCriteriaTimedTypes type) const
         {
             return m_CriteriaTreesByTimedType[type];
         }
@@ -395,19 +399,19 @@ class AchievementGlobalMgr
         void LoadRewards();
         void LoadRewardLocales();
         AchievementEntry const* GetAchievement(uint32 achievementId) const;
-        AchievementEntry const* GetAchievementByCriteriaTree(uint32 criteriaTree) const;
         CriteriaEntry const* GetAchievementCriteria(uint32 criteriaId) const;
         CriteriaTreeEntry const* GetAchievementCriteriaTree(uint32 criteriaId) const;
+        uint32 GetParantTreeId(uint32 parent);
 
     private:
         AchievementCriteriaDataMap m_criteriaDataMap;
 
         // store achievement criterias by type to speed up lookup
-        CriteriaTreeEntryList m_CriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
-        CriteriaTreeEntryList m_GuildCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
-        CriteriaTreeEntryList m_ScenarioCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
+        CriteriaTreeList m_CriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
+        CriteriaTreeList m_GuildCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
+        CriteriaTreeList m_ScenarioCriteriaTreesByType[ACHIEVEMENT_CRITERIA_TYPE_TOTAL];
 
-        CriteriaTreeEntryList m_CriteriaTreesByTimedType[ACHIEVEMENT_TIMED_TYPE_MAX];
+        CriteriaTreeList m_CriteriaTreesByTimedType[ACHIEVEMENT_TIMED_TYPE_MAX];
 
         // store achievements by referenced achievement id to speed up lookup
         AchievementListByReferencedId m_AchievementListByReferencedId;
