@@ -1691,11 +1691,7 @@ void AddSC_pursing_the_black_harvest()
     new npc_suffering_soul_fragment();
     new npc_hungering_soul_fragment();
     new npc_essence_of_order();
-<<<<<<< HEAD
     new npc_demonic_gateway_scen();
-=======
-    new npc_hungering_soul_fragment2();
->>>>>>> b6ba066f09695b91232c0315be6b11d86e311290
     new npc_kanrethad_ebonlocke();
     new npc_jubeka_shadowbreaker();
     new npc_wild_imp_scenario();
