@@ -365,6 +365,27 @@ enum c_events
     EVENT_50
 };
 
+enum c_actions
+{
+    ACTION_NONE,
+
+    ACTION_1,
+    ACTION_2,
+    ACTION_3,
+    ACTION_4,
+    ACTION_5,
+    ACTION_6,
+    ACTION_7,
+    ACTION_8,
+    ACTION_9,
+    ACTION_10,
+    ACTION_11,
+    ACTION_12,
+    ACTION_13,
+    ACTION_14,
+    ACTION_15
+};
+
 class EventMap : private std::map<uint32, uint32>
 {
     public:

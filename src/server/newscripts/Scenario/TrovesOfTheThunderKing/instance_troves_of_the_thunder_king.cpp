@@ -37,17 +37,25 @@ public:
 
         void Initialize()
         {
+            start = NOT_STARTED;
         }
 
         void OnPlayerEnter(Player* player)
         {
+            std::set<uint32> WorldMapAreaIds;
+            WorldMapAreaIds.insert(770);
+            WorldMapAreaIds.insert(748);
+            WorldMapAreaIds.insert(907);
+            WorldMapAreaIds.insert(910);
+            player->GetSession()->SendSetPhaseShift(std::set<uint32>(), std::set<uint32>(), WorldMapAreaIds, 8);
         }
 		
         void SetData(uint32 type, uint32 data)
         {
             switch (type)
             {
-                case 0:
+                case DATA_EVENT_STARTED:
+                    start = data;
                 default:
                     break;
             }
@@ -67,11 +75,15 @@ public:
         {
             switch (type)
             {
-                case 0:
+                case DATA_EVENT_STARTED:
+                    return start;
                 default:
                     return 0;
             }
         }
+
+    private:
+        uint32 start;
     };
 };
 

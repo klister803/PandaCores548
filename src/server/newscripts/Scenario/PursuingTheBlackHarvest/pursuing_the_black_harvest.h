@@ -281,14 +281,6 @@ enum eGameObects
     GO_GOLDEN_GOBLET                = 216441,
 };
 
-enum Actions
-{
-    ACTION_NONE,
-
-    ACTION_1,
-    ACTION_2,
-};
-
 bool IsNextStageAllowed(InstanceScript* instance, uint8 stage);
 
 #endif
