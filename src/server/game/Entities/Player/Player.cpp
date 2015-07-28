@@ -22473,6 +22473,11 @@ void Player::_SaveSpells(SQLTransaction& trans)
             m_spells.erase(itr++);
             continue;
         }
+        if (itr->second->state == PLAYERSPELL_TEMPORARY)
+        {
+            itr++;
+            continue;
+        }
 
         if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->state == PLAYERSPELL_CHANGED)
         {
