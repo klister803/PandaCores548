@@ -3628,15 +3628,6 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (!entry)
         return;
 
-    uint32 summonBattlePetGuid = 0;
-    uint32 summonBattlePetEntry = 0;
-    // handle trapped pets without summonSpellId and possible creatureEntry count is 3 - Summon Battle Pet
-    if (m_spellInfo->Id == 118301)
-    {
-        summonBattlePetEntry = m_spellValue->EffectBasePoints[0];
-        summonBattlePetGuid = m_spellValue->EffectBasePoints[1];
-    }
-
     SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(m_spellInfo->GetEffect(effIndex, m_diffMode).MiscValueB);
     if (!properties)
     {
@@ -3751,15 +3742,31 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 }
                 case SUMMON_TYPE_MINIPET:
                 {
-                    if (summonBattlePetEntry)
-                        summon = m_caster->GetMap()->SummonCreature(summonBattlePetEntry, *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
-                    else
-                        summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
+                    uint64 guid = m_caster->GetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID);
+                    PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(guid);
 
-                    if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION))
+                    if (!petInfo)
                         return;
 
-                    summon->SelectLevel(summon->GetCreatureTemplate());       // some summoned creaters have different from 1 DB data for level/hp
+                    summon = m_caster->GetMap()->SummonCreature(petInfo->GetCreatureEntry(), *destTarget, properties, duration, m_originalCaster, m_targets.GetUnitTargetGUID(), m_spellInfo->Id);
+
+                    if (!summon || !summon->HasUnitTypeMask(UNIT_MASK_MINION) || summon->GetCreatureTemplate()->type != CREATURE_TYPE_WILD_PET)
+                        return;
+
+                    // summoner operation fields
+                    //m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
+                    m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
+                    m_caster->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
+
+                    // summon operation fields
+                    summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, guid);
+                    // timestamp for custom name cache
+                    if (petInfo->GetCustomName() != "")
+                        summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
+                    // level for client
+                    summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
+                    // some pet data
+                    summon->SetLevel(summon->GetCreatureTemplate()->maxlevel);       // some summoned creaters have different from 1 DB data for level/hp
                     summon->SetUInt32Value(UNIT_NPC_FLAGS, summon->GetCreatureTemplate()->npcflag);
 
                     summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
@@ -3768,56 +3775,9 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                     if (summon->GetCreatureTemplate()->type == CREATURE_TYPE_WILD_PET)
                         summon->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
-                    // handle unique pets with the only creatureEntry and existing summonSpellID
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id != 118301 && sBattlePetSpeciesBySpellId.find(summon->GetEntry()) != sBattlePetSpeciesBySpellId.end())
-                    {
-                        uint64 battlePetGUID = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetGUIDBySpell(m_spellInfo->Id);
-                        if (battlePetGUID)
-                        {
-                            if (PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
-                            {
-                                // set guids
-                                m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
-                                summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
-                                // timestamp for custom name cache
-                                if (petInfo->GetCustomName() != "")
-                                    summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
-                                // quality
-                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
-                                // level
-                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
-                                // some pet data
-                                summon->SetHealth(petInfo->GetHealth());
-                                summon->SetMaxHealth(petInfo->GetMaxHealth());
-                                // more....
-                            }
-                        }
-                    }
-                    // terrible style....rewrited later
-                    else if (summonBattlePetEntry)
-                    {
-                        uint64 battlePetGUID = summonBattlePetGuid;
-                        if (battlePetGUID)
-                        {
-                            if (PetJournalInfo * petInfo = m_caster->ToPlayer()->GetBattlePetMgr()->GetPetInfoByPetGUID(battlePetGUID))
-                            {
-                                // set guids
-                                m_caster->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, battlePetGUID);
-                                summon->SetUInt64Value(UNIT_FIELD_BATTLE_PET_COMPANION_GUID, battlePetGUID);
-                                // timestamp for custom name cache
-                                if (petInfo->GetCustomName() != "")
-                                    summon->SetUInt32Value(UNIT_FIELD_BATTLE_PET_COMPANION_NAME_TIMESTAMP, time(NULL));
-                                // quality
-                                m_caster->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, petInfo->GetQuality());
-                                // level
-                                summon->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, petInfo->GetLevel());
-                                // some pet data
-                                summon->SetHealth(petInfo->GetHealth());
-                                summon->SetMaxHealth(petInfo->GetMaxHealth());
-                                // more....
-                            }
-                        }
-                    }
+                    summon->SetHealth(petInfo->GetHealth());
+                    summon->SetMaxHealth(petInfo->GetMaxHealth());
+                    // more....
 
                     summon->AI()->EnterEvadeMode();
                     break;

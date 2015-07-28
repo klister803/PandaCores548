@@ -1277,6 +1277,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
             uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
             if (!level_)
                 level_ = level;
+
             SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, level_);
         }
         else

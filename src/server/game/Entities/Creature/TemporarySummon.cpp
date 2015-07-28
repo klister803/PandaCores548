@@ -431,6 +431,7 @@ void TempSummon::UnSummon(uint32 msTime)
     {
         owner->SetUInt64Value(PLAYER_FIELD_SUMMONED_BATTLE_PET_GUID, 0);
         owner->SetUInt32Value(PLAYER_CURRENT_BATTLE_PET_BREED_QUALITY, 0);
+        owner->SetUInt32Value(UNIT_FIELD_WILD_BATTLE_PET_LEVEL, 0);
     }
 
     if (owner && owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled)
