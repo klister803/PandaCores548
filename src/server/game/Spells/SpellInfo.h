@@ -424,11 +424,11 @@ public:
     // SpellScalingEntry
     int32  CastTimeMin;
     int32  CastTimeMax;
-    int32  CastTimeMaxLevel;
+    uint32 CastTimeMaxLevel;
     int32  ScalingClass;
     float  SpellAPBonusMultiplier;
     float  CoefBase;
-    int32  CoefLevelBase;
+    uint32 CoefLevelBase;
     int32  MaxScalingLevel;
     int32  ScalesFromItemLevel;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];

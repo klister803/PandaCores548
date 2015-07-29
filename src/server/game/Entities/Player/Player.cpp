@@ -3142,7 +3142,7 @@ void Player::Regenerate(Powers power, uint32 saveTimer)
         }
 
         //Visualization for power
-        VisualForPower(power, curValue, -integerValue);
+        VisualForPower(power, curValue, -int32(integerValue));
     }
     else
     {

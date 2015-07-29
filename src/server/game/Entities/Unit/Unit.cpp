@@ -19875,7 +19875,7 @@ bool Unit::SpellProcTriggered(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect*
 
                     if (Aura* aura = _targetAura->GetAura(triggered_spell_id))
                     {
-                        if ((aura->GetStackAmount() + 1) > (aura->GetSpellInfo()->StackAmount - 1))
+                        if (uint32((aura->GetStackAmount() + 1)) > (aura->GetSpellInfo()->StackAmount - 1))
                         {
                             RemoveAurasDueToSpell(triggered_spell_id);
                             triggered_spell_id = itr->spell_trigger;

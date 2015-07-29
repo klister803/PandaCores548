@@ -301,7 +301,7 @@ void Battleground::Update(uint32 diff)
                     //! Patch 5.4: For Arena matches that last more than 10 minutes, all players in the Arena will begin to receive Dampening.
                     //! Patch 5.4.7: Dampening is now applied to an Arena match starting at the 5 minute mark (down from 10 minutes).
                 }
-                else if (GetElapsedTime() >= dumpeningTime*MINUTE*IN_MILLISECONDS)
+                else if (GetElapsedTime() >= uint32(dumpeningTime * MINUTE * IN_MILLISECONDS))
                 {
                     ModifyStartDelayTime(diff);
                     if (GetStartDelayTime() <= 0 || GetStartDelayTime() > 10000)

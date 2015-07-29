@@ -459,7 +459,7 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
     {
         if (caster)
         {
-            int32 level = caster->getLevel();
+            uint32 level = caster->getLevel();
             if (target && _spellInfo->IsPositiveEffect(_effIndex) && (Effect == SPELL_EFFECT_APPLY_AURA))
                 level = target->getLevel();
 
@@ -2652,8 +2652,8 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
     if (caster && CastTimeMax > 0)
     {
         castTime = CastTimeMax;
-        if (CastTimeMaxLevel > int32(caster->getLevel()))
-            castTime = CastTimeMin + int32(caster->getLevel() - 1) * (CastTimeMax - CastTimeMin) / (CastTimeMaxLevel - 1);
+        if (CastTimeMaxLevel > caster->getLevel())
+            castTime = CastTimeMin + caster->getLevel() - 1 * (CastTimeMax - CastTimeMin) / (CastTimeMaxLevel - 1);
     }
     else if (CastTimeEntry)
         castTime = CastTimeEntry->CastTime;
