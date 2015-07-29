@@ -58,7 +58,8 @@ enum GoldenChest
 
 class challenge_achieve_reward : public AchievementRewardScript
 {
-    challenge_achieve_reward() : AchievementRewardScript("ChallengeConquerorGold") {}
+public:
+    challenge_achieve_reward() : AchievementRewardScript("challenge_achieve_reward") {}
 
     uint32 SelectItem(Player* source, AchievementReward const* data)
     {
@@ -86,7 +87,6 @@ class challenge_achieve_reward : public AchievementRewardScript
                 return GOLDEN_CHEST_OF_THE_GOLDEN_KING_MONK;
             case CLASS_DRUID:
                 return GOLDEN_CHEST_OF_THE_GOLDEN_KING_DRUID;
-
         }
         return 0;
     }
@@ -95,4 +95,5 @@ class challenge_achieve_reward : public AchievementRewardScript
 void AddSC_challenge_scripts()
 {
     new go_challenge();
+    new challenge_achieve_reward();
 }
