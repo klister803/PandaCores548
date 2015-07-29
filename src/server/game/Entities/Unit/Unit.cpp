@@ -23885,7 +23885,7 @@ void Unit::ApplySoulSwapDOT(Unit* target)
 
         AddAura((*iter).Id, target);
 
-        if (Aura* aura = target->GetAura((*iter).Id))
+        if (Aura* aura = target->GetAura((*iter).Id, GetGUID()))
         {
             aura->SetStackAmount((*iter).stackAmount);
             aura->SetMaxDuration((*iter).duration);
