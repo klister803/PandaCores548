@@ -55,8 +55,6 @@ enum AreaTeams
     AREATEAM_ANY   = 6
 };
 
-#define ACHIEVEMENT_MAX_ID 8915+1
-
 enum AchievementFaction
 {
     ACHIEVEMENT_FACTION_HORDE           = 0,

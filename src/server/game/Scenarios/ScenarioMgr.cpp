@@ -221,7 +221,7 @@ void ScenarioProgress::SendStepUpdate(Player* player, bool full)
     {
         ByteBuffer buff;
         uint32 count = 0;
-        if (CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap(0))
+        if (CriteriaProgressMap const* progressMap = GetAchievementMgr().GetCriteriaProgressMap())
         {
             for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)
             {
